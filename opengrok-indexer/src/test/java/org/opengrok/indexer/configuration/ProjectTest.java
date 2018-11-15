@@ -138,15 +138,17 @@ public class ProjectTest {
      */
     @Test
     public void testMergeProjects1() {
-        Configuration cfg = new Configuration();
-        cfg.setTabSize(new Configuration().getTabSize() + 3731);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setTabSize(new Configuration().getTabSize() + 3731);
+        env.setNavigateWindowEnabled(!new Configuration().isNavigateWindowEnabled());
 
         Project p1 = new Project();
-
-        p1.completeWithDefaults(cfg);
-
         assertNotNull(p1);
-        assertEquals(new Configuration().getTabSize() + 3731, p1.getTabSize());
+
+        p1.completeWithDefaults();
+
+        assertEquals(env.getTabSize(), p1.getTabSize());
+        assertEquals(env.isNavigateWindowEnabled(), p1.isNavigateWindowEnabled());
     }
 
     /**
@@ -154,15 +156,15 @@ public class ProjectTest {
      */
     @Test
     public void testMergeProjects2() {
-        Configuration cfg = new Configuration();
-        cfg.setTabSize(new Configuration().getTabSize() + 3731);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setTabSize(new Configuration().getTabSize() + 3731);
 
         Project p1 = new Project();
         p1.setTabSize(new Project().getTabSize() + 9737);
         p1.setNavigateWindowEnabled(true);
         p1.setHandleRenamedFiles(true);
 
-        p1.completeWithDefaults(cfg);
+        p1.completeWithDefaults();
 
         assertNotNull(p1);
         assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
@@ -175,11 +177,28 @@ public class ProjectTest {
      */
     @Test
     public void testCreateProjectWithConfiguration() {
-        Configuration cfg = new Configuration();
-        cfg.setTabSize(4);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setTabSize(4);
 
-        Project p1 = new Project("a", "/a", cfg);
+        Project p1 = new Project("a", "/a");
 
-        assertEquals(cfg.getTabSize(), p1.getTabSize());
+        assertEquals(env.getTabSize(), p1.getTabSize());
+    }
+
+    @Test
+    public void testEquality() {
+        Project g1 = new Project();
+        Project g2 = new Project();
+        assertTrue("null == null", g1.equals(g2));
+
+        g1 = new Project("name");
+        g2 = new Project("other");
+        assertFalse("\"name\" != \"other\"", g1.equals(g2));
+
+        g1 = new Project("name");
+        g2 = new Project("NAME");
+        assertTrue("\"name\" == \"NAME\"", g1.equals(g2));
+        assertTrue("\"name\" == \"name\"", g1.equals(g1));
+        assertTrue("\"NAME\" == \"NAME\"", g2.equals(g2));
     }
 }

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opengrok</groupId>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc74</version>
+    </parent>
+
+    <artifactId>opengrok-tools</artifactId>
+    <version>1.1-rc74</version>
+    <packaging>pom</packaging>
+
+    <name>OpenGrok tools</name>
+
+    <properties>
+        <python.system.executable>python3</python.system.executable>
+        <python.environment>${project.build.directory}/env/bin</python.environment>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>Windows python environment</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <python.system.executable>python</python.system.executable>
+                <python.environment>${project.build.directory}/env/Scripts</python.environment>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <sourceDirectory>src/main/python</sourceDirectory>
+        <testSourceDirectory>src/test/python</testSourceDirectory>
+
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>generate-python-package-version</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <!--
+                                Use property ${project.version} but delete the "-" (dash) from it
+                                and place it into the property ${project.python.package.version}
+                             -->
+                            <name>project.python.package.version</name>
+                            <regex>-rc</regex>
+                            <value>${project.version}</value>
+                            <replacement>rc</replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- copy all the python files to the target directory
+                     so we produce the dist and build directories there -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy package source files</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/src</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy version file and replace the opengrok version in it</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <!-- replace ${project.python.package.version} in version.py -->
+                            <outputDirectory>${project.build.directory}/src/main/python/opengrok_tools</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/python/opengrok_tools</directory>
+                                    <includes>
+                                        <include>version.py</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy top level package resources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>MANIFEST.in</include>
+                                        <include>README.md</include>
+                                        <include>setup.py</include>
+                                        <include>setup.cfg</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy logging.properties.template to dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>logging.properties.template</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>Generate python env</id>
+                        <configuration>
+                            <executable>${python.system.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>venv</argument>
+                                <argument>env</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <!-- needed for 'pip install pylint' to work -->
+                        <id>Upgrade pip</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
+                                <argument>install</argument>
+                                <argument>--upgrade</argument>
+                                <argument>pip</argument>
+                                <argument>setuptools</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Generate python package</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>sdist</argument>
+                                <argument>--formats</argument>
+                                <argument>gztar</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>package</phase>
+                    </execution>
+                    <execution>
+                        <id>Install python package for tests/pylint</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Install python lint and flake8</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
+                                <argument>install</argument>
+                                <argument>pylint</argument>
+                                <argument>flake8</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Python lint</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>pylint</argument>
+                                <argument>-E</argument>
+                                <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
+                                <argument>${project.build.directory}/setup.py</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Python flake8</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>flake8</argument>
+                                <argument>-v</argument>
+                                <argument>--exclude=test_command.py,test_commands.py</argument>
+                                <argument>${project.build.sourceDirectory}</argument>
+                                <argument>setup.py</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Test python package</id>
+                        <configuration>
+                            <executable>${python.environment}/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <environmentVariables>
+                                <PATH>${python.environment}:${env.PATH}</PATH>
+                            </environmentVariables>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>test</argument>
+                            </arguments>
+                            <skip>${skipTests}</skip>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -130,7 +130,7 @@ public class SuggesterServiceImpl implements SuggesterService {
             final Collection<String> projects,
             final List<SuperIndexSearcher> superIndexSearchers
     ) {
-        if (env.getConfiguration().isProjectsEnabled()) {
+        if (env.isProjectsEnabled()) {
             return projects.stream().map(project -> {
                 try {
                     SuperIndexSearcher searcher = env.getIndexSearcher(project);
@@ -157,7 +157,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh() {
-        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getConfiguration());
+        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
         lock.writeLock().lock();
         try {
             // close and init from scratch because many things may have changed in the configuration
@@ -176,9 +176,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh(final String project) {
-        Configuration config = env.getConfiguration();
-
-        Project p = config.getProjects().get(project);
+        Project p = env.getProjects().get(project);
         if (p == null) {
             logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found",
                     project);
@@ -201,7 +199,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private NamedIndexDir getNamedIndexDir(final Project p) {
-        Path indexPath = Paths.get(env.getConfiguration().getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath());
+        Path indexPath = Paths.get(env.getDataRootPath(), IndexDatabase.INDEX_DIR, p.getPath());
         return new NamedIndexDir(p.getName(), indexPath);
     }
 
@@ -270,15 +268,13 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private void initSuggester() {
-        Configuration config = env.getConfiguration();
-
-        SuggesterConfig suggesterConfig = config.getSuggesterConfig();
+        SuggesterConfig suggesterConfig = env.getSuggesterConfig();
         if (!suggesterConfig.isEnabled()) {
             logger.log(Level.INFO, "Suggester disabled");
             return;
         }
 
-        File suggesterDir = new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR);
+        File suggesterDir = new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
@@ -294,7 +290,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private Collection<NamedIndexDir> getAllProjectIndexDirs() {
-        if (env.getConfiguration().isProjectsEnabled()) {
+        if (env.isProjectsEnabled()) {
             return env.getProjectList().stream()
                     .filter(Project::isIndexed)
                     .map(this::getNamedIndexDir)
@@ -323,7 +319,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     private void scheduleRebuild() {
         cancelScheduledRebuild();
 
-        if (!env.getConfiguration().getSuggesterConfig().isAllowMostPopular()) { // no need to rebuild
+        if (!env.getSuggesterConfig().isAllowMostPopular()) { // no need to rebuild
             logger.log(Level.INFO, "Suggester rebuild not scheduled");
             return;
         }
@@ -347,7 +343,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private Duration getTimeToNextRebuild() {
-        String cronDefinition = env.getConfiguration().getSuggesterConfig().getRebuildCronConfig();
+        String cronDefinition = env.getSuggesterConfig().getRebuildCronConfig();
         if (cronDefinition == null) {
             return null;
         }

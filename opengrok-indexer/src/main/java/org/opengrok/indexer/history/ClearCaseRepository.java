@@ -239,11 +239,12 @@ public class ClearCaseRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file, boolean interactive) {
-        // if the parent contains a file named "view.dat" or
+        // if the parent contains a file named "[.]view.dat" or
         // the parent is named "vobs" or the canonical path
         // is found in "cleartool lsvob -s"
-        File f = new File(file, "view.dat");
-        if (f.exists()) {
+        File fWindows = new File(file, "view.dat");
+        File fUnix = new File(file, ".view.dat");
+        if (fWindows.exists() || fUnix.exists()) {
             return true;
         } else if (file.isDirectory() && file.getName().equalsIgnoreCase("vobs")) {
             return true;

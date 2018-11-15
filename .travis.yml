@@ -3,23 +3,11 @@ cache:
   directories:
   - '$HOME/.m2'
   - '$HOME/.sonar/cache'
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-      jdk: oraclejdk8
-    - os: osx
-      osx_image: xcode9.4
-before_install: dev/before_install
-install: true
-before_script: dev/before
 env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "O_cda5pWDBAP-O3_0nG5RQ"
-script: dev/main
 addons:
   coverity_scan:
     project:
@@ -32,35 +20,49 @@ addons:
     organization: "opengrok"
     token:
       secure: "ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0="
-deploy:
-  # Pre-release
-  - provider: releases
-    script:
-    - echo "$TRAVIS_TAG"
-    - echo "$TRAVIS_BRANCH"
-    - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
-    prerelease: true
-    api_key:
-      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-    file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-    skip_cleanup: true
-    on:
-      repo: oracle/opengrok
-      tags: true
-      condition: "$TRAVIS_TAG =~ rc[0-9]+$"
-      branch: master
-  # Full release
-  - provider: releases
-    script:
-    - echo "$TRAVIS_TAG"
-    - echo "$TRAVIS_BRANCH"
-    - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
-    api_key:
-      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-    file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-    skip_cleanup: true
-    on:
-      repo: oracle/opengrok
-      tags: true
-      condition: "! $TRAVIS_TAG =~ rc[0-9]+$"
-      branch: master
+jobs:
+  include:
+    - stage: test
+      os: linux
+      dist: trusty
+      sudo: required
+      jdk: oraclejdk8
+      install: true
+      script: dev/main
+      before_install: dev/before_install
+      before_script: dev/before
+    - stage: test
+      os: osx
+      osx_image: xcode9.4
+      install: true
+      script: dev/main
+      before_install: dev/before_install
+      before_script: dev/before
+    - stage: deploy
+      name: Github Release
+      if: repo = "oracle/opengrok" AND tag IS present
+      before_install: dev/before_install
+      install: true
+      script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+      deploy:
+        # Pre-release
+        - provider: releases
+          name: $TRAVIS_TAG
+          prerelease: true
+          api_key:
+            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+          skip_cleanup: true
+          on:
+            condition: $TRAVIS_TAG =~ rc[0-9]+$
+            all_branches: true
+        # Full release
+        - provider: releases
+          name: $TRAVIS_TAG
+          api_key:
+            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+          skip_cleanup: true
+          on:
+            condition: ! $TRAVIS_TAG =~ rc[0-9]+$
+            all_branches: true

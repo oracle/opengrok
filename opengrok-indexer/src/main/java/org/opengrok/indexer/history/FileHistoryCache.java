@@ -40,6 +40,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -789,6 +790,8 @@ class FileHistoryCache implements HistoryCache {
             // Remove all files which constitute the history cache.
             try {
                 IOUtils.removeRecursive(Paths.get(histDir));
+            } catch (NoSuchFileException ex) {
+                LOGGER.log(Level.WARNING, String.format("directory %s does not exist", histDir));
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "tried removeRecursive()", ex);
             }

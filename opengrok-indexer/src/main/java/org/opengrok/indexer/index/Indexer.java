@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -71,6 +70,12 @@ import org.opengrok.indexer.util.Statistics;
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
  * stats etc., if specified in the options
+ *
+ * We shall use / as path delimiter in whole opengrok for uuids and paths
+ * from Windows systems, the path shall be converted when entering the index or web
+ * and converted back if needed* to access original file
+ *
+ * *Windows already supports opening /var/opengrok as C:\var\opengrok
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
@@ -83,9 +88,13 @@ public final class Indexer {
     private static final String DIRBASED = "dirbased";
     private static final String UIONLY = "uionly";
 
+    //whole app uses this separator
+    public static final char PATH_SEPARATOR ='/';
+    public static String PATH_SEPARATOR_STRING =Character.toString(PATH_SEPARATOR);
+
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
-    private static Configuration checkIndexVersionCfg;
+    private static boolean checkIndexVersion = false;
     private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
@@ -106,7 +115,7 @@ public final class Indexer {
     private static final Set<String> defaultProjects = new TreeSet<>();
     private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
-    private static String host = null;
+    private static String webappURI = null;
 
     private static OptionParser optParser = null;
     private static boolean verbose = false;
@@ -203,22 +212,6 @@ public final class Indexer {
                 subFilesList.add(path);
             }
 
-            // Check version of index(es) versus current Lucene version and exit
-            // with return code upon failure.
-            if (checkIndexVersionCfg != null) {
-                try {
-                    IndexVersion.check(checkIndexVersionCfg, subFilesList);
-                } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s\n", e);
-                    System.err.printf("You might want to remove " +
-                            (subFilesList.size() > 0 ?
-                            "data for projects " + String.join(",", subFilesList) : "all data") +
-                            " under the DATA_ROOT and to reindex\n");
-                    status = 1;
-                    System.exit(status);
-                }
-            }
-
             // If an user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
             // expects a name for the project. Therefore we fill the name
@@ -232,13 +225,34 @@ public final class Indexer {
             // Set updated configuration in RuntimeEnvironment.
             env.setConfiguration(cfg, subFilesList, false);
 
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code upon failure.
+            if (checkIndexVersion) {
+                if (cfg == null) {
+                    System.err.println("Need configuration to check index version (use -R)");
+                    System.exit(1);
+                }
+
+                try {
+                    IndexVersion.check(subFilesList);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s\n", e);
+                    System.err.printf("You might want to remove " +
+                            (subFilesList.size() > 0 ?
+                                    "data for projects " + String.join(",", subFilesList) : "all data") +
+                            " under the DATA_ROOT and to reindex\n");
+                    status = 1;
+                    System.exit(status);
+                }
+            }
+
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
             // call above.
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (noindex) {
-                getInstance().sendToConfigHost(env, host);
+                getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
             }
@@ -264,8 +278,11 @@ public final class Indexer {
                     Project project;
                     if ((project = Project.getProject(path)) != null) {
                         subFiles.add(path);
-                        repositories.addAll(env.getProjectRepositoriesMap().get(project).
-                                stream().map(x -> x.getDirectoryNameRelative()).collect(Collectors.toSet()));
+                        List<RepositoryInfo> repoList = env.getProjectRepositoriesMap().get(project);
+                        if (repoList != null) {
+                            repositories.addAll(repoList.
+                                    stream().map(x -> x.getDirectoryNameRelative()).collect(Collectors.toSet()));
+                        }
                     } else {
                         System.err.println("The path " + path
                                 + " does not correspond to a project");
@@ -285,11 +302,11 @@ public final class Indexer {
             // from project-less config to one with projects), set the property
             // so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
-            if (addProjects && host != null) {
+            if (addProjects && webappURI != null) {
                 try {
-                    IndexerUtil.enableProjects(host);
+                    IndexerUtil.enableProjects(webappURI);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host", e);
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp webappURI", e);
                     System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
                 }
             }
@@ -316,11 +333,11 @@ public final class Indexer {
 
             // Finally ping webapp to refresh indexes in the case of partial reindex
             // or send new configuration to the web application in the case of full reindex.
-            if (host != null) {
+            if (webappURI != null) {
                 if (!subFiles.isEmpty()) {
-                    getInstance().refreshSearcherManagers(env, subFiles, host);
+                    getInstance().refreshSearcherManagers(env, subFiles, webappURI);
                 } else {
-                    getInstance().sendToConfigHost(env, host);
+                    getInstance().sendToConfigHost(env, webappURI);
                 }
             }
 
@@ -329,6 +346,7 @@ public final class Indexer {
             System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
+            System.err.println("Exception: " + ex.getLocalizedMessage());
             System.err.println(optParser.getUsage());
             System.exit(1);
         } catch (Throwable e) {
@@ -341,7 +359,7 @@ public final class Indexer {
     }
 
     /**
-     * Web address consisting of host and port of a web address
+     * Web address consisting of webappURI and port of a web address
      */
     public static class WebAddress {
         private String host;
@@ -360,10 +378,10 @@ public final class Indexer {
     }
 
      /**
-      * Parse a web address into its host and port components
+      * Parse a web address into its webappURI and port components
       * This method along with the WebAddress class is used by OptionParser
       * to validate user entry of a web address.
-      * @param webAddr expected to be in the form host:port
+      * @param webAddr expected to be in the form webappURI:port
       * @return WebAddress object
       * @throws NumberFormatException or IllegalArgumentException
       */
@@ -371,7 +389,7 @@ public final class Indexer {
         String[] hp = webAddr.split(":");
 
         if (hp.length != 2) {
-            throw new IllegalArgumentException("WebAddress syntax error (expecting host:port)");
+            throw new IllegalArgumentException("WebAddress syntax error (expecting webappURI:port)");
         }
 
         return new WebAddress(hp[0], hp[1]);
@@ -455,14 +473,9 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--checkIndexVersion", "=/path/to/conf",
+            parser.on("--checkIndexVersion",
                     "Check if current Lucene version matches index version").Do(v -> {
-                try {
-                    File cfgFile = new File((String)v);
-                    checkIndexVersionCfg = Configuration.read(cfgFile);
-                } catch(IOException|NullPointerException e) {
-                    die(e.getMessage());
-                }
+                checkIndexVersion = true;
             });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
@@ -730,21 +743,21 @@ public final class Indexer {
                 cfg.setTabSize((Integer)tabSize);
             });
 
-            parser.on("-U", "--host", "=protocol://host:port/contextPath",
-                "Send the current configuration to the specified address").Do(webAddr -> {
-                    host = (String) webAddr;
+            parser.on("-U", "--uri", "=protocol://webappURI:port/contextPath",
+                "Send the current configuration to the specified webappURI").Do(webAddr -> {
+                    webappURI = (String) webAddr;
                     try {
-                        URI uri = new URI(host);
+                        URI uri = new URI(webappURI);
                         String scheme = uri.getScheme();
                         if (!scheme.equals("http") && !scheme.equals("https")) {
-                            die("URI '" + host + "' does not have HTTP/HTTPS scheme");
+                            die("webappURI '" + webappURI + "' does not have HTTP/HTTPS scheme");
                         }
                     } catch (URISyntaxException e) {
-                        die("URL '" + host + "' is not valid.");
+                        die("URL '" + webappURI + "' is not valid.");
                     }
 
                     env = RuntimeEnvironment.getInstance();
-                    env.setConfigHost(host);
+                    env.setConfigURI(webappURI);
                 }
             );
 
@@ -804,8 +817,8 @@ public final class Indexer {
     private static void checkConfiguration() {
         env = RuntimeEnvironment.getInstance();
 
-        if (noindex && (env.getConfigHost() == null || env.getConfigHost().isEmpty())) {
-            die("Missing host URL");
+        if (noindex && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+            die("Missing webappURI URL");
         }
 
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
@@ -830,7 +843,7 @@ public final class Indexer {
         } else {
             fileSpec = fileSpec.substring(1);
         }
-        fileSpec = fileSpec.toUpperCase();
+        fileSpec = fileSpec.toUpperCase(Locale.ROOT);
 
         // Disable analyzer?
         if (analyzer.equals("-")) {
@@ -935,22 +948,22 @@ public final class Indexer {
                     Project p = oldProjects.get(name);
                     p.setPath(path);
                     p.setName(name);
-                    p.completeWithDefaults(env.getConfiguration());
+                    p.completeWithDefaults();
                     projects.put(name, p);
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    projects.put(name, new Project(name, path, env.getConfiguration()));
+                    projects.put(name, new Project(name, path));
                 }
             }
         }
         
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
-            long start = System.currentTimeMillis();
+            Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
-            long time = (System.currentTimeMillis() - start) / 1000;
-            LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
+            stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
+                    env.getRepositories().size()));
             
             if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
@@ -963,7 +976,7 @@ public final class Indexer {
                     System.out.println("Repositories in " + prefix + ":");
                     for (RepositoryInfo info : env.getRepositories()) {
                         String dir = info.getDirectoryName();
-                        System.out.println(dir.substring(prefix.length()));
+                        System.out.println(String.format("%s (%s)", dir.substring(prefix.length()), info.getType()));
                     }
                 }
                 if (!zapCache.isEmpty()) {
@@ -1054,7 +1067,7 @@ public final class Indexer {
         IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
         IndexerParallelizer parallelizer = new IndexerParallelizer(env);

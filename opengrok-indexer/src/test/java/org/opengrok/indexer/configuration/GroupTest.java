@@ -214,4 +214,21 @@ public class GroupTest {
         assertTrue(random2.getProjects().size() == 1);
         assertTrue(random2.getProjects().iterator().next() == efgh);
     }
+
+    @Test
+    public void testEquality() {
+        Group g1 = new Group();
+        Group g2 = new Group();
+        assertTrue("null == null", g1.equals(g2));
+
+        g1 = new Group("name");
+        g2 = new Group("other");
+        assertFalse("\"name\" != \"other\"", g1.equals(g2));
+
+        g1 = new Group("name");
+        g2 = new Group("NAME");
+        assertTrue("\"name\" == \"NAME\"", g1.equals(g2));
+        assertTrue("\"name\" == \"name\"", g1.equals(g1));
+        assertTrue("\"NAME\" == \"NAME\"", g2.equals(g2));
+    }
 }

@@ -1,6 +1,4 @@
-# This references an OpenJDK container from the
-# Docker Hub https://hub.docker.com/_/openjdk/
-box: openjdk:8-jdk
+box: maven:3.5.3-jdk-8
 
 # This should switch to Oracle JDK however does not work:
 #box:
@@ -12,7 +10,7 @@ box: openjdk:8-jdk
 build:
   steps:
     - install-packages:
-      packages: sudo maven cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8 autoconf build-essential pkg-config
+      packages: sudo maven cvs git mercurial cssc bzr subversion monotone rcs autoconf python3 python3-venv python3-pip build-essential pkg-config
     - script:
       name: Install Universal ctags
       code: ./dev/install-universal_ctags.sh
@@ -22,6 +20,9 @@ build:
         /usr/sbin/groupadd -g 1000 foobar
         /usr/sbin/useradd -u 1000 -g 1000 -s /bin/bash -m foobar
         chown -R foobar:foobar $WERCKER_ROOT
+    - script:
+      name: Install Python packages
+      code: ./dev/install-python-packages.sh
     - wercker/maven@1.3.8:
       goals: install
       cache_repo: true

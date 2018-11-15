@@ -369,9 +369,13 @@ public class IndexDatabase {
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
         if (project != null) {
-            if (env.getConfigHost() != null) {
+            // Also need to store the correct value in configuration
+            // when indexer writes it to a file.
+            project.setIndexed(true);
+
+            if (env.getConfigURI() != null) {
                 Response r = ClientBuilder.newClient()
-                        .target(env.getConfigHost())
+                        .target(env.getConfigURI())
                         .path("api")
                         .path("v1")
                         .path("projects")
@@ -385,10 +389,6 @@ public class IndexDatabase {
                             new Object[] {project, r});
                 }
             }
-
-            // Also need to store the correct value in configuration
-            // when indexer writes it to a file.
-            project.setIndexed(true);
         }
     }
 
@@ -463,6 +463,8 @@ public class IndexDatabase {
                         continue;
                     }
                 }
+
+                dir = Util.fixPathIfWindows(dir);
 
                 String startuid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
@@ -1100,6 +1102,7 @@ public class IndexDatabase {
                     }
 
                     if (uidIter != null) {
+                        path = Util.fixPathIfWindows(path);
                         String uid = Util.path2uid(path,
                             DateTools.timeToString(file.lastModified(),
                             DateTools.Resolution.MILLISECOND)); // construct uid for doc

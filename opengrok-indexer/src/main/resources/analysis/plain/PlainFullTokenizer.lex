@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.plain;
@@ -43,11 +43,12 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 //WhiteSpace     = [ \t\f\r]+|\n
 Identifier = [a-zA-Z\p{Letter}_] [a-zA-Z\p{Letter}0-9\p{Number}_]*
 Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
+// No letters in the following, so no toLowerCase(Locale.ROOT) needed.
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
-{Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
-    onSymbolMatched(yytext().toLowerCase(Locale.getDefault()), yychar);
+{Identifier}|{Number}|{Printable} {
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
 }
 [^]    {}

@@ -51,7 +51,7 @@ public class ConfigurationController {
     @GET
     @Produces(MediaType.APPLICATION_XML)
     public String get() {
-        return env.getConfiguration().getXMLRepresentationAsString();
+        return env.getConfigurationXML();
     }
 
     @PUT
@@ -66,7 +66,7 @@ public class ConfigurationController {
     @Produces(MediaType.APPLICATION_JSON)
     public Object getField(@PathParam("field") final String field) {
         try {
-            return ClassUtil.invokeGetter(env.getConfiguration(), field);
+            return env.getConfigurationValueException(field);
         } catch (IOException e) {
             throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
         }
@@ -76,13 +76,13 @@ public class ConfigurationController {
     @Path("/{field}")
     public void setField(@PathParam("field") final String field, final String value) {
         try {
-            ClassUtil.invokeSetter(env.getConfiguration(), field, value);
+            env.setConfigurationValueException(field, value);
         } catch (IOException e) {
             throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
         }
 
         // apply the configuration - let the environment reload the configuration if necessary
-        env.applyConfig(env.getConfiguration(), false, true);
+        env.applyConfig(false, true);
         suggesterService.refresh();
     }
 

@@ -18,5 +18,7 @@ if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
 	fi
 fi
 
-mvn -B -V verify $extra_args
-node dev/parse.js
+ret=0
+mvn -B -V verify $extra_args || ret=1
+node dev/parse.js || ret=1
+exit $ret

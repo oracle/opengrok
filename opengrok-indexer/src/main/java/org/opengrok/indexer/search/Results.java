@@ -186,7 +186,7 @@ public final class Results {
             out.write("/</a>");
             if (sh.desc != null) {
                 out.write(" - <i>");
-                out.write(htmlize(sh.desc.get(parent)));
+                out.write(sh.desc.get(parent));
                 out.write("</i>");
             }
             JSONArray messages;

@@ -54,7 +54,7 @@ public class SystemController {
     @PUT
     @Path("/includes/reload")
     public void reloadIncludes() {
-        env.reloadIncludeFiles(env.getConfiguration());
+        env.getIncludeFiles().reloadIncludeFiles();
     }
 
     @POST
@@ -62,6 +62,6 @@ public class SystemController {
     @Consumes(MediaType.TEXT_PLAIN)
     public void loadPathDescriptions(final String input) throws IOException {
         EftarFile ef = new EftarFile();
-        ef.create(input, env.getConfiguration().getDtagsEftarPath().toString());
+        ef.create(input, env.getDtagsEftarPath().toString());
     }
 }

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web;
@@ -75,6 +75,8 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
+
 /**
  * Class for useful functions.
  */
@@ -96,8 +98,15 @@ public final class Util {
     private final static Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
         "[^A-Za-z0-9_]");
 
+    private static String OS = null;
+
+    private static final String anchorLinkStart = "<a href=\"";
+    private static final String anchorClassStart = "<a class=\"";
+    private static final String anchorEnd = "</a>";
+    private static final String closeQuotedTag = "\">";
+
     private Util() {
-        // singleton
+        // private to ensure static
     }
 
     /**
@@ -377,7 +386,7 @@ public final class Util {
     }
 
     /**
-     * Convenience method for {@code breadcrumbPath(urlPrefix, path, '/')}.
+     * Convenience method for {@code breadcrumbPath(urlPrefix, path, PATH_SEPARATOR)}.
      *
      * @param urlPrefix prefix to add to each url
      * @param path path to crack
@@ -386,13 +395,8 @@ public final class Util {
      * @see #breadcrumbPath(String, String, char)
      */
     public static String breadcrumbPath(String urlPrefix, String path) {
-        return breadcrumbPath(urlPrefix, path, '/');
+        return breadcrumbPath(urlPrefix, path, PATH_SEPARATOR);
     }
-
-    private static final String anchorLinkStart = "<a href=\"";
-    private static final String anchorClassStart = "<a class=\"";
-    private static final String anchorEnd = "</a>";
-    private static final String closeQuotedTag = "\">";
 
     /**
      * Convenience method for
@@ -472,13 +476,13 @@ public final class Util {
                         * (17 + prefix.length() + postfix.length()));
         int k = path.indexOf(pnames[0]);
         if (path.lastIndexOf(sep, k) != -1) {
-            pwd.append('/');
+            pwd.append(PATH_SEPARATOR);
             markup.append(sep);
         }
         for (int i = 0; i < pnames.length; i++) {
             pwd.append(URIEncodePath(pnames[i]));
             if (isDir || i < pnames.length - 1) {
-                pwd.append('/');
+                pwd.append(PATH_SEPARATOR);
             }
             markup.append(anchorLinkStart).append(prefix).append(pwd)
                     .append(postfix).append(closeQuotedTag).append(pnames[i])
@@ -855,8 +859,29 @@ public final class Util {
      * @return the original path.
      */
     public static String uid2url(String uid) {
-        String url = uid.replace('\u0000', '/');
-        return url.substring(0, url.lastIndexOf('/')); // remove date from end
+        String url = uid.replace('\u0000', PATH_SEPARATOR);
+        return url.substring(0, url.lastIndexOf(PATH_SEPARATOR)); // remove date from end
+    }
+
+    public static String fixPathIfWindows(String path) {
+        if (Util.isWindows()) {
+            // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
+            // and also so the path appears as correctly formed URI in the search results.
+            return path.replace(File.separatorChar, PATH_SEPARATOR);
+        }
+        return path;
+    }
+
+    public static String getOsName() {
+        if (OS == null) {
+            OS = System.getProperty("os.name");
+        }
+        return OS;
+    }
+
+    public static boolean isWindows() {
+        String osname = getOsName();
+        return osname != null ? osname.startsWith("Windows") : false;
     }
 
     /**
@@ -993,8 +1018,7 @@ public final class Util {
                     // Add leading zero if required.
                     sb.append('0');
                 }
-                sb.append(
-                        Integer.toHexString(u).toUpperCase(Locale.ENGLISH));
+                sb.append(Integer.toHexString(u).toUpperCase(Locale.ROOT));
             }
         }
         return sb.toString();
@@ -1570,7 +1594,7 @@ public final class Util {
     }
 
     /**
-     * Creates a html slider for pagination. This has the same effect as
+     * Creates a HTML slider for pagination. This has the same effect as
      * invoking <code>createSlider(offset, limit, size, null)</code>.
      *
      * @param offset start of the current page
@@ -1583,8 +1607,7 @@ public final class Util {
     }
 
     /**
-     * Creates a html slider for pagination.
-     *
+     * Creates a HTML slider for pagination.
      *
      * @param offset start of the current page
      * @param limit max number of items per page
@@ -1661,7 +1684,7 @@ public final class Util {
     }
 
     /**
-     * Check if the string is a http URL.
+     * Check if the string is a HTTP URL.
      *
      * @param string the string to check
      * @return true if it is http URL, false otherwise
@@ -1676,8 +1699,31 @@ public final class Util {
         return url.getProtocol().equals("http") || url.getProtocol().equals("https");
     }
 
+    protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
+
     /**
-     * Build a html link to the given http url. If the URL is not an http URL
+     * If given path is a URL, return the string representation with the user-info part filtered out.
+     * @param path path to object
+     * @return either the original string or string representation of URL with the user-info part removed
+     */
+    public static String redactUrl(String path) {
+        URL url;
+        try {
+            url = new URL(path);
+        } catch (MalformedURLException e) {
+            // not an URL
+            return path;
+        }
+        if (url.getUserInfo() != null) {
+            return url.toString().replace(url.getUserInfo(),
+                    REDACTED_USER_INFO);
+        } else {
+            return path;
+        }
+    }
+
+    /**
+     * Build a HTML link to the given HTTP URL. If the URL is not an http URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *
@@ -1694,9 +1740,9 @@ public final class Util {
      * Build a html link to the given http URL. If the URL is not an http URL
      * then it is returned as it was received.
      *
-     * @param url the http URL
+     * @param url the HTTP URL
      * @param newTab if the link should open in a new tab
-     * @return html containing the link &lt;a&gt;...&lt;/a&gt;
+     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt;
      */
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
@@ -1852,8 +1898,8 @@ public final class Util {
     }
 
     /**
-     * Parses the specified url and returns its query params.
-     * @param url url to retrieve the query params from
+     * Parses the specified URL and returns its query params.
+     * @param url URL to retrieve the query params from
      * @return query params of {@code url}
      */
     public static Map<String, List<String>> getQueryParams(final URL url) {

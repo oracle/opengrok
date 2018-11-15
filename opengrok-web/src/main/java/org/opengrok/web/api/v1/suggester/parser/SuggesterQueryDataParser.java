@@ -101,9 +101,11 @@ public class SuggesterQueryDataParser {
 
         logger.log(Level.FINEST, "Processing suggester query: {0} at {1}", new Object[] {text, caretPosition});
 
-        String randomIdentifier = RandomStringUtils.randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase();
+        String randomIdentifier = RandomStringUtils.
+                randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
         while (text.contains(randomIdentifier)) {
-            randomIdentifier = RandomStringUtils.randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase();
+            randomIdentifier = RandomStringUtils.
+                    randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase(); // OK no ROOT
         }
 
         String newText = new StringBuilder(text).insert(caretPosition, randomIdentifier).toString();

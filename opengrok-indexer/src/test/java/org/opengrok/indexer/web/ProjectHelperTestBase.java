@@ -237,7 +237,6 @@ public class ProjectHelperTestBase {
         env.setProjects(prjs);
         env.setGroups(new TreeSet<>(grps));
         env.setRepositories(rps);
-        env.register();
     }
 
     @AfterClass
@@ -246,7 +245,6 @@ public class ProjectHelperTestBase {
         env.setProjects(projects);
         env.setGroups(groups);
         env.setRepositories(repositories);
-        env.register();
     }
 
     protected void invokeAddPlugin(IAuthorizationPlugin plugin) {

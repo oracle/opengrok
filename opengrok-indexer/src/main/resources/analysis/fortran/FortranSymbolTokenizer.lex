@@ -19,11 +19,12 @@
 
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.fortran;
 
+import java.util.Locale;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
@@ -49,7 +50,7 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
  ^{Label} { }
  ^[^ \t\f\r\n]+ { yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id.toLowerCase())) {
+    if (!Consts.kwd.contains(id.toLowerCase(Locale.ROOT))) {
                         onSymbolMatched(id, yychar);
                         return yystate(); }
               }

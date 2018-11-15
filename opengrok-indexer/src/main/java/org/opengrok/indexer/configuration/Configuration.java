@@ -28,13 +28,11 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,11 +60,14 @@ import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+
 /**
- * Placeholder class for all configuration variables. Due to the multithreaded
+ * Placeholder class for all configuration variables. Due to the multi-threaded
  * nature of the web application, each thread will use the same instance of the
  * configuration object for each page request. Class and methods should have
  * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
+ *
+ * This should be as close to POJO (https://en.wikipedia.org/wiki/Plain_old_Java_object) as possible.
  */
 public final class Configuration {
 
@@ -102,6 +103,9 @@ public final class Configuration {
     private static final String NONPOSITIVE_NUMBER_ERROR =
         "Invalid value for \"%s\" - \"%s\". Expected value greater than 0";
 
+    /**
+     * Path to {@code ctags} binary.
+     */
     private String ctags;
 
     /**
@@ -235,7 +239,6 @@ public final class Configuration {
      * contains definition tags.
      */
     public static final String EFTAR_DTAGS_NAME = "dtags.eftar";
-    private transient File dtagsEftar = null;
 
     /**
      * Revision messages will be collapsible if they exceed this many number of
@@ -273,6 +276,12 @@ public final class Configuration {
      * If true, list directories first in xref directory listing.
      */
     private boolean listDirsFirst = true;
+
+    /**
+     * A flag if the navigate window should be opened by default when browsing
+     * the source code of projects.
+     */
+    private boolean navigateWindowEnabled;
 
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
@@ -441,6 +450,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
+        setNavigateWindowEnabled(false);
         setOptimizeDatabase(true);
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
@@ -725,6 +735,14 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
+    }
+
+    public boolean isNavigateWindowEnabled() {
+        return navigateWindowEnabled;
+    }
+
+    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+        this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
     public Map<String,Project> getProjects() {
@@ -1074,72 +1092,10 @@ public final class Configuration {
     }
 
     /**
-     * Get the contents of a file or empty string if the file cannot be read.
-     */
-    private static String getFileContent(File file) {
-        if (file == null || !file.canRead()) {
-            return "";
-        }
-        FileReader fin = null;
-        BufferedReader input = null;
-        try {
-            fin = new FileReader(file);
-            input = new BufferedReader(fin);
-            String line;
-            StringBuilder contents = new StringBuilder();
-            String EOL = System.getProperty("line.separator");
-            while ((line = input.readLine()) != null) {
-                contents.append(line).append(EOL);
-            }
-            return contents.toString();
-        } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.WARNING, "failed to find file: {0}",
-                e.getMessage());
-        } catch (java.io.IOException e) {
-            LOGGER.log(Level.WARNING, "failed to read file: {0}",
-                e.getMessage());
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
-            } else if (fin != null) {
-                try {
-                    fin.close();
-                } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
-            }
-        }
-        return "";
-    }
-
-    /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
     public static final String FOOTER_INCLUDE_FILE = "footer_include";
-
-    private transient String footer = null;
-
-    /**
-     * Get the contents of the footer include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see #FOOTER_INCLUDE_FILE
-     */
-    public String getFooterIncludeFileContent(boolean force) {
-        if (footer == null || force) {
-            footer = getFileContent(new File(getIncludeRoot(), FOOTER_INCLUDE_FILE));
-        }
-        return footer;
-    }
 
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
@@ -1147,45 +1103,11 @@ public final class Configuration {
      */
     public static final String HEADER_INCLUDE_FILE = "header_include";
 
-    private transient String header = null;
-
-    /**
-     * Get the contents of the header include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see #HEADER_INCLUDE_FILE
-     */
-    public String getHeaderIncludeFileContent(boolean force) {
-        if (header == null || force) {
-            header = getFileContent(new File(getIncludeRoot(), HEADER_INCLUDE_FILE));
-        }
-        return header;
-    }
-    
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the body of web app's "Home" page.
      */
     public static final String BODY_INCLUDE_FILE = "body_include";
-
-    private transient String body = null;
-
-    /**
-     * Get the contents of the body include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see Configuration#BODY_INCLUDE_FILE
-     */
-    public String getBodyIncludeFileContent(boolean force) {
-        if (body == null || force) {
-            body = getFileContent(new File(getIncludeRoot(), BODY_INCLUDE_FILE));
-        }
-        return body;
-    }
 
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
@@ -1194,44 +1116,11 @@ public final class Configuration {
      */
     public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
 
-    private transient String eforbidden_content = null;
-
-    /**
-     * Get the contents of the page for forbidden error page (403 Forbidden)
-     * include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
-     */
-    public String getForbiddenIncludeFileContent(boolean force) {
-        if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(getIncludeRoot(), E_FORBIDDEN_INCLUDE_FILE));
-        }
-        return eforbidden_content;
-    }
-
     /**
      * @return path to the file holding compiled path descriptions for the web application
      */
     public Path getDtagsEftarPath() {
         return Paths.get(getDataRoot(), "index", EFTAR_DTAGS_NAME);
-    }
-
-    /**
-     * Get the eftar file, which contains definition tags for path descriptions.
-     *
-     * @return {@code null} if there is no such file, the file otherwise.
-     */
-    public File getDtagsEftar() {
-        if (dtagsEftar == null) {
-            File tmp = getDtagsEftarPath().toFile();
-            if (tmp.canRead()) {
-                dtagsEftar = tmp;
-            }
-        }
-        return dtagsEftar;
     }
 
     public String getCTagsExtraOptionsFile() {
@@ -1413,5 +1302,4 @@ public final class Configuration {
 
         return conf;
     }
-
 }

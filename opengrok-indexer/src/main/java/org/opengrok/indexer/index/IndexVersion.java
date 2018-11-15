@@ -35,7 +35,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
-import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -59,12 +59,12 @@ public class IndexVersion {
     
     /**
      * Check if version of index(es) matches major Lucene version.
-     * @param cfg configuration
      * @param subFilesList list of paths. If non-empty, only projects matching these paths will be checked.
      * @throws Exception otherwise
      */
-    public static void check(Configuration cfg, List<String> subFilesList) throws Exception {
-        File indexRoot = new File(cfg.getDataRoot(), IndexDatabase.INDEX_DIR);
+    public static void check(List<String> subFilesList) throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
         LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
                 indexRoot);
 
@@ -77,8 +77,8 @@ public class IndexVersion {
                 checkDir(getDirectory(new File(indexRoot, projectName)));
             }
         } else {
-            if (cfg.isProjectsEnabled()) {
-                for (String projectName : cfg.getProjects().keySet()) {
+            if (env.isProjectsEnabled()) {
+                for (String projectName : env.getProjects().keySet()) {
                     LOGGER.log(Level.FINER,
                             "Checking Lucene index version in project {0}",
                             projectName);

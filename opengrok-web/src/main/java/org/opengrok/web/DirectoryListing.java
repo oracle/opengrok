@@ -211,9 +211,9 @@ public class DirectoryListing {
                     continue;
                 }
                 String filename = child.getName();
-                if (filename.startsWith("README") || filename.endsWith("README")
-                    || filename.startsWith("readme"))
-                {
+                String filenameLower = filename.toLowerCase(Locale.ROOT);
+                if (filenameLower.startsWith("readme") ||
+                        filenameLower.endsWith("readme")) {
                     readMes.add(filename);
                 }
                 boolean isDir = child.isDirectory();

@@ -24,7 +24,7 @@ Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 {
     PageConfig cfg = PageConfig.get(request);
 %>
-<%= cfg.getEnv().getConfiguration().getHeaderIncludeFileContent(false) %>
+<%= cfg.getEnv().getIncludeFiles().getHeaderIncludeFileContent(false) %>
 <% 
 }
 /* ---------------------- pageheader.jspf end --------------------- */

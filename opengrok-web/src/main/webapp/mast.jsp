@@ -54,13 +54,11 @@ org.opengrok.indexer.web.Util"%><%
         return;
     }
 
-    // jel: hmmm - questionable for dynamic content
-    long flast = cfg.getLastModified();
-    if (request.getDateHeader("If-Modified-Since") >= flast) {
-        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+    if (cfg.isNotModified(request, response)) {
+        // the resource was not modified
+        // the code 304 NOT MODIFIED has been inserted to the response
         return;
     }
-    response.setDateHeader("Last-Modified", flast);
 
     // Use UTF-8 if no encoding is specified in the request
     if (request.getCharacterEncoding() == null) {
