@@ -9,7 +9,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def readme():
-    with open(os.path.join(SCRIPT_DIR, 'README.md'), 'r') as readme:
+    with open(os.path.join(SCRIPT_DIR, 'README-dist.txt'), 'r') as readme:
         return readme.read()
 
 
