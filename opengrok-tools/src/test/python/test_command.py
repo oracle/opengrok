@@ -66,7 +66,7 @@ def test_subst_append_exclsubst_nosubst():
 def test_execute_nonexistent():
     cmd = Command(['/baaah', '/etc/passwd'])
     cmd.execute()
-    assert cmd.getretcode() == None
+    assert cmd.getretcode() is None
     assert cmd.getstate() == Command.ERRORED
 
 
@@ -88,7 +88,8 @@ def test_work_dir():
     assert os.getcwd() == orig_cwd
 
 
-@pytest.mark.skipif(not os.path.exists('/usr/bin/env'), reason="requires posix")
+@pytest.mark.skipif(not os.path.exists('/usr/bin/env'),
+                    reason="requires posix")
 def test_env():
     cmd = Command(['/usr/bin/env'],
                   env_vars={'FOO': 'BAR', 'A': 'B'})
@@ -141,7 +142,7 @@ def test_command_timeout():
     elapsed_time = time.time() - start_time
     assert elapsed_time < timeout
     assert cmd.getstate() == Command.TIMEDOUT
-    assert cmd.getretcode() == None
+    assert cmd.getretcode() is None
 
 
 @pytest.mark.skipif(not os.path.exists('/bin/sleep'),
