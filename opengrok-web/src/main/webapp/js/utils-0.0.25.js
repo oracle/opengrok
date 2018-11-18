@@ -2273,6 +2273,29 @@ function isOnSearchPage() {
     return $(document.documentElement).hasClass('search');
 }
 
+function transform_projects_to_groups() {
+    var sol = $('#project').searchableOptionList();
+
+    var $sel = sol.$selectionContainer;
+
+    $sel.find('.sol-optiongroup').each(function () {
+        var $el = $(this);
+        var checkboxs = $el.find('.sol-option .sol-checkbox')
+        for (var i = 0; i < checkboxs.length; i++) {
+            var checkbox = $(checkboxs[i])
+            if (!checkbox.is(":checked")) {
+                return;
+            }
+        }
+
+        $el.find('.sol-checkbox[name=group]').prop('checked', true);
+        for (var i = 0; i < checkboxs.length; i++) {
+            var checkbox = $(checkboxs[i])
+            checkbox.prop('checked', false)
+        }
+    });
+}
+
 /**
  * Handles submit on search form.
  *
@@ -2293,6 +2316,9 @@ function searchSubmit(form) {
         input.type = 'hidden';
         form.appendChild(input);
     }
+
+    // select groups instead of projects if all projects in one group are selected
+    transform_projects_to_groups();
 }
 
 /**

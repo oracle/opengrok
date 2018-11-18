@@ -916,7 +916,8 @@
                 $groupCaption = $('<div class="sol-optiongroup-label"/>')
                     .attr('title', solOptiongroup.tooltip)
                     .html(solOptiongroup.label),
-                $groupItem = $('<div class="sol-optiongroup"/>').append($groupCaption);
+                $groupCheckbox = $('<input class="sol-checkbox" style="display: none" type="checkbox" name="group" value="' + solOptiongroup.label+ '"/>'),
+                $groupItem = $('<div class="sol-optiongroup"/>').append($groupCaption).append($groupCheckbox);
 
             if (solOptiongroup.disabled) {
                 $groupItem.addClass('disabled');
