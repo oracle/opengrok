@@ -106,19 +106,20 @@ def main():
         sys.exit(1)
     logger.debug("web application URI = {}".format(uri))
 
+    # First read and validate configuration file as it is mandatory argument.
+    config = read_config(logger, args.config)
+    if config is None:
+        logger.error("Cannot read config file from {}".format(args.config))
+        sys.exit(1)
+
     # Changing working directory to root will avoid problems when running
-    # programs via sudo/su.
+    # programs via sudo/su. Do this only after the config file was read
+    # so that its path can be specified as relative.
     try:
         os.chdir("/")
     except OSError:
         logger.error("cannot change working directory to /",
                      exc_info=True)
-        sys.exit(1)
-
-    # First read and validate configuration file as it is mandatory argument.
-    config = read_config(logger, args.config)
-    if config is None:
-        logger.error("Cannot read config file from {}".format(args.config))
         sys.exit(1)
 
     try:
