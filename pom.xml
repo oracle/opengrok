@@ -347,12 +347,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     <argLine>${surefireArgLine}</argLine>
                 </configuration>
             </plugin>
-            <!-- CODE COVERAGE PUBLISHER -->
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>3.1.0</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
@@ -363,5 +357,27 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>java8</id>
+            <activation>
+                <jdk>8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <!--
+                      Code coverage is published only for JDK 8 because the coveralls-maven-plugin
+                      does not work with JDK 9+ (https://github.com/trautonen/coveralls-maven-plugin/issues/112)
+                    -->
+                    <plugin>
+                        <groupId>org.eluder.coveralls</groupId>
+                        <artifactId>coveralls-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
