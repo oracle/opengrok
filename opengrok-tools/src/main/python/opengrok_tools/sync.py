@@ -90,6 +90,9 @@ def main():
                         help='config file in JSON format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
+    parser.add_argument('-f', '--driveon', action='store_true', default=False,
+                        help='continue command sequence processing even '
+                        'if one of the commands requests break')
     try:
         args = parser.parse_args()
     except ValueError as e:
@@ -177,7 +180,8 @@ def main():
             cmds_base = []
             for d in dirs_to_process:
                 cmd_base = CommandSequenceBase(d, commands, args.loglevel,
-                                               config.get("cleanup"))
+                                               config.get("cleanup"),
+                                               args.driveon)
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.

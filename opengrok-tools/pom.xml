@@ -289,8 +289,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>-m</argument>
                                 <argument>flake8</argument>
                                 <argument>-v</argument>
-                                <argument>--exclude=test_command.py,test_commands.py</argument>
                                 <argument>${project.build.sourceDirectory}</argument>
+                                <argument>${project.build.testSourceDirectory}</argument>
                                 <argument>setup.py</argument>
                             </arguments>
                         </configuration>
