@@ -93,7 +93,8 @@ def test_driveon_flag():
                  "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
                 {"command": ["/bin/echo"]},
                 {"command": ["/bin/sh", "-c",
-                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 1"]},
+                             "echo " + CommandSequence.PROJECT_SUBST +
+                             "; exit 1"]},
                 {"command": ["/bin/sh", "-c",
                              "echo " + CommandSequence.PROJECT_SUBST]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master",
