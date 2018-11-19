@@ -65,7 +65,7 @@ def read_config(logger, inputfile):
                 pass
             else:
                 return cfg
-    except IOError:
-        logger.error("cannot open '{}'".format(inputfile))
+    except IOError as e:
+        logger.error("cannot open '{}': {}".format(inputfile, e.strerror))
 
     return cfg
