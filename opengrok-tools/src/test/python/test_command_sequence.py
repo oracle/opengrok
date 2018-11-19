@@ -91,15 +91,20 @@ def test_exit_2_handling():
 def test_driveon_flag():
     cmd_list = [{"command": ["/bin/sh", "-c",
                  "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
-                {"command": ["/bin/echo"]}]
+                {"command": ["/bin/echo"]},
+                {"command": ["/bin/sh", "-c",
+                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 1"]},
+                {"command": ["/bin/sh", "-c",
+                             "echo " + CommandSequence.PROJECT_SUBST]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master",
                                                cmd_list, driveon=True))
     cmds.run()
     assert cmds.retcodes == {
         '/bin/sh -c echo opengrok-master; exit 2': 2,
-        '/bin/echo opengrok-master': 0
+        '/bin/echo opengrok-master': 0,
+        '/bin/sh -c echo opengrok-master; exit 1': 1
     }
-    assert not cmds.failed
+    assert cmds.failed
 
 
 @pytest.mark.skipif(not os.path.exists('/bin/echo'),

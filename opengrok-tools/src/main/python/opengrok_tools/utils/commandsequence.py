@@ -122,7 +122,8 @@ class CommandSequence(CommandSequenceBase):
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
         If the command has return code 2, the sequence will be terminated
-        however it will not be treated as error.
+        however it will not be treated as error (unless the 'driveon' parameter
+        is True).
 
         If a command contains PROJECT_SUBST pattern, it will be replaced
         by project name, otherwise project name will be appended to the
@@ -147,6 +148,13 @@ class CommandSequence(CommandSequenceBase):
                                               "requested break".
                                               format(self.name, command))
                             self.run_cleanup()
+                        else:
+                            self.logger.debug("command '{}' for project {} "
+                                              "requested break however "
+                                              "the 'driveon' option is set "
+                                              "so driving on.".
+                                              format(self.name, command))
+                            continue
                     else:
                         self.logger.error("command '{}' for project {} failed "
                                           "with code {}, breaking".
@@ -154,8 +162,7 @@ class CommandSequence(CommandSequenceBase):
                         self.failed = True
                         self.run_cleanup()
 
-                    if not self.driveon:
-                        break
+                    break
 
     def run_cleanup(self):
         """
