@@ -913,7 +913,7 @@ public final class PageConfig {
         /**
          * Use a project determined directly from the URL
          */
-        if (getProject() != null) {
+        if (getProject() != null && getProject().isIndexed()) {
             projectNames.add(getProject().getName());
             return projectNames;
         }
@@ -923,7 +923,7 @@ public final class PageConfig {
          */
         if (projects.size() == 1) {
             Project p = projects.get(0);
-            if (authFramework.isAllowed(req, p)) {
+            if (p.isIndexed() && authFramework.isAllowed(req, p)) {
                 projectNames.add(p.getName());
             }
             return projectNames;
@@ -935,7 +935,7 @@ public final class PageConfig {
         List<String> names = getParamVals(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
-            if (project != null && authFramework.isAllowed(req, project)) {
+            if (project != null && project.isIndexed() && authFramework.isAllowed(req, project)) {
                 projectNames.add(projectName);
             }
         }
@@ -947,7 +947,11 @@ public final class PageConfig {
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
             if (group != null) {
-                projectNames.addAll(getProjectHelper().getAllGrouped(group).stream().map(Project::getName).collect(Collectors.toSet()));
+                projectNames.addAll(getProjectHelper().getAllGrouped(group)
+                                                      .stream()
+                                                      .filter(project -> project.isIndexed())
+                                                      .map(Project::getName)
+                                                      .collect(Collectors.toSet()));
             }
         }
 
@@ -955,7 +959,7 @@ public final class PageConfig {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
                 Project x = Project.getByName(s);
-                if (x != null && authFramework.isAllowed(req, x)) {
+                if (x != null && x.isIndexed() && authFramework.isAllowed(req, x)) {
                     projectNames.add(s);
                 }
             }
@@ -965,7 +969,7 @@ public final class PageConfig {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
                 for (Project project : defaultProjects) {
-                    if (authFramework.isAllowed(req, project)) {
+                    if (project.isIndexed() && authFramework.isAllowed(req, project)) {
                         projectNames.add(project.getName());
                     }
                 }
