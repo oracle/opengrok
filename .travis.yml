@@ -45,15 +45,7 @@ jobs:
     - stage: test
       name: macOS + Oracle JDK 8
       os: osx
-      osx_image: xcode9.3
-      install: true
-      script: dev/main
-      before_install: dev/before_install
-      before_script: dev/before
-    - stage: test
-      name: macOS + Oracle JDK 10
-      os: osx
-      osx_image: xcode9.4
+      osx_image: xcode8.3
       install: true
       script: dev/main
       before_install: dev/before_install
