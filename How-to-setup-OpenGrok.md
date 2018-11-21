@@ -1,5 +1,5 @@
 OpenGrok can be installed and used under different use cases. Advanced usage depends on your knowledge of running java applications and command line options.
-Note, that you need the create the index no matter what is your use case. Without indexes Opengrok will be simply useless.
+Note, that you need to create the index no matter what is your use case. Without indexes Opengrok will be simply useless.
 
 # Requirements
 
