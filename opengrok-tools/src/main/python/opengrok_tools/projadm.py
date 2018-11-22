@@ -219,7 +219,7 @@ def main():
                         help='path to the ConfigMerge binary')
     parser.add_argument('--java', help='Path to java binary '
                                        '(needed for config merge program)')
-    parser.add_argument('--jar', help='Path to jar archive to run')
+    parser.add_argument('-j', '--jar', help='Path to jar archive to run')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='Upload configuration at the end')
     parser.add_argument('-n', '--noop', action='store_true', default=False,
