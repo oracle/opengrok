@@ -86,11 +86,11 @@ public class SubversionHistoryParserTest {
         String revId1 = "12345";
         String author1 = "username1";
         String date1= "2007-09-11T11:48:56.123456Z";
-        String file1 = Paths.get("trunk/project/filename.ext").toString();
+        String file1 = "trunk/project/filename.ext";
         String revId2 = "23456";
         String author2 = "username2";
         String date2= "2006-08-10T11:38:56.123456Z";
-        String file2 = Paths.get("trunk/project/path/filename2.ext2").toString();
+        String file2 = "trunk/project/path/filename2.ext2";
         String revId3 = "765432";
         String author3 = "username3";
         String date3= "2006-08-09T10:38:56.123456Z";
@@ -142,8 +142,8 @@ public class SubversionHistoryParserTest {
         assertNotNull(result.getHistoryEntries());
         assertEquals(3, result.getHistoryEntries().size());
 
-        String file1pref = (Util.isWindows() ? "C:\\" : "/") + file1;
-        String file2pref = (Util.isWindows() ? "C:\\" : "/") + file2;
+        String file1pref = Paths.get(Paths.get("/"+file1).toUri()).toFile().toString();
+        String file2pref = Paths.get(Paths.get("/"+file2).toUri()).toFile().toString();
 
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
@@ -212,7 +212,7 @@ public class SubversionHistoryParserTest {
                 assertEquals(author, e.getAuthor());
                 assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
                 assertEquals(1, e.getFiles().size());
-                assertEquals("/" + file, e.getFiles().first());
+                assertEquals(Paths.get(Paths.get("/"+file).toUri()).toFile().toString(), e.getFiles().first());
             } catch (IOException ex) {
                 if (!expectedException) {
                     fail("Should not throw an IO exception for " + date);

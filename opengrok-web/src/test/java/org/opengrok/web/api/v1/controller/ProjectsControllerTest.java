@@ -73,7 +73,7 @@ import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-@ConditionalRun(RepositoryInstalled.SubvsersionInstalled.class)
+@ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
 public class ProjectsControllerTest extends JerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
