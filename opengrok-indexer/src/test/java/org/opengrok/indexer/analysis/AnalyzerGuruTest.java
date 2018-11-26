@@ -29,6 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -313,8 +315,8 @@ public class AnalyzerGuruTest {
     public void shouldMatchJavaClassMagic() throws Exception {
         String oldMagic = "\312\376\272\276";      // cafebabe?
         String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
-            (byte) 0xBA, (byte) 0xBE});
-        assertNotEquals("despite octal escape as unicode,", oldMagic, newMagic);
+            (byte) 0xBA, (byte) 0xBE}, Charset.forName("UTF-8"));
+        assertNotEquals("despite octal string, escape it as unicode,", oldMagic, newMagic);
 
         // 0xCAFEBABE (4), minor (2), major (2)
         byte[] dotclass = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE,
