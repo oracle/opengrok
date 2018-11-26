@@ -22,6 +22,11 @@
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -33,8 +38,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.web.Util;
-
-import static org.junit.Assert.*;
 
 /**
  *
@@ -212,7 +215,7 @@ public class SubversionHistoryParserTest {
                 assertEquals(author, e.getAuthor());
                 assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
                 assertEquals(1, e.getFiles().size());
-                assertEquals("/" + file, e.getFiles().first());
+                assertEquals(Paths.get("/", file), e.getFiles().first());
             } catch (IOException ex) {
                 if (!expectedException) {
                     fail("Should not throw an IO exception for " + date);
