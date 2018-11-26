@@ -884,6 +884,12 @@ public final class Util {
         return osname != null ? osname.startsWith("Windows") : false;
     }
 
+    public static boolean isUnix() {
+        String osname = getOsName();
+        return osname != null ? (osname.startsWith("Linux") || osname.startsWith("Solaris") ||
+                osname.contains("bsd") || osname.startsWith("mac")): false;
+    }
+
     /**
      * Write the 'H A D' links. This is used for search results and directory
      * listings.
