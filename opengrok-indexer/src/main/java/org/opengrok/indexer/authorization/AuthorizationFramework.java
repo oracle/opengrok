@@ -414,7 +414,7 @@ public final class AuthorizationFramework {
         try {
             return loadClass(classname);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was not found: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was not found", classname), ex);
         } catch (SecurityException ex) {
             LOGGER.log(Level.WARNING, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
         } catch (InstantiationException ex) {
@@ -533,11 +533,15 @@ public final class AuthorizationFramework {
     private void loadJarFiles(AuthorizationStack stack, List<File> jarfiles) {
         IAuthorizationPlugin pf;
 
+
         for (File file : jarfiles) {
             try (JarFile jar = new JarFile(file)) {
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
+                    if (!entry.getName().endsWith(".class")) {
+                        continue;
+                    }
                     String classname = getClassName(entry);
                     if (!entry.getName().endsWith(".class") || classname.isEmpty()) {
                         continue;
@@ -559,12 +563,15 @@ public final class AuthorizationFramework {
     private String getClassName(File f) {
         String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
+        // no need to check for the index from lastIndexOf because we're in a branch
+        // where we expect the .class suffix
         classname = classname.substring(0, classname.lastIndexOf('.')); // strip .class
         return classname;
     }
 
     private String getClassName(JarEntry f) {
-        String classname = f.getName().replace(File.separatorChar, '.'); // convert to package name
+        // java jar always uses / as separator
+        String classname = f.getName().replace('/', '.'); // convert to package name
         return classname.substring(0, classname.lastIndexOf('.'));  // strip .class
     }
 
@@ -616,7 +623,7 @@ public final class AuthorizationFramework {
         } else {
             newLocalStack = this.newStack.clone();
         }
-        
+
         // Load all other possible plugin classes.
         if (isLoadClassesEnabled()) {
             loadClassFiles(newLocalStack, IOUtils.listFilesRec(pluginDirectory, ".class"));
@@ -649,7 +656,7 @@ public final class AuthorizationFramework {
 
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
         stats.addRequest("authorization_stack_reload");
-        
+
         // clean the old stack
         removeAll(oldStack);
         oldStack = null;
@@ -682,7 +689,7 @@ public final class AuthorizationFramework {
      *
      * Assumes the {@code lock} is held for reading.
      *
-     * @param req the request
+     * @param session the request session
      * @return true if it is; false otherwise
      */
     private boolean isSessionInvalid(HttpSession session) {
@@ -738,8 +745,9 @@ public final class AuthorizationFramework {
      *
      * @param request request object
      * @param cache cache
-     * @param name name
-     * @param predicate predicate
+     * @param entity entity with name
+     * @param pluginPredicate predicate to determine the plugin's decision for the request
+     * @param skippingPredicate predicate to determine if the plugin should be skipped for this request
      * @return true if yes
      *
      * @see RuntimeEnvironment#getPluginStack()

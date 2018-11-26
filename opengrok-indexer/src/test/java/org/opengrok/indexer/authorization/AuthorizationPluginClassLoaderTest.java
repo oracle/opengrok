@@ -24,13 +24,13 @@ package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
-
+import java.util.logging.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 public class AuthorizationPluginClassLoaderTest {
@@ -38,8 +38,7 @@ public class AuthorizationPluginClassLoaderTest {
     private final File pluginDirectory;
 
     public AuthorizationPluginClassLoaderTest() throws URISyntaxException {
-        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("/authorization/plugins/testplugins.jar");
-        pluginDirectory = Paths.get(resource.toURI()).toFile().getParentFile();
+        pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
         Assert.assertTrue(pluginDirectory.isDirectory());
     }
 
@@ -142,7 +141,7 @@ public class AuthorizationPluginClassLoaderTest {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "org.sample.plugin.NoPlugin", true);
+        loadClass(instance, "org.sample.plugin.NoPlugin", true);
     }
 
     @Test
@@ -212,15 +211,15 @@ public class AuthorizationPluginClassLoaderTest {
             }
         } catch (ClassNotFoundException ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce ClassNotFoundException");
+                Assert.fail(String.format("Should not produce ClassNotFoundException: %s", ex.getLocalizedMessage()));
             }
         } catch (SecurityException ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce SecurityException");
+                Assert.fail(String.format("Should not produce SecurityException: %s", ex.getLocalizedMessage()));
             }
         } catch (Exception ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce any exception");
+                Assert.fail(String.format("Should not produce any exception: %s", ex.getLocalizedMessage()));
             }
         }
         return clazz;
