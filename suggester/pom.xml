@@ -62,7 +62,7 @@
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.15.1</version>
+            <version>3.17.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>
@@ -93,12 +93,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>@{surefireArgLine}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -108,7 +107,7 @@
         <profile>
             <id>java9plus</id>
             <activation>
-                <jdk>[9,11]</jdk>
+                <jdk>[9,18]</jdk>
             </activation>
             <build>
                 <plugins>
@@ -117,6 +116,8 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>
+                                @{surefireArgLine}
+                                --illegal-access=permit
                                 --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
                                 --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
                                 --add-exports java.base/sun.nio.ch=ALL-UNNAMED

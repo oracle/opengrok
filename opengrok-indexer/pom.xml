@@ -262,6 +262,19 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                               ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
                           </filesToInclude>
                           <replacements>
+                              <!--
+                              needed for HTML 5 compliance (javadoc in JDK 11)
+                              workaround for https://github.com/jflex-de/jflex/issues/534
+                              -->
+                              <replacement>
+                                  <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
+                                  <valueFile>${basedir}/jflex-code.txt</valueFile>
+                              </replacement>
+                              <replacement>
+                                  <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
+                                  <valueFile>${basedir}/jflex-code-end.txt</valueFile>
+                              </replacement>
+
                               <replacement>
                                   <token>private static final int ZZ_BUFFERSIZE =</token>
                                   <value>private int ZZ_BUFFERSIZE =</value>
@@ -288,6 +301,34 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                               <regexFlag>DOTALL</regexFlag>
                           </regexFlags>
                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <!--
+                        needed for HTML 5 compliance (javadoc in JDK 11)
+                        workaround for https://github.com/jflex-de/jflex/issues/534
+                        -->
+                        <id>replace-tt-with-code-in-jflex-sources</id>
+                        <phase>generate-sources</phase>
+
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <filesToInclude>
+                                ${basedir}/target/generated-sources/jflex/**/*.java
+                            </filesToInclude>
+                            <replacements>
+                                <replacement>
+                                    <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
+                                    <valueFile>${basedir}/jflex-code.txt</valueFile>
+                                </replacement>
+                                <replacement>
+                                    <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
+                                    <valueFile>${basedir}/jflex-code-end.txt</valueFile>
+                                </replacement>
+                            </replacements>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -369,21 +410,47 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
                     </excludes>
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>@{surefireArgLine}</argLine>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>java9plus</id>
+            <activation>
+                <jdk>[9,18]</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!-- Test helper class with name that confuses surefire -->
+                                <exclude>**/TestRepository.java</exclude>
+                            </excludes>
+                            <argLine>
+                                @{surefireArgLine}
+                                --illegal-access=permit
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
