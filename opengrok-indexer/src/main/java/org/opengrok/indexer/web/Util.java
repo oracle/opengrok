@@ -886,8 +886,8 @@ public final class Util {
 
     public static boolean isUnix() {
         String osname = getOsName();
-        return osname != null ? osname.startsWith("Linux") || osname.startsWith("Solaris") ||
-                osname.contains("bsd") || osname.startsWith("mac"): false;
+        return osname != null ? (osname.startsWith("Linux") || osname.startsWith("Solaris") ||
+                osname.contains("bsd") || osname.startsWith("mac")): false;
     }
 
     /**
