@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.opengrok.indexer.authorization.TestPlugin;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
@@ -475,6 +477,7 @@ public class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
+    @ConditionalRun(UnixPresent.class)
     public void testCheckSourceRootExistence4() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
