@@ -88,7 +88,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
         for (File f : jars) {
             try (JarFile jar = new JarFile(f)) {
-                String filename = classname.replace('.', File.separatorChar) + ".class";
+                // jar files always use / separator
+                String filename = classname.replace('.', '/') + ".class";
                 JarEntry entry = (JarEntry) jar.getEntry(filename);
                 if (entry != null && entry.getName().endsWith(".class")) {
                     try (InputStream is = jar.getInputStream(entry)) {
@@ -105,7 +106,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Loading class threw an exception:", ex);
             } catch (Throwable ex) {
-                LOGGER.log(Level.SEVERE, "Loading class threw an unknown exception:", ex);
+                LOGGER.log(Level.SEVERE, "Loading class threw an unknown exception", ex);
             }
         }
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
