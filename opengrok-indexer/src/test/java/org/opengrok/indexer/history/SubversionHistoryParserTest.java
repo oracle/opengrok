@@ -31,13 +31,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.indexer.web.Util;
 
 /**
  *
@@ -145,27 +143,24 @@ public class SubversionHistoryParserTest {
         assertNotNull(result.getHistoryEntries());
         assertEquals(3, result.getHistoryEntries().size());
 
-        String file1pref = (Util.isWindows() ? "C:\\" : "/") + file1;
-        String file2pref = (Util.isWindows() ? "C:\\" : "/") + file2;
-
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
         assertEquals(1, e1.getFiles().size());
-        assertEquals(file1pref, e1.getFiles().first());
+        assertEquals(Paths.get(Paths.get("/" + file1).toUri()).toString(), e1.getFiles().first());
 
         HistoryEntry e2 = result.getHistoryEntries().get(1);
         assertEquals(revId2, e2.getRevision());
         assertEquals(author2, e2.getAuthor());
         assertEquals(1, e2.getFiles().size());
-        assertEquals(file2pref, e2.getFiles().first());
+        assertEquals(Paths.get(Paths.get("/" + file2).toUri()).toString(), e2.getFiles().first());
 
         HistoryEntry e3 = result.getHistoryEntries().get(2);
         assertEquals(revId3, e3.getRevision());
         assertEquals(author3, e3.getAuthor());
         assertEquals(2, e3.getFiles().size());
-        assertEquals(file1pref, e3.getFiles().first());
-        assertEquals(file2pref, e3.getFiles().last());
+        assertEquals(Paths.get(Paths.get("/" + file1).toUri()).toString(), e3.getFiles().first());
+        assertEquals(Paths.get(Paths.get("/" + file2).toUri()).toString(), e3.getFiles().last());
         assertTrue(e3.getMessage().contains("line1"));
         assertTrue(e3.getMessage().contains("line3"));
     }
@@ -188,7 +183,7 @@ public class SubversionHistoryParserTest {
             String date = dates[i][0];
             String format = dates[i][1];
             boolean expectedException = dates[i][2] != null;
-            String file = "trunk/project/filename.ext";
+            String file = Paths.get("trunk", "project", "filename.ext").toString();
             try {
                 String output = "<?xml version=\"1.0\"?>\n"
                         + "<log>\n"
@@ -215,7 +210,7 @@ public class SubversionHistoryParserTest {
                 assertEquals(author, e.getAuthor());
                 assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
                 assertEquals(1, e.getFiles().size());
-                assertEquals(Paths.get("/", file), e.getFiles().first());
+                assertEquals(Paths.get(Paths.get("/" + file).toUri()).toString(), e.getFiles().first());
             } catch (IOException ex) {
                 if (!expectedException) {
                     fail("Should not throw an IO exception for " + date);
