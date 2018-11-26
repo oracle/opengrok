@@ -115,8 +115,8 @@ public class PathUtils {
         // following fixup would not be needed, since File and Paths recognize
         // backslash as a delimiter. On Linux and macOS, any backslash needs to
         // be normalized.
-        path = path.replace('\\', File.separatorChar);
-        canonical = canonical.replace('\\', File.separatorChar);
+        path = path.replaceAll("\\\\", File.separator);
+        canonical = canonical.replaceAll("\\\\", File.separator);
         String normCanonical = canonical.endsWith(File.separator) ?
             canonical : canonical + File.separator;
         Deque<String> tail = null;
