@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.UnixPresent;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a container for tests of {@link PathUtils}.
@@ -78,7 +79,7 @@ public class PathUtilsTest {
 
     @Test
     public void shouldHandleEffectivelySameInputs() throws IOException {
-        final String USR_BIN = Paths.get("/usr/bin").toString();
+        String USR_BIN = Paths.get(Paths.get("/usr/bin").toUri()).toString();
         String rel = PathUtils.getRelativeToCanonical(USR_BIN + File.separator, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to ~itself", "", rel);
     }
