@@ -25,6 +25,8 @@ package org.opengrok.indexer.history;
 
 import java.util.Arrays;
 import java.util.HashSet;
+
+import com.sun.javafx.util.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -164,6 +166,15 @@ public class BazaarHistoryParserTest {
             "/directory/filename2.ext2",
             "/otherdir/file.extension"
         };
+        if (Utils.isWindows()) {
+            files = new String[] {
+                    "\\\\filename.ext",
+                    "\\\\directory",
+                    "\\\\directory\\filename.ext",
+                    "\\\\directory\\filename2.ext2",
+                    "\\\\otherdir\\file.extension"
+            };
+        }
 
         StringBuilder output = new StringBuilder();
         for (int i = 0; i < 60; i++) {

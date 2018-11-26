@@ -25,11 +25,14 @@ package org.opengrok.indexer.history;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import com.sun.javafx.util.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opengrok.indexer.web.Util;
 
 import static org.junit.Assert.*;
 
@@ -84,10 +87,16 @@ public class SubversionHistoryParserTest {
         String author1 = "username1";
         String date1= "2007-09-11T11:48:56.123456Z";
         String file1 = "trunk/project/filename.ext";
+        if (Utils.isWindows() ) {
+            file1 = "trunk\\project\\filename.ext";
+        }
         String revId2 = "23456";
         String author2 = "username2";
         String date2= "2006-08-10T11:38:56.123456Z";
         String file2 = "trunk/project/path/filename2.ext2";
+        if (Utils.isWindows() ) {
+            file2 = "trunk\\project\\path\\filename2.ext2";
+        }
         String revId3 = "765432";
         String author3 = "username3";
         String date3= "2006-08-09T10:38:56.123456Z";
@@ -143,20 +152,20 @@ public class SubversionHistoryParserTest {
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
         assertEquals(1, e1.getFiles().size());
-        assertEquals("/" + file1, e1.getFiles().first());
+        assertEquals((Util.isWindows()?"C:\\":"/") + file1, e1.getFiles().first());
 
         HistoryEntry e2 = result.getHistoryEntries().get(1);
         assertEquals(revId2, e2.getRevision());
         assertEquals(author2, e2.getAuthor());
         assertEquals(1, e2.getFiles().size());
-        assertEquals("/" + file2, e2.getFiles().first());
+        assertEquals((Util.isWindows()?"C:\\":"/") + file2, e2.getFiles().first());
 
         HistoryEntry e3 = result.getHistoryEntries().get(2);
         assertEquals(revId3, e3.getRevision());
         assertEquals(author3, e3.getAuthor());
         assertEquals(2, e3.getFiles().size());
-        assertEquals("/" + file1, e3.getFiles().first());
-        assertEquals("/" + file2, e3.getFiles().last());
+        assertEquals((Util.isWindows()?"C:\\":"/") + file1, e3.getFiles().first());
+        assertEquals((Util.isWindows()?"C:\\":"/") + file2, e3.getFiles().last());
         assertTrue(e3.getMessage().contains("line1"));
         assertTrue(e3.getMessage().contains("line3"));
     }
