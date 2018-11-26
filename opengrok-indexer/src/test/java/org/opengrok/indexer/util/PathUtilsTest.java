@@ -38,8 +38,10 @@ import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.UnixPresent;
 
 /**
@@ -48,6 +50,9 @@ import org.opengrok.indexer.condition.UnixPresent;
 public class PathUtilsTest {
 
     private final List<File> tempDirs = new ArrayList<>();
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @After
     public void tearDown() {
