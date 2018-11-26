@@ -23,19 +23,20 @@
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -46,10 +47,8 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
-import org.opengrok.indexer.util.TestRepository;
-
-import static org.junit.Assert.*;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
@@ -178,13 +177,13 @@ public class GitRepositoryTest {
     @Test
     public void testRenamedFiles() throws Exception {
         String[][] tests = new String[][]{
-            {"moved2/renamed2.c", "84599b3c", "moved2/renamed2.c"},
-            {"moved2/renamed2.c", "67dfbe26", "moved/renamed2.c"},
-            {"moved2/renamed2.c", "67dfbe26", "moved/renamed2.c"},
-            {"moved2/renamed2.c", "1086eaf5", "moved/renamed.c"},
-            {"moved2/renamed2.c", "b6413947", "moved/renamed.c"},
-            {"moved2/renamed2.c", "ce4c98ec", "renamed.c"},
-            {"moved2/renamed2.c", "bb74b7e8", "renamed.c"}
+                {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", Paths.get("moved2", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", Paths.get("moved", "renamed.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), "b6413947", Paths.get("moved", "renamed.c").toString()},
+                {Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", "renamed.c"},
+                {Paths.get("moved2", "renamed2.c").toString(), "bb74b7e8", "renamed.c"}
         };
 
         File root = new File(repository.getSourceRoot(), "git");
@@ -312,8 +311,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "84599b3", exp_str);
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
+        runRenamedTest("moved2/renamed2.c", "84599b3", exp_str);
+        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
     }
 
     /**
@@ -379,7 +378,7 @@ public class GitRepositoryTest {
                 + "}\n";
 
         runRenamedTest(Paths.get("moved", "renamed.c").toString(), "b641394", exp_str);
-        runRenamedTest("renamed.c", "ce4c98e", exp_str);
+        runRenamedTest(Paths.get("renamed.c").toString(), "ce4c98e", exp_str);
     }
 
     /**
@@ -391,7 +390,7 @@ public class GitRepositoryTest {
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
         runRenamedTest(Paths.get("moved", "renamed.c").toString(), "67dfbe2", null);
-        runRenamedTest("renamed.c", "67dfbe2", null);
+        runRenamedTest(Paths.get("renamed.c").toString(), "67dfbe2", null);
     }
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {

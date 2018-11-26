@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,14 +180,19 @@ public class GitRepository extends Repository {
         File directory = new File(getDirectoryName());
 
         try {
-            String filename = fullpath.substring(getDirectoryName().length() + 1);
+            /*
+             * Be careful, git uses only forward slashes in its command and output (not in file path).
+             * Using backslashes together with git show will get empty output and 0 status code.
+             */
+            String filename = fullpath.substring(getDirectoryName().length() + 1)
+                                      .replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {
                 RepoCommand,
                 "show",
                 rev + ":" + filename
             };
-            
+
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
@@ -236,6 +242,7 @@ public class GitRepository extends Repository {
         }
 
         InputStream ret = getHistoryRev(fullpath, rev);
+
         if (ret == null) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -303,6 +310,7 @@ public class GitRepository extends Repository {
         }
 
         String fileInRepo = getPathRelativeToRepositoryRoot(fullpath);
+
         /*
          * Get the list of file renames for given file to the specified
          * revision.
@@ -345,7 +353,8 @@ public class GitRepository extends Repository {
                 }
 
                 if ((m = pattern.matcher(line)).find()) {
-                    originalFile = m.group(1);
+                    // git output paths with forward slashes so transform it if needed
+                    originalFile = Paths.get(m.group(1)).toString();
                 }
             }
         }
@@ -362,7 +371,7 @@ public class GitRepository extends Repository {
 
     /**
      * Get first revision of given file without following renames.
-     * @param file file to get first revision of
+     * @param fullpath file path to get first revision of
      */
     private String getFirstRevision(String fullpath) throws IOException {
         String[] argv = {
