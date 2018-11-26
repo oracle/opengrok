@@ -628,6 +628,8 @@ public class FileHistoryCacheTest {
     /*
      * Functional test for the FetchHistoryWhenNotInCache configuration option.
      */
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.SCCSInstalled.class)
     @Test
     public void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.

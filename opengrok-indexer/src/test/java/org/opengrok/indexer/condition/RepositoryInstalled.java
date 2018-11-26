@@ -30,6 +30,7 @@ import org.opengrok.indexer.history.MercurialRepository;
 import org.opengrok.indexer.history.PerforceRepository;
 import org.opengrok.indexer.history.RCSRepository;
 import org.opengrok.indexer.history.Repository;
+import org.opengrok.indexer.history.SCCSRepository;
 import org.opengrok.indexer.history.SubversionRepository;
 
 /**
@@ -102,9 +103,15 @@ public abstract class RepositoryInstalled implements RunCondition {
         }
     }
 
-    public static class SubvsersionInstalled extends RepositoryInstalled {
-        public SubvsersionInstalled() {
+    public static class SubversionInstalled extends RepositoryInstalled {
+        public SubversionInstalled() {
             super("svn", new SubversionRepository());
+        }
+    }
+
+    public static class SCCSInstalled extends RepositoryInstalled {
+        public SCCSInstalled() {
+            super("sccs", new SCCSRepository());
         }
     }
 
