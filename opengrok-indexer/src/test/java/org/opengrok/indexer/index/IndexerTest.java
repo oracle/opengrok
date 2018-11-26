@@ -23,12 +23,17 @@
  */
 package org.opengrok.indexer.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,10 +67,6 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -481,11 +482,13 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{
+                        Paths.get("/c").toString()
+                })),
                 false, false, null, null, new ArrayList<>(), false);
         assertEquals(1, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"c"})),
+                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 
     /**
@@ -499,12 +502,19 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
+        System.out.println(Paths.get("/lisp").toString());
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data", "/no-project-x32ds1"})),
+                new TreeSet<>(Arrays.asList(new String[]{
+                        Paths.get("/lisp").toString(),
+                        Paths.get("/pascal").toString(),
+                        Paths.get("/perl").toString(),
+                        Paths.get("/data").toString(),
+                        Paths.get("/no-project-x32ds1").toString()
+                })),
                 false, false, null, null, new ArrayList<>(), false);
         assertEquals(4, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data"})),
-                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"lisp", "pascal", "perl", "data"})),
+                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 
     /**
@@ -519,7 +529,12 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{"/c", "/data", "__all__", "/no-project-x32ds1"})),
+                new TreeSet<>(Arrays.asList(new String[]{
+                        Paths.get("/c").toString(),
+                        Paths.get("/data").toString(),
+                        Paths.get("__all__").toString(),
+                        Paths.get("/no-project-x32ds1").toString()
+                })),
                 false, false, null, null, new ArrayList<>(), false);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
