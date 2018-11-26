@@ -39,6 +39,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.UnixPresent;
 
 /**
  * Represents a container for tests of {@link PathUtils}.
@@ -77,6 +79,7 @@ public class PathUtilsTest {
     }
 
     @Test
+    @ConditionalRun(UnixPresent.class)
     public void shouldHandleLinksOfArbitraryDepthWithValidation()
             throws IOException, ForbiddenSymlinkException {
         // Create real directories
