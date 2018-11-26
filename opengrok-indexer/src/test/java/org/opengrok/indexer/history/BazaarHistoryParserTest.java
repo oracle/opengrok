@@ -23,6 +23,7 @@
 
 package org.opengrok.indexer.history;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 
