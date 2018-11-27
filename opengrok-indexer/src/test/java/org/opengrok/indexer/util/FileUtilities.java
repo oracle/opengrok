@@ -33,7 +33,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IgnoredNames;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Various filesystem utilities used by the different test setups
@@ -53,7 +54,7 @@ public class FileUtilities {
             if (ze.isDirectory()) {
                 file.mkdirs();
             } else {
-                try (InputStream in = zipfile.getInputStream(ze); FileOutputStream out = new FileOutputStream(file)) {
+                try (InputStream in = zipfile.getInputStream(ze); OutputStream out = new FileOutputStream(file)) {
                     if (in == null) {
                         throw new IOException("Cannot get InputStream for " + ze);
                     }

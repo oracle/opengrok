@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -230,6 +231,7 @@ public class FileHistoryCacheTest {
     /**
      * Basic tests for the {@code store()} and {@code get()} methods.
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testStoreAndGet() throws Exception {
@@ -353,6 +355,7 @@ public class FileHistoryCacheTest {
      * - change+rename the file again
      * - incremental reindex
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenameFileThenDoIncrementalReindex() throws Exception {
@@ -480,6 +483,7 @@ public class FileHistoryCacheTest {
      * (i.e. there should not be history entries from the default branch made
      * there after the branch was created).
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenamedFilePlusChangesBranched() throws Exception {

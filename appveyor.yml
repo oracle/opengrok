@@ -19,6 +19,7 @@ install:
   - cmd: mvn --version
   - cmd: java -version
   - cmd: python --version
+  - cmd: hg --version
   - ps: |
       Add-Type -AssemblyName System.IO.Compression.FileSystem
       if (!(Test-Path -Path "C:\uctags" )) {
