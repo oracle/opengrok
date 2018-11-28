@@ -940,7 +940,7 @@ public final class Indexer {
             // Add a project for each top-level directory in source root.
             for (File file : files) {
                 String name = file.getName();
-                String path = File.separator + name;
+                String path = '/' + name;
                 if (oldProjects.containsKey(name)) {
                     // This is an existing object. Reuse the old project,
                     // possibly with customizations, instead of creating a

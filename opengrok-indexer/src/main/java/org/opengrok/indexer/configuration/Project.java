@@ -50,6 +50,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         ClassUtil.remarkTransientFields(Project.class);
     }
 
+    /**
+     * Path relative to source root. Uses the '/' separator on all platforms.
+     */
     private String path;
 
     /**
@@ -175,15 +178,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Set the path (relative from source root) this project is located It seems
-     * that you should ALWAYS prefix the path with current file.separator ,
-     * current environment should always have it set up
+     * Set the path (relative from source root) this project is located.
      *
      * @param path the relative path from source root where this project is
-     * located.
+     * located, starting with path separator.
      */
     public void setPath(String path) {
-        this.path = path;
+        this.path = Util.fixPathIfWindows(path);
     }
 
     public void setIndexed(boolean flag) {
