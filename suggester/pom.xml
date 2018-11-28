@@ -13,6 +13,10 @@
 
     <name>OpenGrok Suggester</name>
 
+    <properties>
+        <jdkArgs></jdkArgs>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -97,7 +101,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>@{surefireArgLine}</argLine>
+                    <argLine>
+                        -Djna.nosys=true
+                        @{surefireArgLine}
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -117,6 +124,7 @@
                         <configuration>
                             <argLine>
                                 @{surefireArgLine}
+                                -Djna.nosys=true
                                 --illegal-access=permit
                                 --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
                                 --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
