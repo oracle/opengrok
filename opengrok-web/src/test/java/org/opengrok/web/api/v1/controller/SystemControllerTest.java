@@ -111,9 +111,10 @@ public class SystemControllerTest extends JerseyTest {
         // Check
         Path eftarPath = env.getDtagsEftarPath();
         assertTrue(eftarPath.toFile().exists());
-        EftarFileReader er = new EftarFileReader(eftarPath.toString());
-        for (int i = 0; i < descriptions.length; i++) {
-            assertEquals(descriptions[i][1], er.get(descriptions[i][0]));
+        try (EftarFileReader er = new EftarFileReader(eftarPath.toString())) {
+            for (int i = 0; i < descriptions.length; i++) {
+                assertEquals(descriptions[i][1], er.get(descriptions[i][0]));
+            }
         }
 
         // Cleanup

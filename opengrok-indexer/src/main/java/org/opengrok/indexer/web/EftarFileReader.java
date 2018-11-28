@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.web;
 
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +42,7 @@ import org.opengrok.indexer.util.IOUtils;
  *
  * @author Chandan
  */
-public class EftarFileReader {
+public class EftarFileReader implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EftarFileReader.class);
 
