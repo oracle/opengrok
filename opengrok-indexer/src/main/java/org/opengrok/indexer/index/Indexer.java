@@ -66,6 +66,7 @@ import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.Statistics;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -1018,7 +1019,7 @@ public final class Indexer {
                     break;
                 }
                 for (Project p : env.getProjectList()) {
-                    if (p.getPath().equals(projectPath)) {
+                    if (p.getPath().equals(Util.fixPathIfWindows(projectPath))) {
                         projects.add(p);
                         break;
                     }
