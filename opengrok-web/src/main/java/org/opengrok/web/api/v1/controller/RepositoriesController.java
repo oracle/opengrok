@@ -39,13 +39,13 @@ public class RepositoriesController {
     @GET
     @Path("/type")
     @Produces(MediaType.TEXT_PLAIN)
-    public String getType(@QueryParam("repository") final String repository) {
+    public String getType(@QueryParam("repository") final String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
-            if (ri.getDirectoryNameRelative().equals(repository)) {
-                return repository + ":" + ri.getType();
+            if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
+                return repositoryPath + ":" + ri.getType();
             }
         }
-        return repository + ":N/A";
+        return repositoryPath + ":N/A";
     }
 
 }

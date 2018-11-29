@@ -192,8 +192,10 @@ will be used for repository paths.
 
 ### return type of the repository [GET]
 
-The repository path is relative to source root, starting with slash.
-Repository type is separated from the repository path with a colon.
+The repository path is relative to source root.
+
+In the response the repository type is separated from the repository path
+with a colon. If the type cannot be determined "N/A" is returned.
 
 + Response 200 (text/plain)
   + Body
@@ -201,7 +203,8 @@ Repository type is separated from the repository path with a colon.
             /opengrok-master:git
 
 + Parameters
-  + repository - repository for which to return type
+  + repository - repository path with native path separators (of the machine
+  running the service) starting with path separator for which to return type
 
 ## Search [/search{?full,def,symbol,path,hist,type,projects,maxresults,start}]
 
