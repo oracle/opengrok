@@ -188,7 +188,7 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @SuppressWarnings("rawtypes")
-    private IAuthorizationPlugin getNewInstance(Class c) {
+    private IAuthorizationPlugin getNewInstance(Class<?> c) {
         IAuthorizationPlugin plugin = null;
         try {
             plugin = (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
