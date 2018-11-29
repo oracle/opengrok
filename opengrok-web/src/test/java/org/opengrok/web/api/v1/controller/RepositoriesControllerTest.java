@@ -41,6 +41,7 @@ import org.opengrok.indexer.util.TestRepository;
 
 import javax.ws.rs.core.Application;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -88,10 +89,13 @@ public class RepositoriesControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetRepositoryType() throws Exception {
-        assertEquals("/totally-nonexistent-repository:N/A",
-                getRepoType("/totally-nonexistent-repository"));
+    public void testGetRepositoryTypeOfNonExistenRepository() throws Exception {
+        assertEquals(Paths.get("/totally-nonexistent-repository").toString() + ":N/A",
+                getRepoType(Paths.get("/totally-nonexistent-repository").toString()));
+    }
 
+    @Test
+    public void testGetRepositoryType() throws Exception {
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
@@ -111,11 +115,12 @@ public class RepositoriesControllerTest extends JerseyTest {
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
-        assertEquals("/mercurial:Mercurial", getRepoType("/mercurial"));
-
-        assertEquals("/mercurial/closed:Mercurial", getRepoType("/mercurial/closed"));
-
-        assertEquals("/git:git", getRepoType("/git"));
+        assertEquals(Paths.get("/mercurial").toString() + ":Mercurial",
+                getRepoType(Paths.get("/mercurial").toString()));
+        assertEquals(Paths.get("/mercurial/closed").toString() + ":Mercurial",
+                getRepoType(Paths.get("/mercurial/closed").toString()));
+        assertEquals(Paths.get("/git").toString() + ":git",
+                getRepoType(Paths.get("/git").toString()));
     }
 
     private String getRepoType(final String repository) {
