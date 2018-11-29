@@ -438,7 +438,7 @@ public class ProjectsControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetRepos() throws Exception {
+    public void testGetReposForNonExistentProject() throws Exception {
         GenericType<List<String>> type = new GenericType<List<String>>() {};
 
         // Try to get repos for non-existent project first.
@@ -449,6 +449,11 @@ public class ProjectsControllerTest extends JerseyTest {
                 .get(type);
 
         assertTrue(repos.isEmpty());
+    }
+
+    @Test
+    public void testGetRepos() throws Exception {
+        GenericType<List<String>> type = new GenericType<List<String>>() {};
 
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
@@ -459,13 +464,13 @@ public class ProjectsControllerTest extends JerseyTest {
         addProject("mercurial");
 
         // Get repositories of the project.
-        repos = target("projects")
+        List<String> repos = target("projects")
                 .path("mercurial")
                 .path("repositories")
                 .request()
                 .get(type);
 
-        // Perform cleanup of the subrepository in order not to interefere
+        // Perform cleanup of the subrepository in order not to interfere
         // with other tests.
         removeRecursive(new File(mercurialRoot.getAbsolutePath() +
                 File.separator + "closed").toPath());
