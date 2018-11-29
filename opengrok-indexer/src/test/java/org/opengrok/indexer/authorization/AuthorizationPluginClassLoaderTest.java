@@ -191,7 +191,7 @@ public class AuthorizationPluginClassLoaderTest {
     private IAuthorizationPlugin getNewInstance(Class c) {
         IAuthorizationPlugin plugin = null;
         try {
-            plugin = (IAuthorizationPlugin) c.newInstance();
+            plugin = (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
         } catch (InstantiationException ex) {
             Assert.fail("Should not produce InstantiationException");
         } catch (IllegalAccessException ex) {
