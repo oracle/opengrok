@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -476,7 +477,9 @@ public class ProjectsControllerTest extends JerseyTest {
                 File.separator + "closed").toPath());
 
         // test
-        assertEquals(Arrays.asList("/mercurial", "/mercurial/closed"), repos);
+        assertEquals(
+                new ArrayList<>(Arrays.asList(Paths.get("/mercurial").toString(), Paths.get("/mercurial/closed").toString())),
+                repos);
 
         // Test the types. There should be only one type for project with
         // multiple nested Mercurial repositories.
