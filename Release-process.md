@@ -50,5 +50,5 @@ The below steps are common for both pre-release and final release:
    of the release, e.g. adding list of issues fixed, whether complete reindex
    is necessary etc.
 
-1. Send announcement to opengrok-users@yahoogroups.com,
-   the #opengrok Slack channel etc.
+1. Send announcement to opengrok-users@yahoogroups.com
+   (the #opengrok Slack channel should receive the release info automatically thanks to Github hooks)
