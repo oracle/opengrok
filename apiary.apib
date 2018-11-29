@@ -28,7 +28,7 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Request (application/xml)
   + Body
-  
+
         ```
         <?xml version="1.0" encoding="UTF-8"?>
         <java version="1.8.0_172" class="java.beans.XMLDecoder">
@@ -146,7 +146,7 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Request
   + Body
-  
+
             body – string representation of the value to set
 
 + Response 204
@@ -154,10 +154,13 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 ### returns the field value [GET]
 
 + Response 200 (application/json)
-        
+
 ## Project repositories [/projects/{project}/repositories]
 
 ### returns a list of repositories for the specified project [GET]
+
+Native path separators (of the system running the service)
+will be used for repository paths.
 
 + Response 200 (application/json)
   + Body
@@ -173,7 +176,7 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Response 200 (application/json)
   + Body
-  
+
             ["RCS","git","SCCS"]
 
 ## Project indexed flag [/projects/indexed]
@@ -182,9 +185,9 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Response 200 (application/json)
   + Body
-  
+
             ["sc-2","sc-1"]
-            
+
 ## Repository type [/repositories/type{?repository}]
 
 ### return type of the repository [GET]
