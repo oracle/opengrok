@@ -163,6 +163,7 @@
                         <configuration>
                             <argLine>
                                 @{surefireArgLine}
+                                -Djna.nosys=true
                                 --illegal-access=permit
                                 --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
                                 --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
