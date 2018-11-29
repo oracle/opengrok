@@ -870,7 +870,7 @@ public class RuntimeEnvironmentTest {
     protected Map<String, Long> createMap(Object[][] input) {
         Map<String, Long> map = new TreeMap<>();
         for (int i = 0; i < input.length; i++) {
-            map.put((String) input[i][0], new Long((long) input[i][1]));
+            map.put((String) input[i][0], (Long) input[i][1]);
         }
         return map;
     }
