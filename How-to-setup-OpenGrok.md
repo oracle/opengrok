@@ -33,7 +33,7 @@ The index data will be created under directory called **data root**.
 
 Source base should be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under source root.
 
-The indexer assumes the input data is stored in UTF-8 encoding (ASCII works therefore too).
+The indexer assumes the input data is stored in the UTF-8 encoding (ASCII works therefore too).
 
 ## <u>Step.1</u> - Install management tools (optional)
 
