@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -335,6 +336,7 @@ public final class Indexer {
                 }
             }
 
+            env.getIndexerParallelizer().bounce();
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
             System.exit(1);
@@ -775,6 +777,10 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 
+            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
+                "Web application should run ctags when necessary. Default is off.").
+                Do(v -> cfg.setWebappCtags((Boolean)v));
+
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
                 "(so that the web application can use the same configuration)").Do(configFile -> {
@@ -1006,13 +1012,15 @@ public final class Indexer {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
-        IndexerParallelizer parallelizer = new IndexerParallelizer(env);
-
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
+        final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
             if (update) {
-                IndexDatabase.updateAll(parallelizer, progress);
+                latch = IndexDatabase.updateAll(progress);
             } else if (env.isOptimizeDatabase()) {
-                IndexDatabase.optimizeAll(parallelizer);
+                latch = IndexDatabase.optimizeAll();
+            } else {
+                latch = new CountDownLatch(0);
             }
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
@@ -1043,6 +1051,7 @@ public final class Indexer {
                 }
             }
 
+            latch = new CountDownLatch(dbs.size());
             for (final IndexDatabase db : dbs) {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
@@ -1051,7 +1060,7 @@ public final class Indexer {
                     public void run() {
                         try {
                             if (update) {
-                                db.update(parallelizer);
+                                db.update();
                             } else if (optimize) {
                                 db.optimize();
                             }
@@ -1059,35 +1068,20 @@ public final class Indexer {
                             LOGGER.log(Level.SEVERE, "An error occurred while "
                                     + (update ? "updating" : "optimizing")
                                     + " index", e);
+                        } finally {
+                            latch.countDown();
                         }
                     }
                 });
             }
         }
 
-        parallelizer.getFixedExecutor().shutdown();
-        while (!parallelizer.getFixedExecutor().isTerminated()) {
-            try {
-                // Wait forever
-                parallelizer.getFixedExecutor().awaitTermination(999,
-                    TimeUnit.DAYS);
-            } catch (InterruptedException exp) {
-                LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
-            }
-        }
+        // Wait forever for the executors to finish.
         try {
-            // It can happen that history index is not done in prepareIndexer()
-            // but via db.update() above in which case we must make sure the
-            // thread pool for renamed file handling is destroyed.
-            RuntimeEnvironment.destroyRenamedHistoryExecutor();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE,
-                    "destroying of renamed thread pool failed", ex);
-        }
-        try {
-            parallelizer.close();
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "parallelizer.close() failed", ex);
+            latch.await(999, TimeUnit.DAYS);
+        } catch (InterruptedException exp) {
+            LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
+                    " for executor to finish", exp);
         }
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }

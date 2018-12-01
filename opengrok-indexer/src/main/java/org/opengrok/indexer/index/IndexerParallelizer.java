@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -32,6 +32,7 @@ import org.opengrok.indexer.analysis.CtagsValidator;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BoundedBlockingObjectPool;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.ObjectFactory;
 import org.opengrok.indexer.util.ObjectPool;
 
@@ -49,9 +50,23 @@ public class IndexerParallelizer implements AutoCloseable {
     private static final Logger LOGGER =
         LoggerFactory.getLogger(IndexerParallelizer.class);
 
-    private final ExecutorService fixedExecutor;
-    private final ForkJoinPool forkJoinPool;
-    private final ObjectPool<Ctags> ctagsPool;
+    private final RuntimeEnvironment env;
+    private final int indexingParallelism;
+
+    private LazilyInstantiate<ForkJoinPool> lzForkJoinPool;
+    private ForkJoinPool forkJoinPool;
+
+    private LazilyInstantiate<ObjectPool<Ctags>> lzCtagsPool;
+    private ObjectPool<Ctags> ctagsPool;
+
+    private LazilyInstantiate<ExecutorService> lzFixedExecutor;
+    private ExecutorService fixedExecutor;
+
+    private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
+    private ExecutorService historyExecutor;
+
+    private LazilyInstantiate<ExecutorService> lzHistoryRenamedExecutor;
+    private ExecutorService historyRenamedExecutor;
 
     /**
      * Initializes a new instance using settings from the specified environment
@@ -59,54 +74,158 @@ public class IndexerParallelizer implements AutoCloseable {
      * @param env a defined instance
      */
     public IndexerParallelizer(RuntimeEnvironment env) {
+        if (env == null) {
+            throw new IllegalArgumentException("env is null");
+        }
+        this.env = env;
+        /*
+         * Save the following value explicitly because it must not change for
+         * an IndexerParallelizer instance.
+         */
+        this.indexingParallelism = env.getIndexingParallelism();
 
-        int indexingParallelism = env.getIndexingParallelism();
-
-        // The order of the following is important.
-        this.fixedExecutor = Executors.newFixedThreadPool(indexingParallelism);
-        this.forkJoinPool = new ForkJoinPool(indexingParallelism);
-        this.ctagsPool = new BoundedBlockingObjectPool<>(indexingParallelism,
-            new CtagsValidator(), new CtagsObjectFactory(env));
+        createLazyForkJoinPool();
+        createLazyCtagsPool();
+        createLazyFixedExecutor();
+        createLazyHistoryExecutor();
+        createLazyHistoryRenamedExecutor();
     }
 
     /**
      * @return the fixedExecutor
      */
     public ExecutorService getFixedExecutor() {
-        return fixedExecutor;
+        ExecutorService result = lzFixedExecutor.get();
+        fixedExecutor = result;
+        return result;
     }
 
     /**
      * @return the forkJoinPool
      */
     public ForkJoinPool getForkJoinPool() {
-        return forkJoinPool;
+        ForkJoinPool result = lzForkJoinPool.get();
+        forkJoinPool = result;
+        return result;
     }
 
     /**
      * @return the ctagsPool
      */
     public ObjectPool<Ctags> getCtagsPool() {
-        return ctagsPool;
+        ObjectPool<Ctags> result = lzCtagsPool.get();
+        ctagsPool = result;
+        return result;
     }
 
+    /**
+     * @return the ExecutorService used for history parallelism
+     */
+    public ExecutorService getHistoryExecutor() {
+        ExecutorService result = lzHistoryExecutor.get();
+        historyExecutor = result;
+        return result;
+    }
+
+    /**
+     * @return the ExecutorService used for history-renamed parallelism
+     */
+    public ExecutorService getHistoryRenamedExecutor() {
+        ExecutorService result = lzHistoryRenamedExecutor.get();
+        historyRenamedExecutor = result;
+        return result;
+    }
+
+    /**
+     * Calls {@link #bounce()}, which prepares for -- but does not start -- new
+     * pools.
+     */
     @Override
     public void close() {
-        if (ctagsPool != null) {
-            ctagsPool.shutdown();
+        bounce();
+    }
+
+    /**
+     * Shuts down the instance's executors if any of the getters were called;
+     * and prepares them to be called again to return new instances.
+     * <p>
+     * N.b. this method is not thread-safe w.r.t. the getters, so care must be
+     * taken that any scheduled work has been completed and that no other
+     * thread might call those methods simultaneously with this method.
+     * <p>
+     * The JVM will await any instantiated thread pools until they are
+     * explicitly shut down. A principle intention of this method is to
+     * facilitate OpenGrok test classes that run serially. The non-test
+     * processes using {@link IndexerParallelizer} -- i.e. {@code opengrok.jar}
+     * indexer or opengrok-web -- would only need a one-way shutdown; but they
+     * call this method satisfactorily too.
+     */
+    public void bounce() {
+        ForkJoinPool formerForkJoinPool = forkJoinPool;
+        if (formerForkJoinPool != null) {
+            forkJoinPool = null;
+            createLazyForkJoinPool();
+            formerForkJoinPool.shutdown();
         }
-        if (forkJoinPool != null) {
-            forkJoinPool.shutdown();
+
+        ExecutorService formerFixedExecutor = fixedExecutor;
+        if (formerFixedExecutor != null) {
+            fixedExecutor = null;
+            createLazyFixedExecutor();
+            formerFixedExecutor.shutdown();
         }
-        if (fixedExecutor != null) {
-            fixedExecutor.shutdown();
+
+        ObjectPool<Ctags> formerCtagsPool = ctagsPool;
+        if (formerCtagsPool != null) {
+            ctagsPool = null;
+            createLazyCtagsPool();
+            formerCtagsPool.shutdown();
         }
+
+        formerFixedExecutor = historyExecutor;
+        if (formerFixedExecutor != null) {
+            historyExecutor = null;
+            createLazyHistoryExecutor();
+            formerFixedExecutor.shutdown();
+        }
+
+        formerFixedExecutor = historyRenamedExecutor;
+        if (formerFixedExecutor != null) {
+            historyRenamedExecutor = null;
+            createLazyHistoryRenamedExecutor();
+            formerFixedExecutor.shutdown();
+        }
+    }
+
+    private void createLazyForkJoinPool() {
+        lzForkJoinPool = LazilyInstantiate.using(() ->
+                new ForkJoinPool(indexingParallelism));
+    }
+
+    private void createLazyCtagsPool() {
+        lzCtagsPool = LazilyInstantiate.using(() ->
+                new BoundedBlockingObjectPool<>(indexingParallelism,
+                        new CtagsValidator(), new CtagsObjectFactory(env)));
+    }
+
+    private void createLazyFixedExecutor() {
+        lzFixedExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(indexingParallelism));
+    }
+
+    private void createLazyHistoryExecutor() {
+        lzHistoryExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(env.getHistoryParallelism()));
+    }
+
+    private void createLazyHistoryRenamedExecutor() {
+        lzHistoryRenamedExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
     }
 
     /**
      * Creates a new instance, and attempts to configure it from the specified
      * environment instance.
-     * @param env
      * @return a defined instance, possibly with a {@code null} ctags binary
      * setting if a value was not available from {@link RuntimeEnvironment}.
      */

@@ -19,13 +19,15 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -188,6 +190,36 @@ public abstract class Repository extends RepositoryInfo {
             throw new HistoryException("Cached revision '" + revision
                     + "' not found in the repository "
                     + getDirectoryName());
+        }
+    }
+
+    /**
+     * Gets the contents of a specific version of a named file into the
+     * specified target using
+     * {@link #getHistoryGet(java.lang.String, java.lang.String, java.lang.String)}.
+     * Subclasses can override to avoid the in-memory copy of the contents.
+     *
+     * @param target a required target file which will be overwritten
+     * @param parent the name of the directory containing the file
+     * @param basename the name of the file to get
+     * @param rev the revision to get
+     * @return {@code true} if contents were found
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public boolean getHistoryGet(File target, String parent, String basename,
+            String rev) throws IOException {
+        try (InputStream in = getHistoryGet(parent, basename, rev)) {
+            if (in == null) {
+                return false;
+            }
+            try (OutputStream out = new FileOutputStream(target)) {
+                byte[] buf = new byte[8 * 1024];
+                int n;
+                while ((n = in.read(buf)) != 0) {
+                    out.write(buf, 0, n);
+                }
+            }
+            return true;
         }
     }
 

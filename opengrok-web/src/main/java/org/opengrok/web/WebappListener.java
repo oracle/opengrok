@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
@@ -109,8 +110,10 @@ public final class WebappListener
      */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
-        RuntimeEnvironment.getInstance().watchDog.stop();
-        RuntimeEnvironment.getInstance().stopExpirationTimer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.getIndexerParallelizer().bounce();
+        env.watchDog.stop();
+        env.stopExpirationTimer();
         try {
             saveStatistics();
         } catch (IOException ex) {
