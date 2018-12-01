@@ -1454,15 +1454,30 @@ public final class RuntimeEnvironment {
 
     /**
      * Classifies projects and puts them in their groups.
-     * @param groups groups to update
+     * <p>
+     * If any of the groups contain some projects or repositories already,
+     * these get discarded.
+     *
+     * @param groups   set of groups to be filled with matching projects
      * @param projects projects to classify
      */
     public void populateGroups(Set<Group> groups, Set<Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
+
+        // clear the groups first if they had something in them
+        for (Group group : groups) {
+            group.getRepositories().clear();
+            group.getProjects().clear();
+        }
+
+        // now fill the groups with appropriate projects
         for (Project project : projects) {
-            // filterProjects only groups which match project's description
+            // clear the project's groups
+            project.getGroups().clear();
+
+            // filter projects only to groups which match project's name
             Set<Group> copy = Group.matching(project, groups);
 
             // add project to the groups

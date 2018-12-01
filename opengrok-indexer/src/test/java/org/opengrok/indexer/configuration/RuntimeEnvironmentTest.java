@@ -23,6 +23,16 @@
  */
 package org.opengrok.indexer.configuration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
+import java.util.TreeSet;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
@@ -50,20 +60,9 @@ import org.opengrok.indexer.analysis.plain.PlainXref;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.web.Statistics;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
-import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
-
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.Statistics;
 
 /**
  * Test the RuntimeEnvironment class
@@ -1056,5 +1055,62 @@ public class RuntimeEnvironmentTest {
         // cleanup
         IOUtils.removeRecursive(sourceRoot.toPath());
         IOUtils.removeRecursive(realDir);
+    }
+
+    @Test
+    public void testPopulateGroupsMultipleTimes() {
+        // create a structure with two repositories
+        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        Project project1 = new Project("bar", "/bar");
+        env.getProjects().put(project1.getName(), project1);
+        Project project2 = new Project("barfoo", "/barfoo");
+        env.getProjects().put(project2.getName(), project2);
+        final Group group1 = new Group("group1", "bar");
+        env.getGroups().add(group1);
+        final Group group2 = new Group("group2", "bar.*");
+        env.getGroups().add(group2);
+
+        final RepositoryInfo repository1 = new RepositoryInfo();
+        repository1.setDirectoryNameRelative("/bar");
+        env.getRepositories().add(repository1);
+        final RepositoryInfo repo2 = new RepositoryInfo();
+        repository1.setDirectoryNameRelative("/barfoo");
+        env.getRepositories().add(repo2);
+        env.getProjectRepositoriesMap().put(project1, Arrays.asList(repository1));
+        env.getProjectRepositoriesMap().put(project2, Arrays.asList(repo2));
+
+        Assert.assertEquals(2, env.getProjects().size());
+        Assert.assertEquals(2, env.getRepositories().size());
+        Assert.assertEquals(2, env.getProjectRepositoriesMap().size());
+        Assert.assertEquals(2, env.getGroups().size());
+
+        // populate groups for the first time
+        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+
+        Assert.assertEquals(2, env.getProjects().size());
+        Assert.assertEquals(2, env.getRepositories().size());
+        Assert.assertEquals(2, env.getProjectRepositoriesMap().size());
+        Assert.assertEquals(2, env.getGroups().size());
+
+        Assert.assertEquals(0, group1.getProjects().size());
+        Assert.assertEquals(1, group1.getRepositories().size());
+        Assert.assertEquals(0, group2.getProjects().size());
+        Assert.assertEquals(2, group2.getRepositories().size());
+
+        // remove a single repository object => project1 will become a simple project
+        env.getProjectRepositoriesMap().remove(project1);
+        env.getRepositories().remove(repository1);
+
+        // populate groups for the second time
+        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+
+        Assert.assertEquals(2, env.getProjects().size());
+        Assert.assertEquals(1, env.getRepositories().size());
+        Assert.assertEquals(1, env.getProjectRepositoriesMap().size());
+        Assert.assertEquals(2, env.getGroups().size());
+        Assert.assertEquals(1, group1.getProjects().size());
+        Assert.assertEquals(0, group1.getRepositories().size());
+        Assert.assertEquals(1, group2.getProjects().size());
+        Assert.assertEquals(1, group2.getRepositories().size());
     }
 }
