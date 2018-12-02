@@ -30,6 +30,7 @@
 """
 
 import argparse
+import fnmatch
 import logging
 import os
 import re
@@ -86,7 +87,8 @@ def get_repos_for_project(logger, project, ignored_repos, **kwargs):
     for repo_path in get_repos(logger, project, kwargs['uri']):
         logger.debug("Repository path = {}".format(repo_path))
 
-        if repo_path in ignored_repos:
+        r_path = os.path.relpath(repo_path, '/' + project)
+        if any(map(lambda repo: fnmatch.fnmatch(r_path, repo), ignored_repos)):
             logger.info("repository {} ignored".format(repo_path))
             continue
 
@@ -344,9 +346,9 @@ def main():
                                               command_timeout=command_timeout,
                                               source_root=source_root,
                                               uri=uri)
-            except RepositoryException:
-                logger.error('failed to get repositories for project {}'.
-                             format(args.project))
+            except RepositoryException as ex:
+                logger.error('failed to get repositories for project {}: {}'.
+                             format(args.project, ex))
                 sys.exit(1)
 
             if not repos:
