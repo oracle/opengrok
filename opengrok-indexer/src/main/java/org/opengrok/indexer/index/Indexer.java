@@ -307,8 +307,8 @@ public final class Indexer {
                 try {
                     IndexerUtil.enableProjects(webappURI);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp webappURI", e);
-                    System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
+                    LOGGER.log(Level.SEVERE, String.format("Couldn't notify the webapp on %s.", webappURI), e);
+                    System.err.println(String.format("Couldn't notify the webapp on %s: %s.", webappURI, e.getLocalizedMessage()));
                 }
             }
 
