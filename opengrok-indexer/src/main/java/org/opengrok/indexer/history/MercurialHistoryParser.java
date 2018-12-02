@@ -112,7 +112,6 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         entries = new ArrayList<HistoryEntry>();
         String s;
@@ -128,7 +127,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.startsWith(MercurialRepository.DATE) && entry != null) {
                 Date date;
                 try {
-                    date = df.parse(s.substring(MercurialRepository.DATE.length()).trim());
+                    date = repository.parse(s.substring(MercurialRepository.DATE.length()).trim());
                 } catch (ParseException pe) {
                     //
                     // Overriding processStream() thus need to comply with the

@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,15 +60,15 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         final String home;
         final int length;
         final List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        final DateFormat format;
+        final SubversionRepository repository;
         HistoryEntry entry;
         StringBuilder sb;
 
-        Handler(String home, String prefix, int length, DateFormat df) {
+        Handler(String home, String prefix, int length, SubversionRepository repository) {
             this.home = home;
             this.prefix = prefix;
             this.length = length;
-            format = df;
+            this.repository = repository;
             sb = new StringBuilder();
         }
 
@@ -90,7 +89,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(s);
             } else if ("date".equals(qname)) {
                 try {
-                    entry.setDate(format.parse(s));
+                    entry.setDate(repository.parse(s));
                 } catch (ParseException ex) {
                     throw new SAXException("Failed to parse date: " + s, ex);
                 }
@@ -152,7 +151,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), repos.reposPath,
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
-                repos.getDateFormat());
+                repos);
 
         Executor executor;
         try {
@@ -204,7 +203,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        handler = new Handler("/", "", 0, new SubversionRepository().getDateFormat());
+        handler = new Handler("/", "", 0, new SubversionRepository());
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return new History(handler.entries);
     }

@@ -424,7 +424,7 @@ public class SubversionRepository extends Repository {
                 List<HistoryEntry> hlist = hist.getHistoryEntries();
                 if (hlist != null && hlist.size() > 0) {
                     HistoryEntry he = hlist.get(0);
-                    curVersion = outputDateFormat.format(he.getDate()) + " " +
+                    curVersion = format(he.getDate()) + " " +
                             he.getRevision() + " " + he.getAuthor() + " " +
                             he.getMessage();
                 }

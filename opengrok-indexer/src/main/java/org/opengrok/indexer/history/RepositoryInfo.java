@@ -71,10 +71,6 @@ public class RepositoryInfo implements Serializable {
     private boolean handleRenamedFiles;
     private boolean historyEnabled;
 
-    /**
-     * format used for printing the date in {@code currentVersion}
-     */
-    protected static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
 
     /**
      * Empty constructor to support serialization.
@@ -272,7 +268,7 @@ public class RepositoryInfo implements Serializable {
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
     }
-    
+
     /**
      * Fill configurable properties from associated project (if any) or Configuration.
      */

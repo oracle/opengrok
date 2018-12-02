@@ -70,7 +70,6 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         String s;
@@ -89,7 +88,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
             entry = new HistoryEntry();
             if ((s = in.readLine()) != null) {
                 try {
-                    entry.setDate(df.parse(s));
+                    entry.setDate(repository.parse(s));
                 } catch (ParseException pe) {
                     //
                     // Overriding processStream() thus need to comply with the

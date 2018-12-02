@@ -157,11 +157,11 @@ public class GitRepositoryTest {
             {"2017-07-25T13:17:44+02:00", null},
         };
 
-        DateFormat format = new GitRepository().getDateFormat();
+        final GitRepository repository = new GitRepository();
 
         for (String[] test : tests) {
             try {
-                format.parse(test[0]);
+                repository.parse(test[0]);
                 if (test[1] != null) {
                     Assert.fail("Shouldn't be able to parse the date: " + test[0]);
                 }

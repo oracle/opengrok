@@ -80,7 +80,6 @@ class GitHistoryParser implements Executor.StreamHandler {
     }
     
     private void process(BufferedReader in) throws IOException {
-        DateFormat df = repository.getDateFormat();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         entries = new ArrayList<>();
         HistoryEntry entry = null;
@@ -103,7 +102,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                     String dateString =
                             s.substring("AuthorDate:".length()).trim();
                     try {
-                        entry.setDate(df.parse(dateString));
+                        entry.setDate(repository.parse(dateString));
                     } catch (ParseException pe) {
                         //
                         // Overriding processStream() thus need to comply with the

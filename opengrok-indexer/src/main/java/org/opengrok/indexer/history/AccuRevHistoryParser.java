@@ -27,12 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -99,7 +97,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        DateFormat df = repository.getDateFormat();
         String line;
         String user;
         Date date;
@@ -143,7 +140,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(user);
 
                 try {
-                    date = df.parse(data[2]);
+                    date = repository.parse(data[2]);
                     entry.setDate(date);
                 } catch (ParseException pe) {
                     //

@@ -99,7 +99,6 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
 
@@ -138,7 +137,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                     if (s.startsWith("Date:")) {
                         Date date = new Date();
                         try {
-                            date = df.parse(s.substring("date:".length()).trim());
+                            date = repository.parse(s.substring("date:".length()).trim());
                         } catch (ParseException pe) {
                             //
                             // Overriding processStream() thus need to comply with the

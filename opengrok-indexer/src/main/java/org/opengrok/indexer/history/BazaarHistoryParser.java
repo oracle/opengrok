@@ -93,7 +93,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -132,7 +131,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                     // And then, look for timestamp.
                     if (s.startsWith("timestamp:")) {
                         try {
-                            Date date = df.parse(s.substring("timestamp:".length()).trim());
+                            Date date = repository.parse(s.substring("timestamp:".length()).trim());
                             entry.setDate(date);
                         } catch (ParseException e) {
                             //

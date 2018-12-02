@@ -61,7 +61,6 @@ class CVSHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = cvsrepo.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -124,7 +123,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                     if ("date".equals(key)) {
                         try {
                             val = val.replace('/', '-');
-                            entry.setDate(df.parse(val));
+                            entry.setDate(cvsrepo.parse(val));
                         } catch (ParseException pe) {
                             //
                             // Overriding processStream() thus need to comply with the

@@ -729,9 +729,8 @@ public class GitRepository extends Repository {
         }
 
         try {
-            Date date = getDateFormat().parse(output.substring(0, indexOf));
-            return String.format("%s %s",
-                    outputDateFormat.format(date), output.substring(indexOf + 1));
+            Date date = parse(output.substring(0, indexOf));
+            return String.format("%s %s", format(date), output.substring(indexOf + 1));
         } catch (ParseException ex) {
             throw new IOException(ex);
         }

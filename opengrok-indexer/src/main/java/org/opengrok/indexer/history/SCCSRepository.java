@@ -185,7 +185,7 @@ public class SCCSRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return new SCCSHistoryParser().parse(file, this);
+        return new SCCSHistoryParser(this).parse(file);
     }
 
     @Override

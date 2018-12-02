@@ -74,7 +74,6 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
         history = new History();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -124,7 +123,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(author);
                 entry.setRevision(revision);
                 try {
-                    entry.setDate(df.parse(date));
+                    entry.setDate(repository.parse(date));
                 } catch (ParseException ex) {
                     LOGGER.log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
                 }

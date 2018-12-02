@@ -54,8 +54,7 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            DateFormat format = repository.getDateFormat();
-            format.parse(test[0]);
+            repository.parse(test[0]);
         }
     }
 
@@ -78,8 +77,7 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(new String[]{test[1]});
-            DateFormat format = repository.getDateFormat();
-            format.parse(test[0]);
+            repository.parse(test[0]);
         }
     }
 
@@ -106,11 +104,10 @@ public class RepositoryTest {
 
         RepositoryImplementation repository = new RepositoryImplementation();
         repository.setDatePatterns(new String[0]);
-        DateFormat format = repository.getDateFormat();
 
         for (String test : tests) {
             try {
-                format.parse(test);
+                repository.parse(test);
                 Assert.fail("Shouldn't be able to parse the date: " + test);
             } catch (ParseException ex) {
             }
@@ -134,9 +131,8 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            DateFormat format = repository.getDateFormat();
             try {
-                format.parse(test[0]);
+                repository.parse(test[0]);
                 Assert.fail("Shouldn't be able to parse the date: " + test[0]);
             } catch (ParseException ex) {
             }
