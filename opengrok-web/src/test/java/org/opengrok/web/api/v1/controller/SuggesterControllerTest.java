@@ -237,6 +237,8 @@ public class SuggesterControllerTest extends JerseyTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
+    // temporarily disabled, see https://github.com/oracle/opengrok/issues/2030
+    /*
     @Test
     public void testGetSuggestionsMultipleProjects() {
         Result res = target(SuggesterController.PATH)
@@ -249,6 +251,7 @@ public class SuggesterControllerTest extends JerseyTest {
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("me", "method", "message", "meta"));
     }
+    */
 
     @Test
     public void testGetSuggestionsMultipleProjects2() {
