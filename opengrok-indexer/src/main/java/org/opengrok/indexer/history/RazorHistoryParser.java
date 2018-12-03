@@ -27,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -85,7 +84,6 @@ class RazorHistoryParser {
     }
 
     protected History parseContents(BufferedReader contents) throws IOException {
-        DateFormat df = repository.getDateFormat();
         String line;
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
@@ -166,7 +164,7 @@ class RazorHistoryParser {
                             entry.setActive("Active".equals(state));
                             Date date = null;
                             try {
-                                date = df.parse(dateTime);
+                                date = repository.parse(dateTime);
                             } catch (ParseException pe) {
                                 //
                                 // Overriding processStream() thus need to comply with the

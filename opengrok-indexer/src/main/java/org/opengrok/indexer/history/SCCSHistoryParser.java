@@ -27,13 +27,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
-
 import org.opengrok.indexer.util.IOUtils;
 
 /**
@@ -50,7 +46,6 @@ class SCCSHistoryParser {
     int field;
     boolean sep;
     StringBuilder record = new StringBuilder(128);
-    DateFormat sccsDateFormat;
     Reader in;
 
     // Record fields
@@ -58,9 +53,13 @@ class SCCSHistoryParser {
     private Date rdate;
     private String author;
     private String comment;
+    private SCCSRepository repository;
 
-    History parse(File file, Repository repos) throws HistoryException {
-        sccsDateFormat = repos.getDateFormat();
+    SCCSHistoryParser(SCCSRepository repository) {
+        this.repository = repository;
+    }
+
+    History parse(File file) throws HistoryException {
         try {
             return parseFile(file);
         } catch (IOException e) {
@@ -83,7 +82,6 @@ class SCCSHistoryParser {
         passRecord = true;
         active = true;
         field = 0;
-        sccsDateFormat =  new SimpleDateFormat("yy/MM/dd", Locale.getDefault());
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         while (next()) {
@@ -132,7 +130,7 @@ class SCCSHistoryParser {
             if (f.length > 5) {
                 revision = f[1];
                 try {
-                    rdate = sccsDateFormat.parse(f[2] + " " + f[3]);
+                    rdate = repository.parse(f[2] + " " + f[3]);
                 } catch (ParseException e) {
                     rdate = null;
                     //

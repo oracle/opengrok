@@ -30,14 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.InvalidPathException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -99,7 +97,6 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
 
@@ -138,7 +135,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                     if (s.startsWith("Date:")) {
                         Date date = new Date();
                         try {
-                            date = df.parse(s.substring("date:".length()).trim());
+                            date = repository.parse(s.substring("date:".length()).trim());
                         } catch (ParseException pe) {
                             //
                             // Overriding processStream() thus need to comply with the

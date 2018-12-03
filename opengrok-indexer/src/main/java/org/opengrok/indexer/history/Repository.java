@@ -53,6 +53,13 @@ public abstract class Repository extends RepositoryInfo {
     private static final Logger LOGGER = LoggerFactory.getLogger(Repository.class);
 
     /**
+     * format used for printing the date in {@code currentVersion}.
+     * <p>
+     * NOTE: SimpleDateFormat is not thread-safe, lock must be held when formatting
+     */
+    protected static final SimpleDateFormat OUTPUT_DATE_FORMAT = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
+
+    /**
      * The command with which to access the external repository. Can be
      * {@code null} if the repository isn't accessed via a CLI, or if it hasn't
      * been initialized by {@link #ensureCommand} yet.
@@ -455,8 +462,35 @@ public abstract class Repository extends RepositoryInfo {
         return false;
     }
 
-    public DateFormat getDateFormat() {
+    private DateFormat getDateFormat() {
         return new RepositoryDateFormat();
+    }
+
+    /**
+     * Format the given date according to the output format.
+     *
+     * @param date the date
+     * @return the string representing the formatted date
+     * @see #OUTPUT_DATE_FORMAT
+     */
+    public String format(Date date) {
+        synchronized (OUTPUT_DATE_FORMAT) {
+            return OUTPUT_DATE_FORMAT.format(date);
+        }
+    }
+
+    /**
+     * Parse the given string as a date object with the repository date formats.
+     *
+     * @param dateString the string representing the date
+     * @return the instance of a date
+     * @throws ParseException when the string can not be parsed correctly
+     */
+    public Date parse(String dateString) throws ParseException {
+        final DateFormat format = getDateFormat();
+        synchronized (format) {
+            return format.parse(dateString);
+        }
     }
 
     static Boolean checkCmd(String... args) {
@@ -515,6 +549,7 @@ public abstract class Repository extends RepositoryInfo {
 
     private class RepositoryDateFormat extends DateFormat {
         private final Locale locale = Locale.ENGLISH;
+        // NOTE: SimpleDateFormat is not thread-safe, lock must be held when used
         private final SimpleDateFormat[] formatters = new SimpleDateFormat[datePatterns.length];
 
         {

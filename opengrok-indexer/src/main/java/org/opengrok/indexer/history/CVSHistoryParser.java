@@ -28,13 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
-
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
@@ -61,7 +59,6 @@ class CVSHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = cvsrepo.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -124,7 +121,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                     if ("date".equals(key)) {
                         try {
                             val = val.replace('/', '-');
-                            entry.setDate(df.parse(val));
+                            entry.setDate(cvsrepo.parse(val));
                         } catch (ParseException pe) {
                             //
                             // Overriding processStream() thus need to comply with the
