@@ -65,7 +65,6 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.opengrok.indexer.Info;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
