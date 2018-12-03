@@ -24,11 +24,7 @@ package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.index.Term;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
@@ -238,7 +234,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     // temporarily disabled, see https://github.com/oracle/opengrok/issues/2030
-    /*
+    @Ignore
     @Test
     public void testGetSuggestionsMultipleProjects() {
         Result res = target(SuggesterController.PATH)
@@ -251,7 +247,6 @@ public class SuggesterControllerTest extends JerseyTest {
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("me", "method", "message", "meta"));
     }
-    */
 
     @Test
     public void testGetSuggestionsMultipleProjects2() {
