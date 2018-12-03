@@ -22,6 +22,32 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -35,33 +61,6 @@ import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 
 @Path("/projects")
 public class ProjectsController {
@@ -92,10 +91,7 @@ public class ProjectsController {
             // Note that the project is inactive in the UI until it is indexed.
             // See {@code isIndexed()}
             env.getProjects().put(projectName, project);
-
-            Set<Project> projectSet = new TreeSet<>();
-            projectSet.add(project);
-            env.populateGroups(env.getGroups(), projectSet);
+            env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjectList()));
         } else {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
