@@ -372,19 +372,6 @@ public final class Util {
         return false;
     }
 
-    private static final String versionP = htmlize(Info.getRevision());
-
-    /**
-     * used by BUI - CSS needs this parameter for proper cache refresh (per
-     * changeset) in client browser TODO jel: but useless, since the page cached
-     * anyway.
-     *
-     * @return html escaped version (hg changeset)
-     */
-    public static String versionParameter() {
-        return versionP;
-    }
-
     /**
      * Convenience method for {@code breadcrumbPath(urlPrefix, path, PATH_SEPARATOR)}.
      *
