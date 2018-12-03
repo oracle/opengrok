@@ -97,7 +97,7 @@ If any of the commands in `"commands"` fail, the `"cleanup"` command will be exe
 
 Normal command execution can be also performed in the `cleanup` section.
 
-## Ignoring repositories
+## Ignoring errors
 
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
 
@@ -174,7 +174,7 @@ hook_timeout: 1200
 projects:
   http:
     proxy: true
-  history:
+  opengrok-stable:
     disabled: true
   userland:
     proxy: true
@@ -184,7 +184,7 @@ projects:
       post: userland-post.ksh
   opengrok-master:
     ignored_repos:
-      - /opengrok-master/testdata/repositories/rcs_test
+      - testdata/repositories/rcs_test
   jdk.*:
     proxy: true
     hooks:
@@ -205,7 +205,11 @@ Multiple projects can share the same configuration using regular expressions as 
 
 ## Disabling project mirroring
 
-The `history` project is marked as disabled. This means that the `opengrok-mirror` script will exit with special value of 2 that is interpreted by the `opengrok-sync` script to avoid any reindex. It is not treated as an error.
+The `opengrok-stable` project is marked as disabled. This means that the `opengrok-mirror` script will exit with special value of 2 that is interpreted by the `opengrok-sync` script to avoid any reindex. It is not treated as an error.
+
+## Ignoring repositories
+
+Some repositories under the project are not meant to be synchronized (e. g. the remote does not exist anymore or it is a testing repository for tests in that project). `opengrok-mirror` can ignore them if you provide them in the `ignored_repos` list. This is a list of paths relative to the matched project (see xxx) and supports filename glob expansion (see the example).
 
 ## Batch mode
 
