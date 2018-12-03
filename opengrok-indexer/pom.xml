@@ -177,6 +177,25 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <build>
         <plugins>
+<!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <lexDefinitions>
+                                <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
@@ -259,7 +278,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                         <configuration>
                           <filesToInclude>
-                              ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
+                              ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/json/JsonSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
                           </filesToInclude>
                           <replacements>
                               <!--
@@ -352,24 +371,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>de.jflex</groupId>
-                <artifactId>jflex-maven-plugin</artifactId>
-                <version>1.7.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <lexDefinitions>
-                                <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
-                            </lexDefinitions>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
