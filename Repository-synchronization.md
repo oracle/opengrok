@@ -209,7 +209,7 @@ The `opengrok-stable` project is marked as disabled. This means that the `opengr
 
 ## Ignoring repositories
 
-Some repositories under the project are not meant to be synchronized (e. g. the remote does not exist anymore or it is a testing repository for tests in that project). `opengrok-mirror` can ignore them if you provide them in the `ignored_repos` list. This is a list of paths relative to the matched project (see xxx) and supports filename glob expansion (see the example).
+Some repositories under the project are not meant to be synchronized (e. g. the remote does not exist anymore or it is a testing repository for tests in that project). `opengrok-mirror` can ignore them if you provide them in the `ignored_repos` list. This is a list of paths relative to the matched project (see [project-matching](https://github.com/oracle/opengrok/wiki/Repository-synchronization#https://github.com/oracle/opengrok/wiki/Repository-synchronization#project-matching)) and supports filename glob expansion (see the example).
 
 ## Batch mode
 
