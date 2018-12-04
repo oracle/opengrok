@@ -34,7 +34,7 @@ The below steps are common for both pre-release and final release:
 
    Then commit and push the change:
 
-     `git commit pom.xml **/pom.xml`
+     `git commit pom.xml **/pom.xml` -m 1.1-rcXYZ
 
      `git push`
 
