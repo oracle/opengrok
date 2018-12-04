@@ -29,7 +29,7 @@ Sample configuration file for Solaris code base:
 
 ## Introduce own mapping for an extension to analyzer
 
-Use the `-A` Indexer option, e.g. like this:
+Use the `-A` Indexer option, e.g. to make files with the `.cs` suffix to be processed as plain text:
 
 ```
 -A .cs:org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory
