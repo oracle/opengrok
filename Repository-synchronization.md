@@ -184,7 +184,7 @@ projects:
       post: userland-post.ksh
   opengrok-master:
     ignored_repos:
-      - testdata/repositories/rcs_test
+      - testdata/repositories/*
   jdk.*:
     proxy: true
     hooks:
