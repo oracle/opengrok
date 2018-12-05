@@ -23,7 +23,6 @@ Portions Copyright 2011 Jens Elkner.
 java.util.Date,
 java.util.EnumSet,
 
-org.apache.commons.lang3.StringUtils,
 org.opengrok.indexer.Info,
 org.opengrok.indexer.web.PageConfig,
 org.opengrok.indexer.web.Prefix"
