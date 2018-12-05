@@ -183,7 +183,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>2.2.4</version>
                 <configuration>
                     <includeOnlyProperties>
-                        <includeOnlyProperty>^git.commit.id$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.id</includeOnlyProperty>
                     </includeOnlyProperties>
                 </configuration>
                 <executions>
@@ -238,6 +238,10 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 ${project.build.outputDirectory}/org/opengrok/indexer/info.properties
                             </filesToInclude>
                             <replacements>
+                                <replacement>
+                                    <token>git.commit.id.abbrev</token>
+                                    <value>changeset_short</value>
+                                </replacement>
                                 <replacement>
                                     <token>git.commit.id</token>
                                     <value>changeset</value>
