@@ -39,10 +39,12 @@ This will map extension `.cs` to the analyzer created by the `PlainAnalyzerFacto
 
 OpenGrok also allows using just the prefix. E.g. the following are all equivalent:
 
-`-A .e:org.opengrok.indexer.analysis.c.CAnalyzerFactory`
-`-A .e:CAnalyzerFactory`
-`-A .e:CAnalyzer`
-`-A .e:C`
+```
+-A .e:org.opengrok.indexer.analysis.c.CAnalyzerFactory
+-A .e:CAnalyzerFactory
+-A .e:CAnalyzer
+-A .e:C
+```
 
 To clear the mapping:
 
