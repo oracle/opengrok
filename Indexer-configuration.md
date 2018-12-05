@@ -36,3 +36,20 @@ Use the `-A` Indexer option, e.g. to make files with the `.cs` suffix to be proc
 ```
 
 This will map extension `.cs` to the analyzer created by the `PlainAnalyzerFactory `. You should even be able to override OpenGroks analyzers using this option.
+
+OpenGrok also allows using just the prefix. E.g. the following are all equivalent:
+
+`-A .e:org.opengrok.indexer.analysis.c.CAnalyzerFactory`
+`-A .e:CAnalyzerFactory`
+`-A .e:CAnalyzer`
+`-A .e:C`
+
+To clear the mapping:
+
+`-A .e:-`
+
+so that the plain-text heuristic is active as a fallback for `.e` files. Or you could explicitly map the `PlainAnalyzerFactory`:
+
+`-A .e:Plain`
+
+(N.b. the case-sensitivity of the class name.)
