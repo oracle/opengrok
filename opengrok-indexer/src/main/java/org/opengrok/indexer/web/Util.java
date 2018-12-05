@@ -65,7 +65,6 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.opengrok.indexer.Info;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -370,19 +369,6 @@ public final class Util {
             }
         }
         return false;
-    }
-
-    private static final String versionP = htmlize(Info.getRevision());
-
-    /**
-     * used by BUI - CSS needs this parameter for proper cache refresh (per
-     * changeset) in client browser TODO jel: but useless, since the page cached
-     * anyway.
-     *
-     * @return html escaped version (hg changeset)
-     */
-    public static String versionParameter() {
-        return versionP;
     }
 
     /**
