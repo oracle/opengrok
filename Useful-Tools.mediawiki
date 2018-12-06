@@ -7,6 +7,6 @@ Coverity scan: <a href="https://scan.coverity.com/projects/2627">
        src="https://scan.coverity.com/projects/2627/badge.svg"/>
 </a>
 
-VersionEye: <a href='https://www.versioneye.com/user/projects/54b7a584050646ca5c0001aa'><img src='https://www.versioneye.com/user/projects/54b7a584050646ca5c0001aa/badge.svg?style=flat' alt="Dependency Status" /></a>
+Snyk <a href='https://app.snyk.io/org/tarzanek/project/bab0ac81-4038-44f2-ba59-57d8b81f6e43'>dashboard</a>
 
 Inspecting indexes: [http://code.google.com/p/luke/ Luke] - this site is abandoned, we maintain a fork on [http://github.com/tarzanek/luke tarzanek/Luke] 
