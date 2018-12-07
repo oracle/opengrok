@@ -153,8 +153,6 @@ def main():
                                  "opengrok-sync.lock"))
     try:
         with lock.acquire(timeout=0):
-            pool = Pool(processes=int(args.workers))
-
             if args.projects:
                 dirs_to_process = args.projects
                 logger.debug("Processing directories: {}".
@@ -186,10 +184,12 @@ def main():
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.
+            pool = Pool(processes=int(args.workers))
             try:
                 cmds_base_results = pool.map(worker, cmds_base, 1)
             except KeyboardInterrupt:
-                # XXX lock.release() or return 1 ?
+                pool.close()
+                pool.terminate()
                 sys.exit(1)
             else:
                 for cmds_base in cmds_base_results:
