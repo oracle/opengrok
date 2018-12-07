@@ -474,7 +474,7 @@ public final class RuntimeEnvironment {
      */
     @SuppressWarnings("unchecked")
     public Map<String,Project> getProjects() {
-        return (Map<String,Project>)getConfigurationValue("projects");
+        return (Map<String, Project>)getConfigurationValue("projects");
     }
 
     /**
