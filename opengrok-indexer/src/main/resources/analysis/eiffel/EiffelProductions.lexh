@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -96,7 +96,9 @@ Real = ({Decimal_integer}? "." {Decimal_integer} |
 /*
  * Character_constant = Δ "'" Character "'"
  */
-Character_constant = \' [^\']+ \'
+Character_constant = \' ([^\'\n\r] | {Special_character}) \'
+
+Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/")
 
 /*
  * SCOMMENT : single-line comment
@@ -166,7 +168,8 @@ Character_constant = \' [^\']+ \'
      * Eiffel defines "Line_wrapping_part" as a sequence of characters
      * consisting of the following, in order: % (percent character); zero or
      * more blanks or tabs; New_line; zero or more blanks or tabs; % again. For
-     * OpenGrok purposes, just recognizing LFs in STRING is good enough.
+     * OpenGrok purposes, just recognizing LFs in STRING is good enough; though
+     * see also the {Special_character} handling for STRING,VSTRING.
      */
 }
 
@@ -178,6 +181,11 @@ Character_constant = \' [^\']+ \'
 }
 
 <STRING, VSTRING> {
+    {Special_character}    {
+        h.chkLOC();
+        offer(yytext());
+    }
+
     {WhspChar}*{EOL}    {
         onDisjointSpanChanged(null, yychar);
         onEndOfLineMatched(yytext(), yychar);
@@ -188,7 +196,10 @@ Character_constant = \' [^\']+ \'
 <YYINITIAL, SCOMMENT, STRING, VSTRING> {
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
     \s    { offer(yytext()); }
-    [^]    { h.chkLOC(); offer(yytext()); }
+    [^]    {
+        h.chkLOC();
+        offer(yytext());
+    }
 }
 
 <SCOMMENT, STRING, VSTRING> {
