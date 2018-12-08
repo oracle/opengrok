@@ -175,16 +175,16 @@ public class GitRepository extends Repository {
      * Try to get file contents for given revision.
      *
      * @param sink a required target sink
-     * @param outIterations a required out array for storing the number of calls
-     * made to {@code sink}
      * @param fullpath full pathname of the file
      * @param rev revision
-     * @return {@code true} if any contents were found
+     * @return a defined instance with {@code success} == {@code true} if no
+     * error occurred and with non-zero {@code iterations} if some data was
+     * transferred
      */
-    private boolean getHistoryRev(BufferSink sink, int[] outIterations,
-            String fullpath, String rev) {
+    private HistoryRevResult getHistoryRev(
+            BufferSink sink, String fullpath, String rev) {
 
-        outIterations[0] = 0;
+        HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
         try {
             /*
@@ -203,29 +203,19 @@ public class GitRepository extends Repository {
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
-
-            byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = executor.getOutputStream()) {
-                int len;
-                while ((len = in.read(buffer)) != -1) {
-                    if (len > 0) {
-                        outIterations[0]++;
-                        sink.write(buffer, 0, len);
-                    }
-                }
-            }
+            result.iterations = transferExecutorOutput(sink, executor);
 
             /*
              * If exit value of the process was not 0 then the file did
              * not exist or internal git error occured.
              */
-            return status == 0;
+            result.success = (status == 0);
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history for file {0} in revision {1}: ",
                         new Object[]{fullpath, rev, exp.getClass().toString(), exp});
-            return false;
         }
+        return result;
     }
 
     /**
@@ -274,10 +264,8 @@ public class GitRepository extends Repository {
             return false;
         }
 
-        int[] iterations = new int[1];
-        boolean ret = getHistoryRev((buf, offset, n) -> sink.write(buf, offset,
-                n), iterations, fullpath, rev);
-        if (!ret && iterations[0] < 1) {
+        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
              * renamed so we need to find its original name in that revision
@@ -296,11 +284,11 @@ public class GitRepository extends Repository {
                 return false;
             }
             if (origpath != null) {
-                ret = getHistoryRev(sink, iterations, origpath, rev);
+                result = getHistoryRev(sink, origpath, rev);
             }
         }
 
-        return ret;
+        return result.success;
     }
 
     /**

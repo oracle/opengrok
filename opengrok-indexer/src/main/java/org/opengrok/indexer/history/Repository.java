@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -215,7 +216,7 @@ public abstract class Repository extends RepositoryInfo {
             try (OutputStream out = new FileOutputStream(target)) {
                 byte[] buf = new byte[8 * 1024];
                 int n;
-                while ((n = in.read(buf)) != 0) {
+                while ((n = in.read(buf)) != -1) {
                     out.write(buf, 0, n);
                 }
             }
@@ -580,6 +581,31 @@ public abstract class Repository extends RepositoryInfo {
             }
         }
         return filename;
+    }
+
+    /**
+     * Transfers the {@code executor} output to the {@code sink}.
+     * @return the number of calls to {@code sink}
+     */
+    static int transferExecutorOutput(BufferSink sink, Executor executor)
+            throws IOException {
+        try (InputStream in = executor.getOutputStream()) {
+            byte[] buffer = new byte[8 * 1024];
+            int iterations = 0;
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    ++iterations;
+                    sink.write(buffer, 0, len);
+                }
+            }
+            return iterations;
+        }
+    }
+
+    class HistoryRevResult {
+        public boolean success;
+        public int iterations;
     }
 
     private class RepositoryDateFormat extends DateFormat {
