@@ -711,4 +711,13 @@ feature -- Output
 		do
 		end
 
+	special_chars
+		do
+			value := "abc"
+			value := 'abc' -- not a valid character
+			value := "%""
+			value := "%'"
+			value := '%''
+			value := '%"'
+		end
 end

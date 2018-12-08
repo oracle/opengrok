@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.eiffel;
@@ -53,7 +53,7 @@ public class EiffelXrefTest {
     public void sampleTest() throws IOException {
         writeAndCompare("analysis/eiffel/sample.e",
             "analysis/eiffel/sample_xref.html",
-            getTagsDefinitions(), 489);
+            getTagsDefinitions(), 498);
     }
 
     @Test
