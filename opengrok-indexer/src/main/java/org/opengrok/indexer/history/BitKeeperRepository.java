@@ -17,17 +17,23 @@
  * CDDL HEADER END
  */
 
+/*
+ * Author: James Service <jas2701@googlemail.com>
+ * Portions by: Oracle and/or its affiliates.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ */
+
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.opengrok.indexer.util.BufferSink;
 import org.suigeneris.jrcs.rcs.InvalidVersionNumberException;
 import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -294,18 +300,11 @@ public class BitKeeperRepository extends Repository {
         return history;
     }
 
-    /**
-     * Return an InputStream of the content of a given file at a given revision.
-     *
-     * @param parent the directory the file is in
-     * @param basename the basename of the file
-     * @param revision revision, or null for latest
-     * @return output an input stream
-     */
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String revision) {
-        final File directory = new File(parent).getAbsoluteFile();
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String revision) {
 
+        final File directory = new File(parent).getAbsoluteFile();
         final ArrayList<String> argv = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
@@ -320,10 +319,18 @@ public class BitKeeperRepository extends Repository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec(true) != 0) {
             LOGGER.log(Level.SEVERE, "Failed to get history: {0}", executor.getErrorString());
-            return null;
+            return false;
         }
 
-        return executor.getOutputStream();
+        try {
+            copyBytes(sink, executor.getOutputStream());
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to get content for {0}",
+                    basename);
+        }
+
+        return false;
     }
 
     /* Annotation Stuff */

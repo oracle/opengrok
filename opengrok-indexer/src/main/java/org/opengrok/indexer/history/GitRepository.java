@@ -24,14 +24,10 @@
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -203,7 +199,7 @@ public class GitRepository extends Repository {
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
-            result.iterations = transferExecutorOutput(sink, executor);
+            result.iterations = copyBytes(sink, executor.getOutputStream());
 
             /*
              * If exit value of the process was not 0 then the file did
@@ -218,39 +214,10 @@ public class GitRepository extends Repository {
         return result;
     }
 
-    /**
-     * Gets the contents of a specific version of a named file into the
-     * specified target without a full, in-memory buffer.
-     *
-     * @param target a required target file which will be overwritten
-     * @param parent the name of the directory containing the file
-     * @param basename the name of the file to get
-     * @param rev the revision to get
-     * @return {@code true} if contents were found
-     * @throws java.io.IOException if an I/O error occurs
-     */
     @Override
-    public boolean getHistoryGet(File target, String parent, String basename,
-            String rev) throws IOException {
-        try (OutputStream out = new FileOutputStream(target)) {
-            return getHistoryGet((buf, offset, n) -> out.write(buf, offset, n),
-                    parent, basename, rev);
-        }
-    }
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
-    @Override
-    public InputStream getHistoryGet(String parent, String basename,
-            String rev) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        if (getHistoryGet((buf, offset, n) -> out.write(buf, offset, n),
-                parent, basename, rev)) {
-            return new ByteArrayInputStream(out.toByteArray());
-        }
-        return null;
-    }
-
-    protected boolean getHistoryGet(BufferSink sink, String parent,
-            String basename, String rev) {
         String fullpath;
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
@@ -283,7 +250,7 @@ public class GitRepository extends Repository {
                 });
                 return false;
             }
-            if (origpath != null) {
+            if (origpath != null && !origpath.equals(fullpath)) {
                 result = getHistoryRev(sink, origpath, rev);
             }
         }

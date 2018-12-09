@@ -19,12 +19,11 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright 2008 Peter Bray
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-/* Portions Copyright 2008 Peter Bray */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 
 /**
  * Adds access to to a <a href="http://www.visible.com/Products/Razor/index.htm">Razor</a> Repository
@@ -218,7 +218,9 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
+
         // @TODO : Rename & Delete Support
         try {
             File binaryFile
@@ -230,26 +232,37 @@ public class RazorRepository extends Repository {
                 // implementation will be useful to sites using GZIP as a
                 // UNIX Compress replacement (A supported configuration
                 // according to to the Razor 4.x/5.x manuals)
-                return new GZIPInputStream(new FileInputStream(binaryFile));
+                try (FileInputStream in = new FileInputStream(binaryFile)) {
+                    GZIPInputStream gzIn = new GZIPInputStream(in);
+                    copyBytes(sink, gzIn);
+                }
+                return true;
             }
 
             File rcsFile = getRazorArchiveRCSFileFor(new File(parent, basename));
             if (rcsFile != null && rcsFile.exists()) {
                 String rcsPath = rcsFile.getPath();
-                return new BufferedInputStream(new RCSget(rcsPath, rev));
+                try (InputStream in = new RCSget(rcsPath, rev)) {
+                    copyBytes(sink, in);
+                }
+                return true;
             }
 
             File sccsFile = getRazorArchiveSCCSFileFor(new File(parent, basename));
             if (sccsFile != null && sccsFile.exists()) {
                 ensureCommand(SCCSRepository.CMD_PROPERTY_KEY,
                         SCCSRepository.CMD_FALLBACK);
-                return SCCSget.getRevision(RepoCommand, sccsFile, rev);
+                try (InputStream in = SCCSget.getRevision(RepoCommand,
+                        sccsFile, rev)) {
+                    copyBytes(sink, in);
+                }
+                return true;
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "getHistoryGet( "
                     + parent + ", " + basename + ", " + rev + ")", e);
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -281,12 +294,7 @@ public class RazorRepository extends Repository {
             }
 
             mappedFile = getRazorArchiveSCCSFileFor(file);
-            if (mappedFile.exists() && mappedFile.isFile()) {
-                return true;
-            }
-
-            return false;
-
+            return mappedFile.exists() && mappedFile.isFile();
         } catch (Exception e) {
             return false;
         }

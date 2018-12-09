@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -36,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -69,18 +71,22 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
         try {
             File history = SCCSHistoryParser.getSCCSFile(parent, basename);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            return SCCSget.getRevision(RepoCommand, history, rev);
+            try (InputStream in = SCCSget.getRevision(RepoCommand, history, rev)) {
+                copyBytes(sink, in);
+            }
+            return true;
         } catch (FileNotFoundException ex) {
-            return null;
+            // continue below
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
                     "An error occurred while getting revision", ex);
-            return null;
         }
+        return false;
     }
 
     private Map<String,String> getAuthors(File file) throws IOException {

@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.history;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -195,10 +196,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Gets the contents of a specific version of a named file into the
-     * specified target using
-     * {@link #getHistoryGet(java.lang.String, java.lang.String, java.lang.String)}.
-     * Subclasses can override to avoid the in-memory copy of the contents.
+     * Gets the contents of a specific version of a named file, and copies
+     * into the specified target.
      *
      * @param target a required target file which will be overwritten
      * @param parent the name of the directory containing the file
@@ -207,34 +206,43 @@ public abstract class Repository extends RepositoryInfo {
      * @return {@code true} if contents were found
      * @throws java.io.IOException if an I/O error occurs
      */
-    public boolean getHistoryGet(File target, String parent, String basename,
-            String rev) throws IOException {
-        try (InputStream in = getHistoryGet(parent, basename, rev)) {
-            if (in == null) {
-                return false;
-            }
-            try (OutputStream out = new FileOutputStream(target)) {
-                byte[] buf = new byte[8 * 1024];
-                int n;
-                while ((n = in.read(buf)) != -1) {
-                    out.write(buf, 0, n);
-                }
-            }
-            return true;
+    public boolean getHistoryGet(
+            File target, String parent, String basename, String rev)
+            throws IOException {
+        try (FileOutputStream out = new FileOutputStream(target)) {
+            return getHistoryGet(out::write, parent, basename, rev);
         }
     }
 
     /**
-     * Get an input stream that I may use to read a specific version of a named
-     * file.
-     *
+     * Gets an {@link InputStream} of the contents of a specific version of a
+     * named file.
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
      * @param rev the revision to get
-     * @return An input stream containing the correct revision.
+     * @return a defined instance if contents were found; or else {@code null}
      */
-    abstract InputStream getHistoryGet(
-            String parent, String basename, String rev);
+    public InputStream getHistoryGet(
+            String parent, String basename, String rev) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (getHistoryGet(out::write, parent, basename, rev)) {
+            return new ByteArrayInputStream(out.toByteArray());
+        }
+        return null;
+    }
+
+    /**
+     * Subclasses must override to get the contents of a specific version of a
+     * named file, and copy to the specified {@code sink}.
+     *
+     * @param sink a defined instance
+     * @param parent the name of the directory containing the file
+     * @param basename the name of the file to get
+     * @param rev the revision to get
+     * @return a value indicating if the get was successful.
+     */
+    abstract boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev);
 
     /**
      * Checks whether this parser can annotate files.
@@ -584,23 +592,20 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Transfers the {@code executor} output to the {@code sink}.
-     * @return the number of calls to {@code sink}
+     * Copies all bytes from {@code in} to the {@code sink}.
+     * @return the number of writes to {@code sink}
      */
-    static int transferExecutorOutput(BufferSink sink, Executor executor)
-            throws IOException {
-        try (InputStream in = executor.getOutputStream()) {
-            byte[] buffer = new byte[8 * 1024];
-            int iterations = 0;
-            int len;
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    ++iterations;
-                    sink.write(buffer, 0, len);
-                }
+    static int copyBytes(BufferSink sink, InputStream in) throws IOException {
+        byte[] buffer = new byte[8 * 1024];
+        int iterations = 0;
+        int len;
+        while ((len = in.read(buffer)) != -1) {
+            if (len > 0) {
+                ++iterations;
+                sink.write(buffer, 0, len);
             }
-            return iterations;
         }
+        return iterations;
     }
 
     class HistoryRevResult {

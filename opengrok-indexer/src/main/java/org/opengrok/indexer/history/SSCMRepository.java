@@ -19,16 +19,15 @@
 
 /*
  * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -169,8 +169,8 @@ public class SSCMRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, final String basename, String rev) {
-        InputStream ret = null;
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
         File directory = new File(parent);
 
@@ -206,35 +206,33 @@ public class SSCMRepository extends Repository {
                 LOGGER.log(Level.WARNING,
                         "Failed get revision {2} for: \"{0}\" Exit code: {1}",
                         new Object[]{new File(parent, basename).getAbsolutePath(), String.valueOf(status), rev});
-                return null;
+                return false;
             }
 
-            ret = new BufferedInputStream(new FileInputStream(new File(tmp, basename))) {
-
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    boolean deleteOnExit = false;
-                    File tmpFile = new File(tmp, basename);
-                    // delete the temporary file on close
-                    if (!tmpFile.delete()) {
-                        // try on JVM exit
-                        deleteOnExit = true;
-                        tmpFile.deleteOnExit();
-                    }
-                    // delete the temporary directory on close
-                    if (deleteOnExit || !tmp.delete()) {
-                        // try on JVM exit
-                        tmp.deleteOnExit();
-                    }
+            File tmpFile = new File(tmp, basename);
+            try (FileInputStream in = new FileInputStream(tmpFile)) {
+                copyBytes(sink, in);
+            } finally {
+                boolean deleteOnExit = false;
+                // delete the temporary file on close
+                if (!tmpFile.delete()) {
+                    // try on JVM exit
+                    deleteOnExit = true;
+                    tmpFile.deleteOnExit();
                 }
-            };
+                // delete the temporary directory on close
+                if (deleteOnExit || !tmp.delete()) {
+                    // try on JVM exit
+                    tmp.deleteOnExit();
+                }
+            }
+            return true;
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get file: " + exp.getClass().toString(), exp);
         }
 
-        return ret;
+        return false;
     }
 
     @Override
