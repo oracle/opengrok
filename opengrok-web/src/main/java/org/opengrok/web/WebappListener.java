@@ -137,8 +137,7 @@ public final class WebappListener
             sh.destroy();
         }
 
-        PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
-        fac.returnAnalyzer();
+        PlainAnalyzerFactory.DEFAULT_INSTANCE.returnAnalyzer();
     }
 
     /**
