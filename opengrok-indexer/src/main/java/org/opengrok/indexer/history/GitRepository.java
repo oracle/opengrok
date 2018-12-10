@@ -57,7 +57,7 @@ public class GitRepository extends Repository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -6126297612958508386L;
     /**
      * The property name used to obtain the client command for this repository.
      */

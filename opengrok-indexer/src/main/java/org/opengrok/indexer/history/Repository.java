@@ -50,6 +50,8 @@ import org.opengrok.indexer.util.Executor;
  */
 public abstract class Repository extends RepositoryInfo {
 
+    private static final long serialVersionUID = -203179700904894217L;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Repository.class);
 
     /**
@@ -548,6 +550,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     private class RepositoryDateFormat extends DateFormat {
+        private static final long serialVersionUID = -6951382723884436414L;
+
         private final Locale locale = Locale.ENGLISH;
         // NOTE: SimpleDateFormat is not thread-safe, lock must be held when used
         private final SimpleDateFormat[] formatters = new SimpleDateFormat[datePatterns.length];
