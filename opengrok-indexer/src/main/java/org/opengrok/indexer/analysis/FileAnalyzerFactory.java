@@ -206,6 +206,13 @@ public class FileAnalyzerFactory {
     }
 
     /**
+     * Free thread-local data.
+     */
+    public void returnAnalyzer() {
+        cachedAnalyzer.remove();
+    }
+
+    /**
      * Create a new analyzer.
      * @return an analyzer
      */
