@@ -205,6 +205,9 @@ public class FileAnalyzerFactory {
         return fa;
     }
 
+    /**
+     * Free thread-local data.
+     */
     public void returnAnalyzer() {
         cachedAnalyzer.remove();
     }
