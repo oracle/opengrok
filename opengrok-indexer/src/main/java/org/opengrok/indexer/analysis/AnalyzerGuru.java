@@ -507,6 +507,15 @@ public class AnalyzerGuru {
     }
 
     /**
+     * Free resources associated with all registered analyzers.
+     */
+    public static void returnAnalyzers() {
+        for (FileAnalyzerFactory analyzer : factories) {
+            analyzer.returnAnalyzer();
+        }
+    }
+
+    /**
      * Populate a Lucene document with the required fields.
      *
      * @param doc The document to populate

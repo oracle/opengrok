@@ -22,24 +22,25 @@
  */
 package org.opengrok.web;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.Info;
-import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
 import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
@@ -137,7 +138,7 @@ public final class WebappListener
             sh.destroy();
         }
 
-        PlainAnalyzerFactory.DEFAULT_INSTANCE.returnAnalyzer();
+        AnalyzerGuru.returnAnalyzers();
     }
 
     /**
