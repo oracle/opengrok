@@ -114,6 +114,8 @@ public class OptionParser {
     private String epilogue;  // text emitted after options summary
     
     class DuplicateOptionName extends Exception {
+        private static final long serialVersionUID = -2807551057713512315L;
+
         public DuplicateOptionName(String message) {
             super(message);
         }
