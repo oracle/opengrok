@@ -33,6 +33,7 @@ import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -135,6 +136,9 @@ public final class WebappListener
         if (sh != null) {
             sh.destroy();
         }
+
+        PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
+        fac.returnAnalyzer();
     }
 
     /**
