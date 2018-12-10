@@ -1,12 +1,13 @@
 package org.opengrok.web;
 
 import org.junit.Test;
-import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequestEvent;
+import javax.servlet.http.HttpServletRequest;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WebappListenerTest {
     /**
@@ -15,8 +16,9 @@ public class WebappListenerTest {
     @Test
     public void testRequest() {
         WebappListener wl = new WebappListener();
-        DummyHttpServletRequest req = new DummyHttpServletRequest();
+        final HttpServletRequest req = mock(HttpServletRequest.class);
         final ServletContext servletContext = mock(ServletContext.class);
+        when(req.getServletContext()).thenReturn(servletContext);
         ServletRequestEvent event = new ServletRequestEvent(servletContext, req);
 
         wl.requestInitialized(event);
