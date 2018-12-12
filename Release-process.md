@@ -52,3 +52,5 @@ The below steps are common for both pre-release and final release:
 
 1. Send announcement to opengrok-users@yahoogroups.com
    (the #opengrok Slack channel should receive the release info automatically thanks to Github hooks)
+
+   If this is final release, update https://en.wikipedia.org/wiki/OpenGrok
