@@ -30,19 +30,19 @@ The below steps are common for both pre-release and final release:
 
 1. set new version
 
-   `mvn versions:set -DgenerateBackupPoms=false -DnewVersion=1.1-rcXYZ`
+   `mvn versions:set -DgenerateBackupPoms=false -DnewVersion=INSERT_VERSION_HERE`
 
    Then commit and push the change:
 
-     `git commit pom.xml **/pom.xml` -m 1.1-rcXYZ
+     `git commit pom.xml **/pom.xml -m INSERT_VERSION_HERE`
 
      `git push`
 
 1. Trigger release creation
 
-     `git tag 1.1-rcXYZ`
+     `git tag INSERT_VERSION_HERE`
 
-     `git push origin tag 1.1-rcXYZ`
+     `git push origin tag INSERT_VERSION_HERE`
 
    Wait for the build to finish and release created.
 
