@@ -86,5 +86,5 @@ jobs:
           file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
           skip_cleanup: true
           on:
-            condition: ! $TRAVIS_TAG =~ rc[0-9]+$
+            condition: $TRAVIS_TAG =~ ^[0-9\.]+$
             all_branches: true
