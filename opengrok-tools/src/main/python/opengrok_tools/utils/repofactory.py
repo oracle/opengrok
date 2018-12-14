@@ -26,6 +26,7 @@ from ..scm.git import GitRepository
 from ..scm.mercurial import MercurialRepository
 from ..scm.svn import SubversionRepository
 from ..scm.teamware import TeamwareRepository
+from ..scm.repo import RepoRepository
 
 
 def get_repository(logger, path, repo_type, project, commands, env, hooks,
@@ -62,5 +63,9 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks,
         return GitRepository(logger, path, project,
                              commands.get("git"),
                              env, hooks, timeout)
+    elif repo_lower == "repo":
+        return RepoRepository(logger, path, project,
+                              commands.get("repo"),
+                              env, hooks, timeout)
     else:
         return None
