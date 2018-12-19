@@ -65,7 +65,16 @@ Example for the query `*e`:
 * …
 
 ## Configuration
-Suggester configuration is bundled in `suggesterConfig` property of the configuration.
+Suggester configuration is bundled in `suggesterConfig` property of the configuration. In [read-only configuration](https://github.com/oracle/opengrok/wiki/Read-only-configuration) it looks for example like this:
+
+```xml
+  <void property="suggesterConfig">
+     <void property="minChars">
+       <int>3</int>
+     </void>
+  </void>
+```
+
 Configurable properties of the suggester configuration:
 
 ### Enabled 
