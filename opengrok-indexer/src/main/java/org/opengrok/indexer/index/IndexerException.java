@@ -28,6 +28,8 @@ package org.opengrok.indexer.index;
  */
 public class IndexerException extends Exception {
 
+   private static final long serialVersionUID = -3009093549932264215L;
+
    IndexerException(String string) {
       super(string);
    }

@@ -29,6 +29,7 @@ package org.opengrok.indexer.condition;
  * https://stackoverflow.com/questions/1754315/how-to-create-custom-exceptions-in-java
  */
 public class DeliberateRuntimeException extends RuntimeException {
+
       private static final long serialVersionUID = 7870938126523334656L;
 
       public DeliberateRuntimeException() { super(); }

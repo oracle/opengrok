@@ -29,6 +29,8 @@ import java.util.BitSet;
  */
 public class BitIntsHolder extends BitSet implements IntsHolder {
 
+    private static final long serialVersionUID = 6943964922850699553L;
+
     public BitIntsHolder() {
     }
 
