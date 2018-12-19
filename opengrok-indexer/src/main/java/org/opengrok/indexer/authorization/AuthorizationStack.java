@@ -47,6 +47,8 @@ import org.opengrok.indexer.web.Statistics;
  */
 public class AuthorizationStack extends AuthorizationEntity {
 
+    private static final long serialVersionUID = -2116160303238347415L;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationStack.class);
 
     private List<AuthorizationEntity> stack = new ArrayList<>();

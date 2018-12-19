@@ -144,6 +144,8 @@ public class Message implements Comparable<Message> {
 
     private static class DurationSerializer extends StdSerializer<Duration> {
 
+        private static final long serialVersionUID = 5275434375701446542L;
+
         DurationSerializer() {
             this(null);
         }
@@ -167,6 +169,7 @@ public class Message implements Comparable<Message> {
     }
 
     private static class DurationDeserializer extends StdDeserializer<Duration> {
+        private static final long serialVersionUID = 5513386447457242809L;
 
         DurationDeserializer() {
             this(null);

@@ -32,6 +32,9 @@ import java.io.File;
  * @author Chandan
  */
 public final class IgnoredFiles extends Filter {
+
+    private static final long serialVersionUID = 3673125546519046976L;
+
     private static final String[] defaultPatternsFiles = {
         "cscope.in.out",
         "cscope.out.po",

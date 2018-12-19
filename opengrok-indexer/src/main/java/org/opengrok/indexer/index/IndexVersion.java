@@ -51,6 +51,8 @@ public class IndexVersion {
      */
     public static class IndexVersionException extends Exception {
 
+        private static final long serialVersionUID = -756788782277552544L;
+
         public IndexVersionException(String s) {
             super(s);
         }

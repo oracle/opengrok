@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Filter implements Serializable {
+
     private static final long serialVersionUID = 3L;
 
     /** The list of exact filenames */
@@ -216,6 +217,9 @@ public class Filter implements Serializable {
     }
 
     public static class PatternList extends ArrayList<String> {
+
+        private static final long serialVersionUID = -6883390970972775838L;
+
         private final Filter owner;
 
         public PatternList(Filter owner) {

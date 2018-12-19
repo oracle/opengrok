@@ -280,6 +280,8 @@ public class MessagesContainer {
 
         private static class InstantSerializer extends StdSerializer<Instant> {
 
+            private static final long serialVersionUID = -369908820170764793L;
+
             InstantSerializer() {
                 this(null);
             }
