@@ -35,7 +35,6 @@ import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
 import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.query.SuggesterQuery;
-import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
@@ -43,7 +42,6 @@ import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -291,13 +289,19 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
 
         File suggesterDir = new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR);
+        int rebuildParalleismLevel = (int)(((float)suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent() / 100) * Runtime.getRuntime().availableProcessors());
+        if (rebuildParalleismLevel == 0) {
+            rebuildParalleismLevel = 1;
+        }
+        logger.log(Level.FINER, "Suggester rebuild parallelism level: " + rebuildParalleismLevel);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
                 suggesterConfig.isAllowMostPopular(),
                 env.isProjectsEnabled(),
                 suggesterConfig.getAllowedFields(),
-                suggesterConfig.getTimeThreshold());
+                suggesterConfig.getTimeThreshold(),
+                rebuildParalleismLevel);
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());

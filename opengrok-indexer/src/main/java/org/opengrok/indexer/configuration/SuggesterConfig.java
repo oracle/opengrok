@@ -50,6 +50,7 @@ public class SuggesterConfig {
     public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
     public static final int BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
     public static final int TIME_THRESHOLD_DEFAULT = 2000; // 2 sec
+    public static final int REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT = 80;
 
     public static final Set<String> allowedProjectsDefault = null;
     public static final Set<String> allowedFieldsDefault = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
@@ -135,6 +136,11 @@ public class SuggesterConfig {
      */
     private int timeThreshold;
 
+    /**
+     * Number of threads used for rebuild pool expressed in percent of available CPUs in the system.
+     */
+    private int rebuildThreadPoolSizeInNcpuPercent;
+
     public SuggesterConfig() {
         setEnabled(ENABLED_DEFAULT);
         setMaxResults(MAX_RESULTS_DEFAULT);
@@ -151,6 +157,7 @@ public class SuggesterConfig {
         // do not use setter because indexer invocation with --man will fail
         rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
         setBuildTerminationTime(BUILD_TERMINATION_TIME_DEFAULT);
+        setRebuildThreadPoolSizeInNcpuPercent(REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT);
     }
 
     public boolean isEnabled() {
@@ -285,6 +292,17 @@ public class SuggesterConfig {
         this.timeThreshold = timeThreshold;
     }
 
+    public void setRebuildThreadPoolSizeInNcpuPercent(final int percent) {
+        if (percent < 0 || percent > 100) {
+            throw new IllegalArgumentException("Need percentage value");
+        }
+        this.rebuildThreadPoolSizeInNcpuPercent = percent;
+    }
+
+    public int getRebuildThreadPoolSizeInNcpuPercent() {
+        return rebuildThreadPoolSizeInNcpuPercent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -306,14 +324,15 @@ public class SuggesterConfig {
                 buildTerminationTime == that.buildTerminationTime &&
                 Objects.equals(allowedProjects, that.allowedProjects) &&
                 Objects.equals(allowedFields, that.allowedFields) &&
-                Objects.equals(rebuildCronConfig, that.rebuildCronConfig);
+                Objects.equals(rebuildCronConfig, that.rebuildCronConfig) &&
+                rebuildThreadPoolSizeInNcpuPercent == that.rebuildThreadPoolSizeInNcpuPercent;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(enabled, maxResults, minChars, allowedProjects, maxProjects, allowedFields,
                 allowComplexQueries, allowMostPopular, showScores, showProjects, showTime, rebuildCronConfig,
-                buildTerminationTime);
+                buildTerminationTime, rebuildThreadPoolSizeInNcpuPercent);
     }
 
 }
