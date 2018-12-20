@@ -25,7 +25,6 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -106,9 +105,7 @@ public class BazaarRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            try (InputStream in = process.getInputStream()) {
-                copyBytes(sink, in);
-            }
+            copyBytes(sink, process.getInputStream());
             return true;
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,

@@ -608,7 +608,7 @@ public abstract class Repository extends RepositoryInfo {
         return iterations;
     }
 
-    class HistoryRevResult {
+    static class HistoryRevResult {
         public boolean success;
         public int iterations;
     }
