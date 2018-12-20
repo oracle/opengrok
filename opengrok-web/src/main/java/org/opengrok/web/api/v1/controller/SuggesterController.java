@@ -168,15 +168,13 @@ public final class SuggesterController {
     @PUT
     @Path("/rebuild")
     public void rebuild() {
-        // TODO run this async in a thread so that the request get a response instantly
-        suggester.rebuild();
+        new Thread(() -> suggester.rebuild()).start();
     }
 
     @PUT
     @Path("/rebuild/{project}")
     public void rebuild(@PathParam("project") final String project) {
-        // TODO run this async in a thread so that the request get a response instantly
-        suggester.rebuild(project);
+        new Thread(() -> suggester.rebuild(project)).start();
     }
 
     /**

@@ -84,9 +84,16 @@ public final class Suggester implements Closeable {
 
     private final int timeThreshold;
 
+    private final int rebuildParallelismLevel;
+
     // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
     private final ExecutorService executorService = Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors());
+            Runtime.getRuntime().availableProcessors(),
+            runnable -> {
+                Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                thread.setName("suggester-lookup-" + thread.getId());
+                return thread;
+            });
 
     /**
      * @param suggesterDir directory under which the suggester data should be created
@@ -105,7 +112,8 @@ public final class Suggester implements Closeable {
             final boolean allowMostPopular,
             final boolean projectsEnabled,
             final Set<String> allowedFields,
-            final int timeThreshold
+            final int timeThreshold,
+            final int rebuildParallelismLevel
     ) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
@@ -123,11 +131,12 @@ public final class Suggester implements Closeable {
         this.projectsEnabled = projectsEnabled;
         this.allowedFields = new HashSet<>(allowedFields);
         this.timeThreshold = timeThreshold;
+        this.rebuildParallelismLevel = rebuildParallelismLevel;
     }
 
     /**
      * Initializes suggester data for specified indexes. The data is initialized asynchronously.
-     * @param luceneIndexes paths to lucene indexes and name with which the index should be associated
+     * @param luceneIndexes paths to Lucene indexes and name with which the index should be associated
      */
     public void init(final Collection<NamedIndexDir> luceneIndexes) {
         if (luceneIndexes == null || luceneIndexes.isEmpty()) {
@@ -135,13 +144,13 @@ public final class Suggester implements Closeable {
             return;
         }
         if (!projectsEnabled && luceneIndexes.size() > 1) {
-            throw new IllegalArgumentException("Projects are not enabled and multiple lucene indexes were passed");
+            throw new IllegalArgumentException("Projects are not enabled and multiple Lucene indexes were passed");
         }
 
         synchronized (lock) {
             logger.log(Level.INFO, "Initializing suggester");
 
-            ExecutorService executor = Executors.newWorkStealingPool();
+            ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
             for (NamedIndexDir indexDir : luceneIndexes) {
                 submitInitIfIndexExists(executor, indexDir);
@@ -222,9 +231,9 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            logger.log(Level.INFO, "Rebuilding following suggesters: {0}", indexDirs);
+            logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
-            ExecutorService executor = Executors.newWorkStealingPool();
+            ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
             for (NamedIndexDir indexDir : indexDirs) {
                 SuggesterProjectData data = this.projectData.get(indexDir.name);
