@@ -50,6 +50,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -162,6 +163,20 @@ public final class SuggesterController {
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
         return env.getSuggesterConfig();
+    }
+
+    @PUT
+    @Path("/rebuild")
+    public void rebuild() {
+        // TODO run this async in a thread so that the request get a response instantly
+        suggester.rebuild();
+    }
+
+    @PUT
+    @Path("/rebuild/{project}")
+    public void rebuild(@PathParam("project") final String project) {
+        // TODO run this async in a thread so that the request get a response instantly
+        suggester.rebuild(project);
     }
 
     /**

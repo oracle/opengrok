@@ -215,7 +215,7 @@ public class ProjectsController {
                     }
                 }
             }
-            suggester.refresh(projectName);
+            suggester.rebuild(projectName);
         } else {
             logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
         }
