@@ -407,7 +407,11 @@ class SuggesterProjectData implements Closeable {
             throw new IllegalArgumentException("Cannot increment search count for null");
         }
 
-        lock.readLock().lock();
+        boolean gotLock = lock.readLock().tryLock();
+        if (!gotLock) { // do not wait for rebuild
+            return;
+        }
+
         try {
             if (lookups.get(term.field()).get(term.text()) == null) {
                 return; // unknown term
