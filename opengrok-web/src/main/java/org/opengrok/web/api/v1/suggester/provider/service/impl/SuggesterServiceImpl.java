@@ -43,6 +43,7 @@ import org.opengrok.indexer.configuration.SuperIndexSearcher;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -175,21 +176,36 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public void refresh(final String project) {
+    public void rebuild() {
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINE, "Cannot perform rebuild because suggester is not initialized");
+                return;
+            }
+            suggester.rebuild(getAllProjectIndexDirs());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void rebuild(final String project) {
         Project p = env.getProjects().get(project);
         if (p == null) {
-            logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found",
+            logger.log(Level.WARNING, "Cannot rebuild suggester because project for name {0} was not found",
                     project);
             return;
         }
         if (!p.isIndexed()) {
-            logger.log(Level.WARNING, "Cannot refresh project {0} because it is not indexed yet", project);
+            logger.log(Level.WARNING, "Cannot rebuild project {0} because it is not indexed yet", project);
             return;
         }
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot refresh {0} because suggester is not initialized", project);
+                logger.log(Level.FINE, "Cannot rebuild {0} because suggester is not initialized", project);
                 return;
             }
             suggester.rebuild(Collections.singleton(getNamedIndexDir(p)));

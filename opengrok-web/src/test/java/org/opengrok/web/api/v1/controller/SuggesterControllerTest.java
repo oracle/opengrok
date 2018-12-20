@@ -25,6 +25,7 @@ package org.opengrok.web.api.v1.controller;
 import org.apache.lucene.index.Term;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.*;
+import org.junit.runners.MethodSorters;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
@@ -61,6 +62,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @ConditionalRun(CtagsInstalled.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SuggesterControllerTest extends JerseyTest {
 
     public static class Result {
@@ -639,5 +641,26 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("print", "printf"));
+    }
+
+    @Test
+    public void ZtestRebuild() {
+        Response res = target(SuggesterController.PATH)
+                .path("rebuild")
+                .request()
+                .put(Entity.text(""));
+
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+    }
+
+    @Test
+    public void ZtestRebuildProject() {
+        Response res = target(SuggesterController.PATH)
+                .path("rebuild")
+                .path("c")
+                .request()
+                .put(Entity.text(""));
+
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
     }
 }

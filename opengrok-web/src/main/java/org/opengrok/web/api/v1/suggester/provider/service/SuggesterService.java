@@ -51,10 +51,15 @@ public interface SuggesterService {
     void refresh();
 
     /**
-     * Refreshes the suggester for specified {@code project}.
-     * @param project name of the project to refresh
+     * Rebuild suggester data structures. This is a subset of what {@code refresh} does.
      */
-    void refresh(String project);
+    void rebuild();
+
+    /**
+     * Rebuilds suggester data structures for given project. This is a subset of what {@code refresh} does.
+     * @param project project name
+     */
+    void rebuild(String project);
 
     /**
      * Deletes all suggester data for the {@code project}.
