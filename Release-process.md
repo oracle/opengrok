@@ -1,3 +1,12 @@
+# Semantic versioning (sic)
+
+In overall, the regular expression pattern will be something like `\d+\.\d+(\.\d+|\-rc\d+)`.
+
+Specifically:
+  - x.y: major release, usually requires reindex from scratch
+  - x.y.z: minor release
+  - x.y-rcZ: release candidate, may require reindex from scratch
+
 # Release criteria
 
 Ideally, the following minimum criteria should be fulfilled before a new
