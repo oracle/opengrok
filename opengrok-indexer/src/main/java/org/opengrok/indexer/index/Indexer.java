@@ -101,7 +101,7 @@ public final class Indexer {
     private static boolean optimizedChanged = false;
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
-    private static boolean noindex = false;
+    private static boolean bareConfig = false;
     private static boolean awaitProfiler;
 
     private static boolean help;
@@ -252,7 +252,7 @@ public final class Indexer {
             // call above.
             RepositoryFactory.initializeIgnoredNames(env);
 
-            if (noindex) {
+            if (bareConfig) {
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
@@ -314,12 +314,13 @@ public final class Indexer {
 
             LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
-            
+
             // Get history first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
-                    listFiles, createDict, subFiles, new ArrayList<>(repositories),
+                    listFiles, createDict, runIndex, subFiles, new ArrayList<>(repositories),
                     zapCache, listRepos);
+
             if (listRepos || !zapCache.isEmpty()) {
                 return;
             }
@@ -564,7 +565,7 @@ public final class Indexer {
 
             parser.on("-m", "--memory", "=number", Double.class,
                 "Amount of memory that may be used for buffering added documents and",
-                "deletions before they are flushed to the directory (default "+Configuration.defaultRamBufferSize+"MB).",
+                "deletions before they are flushed to the directory (default " + Configuration.defaultRamBufferSize + "MB).",
                 "Please increase JVM heap accordingly, too.").Do(memSize -> {
                 cfg.setRamBufferSize((Double)memSize);
             });
@@ -587,7 +588,8 @@ public final class Indexer {
             );
 
             parser.on("-n", "--noIndex",
-                "Do not generate indexes, but process all other command line options.").Do(v -> {
+                "Do not generate indexes and other data (such as history cache and xref files), " +
+                "but process all other command line options.").Do(v -> {
                 runIndex = false;
             });
 
@@ -766,7 +768,7 @@ public final class Indexer {
 
             parser.on("--updateConfig",
                 "Populate the webapp with bare configuration and exit.").Do(v -> {
-                noindex = true;
+                bareConfig = true;
             });
 
             parser.on("--userPage", "=URL",
@@ -818,7 +820,7 @@ public final class Indexer {
     private static void checkConfiguration() {
         env = RuntimeEnvironment.getInstance();
 
-        if (noindex && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
             die("Missing webappURI URL");
         }
 
@@ -888,13 +890,43 @@ public final class Indexer {
         }
     }
 
-    /*
+    // Wrapper for prepareIndexer() that always generates history cache.
+    public void prepareIndexer(RuntimeEnvironment env,
+                               boolean searchRepositories,
+                               boolean addProjects,
+                               Set<String> defaultProjects,
+                               boolean listFiles,
+                               boolean createDict,
+                               List<String> subFiles,
+                               List<String> repositories,
+                               List<String> zapCache,
+                               boolean listRepoPaths) throws IndexerException, IOException {
+        prepareIndexer(env, searchRepositories, addProjects, defaultProjects, listFiles, createDict, true,
+                subFiles, repositories, zapCache, listRepoPaths);
+    }
+
+    /**
+     * Generate history cache and/or scan the repositories.
+     *
      * This is the first phase of the indexing where history cache is being
      * generated for repositories (at least for those which support getting
      * history per directory).
      *
-     * PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
+     * PMD wants us to use length() &gt; 0 &amp;&amp; charAt(0) instead of startsWith()
      * for performance. We prefer clarity over performance here, so silence it.
+     *
+     * @param env runtime environment
+     * @param searchRepositories if true, search for repositories
+     * @param addProjects if true, add projects
+     * @param defaultProjects default projects
+     * @param listFiles list files and return
+     * @param createDict if true, create dictionary
+     * @param subFiles list of directories
+     * @param repositories list of repositories
+     * @param zapCache list of projects to remove history cache for
+     * @param listRepoPaths print repository paths to standard output
+     * @throws IndexerException
+     * @throws IOException
      */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
@@ -903,6 +935,7 @@ public final class Indexer {
             Set<String> defaultProjects,
             boolean listFiles,
             boolean createDict,
+            boolean createHistoryCache,
             List<String> subFiles,
             List<String> repositories,
             List<String> zapCache,
@@ -1011,6 +1044,14 @@ public final class Indexer {
             }
         }
 
+        if (listFiles) {
+            for (String file : IndexDatabase.getAllFiles(subFiles)) {
+                LOGGER.fine(file);
+            }
+
+            return;
+        }
+
         if (defaultProjects != null && !defaultProjects.isEmpty()) {
             Set<Project> projects = new TreeSet<>();
             for (String projectPath : defaultProjects) {
@@ -1030,21 +1071,17 @@ public final class Indexer {
             }
         }
 
-        // Even if history is disabled globally, it can be enabled for some repositories.
-        if (repositories != null && !repositories.isEmpty()) {
-            LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
-                repositories.stream().collect(Collectors.joining(",")));
-            HistoryGuru.getInstance().createCache(repositories);
-            LOGGER.info("Done...");
-          } else {
-              LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-              HistoryGuru.getInstance().createCache();
-              LOGGER.info("Done...");
-          }
-
-        if (listFiles) {
-            for (String file : IndexDatabase.getAllFiles(subFiles)) {
-                LOGGER.fine(file);
+        if (createHistoryCache) {
+            // Even if history is disabled globally, it can be enabled for some repositories.
+            if (repositories != null && !repositories.isEmpty()) {
+                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                        repositories.stream().collect(Collectors.joining(",")));
+                HistoryGuru.getInstance().createCache(repositories);
+                LOGGER.info("Done...");
+            } else {
+                LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                HistoryGuru.getInstance().createCache();
+                LOGGER.info("Done...");
             }
         }
 
