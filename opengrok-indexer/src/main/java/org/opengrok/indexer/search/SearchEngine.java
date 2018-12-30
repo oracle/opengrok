@@ -67,6 +67,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Summary.Fragment;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.ProjectHelper;
@@ -521,7 +522,8 @@ public class SearchEngine {
                              * default charset.
                              */
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
-                                    ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz")))))
+                                    ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(
+                                            TandemPath.join(data + Prefix.XREF_P + filename, ".gz"))))))
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
                                 l = r.read(content);
                             }

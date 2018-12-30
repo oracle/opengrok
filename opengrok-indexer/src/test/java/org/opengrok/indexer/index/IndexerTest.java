@@ -66,6 +66,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -306,7 +307,8 @@ public class IndexerTest {
             // followed by {@code addFile()} that will create the file again.
             if (path.equals("/mercurial/bar.txt")) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                File f = new File(env.getDataRootPath(), "historycache" + path + ".gz");
+                File f = new File(env.getDataRootPath(),
+                        TandemPath.join("historycache" + path, ".gz"));
                 Assert.assertTrue("history cache file should be preserved", f.exists());
             }
             removedFiles.add(path);

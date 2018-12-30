@@ -27,6 +27,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -79,8 +80,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
 
         StreamSource gzSrc = wrap(src);
         String path = doc.get("path");
-        if (path != null
-                && (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
+        if (path != null && path.toLowerCase(Locale.ROOT).endsWith(".gz")) {
             String newname = path.substring(0, path.length() - 3);
             //System.err.println("GZIPPED OF = " + newname);
             try (InputStream gzis = gzSrc.getStream()) {

@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.TandemPath;
 
 /**
  * Represents a tracker of pending file deletions and renamings that can later
@@ -319,7 +320,7 @@ class PendingFileCompleter {
     }
 
     private void doDelete(PendingFileDeletionExec del) throws IOException {
-        File f = new File(del.absolutePath + PENDING_EXTENSION);
+        File f = new File(TandemPath.join(del.absolutePath, PENDING_EXTENSION));
         File parent = f.getParentFile();
         del.absoluteParent = parent;
 
