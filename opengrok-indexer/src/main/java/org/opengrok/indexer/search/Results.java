@@ -56,6 +56,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.Util;
@@ -116,9 +117,9 @@ public final class Results {
             int len = r.read(content);
             return new String(content, 0, len);
         } catch (Exception e) {
-            LOGGER.log(
-                    Level.WARNING, "An error reading tags from " + basedir + path
-                    + (compressed ? ".gz" : ""), e);
+            String fnm = compressed ? TandemPath.join(basedir + path, ".gz") :
+                    basedir + path;
+            LOGGER.log(Level.WARNING, "An error reading tags from " + fnm, e);
         }
         return "";
     }
@@ -127,13 +128,14 @@ public final class Results {
     private static Reader getXrefReader(
                     File basedir, String path, boolean compressed)
             throws IOException {
-        /**
+        /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
         if (compressed) {
             return new BufferedReader(IOUtils.createBOMStrippedReader(
-                    new GZIPInputStream(new FileInputStream(new File(basedir, path + ".gz")))));
+                    new GZIPInputStream(new FileInputStream(new File(basedir,
+                            TandemPath.join(path, ".gz"))))));
         } else {
             return new BufferedReader(IOUtils.createBOMStrippedReader(
                     new FileInputStream(new File(basedir, path))));

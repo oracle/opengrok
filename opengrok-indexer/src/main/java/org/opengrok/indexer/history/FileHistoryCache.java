@@ -59,6 +59,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TandemPath;
 
 /*
  * Class representing file based storage of per source file history.
@@ -213,13 +214,12 @@ class FileHistoryCache implements HistoryCache {
                 sb.append(File.separator);
                 sb.append(DIRECTORY_FILE_PREFIX);
             }
-            sb.append(".gz");
         } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to " +
                     "source root for " + file, e);
         }
 
-        return new File(sb.toString());
+        return new File(TandemPath.join(sb.toString(), ".gz"));
     }
 
     /**

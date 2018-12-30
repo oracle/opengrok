@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -31,6 +32,7 @@ import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
@@ -625,7 +627,7 @@ public class FileHistoryCacheTest {
         // FetchHistoryWhenNotInCache is set to false.
         File dataRoot = new File(repositories.getDataRoot(),
                 "historycache" + File.separatorChar + reponame);
-        File fileHistory = new File(dataRoot, filename + ".gz");
+        File fileHistory = new File(dataRoot, TandemPath.join(filename, ".gz"));
         assertEquals(historyFileExists, fileHistory.exists());
     }
 

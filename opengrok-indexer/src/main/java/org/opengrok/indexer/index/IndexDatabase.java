@@ -98,6 +98,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.ObjectPool;
 import org.opengrok.indexer.util.Statistics;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -685,7 +686,8 @@ public class IndexDatabase {
     }
 
     private File whatXrefFile(String path, boolean compress) {
-        return new File(xrefDir, path + (compress ? ".gz" : ""));
+        String xrefPath = compress ? TandemPath.join(path, ".gz") : path;
+        return new File(xrefDir, xrefPath);
     }
 
     /**
@@ -1612,8 +1614,8 @@ public class IndexDatabase {
 
             // Write to a pending file for later renaming.
             String xrefAbs = xrefFile.getAbsolutePath();
-            File transientXref = new File(xrefAbs +
-                PendingFileCompleter.PENDING_EXTENSION);
+            File transientXref = new File(TandemPath.join(xrefAbs,
+                PendingFileCompleter.PENDING_EXTENSION));
             PendingFileRenaming ren = new PendingFileRenaming(xrefAbs,
                 transientXref.getAbsolutePath());
             completer.add(ren);

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -74,6 +74,7 @@ import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
@@ -873,7 +874,7 @@ public final class PageConfig {
      * Get the parameter values for the given name. Splits comma separated
      * values automatically into a list of Strings.
      *
-     * @param name name of the parameter.
+     * @param paramName name of the parameter.
      * @return a possible empty list.
      */
     private List<String> getParamVals(String paramName) {
@@ -1185,7 +1186,7 @@ public final class PageConfig {
     private File checkFile(File dir, String name, boolean compressed) {
         File f;
         if (compressed) {
-            f = new File(dir, name + ".gz");
+            f = new File(dir, TandemPath.join(name, ".gz"));
             if (f.exists() && f.isFile()
                     && f.lastModified() >= resourceFile.lastModified()) {
                 return f;
@@ -1206,7 +1207,7 @@ public final class PageConfig {
         }
         File f;
         if (compressed) {
-            f = new File(dir, name + ".gz");
+            f = new File(dir, TandemPath.join(name, ".gz"));
             if (f.exists() && f.isFile()
                     && f.lastModified() >= lresourceFile.lastModified()) {
                 return f;
@@ -1571,7 +1572,6 @@ public final class PageConfig {
     /**
      * Get basename of the path or "/" if the path is empty.
      * This is used for setting title of various pages.
-     * @param path
      * @return short version of the path
      */
     public String getShortPath(String path) {

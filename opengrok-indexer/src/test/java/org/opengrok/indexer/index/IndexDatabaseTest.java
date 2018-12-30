@@ -50,6 +50,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -134,7 +135,7 @@ public class IndexDatabaseTest {
 
         for (String dirName : new String[]{"historycache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
-            File dataFile = new File(dataDir, fileName + ".gz");
+            File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
             if (shouldExist) {
                 Assert.assertTrue("file " + fileName + " not found in " + dirName,
@@ -149,12 +150,9 @@ public class IndexDatabaseTest {
     /**
      * Test removal of IndexDatabase. xrefs and history index entries after
      * file has been removed from a repository.
-     *
-     * @throws Exception 
      */
     @Test
     public void testCleanupAfterIndexRemoval() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         final int origNumFiles;
 
         String projectName = "git";
@@ -190,7 +188,6 @@ public class IndexDatabaseTest {
     /**
      * This is a test of {@code populateDocument} so it should be rather in {@code AnalyzerGuruTest}
      * however it lacks the pre-requisite indexing phase.
-     * @throws IOException
      */
     @Test
     public void testIndexPath() throws IOException {
