@@ -80,6 +80,10 @@ The following table lists all supported formats and OpenGrok version in which th
 |0.11
 |"JS"
 |-
+|JSON
+|1.1
+|"JSON"
+|-
 |Kotlin
 |1.1
 |"KT","KTS"
