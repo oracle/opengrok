@@ -59,6 +59,8 @@ The below steps are common for both pre-release and final release:
    of the release, e.g. adding list of issues fixed, whether complete reindex
    is necessary etc.
 
+1. Check the https://github.com/OpenGrok/docker/blob/master/Dockerfile to see what version matching is done on the release string and if needed adjust accordingly to the latest stable release
+
 1. Send announcement to opengrok-users@yahoogroups.com
    (the #opengrok Slack channel should receive the release info automatically thanks to Github hooks)
 
