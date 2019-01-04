@@ -28,7 +28,8 @@ if [[ $ver == $VERSION ]]; then
 	exit 1
 fi
 
-mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$VERSION && \
+git pull --ff-only && \
+    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$VERSION && \
     git commit pom.xml **/pom.xml -m $VERSION && \
     git push && \
     git tag $VERSION
