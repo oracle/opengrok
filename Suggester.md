@@ -152,3 +152,8 @@ Specifies a time threshold for suggestions in milliseconds.
 If the computation exceeds this time, it will be stopped and partial results will be returned.
 - Property: `timeThreshold`
 - Default value: `2000` (2 seconds)
+
+### Rebuild thread pool size
+Specifies size of the thread pool used for rebuilding suggester data in terms of percentage of online CPUs in the system.
+- Property: `rebuildThreadPoolSizeInNcpuPercent`
+- Default value: `80` (80%)
