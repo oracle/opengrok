@@ -2280,6 +2280,13 @@ function transform_projects_to_groups() {
 
     $sel.find('.sol-optiongroup').each(function () {
         var $el = $(this);
+
+        // handle "Other" group for ungrouped projects
+        if ($el.find('.sol-optiongroup-label').text() === 'Other') {
+            $el.find('.sol-checkbox[name=group]').prop('checked', false);
+            return;
+        }
+
         var checkboxs = $el.find('.sol-option .sol-checkbox')
         for (var i = 0; i < checkboxs.length; i++) {
             var checkbox = $(checkboxs[i])
