@@ -50,11 +50,34 @@ Of course, the Python package can be installed into Python virtual environment.
 
 Install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)).
 
-Copy the `.war` file to the location where the application container will detect it and deploy the web application. 
+The web application is distributed in the form of [WAR archive file](https://en.wikipedia.org/wiki/WAR_(file_format)) called `source.war` by default. To deploy the application, it means to copy the `.war` file to the location where the application container will detect it and deploy the web application. The container application will usually detect the new file (even if previous version of the web application is already running), unpack the archive and start the web application. Usually, it is not necessary to unpack the archive by hand. It depends on the container server how quickly it will discover the new archive; usually it takes just a couple of seconds. The destination directory varies per application server. For example for Tomcat 8 it might be something like `/var/tomcat8/webapps` however this could vary based on operating system as well. So, if you copy the archive to say `/var/tomcat8/webapps/source.war`, the application server will extract the contents of the archive to the `/var/tomcat8/webapps/source/` directory.
 
-If you happen to be using the Python tools, you can use the `opengrok-deploy` script to perform the same. The script is also handy when the configuration file is stored in non-standard location (i.e. other than `/var/opengrok/etc/configuration.xml`)
+Once started, the web application will be served on http://ADDRESS:PORT/source/ where `ADDRESS` and `PORT` depend on the configuration of your application server. For instance, it could be http://localhost:8080/source. The `source` part of the URI matches the name of the WAR file, so if you want your application to be available on http://localhost:8080/FooBar/ , copy the file into the destination directory as `FooBar.war`.
 
-See https://github.com/oracle/opengrok/wiki/Webapp-configuration for more configuration options.
+After application server unpacks the War file, it will search for the `WEB-INF/web.xml` file. For example, deployed default War archive in Tomcat 8 on a Unix system might have the file present as `/var/tomcat8/webapps/source/WEB-INF/web.xml`. Inside this XML file there is an parameter called `CONFIGURATION`. Inside the XML file it might look like this:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <display-name>OpenGrok</display-name>
+    <description>A wicked fast source browser</description>
+    <context-param>
+        <description>Full path to the configuration file where OpenGrok can read its configuration</description>
+        <param-name>CONFIGURATION</param-name>
+        <param-value>/opengrok/etc/configuration.xml</param-value>
+    </context-param>
+...
+```
+
+This is where the web application will read the configuration from. The default value is `/var/opengrok/etc/configuration.xml` (notice that in the above example non-default path was used). This configuration file is created by the indexer when using the `-W` option and the web application reads the file on startup - this is a way how to make the configuration persistent.
+
+If you happen to be using the Python tools distributed with OpenGrok, you can use the `opengrok-deploy` script to perform the copying of the War file while optionally changing the `CONFIGURATION` value if the configuration file is stored in non-default location.
+
+See https://github.com/oracle/opengrok/wiki/Webapp-configuration for more configuration options of the web application.
 
 ## <u>Step.3</u> - Indexing
 
