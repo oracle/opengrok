@@ -109,15 +109,13 @@ For the indexing step, the directories that store the output data need to be cre
 
 The initial indexing can take a lot of time - for large code bases (meaning both amount of source code and history) it can take many hours. Subsequent indexing will be much faster as it is incremental.
 
-At the end of the indexing the indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state.
-
 The indexer can be run either using `opengrok.jar` directly:
 ```
 java -Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -jar /opengrok/dist/lib/opengrok.jar \
     -c /path/to/universal/ctags \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
-    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
+    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080/source
 ```
 or using the `opengrok-indexer` wrapper like so:
 ```
@@ -125,11 +123,13 @@ opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.proper
     -a /opengrok/dist/lib/opengrok.jar -- \
     -c /path/to/universal/ctags \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
-    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
+    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080/source
 ```
 Notice how the indexer arguments in both commands are the same. The `opengrok-indexer` will merely find the Java executable and run it.
 
-The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing.
+At the end of the indexing the indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state. The indexer needs to know where to upload the configuration to - this is what the `-U` option is there for. The URI supplied by this option needs to match the location where the web application was deployed to, e.g. for War file called `source.war` the URI will be `http://localhost:PORT_NUMBER/source`.
+
+The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing. The location of the configuration file needs to match the configuration location in the `web.xml` file (see the Deploy section above).
 
 Run the command with `-h` to get more information about the options, i.e.:
 ```
