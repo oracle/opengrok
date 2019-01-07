@@ -25,15 +25,32 @@ The data to be indexed should be stored in a directory called **source root**. E
 
 The concept of projects was introduced to effectively replace the need for multiple web applications with opengrok <code>.war</code> file (see below) and leave you with one indexer and one web application serving more source code repositories - projects.
 
+That said, OpenGrok can be run in project-less setup where all the input data is always searched at once.
+
 [[/images/setup-project.png]]
 
 The index data will be created under directory called **data root**.
 
 ## <u>Step.0</u> - Setting up the sources / input data
 
-Source base should be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under source root.
+Input data should be available locally for OpenGrok to work efficiently since indexing is pretty I/O intensive. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under source root.
+
+The source root directory needs to be created first.
 
 The indexer assumes the input data is stored in the UTF-8 encoding (ASCII works therefore too).
+
+For example, to add 2 sample code checkouts using the default source root on Unix system:
+```shell
+cd /var/opengrok/src
+
+# use one of the training modules at GitHub as an example small app.      
+git clone git@github.com:githubtraining/hellogitworld.git
+
+# use Git as an example large app
+git clone git@github.com:git/git.git
+```
+
+These 2 directories will be treated as projects if the indexer is run with projects enabled (the `-P` option), otherwise the data will be treated as a whole.
 
 ## <u>Step.1</u> - Install management tools (optional)
 
