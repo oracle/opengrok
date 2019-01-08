@@ -87,7 +87,7 @@ After application server unpacks the War file, it will search for the `WEB-INF/w
     <context-param>
         <description>Full path to the configuration file where OpenGrok can read its configuration</description>
         <param-name>CONFIGURATION</param-name>
-        <param-value>/opengrok/etc/configuration.xml</param-value>
+        <param-value>/var/opengrok/etc/configuration.xml</param-value>
     </context-param>
 ...
 ```
