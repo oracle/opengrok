@@ -86,8 +86,8 @@ public class StatisticsTest {
             Statistics stat = new Statistics();
             Assert.assertEquals(1, stat.getMinutes());
             stat.setTimeStart(start - tests[i]);
-
             Assert.assertEquals(stat.getTimeStart(), start - tests[i]);
+            stat.maybeRefresh();
             Assert.assertEquals((tests[i] + 60 * 1000) / (60 * 1000), stat.getMinutes());
         }
     }
