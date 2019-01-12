@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.apache.tools.ant.filters.StringInputStream;
-import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -876,7 +875,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testLoadEmptyStatistics() throws IOException, ParseException {
+    public void testLoadEmptyStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{}";
         try (InputStream in = new StringInputStream(json)) {
@@ -886,7 +885,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testLoadStatistics() throws IOException, ParseException {
+    public void testLoadStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{"
             + "\"requests_per_minute_max\":3,"
@@ -950,22 +949,12 @@ public class RuntimeEnvironmentTest {
         Assert.assertEquals(createMap(new Object[][]{{"*", 2235L}, {"xref", 48L}, {"root", 2235L}}), stats.getTimingMax());
     }
 
-    @Test(expected = ParseException.class)
-    public void testLoadInvalidStatistics() throws ParseException, IOException {
+    @Test(expected = IOException.class)
+    public void testLoadInvalidStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{ malformed json with missing bracket";
         try (InputStream in = new StringInputStream(json)) {
             loadStatistics(in);
-        }
-    }
-
-    @Test
-    public void testSaveEmptyStatistics() throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setStatistics(new Statistics());
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            saveStatistics(out);
-            Assert.assertEquals("{}", out.toString());
         }
     }
 
@@ -996,13 +985,13 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test(expected = IOException.class)
-    public void testLoadNullStatistics() throws IOException, ParseException {
+    public void testLoadNullStatistics() throws IOException {
         RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
         loadStatistics();
     }
 
     @Test(expected = IOException.class)
-    public void testLoadNullStatisticsFile() throws IOException, ParseException {
+    public void testLoadNullStatisticsFile() throws IOException {
         loadStatistics((File) null);
     }
 
