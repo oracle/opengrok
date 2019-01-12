@@ -265,24 +265,33 @@ public class StatisticsTest {
         });
     }
 
-    private Object getJsonField(String jsonString, String name) throws IOException {
+    private Long getJsonLongField(String jsonString, String name) throws IOException {
         JsonFactory jfactory = new JsonFactory();
         JsonParser jParser = jfactory.createParser(jsonString);
-        Object parsedName = null;
+        Long value = null;
 
         Assert.assertNotNull(jParser);
 
-        while (jParser.nextToken() != JsonToken.END_OBJECT) {
-            String fieldname = jParser.getCurrentName();
+        JsonToken token;
+        while ((token = jParser.nextToken()) != JsonToken.END_OBJECT) {
+            if (token == JsonToken.START_OBJECT) {
+                while (jParser.nextToken() != JsonToken.END_OBJECT) {
+                }
+            }
 
+            if (token != JsonToken.FIELD_NAME)
+                continue;
+
+            String fieldname = jParser.getCurrentName();
             if (name.equals(fieldname)) {
                 jParser.nextToken();
-                parsedName = jParser.getText();
+                value = jParser.getLongValue();
+                break;
             }
         }
         jParser.close();
 
-        return parsedName;
+        return value;
     }
 
     protected void checkToJson(Function<Statistics, String> callback) throws IOException {
@@ -295,15 +304,15 @@ public class StatisticsTest {
         String result = callback.apply(stats);
         Assert.assertNotNull(result);
 
-        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_MINUTES));
-        Assert.assertEquals(-325L, (long) getJsonField(result, Statistics.STATISTIC_MINUTES));
-        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS));
-        Assert.assertEquals(145L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS));
-        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
-        Assert.assertEquals(1000L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
-        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
-        Assert.assertEquals(107L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
-        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
-        Assert.assertEquals(106L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
+        Assert.assertNotNull(getJsonLongField(result, Statistics.STATISTIC_MINUTES));
+        Assert.assertEquals(-325L, (long) getJsonLongField(result, Statistics.STATISTIC_MINUTES));
+        Assert.assertNotNull(getJsonLongField(result, Statistics.STATISTIC_REQUESTS));
+        Assert.assertEquals(145L, (long) getJsonLongField(result, Statistics.STATISTIC_REQUESTS));
+        Assert.assertNotNull(getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
+        Assert.assertEquals(1000L, (long) getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
+        Assert.assertNotNull(getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
+        Assert.assertEquals(107L, (long) getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
+        Assert.assertNotNull(getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
+        Assert.assertEquals(106L, (long) getJsonLongField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
     }
 }
