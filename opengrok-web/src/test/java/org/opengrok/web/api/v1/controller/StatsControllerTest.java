@@ -63,7 +63,7 @@ public class StatsControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetClean() {
+    public void testGetClean() throws IOException {
         target("stats")
                 .request()
                 .delete();
@@ -72,7 +72,11 @@ public class StatsControllerTest extends JerseyTest {
                 .request()
                 .get(String.class);
 
-        Assert.assertEquals("{}", output);
+        Statistics stats = Statistics.fromJson(output);
+        assertEquals(0, stats.getRequests());
+        Assert.assertEquals(1, stats.getMinutes());
+        Assert.assertEquals(0, stats.getRequestCategories().size());
+        Assert.assertEquals(0, stats.getTiming().size());
     }
 
     @Test
