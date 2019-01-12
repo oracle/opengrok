@@ -242,7 +242,7 @@ public class StatisticsTest {
         Assert.assertEquals(10L, stat.getMinutes());
         Assert.assertEquals(100L, stat.getRequests());
         Assert.assertEquals(543L, stat.getRequestsPerMinute());
-        Assert.assertEquals(10.0, stat.getRequestsPerMinuteAvg(), 0.000001);
+        Assert.assertEquals(54312.0, stat.getRequestsPerMinuteAvg(), 0.000001);
         Assert.assertEquals(49L, stat.getRequestsPerMinuteMin());
         Assert.assertEquals(4753L, stat.getRequestsPerMinuteMax());
     }
