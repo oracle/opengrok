@@ -22,10 +22,8 @@
  */
 package org.opengrok.web.api.v1.controller;
 
-import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.Statistics;
-import org.opengrok.indexer.web.Util;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -55,7 +53,7 @@ public class StatsController {
 
     @PUT
     @Path("reload")
-    public void reload() throws IOException, ParseException {
+    public void reload() throws IOException {
         loadStatistics();
     }
 }

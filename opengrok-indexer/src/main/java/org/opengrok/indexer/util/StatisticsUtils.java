@@ -24,7 +24,6 @@
 package org.opengrok.indexer.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.Statistics;
 
@@ -81,9 +80,8 @@ public class StatisticsUtils {
      * Load statistics from JSON file specified in configuration.
      *
      * @throws IOException
-     * @throws ParseException
      */
-    public static void loadStatistics() throws IOException, ParseException {
+    public static void loadStatistics() throws IOException {
         String path = RuntimeEnvironment.getInstance().getStatisticsFilePath();
         if (path == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
@@ -96,9 +94,8 @@ public class StatisticsUtils {
      *
      * @param in the file with json
      * @throws IOException
-     * @throws ParseException
      */
-    public static void loadStatistics(File in) throws IOException, ParseException {
+    public static void loadStatistics(File in) throws IOException {
         if (in == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
@@ -112,9 +109,8 @@ public class StatisticsUtils {
      *
      * @param in the file with json
      * @throws IOException
-     * @throws ParseException
      */
-    public static void loadStatistics(InputStream in) throws IOException, ParseException {
+    public static void loadStatistics(InputStream in) throws IOException {
         try (Reader iReader = new InputStreamReader(in, "UTF-8")) {
             StringBuilder outputString = new StringBuilder();
             final char[] buf = new char[1024];
