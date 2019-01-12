@@ -78,7 +78,7 @@ public class StatisticsUtils {
     }
 
     /**
-     * Load statistics fromJson JSON file specified in configuration.
+     * Load statistics from JSON file specified in configuration.
      *
      * @throws IOException
      * @throws ParseException
@@ -92,7 +92,7 @@ public class StatisticsUtils {
     }
 
     /**
-     * Load statistics fromJson JSON file.
+     * Load statistics from JSON file.
      *
      * @param in the file with json
      * @throws IOException
@@ -108,7 +108,7 @@ public class StatisticsUtils {
     }
 
     /**
-     * Load statistics fromJson an input stream.
+     * Load statistics from an input stream.
      *
      * @param in the file with json
      * @throws IOException
