@@ -171,11 +171,9 @@ public class Statistics {
         timingMin.put(category, min);
         timingMax.put(category, max);
 
-        // TODO recompute for given category only
-        for (Map.Entry<String, Long> entry : timing.entrySet()) {
-            timingAvg.put(entry.getKey(), entry.getValue().doubleValue()
-                    / requestCategories.get(entry.getKey()));
-        }
+        // Recompute the average for given category.
+        timingAvg.put(category,
+                timing.get(category).doubleValue() / requestCategories.get(category));
     }
 
     public Map<String, Long> getRequestCategories() {
