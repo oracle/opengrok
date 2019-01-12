@@ -22,8 +22,11 @@
  */
 package org.opengrok.indexer.web;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.glassfish.jersey.server.JSONP;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -53,20 +56,35 @@ public class Statistics {
     protected static final String STATISTIC_DAY_HISTOGRAM = "day_histogram";
     protected static final String STATISTIC_MONTH_HISTOGRAM = "month_histogram";
 
+    @JsonProperty(STATISTIC_REQUEST_CATEGORIES)
     private Map<String, Long> requestCategories = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING)
     private Map<String, Long> timing = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_MIN)
     private Map<String, Long> timingMin = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_MAX)
     private Map<String, Long> timingMax = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_AVG)
     private Map<String, Double> timingAvg = new TreeMap<>();
+    @JsonProperty(STATISTIC_DAY_HISTOGRAM)
     private long[] dayHistogram = new long[24];
+    @JsonProperty(STATISTIC_MONTH_HISTOGRAM)
     private long[] monthHistogram = new long[31];
-    private long timeStart = System.currentTimeMillis();
+    @JsonProperty(STATISTIC_REQUESTS)
     private long requests = 0;
+    @JsonProperty(STATISTIC_MINUTES)
     private long minutes = 1;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE)
     private long requestsPerMinute = 0;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_MIN)
     private long requestsPerMinuteMin = Long.MAX_VALUE;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_MAX)
     private long requestsPerMinuteMax = Long.MIN_VALUE;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_AVG)
     private double requestsPerMinuteAvg = 0;
+
+    @JsonIgnore
+    private long timeStart = System.currentTimeMillis();
 
     /**
      * Adds a single request into all requests.
