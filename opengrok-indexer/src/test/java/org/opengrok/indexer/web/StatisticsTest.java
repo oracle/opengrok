@@ -22,14 +22,12 @@
  */
 package org.opengrok.indexer.web;
 
+import com.fasterxml.jackson.core.*;
+import org.junit.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.function.Function;
-import org.json.simple.JSONObject;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *
@@ -203,29 +201,42 @@ public class StatisticsTest {
      * Test of toJson method, of class Statistics.
      */
     @Test
-    public void testToJsonOnInstance() {
-        checkToJson(new Function<Statistics, JSONObject>() {
+    public void testToJsonOnInstance() throws IOException {
+        checkToJson(new Function<Statistics, String>() {
             @Override
-            public JSONObject apply(Statistics t) {
-                return t.toJson();
+            public String apply(Statistics t) {
+                try {
+                    return t.toJson();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
         });
     }
 
     /**
-     * Test of from method, of class Statistics.
+     * Test of fromJson method, of class Statistics.
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testFrom() {
-        JSONObject input = new JSONObject();
-        input.put(Statistics.STATISTIC_MINUTES, 10L);
-        input.put(Statistics.STATISTIC_REQUESTS, 100L);
-        input.put(Statistics.STATISTIC_REQUESTS_PER_MINUTE, 543L);
-        input.put(Statistics.STATISTIC_REQUESTS_PER_MINUTE_AVG, 54312.0);
-        input.put(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN, 49L);
-        input.put(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX, 4753L);
-        Statistics stat = Statistics.from(input);
+    public void testFrom() throws IOException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        JsonFactory jfactory = new JsonFactory();
+        JsonGenerator jGenerator = jfactory
+                .createGenerator(stream, JsonEncoding.UTF8);
+
+        jGenerator.writeStartObject();
+        jGenerator.writeNumberField(Statistics.STATISTIC_MINUTES, 10L);
+        jGenerator.writeNumberField(Statistics.STATISTIC_REQUESTS, 100L);
+        jGenerator.writeNumberField(Statistics.STATISTIC_REQUESTS_PER_MINUTE, 543L);
+        jGenerator.writeNumberField(Statistics.STATISTIC_REQUESTS_PER_MINUTE_AVG, 54312.0);
+        jGenerator.writeNumberField(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN, 49L);
+        jGenerator.writeNumberField(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX, 4753L);
+        jGenerator.writeEndObject();
+        jGenerator.close();
+        String jsonString = new String(stream.toByteArray(), "UTF-8");
+        Statistics stat = Statistics.fromJson(jsonString);
 
         Assert.assertNotNull(stat);
         Assert.assertEquals(10L, stat.getMinutes());
@@ -240,34 +251,59 @@ public class StatisticsTest {
      * Test of toJson method, of class Statistics.
      */
     @Test
-    public void testToJsonOnClass() {
-        checkToJson(new Function<Statistics, JSONObject>() {
+    public void testToJsonOnClass() throws IOException {
+        checkToJson(new Function<Statistics, String>() {
             @Override
-            public JSONObject apply(Statistics t) {
-                return Statistics.toJson(t);
+            public String apply(Statistics t) {
+                try {
+                    return Statistics.toJson(t);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
         });
     }
 
-    protected void checkToJson(Function<Statistics, JSONObject> callback) {
+    private Object getJsonField(String jsonString, String name) throws IOException {
+        JsonFactory jfactory = new JsonFactory();
+        JsonParser jParser = jfactory.createParser(jsonString);
+        Object parsedName = null;
+
+        Assert.assertNotNull(jParser);
+
+        while (jParser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldname = jParser.getCurrentName();
+
+            if (name.equals(fieldname)) {
+                jParser.nextToken();
+                parsedName = jParser.getText();
+            }
+        }
+        jParser.close();
+
+        return parsedName;
+    }
+
+    protected void checkToJson(Function<Statistics, String> callback) throws IOException {
         Statistics stats = new Statistics();
         stats.setRequests(145L);
         stats.setMinutes(-325L);
         stats.setRequestsPerMinute(1000L);
         stats.setRequestsPerMinuteMin(107L);
         stats.setRequestsPerMinuteMax(106L);
-        JSONObject result = callback.apply(stats);
-
+        String result = callback.apply(stats);
         Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(Statistics.STATISTIC_MINUTES));
-        Assert.assertEquals(-325L, (long) result.get(Statistics.STATISTIC_MINUTES));
-        Assert.assertNotNull(result.get(Statistics.STATISTIC_REQUESTS));
-        Assert.assertEquals(145L, (long) result.get(Statistics.STATISTIC_REQUESTS));
-        Assert.assertNotNull(result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE));
-        Assert.assertEquals(1000L, (long) result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE));
-        Assert.assertNotNull(result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
-        Assert.assertEquals(107L, (long) result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
-        Assert.assertNotNull(result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
-        Assert.assertEquals(106L, (long) result.get(Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
+
+        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_MINUTES));
+        Assert.assertEquals(-325L, (long) getJsonField(result, Statistics.STATISTIC_MINUTES));
+        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS));
+        Assert.assertEquals(145L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS));
+        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
+        Assert.assertEquals(1000L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE));
+        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
+        Assert.assertEquals(107L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MIN));
+        Assert.assertNotNull(getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
+        Assert.assertEquals(106L, (long) getJsonField(result, Statistics.STATISTIC_REQUESTS_PER_MINUTE_MAX));
     }
 }

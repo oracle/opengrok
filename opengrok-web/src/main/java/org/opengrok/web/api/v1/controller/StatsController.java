@@ -44,8 +44,8 @@ public class StatsController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String get() {
-        return Util.statisticToJson(env.getStatistics()).toJSONString();
+    public Statistics get() {
+        return env.getStatistics();
     }
 
     @DELETE
@@ -58,5 +58,4 @@ public class StatsController {
     public void reload() throws IOException, ParseException {
         loadStatistics();
     }
-
 }

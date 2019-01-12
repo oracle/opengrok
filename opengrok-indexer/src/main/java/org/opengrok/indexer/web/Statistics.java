@@ -22,13 +22,15 @@
  */
 package org.opengrok.indexer.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 /**
  * Framework for statistics gathering. So far used only by the webapp.
@@ -55,6 +57,7 @@ public class Statistics {
     private Map<String, Long> timing = new TreeMap<>();
     private Map<String, Long> timingMin = new TreeMap<>();
     private Map<String, Long> timingMax = new TreeMap<>();
+    private Map<String, Double> timingAvg = new TreeMap<>();
     private long[] dayHistogram = new long[24];
     private long[] monthHistogram = new long[31];
     private long timeStart = System.currentTimeMillis();
@@ -63,6 +66,7 @@ public class Statistics {
     private long requestsPerMinute = 0;
     private long requestsPerMinuteMin = Long.MAX_VALUE;
     private long requestsPerMinuteMax = Long.MIN_VALUE;
+    private double requestsPerMinuteAvg = 0;
 
     /**
      * Adds a single request into all requests.
@@ -72,6 +76,7 @@ public class Statistics {
 
         requestsPerMinute++;
         requests++;
+        requestsPerMinuteAvg = requests / (double) minutes;
 
         if (requestsPerMinute > requestsPerMinuteMax) {
             requestsPerMinuteMax = requestsPerMinute;
@@ -102,6 +107,7 @@ public class Statistics {
      * @param category category
      */
     synchronized public void addRequest(String category) {
+        maybeRefresh();
         Long val = requestCategories.get(category);
         if (val == null) {
             val = 0L;
@@ -146,6 +152,12 @@ public class Statistics {
         timing.put(category, val);
         timingMin.put(category, min);
         timingMax.put(category, max);
+
+        // TODO recompute for given category only
+        for (Map.Entry<String, Long> entry : timing.entrySet()) {
+            timingAvg.put(entry.getKey(), entry.getValue().doubleValue()
+                    / requestCategories.get(entry.getKey()));
+        }
     }
 
     public Map<String, Long> getRequestCategories() {
@@ -171,11 +183,6 @@ public class Statistics {
      * @return map of averages for each category
      */
     public Map<String, Double> getTimingAvg() {
-        Map<String, Double> timingAvg = new TreeMap<>();
-        for (Map.Entry<String, Long> entry : timing.entrySet()) {
-            timingAvg.put(entry.getKey(), entry.getValue().doubleValue()
-                    / requestCategories.get(entry.getKey()));
-        }
         return timingAvg;
     }
 
@@ -195,6 +202,10 @@ public class Statistics {
         this.timingMax = timing_max;
     }
 
+    synchronized public void setTimingAvg(Map<String, Double> timing_avg) {
+        this.timingAvg = timing_avg;
+    }
+
     public long getTimeStart() {
         return timeStart;
     }
@@ -212,7 +223,6 @@ public class Statistics {
     }
 
     public long getMinutes() {
-        maybeRefresh();
         return minutes;
     }
 
@@ -221,7 +231,6 @@ public class Statistics {
     }
 
     public long getRequestsPerMinute() {
-        maybeRefresh();
         return requestsPerMinute;
     }
 
@@ -252,8 +261,11 @@ public class Statistics {
     }
 
     public double getRequestsPerMinuteAvg() {
-        maybeRefresh();
-        return requests / (double) minutes;
+        return this.requestsPerMinuteAvg;
+    }
+
+    synchronized public void setRequestsPerMinuteAvg(double value) {
+        this.requestsPerMinuteAvg = value;
     }
 
     public long[] getDayHistogram() {
@@ -273,116 +285,41 @@ public class Statistics {
     }
 
     /**
-     * Convert this statistics object into JSONObject.
+     * Convert this statistics object into JSON
      *
-     * @return the json object
+     * @return the JSON object
      */
-    public JSONObject toJson() {
+    public String toJson() throws JsonProcessingException {
         return toJson(this);
     }
 
     /**
-     * Convert JSONObject object into statistics.
+     * Convert JSON object into statistics.
      *
-     * @param input object containing statistics
-     * @return the statistics object
+     * @param jsonString String with JSON
+     * @return the {@code Statistics} object
      */
     @SuppressWarnings("unchecked")
-    public static Statistics from(JSONObject input) {
-        Statistics stats = new Statistics();
-        Object o;
-        if ((o = input.get(STATISTIC_REQUEST_CATEGORIES)) != null) {
-            stats.setRequestCategories((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING)) != null) {
-            stats.setTiming((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING_MIN)) != null) {
-            stats.setTimingMin((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING_MAX)) != null) {
-            stats.setTimingMax((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS)) != null) {
-            stats.setRequests((long) o);
-        }
-        if ((o = input.get(STATISTIC_MINUTES)) != null) {
-            stats.setMinutes((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE)) != null) {
-            stats.setRequestsPerMinute((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE_MIN)) != null) {
-            stats.setRequestsPerMinuteMin((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE_MAX)) != null) {
-            stats.setRequestsPerMinuteMax((long) o);
-        }
-        if ((o = input.get(STATISTIC_DAY_HISTOGRAM)) != null) {
-            stats.setDayHistogram(convertJSONArrayToArray((JSONArray) o, stats.getDayHistogram()));
-        }
-        if ((o = input.get(STATISTIC_MONTH_HISTOGRAM)) != null) {
-            stats.setMonthHistogram(convertJSONArrayToArray((JSONArray) o, stats.getMonthHistogram()));
-        }
+    public static Statistics fromJson(String jsonString) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Statistics stats = mapper.readValue(jsonString, Statistics.class);
         stats.setTimeStart(System.currentTimeMillis());
+
         return stats;
     }
 
     /**
-     * Convert statistics object into JSONObject.
+     * Convert statistics object into JSON.
      *
      * @param stats the statistics object
-     * @return the json object or empty json object if there was no request
+     * @return String with JSON
      */
     @SuppressWarnings("unchecked")
-    public static JSONObject toJson(Statistics stats) {
-        JSONObject output = new JSONObject();
-        if (stats.getRequests() == 0) {
-            return output;
-        }
-        output.put(STATISTIC_REQUEST_CATEGORIES, new JSONObject(stats.getRequestCategories()));
-        output.put(STATISTIC_TIMING, new JSONObject(stats.getTiming()));
-        output.put(STATISTIC_TIMING_MIN, new JSONObject(stats.getTimingMin()));
-        output.put(STATISTIC_TIMING_MAX, new JSONObject(stats.getTimingMax()));
-        output.put(STATISTIC_TIMING_AVG, new JSONObject(stats.getTimingAvg()));
-        output.put(STATISTIC_MINUTES, stats.getMinutes());
-        output.put(STATISTIC_REQUESTS, stats.getRequests());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE, stats.getRequestsPerMinute());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_MIN, stats.getRequestsPerMinuteMin());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_MAX, stats.getRequestsPerMinuteMax());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_AVG, stats.getRequestsPerMinuteAvg());
-        output.put(STATISTIC_DAY_HISTOGRAM, convertArrayToJSONArray(stats.getDayHistogram()));
-        output.put(STATISTIC_MONTH_HISTOGRAM, convertArrayToJSONArray(stats.getMonthHistogram()));
-        return output;
-    }
+    public static String toJson(Statistics stats) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonStr = mapper.writeValueAsString(stats);
 
-    /**
-     * Converts an array into json array.
-     *
-     * @param array the input array
-     * @return the output json array
-     */
-    @SuppressWarnings("unchecked")
-    private static JSONArray convertArrayToJSONArray(long[] array) {
-        JSONArray ret = new JSONArray();
-        for (long o : array) {
-            ret.add(o);
-        }
-        return ret;
-    }
-
-    /**
-     * Converts an json array into an array.
-     *
-     * @param dest the input json array
-     * @param target the output array
-     * @return target
-     */
-    private static long[] convertJSONArrayToArray(JSONArray dest, long[] target) {
-        for (int i = 0; i < target.length && i < dest.size(); i++) {
-            target[i] = (long) dest.get(i);
-        }
-        return target;
+        return jsonStr;
     }
 
     @Override
@@ -400,6 +337,5 @@ public class Statistics {
                 + "\nrequestsPerMinuteAvg = " + getRequestsPerMinuteAvg()
                 + "\ndayHistogram = " + LongStream.of(getDayHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "))
                 + "\nmonthHistogram = " + LongStream.of(getMonthHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "));
-
     }
 }

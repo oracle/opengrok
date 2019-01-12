@@ -687,7 +687,7 @@ public class RuntimeEnvironmentTest {
         assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
 
         /**
-         * Fourth element is a stack slightly changed from the previous stack.
+         * Fourth element is a stack slightly changed fromJson the previous stack.
          * Only the setup for the particular plugin is changed.
          */
         assertTrue(pluginConfiguration.getStack().get(3) instanceof AuthorizationStack);
@@ -980,7 +980,7 @@ public class RuntimeEnvironmentTest {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             saveStatistics(out);
             Assert.assertNotEquals("{}", out.toString());
-            Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
+            Assert.assertEquals(env.getStatistics().toJson(), out.toString());
         }
     }
 
