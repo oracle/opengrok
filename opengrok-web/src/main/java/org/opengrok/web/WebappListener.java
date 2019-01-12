@@ -22,7 +22,6 @@
  */
 package org.opengrok.web;
 
-import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
