@@ -300,16 +300,16 @@ public class Statistics {
     }
 
     /**
-     * Convert this statistics object into JSON
+     * Convert this {@code Statistics} object into JSON
      *
-     * @return the JSON object
+     * @return the JSON string
      */
     public String toJson() throws JsonProcessingException {
         return toJson(this);
     }
 
     /**
-     * Convert JSON object into statistics.
+     * Convert JSON into {@code Statistics} object.
      *
      * @param jsonString String with JSON
      * @return the {@code Statistics} object
