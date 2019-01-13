@@ -87,10 +87,6 @@ Now, some knowledge about Java beans is necessary to add some tunables. This is 
    <string>/var/opengrok/src</string> <!-- java type and value -->
   </void>
 
-  <void property="verbose"> <!-- name of the property in configuration -->
-   <boolean>true</boolean> <!-- java type and value -->
-  </void>
-
  </object>
 </java>
 ```
