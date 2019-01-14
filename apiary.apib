@@ -366,11 +366,15 @@ with a colon. If the type cannot be determined "N/A" is returned.
 
 ### rebuilds suggester data for all projects [PUT]
 
+This kicks off suggester data rebuild in the background, i.e. the rebuild will very likely complete some time after the API call returned.
+
 + Response 204
 
 ## Suggester project data rebuild [/suggest/rebuild/{project}]
 
 ### rebuilds suggester data for given project [PUT]
+
+This kicks off suggester data rebuild in the background, i.e. the rebuild will very likely complete some time after the API call returned.
 
 + Parameters
   + project - project name
