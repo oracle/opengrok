@@ -207,8 +207,8 @@ public class StatisticsTest {
             public String apply(Statistics t) {
                 try {
                     return t.toJson();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (JsonProcessingException e) {
+                    Assert.fail(e.toString());
                 }
                 return null;
             }
@@ -258,7 +258,7 @@ public class StatisticsTest {
                 try {
                     return Statistics.toJson(t);
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    Assert.fail(e.toString());
                 }
                 return null;
             }
