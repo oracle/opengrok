@@ -159,9 +159,9 @@ public final class Results {
      * @param sh search helper which has all required fields set
      * @param start index of the first hit to print
      * @param end index of the last hit to print
-     * @throws HistoryException
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws HistoryException history exception
+     * @throws IOException I/O exception
+     * @throws ClassNotFoundException class not found
      */
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
             long end)

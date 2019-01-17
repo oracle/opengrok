@@ -268,6 +268,9 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 </executions>
                 <configuration>
                     <verbose>true</verbose>
+                    <sourceFileExcludes>
+                        <exclude>**/HistoryLineTokenizer.java</exclude>
+                    </sourceFileExcludes>
                 </configuration>
             </plugin>
             <plugin>

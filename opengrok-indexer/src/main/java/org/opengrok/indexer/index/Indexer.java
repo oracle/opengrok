@@ -926,8 +926,8 @@ public final class Indexer {
      * @param repositories list of repositories
      * @param zapCache list of projects to remove history cache for
      * @param listRepoPaths print repository paths to standard output
-     * @throws IndexerException
-     * @throws IOException
+     * @throws IndexerException indexer exception
+     * @throws IOException I/O exception
      */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
