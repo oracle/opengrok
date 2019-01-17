@@ -268,10 +268,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 </executions>
                 <configuration>
                     <verbose>true</verbose>
-                    <sourcepath>${basedir}/src/main/**/*.java</sourcepath>
-                    <sourceFileExcludes>
-                        <sourceFileExclude>**/generated-sources/**</sourceFileExclude>
-                    </sourceFileExcludes>
                 </configuration>
             </plugin>
             <plugin>
