@@ -122,6 +122,7 @@ public class LineHighlight {
 
     /**
      * Sets the left elide value.
+     * @param value integer value
      */
     public void setLelide(int value) {
         if (value < 0) {
@@ -140,6 +141,7 @@ public class LineHighlight {
 
     /**
      * Sets the right elide value.
+     * @param value integer value
      */
     public void setRelide(int value) {
         if (value < 0) {
@@ -153,10 +155,10 @@ public class LineHighlight {
      * {@link Util#htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)},
      * taking into account any positive {@link #getLelide()} or
      * {@link #getRelide()}.
-     * @param dest
-     * @param line
-     * @param start
-     * @param end
+     * @param dest appendable object
+     * @param line line value
+     * @param start start offset
+     * @param end end offset
      * @throws IOException
      */
     public void hsub(Appendable dest, String line, int start, int end)
@@ -195,9 +197,9 @@ public class LineHighlight {
      * Calls {@link #hsub(java.lang.Appendable, java.lang.String, int, int)}
      * with {@code dest}, {@code line}, {@code loff}, and {@code line}
      * {@link String#length()}.
-     * @param dest
-     * @param line
-     * @param loff
+     * @param dest appendable object
+     * @param line line value
+     * @param loff start offset
      * @throws IOException
      */
     public void hsub(Appendable dest, String line, int loff)

@@ -607,6 +607,7 @@ public class IndexDatabase {
 
     /**
      * Optimize the index database
+     * @throws IOException I/O exception
      */
     public void optimize() throws IOException {
         synchronized (lock) {

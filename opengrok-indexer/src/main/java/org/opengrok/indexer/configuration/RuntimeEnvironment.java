@@ -285,6 +285,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, Object value) throws IOException {
         try {
@@ -299,6 +300,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value string value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, String value) throws IOException {
         try {

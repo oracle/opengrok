@@ -62,6 +62,7 @@ public class PhraseHighlight {
      * Gets a value that has been translated from start offset w.r.t. document
      * start to a value w.r.t. line start -- or -1 if not beginning this
      * line.
+     * @return offset
      */
     public int getLineStart() {
         return lineStart;
@@ -71,6 +72,7 @@ public class PhraseHighlight {
      * Gets a value that has been translated from start offset w.r.t. document
      * start to a value w.r.t. line start -- or {@link Integer#MAX_VALUE} if
      * not ending this line.
+     * @return offset
      */
     public int getLineEnd() {
         return lineEnd;
