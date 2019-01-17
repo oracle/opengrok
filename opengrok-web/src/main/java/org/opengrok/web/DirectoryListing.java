@@ -133,6 +133,8 @@ public class DirectoryListing {
      * @param files list of files
      * @return see
      * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
+     * @throws HistoryException history exception
+     * @throws IOException I/O exception
      */
     public List<String> listTo(String contextPath, File dir, Writer out,
         String path, List<String> files)

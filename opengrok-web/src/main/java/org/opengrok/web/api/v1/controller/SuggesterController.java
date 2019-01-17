@@ -272,6 +272,7 @@ public final class SuggesterController {
      * @param field field for which to return the data
      * @param page which page of data to retrieve
      * @param pageSize number of results to return
+     * @param all return all pages
      * @return list of terms with their popularity
      */
     @GET
