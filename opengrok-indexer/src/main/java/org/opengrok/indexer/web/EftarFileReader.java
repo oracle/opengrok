@@ -180,7 +180,7 @@ public class EftarFileReader implements Closeable {
      * Get description for path
      * @param path path relative to source root
      * @return path description string
-     * @throws IOException
+     * @throws IOException I/O
      */
     public String get(String path) throws IOException {
         StringTokenizer toks = new StringTokenizer(path, "/");

@@ -165,7 +165,7 @@ public final class Util {
      * underscore.
      * @param str a defined instance
      * @param dest a defined target
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     public static void qurlencode(String str, Appendable dest)
             throws IOException {
@@ -670,7 +670,7 @@ public final class Util {
      *
      * @param s input text
      * @param dest appendable destination for appending the encoded characters
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public static void encode(String s, Appendable dest) throws IOException {
         for (int i = 0; i < s.length(); i++) {
@@ -697,8 +697,8 @@ public final class Util {
      *
      * @param urlStr string URL
      * @return the encoded URL
-     * @throws URISyntaxException
-     * @throws MalformedURLException
+     * @throws URISyntaxException URI syntax
+     * @throws MalformedURLException URL malformed
      */
     public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
         URL url = new URL(urlStr);
@@ -944,7 +944,7 @@ public final class Util {
      * {@code str}.
      * @param str a defined instance
      * @param dest a defined target
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void URIEncode(String str, Appendable dest)
             throws IOException {
@@ -1742,8 +1742,8 @@ public final class Util {
      * @param attrs map of attributes for the html element
      * @return string containing the result
      *
-     * @throws URISyntaxException
-     * @throws MalformedURLException
+     * @throws URISyntaxException URI syntax
+     * @throws MalformedURLException malformed URL
      */
     public static String buildLink(String name, Map<String, String> attrs)
             throws URISyntaxException, MalformedURLException {
