@@ -236,7 +236,7 @@ public final class RuntimeEnvironment {
      * Get value of configuration field
      * @param fieldName name of the field
      * @return object value
-     * @throws IOException
+     * @throws IOException I/O
      */
     public Object getConfigurationValueException(String fieldName) throws IOException {
         try {
@@ -285,6 +285,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, Object value) throws IOException {
         try {
@@ -299,6 +300,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value string value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, String value) throws IOException {
         try {
@@ -1009,7 +1011,7 @@ public final class RuntimeEnvironment {
      * Sets the bug regex for the history listing
      *
      * @param bugPattern the regex to search history comments
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void setBugPattern(String bugPattern) throws IOException {
         setConfigurationValueException("bugPattern", bugPattern);
@@ -1046,7 +1048,7 @@ public final class RuntimeEnvironment {
      * Sets the review(ARC) regex for the history listing
      *
      * @param reviewPattern the regex to search history comments
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void setReviewPattern(String reviewPattern) throws IOException {
         setConfigurationValueException("reviewPattern", reviewPattern);
@@ -1339,7 +1341,7 @@ public final class RuntimeEnvironment {
      * Read configuration from a file and put it into effect.
      * @param file the file to read
      * @param interactive true if run in interactive mode
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void readConfiguration(File file, boolean interactive) throws IOException {
         setConfiguration(Configuration.read(file), null, interactive);

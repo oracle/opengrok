@@ -41,7 +41,7 @@ public class StatisticsUtils {
     /**
      * Dump statistics in JSON format into the file specified in configuration.
      *
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics() throws IOException {
         String path = RuntimeEnvironment.getInstance().getStatisticsFilePath();
@@ -55,7 +55,7 @@ public class StatisticsUtils {
      * Dump statistics in JSON format into a file.
      *
      * @param out the output file
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics(File out) throws IOException {
         if (out == null) {
@@ -70,7 +70,7 @@ public class StatisticsUtils {
      * Dump statistics in JSON format into an output stream.
      *
      * @param out the output stream
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics(OutputStream out) throws IOException {
         out.write(RuntimeEnvironment.getInstance().getStatistics().toJson().getBytes());
@@ -79,7 +79,7 @@ public class StatisticsUtils {
     /**
      * Load statistics from JSON file specified in configuration.
      *
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void loadStatistics() throws IOException {
         String path = RuntimeEnvironment.getInstance().getStatisticsFilePath();
@@ -93,7 +93,7 @@ public class StatisticsUtils {
      * Load statistics from JSON file.
      *
      * @param in the file with json
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void loadStatistics(File in) throws IOException {
         if (in == null) {
@@ -108,7 +108,7 @@ public class StatisticsUtils {
      * Load statistics from an input stream.
      *
      * @param in the file with json
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void loadStatistics(InputStream in) throws IOException {
         try (Reader iReader = new InputStreamReader(in, "UTF-8")) {

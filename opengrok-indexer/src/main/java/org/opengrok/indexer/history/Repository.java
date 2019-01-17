@@ -385,6 +385,7 @@ public abstract class Repository extends RepositoryInfo {
      * Check if this it the right repository type for the given file.
      *
      * @param file File to check if this is a repository for.
+     * @param interactive is this run from interactive mode
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file, boolean interactive);
@@ -401,7 +402,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Determine parent of this repository.
      * @return parent
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public final String determineParent() throws IOException {
         return determineParent(false);
@@ -415,7 +416,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Determine branch of this repository.
      * @return branch
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public final String determineBranch() throws IOException {
         return determineBranch(false);

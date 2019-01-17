@@ -309,7 +309,7 @@ public final class HistoryGuru {
 
     /**
      * Does the history cache contain entry for this directory ?
-     * @param file
+     * @param file file object
      * @return true if there is cache, false otherwise
      */
     public boolean hasCacheForFile(File file) {
@@ -878,6 +878,7 @@ public final class HistoryGuru {
      * Set list of known repositories which match the list of directories.
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
+     * @param interactive interactive mode flag
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, boolean interactive) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
@@ -910,6 +911,7 @@ public final class HistoryGuru {
      *
      * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
+     * @param interactive interactive mode flag
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, boolean interactive) {
         if (repos == null || repos.isEmpty()) {

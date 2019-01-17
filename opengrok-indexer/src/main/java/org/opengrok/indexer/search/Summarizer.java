@@ -125,7 +125,7 @@ public class Summarizer {
      *
      * @param text input text
      * @return summary of hits
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public Summary getSummary(String text) throws IOException {
         if (text == null) {

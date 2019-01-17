@@ -44,6 +44,7 @@ interface PerlLexer extends JFlexJointLexer {
      * Indicates that a premature end of quoting occurred. Everything up to the
      * causal character has been written, and anything following will be
      * indicated via {@link yypushback}.
+     * @throws IOException I/O exception
      */
     void abortQuote() throws IOException;
 }

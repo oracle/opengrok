@@ -81,7 +81,7 @@ public final class IndexAnalysisSettings implements Serializable {
      * Sets the project name to be used to distinguish different instances of
      * {@link IndexAnalysisSettings} that might be returned by a Lucene
      * {@code MultiReader} search across projects.
-     * @param value
+     * @param value project name
      */
     public void setProjectName(String value) {
         this.projectName = value;
@@ -105,6 +105,7 @@ public final class IndexAnalysisSettings implements Serializable {
 
     /**
      * Gets the version number for the specified file type name if it exists
+     * @param fileTypeName name of the file type
      * @return a defined value or {@code null} if unknown
      */
     public Long getAnalyzerVersion(String fileTypeName) {

@@ -1572,6 +1572,7 @@ public final class PageConfig {
     /**
      * Get basename of the path or "/" if the path is empty.
      * This is used for setting title of various pages.
+     * @param path path
      * @return short version of the path
      */
     public String getShortPath(String path) {
@@ -1697,15 +1698,17 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
+     * </p>
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
      * <li>last timestamp for index</li>
      * <li>OpenGrok current deployed version</li>
      * </ul>
-     * <p>
+     *
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
+     * </p>
      *
      * @param request the http request containing the headers
      * @param response the http response for setting the headers

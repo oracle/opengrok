@@ -392,7 +392,7 @@ public class Ctags implements Resettable {
      *
      * @param bufferTags tags file output
      * @return definitions parsed from buffer
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException interrupted
      */
     public Definitions testCtagsParser(String bufferTags)
             throws InterruptedException {

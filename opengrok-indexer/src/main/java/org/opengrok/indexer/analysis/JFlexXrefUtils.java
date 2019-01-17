@@ -183,7 +183,7 @@ public class JFlexXrefUtils {
      * {@link Definitions#getTags(int)} indicates that a function or method
      * is defined to starting at the {@link JFlexStackingLexer#getLineNumber()}
      * of {@code lexer}.
-     * @param scopesEnabled
+     * @param scopesEnabled are scopes enabled ?
      * @param existingScope possibly a defined instance or null
      * @param lexer a defined, associated lexer
      * @param defs possibly a defined instance or null

@@ -268,10 +268,14 @@ public class Context {
      *
      * @param in File to be matched
      * @param out to write the context
+     * @param urlPrefix URL prefix
      * @param morePrefix to link to more... page
      * @param path path of the file
      * @param tags format to highlight defs.
      * @param limit should the number of matching lines be limited?
+     * @param isDefSearch is definition search
+     * @param hits list of hits
+     * @param scopes scopes object
      * @return Did it get any matching context?
      */
     public boolean getContext(Reader in, Writer out, String urlPrefix,

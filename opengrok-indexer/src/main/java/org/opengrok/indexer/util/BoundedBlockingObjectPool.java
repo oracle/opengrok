@@ -101,9 +101,8 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         }
     }
 
-    /**
+    /*
      * Creates a new instance, and returns that instead to the pool.
-     * @param t 
      */
     @Override
     protected void handleInvalidReturn(T t) {

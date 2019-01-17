@@ -121,6 +121,7 @@ public class PerforceRepository extends Repository {
      * Check if a given file is in the depot
      *
      * @param file The file to test
+     * @param interactive interactive mode flag
      * @return true if the given file is in the depot, false otherwise
      */
     public static boolean isInP4Depot(File file, boolean interactive) {

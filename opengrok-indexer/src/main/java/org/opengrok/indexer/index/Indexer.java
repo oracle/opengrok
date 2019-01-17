@@ -921,12 +921,13 @@ public final class Indexer {
      * @param defaultProjects default projects
      * @param listFiles list files and return
      * @param createDict if true, create dictionary
+     * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
      * @param repositories list of repositories
      * @param zapCache list of projects to remove history cache for
      * @param listRepoPaths print repository paths to standard output
-     * @throws IndexerException
-     * @throws IOException
+     * @throws IndexerException indexer exception
+     * @throws IOException I/O exception
      */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
