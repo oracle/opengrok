@@ -285,6 +285,8 @@ public class SearchEngine {
      * Call to search() must be eventually followed by call to destroy()
      * so that IndexSearcher objects are properly freed.
      *
+     * @param req request
+     * @param projectNames names of the projects
      * @return The number of hits
      * @see ProjectHelper#getAllProjects()
      */
@@ -317,6 +319,7 @@ public class SearchEngine {
      * Call to search() must be eventually followed by call to destroy()
      * so that IndexSearcher objects are properly freed.
      *
+     * @param req request
      * @return The number of hits
      * @see ProjectHelper#getAllProjects()
      */
@@ -425,6 +428,8 @@ public class SearchEngine {
     /**
      * Gets the document of the specified {@code docId} from
      * {@code search(...)} if it was called.
+     *
+     * @param docId document ID
      * @return a defined instance if a query succeeded
      * @throws java.io.IOException if an error occurs obtaining the Lucene
      * document by ID

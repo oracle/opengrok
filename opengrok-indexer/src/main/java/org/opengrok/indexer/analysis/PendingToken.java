@@ -44,9 +44,9 @@ public class PendingToken {
     /**
      * Initializes an instance with immutable fields for the specified
      * arguments.
-     * @param str
-     * @param start
-     * @param end
+     * @param str string value
+     * @param start start offset
+     * @param end end offset
      */
     public PendingToken(String str, int start, int end) {
         this.str = str;
@@ -56,7 +56,7 @@ public class PendingToken {
 
     /**
      * Compares this instance's immutable fields to the other.
-     * @param o
+     * @param o object
      * @return {@code true} if the objects are equal
      */
     @Override
