@@ -47,7 +47,6 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import org.json.simple.JSONArray;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.analysis.Scopes;
@@ -60,6 +59,8 @@ import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.Util;
+
+import org.opengrok.indexer.web.messages.MessagesUtils;
 
 import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
@@ -191,9 +192,10 @@ public final class Results {
                 out.write(sh.desc.get(parent));
                 out.write("</i>");
             }
-            JSONArray messages;
-            if ((p = Project.getProject(parent)) != null
-                    && (messages = Util.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG)).size() > 0) {
+
+            p = Project.getProject(parent);
+            String messages = MessagesUtils.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG);
+            if (p != null && !messages.isEmpty()) {
                 out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");

@@ -32,6 +32,7 @@ org.opengrok.indexer.web.SortOrder,
 org.opengrok.indexer.web.Suggestion"
 %>
 <%@ page import="org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory" %>
+<%@ page import="java.util.List" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);

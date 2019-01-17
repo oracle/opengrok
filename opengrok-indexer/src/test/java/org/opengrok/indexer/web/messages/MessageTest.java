@@ -24,8 +24,14 @@ package org.opengrok.indexer.web.messages;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessageTest {
 
@@ -59,4 +65,11 @@ public class MessageTest {
         new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1));
     }
 
+    @Test
+    public void messageToJSON() throws IOException {
+        Message m = new Message("test", Collections.singleton("test"), "foo", Duration.ofMinutes(1));
+        String jsonString = m.toJSON();
+        assertEquals(new HashSet<>(Arrays.asList("cssClass", "duration", "text", "tags")),
+                getTopLevelJSONFields(jsonString));
+    }
 }

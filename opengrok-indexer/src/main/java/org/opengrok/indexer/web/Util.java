@@ -41,12 +41,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -54,7 +50,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -63,16 +58,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletRequest;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.opengrok.indexer.configuration.Group;
-import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
 
@@ -1262,203 +1252,6 @@ public final class Util {
         while (xform.yylex()) {
             // Nothing else to do.
         }
-    }
-
-    /**
-     * Print list of messages into output
-     *
-     * @param out output
-     * @param set set of messages
-     */
-    public static void printMessages(Writer out, SortedSet<AcceptedMessage> set) {
-        printMessages(out, set, false);
-    }
-
-    /**
-     * Print set of messages into output
-     *
-     * @param out output
-     * @param set set of messages
-     * @param limited if the container should be limited
-     */
-    public static void printMessages(Writer out, SortedSet<AcceptedMessage> set, boolean limited) {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-        if (!set.isEmpty()) {
-            try {
-                out.write("<ul class=\"message-group");
-                if (limited) {
-                    out.write(" limited");
-                }
-                out.write("\">\n");
-                for (AcceptedMessage m : set) {
-                    out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getMessage().getCssClass()));
-                    out.write("\" title=\"Expires on ");
-                    out.write(Util.encode(df.format(Date.from(m.getExpirationTime()))));
-                    out.write("\">");
-                    out.write(Util.encode(df.format(Date.from(m.getAcceptedTime()))));
-                    out.write(": ");
-                    out.write(m.getMessage().getText());
-                    out.write("</li>");
-                }
-                out.write("</ul>");
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                        "An error occurred for a group of messages", ex);
-            }
-        }
-    }
-
-    /**
-     * Print set of messages into json array
-     *
-     * @param set set of messages
-     * @return json array containing the set of messages
-     */
-    @SuppressWarnings("unchecked")
-    public static JSONArray messagesToJson(SortedSet<AcceptedMessage> set) {
-        JSONArray array = new JSONArray();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-        for (AcceptedMessage m : set) {
-            JSONObject message = new JSONObject();
-            message.put("class", Util.encode(m.getMessage().getCssClass()));
-            message.put("expiration", Util.encode(df.format(Date.from(m.getExpirationTime()))));
-            message.put("created", Util.encode(df.format(Date.from(m.getAcceptedTime()))));
-            message.put("text", Util.encode(m.getMessage().getText()));
-            JSONArray tags = new JSONArray();
-            for (String t : m.getMessage().getTags()) {
-                tags.add(Util.encode(t));
-            }
-            message.put("tags", tags);
-            array.add(message);
-        }
-        return array;
-    }
-
-    /**
-     * Print set of messages into json object for given tag.
-     *
-     * @param tag return messages in json format for the given tag
-     * @return json object with 'tag' and 'messages' attribute or null
-     */
-    @SuppressWarnings("unchecked")
-    public static JSONObject messagesToJsonObject(String tag) {
-        SortedSet<AcceptedMessage> messages = RuntimeEnvironment.getInstance().getMessages(tag);
-        if (messages.isEmpty()) {
-            return null;
-        }
-        JSONObject toRet = new JSONObject();
-        toRet.put("tag", tag);
-        toRet.put("messages", messagesToJson(messages));
-        return toRet;
-    }
-
-    /**
-     * Print messages for given tags into json array
-     *
-     * @param array the array where the result should be stored
-     * @param tags list of tags
-     * @return json array of the messages (the same as the parameter)
-     * @see #messagesToJsonObject(String)
-     */
-    @SuppressWarnings("unchecked")
-    public static JSONArray messagesToJson(JSONArray array, String... tags) {
-        array = array == null ? new JSONArray() : array;
-        for (String tag : tags) {
-            JSONObject messages = messagesToJsonObject(tag);
-            if (messages == null || messages.isEmpty()) {
-                continue;
-            }
-            array.add(messages);
-        }
-        return array;
-    }
-
-    /**
-     * Print messages for given tags into json array
-     *
-     * @param tags list of tags
-     * @return json array of the messages
-     * @see #messagesToJson(JSONArray, String...)
-     * @see #messagesToJsonObject(String)
-     */
-    public static JSONArray messagesToJson(String... tags) {
-        return messagesToJson((JSONArray) null, tags);
-    }
-
-    /**
-     * Print messages for given tags into json array
-     *
-     * @param tags list of tags
-     * @return json array of the messages
-     * @see #messagesToJson(String...)
-     * @see #messagesToJsonObject(String)
-     */
-    public static JSONArray messagesToJson(List<String> tags) {
-        String[] array = new String[tags.size()];
-        return messagesToJson(tags.toArray(array));
-    }
-
-    /**
-     * Print messages for given project into json array. These messages are
-     * tagged by project description or tagged by any of the project's group
-     * name.
-     *
-     * @param project the project
-     * @param additionalTags additional list of tags
-     * @return the json array
-     * @see #messagesToJson(String...)
-     */
-    public static JSONArray messagesToJson(Project project, String... additionalTags) {
-        if (project == null) {
-            return new JSONArray();
-        }
-        List<String> tags = new ArrayList<>();
-        tags.addAll(Arrays.asList(additionalTags));
-        tags.add(project.getName());
-        project.getGroups().stream().forEach((Group t) -> {
-            tags.add(t.getName());
-        });
-        return messagesToJson(tags);
-    }
-
-    /**
-     * Print messages for given project into json array. These messages are
-     * tagged by project description or tagged by any of the project's group
-     * name
-     *
-     * @param project the project
-     * @return the json array
-     * @see #messagesToJson(Project, String...)
-     */
-    public static JSONArray messagesToJson(Project project) {
-        return messagesToJson(project, new String[0]);
-    }
-
-    /**
-     * Print messages for given group into json array.
-     *
-     * @param group the group
-     * @param additionalTags additional list of tags
-     * @return the json array
-     * @see #messagesToJson(java.util.List)
-     */
-    public static JSONArray messagesToJson(Group group, String... additionalTags) {
-        List<String> tags = new ArrayList<>();
-        tags.add(group.getName());
-        tags.addAll(Arrays.asList(additionalTags));
-        return messagesToJson(tags);
-    }
-
-    /**
-     * Print messages for given group into json array.
-     *
-     * @param group the group
-     * @return the json array
-     * @see #messagesToJson(Group, String...)
-     */
-    public static JSONArray messagesToJson(Group group) {
-        return messagesToJson(group, new String[0]);
     }
 
     /**

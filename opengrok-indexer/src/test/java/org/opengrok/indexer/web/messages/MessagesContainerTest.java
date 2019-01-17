@@ -26,16 +26,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
 
@@ -144,4 +148,18 @@ public class MessagesContainerTest {
         container.getMessages(null);
     }
 
+    /**
+     * tests serialization of MessagesContainer.AcceptedMessage
+     */
+    @Test
+    public void testJSON() throws IOException {
+        Message m = new Message("testJSON", Collections.singleton("testJSON"), "info", Duration.ofMinutes(10));
+
+        container.addMessage(m);
+
+        MessagesContainer.AcceptedMessage am = container.getMessages("testJSON").first();
+        String jsonString = am.toJSON();
+        assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "cssClass", "text")),
+                getTopLevelJSONFields(jsonString));
+    }
 }
