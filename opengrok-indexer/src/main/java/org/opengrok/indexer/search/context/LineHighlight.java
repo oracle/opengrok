@@ -159,7 +159,7 @@ public class LineHighlight {
      * @param line line value
      * @param start start offset
      * @param end end offset
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void hsub(Appendable dest, String line, int start, int end)
             throws IOException {
@@ -200,7 +200,7 @@ public class LineHighlight {
      * @param dest appendable object
      * @param line line value
      * @param loff start offset
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void hsub(Appendable dest, String line, int loff)
             throws IOException {

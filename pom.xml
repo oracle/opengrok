@@ -269,6 +269,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <verbose>true</verbose>
                     <sourceFileExcludes>
+                        <!-- workarounds for https://github.com/jflex-de/jflex/issues/542 -->
                         <exclude>**/HistoryLineTokenizer.java</exclude>
                         <exclude>**/PlainLineTokenizer.java</exclude>
                         <exclude>**/XrefSourceTransformer.java</exclude>
