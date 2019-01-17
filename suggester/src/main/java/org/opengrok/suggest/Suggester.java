@@ -471,6 +471,13 @@ public final class Suggester implements Closeable {
         } else {
             data = projectData.get(project);
         }
+
+        if (data == null) {
+            logger.log(Level.WARNING, "Cannot update search count because of missing suggester data{}",
+                    projectsEnabled ? " for project " + project : "");
+            return;
+        }
+
         data.incrementSearchCount(term, value);
     }
 
@@ -490,7 +497,7 @@ public final class Suggester implements Closeable {
     ) {
         SuggesterProjectData data = projectData.get(project);
         if (data == null) {
-            logger.log(Level.FINE, "Cannot retrieve search counts because data for project {0} were not found",
+            logger.log(Level.FINE, "Cannot retrieve search counts because suggester data for project {0} was not found",
                     project);
             return Collections.emptyList();
         }
