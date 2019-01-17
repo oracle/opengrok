@@ -303,6 +303,7 @@ public class Statistics {
      * Convert this {@code Statistics} object into JSON
      *
      * @return the JSON string
+     * @throws JsonProcessingException JSON processing exception
      */
     public String toJson() throws JsonProcessingException {
         return toJson(this);
@@ -313,6 +314,7 @@ public class Statistics {
      *
      * @param jsonString String with JSON
      * @return the {@code Statistics} object
+     * @throws IOException I/O exception
      */
     @SuppressWarnings("unchecked")
     public static Statistics fromJson(String jsonString) throws IOException {
@@ -328,6 +330,7 @@ public class Statistics {
      *
      * @param stats the statistics object
      * @return String with JSON
+     * @throws JsonProcessingException JSON processing exception
      */
     @SuppressWarnings("unchecked")
     public static String toJson(Statistics stats) throws JsonProcessingException {
