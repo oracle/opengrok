@@ -70,6 +70,11 @@ public class WildCardMatcher extends LineMatcher {
     /**
      * Determines if a word matches a wildcard pattern. <small>Work released by
      * Granta Design Ltd after originally being done on company time.</small>
+     * @param pattern pattern
+     * @param patternIdx index
+     * @param string word
+     * @param stringIdx index
+     * @return true if word matches the pattern
      */
     public static boolean wildcardEquals(String pattern, int patternIdx,
             String string, int stringIdx) {
