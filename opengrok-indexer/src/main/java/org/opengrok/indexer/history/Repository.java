@@ -385,6 +385,7 @@ public abstract class Repository extends RepositoryInfo {
      * Check if this it the right repository type for the given file.
      *
      * @param file File to check if this is a repository for.
+     * @param interactive is this run from interactive mode
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file, boolean interactive);
