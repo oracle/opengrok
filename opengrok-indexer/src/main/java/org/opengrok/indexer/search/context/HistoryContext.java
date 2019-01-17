@@ -208,6 +208,7 @@ public class HistoryContext {
      * @param nrev old revision
      * @param rev current revision
      * line? If {@code true}, replace newline with space.
+     * @throws IOException IO exception
      */
     protected static void writeMatch(Appendable out, String line,
                             int start, int end, boolean flatten, String path,

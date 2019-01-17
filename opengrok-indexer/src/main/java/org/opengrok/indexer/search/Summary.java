@@ -31,43 +31,43 @@ public class Summary {
     public static class Fragment {
         private final String text;
 
-        /** Constructs a fragment for the given text. */
+        /* Constructs a fragment for the given text. */
         public Fragment(String text) { this.text = text; }
 
-        /** Returns the text of this fragment. */
+        /* Returns the text of this fragment. */
         public String getText() { return text; }
 
-        /** Returns true iff this fragment is to be highlighted. */
+        /* Returns true iff this fragment is to be highlighted. */
         public boolean isHighlight() { return false; }
 
-        /** Returns true iff this fragment is an ellipsis. */
+        /* Returns true iff this fragment is an ellipsis. */
         public boolean isEllipsis() { return false; }
 
-        /** Returns an HTML representation of this fragment. */
+        /* Returns an HTML representation of this fragment. */
         public String toString() { return htmlize(text); }
     }
 
     /** A highlighted fragment of text within a summary. */
     public static class Highlight extends Fragment {
-        /** Constructs a highlighted fragment for the given text. */
+        /* Constructs a highlighted fragment for the given text. */
         public Highlight(String text) { super(text); }
 
-        /** Returns true. */
+        /* Returns true. */
         public boolean isHighlight() { return true; }
 
-        /** Returns an HTML representation of this fragment. */
+        /* Returns an HTML representation of this fragment. */
         public String toString() { return "<b>" + super.toString() + "</b>"; }
     }
 
     /** An ellipsis fragment within a summary. */
     public static class Ellipsis extends Fragment {
-        /** Constructs an ellipsis fragment for the given text. */
+        /* Constructs an ellipsis fragment for the given text. */
         public Ellipsis() { super(" ... "); }
 
-        /** Returns true. */
+        /* Returns true. */
         public boolean isEllipsis() { return true; }
 
-        /** Returns an HTML representation of this fragment. */
+        /* Returns an HTML representation of this fragment. */
         public String toString() { return "<b> ... </b>"; }
     }
 
@@ -78,12 +78,18 @@ public class Summary {
     /* Adds a fragment to a summary.*/
     public void add(Fragment fragment) { fragments.add(fragment); }
 
-    /** Returns an array of all of this summary's fragments.*/
+    /**
+     * Returns an array of all of this summary's fragments.
+     * @return fragment array
+     */
     public Fragment[] getFragments() {
         return fragments.toArray(FRAGMENT_PROTO);
     }
 
-    /** Returns an HTML representation of this fragment. */
+    /**
+     * Returns an HTML representation of this fragment.
+     * @return string representation
+     */
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < fragments.size(); i++) {
