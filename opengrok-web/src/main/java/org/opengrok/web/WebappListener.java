@@ -22,7 +22,6 @@
  */
 package org.opengrok.web;
 
-import org.json.simple.parser.ParseException;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
@@ -89,8 +88,6 @@ public final class WebappListener
             loadStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        } catch (ParseException ex) {
-            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
 
         String pluginDirectory = env.getPluginDirectory();
@@ -104,8 +101,6 @@ public final class WebappListener
             loadStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        } catch (ParseException ex) {
-            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
     }
 

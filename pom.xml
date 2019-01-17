@@ -66,6 +66,8 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>2.27</jersey.version>
+        <!-- Jackson version needs to match the version of Jackson Jersey depends on otherwise weird things will happen. -->
+        <jackson.version>2.8.10</jackson.version>
     </properties>
 
     <dependencyManagement>
