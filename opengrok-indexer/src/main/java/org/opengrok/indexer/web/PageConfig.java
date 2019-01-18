@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -597,7 +597,7 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
+            queryBuilder = new QueryBuilder().setFreetext(req.getParameter(QueryBuilder.FULL))
                     .setDefs(req.getParameter(QueryBuilder.DEFS))
                     .setRefs(req.getParameter(QueryBuilder.REFS))
                     .setPath(req.getParameter(QueryBuilder.PATH))
@@ -1600,10 +1600,10 @@ public final class PageConfig {
      * @return string used for setting page title of search results page
      */
     public String getSearchTitle() {
-        String title = new String();
+        String title = "";
 
-        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
-            title += req.getParameter("q") + " (full)";
+        if (req.getParameter(QueryBuilder.FULL) != null && !req.getParameter(QueryBuilder.FULL).isEmpty()) {
+            title += req.getParameter(QueryBuilder.FULL) + " (full)";
         }
         if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
             title = addTitleDelimiter(title);

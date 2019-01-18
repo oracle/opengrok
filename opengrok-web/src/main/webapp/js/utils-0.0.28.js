@@ -803,7 +803,7 @@
             return $.intelliWindow = $window.create($.extend({
                 title: 'Intelligence window',
                 selector: 'a.intelliWindow-symbol',
-                google_url: 'https://www.google.com/search?q=',
+                google_url: 'https://www.google.com/search?full=',
                 project: undefined,
                 init: function ($window) {
                     var $highlight, $unhighlight, $unhighlightAll, $prev, $next
@@ -945,7 +945,7 @@
 
                     this.$search_defs.attr('href', this.getSearchLink('defs'));
                     this.$search_refs.attr('href', this.getSearchLink('refs'));
-                    this.$search_full.attr('href', this.getSearchLink('q'));
+                    this.$search_full.attr('href', this.getSearchLink('full'));
                     this.$search_files.attr('href', this.getSearchLink('path'));
                     this.$search_google.attr('href', this.options.google_url + this.symbol)
                 },
@@ -1745,7 +1745,7 @@ function initAutocomplete(config, minisearch) {
     if (minisearch) {
         initMinisearchAutocomplete(config);
     } else {
-        initAutocompleteForField("q", "full", config);
+        initAutocompleteForField("full", "full", config);
         initAutocompleteForField("defs", "defs", config);
         initAutocompleteForField("refs", "refs", config);
         initAutocompleteForField("path", "path", config);
@@ -1799,7 +1799,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
         dataFunction = getAutocompleteMenuData;
     }
     if (!errorElemId) {
-        errorElemId = 'q';
+        errorElemId = 'full';
     }
     var errorElem = $('#' + errorElemId);
 
@@ -1909,7 +1909,7 @@ function getAutocompleteMenuData(input, field) {
     return {
         projects: getSelectedProjectNames(),
         field: field,
-        full: $('#q').val(),
+        full: $('#full').val(),
         defs: $('#defs').val(),
         refs: $('#refs').val(),
         path: $('#path').val(),
