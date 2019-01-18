@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -30,6 +30,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.suggest.Lookup;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 import org.hamcrest.Matchers;
@@ -66,9 +67,8 @@ public class SuggesterProjectDataTest {
     private SuggesterProjectData data;
 
     @Before
-    @SuppressWarnings("deprecation") // for RAMDirectory
     public void setUp() throws IOException {
-        dir = new org.apache.lucene.store.RAMDirectory();
+        dir = new ByteBuffersDirectory();
         tempDir = Files.createTempDirectory("test");
     }
 
@@ -262,9 +262,8 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation") // for RAMDirectory
     public void testRemove() throws IOException {
-        Directory dir = new org.apache.lucene.store.RAMDirectory();
+        Directory dir = new ByteBuffersDirectory();
         Path tempDir = Files.createTempDirectory("test");
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
