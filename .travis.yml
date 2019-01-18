@@ -33,16 +33,6 @@ jobs:
       before_install: dev/before_install
       before_script: dev/before
     - stage: test
-      name: Linux + Oracle JDK 9
-      os: linux
-      dist: trusty
-      sudo: required
-      jdk: oraclejdk9
-      install: true
-      script: dev/main
-      before_install: dev/before_install
-      before_script: dev/before
-    - stage: test
       name: Linux + Oracle JDK 11
       os: linux
       dist: trusty
