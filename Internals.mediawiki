@@ -2,11 +2,11 @@ Chandan B.N, Feb 2006
 
 OpenGrok contains these main packages:
 
-* `org.opengrok.analysis`: Responsible for analyzing programs, source files, archives like ZIP, tar, documents like man pages, xml and html files, images etc.,
-* `org.opengrok.index`: Builds or updates the Lucene index, recursively going down the directory tree.
-* `org.opengrok.search: Has utilities that provide interface for search results, matched context etc.
-* `org.opengrok.history`: Abstraction for source code version control.
-* `org.opengrok.web`: Utility routines used by the the web application.
+* org.opengrok.analysis: Responsible for analyzing programs, source files, archives like ZIP, tar, documents like man pages, xml and html files, images etc.,
+* org.opengrok.index: Builds or updates the Lucene index, recursively going down the directory tree.
+* org.opengrok.search: Has utilities that provide interface for search results, matched context etc.
+* org.opengrok.history: Abstraction for source code version control.
+* org.opengrok.web: Utility routines used by the the web application.
 
 While the source is the ultimate reference guide for how it works, here is a brief illustration of certain mechanisms.
 
