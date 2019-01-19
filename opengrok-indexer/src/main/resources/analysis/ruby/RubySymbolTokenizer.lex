@@ -64,7 +64,7 @@ import org.opengrok.indexer.web.HtmlConsts;
     public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
-        if (nameLength(value) <= 1) {
+        if (nameLength(value) <= 0) {
             lastSymbol = null;
         } else if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;

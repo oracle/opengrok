@@ -29,6 +29,7 @@
 package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
+import java.util.Set;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
@@ -51,18 +52,9 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     @Override
     public boolean offerSymbol(String value, int captureOffset,
-        boolean ignoreKwd)
-            throws IOException {
-        if (ignoreKwd) {
-            if (value.length() > 1) {
-                return onFilteredSymbolMatched(value, yychar, null, false);
-            } else {
-                onNonSymbolMatched(value, yychar);
-                return false;
-            }
-        } else {
-            return onFilteredSymbolMatched(value, yychar, Consts.kwd, false);
-        }
+            boolean ignoreKwd) throws IOException {
+        Set<String> keywords = ignoreKwd ? null : Consts.kwd;
+        return onFilteredSymbolMatched(value, yychar, keywords, false);
     }
 
     @Override

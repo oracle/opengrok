@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -86,13 +86,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 
 {Identifier} {
     chkLOC();
-    String id = yytext();
-    // For historical reasons, FortranXref doesn't link identifiers of length=1
-    if (id.length() > 1) {
-        onFilteredSymbolMatched(id, yychar, Consts.kwd, false);
-    } else {
-        onNonSymbolMatched(id, yychar);
-    }
+    onFilteredSymbolMatched(yytext(), yychar, Consts.kwd, false);
 }
 
 "<" ({File}|{FPath}) ">" {

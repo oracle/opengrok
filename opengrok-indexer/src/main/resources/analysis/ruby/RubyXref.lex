@@ -29,6 +29,7 @@
 package org.opengrok.indexer.analysis.ruby;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
@@ -51,16 +52,13 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     @Override
     public boolean offerSymbol(String value, int captureOffset,
-        boolean ignoreKwd)
-            throws IOException {
-        if (nameLength(value) <= 1) {
+            boolean ignoreKwd) throws IOException {
+        if (nameLength(value) <= 0) {
             onNonSymbolMatched(value, yychar);
             return false;
-        } else if (ignoreKwd) {
-            return onFilteredSymbolMatched(value, yychar, null);
-        } else {
-            return onFilteredSymbolMatched(value, yychar, Consts.kwd);
         }
+        Set<String> keywords = ignoreKwd ? null : Consts.kwd;
+        return onFilteredSymbolMatched(value, yychar, keywords);
     }
 
     @Override
