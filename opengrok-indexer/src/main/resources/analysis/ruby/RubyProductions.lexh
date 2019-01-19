@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -216,15 +216,15 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 %%
 <HERE, HERExN> {
     ^ {Here_marker} / {MaybeWhsp}{EOL}    {
-        h.chkLOC();
-        h.maybeEndHere(yytext());
+        chkLOC();
+        maybeEndHere(yytext());
     }
 }
 
 <HEREin, HEREinxN> {
     ^ {MaybeWhsp} {Here_marker} / {MaybeWhsp}{EOL}    {
-        h.chkLOC();
-        h.maybeEndHere(yytext());
+        chkLOC();
+        maybeEndHere(yytext());
     }
 }
 
@@ -233,7 +233,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     [\{] |
     "&&" |
     "||"    {
-        h.chkLOC();
+        chkLOC();
         yypushback(yytext().length());
         yybegin(YYINITIAL);
     }
@@ -247,13 +247,13 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     "<<"[~\-]? ({Here_EOF1} | {Here_EOF2} | {Here_EOF3})    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
-        h.hop(yytext());
+        hop(yytext());
     }
 
     {Instance_var} | {Class_var} | {Global_var} | {Symbol}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         String id = yytext();
         if (offerSymbol(id, 0, true) && returnOnSymbol()) {
@@ -262,7 +262,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     {Local_var} | {Method_name}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
@@ -271,19 +271,19 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     {SPIdentifier}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         offerKeyword(yytext());
     }
 
     {Modules_nested}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
-        h.takeModules(yytext());
+        takeModules(yytext());
     }
 
     {Character_literal}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
@@ -291,15 +291,15 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     {Numeric_literal}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
     }
 
-    \"    { h.chkLOC(); h.qop(yytext(), 0, false); }
-    \'    { h.chkLOC(); h.qop(yytext(), 0, true); }
+    \"    { chkLOC(); qop(yytext(), 0, false); }
+    \'    { chkLOC(); qop(yytext(), 0, true); }
     \#    {
         yypush(SCOMMENT);
         onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
@@ -307,18 +307,18 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     // Quote with two character names plus possibly a {WxSigils} spacer
-    ^ {QuoPC}                   { h.chkLOC(); h.qop(yytext(), 2, false); }
-    {WxSigils}{QuoPC}           { h.chkLOC(); h.qop(yytext(), 3, false); }
-    ^ {QuoPC_xN}                { h.chkLOC(); h.qop(yytext(), 2, true); }
-    {WxSigils}{QuoPC_xN}        { h.chkLOC(); h.qop(yytext(), 3, true); }
+    ^ {QuoPC}                   { chkLOC(); qop(yytext(), 2, false); }
+    {WxSigils}{QuoPC}           { chkLOC(); qop(yytext(), 3, false); }
+    ^ {QuoPC_xN}                { chkLOC(); qop(yytext(), 2, true); }
+    {WxSigils}{QuoPC_xN}        { chkLOC(); qop(yytext(), 3, true); }
 
     // Quote with one character names plus possibly a {WxSigils} spacer
-    ^ {QuoP}                    { h.chkLOC(); h.qop(yytext(), 1, false); }
-    {WxSigils}{QuoP}            { h.chkLOC(); h.qop(yytext(), 2, false); }
-    ^ {Symquo}                  { h.chkLOC(); h.qop(yytext(), 1, false); }
-    {WxSigils}{Symquo}          { h.chkLOC(); h.qop(yytext(), 2, false); }
-    ^ {Symquo_xN}               { h.chkLOC(); h.qop(yytext(), 1, true); }
-    {WxSigils}{Symquo_xN}       { h.chkLOC(); h.qop(yytext(), 2, true); }
+    ^ {QuoP}                    { chkLOC(); qop(yytext(), 1, false); }
+    {WxSigils}{QuoP}            { chkLOC(); qop(yytext(), 2, false); }
+    ^ {Symquo}                  { chkLOC(); qop(yytext(), 1, false); }
+    {WxSigils}{Symquo}          { chkLOC(); qop(yytext(), 2, false); }
+    ^ {Symquo_xN}               { chkLOC(); qop(yytext(), 1, true); }
+    {WxSigils}{Symquo_xN}       { chkLOC(); qop(yytext(), 2, true); }
 
     // POD-end without having seen POD-begin is akin to a one-line comment
     ^ {POD_end} [^\n\r]*    {
@@ -333,9 +333,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     [\{\}]    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
-        if (!h.maybeEndInterpolation(capture)) {
+        if (!maybeEndInterpolation(capture)) {
             offer(capture);
         }
     }
@@ -343,9 +343,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
 <YYINITIAL> {
     "/"    {
-        h.chkLOC();
+        chkLOC();
         // OK to pass a fake "m/" with doWrite=false
-        h.qop(false, "m/", 1, false);
+        qop(false, "m/", 1, false);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
@@ -357,60 +357,62 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     // first slash cannot always be distinguished from division (/) without
     // true parsing.
 
-    {Mpunc1YYIN} \s* "/"    { h.chkLOC();h.hqopPunc(yytext()); }
+    {Mpunc1YYIN} \s* "/"    { chkLOC(); hqopPunc(yytext()); }
 }
 
 <INTRA> {
     // Continue with more punctuation heuristics
 
-    {Mpunc2IN} \s* "/"      { h.chkLOC(); h.hqopPunc(yytext()); }
+    {Mpunc2IN} \s* "/"      { chkLOC(); hqopPunc(yytext()); }
 }
 
 <YYINITIAL, INTRA> {
     // Define keyword heuristics
 
     ^ {Mwords} \s* "/"    {
-        h.chkLOC();
-        h.hqopSymbol(yytext());
+        chkLOC();
+        hqopSymbol(yytext());
     }
 
     {WxSigils}{Mwords} \s* "/"    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
         if (takeAllContent()) {
             String boundary = capture.substring(0, 1);
             offer(boundary);
         }
-        h.hqopSymbol(capture.substring(1));
+        hqopSymbol(capture.substring(1));
     }
 }
 
 <QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 }
 
 <QUO, QUOxL> {
     "#{"    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
         yypush(YYINITIAL);
-        pushHelper();
-        h.interpop();
+        pushData();
+        interpop();
     }
 }
 
 <QUO, QUOxN, QUOxL, QUOxLxN> {
     {Quo0}    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
         offer(capture);
-        if (h.maybeEndQuote(capture)) {
+        if (maybeEndQuote(capture)) {
             yypop();
-            if (h.areModifiersOK()) yypush(QM);
+            if (areModifiersOK()) {
+                yypush(QM);
+            }
             onDisjointSpanChanged(null, yychar);
         }
     }
@@ -427,7 +429,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <QM> {
     // /PAT/imxouesn
     [a-z]    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 
@@ -462,7 +464,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <YYINITIAL, INTRA> {
     {WhspChar}*{EOL}    {
         String capture = yytext();
-        if (h.maybeStartHere()) {
+        if (maybeStartHere()) {
             yypushback(capture.length());
         } else {
             onEndOfLineMatched(yytext(), yychar);
@@ -489,14 +491,14 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 // "string links" and "comment links"
 <SCOMMENT, POD, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {FPath}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onPathlikeMatched(yytext(), '/', false, yychar);
         }
     }
 
     {File}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             String path = yytext();
             onFilelikeMatched(path, yychar);
@@ -504,7 +506,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onEmailAddressMatched(yytext(), yychar);
         }
@@ -513,7 +515,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
 <SCOMMENT, POD, HERE, HERExN, HEREin, HEREinxN> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onUriMatched(yytext(), yychar, null);
         }
@@ -523,9 +525,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
 <QUO, QUOxN> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
-        Pattern collateralCapture = h.getCollateralCapturePattern();
+        Pattern collateralCapture = getCollateralCapturePattern();
         if (takeAllContent()) {
             onUriMatched(capture, yychar, collateralCapture);
         } else {

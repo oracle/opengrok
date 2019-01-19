@@ -19,9 +19,10 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
 
 -->
+
 <!DOCTYPE suppressions PUBLIC
         "-//Checkstyle//DTD SuppressionFilter Configuration 1.1//EN"
         "https://checkstyle.org/dtds/suppressions_1_1.dtd">
@@ -35,7 +36,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         |LazilyInstantiate\.java" />
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|PerlLexHelper\.java|
-        |JFlexXrefUtils\.java|RubyLexHelper\.java|FileAnalyzerFactory\.java|SearchController\.java|
+        |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
         |Context\.java|HistoryContext\.java|Suggester\.java" />
 
     <suppress checks="MethodLength" files="Indexer\.java" />
