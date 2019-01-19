@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.perl;
@@ -26,121 +26,33 @@ package org.opengrok.indexer.analysis.perl;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.Resettable;
 import org.opengrok.indexer.util.RegexUtils;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 
 /**
- * Represents an API for object's using {@link PerlLexHelper}
+ * Represents an abstract base class for Perl lexers.
  */
-interface PerlLexer extends JFlexJointLexer {
-    void maybeIntraState();
-
-    /**
-     * Indicates that a premature end of quoting occurred. Everything up to the
-     * causal character has been written, and anything following will be
-     * indicated via {@link yypushback}.
-     * @throws IOException I/O exception
-     */
-    void abortQuote() throws IOException;
-}
-
-/**
- * Represents a helper for Perl lexers to work around jflex's lack of lex
- * inheritance
- */
-class PerlLexHelper implements Resettable {
+abstract class PerlLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
     // Using equivalent of {Identifier} from PerlProductions.lexh
     private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_]+");
 
-    private final PerlLexer lexer;
+    private PerlLexerData d;
 
-    private final int QUOxLxN;
-    private final int QUOxN;
-    private final int QUOxL;
-    private final int QUO;
-    private final int HEREinxN;
-    private final int HERExN;
-    private final int HEREin;
-    private final int HERE;
-    private final int SCOMMENT;
-    private final int POD;
+    private Stack<PerlLexerData> data;
 
-    private Queue<HereDocSettings> hereSettings;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
-     * operator name (e.g., "m" or "tr") is stored. Unlike {@code endqchar} it
-     * is not unset when the quote ends, because it is useful to indicate if
-     * quote modifier characters are expected.
-     */
-    private String qopname;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
-     * terminating character is stored.
-     */
-    private char endqchar;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
-     * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
-     * nesting is tracked and {@code nendqchar} is incremented appropriately.
-     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
-     */
-    private char nestqchar;
-
-    /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of remaining end separators in an operator section is stored.
-     * It starts at 1, and any nesting increases the value.
-     */
-    private int nendqchar;
-
-    /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of sections for the operator is stored. E.g., for m//, it is 1;
-     * for tr/// it is 2.
-     */
-    private int nsections;
-
-    /**
-     * When matching a two part construct like tr/// or s```, etc., after the
-     * first end separator, {@code waitq} is set to true so that nesting is not
-     * active.
-     */
-    private boolean waitq;
-
-    /**
-     * When matching a quoting construct, a Pattern to identify collateral
-     * capture characters is stored.
-     */
-    private Pattern collateralCapture;
-
-    PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-        PerlLexer lexer,
-        int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
-        int pOD) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.QUOxLxN = qUOxLxN;
-        this.QUOxN = qUOxN;
-        this.QUOxL = qUOxL;
-        this.QUO = qUO;
-        this.HEREinxN = hEREinxN;
-        this.HERExN = hERExN;
-        this.HEREin = hEREin;
-        this.HERE = hERE;
-        this.SCOMMENT = sCOMMENT;
-        this.POD = pOD;
+    PerlLexer() {
+        d = new PerlLexerData();
     }
 
     /**
@@ -148,16 +60,11 @@ class PerlLexHelper implements Resettable {
      */
     @Override
     public void reset() {
-        collateralCapture = null;
-        endqchar = '\0';
-        if (hereSettings != null) {
-            hereSettings.clear();
+        super.reset();
+        d = new PerlLexerData();
+        if (data != null) {
+            data.clear();
         }
-        nendqchar = 0;
-        nestqchar = '\0';
-        nsections = 0;
-        qopname = null;
-        waitq = false;
     }
 
     /**
@@ -171,24 +78,24 @@ class PerlLexHelper implements Resettable {
      */
     public boolean maybeEndQuote(String capture) {
         char c = capture.charAt(0);
-        if (c == endqchar) {
-            if (--nendqchar <= 0) {
-                if (--nsections <= 0) {
-                    endqchar = '\0';
-                    nestqchar = '\0';
+        if (c == d.endqchar) {
+            if (--d.nendqchar <= 0) {
+                if (--d.nsections <= 0) {
+                    d.endqchar = '\0';
+                    d.nestqchar = '\0';
                     return true;
-                } else if (nestqchar != '\0') {
-                    waitq = true;
+                } else if (d.nestqchar != '\0') {
+                    d.waitq = true;
                 } else {
-                    nendqchar = 1;
+                    d.nendqchar = 1;
                 }
             }
-        } else if (nestqchar != '\0' && c == nestqchar) {
-            if (waitq) {
-                waitq = false;
-                nendqchar = 1;
+        } else if (d.nestqchar != '\0' && c == d.nestqchar) {
+            if (d.waitq) {
+                d.waitq = false;
+                d.nendqchar = 1;
             } else {
-                ++nendqchar;
+                ++d.nendqchar;
             }
         }
         return false;
@@ -200,7 +107,7 @@ class PerlLexHelper implements Resettable {
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (qopname) {
+        switch (d.qopname) {
             case "m":
             case "qr":
             case "s":
@@ -234,43 +141,43 @@ class PerlLexHelper implements Resettable {
         // `boundary'.
         String boundary = "";
         String postboundary = capture;
-        qopname = "";
+        d.qopname = "";
         if (namelength > 0) {
             postboundary = capture.replaceFirst("^\\W+", "");
             boundary = capture.substring(0, capture.length() -
                 postboundary.length());
-            qopname = postboundary.substring(0, namelength);
+            d.qopname = postboundary.substring(0, namelength);
         }
-        waitq = false;
-        nendqchar = 1;
-        collateralCapture = null;
+        d.waitq = false;
+        d.nendqchar = 1;
+        d.collateralCapture = null;
 
-        switch (qopname) {
+        switch (d.qopname) {
             case "tr":
             case "s":
             case "y":
-                nsections = 2;
+                d.nsections = 2;
                 break;
             default:
-                nsections = 1;
+                d.nsections = 1;
                 break;
         }
 
-        String postop = postboundary.substring(qopname.length());
+        String postop = postboundary.substring(d.qopname.length());
         String ltpostop = postop.replaceFirst("^\\s+", "");
         char opc = ltpostop.charAt(0);
         setEndQuoteChar(opc);
         setState(ltpostop, nointerp);
 
         if (doWrite) {
-            lexer.offer(boundary);
-            if (qopname.length() > 0) {
-                lexer.offerSymbol(qopname, boundary.length(), false);
+            offer(boundary);
+            if (d.qopname.length() > 0) {
+                offerSymbol(d.qopname, boundary.length(), false);
             } else {
-                lexer.skipSymbol();
+                skipSymbol();
             }
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offer(postop);
+            disjointSpan(HtmlConsts.STRING_CLASS);
+            offer(postop);
         }
     }
 
@@ -289,12 +196,12 @@ class PerlLexHelper implements Resettable {
         }
 
         if (nointerp) {
-            state = nolink ? QUOxLxN : QUOxN;
+            state = nolink ? QUOxLxN() : QUOxN();
         } else {
-            state = nolink ? QUOxL : QUO;
+            state = nolink ? QUOxL() : QUO();
         }
-        lexer.maybeIntraState();
-        lexer.yypush(state);
+        maybeIntraState();
+        yypush(state);
     }
 
     /**
@@ -304,24 +211,24 @@ class PerlLexHelper implements Resettable {
     private void setEndQuoteChar(char opener) {
         switch (opener) {
             case '[':
-                nestqchar = opener;
-                endqchar = ']';
+                d.nestqchar = opener;
+                d.endqchar = ']';
                 break;
             case '<':
-                nestqchar = opener;
-                endqchar = '>';
+                d.nestqchar = opener;
+                d.endqchar = '>';
                 break;
             case '(':
-                nestqchar = opener;
-                endqchar = ')';
+                d.nestqchar = opener;
+                d.endqchar = ')';
                 break;
             case '{':
-                nestqchar = opener;
-                endqchar = '}';
+                d.nestqchar = opener;
+                d.endqchar = '}';
                 break;
             default:
-                nestqchar = '\0';
-                endqchar = opener;
+                d.nestqchar = '\0';
+                d.endqchar = opener;
                 break;
         }
     }
@@ -341,10 +248,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offer(lede);
+        offer(lede);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -362,10 +269,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerSymbol(lede, 0, false);
+        offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -375,7 +282,7 @@ class PerlLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            lexer.offer(whsp);
+            offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
@@ -383,10 +290,10 @@ class PerlLexHelper implements Resettable {
                 off = i + 1;
             }
             while (numlf-- > 0) {
-                lexer.startNewLine();
+                startNewLine();
             }
             if (off < whsp.length()) {
-                lexer.offer(whsp.substring(off));
+                offer(whsp.substring(off));
             }
         }
     }
@@ -401,9 +308,9 @@ class PerlLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offer(capture);
-        if (hereSettings == null) {
-            hereSettings = new LinkedList<>();
+        offer(capture);
+        if (d.hereSettings == null) {
+            d.hereSettings = new LinkedList<>();
         }
 
         String remaining = capture;
@@ -458,12 +365,12 @@ class PerlLexHelper implements Resettable {
 
         int state;
         if (nointerp) {
-            state = indented ? HEREinxN : HERExN;
+            state = indented ? HEREinxN() : HERExN();
         } else {
-            state = indented ? HEREin : HERE;
+            state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
-        hereSettings.add(settings);
+        d.hereSettings.add(settings);
     }
 
     /**
@@ -472,10 +379,10 @@ class PerlLexHelper implements Resettable {
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (hereSettings != null && hereSettings.size() > 0) {
-            HereDocSettings settings = hereSettings.peek();
-            lexer.yypush(settings.state);
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        if (d.hereSettings != null && d.hereSettings.size() > 0) {
+            HereDocSettings settings = d.hereSettings.peek();
+            yypush(settings.state);
+            disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -488,26 +395,26 @@ class PerlLexHelper implements Resettable {
      */
     public boolean maybeEndHere(String capture) throws IOException {
         String trimmed = capture.replaceFirst("^\\s+", "");
-        HereDocSettings settings = hereSettings.peek();
+        HereDocSettings settings = d.hereSettings.peek();
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            lexer.disjointSpan(null);
+            disjointSpan(null);
             didZspan = true;
-            hereSettings.remove();
+            d.hereSettings.remove();
         }
 
-        lexer.offer(capture);
+        offer(capture);
 
-        if (hereSettings.size() > 0) {
-            settings = hereSettings.peek();
-            lexer.yybegin(settings.state);
+        if (d.hereSettings.size() > 0) {
+            settings = d.hereSettings.peek();
+            yybegin(settings.state);
             if (didZspan) {
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                disjointSpan(HtmlConsts.STRING_CLASS);
             }
             return false;
         } else {
-            lexer.yypop();
+            yypop();
             return true;
         }
     }
@@ -517,19 +424,19 @@ class PerlLexHelper implements Resettable {
      * a sigil and ends in an identifier and where Perl allows whitespace after
      * the sigil -- and write the parts to output.
      * <p>
-     * Seeing the {@link endqchar} in the capture will affect an active
+     * Seeing the {@code endqchar} in the capture will affect an active
      * quote-like operator.
      */
     public void sigilID(String capture) throws IOException {
         String sigil = capture.substring(0, 1);
 
-        if (capture.charAt(0) == endqchar) {
-            lexer.skipSymbol();
-            lexer.offer(sigil);
+        if (capture.charAt(0) == d.endqchar) {
+            skipSymbol();
+            offer(sigil);
             if (maybeEndQuote(sigil)) {
-                lexer.abortQuote();
+                abortQuote();
             }
-            lexer.yypushback(capture.length() - 1);
+            yypushback(capture.length() - 1);
             return;
         }
 
@@ -538,10 +445,10 @@ class PerlLexHelper implements Resettable {
         String s0 = postsigil.substring(0, postsigil.length() - id.length());
 
         int ohnooo;
-        if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            lexer.offer(sigil);
-            lexer.offer(s0);
-            lexer.offerSymbol(id, sigil.length() + s0.length(), true);
+        if ((ohnooo = id.indexOf(d.endqchar)) == -1) {
+            offer(sigil);
+            offer(s0);
+            offerSymbol(id, sigil.length() + s0.length(), true);
         } else {
             // If the identifier contains the end quoting character, then it
             // may or may not parse in Perl. Treat everything before the first
@@ -557,18 +464,18 @@ class PerlLexHelper implements Resettable {
             String w0 = id.substring(0, ohnooo);
             String p0 = id.substring(ohnooo, ohnooo + 1);
             String w1 = id.substring(ohnooo + 1);
-            lexer.offer(sigil);
-            lexer.offer(s0);
+            offer(sigil);
+            offer(s0);
             if (w0.length() > 0) {
-                lexer.offerSymbol(w0, sigil.length() + s0.length(), true);
+                offerSymbol(w0, sigil.length() + s0.length(), true);
             } else {
-                lexer.skipSymbol();
+                skipSymbol();
             }
-            lexer.offer(p0);
+            offer(p0);
             if (maybeEndQuote(p0)) {
-                lexer.abortQuote();
+                abortQuote();
             }
-            lexer.yypushback(w1.length());
+            yypushback(w1.length());
         }
     }
 
@@ -603,32 +510,32 @@ class PerlLexHelper implements Resettable {
         String id = ltinterior1.substring(0, ltinterior1.length() -
             s2.length());
 
-        lexer.offer(sigil);
-        lexer.offer(s0);
-        lexer.offer(lpunc);
-        lexer.offer(s1);
-        lexer.offerSymbol(id, sigil.length() + s0.length() +
-            lpunc.length() + s1.length(), true);
-        lexer.offer(s2);
-        lexer.offer(rpunc);
+        offer(sigil);
+        offer(s0);
+        offer(lpunc);
+        offer(s1);
+        offerSymbol(id, sigil.length() + s0.length() +
+                lpunc.length() + s1.length(), true);
+        offer(s2);
+        offer(rpunc);
     }
 
     /**
-     * Write a special identifier as a keyword -- unless {@link endqchar} is in
+     * Write a special identifier as a keyword -- unless {@code endqchar} is in
      * the {@code capture}, which will affect an active quote-like operator
      * instead.
      */
     public void specialID(String capture) throws IOException {
-        if (capture.indexOf(endqchar) == -1) {
-            lexer.offerKeyword(capture);
+        if (capture.indexOf(d.endqchar) == -1) {
+            offerKeyword(capture);
         } else {
             for (int i = 0; i < capture.length(); ++i) {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
-                lexer.offer(w);
+                offer(w);
                 if (maybeEndQuote(w)) {
-                    lexer.abortQuote();
-                    lexer.yypushback(capture.length() - i - 1);
+                    abortQuote();
+                    yypushback(capture.length() - i - 1);
                     break;
                 }
             }
@@ -641,33 +548,115 @@ class PerlLexHelper implements Resettable {
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (endqchar == '\0') {
+        if (d.endqchar == '\0') {
             return null;
         }
-        if (collateralCapture != null) {
-            return collateralCapture;
+        if (d.collateralCapture != null) {
+            return d.collateralCapture;
         }
 
         StringBuilder patb = new StringBuilder("[");
-        patb.append(Pattern.quote(String.valueOf(endqchar)));
-        if (nestqchar != '\0') {
-            patb.append(Pattern.quote(String.valueOf(nestqchar)));
+        patb.append(Pattern.quote(String.valueOf(d.endqchar)));
+        if (d.nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(d.nestqchar)));
         }
         patb.append("]");
         patb.append(RegexUtils.getNotFollowingEscapePattern());
-        collateralCapture = Pattern.compile(patb.toString());
-        return collateralCapture;
+        d.collateralCapture = Pattern.compile(patb.toString());
+        return d.collateralCapture;
     }
 
     /**
-     * Calls {@link PerlLexer#phLOC()} if the yystate is not SCOMMENT or POD.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT or POD.
      */
     public void chkLOC() {
-        int yystate = lexer.yystate();
-        if (yystate != SCOMMENT && yystate != POD) {
-            lexer.phLOC();
+        int yystate = yystate();
+        if (yystate != SCOMMENT() && yystate != POD()) {
+            phLOC();
         }
     }
+
+    abstract void maybeIntraState();
+
+    /**
+     * Indicates that a premature end of quoting occurred. Everything up to the
+     * causal character has been written, and anything following will be
+     * indicated via {@link #yypushback}.
+     * @throws IOException I/O exception
+     */
+    abstract void abortQuote() throws IOException;
+
+    void pushData() {
+        if (data == null) {
+            data = new Stack<>();
+        }
+        data.push(d);
+        d = new PerlLexerData();
+    }
+
+    void popData() {
+        d = data.pop();
+    }
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxLxN.
+     */
+    abstract int QUOxLxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxN.
+     */
+    abstract int QUOxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxL.
+     */
+    abstract int QUOxL();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUO.
+     */
+    abstract int QUO();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREinxN.
+     */
+    abstract int HEREinxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERExN.
+     */
+    abstract int HERExN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREin.
+     */
+    abstract int HEREin();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERE.
+     */
+    abstract int HERE();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent POD.
+     */
+    abstract int POD();
 
     class HereDocSettings {
         private final String terminator;
@@ -681,5 +670,59 @@ class PerlLexHelper implements Resettable {
         public String getTerminator() { return terminator; }
 
         public int getState() { return state; }
+    }
+
+    class PerlLexerData {
+        private Queue<HereDocSettings> hereSettings;
+
+        /**
+         * When matching a quoting construct like qq[], q(), m//, s```, etc.,
+         * the operator name (e.g., "m" or "tr") is stored. Unlike
+         * {@code endqchar} it is not unset when the quote ends, because it is
+         * useful to indicate if quote modifier characters are expected.
+         */
+        private String qopname;
+
+        /**
+         * When matching a quoting construct like qq[], q(), m//, s```, etc.,
+         * the terminating character is stored.
+         */
+        private char endqchar;
+
+        /**
+         * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{}
+         * that nest, the begin character ('[', '&lt;', '(', or '{') is stored
+         * so that nesting is tracked and {@code nendqchar} is incremented
+         * appropriately.  Otherwise, {@code nestqchar} is set to '\0' if no
+         * nesting occurs.
+         */
+        private char nestqchar;
+
+        /**
+         * When matching a quoting construct like qq//, m//, or s```, etc., the
+         * number of remaining end separators in an operator section is stored.
+         * It starts at 1, and any nesting increases the value.
+         */
+        private int nendqchar;
+
+        /**
+         * When matching a quoting construct like qq//, m//, or s```, etc., the
+         * number of sections for the operator is stored. E.g., for m//, it is
+         * 1; for tr/// it is 2.
+         */
+        private int nsections;
+
+        /**
+         * When matching a two part construct like tr/// or s```, etc., after
+         * the first end separator, {@code waitq} is set to true so that
+         * nesting is not active.
+         */
+        private boolean waitq;
+
+        /**
+         * When matching a quoting construct, a Pattern to identify collateral
+         * capture characters is stored.
+         */
+        private Pattern collateralCapture;
     }
 }

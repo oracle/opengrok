@@ -35,7 +35,7 @@ Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
         |BlockingObjectPool\.java|OGKTextVecField\.java|OGKTextField\.java|
         |LazilyInstantiate\.java" />
 
-    <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|PerlLexHelper\.java|
+    <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
         |Context\.java|HistoryContext\.java|Suggester\.java" />
 
