@@ -803,7 +803,7 @@
             return $.intelliWindow = $window.create($.extend({
                 title: 'Intelligence window',
                 selector: 'a.intelliWindow-symbol',
-                google_url: 'https://www.google.com/search?full=',
+                google_url: 'https://www.google.com/search?q=',
                 project: undefined,
                 init: function ($window) {
                     var $highlight, $unhighlight, $unhighlightAll, $prev, $next
