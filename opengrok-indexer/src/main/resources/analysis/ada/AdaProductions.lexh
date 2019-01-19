@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -140,7 +140,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 %%
 <YYINITIAL> {
     {Identifier}    {
-        h.chkLOC();
+        chkLOC();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
@@ -148,18 +148,18 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
     }
 
     {Character_literal}    {
-        h.chkLOC();
-        h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
+        chkLOC();
+        takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
     {Numeric_literal}    {
-        h.chkLOC();
-        h.takeLiteral(yytext(), HtmlConsts.NUMBER_CLASS);
+        chkLOC();
+        takeLiteral(yytext(), HtmlConsts.NUMBER_CLASS);
     }
 
     {String_literal}    {
-        h.chkLOC();
-        h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
+        chkLOC();
+        takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
     {Comment_token}    {
@@ -191,7 +191,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
     }
     // Only one character at a time because of \s restriction above.
     [^\n\r]    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 }
