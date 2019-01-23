@@ -1,0 +1,3 @@
+For security conscious setup, it is desirable to enable HTTPS handling in the application server. However, the indexer needs to be able to send RESTful API rrequests to the web application during indexing. These requests need to pass through localhost. This means that the application server has to be setup to allow plain HTTP communication on certain port (say 8080) and expose the port only to localhost.
+
+Also see https://github.com/oracle/opengrok/wiki/Authorization
