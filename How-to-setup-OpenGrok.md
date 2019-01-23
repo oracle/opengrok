@@ -99,6 +99,8 @@ If you happen to be using the Python tools distributed with OpenGrok, you can us
 
 See https://github.com/oracle/opengrok/wiki/Webapp-configuration for more configuration options of the web application.
 
+Also see https://github.com/oracle/opengrok/wiki/Security
+
 ## <u>Step.3</u> - Indexing
 
 This step consists of these operations:
@@ -153,8 +155,6 @@ You should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPP
 In some setups, it might be desirable to run the indexing (and especially mirroring) of each project in parallel in order to speed up the overall progress. See https://github.com/oracle/opengrok/wiki/Per-project-management on how this can be done.
 
 See https://github.com/oracle/opengrok/wiki/Indexer-configuration for more indexer configuration options.
-
-Also see https://github.com/oracle/opengrok/wiki/Security
 
 ## <u>Step.4</u> - setting up periodic reindex
 
