@@ -763,6 +763,12 @@ public final class AuthorizationFramework {
             return true;
         }
 
+        if (entity == null) {
+            LOGGER.log(Level.WARNING, "entity was null for request with parameters: {}",
+                    request.getParameterMap());
+            return false;
+        }
+
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
 
         Boolean val;
