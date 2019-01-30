@@ -52,8 +52,6 @@ public final class MessagesUtils {
         // private to ensure static
     }
 
-    private static final String EMPTY = "";
-
     static final class TaggedMessagesContainer implements JSONable {
 
         private final String tag;
@@ -124,7 +122,7 @@ public final class MessagesUtils {
      */
     private static String taggedMessagesToJson(Set<TaggedMessagesContainer> messages) {
         if (messages.isEmpty()) {
-            return EMPTY;
+            return JSONable.EMPTY;
         }
 
         ObjectMapper mapper = new ObjectMapper();
@@ -133,7 +131,7 @@ public final class MessagesUtils {
             return mapper.writeValueAsString(messages);
         } catch (JsonProcessingException e) {
             LOGGER.log(Level.WARNING, "failed to encode {0} to JSON", messages);
-            return EMPTY;
+            return JSONable.EMPTY;
         }
     }
 
@@ -181,7 +179,7 @@ public final class MessagesUtils {
      */
     public static String messagesToJson(Project project, String... additionalTags) {
         if (project == null) {
-            return EMPTY;
+            return JSONable.EMPTY;
         }
 
         List<String> tags = new ArrayList<>();
