@@ -43,7 +43,7 @@ public interface JSONable {
             return mapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             LoggerFactory.getLogger(JSONable.class).log(Level.WARNING,
-                    String.format("failed to convert object of class {0} to JSON: {1}",
+                    String.format("failed to convert object of class %s to JSON: %s",
                     this.getClass().toString(), this), e);
             return EMPTY;
         }
