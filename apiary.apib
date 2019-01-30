@@ -75,7 +75,7 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
         {
           "tags": ["main"],
-          "cssClass": "cssClass",
+          "cssClass": "class",
           "text":"test message",
           "duration":"PT10M"
         }
@@ -98,18 +98,17 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
         [
           {
-            "acceptedTime": "2018-06-28T17:49:01.793Z",
-            "message": {
-              "tags": ["main"],
-              "cssClass": "cssClass",
-              "text": "test message",
-              "duration": "PT10M"
-            },
-            "expirationTime": "2018-06-28T17:59:01.793Z",
-            "expired":false
+            "expired": false,
+            "created": "2019-01-23 20:39:31 CET",
+            "tags": [
+              "main"
+            ],
+            "expiration": "2019-01-23 20:49:31 CET",
+            "cssClass": "class",
+            "text": "test&nbsp;message"
           }
         ]
-        
+
 ## Projects [/projects]
 
 ### returns a list of all projects [GET]

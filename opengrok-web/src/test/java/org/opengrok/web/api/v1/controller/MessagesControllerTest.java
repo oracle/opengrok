@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -58,10 +59,12 @@ public class MessagesControllerTest extends JerseyTest {
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static class AcceptedMessageModel {
-        public String acceptedTime;
-        public String expirationTime;
+        public String created;
+        public String expiration;
         public boolean expired;
-        public Message message;
+        public String text;
+        public String cssClass;
+        public Set<String> tags;
     }
 
     @Override
@@ -94,7 +97,7 @@ public class MessagesControllerTest extends JerseyTest {
 
         AcceptedMessage msg = env.getMessages().first();
 
-        assertEquals("test message", msg.getMessage().getText());
+        assertEquals("test&nbsp;message", msg.getMessage().getText());
     }
 
     private void addMessage(String text, String... tags) {
@@ -221,9 +224,9 @@ public class MessagesControllerTest extends JerseyTest {
                 .get(messagesType);
 
         assertEquals(1, messages.size());
-        assertEquals("text", messages.get(0).message.getText());
+        assertEquals("text", messages.get(0).text);
 
-        assertThat(messages.get(0).message.getTags(), contains("info"));
+        assertThat(messages.get(0).tags, contains("info"));
     }
 
     @Test

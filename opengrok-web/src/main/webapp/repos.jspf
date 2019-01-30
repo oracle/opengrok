@@ -23,7 +23,6 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 --%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Iterator"%>
-<%@page import="org.json.simple.JSONArray"%>
 <%@page import="java.util.Set"%>
 <%@page import="org.opengrok.indexer.web.Prefix"%>
 <%@page import="org.opengrok.indexer.web.ProjectHelper"%>
@@ -37,13 +36,15 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 <%@page import="org.opengrok.indexer.configuration.Group"%>
 <%@page import="java.util.List"%>
 <%@page import="org.opengrok.indexer.web.PageConfig"%>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.addScript("repos");
-    JSONArray messages;
+    String messages;
 
-    Util.printMessages(out, cfg.getMessages());
+    printMessages(out, cfg.getMessages());
 
     Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
         public int compare(RepositoryInfo r1, RepositoryInfo r2) {
@@ -110,7 +111,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                             <span class="pull-left">
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
                                 <%
-                                if (!(messages = Util.messagesToJson(group)).isEmpty()) { %>
+                                if (!(messages = MessagesUtils.messagesToJson(group)).isEmpty()) { %>
                                     <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                 <% } %>
                                 <small>
@@ -167,7 +168,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    if (!(messages = Util.messagesToJson(project)).isEmpty()) { %>
+                    if (!(messages = MessagesUtils.messagesToJson(project)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                                 </td><%
@@ -246,7 +247,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 <span class="pull-left">
                                     <span class="name">Other</span>
                                     <%
-                                    if (!(messages = Util.messagesToJson("other")).isEmpty()) { %>
+                                    if (!(messages = messagesToJson("other")).isEmpty()) { %>
                                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                     <% } %>
                                     <small>
@@ -297,7 +298,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    if (!(messages = Util.messagesToJson(proj)).isEmpty()) { %>
+                    if (!(messages = messagesToJson(proj)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                     </td><%
