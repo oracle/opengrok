@@ -130,7 +130,7 @@ public final class MessagesUtils {
         try {
             return mapper.writeValueAsString(messages);
         } catch (JsonProcessingException e) {
-            LOGGER.log(Level.WARNING, "failed to encode {0} to JSON", messages);
+            LOGGER.log(Level.WARNING, String.format("failed to encode '%s' to JSON: ", messages), e);
             return JSONable.EMPTY;
         }
     }
