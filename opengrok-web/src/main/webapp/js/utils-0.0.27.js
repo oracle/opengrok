@@ -1117,7 +1117,7 @@
                             $ul.append(
                                     $('<li>')
                                     .addClass('message-group-item')
-                                    .addClass(tag.messages[j].cssclass)
+                                    .addClass(tag.messages[j].cssClass)
                                     .attr('title', 'Expires on ' + tag.messages[j].expiration)
                                     .html(tag.messages[j].created + ': ' + tag.messages[j].text)
                                     )
