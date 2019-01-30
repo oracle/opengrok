@@ -31,7 +31,7 @@ import java.util.logging.Level;
 
 public interface JSONable {
 
-    public static final String EMPTY = "";
+    String EMPTY = "";
 
     /**
      * convert object to JSON
