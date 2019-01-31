@@ -5,7 +5,7 @@ In general it is recommended to run both the indexer and web application with `-
 ## Indexer
 
 If you run the Indexer via the `opengrok-indexer` script, keep in mind that by default it does not set Java heap size so it will use the default value.
-This **might not** be enough, especially for large projects such as [AOSP](https://en.wikipedia.org/wiki/AOSP).
+This **might not** be enough, especially for large projects such as [AOSP](https://en.wikipedia.org/wiki/AOSP) or when indexing lots of mid sized projects.
 
 ### Lucene flush buffer size
 
