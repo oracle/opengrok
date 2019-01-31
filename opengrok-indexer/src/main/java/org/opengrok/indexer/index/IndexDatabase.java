@@ -226,7 +226,9 @@ public class IndexDatabase {
                     try {
                         db.update(parallelizer);
                     } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "Problem updating lucene index database: ", e);
+                        LOGGER.log(Level.SEVERE,
+                                String.format("Problem updating index database in directory %s: ",
+                                        db.indexDirectory.getDirectory()), e);
                     }
                 }
             });
