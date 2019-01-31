@@ -2207,7 +2207,7 @@ function clearSearchFrom() {
 
 function getSelectedProjectNames() {
     try {
-        return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+        return $.map($("#project").searchableOptionList().getSelection().filter("[name='project']"), function (item) {
             return $(item).attr("value");
         });
     } catch (e) { // happens when projects are not enabled
