@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -2207,7 +2207,7 @@ function clearSearchFrom() {
 
 function getSelectedProjectNames() {
     try {
-        return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+        return $.map($("#project").searchableOptionList().getSelection().filter("[name='project']"), function (item) {
             return $(item).attr("value");
         });
     } catch (e) { // happens when projects are not enabled

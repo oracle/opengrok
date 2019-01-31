@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -126,7 +126,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.6.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.27.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.28.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.3.js", 20));
         SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
