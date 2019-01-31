@@ -61,7 +61,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
     <properties>
         <lucene.version>7.6.0</lucene.version>
-        <mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
+        <mavenjavadocplugin.version>3.0.1</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
