@@ -111,6 +111,11 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 ## Projects [/projects]
 
+For all entry points that modify web application configuration it is worth noting that
+the configuration has to be retrieved and stored on disk (using the configuration specific
+entry points) in order to be persistent (e.g. in case of application server restart or
+web application redeploy).
+
 ### returns a list of all projects [GET]
 
 + Response 200 (application/json)
@@ -119,6 +124,9 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
             ["foo","bar"]
 
 ### add project [POST]
+
+This will merely add the project and its repositories to the web application configuration.
+The project will not be searchable (and thus appear in the UI) until it is indexed.
 
 + Request (text/plain)
   + Body
@@ -131,9 +139,15 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 ### delete project [DELETE]
 
+This will remove the project and its repositories from the web application configuration.
+It will also delete project specific data such as index, cross reference pages, history index
+and suggester data.
+
 + Response 204
 
 ## Project metadata management [/projects/{project}/indexed]
+
+This entry point is used by the Indexer once it finishes indexing given project.
 
 ### marks project as indexed [PUT]
 
