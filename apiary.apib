@@ -145,6 +145,17 @@ and suggester data.
 
 + Response 204
 
+## Project data management [/projects/{project}/data]
+
+### delete project index data [DELETE]
+
+This will delete project index data but keep the project in web application configuration so that
+can be indexed from scratch.
+The project data (whatever is the project's directory under source root) will be left intact.
+This will also mark the project as not indexed.
+
++ Response 204
+
 ## Project metadata management [/projects/{project}/indexed]
 
 This entry point is used by the Indexer once it finishes indexing given project.
