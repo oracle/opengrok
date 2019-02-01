@@ -132,38 +132,58 @@ public class ProjectsController {
         return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}, env.getIgnoredNames()));
     }
 
-    @DELETE
-    @Path("/{project}")
-    public void deleteProject(@PathParam("project") final String projectName)
-            throws IOException, HistoryException {
-
-        Project proj = env.getProjects().get(projectName);
-        if (proj == null) {
+    private Project disableProject(String projectName) {
+        Project project = env.getProjects().get(projectName);
+        if (project == null) {
             throw new IllegalStateException("cannot get project \"" + projectName + "\"");
         }
 
+        // Remove the project from searches so no one can trip over incomplete index data.
+        project.setIndexed(false);
+
+        return project;
+    }
+
+    @DELETE
+    @Path("/{project}")
+    public void deleteProject(@PathParam("project") final String projectName)
+            throws HistoryException {
+
+        Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
 
+        // Delete index data associated with the project.
+        deleteProjectData(projectName);
+
         // Remove the project from its groups.
-        for (Group group : proj.getGroups()) {
-            group.getRepositories().remove(proj);
-            group.getProjects().remove(proj);
+        for (Group group : project.getGroups()) {
+            group.getRepositories().remove(project);
+            group.getProjects().remove(project);
         }
 
         // Now remove the repositories associated with this project.
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(proj);
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos != null) {
             env.getRepositories().removeAll(repos);
         }
-        env.getProjectRepositoriesMap().remove(proj);
+        env.getProjectRepositoriesMap().remove(project);
 
-        env.getProjects().remove(projectName, proj);
+        env.getProjects().remove(projectName, project);
 
         // Prevent the project to be included in new searches.
         env.refreshSearcherManagerMap();
+    }
 
-        // Lastly, remove data associated with the project.
+    @DELETE
+    @Path("/{project}/data")
+    public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
+
+        Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
+
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+
+        // Delete index and xrefs.
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
             java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
             try {
@@ -172,6 +192,8 @@ public class ProjectsController {
                 logger.log(Level.WARNING, "Could not delete {0}", path.toString());
             }
         }
+
+        // Delete history index.
         HistoryGuru guru = HistoryGuru.getInstance();
         guru.removeCache(repos.stream().
                 map(x -> {
@@ -187,8 +209,9 @@ public class ProjectsController {
                         // {@code removeCache()} will return nothing.
                         return "";
                     }
-                }).collect(Collectors.toSet()));
+                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
 
+        // Delete suggester data.
         suggester.delete(projectName);
     }
 
