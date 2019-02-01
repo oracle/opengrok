@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -74,7 +74,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         Boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
-        String dn[] = {"dn"};
+        String[] dn = {"dn"};
 
         updateSession(req, sessionAllowed);
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -837,7 +837,7 @@ public final class PageConfig {
         if (value == null || value.length() == 0) {
             return;
         }
-        String p[] = COMMA_PATTERN.split(value);
+        String[] p = COMMA_PATTERN.split(value);
         for (String p1 : p) {
             if (p1.length() != 0) {
                 result.add(p1);
@@ -878,7 +878,7 @@ public final class PageConfig {
      * @return a possible empty list.
      */
     private List<String> getParamVals(String paramName) {
-        String vals[] = req.getParameterValues(paramName);
+        String[] vals = req.getParameterValues(paramName);
         List<String> res = new ArrayList<>();
         if (vals != null) {
             for (int i = vals.length - 1; i >= 0; i--) {
@@ -1600,7 +1600,7 @@ public final class PageConfig {
      * @return string used for setting page title of search results page
      */
     public String getSearchTitle() {
-        String title = new String();
+        String title = "";
 
         if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
             title += req.getParameter("q") + " (full)";
@@ -1627,7 +1627,7 @@ public final class PageConfig {
                 title += " ";
             }
             title += "in projects: ";
-            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            String[] projects = req.getParameterValues(QueryBuilder.PROJECT);
             title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
         }
 

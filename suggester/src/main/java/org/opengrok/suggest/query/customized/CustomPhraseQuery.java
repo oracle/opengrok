@@ -62,7 +62,7 @@ public class CustomPhraseQuery extends Query {
             throw new IllegalArgumentException("Slop must be >= 0, got " + slop);
         }
         for (int i = 1; i < terms.length; ++i) {
-            if (terms[i-1].field().equals(terms[i].field()) == false) {
+            if (!terms[i - 1].field().equals(terms[i].field())) {
                 throw new IllegalArgumentException("All terms should have the same field");
             }
         }

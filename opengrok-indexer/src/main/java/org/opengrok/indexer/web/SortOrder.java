@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -40,7 +40,7 @@ public enum SortOrder {
     private final String name;
     private final String desc;
 
-    private SortOrder(String name, String desc) {
+    SortOrder(String name, String desc) {
         this.name = name;
         this.desc = desc;
     }

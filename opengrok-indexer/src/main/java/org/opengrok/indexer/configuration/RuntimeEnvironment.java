@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opengrok.indexer.configuration;
@@ -1581,7 +1581,7 @@ public final class RuntimeEnvironment {
      *
      * @return the framework
      */
-    synchronized public AuthorizationFramework getAuthorizationFramework() {
+    public synchronized AuthorizationFramework getAuthorizationFramework() {
         if (authFramework == null) {
             authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
         }
@@ -1594,7 +1594,7 @@ public final class RuntimeEnvironment {
      *
      * @param fw the new framework
      */
-    synchronized public void setAuthorizationFramework(AuthorizationFramework fw) {
+    public synchronized void setAuthorizationFramework(AuthorizationFramework fw) {
         if (this.authFramework != null) {
             this.authFramework.removeAll();
         }

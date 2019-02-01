@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -187,7 +187,7 @@ public class GitRepository extends Repository {
             String filename = fullpath.substring(getDirectoryName().length() + 1)
                                       .replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {
+            String[] argv = {
                 RepoCommand,
                 "show",
                 rev + ":" + filename
@@ -658,7 +658,7 @@ public class GitRepository extends Repository {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("origin") && line.contains("(fetch)")) {
-                    String parts[] = line.split("\\s+");
+                    String[] parts = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", getDirectoryName());

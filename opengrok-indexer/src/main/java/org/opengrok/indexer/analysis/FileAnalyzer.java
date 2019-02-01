@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -72,7 +72,7 @@ public class FileAnalyzer extends Analyzer {
     /**
      * What kind of file is this?
      */
-    public static enum Genre {
+    public enum Genre {
         /**
          * xrefed - line numbered context
          */
@@ -95,7 +95,7 @@ public class FileAnalyzer extends Analyzer {
         HTML("h");
         private final String typeName;
 
-        private Genre(String typename) {
+        Genre(String typename) {
             this.typeName = typename;
         }
 

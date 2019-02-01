@@ -219,7 +219,7 @@ public class AnalyzerGuruHelp {
     private static class MappedFactory {
         public final String key;
         public final FileAnalyzerFactory fac;
-        public MappedFactory(String key, FileAnalyzerFactory fac) {
+        MappedFactory(String key, FileAnalyzerFactory fac) {
             this.key = key;
             this.fac = fac;
         }

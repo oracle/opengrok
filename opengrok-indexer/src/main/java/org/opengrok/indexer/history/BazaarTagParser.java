@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -54,7 +54,7 @@ public class BazaarTagParser implements Executor.StreamHandler {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             String line;
             while ((line = in.readLine()) != null) {
-                String parts[] = line.split("  *");
+                String[] parts = line.split("  *");
                 if (parts.length < 2) {
                     throw new IOException("Tag line contains more than 2 columns: " + line);
                 }

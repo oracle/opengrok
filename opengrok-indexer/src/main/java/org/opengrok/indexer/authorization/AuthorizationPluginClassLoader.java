@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -47,7 +47,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     private final Map<String, Class> cache = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
-    private final static String[] CLASS_WHITELIST = new String[]{
+    private static final String[] CLASS_WHITELIST = new String[]{
         "org.opengrok.indexer.configuration.Group",
         "org.opengrok.indexer.configuration.Project",
         "org.opengrok.indexer.configuration.RuntimeEnvironment",
@@ -57,7 +57,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         "org.opengrok.indexer.logger.*"
     };
 
-    private final static String[] PACKAGE_BLACKLIST = new String[]{
+    private static final String[] PACKAGE_BLACKLIST = new String[]{
         "java",
         "javax",
         "org.w3c",

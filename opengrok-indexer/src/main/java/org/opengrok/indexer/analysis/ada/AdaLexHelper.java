@@ -42,7 +42,7 @@ class AdaLexHelper implements Resettable {
 
     private final int SCOMMENT;
 
-    public AdaLexHelper(int sCOMMENT, AdaLexer lexer) {
+    AdaLexHelper(int sCOMMENT, AdaLexer lexer) {
         if (lexer == null) {
             throw new IllegalArgumentException("`lexer' is null");
         }

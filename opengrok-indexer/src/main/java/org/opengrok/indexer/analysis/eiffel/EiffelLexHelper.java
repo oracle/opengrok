@@ -49,7 +49,7 @@ class EiffelLexHelper implements Resettable {
      */
     private String vstring_closer;
 
-    public EiffelLexHelper(int vSTRING, int sCOMMENT, EiffelLexer lexer) {
+    EiffelLexHelper(int vSTRING, int sCOMMENT, EiffelLexer lexer) {
         if (lexer == null) {
             throw new IllegalArgumentException("`lexer' is null");
         }

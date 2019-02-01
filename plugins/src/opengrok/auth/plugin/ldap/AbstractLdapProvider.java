@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -78,16 +78,16 @@ public abstract class AbstractLdapProvider {
      * @param values match these LDAP value
      * @return set of important attributes for the user
      */
-    abstract public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values);
+    public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values);
 
     /**
      * @return if the provider is correctly configured
      */
-    abstract public boolean isConfigured();
+    public abstract boolean isConfigured();
 
     /**
      * Closes the LDAP provider.
      */
-    abstract public void close();
+    public abstract void close();
 
 }

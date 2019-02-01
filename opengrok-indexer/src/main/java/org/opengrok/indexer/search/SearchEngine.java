@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -534,12 +534,12 @@ public class SearchEngine {
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
                             Summary sum = summarizer.getSummary(new String(content, 0, l));
-                            Fragment fragments[] = sum.getFragments();
-                            for (int jj = 0; jj < fragments.length; ++jj) {
-                                String match = fragments[jj].toString();
+                            Fragment[] fragments = sum.getFragments();
+                            for (Fragment fragment : fragments) {
+                                String match = fragment.toString();
                                 if (match.length() > 0) {
-                                    if (!fragments[jj].isEllipsis()) {
-                                        Hit hit = new Hit(filename, fragments[jj].toString(), "", true, alt);
+                                    if (!fragment.isEllipsis()) {
+                                        Hit hit = new Hit(filename, fragment.toString(), "", true, alt);
                                         ret.add(hit);
                                     }
                                     hasContext = true;

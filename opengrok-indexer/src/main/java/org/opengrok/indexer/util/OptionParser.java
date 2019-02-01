@@ -77,14 +77,14 @@ public class OptionParser {
 
     // Used to hold data type converters
     @SuppressWarnings("rawtypes")
-    static private HashMap<Class,DataParser> converters = new HashMap<>();
+    private static HashMap<Class,DataParser> converters = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     static class DataParser {
         Class dataType;
         Function<String,Object> converter;
         
-        public DataParser(Class cls, Function<String,Object> converter) {
+        DataParser(Class cls, Function<String,Object> converter) {
             this.dataType = cls;
             this.converter = converter;
         }
@@ -100,26 +100,18 @@ public class OptionParser {
     }
     
     // Option object referenced by its name(s)
-    final private HashMap<String,Option> options;
+    private final HashMap<String, Option> options;
     
     // List of options in order of declaration
-    final private List<Option> optionList;
+    private final List<Option> optionList;
     
     // Keeps track of separator elements placed in option summary
-    final private List<Object> usageSummary;
+    private final List<Object> usageSummary;
     
     private boolean scanning = false;
     
     private String prologue;  // text emitted before option summary
     private String epilogue;  // text emitted after options summary
-    
-    class DuplicateOptionName extends Exception {
-        private static final long serialVersionUID = -2807551057713512315L;
-
-        public DuplicateOptionName(String message) {
-            super(message);
-        }
-    }
     
     public class Option {
         
@@ -234,8 +226,8 @@ public class OptionParser {
     }
     
     // Allowable text values for Boolean.class, with case insensitivity.
-    final private static Pattern VERITY = Pattern.compile("(?i)(true|yes|on)");
-    final private static Pattern FALSEHOOD = Pattern.compile("(?i)(false|no|off)");
+    private static final Pattern VERITY = Pattern.compile("(?i)(true|yes|on)");
+    private static final Pattern FALSEHOOD = Pattern.compile("(?i)(false|no|off)");
     
     private static Boolean parseVerity(String text) {
         Matcher m = VERITY.matcher(text);

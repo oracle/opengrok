@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -101,7 +101,7 @@ public final class AuthorizationFramework {
     private boolean loadJars = true;
     
     // HTTP session attribute that holds plugin version 
-    private final static String SESSION_VERSION = "opengrok-authorization-session-version";
+    private static final String SESSION_VERSION = "opengrok-authorization-session-version";
     
     /**
      * Create a new instance of authorization framework with no plugin

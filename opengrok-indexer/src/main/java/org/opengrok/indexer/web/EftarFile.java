@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.web;
@@ -31,14 +31,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Logger;
-
-import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System
@@ -55,8 +51,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
  */
 public class EftarFile {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EftarFile.class);
-
     public static final int RECORD_LENGTH = 14;
     private long offset;
 
@@ -69,7 +63,7 @@ public class EftarFile {
         public long childOffset;
         public long myOffset;
 
-        public Node(long hash, String tag) {
+        Node(long hash, String tag) {
             this.hash = hash;
             this.tag = tag;
             children = new TreeMap<>();
@@ -84,56 +78,6 @@ public class EftarFile {
 
         public Node get(long hash) {
             return children.get(hash);
-        }
-    }
-
-    class FNode {
-
-        public long offset;
-        public long hash;
-        public int childOffset;
-        public int numChildren;
-        public int tagOffset;
-
-        public FNode(RandomAccessFile f) throws Throwable {
-            offset = f.getFilePointer();
-            hash = f.readLong();
-            childOffset = f.readUnsignedShort();
-            numChildren = f.readUnsignedShort();
-            tagOffset = f.readUnsignedShort();
-        }
-
-        public FNode(long hash, long offset, int childOffset, int num, int tagOffset) {
-            this.hash = hash;
-            this.offset = offset;
-            this.childOffset = childOffset;
-            this.numChildren = num;
-            this.tagOffset = tagOffset;
-        }
-
-        public FNode get(long hash, RandomAccessFile f) throws Throwable {
-            if (childOffset == 0) {
-                return null;
-            }
-            return sbinSearch(offset + childOffset, numChildren, hash, f);
-        }
-
-        private FNode sbinSearch(long start, int len, long hash, RandomAccessFile f) throws Throwable {
-            int b = 0;
-            int e = len;
-            while (b <= e) {
-                int m = (b + e) / 2;
-                f.seek(start + m * RECORD_LENGTH);
-                long mhash = f.readLong();
-                if (hash > mhash) {
-                    b = m + 1;
-                } else if (hash < mhash) {
-                    e = m - 1;
-                } else {
-                    return new FNode(mhash, f.getFilePointer() - 8l, f.readUnsignedShort(), f.readUnsignedShort(), f.readUnsignedShort());
-                }
-            }
-            return null;
         }
     }
 

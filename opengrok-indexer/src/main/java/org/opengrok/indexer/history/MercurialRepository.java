@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -215,7 +215,6 @@ public class MercurialRepository extends Repository {
 
         File directory = new File(getDirectoryName());
 
-        Process process = null;
         String revision = rev;
 
         if (rev.indexOf(':') != -1) {
@@ -225,7 +224,7 @@ public class MercurialRepository extends Repository {
             String filename
                     = fullpath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "cat", "-r", revision, filename};
+            String[] argv = {RepoCommand, "cat", "-r", revision, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
@@ -250,8 +249,7 @@ public class MercurialRepository extends Repository {
                 ret = new ByteArrayInputStream(out.toByteArray());
             }
         } catch (Exception exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get history: {0}", exp.getClass().toString());
+            LOGGER.log(Level.SEVERE, "Failed to get history", exp);
         }
 
         return ret;

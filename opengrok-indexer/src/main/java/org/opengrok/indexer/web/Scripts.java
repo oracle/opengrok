@@ -41,7 +41,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     /**
      * A script wrapper.
      */
-    static abstract public class Script {
+    public abstract static class Script {
 
         /**
          * Represents the script information, either
@@ -58,7 +58,7 @@ public class Scripts implements Iterable<Scripts.Script> {
             this.priority = priority;
         }
 
-        abstract public String toHtml();
+        public abstract String toHtml();
 
         public String getScriptData() {
             return scriptData;
@@ -72,7 +72,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     /**
      * Script implementing the toHtml() method as an external script resource.
      */
-    static public class FileScript extends Script {
+    public static class FileScript extends Script {
 
         public FileScript(String script, int priority) {
             super(script, priority);
@@ -89,27 +89,6 @@ public class Scripts implements Iterable<Scripts.Script> {
             return builder.toString();
         }
 
-    }
-
-    /**
-     * Script implementing the toHtml() method as an inline script resource.
-     */
-    static public class InlineScript extends Script {
-
-        public InlineScript(String script, int priority) {
-            super(script, priority);
-        }
-
-        @Override
-        public String toHtml() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("\t<script type=\"text/javascript\" data-priority=\"");
-            builder.append(this.getPriority());
-            builder.append("\">/* <![CDATA[ */");
-            builder.append(this.getScriptData());
-            builder.append("\n/* ]]> */</script>\n");
-            return builder.toString();
-        }
     }
 
     protected static final Map<String, Script> SCRIPTS = new TreeMap<>();

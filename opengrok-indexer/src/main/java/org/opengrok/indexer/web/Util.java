@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -84,7 +84,7 @@ public final class Util {
      * </pre>
      * (Edit above and paste below [in NetBeans] for easy String escaping.)
      */
-    private final static Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
+    private static final Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
         "[^A-Za-z0-9_]");
 
     private static String OS = null;
@@ -513,7 +513,7 @@ public final class Util {
         return buf.toString();
     }
 
-    private final static Pattern EMAIL_PATTERN
+    private static final Pattern EMAIL_PATTERN
             = Pattern.compile("([^<\\s]+@[^>\\s]+)");
 
     /**

@@ -549,7 +549,7 @@ class PendingFileCompleter {
         public String absolutePath;
         public File absoluteParent;
         public IOException exception;
-        public PendingFileDeletionExec(String absolutePath) {
+        PendingFileDeletionExec(String absolutePath) {
             this.absolutePath = absolutePath;
         }
     }
@@ -558,7 +558,7 @@ class PendingFileCompleter {
         public String source;
         public String target;
         public IOException exception;
-        public PendingFileRenamingExec(String source, String target) {
+        PendingFileRenamingExec(String source, String target) {
             this.source = source;
             this.target = target;
         }
@@ -568,7 +568,7 @@ class PendingFileCompleter {
         public String source;
         public String targetRel;
         public IOException exception;
-        public PendingSymlinkageExec(String source, String relTarget) {
+        PendingSymlinkageExec(String source, String relTarget) {
             this.source = source;
             this.targetRel = relTarget;
         }

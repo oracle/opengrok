@@ -130,7 +130,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         private final BlockingQueue<E> queue;
         private final E e;
 
-        public ObjectReturner(BlockingQueue<E> queue, E e) {
+        ObjectReturner(BlockingQueue<E> queue, E e) {
             this.queue = queue;
             this.e = e;
         }

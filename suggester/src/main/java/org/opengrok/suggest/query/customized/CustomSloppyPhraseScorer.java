@@ -530,7 +530,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     }
 
     /** Actual position in doc of a PhrasePosition, relies on that position = tpPos - offset) */
-    private final int tpPos(PhrasePositions pp) {
+    private int tpPos(PhrasePositions pp) {
         return pp.position + pp.offset;
     }
 
