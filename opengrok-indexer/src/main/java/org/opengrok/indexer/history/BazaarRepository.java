@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -106,7 +106,7 @@ public class BazaarRepository extends Repository {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "cat", "-r", rev, filename};
+            String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();

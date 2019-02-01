@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -110,7 +110,7 @@ public class ClearCaseRepository extends Repository {
 
             String decorated = filename + "@@" + rev;
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "get", "-to", tmpName, decorated};
+            String[] argv = {RepoCommand, "get", "-to", tmpName, decorated};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();

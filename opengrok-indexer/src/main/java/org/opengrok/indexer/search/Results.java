@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -318,7 +318,7 @@ public final class Results {
         final String morePrefix;
         final int tabSize;
 
-        public PrintPlainFinalArgs(Writer out, SearchHelper shelp,
+        PrintPlainFinalArgs(Writer out, SearchHelper shelp,
                 RuntimeEnvironment env, String xrefPrefix, int tabSize,
                 String morePrefix) {
             this.out = out;

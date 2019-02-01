@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
- * Portions Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -56,18 +56,18 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
     /**
      * Store entries processed from executor output
      */
-    private final List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private final List<HistoryEntry> entries = new ArrayList<>();
     /**
      * Store renamed files processed from executor output
      */
-    private final Set<String> renamedFiles = new TreeSet<String>();
+    private final Set<String> renamedFiles = new TreeSet<>();
 
     /**
      * Constructor to construct the thing to be constructed.
      *
      * @param datePattern a simple date format string
      */
-    public BitKeeperHistoryParser(String datePattern) {
+    BitKeeperHistoryParser(String datePattern) {
         dateFormat = new SimpleDateFormat(datePattern);
     }
 
@@ -77,7 +77,7 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
      * @return history a history object
      */
     History getHistory() {
-        return new History(entries, new ArrayList<String>(renamedFiles));
+        return new History(entries, new ArrayList<>(renamedFiles));
     }
 
     /**
@@ -107,7 +107,7 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
                     entry = null;
                 }
 
-                final String fields[] = line.substring(2).split("\t");
+                final String[] fields = line.substring(2).split("\t");
                 final HistoryEntry newEntry = new HistoryEntry();
                 try {
                     if (fields[0].equals("ChangeSet")) {

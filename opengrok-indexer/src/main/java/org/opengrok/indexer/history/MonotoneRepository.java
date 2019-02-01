@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -76,7 +76,7 @@ public class MonotoneRepository extends Repository {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "cat", "-r", revision, filename};
+            String[] argv = {RepoCommand, "cat", "-r", revision, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
 
@@ -268,7 +268,7 @@ public class MonotoneRepository extends Repository {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("database") && line.contains("default-server")) {
-                    String parts[] = line.split("\\s+");
+                    String[] parts = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", getDirectoryName());

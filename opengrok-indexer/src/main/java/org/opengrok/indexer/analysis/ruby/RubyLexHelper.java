@@ -48,7 +48,7 @@ interface RubyLexer extends JFlexJointLexer {
 class RubyLexHelper implements Resettable {
 
     // Using equivalent of {Local_nextchar} from RubyProductions.lexh
-    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
+    private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_\u00160-\u0255]+");
 
     private final RubyLexer lexer;
@@ -107,7 +107,7 @@ class RubyLexHelper implements Resettable {
      */
     private Pattern collateralCapture;
 
-    public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN, RubyLexer lexer,
+    RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN, RubyLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
         int pOD) {
         if (lexer == null) {
@@ -582,7 +582,7 @@ class RubyLexHelper implements Resettable {
         private final String terminator;
         private final int state;
 
-        public HereDocSettings(String terminator, int state) {
+        HereDocSettings(String terminator, int state) {
             this.terminator = terminator;
             this.state = state;
         }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -43,7 +43,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * Used to indicate pre-formatted output with
      * {@link Util#htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
      */
-    private final static boolean PRE = true;
+    private static final boolean PRE = true;
 
     private final ScanningSymbolMatcher matcher;
     private Writer out;

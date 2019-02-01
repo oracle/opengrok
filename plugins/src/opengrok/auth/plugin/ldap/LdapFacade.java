@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -101,8 +101,8 @@ public class LdapFacade extends AbstractLdapProvider {
      */
     private interface AttributeMapper<T> {
 
-        public T mapFromAttributes(Attributes attr) throws NamingException;
-    };
+        T mapFromAttributes(Attributes attr) throws NamingException;
+    }
 
     /**
      * Transforms the attributes to the set of strings used for authorization.
@@ -119,7 +119,7 @@ public class LdapFacade extends AbstractLdapProvider {
          *
          * @param values include these values in the result
          */
-        public ContentAttributeMapper(String[] values) {
+        ContentAttributeMapper(String[] values) {
             this.values = values;
         }
 

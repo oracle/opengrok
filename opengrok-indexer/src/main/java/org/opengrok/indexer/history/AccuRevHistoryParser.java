@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -131,7 +131,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
             if (line.startsWith("t")) {             // found transaction
 
-                String data[] = line.split("; ");
+                String[] data = line.split("; ");
                 entry = new HistoryEntry();
 
                 user = data[3].replaceFirst("user: ", "");
@@ -156,7 +156,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
             } else if (line.startsWith("  v")) {  // found version
 
-                String data[] = line.split("\\s+");
+                String[] data = line.split("\\s+");
                 entry.setRevision(data[2]);
                 entry.setActive(true);
                 entries.add(entry);

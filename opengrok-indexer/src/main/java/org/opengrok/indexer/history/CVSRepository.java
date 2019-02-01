@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -216,7 +216,6 @@ public class CVSRepository extends RCSRepository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        Process process = null;
         String revision = rev;
 
         if (rev.indexOf(':') != -1) {
@@ -224,7 +223,7 @@ public class CVSRepository extends RCSRepository {
         }
         try {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "up", "-p", "-r", revision, basename};
+            String[] argv = {RepoCommand, "up", "-p", "-r", revision, basename};
             Executor executor = new Executor(Arrays.asList(argv), new File(parent),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             executor.exec();

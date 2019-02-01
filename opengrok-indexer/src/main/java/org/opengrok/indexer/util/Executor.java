@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.util;
@@ -343,7 +343,7 @@ public class Executor {
      * You should use the StreamHandler interface if you would like to process
      * the output from a process while it is running
      */
-    public static interface StreamHandler {
+    public interface StreamHandler {
 
         /**
          * Process the data in the stream. The processStream function is
@@ -353,7 +353,7 @@ public class Executor {
          * @param in The InputStream containing the data
          * @throws java.io.IOException if any read error
          */
-        public void processStream(InputStream in) throws IOException;
+        void processStream(InputStream in) throws IOException;
     }
 
     private static class SpoolHandler implements StreamHandler {

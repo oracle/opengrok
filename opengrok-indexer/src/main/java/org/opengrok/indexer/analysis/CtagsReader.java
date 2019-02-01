@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -796,15 +796,14 @@ public class CtagsReader {
         public final int lineEnd;
         public final boolean imprecise;
 
-        public CpatIndex(int lineno, int lineStart, int lineEnd) {
+        CpatIndex(int lineno, int lineStart, int lineEnd) {
             this.lineno = lineno;
             this.lineStart = lineStart;
             this.lineEnd = lineEnd;
             this.imprecise = false;
         }
 
-        public CpatIndex(int lineno, int lineStart, int lineEnd,
-            boolean imprecise) {
+        CpatIndex(int lineno, int lineStart, int lineEnd, boolean imprecise) {
             this.lineno = lineno;
             this.lineStart = lineStart;
             this.lineEnd = lineEnd;
@@ -821,7 +820,7 @@ public class CtagsReader {
         public final int end;
         public final String capture;
 
-        public PatResult(int start, int end, String capture) {
+        PatResult(int start, int end, String capture) {
             this.start = start;
             this.end = end;
             this.capture = capture;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -88,7 +88,7 @@ public class Statistics {
     /**
      * Adds a single request into all requests.
      */
-    synchronized public void addRequest() {
+    public synchronized void addRequest() {
         maybeRefresh();
 
         requestsPerMinute++;
@@ -109,7 +109,7 @@ public class Statistics {
     /**
      * Refreshes the last timestamp and number of minutes since start if needed.
      */
-    synchronized protected void maybeRefresh() {
+    protected synchronized void maybeRefresh() {
         if (timeStart + 60 * 1000 <= System.currentTimeMillis()) {
             // several minutes have passed
             minutes += (System.currentTimeMillis() - timeStart) / (60 * 1000);
@@ -123,7 +123,7 @@ public class Statistics {
      *
      * @param category category
      */
-    synchronized public void addRequest(String category) {
+    public synchronized void addRequest(String category) {
         maybeRefresh();
         Long val = requestCategories.get(category);
         if (val == null) {
@@ -138,7 +138,7 @@ public class Statistics {
      * @param category category
      * @return Long value
      */
-    synchronized public Long getRequest(String category) {
+    public synchronized Long getRequest(String category) {
         return requestCategories.get(category);
     }
 
@@ -148,7 +148,7 @@ public class Statistics {
      * @param category category
      * @param v time spent on processing this request
      */
-    synchronized public void addRequestTime(String category, long v) {
+    public synchronized void addRequestTime(String category, long v) {
         addRequest(category);
         Long val = timing.get(category);
         Long min = timingMin.get(category);
@@ -201,23 +201,23 @@ public class Statistics {
         return timingAvg;
     }
 
-    synchronized public void setRequestCategories(Map<String, Long> requestCategories) {
+    public synchronized void setRequestCategories(Map<String, Long> requestCategories) {
         this.requestCategories = requestCategories;
     }
 
-    synchronized public void setTiming(Map<String, Long> timing) {
+    public synchronized void setTiming(Map<String, Long> timing) {
         this.timing = timing;
     }
 
-    synchronized public void setTimingMin(Map<String, Long> timing_min) {
+    public synchronized void setTimingMin(Map<String, Long> timing_min) {
         this.timingMin = timing_min;
     }
 
-    synchronized public void setTimingMax(Map<String, Long> timing_max) {
+    public synchronized void setTimingMax(Map<String, Long> timing_max) {
         this.timingMax = timing_max;
     }
 
-    synchronized public void setTimingAvg(Map<String, Double> timing_avg) {
+    public synchronized void setTimingAvg(Map<String, Double> timing_avg) {
         this.timingAvg = timing_avg;
     }
 
@@ -225,7 +225,7 @@ public class Statistics {
         return timeStart;
     }
 
-    synchronized public void setTimeStart(long timeStart) {
+    public synchronized void setTimeStart(long timeStart) {
         this.timeStart = timeStart;
     }
 
@@ -233,7 +233,7 @@ public class Statistics {
         return requests;
     }
 
-    synchronized public void setRequests(long requests) {
+    public synchronized void setRequests(long requests) {
         this.requests = requests;
     }
 
@@ -241,7 +241,7 @@ public class Statistics {
         return minutes;
     }
 
-    synchronized public void setMinutes(long minutes) {
+    public synchronized void setMinutes(long minutes) {
         this.minutes = minutes;
     }
 
@@ -249,7 +249,7 @@ public class Statistics {
         return requestsPerMinute;
     }
 
-    synchronized public void setRequestsPerMinute(long requestsPerMinute) {
+    public synchronized void setRequestsPerMinute(long requestsPerMinute) {
         this.requestsPerMinute = requestsPerMinute;
     }
 
@@ -260,7 +260,7 @@ public class Statistics {
         return requestsPerMinuteMin;
     }
 
-    synchronized public void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
+    public synchronized void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
         this.requestsPerMinuteMin = requestsPerMinuteMin;
     }
 
@@ -271,7 +271,7 @@ public class Statistics {
         return requestsPerMinuteMax;
     }
 
-    synchronized public void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
+    public synchronized void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
         this.requestsPerMinuteMax = requestsPerMinuteMax;
     }
 
@@ -279,7 +279,7 @@ public class Statistics {
         return this.requestsPerMinuteAvg;
     }
 
-    synchronized public void setRequestsPerMinuteAvg(double value) {
+    public synchronized void setRequestsPerMinuteAvg(double value) {
         this.requestsPerMinuteAvg = value;
     }
 
@@ -287,7 +287,7 @@ public class Statistics {
         return dayHistogram;
     }
 
-    synchronized public void setDayHistogram(long[] dayHistogram) {
+    public synchronized void setDayHistogram(long[] dayHistogram) {
         this.dayHistogram = dayHistogram;
     }
 
@@ -295,7 +295,7 @@ public class Statistics {
         return monthHistogram;
     }
 
-    synchronized public void setMonthHistogram(long[] monthHistogram) {
+    public synchronized void setMonthHistogram(long[] monthHistogram) {
         this.monthHistogram = monthHistogram;
     }
 

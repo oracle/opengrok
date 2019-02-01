@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -49,7 +49,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(BazaarHistoryParser.class);
 
     private String myDir;
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
+    private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
     private BazaarRepository repository=new BazaarRepository(); //NOPMD
 
     BazaarHistoryParser(BazaarRepository repository) {
@@ -113,7 +113,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                 case 0:
                     // First, go on until revno is found.
                     if (s.startsWith("revno:")) {
-                        String rev[] = s.substring("revno:".length()).trim().split(" ");
+                        String[] rev = s.substring("revno:".length()).trim().split(" ");
                         entry.setRevision(rev[0]);
                         ++state;
                     }

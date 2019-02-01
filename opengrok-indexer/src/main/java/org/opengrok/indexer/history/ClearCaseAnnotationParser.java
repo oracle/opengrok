@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -61,7 +61,7 @@ public class ClearCaseAnnotationParser implements Executor.StreamHandler {
         try (BufferedReader in = new BufferedReader(
                 new InputStreamReader(input))) {
             while ((line = in.readLine()) != null) {
-                String parts[] = line.split("\\|");
+                String[] parts = line.split("\\|");
                 String aAuthor = parts[0];
                 String aRevision = parts[1];
                 aRevision = aRevision.replace('\\', '/');

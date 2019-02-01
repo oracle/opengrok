@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -401,7 +401,7 @@ public final class HistoryGuru {
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
                     if (!ignoredNames.ignore(file)) {
-                        File subFiles[] = file.listFiles();
+                        File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', " +
@@ -421,7 +421,7 @@ public final class HistoryGuru {
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
-                        File subFiles[] = file.listFiles();
+                        File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",

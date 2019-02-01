@@ -132,7 +132,7 @@ public class IndexerParallelizer implements AutoCloseable {
 
         private final RuntimeEnvironment env;
 
-        public CtagsObjectFactory(RuntimeEnvironment env) {
+        CtagsObjectFactory(RuntimeEnvironment env) {
             this.env = env;
         }
 

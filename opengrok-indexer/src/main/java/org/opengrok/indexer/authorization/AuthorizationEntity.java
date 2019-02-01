@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -73,7 +73,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * implement the <code>decision</code> method. Returning true if the plugin
      * allows the action or false when the plugin forbids the action.
      */
-    public static abstract class PluginDecisionPredicate implements Predicate<IAuthorizationPlugin> {
+    public abstract static class PluginDecisionPredicate implements Predicate<IAuthorizationPlugin> {
 
         @Override
         public boolean test(IAuthorizationPlugin t) {
@@ -95,7 +95,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * the entity should be skipped for this action and false if the entity
      * should be used.
      */
-    public static abstract class PluginSkippingPredicate implements Predicate<AuthorizationEntity> {
+    public abstract static class PluginSkippingPredicate implements Predicate<AuthorizationEntity> {
 
         @Override
         public boolean test(AuthorizationEntity t) {
@@ -165,14 +165,14 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      *
      * @see IAuthorizationPlugin#load(java.util.Map)
      */
-    abstract public void load(Map<String, Object> parameters);
+    public abstract void load(Map<String, Object> parameters);
 
     /**
      * Unload this entity.
      *
      * @see IAuthorizationPlugin#unload()
      */
-    abstract public void unload();
+    public abstract void unload();
 
     /**
      * Test the given entity if it should be allowed with this authorization
@@ -187,7 +187,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * entity should be omitted from the authorization process
      * @return true if successful; false otherwise
      */
-    abstract public boolean isAllowed(Nameable entity,
+    public abstract boolean isAllowed(Nameable entity,
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate);
 
@@ -199,7 +199,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * @param plugin the new instance of a plugin
      * @return true if there is such case; false otherwise
      */
-    abstract public boolean setPlugin(IAuthorizationPlugin plugin);
+    public abstract boolean setPlugin(IAuthorizationPlugin plugin);
 
     /**
      * Perform a deep copy of the entity.
@@ -207,7 +207,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * @return the new instance of this entity
      */
     @Override
-    abstract public AuthorizationEntity clone();
+    public abstract AuthorizationEntity clone();
 
     /**
      * Print the entity hierarchy.
@@ -218,7 +218,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * will be replaced with a HTML HEX color representing this entity state.
      * @return the string containing this entity representation
      */
-    abstract public String hierarchyToString(String prefix, String colorElement);
+    public abstract String hierarchyToString(String prefix, String colorElement);
 
     /**
      * Get the value of flag

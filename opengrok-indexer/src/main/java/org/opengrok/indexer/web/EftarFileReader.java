@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -98,7 +98,7 @@ public class EftarFileReader implements Closeable {
                 } else if (hash < mhash) {
                     e = m - 1;
                 } else {
-                    return new FNode(mhash, f.getFilePointer() - 8l, f.readUnsignedShort(), f.readUnsignedShort(), f.readUnsignedShort());
+                    return new FNode(mhash, f.getFilePointer() - 8L, f.readUnsignedShort(), f.readUnsignedShort(), f.readUnsignedShort());
                 }
             }
             return null;

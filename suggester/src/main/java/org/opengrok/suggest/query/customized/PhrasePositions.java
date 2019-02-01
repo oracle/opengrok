@@ -45,7 +45,7 @@ final class PhrasePositions {
         this.terms = terms;
     }
 
-    final void firstPosition() throws IOException {
+    void firstPosition() throws IOException {
         count = postings.freq();  // read first pos
         nextPosition();
     }
@@ -56,7 +56,7 @@ final class PhrasePositions {
      * matching exact phrase is easily identified when all PhrasePositions
      * have exactly the same <code>position</code>.
      */
-    final boolean nextPosition() throws IOException {
+    boolean nextPosition() throws IOException {
         if (count-- > 0) {  // read subsequent pos's
             position = postings.nextPosition() - offset;
             return true;

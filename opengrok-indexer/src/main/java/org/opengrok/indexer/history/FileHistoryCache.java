@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -61,7 +61,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 
-/*
+/**
  * Class representing file based storage of per source file history.
  */
 class FileHistoryCache implements HistoryCache {
@@ -70,9 +70,9 @@ class FileHistoryCache implements HistoryCache {
 
     private final Object lock = new Object();
 
-    private final static String HISTORY_CACHE_DIR_NAME = "historycache";
-    private final static String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
-    private final static String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
+    private static final String HISTORY_CACHE_DIR_NAME = "historycache";
+    private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
+    private static final String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
     private boolean historyIndexDone = false;
 

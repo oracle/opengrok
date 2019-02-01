@@ -293,7 +293,7 @@ public class Summarizer {
 
     private class SToken extends PackedTokenAttributeImpl {
 
-        public SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
+        SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
             copyBuffer(startTermBuffer, termBufferOffset, termBufferLength);
             setOffset(start, end);
         }

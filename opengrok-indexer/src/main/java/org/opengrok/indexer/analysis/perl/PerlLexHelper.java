@@ -56,7 +56,7 @@ interface PerlLexer extends JFlexJointLexer {
 class PerlLexHelper implements Resettable {
 
     // Using equivalent of {Identifier} from PerlProductions.lexh
-    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
+    private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_]+");
 
     private final PerlLexer lexer;
@@ -123,7 +123,7 @@ class PerlLexHelper implements Resettable {
      */
     private Pattern collateralCapture;
 
-    public PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
+    PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
         PerlLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
         int pOD) {
@@ -673,7 +673,7 @@ class PerlLexHelper implements Resettable {
         private final String terminator;
         private final int state;
 
-        public HereDocSettings(String terminator, int state) {
+        HereDocSettings(String terminator, int state) {
             this.terminator = terminator;
             this.state = state;
         }

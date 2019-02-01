@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -131,7 +131,7 @@ public final class Indexer {
      * @param argv argument vector
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
         Statistics stats = new Statistics(); //this won't count JVM creation though
         boolean update = true;
 
@@ -960,7 +960,7 @@ public final class Indexer {
         // Projects need to be created first since when adding repositories below,
         // some of the project properties might be needed for that.
         if (addProjects) {
-            File files[] = env.getSourceRootFile().listFiles();
+            File[] files = env.getSourceRootFile().listFiles();
             Map<String,Project> projects = env.getProjects();
 
             // Keep a copy of the old project list so that we can preserve

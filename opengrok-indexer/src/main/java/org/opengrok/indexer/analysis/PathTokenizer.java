@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -77,7 +77,7 @@ public class PathTokenizer extends Tokenizer {
             return true;
         }
 
-        char buf[] = new char[64];
+        char[] buf = new char[64];
         int c;
         int i = 0;
         do {

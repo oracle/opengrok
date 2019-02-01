@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -161,7 +161,7 @@ public class ConfigMerge {
         cfgNew.encodeObject(os);
     }
 
-    private static final void a_usage(PrintStream out) {
+    private static void a_usage(PrintStream out) {
         out.println("Usage:");
         out.println(name + " [-h] <config_file_base> <config_file_new>");
         out.println();
@@ -172,7 +172,7 @@ public class ConfigMerge {
         out.println();
     }
 
-    private static final void b_usage(PrintStream out) {
+    private static void b_usage(PrintStream out) {
         out.println("Maybe try to run " + name + " -h");
     }
 }

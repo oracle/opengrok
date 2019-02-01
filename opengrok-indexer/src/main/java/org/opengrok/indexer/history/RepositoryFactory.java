@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -43,7 +43,7 @@ public final class RepositoryFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryFactory.class);
 
-    private static final Repository repositories[] = {
+    private static final Repository[] repositories = {
         new BitKeeperRepository(),
         new MercurialRepository(),
         new AccuRevRepository(),

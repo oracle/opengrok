@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -287,7 +287,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Fill the project with the current configuration where the applicable
      * project property has a default value.
      */
-    final public void completeWithDefaults() {
+    public final void completeWithDefaults() {
         Configuration defaultCfg = new Configuration();
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

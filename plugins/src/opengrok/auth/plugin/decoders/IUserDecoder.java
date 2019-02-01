@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
@@ -39,5 +39,5 @@ public interface IUserDecoder {
      * @param request the request
      * @return the user object or null (if it could not be constructed)
      */
-    public User fromRequest(HttpServletRequest request);
+    User fromRequest(HttpServletRequest request);
 }

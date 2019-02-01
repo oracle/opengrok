@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  * (derived from Ctags.java).
  */
@@ -122,8 +122,7 @@ public class MandocRunner {
 
         errThread = new Thread(() -> {
             // implicitly capture `errorStream' for the InputStreamReader
-            try (final BufferedReader error = new BufferedReader(
-                new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+            try (BufferedReader error = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     LOGGER.log(Level.WARNING, "Error from mandoc: {0}", s);

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -252,7 +252,7 @@ private static final String RCBREOL="}\n";
         for (int i : c.getInterfaceIndices()) {
             v[i] = 1;
         }
-        String ins[] = c.getInterfaceNames();
+        String[] ins = c.getInterfaceNames();
         if (ins != null && ins.length > 0) {
             out.write(IMPLEMENTS);
             fout.write(IMPLEMENTS);
