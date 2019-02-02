@@ -24,8 +24,8 @@
 package org.opengrok.indexer.analysis.json;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -41,9 +41,9 @@ public class JsonAnalyzer extends AbstractSourceCodeAnalyzer {
      * Creates a new instance of {@link JsonAnalyzer}.
      * @param factory defined instance for the analyzer
      */
-    protected JsonAnalyzer(FileAnalyzerFactory factory) {
+    protected JsonAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new JsonSymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }    
 
     /**

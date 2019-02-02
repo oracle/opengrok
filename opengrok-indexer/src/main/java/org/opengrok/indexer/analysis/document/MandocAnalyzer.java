@@ -27,12 +27,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
-import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -46,9 +46,9 @@ public class MandocAnalyzer extends TextAnalyzer {
      * Creates a new instance of MandocAnalyzer
      * @param factory defined instance for the analyzer
      */
-    protected MandocAnalyzer(FileAnalyzerFactory factory) {
+    protected MandocAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new TroffFullTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

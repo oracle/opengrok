@@ -96,7 +96,7 @@ public class LuceneCompatibilityTest extends TestCase {
     @SuppressWarnings("rawtypes")
     public void testCompatibility() throws Exception, IOException, IllegalAccessException, IllegalArgumentException {
         for (Iterator it = guru.getAnalyzerFactories().iterator(); it.hasNext();) {
-            FileAnalyzerFactory fa = (FileAnalyzerFactory) it.next();
+            AnalyzerFactory fa = (AnalyzerFactory) it.next();
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();

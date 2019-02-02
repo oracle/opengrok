@@ -24,8 +24,8 @@
 package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.Resettable;
 import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.Resettable;
 
 /**
  * Represents an API for object's using {@link AdaLexHelper}

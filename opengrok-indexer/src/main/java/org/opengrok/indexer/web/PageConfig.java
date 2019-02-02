@@ -58,9 +58,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -129,8 +129,8 @@ public final class PageConfig {
     private Boolean annotate;
     private Annotation annotation;
     private Boolean hasHistory;
-    private static final EnumSet<Genre> txtGenres
-            = EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
+    private static final EnumSet<AbstractAnalyzer.Genre> txtGenres
+            = EnumSet.of(AbstractAnalyzer.Genre.DATA, AbstractAnalyzer.Genre.PLAIN, AbstractAnalyzer.Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private List<String> dirFileList;
@@ -277,7 +277,7 @@ public final class PageConfig {
                     }
                 }
 
-                if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
+                if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
                     return data;
                 }
 

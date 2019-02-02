@@ -54,9 +54,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -496,7 +496,7 @@ public class SearchEngine {
                 Document doc = docs.get(ii);
                 String filename = doc.get(QueryBuilder.PATH);
 
-                Genre genre = Genre.get(doc.get(QueryBuilder.T));
+                AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T));
                 Definitions tags = null;
                 IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
                 if (tagsField != null) {
@@ -512,14 +512,14 @@ public class SearchEngine {
                 if (sourceContext != null) {
                     sourceContext.toggleAlt();
                     try {
-                        if (Genre.PLAIN == genre && (source != null)) {
+                        if (AbstractAnalyzer.Genre.PLAIN == genre && (source != null)) {
                             // SRCROOT is read with UTF-8 as a default.
                             hasContext = sourceContext.getContext(
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
                                 null, null, null, filename, tags, nhits > 100,
                                 false, ret, scopes);
-                        } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
+                        } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /**
                              * For backward compatibility, read the

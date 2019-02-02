@@ -24,8 +24,7 @@
 
 package org.opengrok.indexer.analysis.erlang;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
@@ -41,11 +40,11 @@ public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ErlangAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new ErlangAnalyzer(this);
     }
 }

@@ -24,8 +24,8 @@
 package org.opengrok.indexer.analysis.csharp;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -36,9 +36,9 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
  */
 public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
-    protected CSharpAnalyzer(FileAnalyzerFactory factory) {
+    protected CSharpAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new CSharpSymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

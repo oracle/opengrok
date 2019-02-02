@@ -52,8 +52,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.CtagsInstalled;
@@ -373,7 +373,7 @@ public class IndexerTest {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
-            FileAnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
+            AnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
             if (factory == null) {
                 continue;
             }

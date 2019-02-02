@@ -23,8 +23,7 @@
 
 package org.opengrok.indexer.analysis.swift;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class SwiftAnalyzerFactory extends FileAnalyzerFactory {
@@ -36,11 +35,11 @@ public class SwiftAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public SwiftAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new SwiftAnalyzer(this);
     }
 }

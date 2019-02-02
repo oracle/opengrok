@@ -32,7 +32,7 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -94,7 +94,7 @@ public class XMLXrefTest {
 
         Writer sw = new StringWriter();
         XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
         WriteXrefArgs wargs = new WriteXrefArgs(

@@ -23,8 +23,7 @@
 
 package org.opengrok.indexer.analysis.executables;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ELFAnalyzerFactory extends FileAnalyzerFactory {
@@ -36,11 +35,11 @@ public class ELFAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ELFAnalyzerFactory() {
-        super(null, null, null, MAGICS, null, null, Genre.XREFABLE, name);
+        super(null, null, null, MAGICS, null, null, AbstractAnalyzer.Genre.XREFABLE, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new ELFAnalyzer(this);
     }
 }

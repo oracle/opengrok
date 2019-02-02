@@ -24,7 +24,7 @@
 package org.opengrok.indexer.analysis.plain;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 
@@ -53,7 +53,7 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
      * @param factory defined instance for the analyzer
      * @param symbolTokenizer defined instance for the analyzer
      */
-    protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory,
+    protected AbstractSourceCodeAnalyzer(AnalyzerFactory factory,
         JFlexTokenizer symbolTokenizer) {
         super(factory, symbolTokenizer);
     }

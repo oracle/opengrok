@@ -22,8 +22,7 @@
  */
 package org.opengrok.indexer.analysis.c;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class CxxAnalyzerFactory extends FileAnalyzerFactory {
@@ -43,11 +42,11 @@ public class CxxAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CxxAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new CxxAnalyzer(this);
     }
 }

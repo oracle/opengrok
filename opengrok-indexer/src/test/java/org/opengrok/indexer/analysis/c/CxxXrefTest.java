@@ -35,9 +35,10 @@ import java.io.Writer;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
@@ -78,7 +79,7 @@ public class CxxXrefTest {
 
         Writer sw = new StringWriter();
         CxxAnalyzerFactory fac = new CxxAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(getTagsDefinitions());

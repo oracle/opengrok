@@ -23,8 +23,8 @@
  */
 package org.opengrok.indexer.web;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.suigeneris.jrcs.diff.Revision;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 
 /**
  * A simple container to store the data required to generated a view of diffs
@@ -41,7 +41,7 @@ public class DiffData {
     /** the HTML escaped filename used */
     public String filename;
     /** the genre of the requested diff */
-    public Genre genre;
+    public AbstractAnalyzer.Genre genre;
     /** the original and new revision container */
     public Revision revision;
     /** the URI encoded parameter values of the request. {@code param[0]}

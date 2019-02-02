@@ -32,8 +32,8 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -89,7 +89,7 @@ public class TroffXrefTest {
 
         Writer sw = new StringWriter();
         TroffAnalyzerFactory fac = new TroffAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
         WriteXrefArgs wargs = new WriteXrefArgs(

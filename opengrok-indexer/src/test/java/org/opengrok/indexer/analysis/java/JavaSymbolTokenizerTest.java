@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class JavaSymbolTokenizerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaSymbolTokenizerTest.class);
 
-    private final FileAnalyzer analyzer;
+    private final AbstractAnalyzer analyzer;
 
     public JavaSymbolTokenizerTest() {
         this.analyzer = new JavaAnalyzerFactory().getAnalyzer();

@@ -23,8 +23,7 @@
  */
 package org.opengrok.indexer.analysis.sh;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ShAnalyzerFactory extends FileAnalyzerFactory {
@@ -61,11 +60,11 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ShAnalyzerFactory() {
-        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new ShAnalyzer(this);
     }
 }
