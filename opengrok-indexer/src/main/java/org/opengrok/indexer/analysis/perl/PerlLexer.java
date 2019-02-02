@@ -26,7 +26,6 @@ package org.opengrok.indexer.analysis.perl;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,6 +39,7 @@ import org.opengrok.indexer.web.HtmlConsts;
 /**
  * Represents an abstract base class for Perl lexers.
  */
+@SuppressWarnings("Duplicates")
 abstract class PerlLexer extends JFlexSymbolMatcher
         implements JFlexJointLexer, Resettable {
 
@@ -47,13 +47,56 @@ abstract class PerlLexer extends JFlexSymbolMatcher
     private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_]+");
 
-    private PerlLexerData d;
+    private Queue<HereDocSettings> hereSettings;
 
-    private Stack<PerlLexerData> data;
+    /**
+     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
+     * operator name (e.g., "m" or "tr") is stored. Unlike {@code endqchar} it
+     * is not unset when the quote ends, because it is useful to indicate if
+     * quote modifier characters are expected.
+     */
+    private String qopname;
 
-    PerlLexer() {
-        d = new PerlLexerData();
-    }
+    /**
+     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
+     * terminating character is stored.
+     */
+    private char endqchar;
+
+    /**
+     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
+     * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
+     * nesting is tracked and {@code nendqchar} is incremented appropriately.
+     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
+     */
+    private char nestqchar;
+
+    /**
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of remaining end separators in an operator section is stored.
+     * It starts at 1, and any nesting increases the value.
+     */
+    private int nendqchar;
+
+    /**
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of sections for the operator is stored. E.g., for m//, it is 1;
+     * for tr/// it is 2.
+     */
+    private int nsections;
+
+    /**
+     * When matching a two part construct like tr/// or s```, etc., after the
+     * first end separator, {@code waitq} is set to true so that nesting is not
+     * active.
+     */
+    private boolean waitq;
+
+    /**
+     * When matching a quoting construct, a Pattern to identify collateral
+     * capture characters is stored.
+     */
+    private Pattern collateralCapture;
 
     /**
      * Resets the instance to an initial state.
@@ -61,10 +104,16 @@ abstract class PerlLexer extends JFlexSymbolMatcher
     @Override
     public void reset() {
         super.reset();
-        d = new PerlLexerData();
-        if (data != null) {
-            data.clear();
+        collateralCapture = null;
+        endqchar = '\0';
+        if (hereSettings != null) {
+            hereSettings.clear();
         }
+        nendqchar = 0;
+        nestqchar = '\0';
+        nsections = 0;
+        qopname = null;
+        waitq = false;
     }
 
     /**
@@ -78,24 +127,24 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      */
     public boolean maybeEndQuote(String capture) {
         char c = capture.charAt(0);
-        if (c == d.endqchar) {
-            if (--d.nendqchar <= 0) {
-                if (--d.nsections <= 0) {
-                    d.endqchar = '\0';
-                    d.nestqchar = '\0';
+        if (c == endqchar) {
+            if (--nendqchar <= 0) {
+                if (--nsections <= 0) {
+                    endqchar = '\0';
+                    nestqchar = '\0';
                     return true;
-                } else if (d.nestqchar != '\0') {
-                    d.waitq = true;
+                } else if (nestqchar != '\0') {
+                    waitq = true;
                 } else {
-                    d.nendqchar = 1;
+                    nendqchar = 1;
                 }
             }
-        } else if (d.nestqchar != '\0' && c == d.nestqchar) {
-            if (d.waitq) {
-                d.waitq = false;
-                d.nendqchar = 1;
+        } else if (nestqchar != '\0' && c == nestqchar) {
+            if (waitq) {
+                waitq = false;
+                nendqchar = 1;
             } else {
-                ++d.nendqchar;
+                ++nendqchar;
             }
         }
         return false;
@@ -107,7 +156,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (d.qopname) {
+        switch (qopname) {
             case "m":
             case "qr":
             case "s":
@@ -141,29 +190,29 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         // `boundary'.
         String boundary = "";
         String postboundary = capture;
-        d.qopname = "";
+        qopname = "";
         if (namelength > 0) {
             postboundary = capture.replaceFirst("^\\W+", "");
             boundary = capture.substring(0, capture.length() -
                 postboundary.length());
-            d.qopname = postboundary.substring(0, namelength);
+            qopname = postboundary.substring(0, namelength);
         }
-        d.waitq = false;
-        d.nendqchar = 1;
-        d.collateralCapture = null;
+        waitq = false;
+        nendqchar = 1;
+        collateralCapture = null;
 
-        switch (d.qopname) {
+        switch (qopname) {
             case "tr":
             case "s":
             case "y":
-                d.nsections = 2;
+                nsections = 2;
                 break;
             default:
-                d.nsections = 1;
+                nsections = 1;
                 break;
         }
 
-        String postop = postboundary.substring(d.qopname.length());
+        String postop = postboundary.substring(qopname.length());
         String ltpostop = postop.replaceFirst("^\\s+", "");
         char opc = ltpostop.charAt(0);
         setEndQuoteChar(opc);
@@ -171,8 +220,8 @@ abstract class PerlLexer extends JFlexSymbolMatcher
 
         if (doWrite) {
             offer(boundary);
-            if (d.qopname.length() > 0) {
-                offerSymbol(d.qopname, boundary.length(), false);
+            if (qopname.length() > 0) {
+                offerSymbol(qopname, boundary.length(), false);
             } else {
                 skipSymbol();
             }
@@ -211,24 +260,24 @@ abstract class PerlLexer extends JFlexSymbolMatcher
     private void setEndQuoteChar(char opener) {
         switch (opener) {
             case '[':
-                d.nestqchar = opener;
-                d.endqchar = ']';
+                nestqchar = opener;
+                endqchar = ']';
                 break;
             case '<':
-                d.nestqchar = opener;
-                d.endqchar = '>';
+                nestqchar = opener;
+                endqchar = '>';
                 break;
             case '(':
-                d.nestqchar = opener;
-                d.endqchar = ')';
+                nestqchar = opener;
+                endqchar = ')';
                 break;
             case '{':
-                d.nestqchar = opener;
-                d.endqchar = '}';
+                nestqchar = opener;
+                endqchar = '}';
                 break;
             default:
-                d.nestqchar = '\0';
-                d.endqchar = opener;
+                nestqchar = '\0';
+                endqchar = opener;
                 break;
         }
     }
@@ -309,8 +358,8 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         }
 
         offer(capture);
-        if (d.hereSettings == null) {
-            d.hereSettings = new LinkedList<>();
+        if (hereSettings == null) {
+            hereSettings = new LinkedList<>();
         }
 
         String remaining = capture;
@@ -370,7 +419,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
             state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
-        d.hereSettings.add(settings);
+        hereSettings.add(settings);
     }
 
     /**
@@ -379,8 +428,8 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (d.hereSettings != null && d.hereSettings.size() > 0) {
-            HereDocSettings settings = d.hereSettings.peek();
+        if (hereSettings != null && hereSettings.size() > 0) {
+            HereDocSettings settings = hereSettings.peek();
             yypush(settings.state);
             disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
@@ -395,19 +444,19 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      */
     public boolean maybeEndHere(String capture) throws IOException {
         String trimmed = capture.replaceFirst("^\\s+", "");
-        HereDocSettings settings = d.hereSettings.peek();
+        HereDocSettings settings = hereSettings.peek();
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
             disjointSpan(null);
             didZspan = true;
-            d.hereSettings.remove();
+            hereSettings.remove();
         }
 
         offer(capture);
 
-        if (d.hereSettings.size() > 0) {
-            settings = d.hereSettings.peek();
+        if (hereSettings.size() > 0) {
+            settings = hereSettings.peek();
             yybegin(settings.state);
             if (didZspan) {
                 disjointSpan(HtmlConsts.STRING_CLASS);
@@ -430,7 +479,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
     public void sigilID(String capture) throws IOException {
         String sigil = capture.substring(0, 1);
 
-        if (capture.charAt(0) == d.endqchar) {
+        if (capture.charAt(0) == endqchar) {
             skipSymbol();
             offer(sigil);
             if (maybeEndQuote(sigil)) {
@@ -445,7 +494,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         String s0 = postsigil.substring(0, postsigil.length() - id.length());
 
         int ohnooo;
-        if ((ohnooo = id.indexOf(d.endqchar)) == -1) {
+        if ((ohnooo = id.indexOf(endqchar)) == -1) {
             offer(sigil);
             offer(s0);
             offerSymbol(id, sigil.length() + s0.length(), true);
@@ -526,7 +575,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * instead.
      */
     public void specialID(String capture) throws IOException {
-        if (capture.indexOf(d.endqchar) == -1) {
+        if (capture.indexOf(endqchar) == -1) {
             offerKeyword(capture);
         } else {
             for (int i = 0; i < capture.length(); ++i) {
@@ -548,22 +597,22 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (d.endqchar == '\0') {
+        if (endqchar == '\0') {
             return null;
         }
-        if (d.collateralCapture != null) {
-            return d.collateralCapture;
+        if (collateralCapture != null) {
+            return collateralCapture;
         }
 
         StringBuilder patb = new StringBuilder("[");
-        patb.append(Pattern.quote(String.valueOf(d.endqchar)));
-        if (d.nestqchar != '\0') {
-            patb.append(Pattern.quote(String.valueOf(d.nestqchar)));
+        patb.append(Pattern.quote(String.valueOf(endqchar)));
+        if (nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(nestqchar)));
         }
         patb.append("]");
         patb.append(RegexUtils.getNotFollowingEscapePattern());
-        d.collateralCapture = Pattern.compile(patb.toString());
-        return d.collateralCapture;
+        collateralCapture = Pattern.compile(patb.toString());
+        return collateralCapture;
     }
 
     /**
@@ -585,18 +634,6 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @throws IOException I/O exception
      */
     abstract void abortQuote() throws IOException;
-
-    void pushData() {
-        if (data == null) {
-            data = new Stack<>();
-        }
-        data.push(d);
-        d = new PerlLexerData();
-    }
-
-    void popData() {
-        d = data.pop();
-    }
 
     /**
      * Subclasses must override to get the constant value created by JFlex to
@@ -658,7 +695,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      */
     abstract int POD();
 
-    class HereDocSettings {
+    private static class HereDocSettings {
         private final String terminator;
         private final int state;
 
@@ -666,63 +703,5 @@ abstract class PerlLexer extends JFlexSymbolMatcher
             this.terminator = terminator;
             this.state = state;
         }
-
-        public String getTerminator() { return terminator; }
-
-        public int getState() { return state; }
-    }
-
-    class PerlLexerData {
-        private Queue<HereDocSettings> hereSettings;
-
-        /**
-         * When matching a quoting construct like qq[], q(), m//, s```, etc.,
-         * the operator name (e.g., "m" or "tr") is stored. Unlike
-         * {@code endqchar} it is not unset when the quote ends, because it is
-         * useful to indicate if quote modifier characters are expected.
-         */
-        private String qopname;
-
-        /**
-         * When matching a quoting construct like qq[], q(), m//, s```, etc.,
-         * the terminating character is stored.
-         */
-        private char endqchar;
-
-        /**
-         * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{}
-         * that nest, the begin character ('[', '&lt;', '(', or '{') is stored
-         * so that nesting is tracked and {@code nendqchar} is incremented
-         * appropriately.  Otherwise, {@code nestqchar} is set to '\0' if no
-         * nesting occurs.
-         */
-        private char nestqchar;
-
-        /**
-         * When matching a quoting construct like qq//, m//, or s```, etc., the
-         * number of remaining end separators in an operator section is stored.
-         * It starts at 1, and any nesting increases the value.
-         */
-        private int nendqchar;
-
-        /**
-         * When matching a quoting construct like qq//, m//, or s```, etc., the
-         * number of sections for the operator is stored. E.g., for m//, it is
-         * 1; for tr/// it is 2.
-         */
-        private int nsections;
-
-        /**
-         * When matching a two part construct like tr/// or s```, etc., after
-         * the first end separator, {@code waitq} is set to true so that
-         * nesting is not active.
-         */
-        private boolean waitq;
-
-        /**
-         * When matching a quoting construct, a Pattern to identify collateral
-         * capture characters is stored.
-         */
-        private Pattern collateralCapture;
     }
 }

@@ -40,6 +40,7 @@ import org.opengrok.indexer.web.HtmlConsts;
 /**
  * Represents an abstract base class for Ruby lexers.
  */
+@SuppressWarnings("Duplicates")
 abstract class RubyLexer extends JFlexSymbolMatcher
         implements JFlexJointLexer, Resettable {
 
@@ -581,7 +582,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      */
     abstract int POD();
 
-    private class HereDocSettings {
+    private static class HereDocSettings {
         private final String terminator;
         private final int state;
 
@@ -589,10 +590,6 @@ abstract class RubyLexer extends JFlexSymbolMatcher
             this.terminator = terminator;
             this.state = state;
         }
-
-        public String getTerminator() { return terminator; }
-
-        public int getState() { return state; }
     }
 
     private static class RubyLexerData {
