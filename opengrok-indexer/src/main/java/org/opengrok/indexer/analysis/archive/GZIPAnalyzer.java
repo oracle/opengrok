@@ -38,6 +38,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -85,7 +86,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
             String newname = path.substring(0, path.length() - 3);
             //System.err.println("GZIPPED OF = " + newname);
             try (InputStream gzis = gzSrc.getStream()) {
-                fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+                fa = RuntimeEnvironment.getInstance().getAnalyzerGuru().getAnalyzer(gzis, newname);
             }
             if (fa == null) {
                 this.g = Genre.DATA;

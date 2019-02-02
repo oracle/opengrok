@@ -149,8 +149,8 @@ public final class Indexer {
                 PrintStream helpStream = status != 0 ? System.err : System.out;
                 helpStream.println(helpUsage);
                 if (helpDetailed) {
-                    helpStream.println(AnalyzerGuruHelp.getUsage());
-                    helpStream.println(ConfigurationHelp.getSamples());
+                    System.err.println(AnalyzerGuruHelp.getUsage(RuntimeEnvironment.getInstance().getAnalyzerGuru()));
+                    System.err.println(ConfigurationHelp.getSamples());
                 }
                 System.exit(status);
             }
@@ -837,7 +837,7 @@ public final class Indexer {
     }
 
     private static void configureFileAnalyzer(String fileSpec, String analyzer) {
-
+        final AnalyzerGuru analyzerGuru = env.getAnalyzerGuru();
         boolean prefix = false;
 
         // removing '.' from file specification
@@ -853,20 +853,20 @@ public final class Indexer {
         // Disable analyzer?
         if (analyzer.equals("-")) {
             if (prefix) {
-                AnalyzerGuru.addPrefix(fileSpec, null);
+                analyzerGuru.addPrefix(fileSpec, null);
             } else {
-                AnalyzerGuru.addExtension(fileSpec, null);
+                analyzerGuru.addExtension(fileSpec, null);
             }
         } else {
             try {
                 if (prefix) {
-                    AnalyzerGuru.addPrefix(
+                    analyzerGuru.addPrefix(
                         fileSpec,
-                        AnalyzerGuru.findFactory(analyzer));
+                            analyzerGuru.findFactory(analyzer));
                 } else {
-                    AnalyzerGuru.addExtension(
+                    analyzerGuru.addExtension(
                         fileSpec,
-                        AnalyzerGuru.findFactory(analyzer));
+                            analyzerGuru.findFactory(analyzer));
                 }
 
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException

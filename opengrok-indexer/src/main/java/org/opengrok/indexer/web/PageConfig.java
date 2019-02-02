@@ -59,7 +59,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
@@ -246,7 +245,7 @@ public final class PageConfig {
                     + getUriEncodedPath() + "\">history</a>";
             return data;
         }
-        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
+        data.genre = env.getAnalyzerGuru().getGenre(getResourceFile().getName());
 
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
@@ -270,7 +269,7 @@ public final class PageConfig {
                  */
                 for (int i = 0; i < 2 && data.genre == null; i++) {
                     try {
-                        data.genre = AnalyzerGuru.getGenre(in[i]);
+                        data.genre = env.getAnalyzerGuru().getGenre(in[i]);
                     } catch (IOException e) {
                         data.errorMsg = "Unable to determine the file type: "
                                 + Util.htmlize(e.getMessage());

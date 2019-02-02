@@ -35,6 +35,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  * Analyzes a BZip2 file Created on September 22, 2005
@@ -80,7 +81,7 @@ public class BZip2Analyzer extends FileAnalyzer {
             String newname = path.substring(0, path.lastIndexOf('.'));
             //System.err.println("BZIPPED OF = " + newname);
             try (InputStream in = bzSrc.getStream()) {
-                fa = AnalyzerGuru.getAnalyzer(in, newname);
+                fa = RuntimeEnvironment.getInstance().getAnalyzerGuru().getAnalyzer(in, newname);
             }
             if (!(fa instanceof BZip2Analyzer)) {
                 if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {

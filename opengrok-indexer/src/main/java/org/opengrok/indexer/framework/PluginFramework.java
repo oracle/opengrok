@@ -45,7 +45,7 @@ import org.opengrok.indexer.util.IOUtils;
  *
  * @author Krystof Tulinger
  */
-public abstract class PluginFramework<PluginType> {
+public abstract class PluginFramework<PluginType, DataType> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginFramework.class);
 
@@ -216,7 +216,8 @@ public abstract class PluginFramework<PluginType> {
 
         // check for implemented interfaces or extended superclasses
         for (Class intf1 : getSuperclassesAndInterfaces(c)) {
-            if (intf1.getCanonicalName().equals(classType.getCanonicalName())
+            if (intf1.getCanonicalName() != null && // anonymous classes
+                    intf1.getCanonicalName().equals(classType.getCanonicalName())
                     && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
                 return (PluginType) c.getDeclaredConstructor().newInstance();
@@ -251,11 +252,12 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
+     * @param data       a custom data created with {@link #beforeReload()}
      * @param classfiles list of files which possibly contain a java class
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadClassFiles(List<File> classfiles) {
+    private void loadClassFiles(DataType data, List<File> classfiles) {
         PluginType plugin;
 
         for (File file : classfiles) {
@@ -265,7 +267,7 @@ public abstract class PluginFramework<PluginType> {
             }
             // Load the class in memory and try to find a configured space for this class.
             if ((plugin = handleLoadClass(classname)) != null) {
-                classLoaded(plugin);
+                classLoaded(data, plugin);
             }
         }
     }
@@ -277,11 +279,12 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
+     * @param data     a custom data created with {@link #beforeReload()}
      * @param jarfiles list of jar files containing java classes
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadJarFiles(List<File> jarfiles) {
+    private void loadJarFiles(DataType data, List<File> jarfiles) {
         PluginType pf;
 
         for (File file : jarfiles) {
@@ -298,7 +301,7 @@ public abstract class PluginFramework<PluginType> {
                     }
                     // Load the class in memory and try to find a configured space for this class.
                     if ((pf = handleLoadClass(classname)) != null) {
-                        classLoaded(pf);
+                        classLoaded(data, pf);
                     }
                 }
             } catch (IOException ex) {
@@ -326,23 +329,26 @@ public abstract class PluginFramework<PluginType> {
      * Allow the implementing class to interact with the loaded class when the class
      * was loaded with the custom class loader.
      *
+     * @param data   a custom data created with {@link #beforeReload()}
      * @param plugin the loaded plugin
      */
-    protected abstract void classLoaded(PluginType plugin);
+    protected abstract void classLoaded(DataType data, PluginType plugin);
 
 
     /**
      * Perform custom operations before the plugins are loaded.
+     *
+     * @return the implementor can generate custom data which will be later passed to {@link #afterReload(Object)}
      */
-    protected abstract void beforeReload();
+    protected abstract DataType beforeReload();
 
     /**
      * Perform custom operations when the framework has reloaded all available plugins.
      * <p>
      * When this is invoked, all plugins has been loaded into the memory and for each available plugin
-     * the {@link #classLoaded(Object)} was invoked.
+     * the {@link #classLoaded(Object, Object)} was invoked.
      */
-    protected abstract void afterReload();
+    protected abstract void afterReload(DataType data);
 
     /**
      * Calling this function forces the framework to reload the plugins.
@@ -352,30 +358,32 @@ public abstract class PluginFramework<PluginType> {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public final void reload() {
-        if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
-            LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
-                    + "All requests allowed.", pluginDirectory);
-            return;
-        }
-
-        LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
-
-        // trashing out the old instance of the loaded enables us
-        // to reload the stack at runtime
-        loader = (PluginClassLoader) AccessController.doPrivileged((PrivilegedAction) () -> new PluginClassLoader(pluginDirectory));
-
         // notify the implementing class that the reload is about to begin
-        beforeReload();
+        final DataType localData = beforeReload();
 
-        // load all other possible plugin classes.
-        if (isLoadClassesEnabled()) {
-            loadClassFiles(IOUtils.listFilesRec(pluginDirectory, ".class"));
-        }
-        if (isLoadJarsEnabled()) {
-            loadJarFiles(IOUtils.listFiles(pluginDirectory, ".jar"));
-        }
+        try {
+            if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
+                LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}.", pluginDirectory);
+                return;
+            }
 
-        // notify the implementing class that the reload has ended
-        afterReload();
+            LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
+
+            // trashing out the old instance of the loaded enables us
+            // to reload the stack at runtime
+            loader = (PluginClassLoader) AccessController.doPrivileged((PrivilegedAction) () -> new PluginClassLoader(pluginDirectory));
+
+
+            // load all other possible plugin classes.
+            if (isLoadClassesEnabled()) {
+                loadClassFiles(localData, IOUtils.listFilesRec(pluginDirectory, ".class"));
+            }
+            if (isLoadJarsEnabled()) {
+                loadJarFiles(localData, IOUtils.listFiles(pluginDirectory, ".jar"));
+            }
+        } finally {
+            // notify the implementing class that the reload has ended
+            afterReload(localData);
+        }
     }
 }

@@ -56,7 +56,6 @@ import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
@@ -228,7 +227,7 @@ public class SearchHelper {
      * @return Set of tuples with file type and description.
      */
     public static Set<Map.Entry<String, String>> getFileTypeDescriptions() {
-        return AnalyzerGuru.getfileTypeDescriptions().entrySet();
+        return RuntimeEnvironment.getInstance().getAnalyzerGuru().getfileTypeDescriptions().entrySet();
     }
 
     File indexDir;

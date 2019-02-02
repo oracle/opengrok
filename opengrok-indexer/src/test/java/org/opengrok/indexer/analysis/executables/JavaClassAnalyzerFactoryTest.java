@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFramework;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 
 /**
@@ -48,7 +49,7 @@ public class JavaClassAnalyzerFactoryTest {
         assertNotNull("despite inclusion locally,", res);
 
         // assert that it is matched
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = new AnalyzerGuru().find(res);
         assertNotNull("javaclass.bin should have factory", fac);
         assertSame("should be JavaClassAnalyzerFactory", fac.getClass(),
             JavaClassAnalyzerFactory.class);
@@ -64,7 +65,7 @@ public class JavaClassAnalyzerFactoryTest {
             "analysis/executables/fat.dylib");
         assertNotNull("despite inclusion locally,", res);
 
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = new AnalyzerGuru().find(res);
         if (fac != null) {
             assertNotSame("should not be JavaClassAnalyzerFactory",
                 fac.getClass(), JavaClassAnalyzerFactory.class);

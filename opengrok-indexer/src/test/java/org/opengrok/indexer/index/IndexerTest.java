@@ -53,6 +53,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFramework;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
@@ -358,8 +359,9 @@ public class IndexerTest {
     public void testXref() throws IOException {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
+        final AnalyzerGuru guru = new AnalyzerGuru();
         for (File f : files) {
-            AnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
+            AnalyzerFactory factory = guru.find(f.getAbsolutePath());
             if (factory == null) {
                 continue;
             }
