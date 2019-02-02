@@ -22,22 +22,10 @@
  */
 package org.opengrok.indexer.authorization;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -47,8 +35,8 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.framework.PluginFramework;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Statistics;
 
 /**
@@ -56,29 +44,25 @@ import org.opengrok.indexer.web.Statistics;
  *
  * @author Krystof Tulinger
  */
-public final class AuthorizationFramework {
+public final class AuthorizationFramework extends PluginFramework<IAuthorizationPlugin> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
-
-    /**
-     * Plugin directory.
-     */
-    private File pluginDirectory;
-
-    /**
-     * Customized class loader for plugin classes.
-     */
-    private AuthorizationPluginClassLoader loader;
 
     /**
      * Stack of available plugins/stacks in the order of the execution.
      */
     AuthorizationStack stack;
+
     /**
      * New stack. This is set by {@code setStack()} and used for delayed
      * reconfiguration in {@code reload()}.
      */
     AuthorizationStack newStack;
+
+    /**
+     * Stack of plugins intended for loading.
+     */
+    AuthorizationStack loadingStack;
 
     /**
      * Lock for safe reloads.
@@ -89,20 +73,14 @@ public final class AuthorizationFramework {
      * Keeping track of the number of reloads in this framework. This is
      * used to invalidate the session and force reload the authorization values
      * stored in HTTP session.
-     *
+     * <p>
      * Starting at 0 and increases with every reload.
      */
     private long pluginVersion = 0;
 
-    /**
-     * Whether to load plugins from class files and jar files.
-     */
-    private boolean loadClasses = true;
-    private boolean loadJars = true;
-    
     // HTTP session attribute that holds plugin version 
     private static final String SESSION_VERSION = "opengrok-authorization-session-version";
-    
+
     /**
      * Create a new instance of authorization framework with no plugin
      * directory and the default plugin stack.
@@ -110,7 +88,7 @@ public final class AuthorizationFramework {
     public AuthorizationFramework() {
         this(null);
     }
-    
+
     /**
      * Create a new instance of authorization framework with the plugin
      * directory and the default plugin stack.
@@ -125,70 +103,12 @@ public final class AuthorizationFramework {
      * Create a new instance of authorization framework with the plugin
      * directory and the plugin stack.
      *
-     * @param path the plugin directory path
+     * @param path  the plugin directory path
      * @param stack the top level stack configuration
      */
     public AuthorizationFramework(String path, AuthorizationStack stack) {
+        super(IAuthorizationPlugin.class, path);
         this.stack = stack;
-        setPluginDirectory(path);
-    }
-
-    /**
-     * Get the plugin directory.
-     * @return plugin directory file
-     */
-    public synchronized File getPluginDirectory() {
-        return pluginDirectory;
-    }
-
-    /**
-     * Set the plugin directory.
-     *
-     * @param pluginDirectory the directory
-     */
-    public synchronized void setPluginDirectory(File pluginDirectory) {
-        this.pluginDirectory = pluginDirectory;
-    }
-
-    /**
-     * Set the plugin directory.
-     *
-     * @param directory the directory path
-     */
-    public void setPluginDirectory(String directory) {
-        setPluginDirectory(directory != null ? new File(directory) : null);
-    }
-
-    /**
-     * Make {@code reload()} search for plugins in class files.
-     * @param flag true or false
-     */
-    public void setLoadClasses(boolean flag) {
-        loadClasses = flag;
-    }
-    
-    /**
-     * Whether to search for plugins in class files.
-     * @return true if enabled, false otherwise
-     */
-    public boolean isLoadClassesEnabled() {
-        return loadClasses;
-    }
-    
-    /**
-     * Make {@code reload()} search for plugins in jar files.
-     * @param flag true or false
-     */
-    public void setLoadJars(boolean flag) {
-        loadJars = flag;
-    }
-    
-    /**
-     * Whether to search for plugins in class files.
-     * @return true if enabled, false otherwise
-     */
-    public boolean isLoadJarsEnabled() {
-        return loadJars;
     }
 
     /**
@@ -198,7 +118,6 @@ public final class AuthorizationFramework {
      * @param request request object
      * @param project project object
      * @return true if yes
-     *
      * @see #checkAll
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
@@ -211,22 +130,22 @@ public final class AuthorizationFramework {
                     public boolean decision(IAuthorizationPlugin plugin) {
                         return plugin.isAllowed(request, project);
                     }
-        }, new AuthorizationEntity.PluginSkippingPredicate() {
-            @Override
-            public boolean shouldSkip(AuthorizationEntity authEntity) {
-                // shouldn't skip if there is no setup
-                if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
-                    return false;
-                }
+                }, new AuthorizationEntity.PluginSkippingPredicate() {
+                    @Override
+                    public boolean shouldSkip(AuthorizationEntity authEntity) {
+                        // shouldn't skip if there is no setup
+                        if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
+                            return false;
+                        }
 
-                // shouldn't skip if the project is contained in the setup
-                if (authEntity.forProjects().contains(project.getName())) {
-                    return false;
-                }
+                        // shouldn't skip if the project is contained in the setup
+                        if (authEntity.forProjects().contains(project.getName())) {
+                            return false;
+                        }
 
-                return true;
-            }
-        });
+                        return true;
+                    }
+                });
     }
 
     /**
@@ -234,9 +153,8 @@ public final class AuthorizationFramework {
      * {@link #checkAll} for more information about invocation order.
      *
      * @param request request object
-     * @param group group object
+     * @param group   group object
      * @return true if yes
-     *
      * @see #checkAll
      */
     public boolean isAllowed(HttpServletRequest request, Group group) {
@@ -249,43 +167,29 @@ public final class AuthorizationFramework {
                     public boolean decision(IAuthorizationPlugin plugin) {
                         return plugin.isAllowed(request, group);
                     }
-        }, new AuthorizationEntity.PluginSkippingPredicate() {
-            @Override
-            public boolean shouldSkip(AuthorizationEntity authEntity) {
-                // shouldn't skip if there is no setup
-                if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
-                    return false;
-                }
+                }, new AuthorizationEntity.PluginSkippingPredicate() {
+                    @Override
+                    public boolean shouldSkip(AuthorizationEntity authEntity) {
+                        // shouldn't skip if there is no setup
+                        if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
+                            return false;
+                        }
 
-                // shouldn't skip if the group is contained in the setup
-                return !authEntity.forGroups().contains(group.getName());
-            }
-        });
-    }
-
-    /**
-     * Return the java canonical name for the plugin class. If the canonical
-     * name does not exist it returns the usual java name.
-     *
-     * @param plugin the plugin
-     * @return the class name
-     */
-    protected String getClassName(IAuthorizationPlugin plugin) {
-        if (plugin.getClass().getCanonicalName() != null) {
-            return plugin.getClass().getCanonicalName();
-        }
-        return plugin.getClass().getName();
+                        // shouldn't skip if the group is contained in the setup
+                        return !authEntity.forGroups().contains(group.getName());
+                    }
+                });
     }
 
     /**
      * Get available plugins.
-     *
+     * <p>
      * This method and couple of following methods use locking because
      * <ol>
      * <li>plugins can be reloaded at anytime</li>
      * <li>requests are pretty asynchronous</li>
      * </ol>
-     *
+     * <p>
      * So this tries to ensure that there will be no
      * {@code ConcurrentModificationException} or other similar exceptions.
      *
@@ -313,7 +217,7 @@ public final class AuthorizationFramework {
     /**
      * Add an entity into the plugin stack.
      *
-     * @param stack the stack
+     * @param stack  the stack
      * @param entity the authorization entity (stack or plugin)
      */
     protected void addPlugin(AuthorizationStack stack, AuthorizationEntity entity) {
@@ -326,7 +230,7 @@ public final class AuthorizationFramework {
      * Add a plug-in into the plug-in stack. This has the same effect as invoking
      * addPlugin(stack, IAuthorizationPlugin, REQUIRED).
      *
-     * @param stack the stack
+     * @param stack  the stack
      * @param plugin the authorization plug-in
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin) {
@@ -343,21 +247,21 @@ public final class AuthorizationFramework {
      * <h3>New plugin</h3>
      * If there is no entry in configuration for this class, the plugin is
      * appended to the end of the plugin stack with flag <code>flag</code>
-     * 
-     * <p><b>The plug-in's load method is NOT invoked at this point</b></p>
      *
+     * <p><b>The plug-in's load method is NOT invoked at this point</b></p>
+     * <p>
      * This has the same effect as invoking
      * {@code addPlugin(new AuthorizationEntity(stack, flag,
      * getClassName(plugin), plugin)}.
      *
-     * @param stack the stack
+     * @param stack  the stack
      * @param plugin the authorization plug-in
-     * @param flag the flag for the new plug-in
+     * @param flag   the flag for the new plug-in
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin, AuthControlFlag flag) {
         if (stack != null) {
             LOGGER.log(Level.WARNING, "Plugin class \"{0}\" was not found in configuration."
-                    + " Appending the plugin at the end of the list with flag \"{1}\"",
+                            + " Appending the plugin at the end of the list with flag \"{1}\"",
                     new Object[]{getClassName(plugin), flag});
             addPlugin(stack, new AuthorizationPlugin(flag, getClassName(plugin), plugin));
         }
@@ -372,7 +276,7 @@ public final class AuthorizationFramework {
         unloadAllPlugins(stack);
         stack.getStack().clear();
     }
-    
+
     private void removeAll(AuthorizationStack stack) {
         unloadAllPlugins(stack);
         stack.getStack().clear();
@@ -401,180 +305,26 @@ public final class AuthorizationFramework {
         }
     }
 
-    /**
-     * Wrapper around the class loading. Report all exceptions into the log.
-     *
-     * @param classname full name of the class
-     * @return the class implementing the {@link IAuthorizationPlugin} interface
-     * or null if there is no such class
-     *
-     * @see #loadClass(String)
-     */
-    public IAuthorizationPlugin handleLoadClass(String classname) {
-        try {
-            return loadClass(classname);
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was not found", classname), ex);
-        } catch (SecurityException ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
-        } catch (InstantiationException ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
-        } catch (Throwable ex) {
-            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
-        }
-        return null;
-    }
-
-    /**
-     * Load a class into JVM with custom class loader. Call a non-parametric
-     * constructor to create a new instance of that class.
-     *
-     * <p>
-     * The classes implementing the {@link IAuthorizationPlugin} interface are
-     * returned and initialized with a call to a non-parametric constructor.
-     * </p>
-     *
-     * @param classname the full name of the class to load
-     * @return the class implementing the {@link IAuthorizationPlugin} interface
-     * or null if there is no such class
-     *
-     * @throws ClassNotFoundException when the class can not be found
-     * @throws SecurityException when it is prohibited to load such class
-     * @throws InstantiationException when it is impossible to create a new
-     * instance of that class
-     * @throws IllegalAccessException when the constructor of the class is not
-     * accessible
-     * @throws NoSuchMethodException when the class does not have no-argument constructor
-     * @throws InvocationTargetException if the underlying constructor of the class throws an exception
-     */
-    @SuppressWarnings("rawtypes")
-    private IAuthorizationPlugin loadClass(String classname) throws ClassNotFoundException,
-            SecurityException,
-            InstantiationException,
-            IllegalAccessException,
-            NoSuchMethodException,
-            InvocationTargetException {
-
-        Class<?> c = loader.loadClass(classname);
-
-        // check for implemented interfaces
-        for (Class intf1 : getInterfaces(c)) {
-            if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())
-                    && !Modifier.isAbstract(c.getModifiers())) {
-                // call to non-parametric constructor
-                return (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
-            }
-        }
-        LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);
-        return null;
-    }
-
-    /**
-     * Get all available interfaces of a class c.
-     *
-     * @param c class
-     * @return array of interfaces of the class c
-     */
-    @SuppressWarnings("rawtypes")
-    protected List<Class> getInterfaces(Class c) {
-        List<Class> interfaces = new LinkedList<>();
-        Class self = c;
-        while (self != null && !interfaces.contains(IAuthorizationPlugin.class)) {
-            interfaces.addAll(Arrays.asList(self.getInterfaces()));
-            self = self.getSuperclass();
-        }
-        return interfaces;
-    }
-
-    /**
-     * Traverse list of files which possibly contain a java class 
-     * to load all classes which are contained within them into the given stack.
-     * Each class is loaded with {@link #handleLoadClass(String)} which
-     * delegates the loading to the custom class loader
-     * {@link #loadClass(String)}.
-     *
-     * @param stack the stack where to add the loaded classes
-     * @param classfiles list of files which possibly contain a java class
-     *
-     * @see #handleLoadClass(String)
-     * @see #loadClass(String)
-     */
-    private void loadClassFiles(AuthorizationStack stack, List<File> classfiles) {
-        IAuthorizationPlugin pf;
-        
-        for (File file : classfiles) {
-            String classname = getClassName(file);
-            if (classname.isEmpty()) {
-                continue;
-            }
-            // Load the class in memory and try to find a configured space for this class.
-            if ((pf = handleLoadClass(classname)) != null) {
-                if (!stack.setPlugin(pf)) {
-                    LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
-                            classname);
-                }
-            }
+    @Override
+    protected void classLoaded(IAuthorizationPlugin plugin) {
+        if (!loadingStack.setPlugin(plugin)) {
+            LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack", plugin.getClass().getCanonicalName());
         }
     }
 
     /**
-     * Traverse list of jar files to load all classes which are contained within
-     * them into the given stack.
-     * Each class is loaded with {@link #handleLoadClass(String)} which
-     * delegates the loading to the custom class loader
-     * {@link #loadClass(String)}.
-     * 
-     * @param stack the stack where to add the loaded classes
-     * @param jarfiles list of jar files containing java classes
-     * 
-     * @see #handleLoadClass(String)
-     * @see #loadClass(String)
+     * Prepare the loading stack for new plugins.
+     *
+     * @see #classLoaded(IAuthorizationPlugin)
      */
-    private void loadJarFiles(AuthorizationStack stack, List<File> jarfiles) {
-        IAuthorizationPlugin pf;
-
-
-        for (File file : jarfiles) {
-            try (JarFile jar = new JarFile(file)) {
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    if (!entry.getName().endsWith(".class")) {
-                        continue;
-                    }
-                    String classname = getClassName(entry);
-                    if (!entry.getName().endsWith(".class") || classname.isEmpty()) {
-                        continue;
-                    }
-                    // Load the class in memory and try to find a configured space for this class.
-                    if ((pf = handleLoadClass(classname)) != null) {
-                        if (!stack.setPlugin(pf)) {
-                            LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
-                                    classname);
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Could not manipulate with file because of: ", ex);
-            }
+    @Override
+    protected void beforeReload() {
+        if (this.newStack == null) {
+            // Clone a new stack not interfering with the current stack.
+            loadingStack = getStack().clone();
+        } else {
+            loadingStack = this.newStack.clone();
         }
-    }
-
-    private String getClassName(File f) {
-        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
-        classname = classname.replace(File.separatorChar, '.'); // convert to package name
-        // no need to check for the index from lastIndexOf because we're in a branch
-        // where we expect the .class suffix
-        classname = classname.substring(0, classname.lastIndexOf('.')); // strip .class
-        return classname;
-    }
-
-    private String getClassName(JarEntry f) {
-        // java jar always uses / as separator
-        String classname = f.getName().replace('/', '.'); // convert to package name
-        return classname.substring(0, classname.lastIndexOf('.'));  // strip .class
     }
 
     /**
@@ -584,7 +334,7 @@ public final class AuthorizationFramework {
      * Plugins are taken from the pluginDirectory.</p>
      *
      * <p>
-     * Old instances of stack are removed and new list of stack is constructed.
+     * Old instances in stack are removed and new list of stack is constructed.
      * Unload and load event is fired on each plugin.</p>
      *
      * <p>
@@ -596,46 +346,15 @@ public final class AuthorizationFramework {
      * @see Configuration#getPluginDirectory()
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void reload() {
-        if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
-            LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
-                    + "All requests allowed.", pluginDirectory);
-            return;
-        }
+    @Override
+    protected void afterReload() {
         if (stack == null) {
             LOGGER.log(Level.WARNING, "Plugin stack not found in configuration: null. All requests allowed.");
             return;
         }
 
-        LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
-
-        // trashing out the old instance of the loaded enables us
-        // to reload the stack at runtime
-        loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            @Override
-            public Object run() {
-                return new AuthorizationPluginClassLoader(pluginDirectory);
-            }
-        });
-
-        AuthorizationStack newLocalStack;
-        if (this.newStack == null) {
-            // Clone a new stack not interfering with the current stack.
-            newLocalStack = getStack().clone();
-        } else {
-            newLocalStack = this.newStack.clone();
-        }
-
-        // Load all other possible plugin classes.
-        if (isLoadClassesEnabled()) {
-            loadClassFiles(newLocalStack, IOUtils.listFilesRec(pluginDirectory, ".class"));
-        }
-        if (isLoadJarsEnabled()) {
-            loadJarFiles(newLocalStack, IOUtils.listFiles(pluginDirectory, ".jar"));
-        }
-
         // fire load events
-        loadAllPlugins(newLocalStack);
+        loadAllPlugins(loadingStack);
 
         AuthorizationStack oldStack;
         /**
@@ -648,8 +367,8 @@ public final class AuthorizationFramework {
         lock.writeLock().lock();
         try {
             oldStack = stack;
-            stack = newLocalStack;
-            
+            stack = loadingStack;
+
             // increase the current plugin version tracked by the framework
             increasePluginVersion();
         } finally {
@@ -662,13 +381,14 @@ public final class AuthorizationFramework {
         // clean the old stack
         removeAll(oldStack);
         oldStack = null;
+        loadingStack = null;
     }
 
     /**
      * Returns the current plugin version in this framework.
-     * 
+     * <p>
      * This number changes with every {@code reload()}.
-     * 
+     * <p>
      * Assumes the {@code lock} is held for reading.
      *
      * @return the current version number
@@ -679,7 +399,7 @@ public final class AuthorizationFramework {
 
     /**
      * Changes the plugin version to the next version.
-     * 
+     * <p>
      * Assumes that {@code lock} is held for writing.
      */
     private void increasePluginVersion() {
@@ -688,7 +408,7 @@ public final class AuthorizationFramework {
 
     /**
      * Is this session marked as invalid?
-     *
+     * <p>
      * Assumes the {@code lock} is held for reading.
      *
      * @param session the request session
@@ -698,7 +418,7 @@ public final class AuthorizationFramework {
         if (session.getAttribute(SESSION_VERSION) == null) {
             return true;
         }
-        
+
         long version = (long) session.getAttribute(SESSION_VERSION);
 
         return version != getPluginVersion();
@@ -745,20 +465,19 @@ public final class AuthorizationFramework {
      * <p>
      * Plugins in the configuration which have not been loaded are skipped.</p>
      *
-     * @param request request object
-     * @param cache cache
-     * @param entity entity with name
-     * @param pluginPredicate predicate to determine the plugin's decision for the request
+     * @param request           request object
+     * @param cache             cache
+     * @param entity            entity with name
+     * @param pluginPredicate   predicate to determine the plugin's decision for the request
      * @param skippingPredicate predicate to determine if the plugin should be skipped for this request
      * @return true if yes
-     *
      * @see RuntimeEnvironment#getPluginStack()
      */
     @SuppressWarnings("unchecked")
     private boolean checkAll(HttpServletRequest request, String cache, Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
-        
+
         if (stack == null) {
             return true;
         }
@@ -786,7 +505,7 @@ public final class AuthorizationFramework {
 
         long time = 0;
         boolean overallDecision = false;
-        
+
         lock.readLock().lock();
         try {
             // Make sure there is a HTTP session that corresponds to current plugin version.
@@ -818,29 +537,29 @@ public final class AuthorizationFramework {
                     String.format("authorization_of_%s", entity.getName()),
                     time);
         }
-        
+
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);
-        
+
         return overallDecision;
     }
 
     /**
      * Perform the actual check for the entity.
-     *
+     * <p>
      * Assumes that {@code lock} is held in read mode.
-     * 
-     * @param entity either a project or a group
-     * @param pluginPredicate a predicate that decides if the authorization is
-     * successful for the given plugin
+     *
+     * @param entity            either a project or a group
+     * @param pluginPredicate   a predicate that decides if the authorization is
+     *                          successful for the given plugin
      * @param skippingPredicate predicate that decides if given authorization
-     * entity should be omitted from the authorization process
+     *                          entity should be omitted from the authorization process
      * @return true if entity is allowed; false otherwise
      */
     private boolean performCheck(Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
-        
-            return stack.isAllowed(entity, pluginPredicate, skippingPredicate);
+
+        return stack.isAllowed(entity, pluginPredicate, skippingPredicate);
     }
 }
