@@ -25,6 +25,8 @@
 
 package org.opengrok.indexer.web;
 
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,8 +65,6 @@ import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
-
-import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
 
 /**
  * Class for useful functions.
@@ -848,22 +848,37 @@ public final class Util {
         return path;
     }
 
+    /**
+     * Determine the operation system name.
+     *
+     * @return the name in lowercase, {@code null} if unknown
+     */
     public static String getOsName() {
         if (OS == null) {
-            OS = System.getProperty("os.name");
+            OS = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         }
         return OS;
     }
 
+    /**
+     * Determine if the current platform is Windows.
+     *
+     * @return true if windows, false when not windows or we can not determine
+     */
     public static boolean isWindows() {
         String osname = getOsName();
-        return osname != null ? osname.startsWith("Windows") : false;
+        return osname != null ? osname.startsWith("windows") : false;
     }
 
+    /**
+     * Determine if the current platform is Unix.
+     *
+     * @return true if unix, false when not unix or we can not determine
+     */
     public static boolean isUnix() {
         String osname = getOsName();
-        return osname != null ? (osname.startsWith("Linux") || osname.startsWith("Solaris") ||
-                osname.contains("bsd") || osname.startsWith("mac")): false;
+        return osname != null ? (osname.startsWith("linux") || osname.startsWith("solaris") ||
+                osname.contains("bsd") || osname.startsWith("mac")) : false;
     }
 
     /**
