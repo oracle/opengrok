@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -1810,8 +1810,9 @@ public class IndexDatabase {
 
     private boolean xrefExistsFor(String path) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (!whatXrefFile(path, env.isCompressXref()).exists()) {
-            LOGGER.log(Level.FINEST, "Missing {0}", path);
+        File xrefFile = whatXrefFile(path, env.isCompressXref());
+        if (!xrefFile.exists()) {
+            LOGGER.log(Level.FINEST, "Missing {0}", xrefFile);
             return false;
         }
 
