@@ -347,6 +347,8 @@ public abstract class PluginFramework<PluginType, DataType> {
      * <p>
      * When this is invoked, all plugins has been loaded into the memory and for each available plugin
      * the {@link #classLoaded(Object, Object)} was invoked.
+     *
+     * @param data a custom data created with {@link #beforeReload()}
      */
     protected abstract void afterReload(DataType data);
 

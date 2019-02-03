@@ -476,7 +476,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     /**
      * Check if this plugin has failed during loading or is missing.
      *
-     * This method has the same effect as !{@link isWorking()}.
+     * This method has the same effect as !{@link #isWorking()}.
      *
      * @return true if failed, true otherwise
      * @see #isWorking()

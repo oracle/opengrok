@@ -35,12 +35,12 @@ import java.util.stream.Collectors;
 public class AnalyzerGuruHelp {
     /**
      * Gets a reportable hunk of text that details
-     * {@link AnalyzerFramework#getPrefixesMap()},
-     * {@link AnalyzerFramework#getExtensionsMap()},
-     * {@link AnalyzerFramework#getMagicsMap()}, and
-     * {@link AnalyzerFramework#getAnalyzerFactoryMatchers()}.
+     * {@link AnalyzerGuru#getPrefixesMap()},
+     * {@link AnalyzerGuru#getExtensionsMap()},
+     * {@link AnalyzerGuru#getMagicsMap()}, and
+     * {@link AnalyzerGuru#getAnalyzerFactoryMatchers()}.
      * @return a defined, multi-line String
-     * @param analyzerGuru
+     * @param analyzerGuru an instance of analyzer guru with info about analyzers
      */
     public static String getUsage(AnalyzerGuru analyzerGuru) {
         StringBuilder b = new StringBuilder();

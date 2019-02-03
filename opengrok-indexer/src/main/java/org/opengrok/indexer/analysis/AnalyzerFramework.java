@@ -190,7 +190,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
             localInfo.fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
         }
 
-        LOGGER.log(Level.INFO, "An analyzer factory {0} has been loaded.", analyzer.getClass().getCanonicalName());
+        LOGGER.log(Level.FINER, "An analyzer factory {0} has been loaded.", analyzer.getClass().getCanonicalName());
     }
 
     /**
@@ -218,7 +218,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
     @Override
     protected void afterReload(AnalyzersInfo localInfo) {
         if (getPluginDirectory() == null || !getPluginDirectory().isDirectory() || !getPluginDirectory().canRead()) {
-            LOGGER.log(Level.INFO, "No plugin directory for analyzers.");
+            LOGGER.log(Level.WARNING, "No plugin directory for analyzers.");
         }
 
         // apply custom settings for this framework
@@ -292,7 +292,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
             AnalyzerFactory oldFactory;
             if (factory == null) {
                 oldFactory = analyzersInfo.prefixes.remove(prefix);
-                LOGGER.log(Level.INFO,
+                LOGGER.log(Level.FINER,
                         "Removing a mapping for prefix {0}{1}",
                         new Object[]{
                                 prefix,
@@ -302,7 +302,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
 
             } else {
                 oldFactory = analyzersInfo.prefixes.put(prefix, factory);
-                LOGGER.log(Level.INFO,
+                LOGGER.log(Level.FINER,
                         "Adding a factory {0} for matching prefix {1}{2}",
                         new Object[]{
                                 factory.getClass().getCanonicalName(),
@@ -336,7 +336,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
             AnalyzerFactory oldFactory;
             if (factory == null) {
                 oldFactory = analyzersInfo.extensions.remove(extension);
-                LOGGER.log(Level.INFO,
+                LOGGER.log(Level.FINER,
                         "Removing a mapping for suffix {0}{1}",
                         new Object[]{
                                 extension,
@@ -345,7 +345,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
                 );
             } else {
                 oldFactory = analyzersInfo.extensions.put(extension, factory);
-                LOGGER.log(Level.INFO,
+                LOGGER.log(Level.FINER,
                         "Adding a factory {0} for matching suffix {1}{2}",
                         new Object[]{
                                 factory.getClass().getCanonicalName(),
