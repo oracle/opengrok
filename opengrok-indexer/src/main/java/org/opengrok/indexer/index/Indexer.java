@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -145,12 +146,11 @@ public final class Indexer {
         try {
             argv = parseOptions(argv);
             if (help) {
-                status = 1;
-                System.err.println(helpUsage);
+                PrintStream helpStream = status != 0 ? System.err : System.out;
+                helpStream.println(helpUsage);
                 if (helpDetailed) {
-                    System.err.println(AnalyzerGuruHelp.getUsage());
-                    System.err.println(
-                        ConfigurationHelp.getSamples());
+                    helpStream.println(AnalyzerGuruHelp.getUsage());
+                    helpStream.println(ConfigurationHelp.getSamples());
                 }
                 System.exit(status);
             }
@@ -414,7 +414,7 @@ public final class Indexer {
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
-            status = 1;
+            status = 1; // with non-zero EXIT STATUS
         }
 
         /*
