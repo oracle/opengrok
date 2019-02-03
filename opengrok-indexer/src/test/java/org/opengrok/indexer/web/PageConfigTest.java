@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -485,7 +486,8 @@ public class PageConfigTest {
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
         Files.createDirectories(temp.toPath());
-        temp.setReadable(false);
+        // skip the test if the implementation does not permit setting permissions
+        Assume.assumeTrue(temp.setReadable(false));
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
