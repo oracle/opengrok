@@ -28,8 +28,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -44,7 +44,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 public class PluginClassLoader extends ClassLoader {
 
     @SuppressWarnings("rawtypes")
-    private final Map<String, Class> cache = new HashMap<>();
+    private final Map<String, Class> cache = new ConcurrentHashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginClassLoader.class);
     private static final String[] CLASS_WHITELIST = new String[]{
@@ -232,8 +232,6 @@ public class PluginClassLoader extends ClassLoader {
             return c;
         }
 
-        checkClassname(name);
-
         // find already loaded class
         if ((c = findLoadedClass(name)) != null) {
             cache.put(name, c);
@@ -256,6 +254,8 @@ public class PluginClassLoader extends ClassLoader {
             } catch (ClassNotFoundException ex) {
             }
         }
+
+        checkClassname(name);
 
         try {
             checkPackage(name);

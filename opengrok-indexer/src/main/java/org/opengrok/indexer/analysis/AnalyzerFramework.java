@@ -189,6 +189,8 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
         if (analyzer.getName() != null && !analyzer.getName().isEmpty()) {
             localInfo.fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
         }
+
+        LOGGER.log(Level.INFO, "An analyzer factory {0} has been loaded.", analyzer.getClass().getCanonicalName());
     }
 
     /**

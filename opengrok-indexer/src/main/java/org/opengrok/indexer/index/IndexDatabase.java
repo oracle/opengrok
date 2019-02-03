@@ -317,7 +317,7 @@ public class IndexDatabase {
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
-            analyzerGuru = new AnalyzerGuru();
+            analyzerGuru = env.getAnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
