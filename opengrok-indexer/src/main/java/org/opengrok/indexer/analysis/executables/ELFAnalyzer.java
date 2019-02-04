@@ -34,13 +34,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
-import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
@@ -71,7 +70,7 @@ public class ELFAnalyzer extends FileAnalyzer {
      * Creates a new instance of ELFAnalyzer
      * @param factory The factory that creates ELFAnalyzers
      */
-    protected ELFAnalyzer(FileAnalyzerFactory factory) {
+    protected ELFAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 

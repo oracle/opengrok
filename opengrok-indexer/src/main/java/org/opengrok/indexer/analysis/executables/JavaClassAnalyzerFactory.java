@@ -25,8 +25,8 @@
 package org.opengrok.indexer.analysis.executables;
 
 import java.io.InputStream;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -60,7 +60,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         }
 
         @Override
-        public FileAnalyzerFactory isMagic(byte[] content, InputStream in) {
+        public AnalyzerFactory isMagic(byte[] content, InputStream in) {
             if (content.length < 8) {
                 return null;
             }
@@ -82,7 +82,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         }
 
         @Override
-        public FileAnalyzerFactory forFactory() {
+        public AnalyzerFactory forFactory() {
             return JavaClassAnalyzerFactory.DEFAULT_INSTANCE;
         }
     };
@@ -91,7 +91,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         new JavaClassAnalyzerFactory();
 
     private JavaClassAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, name);
     }
 
     /**
@@ -99,7 +99,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
      * @return a defined instance
      */
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new JavaClassAnalyzer(this);
     }
 }

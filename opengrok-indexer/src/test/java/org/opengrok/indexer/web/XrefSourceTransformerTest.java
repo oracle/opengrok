@@ -29,7 +29,7 @@ import java.io.StringWriter;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 
 /**
  * Represents a container for tests of {@link XrefSourceTransformer}.
@@ -58,7 +58,7 @@ public class XrefSourceTransformerTest {
     public void setUp() {
         StringReader rdr = new StringReader(XREF_FRAG_DFLT);
         // Test the normal path of dummy-first then actual data.
-        xform = new XrefSourceTransformer(FileAnalyzer.dummyReader);
+        xform = new XrefSourceTransformer(AbstractAnalyzer.DUMMY_READER);
         xform.yyreset(rdr);
 
         out = new StringWriter();

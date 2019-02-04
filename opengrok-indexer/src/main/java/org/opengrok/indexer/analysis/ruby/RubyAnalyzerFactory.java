@@ -24,8 +24,7 @@
 
 package org.opengrok.indexer.analysis.ruby;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -52,7 +51,7 @@ public class RubyAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link RubyAnalyzerFactory}.
      */
     public RubyAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN,
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN,
             name);
     }
 
@@ -61,7 +60,7 @@ public class RubyAnalyzerFactory extends FileAnalyzerFactory {
      * @return the new instance
      */
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new RubyAnalyzer(this);
     }
 }

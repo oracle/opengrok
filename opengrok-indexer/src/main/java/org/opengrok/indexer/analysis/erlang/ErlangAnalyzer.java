@@ -25,8 +25,8 @@
 package org.opengrok.indexer.analysis.erlang;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -37,9 +37,9 @@ public class ErlangAnalyzer extends AbstractSourceCodeAnalyzer {
      * Creates a new instance of ErlangAnalyzer
      * @param factory defined instance for the analyzer
      */
-    protected ErlangAnalyzer(FileAnalyzerFactory factory) {
+    protected ErlangAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new ErlangSymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

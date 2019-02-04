@@ -43,8 +43,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
@@ -179,7 +179,7 @@ public class Context {
          * circumstances it isn't used"; here it is not meant to be used.
          */
         PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
-        FileAnalyzer anz = fac.getAnalyzer();
+        AbstractAnalyzer anz = fac.getAnalyzer();
 
         String path = doc.get(QueryBuilder.PATH);
         String pathE = Util.URIEncodePath(path);

@@ -33,9 +33,9 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -98,7 +98,7 @@ public class ClojureXrefTest {
 
         Writer sw = new StringWriter();
         ClojureAnalyzerFactory fac = new ClojureAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(defs);

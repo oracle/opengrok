@@ -36,8 +36,6 @@ java.util.Locale,
 java.util.Set,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
-org.opengrok.indexer.analysis.FileAnalyzer.Genre,
-org.opengrok.indexer.analysis.FileAnalyzerFactory,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
 org.opengrok.indexer.search.DirectoryEntry,
@@ -47,7 +45,10 @@ org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.IOUtils,
 org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
-%><%
+%>
+<%@ page import="org.opengrok.indexer.analysis.AnalyzerFactory" %>
+<%@ page import="org.opengrok.indexer.analysis.AbstractAnalyzer" %>
+<%
 {
     // need to set it here since requesting parameters
     if (request.getCharacterEncoding() == null) {
@@ -177,18 +178,18 @@ document.pageReady.push(function() { pageReadyList();});
                 BufferedInputStream bin =
                     new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
-                    FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-                    Genre g = AnalyzerGuru.getGenre(a);
+                    AnalyzerFactory a = AnalyzerGuru.find(basename);
+                    AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
                     if (g == null) {
                         a = AnalyzerGuru.find(bin);
                         g = AnalyzerGuru.getGenre(a);
                     }
-                    if (g == Genre.IMAGE) {
+                    if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
     <img src="<%= rawPath %>"/>
 </div><%
-                    } else if ( g == Genre.HTML) {
+                    } else if ( g == AbstractAnalyzer.Genre.HTML) {
                         /**
                          * For backward compatibility, read the OpenGrok-produced
                          * document using the system default charset.
@@ -196,7 +197,7 @@ document.pageReady.push(function() { pageReadyList();});
                         r = new InputStreamReader(bin);
                         // dumpXref() is also useful here for translating links.
                         Util.dumpXref(out, r, request.getContextPath());
-                    } else if (g == Genre.PLAIN) {
+                    } else if (g == AbstractAnalyzer.Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
@@ -238,10 +239,10 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
-            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
+            AnalyzerFactory a = AnalyzerGuru.find(basename);
+            AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
-            if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
+            if (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.HTML || g == null) {
                 InputStream in = null;
                 try {
                     if (rev.equals(DUMMY_REVISION)) {
@@ -260,7 +261,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             a = AnalyzerGuru.find(in);
                             g = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
+                        if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
     %>
     <div id="src">
     Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
@@ -269,7 +270,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %>
     <div id="src">
         <pre><%
-                            if (g == Genre.PLAIN) {
+                            if (g == AbstractAnalyzer.Genre.PLAIN) {
                                 // We don't have any way to get definitions
                                 // for old revisions currently.
                                 Definitions defs = null;
@@ -283,11 +284,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                         request.getContextPath(),
                                         a, r, out,
                                         defs, annotation, project);
-                            } else if (g == Genre.IMAGE) {
+                            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
         <pre><%
-                            } else if (g == Genre.HTML) {
+                            } else if (g == AbstractAnalyzer.Genre.HTML) {
                                 /**
                                  * For backward compatibility, read the
                                  * OpenGrok-produced document using the system
@@ -325,7 +326,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     <p class="error"><%= error %></p><%
                     }
                 }
-            } else if (g == Genre.IMAGE) {
+            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
     %>
     <div id="src">
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>

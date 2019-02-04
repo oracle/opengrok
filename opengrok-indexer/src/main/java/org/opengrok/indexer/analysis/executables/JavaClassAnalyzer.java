@@ -56,8 +56,8 @@ import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -82,7 +82,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
      *
      * @param factory The factory that creates JavaClassAnalyzers
      */
-    protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
+    protected JavaClassAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 

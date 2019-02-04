@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory.Matcher;
 import org.opengrok.indexer.util.IOUtils;
 
@@ -50,7 +50,7 @@ public class DocumentMatcher implements Matcher {
 
     private static final int FIRST_LOOK_WIDTH = 300;
 
-    private final FileAnalyzerFactory factory;
+    private final AnalyzerFactory factory;
 
     private final String[] lineStarters;
 
@@ -60,7 +60,7 @@ public class DocumentMatcher implements Matcher {
      * @param lineStarters required list of line starters that indicate a match
      * @throws IllegalArgumentException thrown if any parameter is null
      */
-    public DocumentMatcher(FileAnalyzerFactory factory, String[] lineStarters) {
+    public DocumentMatcher(AnalyzerFactory factory, String[] lineStarters) {
         if (factory == null) {
             throw  new IllegalArgumentException("`factory' is null");
         }
@@ -97,7 +97,7 @@ public class DocumentMatcher implements Matcher {
      * @throws IOException in case of any read error
      */
     @Override
-    public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+    public AnalyzerFactory isMagic(byte[] contents, InputStream in)
         throws IOException {
 
         if (!in.markSupported()) {
@@ -174,7 +174,7 @@ public class DocumentMatcher implements Matcher {
     }
 
     @Override
-    public FileAnalyzerFactory forFactory() {
+    public AnalyzerFactory forFactory() {
         return factory;
     }
 

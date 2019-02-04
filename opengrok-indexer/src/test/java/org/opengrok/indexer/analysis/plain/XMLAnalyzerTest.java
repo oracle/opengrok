@@ -29,7 +29,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 
 public class XMLAnalyzerTest {
@@ -44,7 +45,7 @@ public class XMLAnalyzerTest {
         StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
         XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         analyzer.writeXref(new WriteXrefArgs(sr, sw));
         String[] xref = sw.toString().split("\n");
         // Reference to a Java class should have / instead of . in the path
@@ -70,7 +71,7 @@ public class XMLAnalyzerTest {
         StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
         XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         analyzer.writeXref(new WriteXrefArgs(sr, sw));
         String[] xref = sw.toString().split("\n");
         // don't remove ../
@@ -88,7 +89,7 @@ public class XMLAnalyzerTest {
                 new StringReader("<foo xyz='<betweensinglequotes>'> </foo>");
         StringWriter output = new StringWriter();
         XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         analyzer.writeXref(new WriteXrefArgs(input, output));
         assertTrue(output.toString().contains("&lt;betweensinglequotes&gt;"));
 

@@ -35,7 +35,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
@@ -90,7 +91,7 @@ public class PerlXrefTest {
 
         Writer sw = new StringWriter();
         PerlAnalyzerFactory fac = new PerlAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         Xrefer xref = analyzer.writeXref(new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw));
         oss.print(sw.toString());

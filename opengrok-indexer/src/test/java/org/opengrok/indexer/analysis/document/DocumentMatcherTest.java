@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 
 /**
  * Represents a container for tests of {@link DocumentMatcher} subclasses
@@ -48,7 +48,7 @@ public class DocumentMatcherTest {
 
         byte[] buf = readSignature(res);
 
-        FileAnalyzerFactory fac;
+        AnalyzerFactory fac;
 
         // assert that it is troff-like
         fac = TroffAnalyzerFactory.MATCHER.isMagic(buf, res);
@@ -73,7 +73,7 @@ public class DocumentMatcherTest {
 
         byte[] buf = readSignature(res);
 
-        FileAnalyzerFactory fac;
+        AnalyzerFactory fac;
 
         // assert that it is mandoc-like
         fac = MandocAnalyzerFactory.MATCHER.isMagic(buf, res);
@@ -102,7 +102,7 @@ public class DocumentMatcherTest {
 
         byte[] buf = readSignature(res);
 
-        FileAnalyzerFactory fac;
+        AnalyzerFactory fac;
 
         // assert that it is mandoc-like
         fac = MandocAnalyzerFactory.MATCHER.isMagic(buf, res);

@@ -29,9 +29,9 @@ import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.OGKTextField;
@@ -55,7 +55,7 @@ public class PlainAnalyzer extends TextAnalyzer {
      * Creates a new instance of PlainAnalyzer
      * @param factory defined instance for the analyzer
      */
-    protected PlainAnalyzer(FileAnalyzerFactory factory) {
+    protected PlainAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -64,7 +64,7 @@ public class PlainAnalyzer extends TextAnalyzer {
      * @param factory defined instance for the analyzer
      * @param symbolTokenizer defined instance for the analyzer
      */
-    protected PlainAnalyzer(FileAnalyzerFactory factory,
+    protected PlainAnalyzer(AnalyzerFactory factory,
         JFlexTokenizer symbolTokenizer) {
         super(factory, symbolTokenizer);
     }

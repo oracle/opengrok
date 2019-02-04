@@ -37,10 +37,11 @@ org.suigeneris.jrcs.diff.delta.Delta,
 org.suigeneris.jrcs.diff.Diff,
 org.suigeneris.jrcs.diff.Revision,
 org.opengrok.indexer.analysis.AnalyzerGuru,
-org.opengrok.indexer.analysis.FileAnalyzer.Genre,
 org.opengrok.indexer.web.DiffData,
 org.opengrok.indexer.web.DiffType"
-%><%!
+%>
+<%@ page import="org.opengrok.indexer.analysis.AbstractAnalyzer" %>
+<%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
         String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
@@ -108,7 +109,7 @@ include file="mast.jsp"
     <h3 class="error">Error:</h3>
     <p><%= data.errorMsg %></p>
 </div><%
-    } else if (data.genre == Genre.IMAGE) {
+    } else if (data.genre == AbstractAnalyzer.Genre.IMAGE) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());
@@ -128,7 +129,7 @@ include file="mast.jsp"
     </table>
 </div><%
 
-    } else if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
+    } else if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());

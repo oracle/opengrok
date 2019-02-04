@@ -24,8 +24,7 @@
 
 package org.opengrok.indexer.analysis.python;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -34,9 +33,9 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 
 public class PythonAnalyzerFactory extends FileAnalyzerFactory {
-    
+
     private static final String name = "Python";
-    
+
     //TODO note that .PM below is kind of wrong, since perl already has this and is registered before python analyzer
     // unfortunately we miss code that would be able to share extensions between analyzers
     private static final String[] SUFFIXES = {
@@ -51,11 +50,11 @@ public class PythonAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PythonAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new PythonAnalyzer(this);
     }
 }

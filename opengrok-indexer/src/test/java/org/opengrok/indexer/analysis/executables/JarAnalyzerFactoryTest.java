@@ -28,8 +28,8 @@ import java.io.InputStream;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * Represents a container for tests of {@link JarAnalyzerFactory}.
@@ -47,7 +47,7 @@ public class JarAnalyzerFactoryTest {
         assertNotNull("javajar.bin should be available,", res);
 
         // assert that it is matched
-        FileAnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = AnalyzerGuru.find(res);
         assertNotNull("javajar.bin should have factory", fac);
         assertSame("should be JarAnalyzerFactory", fac.getClass(),
             JarAnalyzerFactory.class);

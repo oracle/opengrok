@@ -51,6 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
@@ -82,12 +85,11 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
@@ -100,10 +102,6 @@ import org.opengrok.indexer.util.ObjectPool;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -747,7 +745,7 @@ public class IndexDatabase {
      */
     private void addFile(File file, String path, Ctags ctags)
             throws IOException, InterruptedException {
-        FileAnalyzer fa = getAnalyzerFor(file, path);
+        AbstractAnalyzer fa = getAnalyzerFor(file, path);
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -801,9 +799,9 @@ public class IndexDatabase {
         }
     }
 
-    private FileAnalyzer getAnalyzerFor(File file, String path)
+    private AbstractAnalyzer getAnalyzerFor(File file, String path)
             throws IOException {
-        FileAnalyzer fa;
+        AbstractAnalyzer fa;
         try (InputStream in = new BufferedInputStream(
                 new FileInputStream(file))) {
             return AnalyzerGuru.getAnalyzer(in, path);
@@ -1590,16 +1588,16 @@ public class IndexDatabase {
         return hash;
     }
 
-    private boolean isXrefWriter(FileAnalyzer fa) {
-        Genre g = fa.getFactory().getGenre();
-        return (g == Genre.PLAIN || g == Genre.XREFABLE);
+    private boolean isXrefWriter(AbstractAnalyzer fa) {
+        AbstractAnalyzer.Genre g = fa.getFactory().getGenre();
+        return (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.XREFABLE);
     }
 
     /**
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer newXrefWriter(FileAnalyzer fa, String path)
+    private Writer newXrefWriter(AbstractAnalyzer fa, String path)
             throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isGenerateHtml() && isXrefWriter(fa)) {
@@ -1713,7 +1711,7 @@ public class IndexDatabase {
                 break;
             }
 
-            FileAnalyzer fa = null;
+            AbstractAnalyzer fa = null;
             String fileTypeName;
             if (actGuruVersion.equals(reqGuruVersion)) {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
@@ -1723,7 +1721,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                FileAnalyzerFactory fac =
+                AnalyzerFactory fac =
                         AnalyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();

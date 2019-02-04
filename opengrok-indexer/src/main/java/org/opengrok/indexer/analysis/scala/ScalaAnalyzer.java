@@ -24,8 +24,8 @@
 package org.opengrok.indexer.analysis.scala;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -40,9 +40,9 @@ public class ScalaAnalyzer extends AbstractSourceCodeAnalyzer {
      * Creates a new instance of ScalaAnalyzer
      * @param factory defined instance for the analyzer
      */
-    protected ScalaAnalyzer(FileAnalyzerFactory factory) {
+    protected ScalaAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new ScalaSymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

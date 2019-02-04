@@ -23,7 +23,7 @@
 
 package org.opengrok.indexer.analysis.archive;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class BZip2AnalyzerFactory extends FileAnalyzerFactory {
@@ -43,7 +43,7 @@ public class BZip2AnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new BZip2Analyzer(this);
     }
 }

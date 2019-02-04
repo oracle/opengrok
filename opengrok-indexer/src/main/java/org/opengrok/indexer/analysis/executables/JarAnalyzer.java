@@ -31,11 +31,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
-import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
 
@@ -49,7 +49,7 @@ public class JarAnalyzer extends FileAnalyzer {
     private static final String[] FIELD_NAMES = new String[]
             {QueryBuilder.FULL, QueryBuilder.REFS, QueryBuilder.DEFS};
 
-    protected JarAnalyzer(FileAnalyzerFactory factory) {
+    protected JarAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -82,7 +82,7 @@ public class JarAnalyzer extends FileAnalyzer {
                 fout.write(ename);
                 fout.write("\n");
 
-                FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
+                AnalyzerFactory fac = AnalyzerGuru.find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
                     if (xrefOut != null) {
                         xrefOut.append("<br/>");

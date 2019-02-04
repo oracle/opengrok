@@ -37,8 +37,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.StreamSource;
@@ -58,7 +59,7 @@ public class CSharpAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
-    private static FileAnalyzer analyzer;
+    private static AbstractAnalyzer analyzer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
