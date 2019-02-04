@@ -40,7 +40,7 @@ git checkout myfix
 
 ### Building
 
-To build the code from command line, just run `mvn compile`. It will download all necessary pre-requisities. When using IDE you can open or import the project.
+To build the code from command line, just run `./mvnw compile`. It will download all necessary pre-requisities. When using IDE you can open or import the project.
 
 ### Deploy the web app to the web server
 
@@ -48,7 +48,7 @@ There are multiple possibilities.
 
 #### Deploy `.war` directly
 
-Run command `mvn package -DskipTests` which will create a release as in the [releases page](https://github.com/oracle/opengrok/releases). This release can be found in the `distribution/target` directory with file name `opengrok-{version}.tar.gz`. Unzip the file by `tar xvf opengrok-{version}.tar.gz`. The `.war` file is located in `opengrok-{version}/lib/source.war`. You can copy this file to the web applications directory of your application server (e.g. `webapps` for Tomcat). Or you can use different means specific to application servers (e.g. Tomcat Manager).
+Run command `./mvnw package -DskipTests` which will create a release as in the [releases page](https://github.com/oracle/opengrok/releases). This release can be found in the `distribution/target` directory with file name `opengrok-{version}.tar.gz`. Unzip the file by `tar xvf opengrok-{version}.tar.gz`. The `.war` file is located in `opengrok-{version}/lib/source.war`. You can copy this file to the web applications directory of your application server (e.g. `webapps` for Tomcat). Or you can use different means specific to application servers (e.g. Tomcat Manager).
 
 #### Use Tomcat Maven plugin
 
@@ -74,9 +74,9 @@ Add to `tomcat_users.xml` located in `conf` directory of your Tomcat server:
 
 Type following commands to the console:
 ```bash
-mvn install
+./mvnw install
 cd opengrok-web
-mvn tomcat7:redeploy
+./mvnw tomcat7:redeploy
 ```
 
 or use IDE - in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
@@ -121,7 +121,7 @@ See [[Debugging wiki|Debugging]] for more information on debugging.
 
 ### Test
 
-To run tests type `mvn test` command. For specific tests you can use `-Dtest` option, e.g. `mvn test -Dtest=IndexerTest -DfailIfNoTests=false`.
+To run tests type `./mvnw test` command. For specific tests you can use `-Dtest` option, e.g. `./mvnw test -Dtest=IndexerTest -DfailIfNoTests=false`.
 
 Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github (first it is necessary to enable Travis for your fork on the Travis web).
 
