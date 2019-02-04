@@ -1,6 +1,6 @@
 # Security model
 
-The web application has to have writable access to the data as it employs RESTful APIs that need to be able modify the data such as configuration, index data etc.
+The web application has to have writable access to the data as it employs RESTful APIs that need to be able modify the data such as configuration, index data etc. It does not have to have writable access to the source data, though.
 
 # Securing a deployment
 
