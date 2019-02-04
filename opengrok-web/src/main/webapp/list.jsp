@@ -247,13 +247,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
-<<<<<<< HEAD
-            AnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
-=======
             AnalyzerFactory a = cfg.getEnv().getAnalyzerGuru().find(basename);
             AbstractAnalyzer.Genre g = cfg.getEnv().getAnalyzerGuru().getGenre(a);
->>>>>>> Introducing an plugin framework for analyzers
             String error = null;
             if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;

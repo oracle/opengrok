@@ -337,6 +337,9 @@ public abstract class PluginFramework<PluginType, DataType> {
 
     /**
      * Perform custom operations before the plugins are loaded.
+     * <p>
+     * If this function returns {@code null}, the reloading is completely skipped and {@link #afterReload(Object)}
+     * is never called.
      *
      * @return the implementor can generate custom data which will be later passed to {@link #afterReload(Object)}
      */
@@ -347,6 +350,9 @@ public abstract class PluginFramework<PluginType, DataType> {
      * <p>
      * When this is invoked, all plugins has been loaded into the memory and for each available plugin
      * the {@link #classLoaded(Object, Object)} was invoked.
+     * <p>
+     * When {@link #beforeReload()} returns {@code null}, the reloading is skipped, and this method is
+     * never called.
      *
      * @param data a custom data created with {@link #beforeReload()}
      */
@@ -362,6 +368,12 @@ public abstract class PluginFramework<PluginType, DataType> {
     public final void reload() {
         // notify the implementing class that the reload is about to begin
         final DataType localData = beforeReload();
+
+        if (localData == null) {
+            // the implementor does not want to reload the plugins
+            LOGGER.log(Level.WARNING, "Loading plugins from {0} as instructed by the implementer's class", pluginDirectory);
+            return;
+        }
 
         try {
             if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
