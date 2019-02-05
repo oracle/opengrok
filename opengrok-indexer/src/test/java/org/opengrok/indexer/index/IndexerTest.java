@@ -120,8 +120,9 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Collections.singletonList("/c")),
+        Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 
@@ -154,7 +155,6 @@ public class IndexerTest {
                 env,
                 false, // don't search for repositories
                 true, // scan and add projects
-                null, // no default project
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
@@ -481,10 +481,9 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/c").toString()
-                })),
+        Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"c"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -501,16 +500,16 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        System.out.println(Paths.get("/lisp").toString());
+        Set<String> projectSet = new TreeSet<>();
+        projectSet.add("/lisp");
+        projectSet.add("/pascal");
+        projectSet.add("/perl");
+        projectSet.add("/data");
+        projectSet.add("/no-project-x32ds1");
+
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/lisp").toString(),
-                        Paths.get("/pascal").toString(),
-                        Paths.get("/perl").toString(),
-                        Paths.get("/data").toString(),
-                        Paths.get("/no-project-x32ds1").toString()
-                })),
                 false, null, null);
+        env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"lisp", "pascal", "perl", "data"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -527,14 +526,15 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
+        Set<String> defaultProjects = new TreeSet<>();
+        defaultProjects.add("/c");
+        defaultProjects.add("/data");
+        defaultProjects.add("__all__");
+        defaultProjects.add("/no-project-x32ds1");
+
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/c").toString(),
-                        Paths.get("/data").toString(),
-                        Paths.get("__all__").toString(),
-                        Paths.get("/no-project-x32ds1").toString()
-                })),
                 false, null, null);
+        env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
         assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));

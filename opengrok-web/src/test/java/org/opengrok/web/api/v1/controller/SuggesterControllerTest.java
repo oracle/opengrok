@@ -111,8 +111,8 @@ public class SuggesterControllerTest extends JerseyTest {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                Collections.singleton("__all__"),
                 false, null, null);
+        env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         env.getSuggesterConfig().setRebuildCronConfig(null);

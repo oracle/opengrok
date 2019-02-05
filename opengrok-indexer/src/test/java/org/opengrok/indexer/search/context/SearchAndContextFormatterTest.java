@@ -88,8 +88,8 @@ public class SearchAndContextFormatterTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Collections.singletonList("/c")),
                 false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<String>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");

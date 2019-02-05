@@ -127,8 +127,8 @@ public class SearchAndContextFormatterTest2 {
 
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Collections.singletonList("/c")),
                 false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
 
         Project proj1 = env.getProjects().get(SYMLINK1);
         assertNotNull("symlink1 project", proj1);

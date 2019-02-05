@@ -65,7 +65,6 @@ import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.Statistics;
-import org.opengrok.indexer.web.Util;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -313,8 +312,10 @@ public final class Indexer {
 
             // Create history cache first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                    defaultProjects,
                     createDict, runIndex, subFiles, new ArrayList<>(repositories));
+
+            // prepareIndexer() populated the list of projects so now default projects can be set.
+            env.setDefaultProjectsFromNames(defaultProjects);
 
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
@@ -875,12 +876,11 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
                                boolean searchRepositories,
                                boolean addProjects,
-                               Set<String> defaultProjects,
                                boolean createDict,
                                List<String> subFiles,
                                List<String> repositories) throws IndexerException, IOException {
 
-        prepareIndexer(env, searchRepositories, addProjects, defaultProjects, createDict, true,
+        prepareIndexer(env, searchRepositories, addProjects, createDict, true,
                 subFiles, repositories);
     }
 
@@ -897,7 +897,6 @@ public final class Indexer {
      * @param env runtime environment
      * @param searchRepositories if true, search for repositories
      * @param addProjects if true, add projects
-     * @param defaultProjects default projects
      * @param createDict if true, create dictionary
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
@@ -909,7 +908,6 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
             boolean addProjects,
-            Set<String> defaultProjects,
             boolean createDict,
             boolean createHistoryCache,
             List<String> subFiles,
@@ -969,25 +967,6 @@ public final class Indexer {
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
-        }
-
-        if (defaultProjects != null && !defaultProjects.isEmpty()) {
-            Set<Project> projects = new TreeSet<>();
-            for (String projectPath : defaultProjects) {
-                if (projectPath.equals("__all__")) {
-                    projects.addAll(env.getProjects().values());
-                    break;
-                }
-                for (Project p : env.getProjectList()) {
-                    if (p.getPath().equals(Util.fixPathIfWindows(projectPath))) {
-                        projects.add(p);
-                        break;
-                    }
-                }
-            }
-            if (!projects.isEmpty()) {
-                env.setDefaultProjects(projects);
-            }
         }
 
         if (createHistoryCache) {
