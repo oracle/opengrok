@@ -121,7 +121,7 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Collections.singletonList("/c")),
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 
@@ -159,7 +159,6 @@ public class IndexerTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null, // repositories - not needed when not refreshing history
-                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
         List<Project> newProjects = env.getProjectList();
@@ -487,7 +486,7 @@ public class IndexerTest {
         Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{
                         Paths.get("/c").toString()
                 })),
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null,false);
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"c"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -513,7 +512,7 @@ public class IndexerTest {
                         Paths.get("/data").toString(),
                         Paths.get("/no-project-x32ds1").toString()
                 })),
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, false);
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"lisp", "pascal", "perl", "data"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -537,7 +536,7 @@ public class IndexerTest {
                         Paths.get("__all__").toString(),
                         Paths.get("/no-project-x32ds1").toString()
                 })),
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, false);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
         assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
