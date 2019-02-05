@@ -75,8 +75,8 @@ public class SearchHelperTest {
         System.out.println("Generating index by using the class methods");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-            new TreeSet<>(Collections.singletonList("/c")),
             false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 

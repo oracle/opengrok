@@ -138,7 +138,6 @@ public class IndexerRepoTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                null, // no default project
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
@@ -201,7 +200,6 @@ public class IndexerRepoTest {
                 env,
                 true, // search for repositories
                 true, // scan and add projects
-                null, // no default project
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history

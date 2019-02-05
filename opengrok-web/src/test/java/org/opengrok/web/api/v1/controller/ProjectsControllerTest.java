@@ -310,7 +310,6 @@ public class ProjectsControllerTest extends JerseyTest {
                 env,
                 false, // don't search for repositories
                 false, // don't scan and add projects
-                null, // no default project
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
                 repos); // repositories - needed when refreshing history partially
@@ -548,7 +547,6 @@ public class ProjectsControllerTest extends JerseyTest {
                 env,
                 false, // don't search for repositories
                 true, // add projects
-                null, // no default project
                 false, // don't create dictionary
                 new ArrayList<>(), // subFiles - needed when refreshing history partially
                 new ArrayList<>()); // repositories - needed when refreshing history partially

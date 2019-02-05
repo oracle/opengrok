@@ -13,7 +13,7 @@
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|PerlLexHelper\.java|
         |JFlexXrefUtils\.java|RubyLexHelper\.java|FileAnalyzerFactory\.java|SearchController\.java|
-        |Context\.java|HistoryContext\.java|Indexer\.java|Suggester\.java" />
+        |Context\.java|HistoryContext\.java|Suggester\.java" />
 
     <suppress checks="MethodLength" files="Indexer\.java" />
 </suppressions>

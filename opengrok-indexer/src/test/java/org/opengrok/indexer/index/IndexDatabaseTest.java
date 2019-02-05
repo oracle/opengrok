@@ -87,8 +87,9 @@ public class IndexDatabaseTest {
         // the tests are run.
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
-                env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+                env, true, true,
                 false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList(new String[]{"/c"})));
         indexer.doIndexerExecution(true, null, null);
     }
 

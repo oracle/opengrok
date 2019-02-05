@@ -71,6 +71,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Statistics;
+import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
@@ -774,6 +775,35 @@ public final class RuntimeEnvironment {
             configuration.addRepositories(repositories);
         } finally {
             writeLock.unlock();
+        }
+    }
+
+    /**
+     * Set the specified projects as default in the configuration.
+     * This method should be called only after projects were discovered and became part of the configuration,
+     * i.e. after {@link org.opengrok.indexer.index.Indexer#prepareIndexer} was called.
+     *
+     * @param defaultProjects The default project to use
+     * @see #setDefaultProjects
+     */
+    public void setDefaultProjectsFromNames(Set<String> defaultProjects) {
+        if (defaultProjects != null && !defaultProjects.isEmpty()) {
+            Set<Project> projects = new TreeSet<>();
+            for (String projectPath : defaultProjects) {
+                if (projectPath.equals("__all__")) {
+                    projects.addAll(getProjects().values());
+                    break;
+                }
+                for (Project p : getProjectList()) {
+                    if (p.getPath().equals(Util.fixPathIfWindows(projectPath))) {
+                        projects.add(p);
+                        break;
+                    }
+                }
+            }
+            if (!projects.isEmpty()) {
+                setDefaultProjects(projects);
+            }
         }
     }
 
