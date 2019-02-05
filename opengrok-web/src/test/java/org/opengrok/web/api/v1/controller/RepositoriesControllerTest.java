@@ -96,7 +96,7 @@ public class RepositoriesControllerTest extends JerseyTest {
 
     @Test
     public void testGetRepositoryType() throws Exception {
-        // Create subrepository.
+        // Create sub-repository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
                 "clone", mercurialRoot.getAbsolutePath(),
@@ -112,7 +112,6 @@ public class RepositoriesControllerTest extends JerseyTest {
                 false, // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null, // repositories - needed when refreshing history partially
-                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
         assertEquals(Paths.get("/mercurial").toString() + ":Mercurial",

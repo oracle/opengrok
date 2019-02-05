@@ -314,7 +314,6 @@ public class ProjectsControllerTest extends JerseyTest {
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
                 repos, // repositories - needed when refreshing history partially
-                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
         Indexer.getInstance().doIndexerExecution(true, null, null);
 

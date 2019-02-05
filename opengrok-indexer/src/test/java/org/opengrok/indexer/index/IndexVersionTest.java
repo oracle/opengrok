@@ -91,7 +91,7 @@ public class IndexVersionTest {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(projectsEnabled);
         Indexer.getInstance().prepareIndexer(env, true, true, null,
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         IndexVersion.check(subFiles);

@@ -143,7 +143,6 @@ public class IndexerRepoTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null, // repositories - not needed when not refreshing history
-                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
         
         File repoRoot = new File(env.getSourceRootFile(), "git");
@@ -209,7 +208,6 @@ public class IndexerRepoTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null, // repositories - not needed when not refreshing history
-                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
         // Check the respository paths.

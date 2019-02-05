@@ -55,7 +55,6 @@ import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -114,7 +113,6 @@ public final class Indexer {
     private static final Set<String> repositories = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
-    private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
 
@@ -319,9 +317,9 @@ public final class Indexer {
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
                     listFiles, createDict, runIndex, subFiles, new ArrayList<>(repositories),
-                    zapCache, listRepos);
+                    listRepos);
 
-            if (listRepos || !zapCache.isEmpty()) {
+            if (listRepos) {
                 return;
             }
 
@@ -497,12 +495,6 @@ public final class Indexer {
                     }
                 }
             );
-
-            parser.on("--deleteHistory", "=/path/to/repository",
-                "Delete the history cache for the given repository and exit.",
-                "Use '*' to delete the cache for all repositories.").Do(repo -> {
-                zapCache.add((String)repo);
-            });
 
             parser.on("--depth", "=number", Integer.class,
                 "Scanning depth for repositories in directory structure relative to",
@@ -899,10 +891,9 @@ public final class Indexer {
                                boolean createDict,
                                List<String> subFiles,
                                List<String> repositories,
-                               List<String> zapCache,
                                boolean listRepoPaths) throws IndexerException, IOException {
         prepareIndexer(env, searchRepositories, addProjects, defaultProjects, listFiles, createDict, true,
-                subFiles, repositories, zapCache, listRepoPaths);
+                subFiles, repositories, listRepoPaths);
     }
 
     /**
@@ -924,7 +915,6 @@ public final class Indexer {
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
      * @param repositories list of repositories
-     * @param zapCache list of projects to remove history cache for
      * @param listRepoPaths print repository paths to standard output
      * @throws IndexerException indexer exception
      * @throws IOException I/O exception
@@ -939,7 +929,6 @@ public final class Indexer {
             boolean createHistoryCache,
             List<String> subFiles,
             List<String> repositories,
-            List<String> zapCache,
             boolean listRepoPaths) throws IndexerException, IOException {
 
         if (env.getDataRootPath() == null) {
@@ -950,11 +939,8 @@ public final class Indexer {
             throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
         }
 
-        if (zapCache.isEmpty() && !env.validateUniversalCtags()) {
+        if (!env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Universal Ctags");
-        }
-        if (zapCache == null) {
-            throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
         // Projects need to be created first since when adding repositories below,
@@ -993,14 +979,14 @@ public final class Indexer {
             }
         }
         
-        if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
+        if (searchRepositories || listRepoPaths) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
             
-            if (listRepoPaths || !zapCache.isEmpty()) {
+            if (listRepoPaths) {
                 List<RepositoryInfo> repos = env.getRepositories();
                 String prefix = env.getSourceRootPath();
                 if (listRepoPaths) {
@@ -1014,33 +1000,7 @@ public final class Indexer {
                         System.out.println(String.format("%s (%s)", dir.substring(prefix.length()), info.getType()));
                     }
                 }
-                if (!zapCache.isEmpty()) {
-                    HashSet<String> toZap = new HashSet<>(zapCache.size() << 1);
-                    boolean all = false;
-                    for (String repo : zapCache) {
-                        if ("*".equals(repo)) {
-                            all = true;
-                            break;
-                        }
-                        if (repo.startsWith(prefix)) {
-                            repo = repo.substring(prefix.length());
-                        }
-                        toZap.add(repo);
-                    }
-                    if (all) {
-                        toZap.clear();
-                        for (RepositoryInfo info : env.getRepositories()) {
-                            toZap.add(info.getDirectoryName()
-                                    .substring(prefix.length()));
-                        }
-                    }
-                    try {
-                        HistoryGuru.getInstance().removeCache(toZap);
-                    } catch (HistoryException e) {
-                        LOGGER.log(Level.WARNING, "Clearing history cache failed: {0}",
-                                e.getLocalizedMessage());
-                    }
-                }
+
                 return;
             }
         }

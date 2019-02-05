@@ -193,7 +193,22 @@ public class ProjectsController {
             }
         }
 
-        // Delete history index.
+        deleteHistoryCache(projectName);
+
+        // Delete suggester data.
+        suggester.delete(projectName);
+    }
+
+    @DELETE
+    @Path("/{project}/historycache")
+    public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
+
+        Project project = disableProject(projectName);
+        logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
+
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+
+        // Delete history cache data.
         HistoryGuru guru = HistoryGuru.getInstance();
         guru.removeCache(repos.stream().
                 map(x -> {
@@ -203,16 +218,13 @@ public class ProjectsController {
                         logger.log(Level.FINER, e.getMessage());
                         return "";
                     } catch (IOException e) {
-                        logger.log(Level.INFO, "cannot remove files for repository {0}", x.getDirectoryName());
+                        logger.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
                         // Empty output should not cause any harm
                         // since {@code getReposFromString()} inside
                         // {@code removeCache()} will return nothing.
                         return "";
                     }
                 }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
-
-        // Delete suggester data.
-        suggester.delete(projectName);
     }
 
     @PUT

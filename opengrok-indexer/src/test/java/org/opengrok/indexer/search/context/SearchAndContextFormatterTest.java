@@ -89,7 +89,7 @@ public class SearchAndContextFormatterTest {
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Collections.singletonList("/c")),
-                false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
