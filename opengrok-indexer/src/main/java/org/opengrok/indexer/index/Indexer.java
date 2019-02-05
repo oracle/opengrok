@@ -95,7 +95,6 @@ public final class Indexer {
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
     private static boolean checkIndexVersion = false;
-    private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
     private static boolean addProjects = false;
@@ -313,15 +312,10 @@ public final class Indexer {
             LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
 
-            // Get history first.
+            // Create history cache first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
-                    listFiles, createDict, runIndex, subFiles, new ArrayList<>(repositories),
-                    listRepos);
-
-            if (listRepos) {
-                return;
-            }
+                    listFiles, createDict, runIndex, subFiles, new ArrayList<>(repositories));
 
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
@@ -549,10 +543,6 @@ public final class Indexer {
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
                 "Allow or disallow leading wildcards in a search.").Do(v -> {
                 cfg.setAllowLeadingWildcard((Boolean)v);
-            });
-
-            parser.on("--listRepos", "List all repository paths and exit.").Do(v -> {
-                listRepos = true;
             });
 
             parser.on("-m", "--memory", "=number", Double.class,
@@ -890,10 +880,9 @@ public final class Indexer {
                                boolean listFiles,
                                boolean createDict,
                                List<String> subFiles,
-                               List<String> repositories,
-                               boolean listRepoPaths) throws IndexerException, IOException {
+                               List<String> repositories) throws IndexerException, IOException {
         prepareIndexer(env, searchRepositories, addProjects, defaultProjects, listFiles, createDict, true,
-                subFiles, repositories, listRepoPaths);
+                subFiles, repositories);
     }
 
     /**
@@ -915,7 +904,6 @@ public final class Indexer {
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
      * @param repositories list of repositories
-     * @param listRepoPaths print repository paths to standard output
      * @throws IndexerException indexer exception
      * @throws IOException I/O exception
      */
@@ -928,8 +916,7 @@ public final class Indexer {
             boolean createDict,
             boolean createHistoryCache,
             List<String> subFiles,
-            List<String> repositories,
-            boolean listRepoPaths) throws IndexerException, IOException {
+            List<String> repositories) throws IndexerException, IOException {
 
         if (env.getDataRootPath() == null) {
             throw new IndexerException("ERROR: Please specify a DATA ROOT path");
@@ -979,30 +966,12 @@ public final class Indexer {
             }
         }
         
-        if (searchRepositories || listRepoPaths) {
+        if (searchRepositories) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
-            
-            if (listRepoPaths) {
-                List<RepositoryInfo> repos = env.getRepositories();
-                String prefix = env.getSourceRootPath();
-                if (listRepoPaths) {
-                    if (repos.isEmpty()) {
-                        System.out.println("No repositories found.");
-                        return;
-                    }
-                    System.out.println("Repositories in " + prefix + ":");
-                    for (RepositoryInfo info : env.getRepositories()) {
-                        String dir = info.getDirectoryName();
-                        System.out.println(String.format("%s (%s)", dir.substring(prefix.length()), info.getType()));
-                    }
-                }
-
-                return;
-            }
         }
 
         if (listFiles) {
