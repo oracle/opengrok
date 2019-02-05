@@ -352,4 +352,10 @@ public class ProjectsController {
         return Collections.emptySet();
     }
 
+    @GET
+    @Path("/{project}/files")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<String> getProjectIndexFiles(@PathParam("project") String projectName) throws IOException {
+        return IndexDatabase.getAllFiles(Collections.singletonList("/" + projectName));
+    }
 }
