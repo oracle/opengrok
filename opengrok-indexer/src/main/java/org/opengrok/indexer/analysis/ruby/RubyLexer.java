@@ -48,12 +48,12 @@ abstract class RubyLexer extends JFlexSymbolMatcher
     private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_\u00160-\u0255]+");
 
-    private RubyLexerData d;
+    private RubyLexerData dHead;
 
     private Stack<RubyLexerData> data;
 
     RubyLexer() {
-        d = new RubyLexerData();
+        dHead = new RubyLexerData();
     }
 
     /**
@@ -62,7 +62,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
     @Override
     public void reset() {
         super.reset();
-        d = new RubyLexerData();
+        dHead = new RubyLexerData();
         if (data != null) {
             data.clear();
         }
@@ -79,14 +79,14 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      */
     public boolean maybeEndQuote(String capture) {
         char c = capture.charAt(0);
-        if (c == d.endqchar) {
-            if (--d.nendqchar <= 0) {
-                d.endqchar = '\0';
-                d.nestqchar = '\0';
+        if (c == dHead.endqchar) {
+            if (--dHead.nendqchar <= 0) {
+                dHead.endqchar = '\0';
+                dHead.nestqchar = '\0';
                 return true;
             }
-        } else if (d.nestqchar != '\0' && c == d.nestqchar) {
-            ++d.nendqchar;
+        } else if (dHead.nestqchar != '\0' && c == dHead.nestqchar) {
+            ++dHead.nendqchar;
         }
         return false;
     }
@@ -97,7 +97,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (d.qopname) {
+        switch (dHead.qopname) {
             case "m": // named here a la Perl for the Ruby /pat/ operator
                 return true;
             default:
@@ -134,20 +134,20 @@ abstract class RubyLexer extends JFlexSymbolMatcher
         // with \b as a zero-width simple word boundary. Excise it into
         // `boundary'.
         String postop = capture;
-        d.qopname = "";
+        dHead.qopname = "";
         if (namelength > 0) {
-            d.qopname = capture.substring(0, namelength);
-            postop = capture.substring(d.qopname.length());
+            dHead.qopname = capture.substring(0, namelength);
+            postop = capture.substring(dHead.qopname.length());
         }
-        d.nendqchar = 1;
-        d.collateralCapture = null;
+        dHead.nendqchar = 1;
+        dHead.collateralCapture = null;
 
         char opc = postop.charAt(0);
         setEndQuoteChar(opc);
         setState(postop, nointerp);
 
         if (doWrite) {
-            offer(d.qopname);
+            offer(dHead.qopname);
             skipSymbol();
             disjointSpan(HtmlConsts.STRING_CLASS);
             offer(postop);
@@ -184,24 +184,24 @@ abstract class RubyLexer extends JFlexSymbolMatcher
     private void setEndQuoteChar(char opener) {
         switch (opener) {
             case '[':
-                d.nestqchar = opener;
-                d.endqchar = ']';
+                dHead.nestqchar = opener;
+                dHead.endqchar = ']';
                 break;
             case '<':
-                d.nestqchar = opener;
-                d.endqchar = '>';
+                dHead.nestqchar = opener;
+                dHead.endqchar = '>';
                 break;
             case '(':
-                d.nestqchar = opener;
-                d.endqchar = ')';
+                dHead.nestqchar = opener;
+                dHead.endqchar = ')';
                 break;
             case '{':
-                d.nestqchar = opener;
-                d.endqchar = '}';
+                dHead.nestqchar = opener;
+                dHead.endqchar = '}';
                 break;
             default:
-                d.nestqchar = '\0';
-                d.endqchar = opener;
+                dHead.nestqchar = '\0';
+                dHead.endqchar = opener;
                 break;
         }
     }
@@ -290,8 +290,8 @@ abstract class RubyLexer extends JFlexSymbolMatcher
         }
 
         offer(capture);
-        if (d.hereSettings == null) {
-            d.hereSettings = new LinkedList<>();
+        if (dHead.hereSettings == null) {
+            dHead.hereSettings = new LinkedList<>();
         }
 
         String remaining = capture;
@@ -346,7 +346,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
             state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
-        d.hereSettings.add(settings);
+        dHead.hereSettings.add(settings);
     }
 
     /**
@@ -355,8 +355,8 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (d.hereSettings != null && d.hereSettings.size() > 0) {
-            HereDocSettings settings = d.hereSettings.peek();
+        if (dHead.hereSettings != null && dHead.hereSettings.size() > 0) {
+            HereDocSettings settings = dHead.hereSettings.peek();
             yypush(settings.state);
             disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
@@ -371,20 +371,20 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      */
     public boolean maybeEndHere(String capture) throws IOException {
         String trimmed = capture.replaceFirst("^\\s+", "");
-        HereDocSettings settings = d.hereSettings.peek();
+        HereDocSettings settings = dHead.hereSettings.peek();
         assert settings != null;
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
             disjointSpan(null);
             didZspan = true;
-            d.hereSettings.remove();
+            dHead.hereSettings.remove();
         }
 
         offer(capture);
 
-        if (d.hereSettings.size() > 0) {
-            settings = d.hereSettings.peek();
+        if (dHead.hereSettings.size() > 0) {
+            settings = dHead.hereSettings.peek();
             yybegin(settings.state);
             if (didZspan) {
                 disjointSpan(HtmlConsts.STRING_CLASS);
@@ -400,7 +400,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * Resets the interpolation counter to 1.
      */
     public void interpop() {
-        d.nendbrace = 1;
+        dHead.nendbrace = 1;
     }
 
     /**
@@ -413,11 +413,11 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if the interpolation state should end
      */
     public boolean maybeEndInterpolation(String capture) throws IOException {
-        if (d.nendbrace <= 0) {
+        if (dHead.nendbrace <= 0) {
             return false;
         }
         if (capture.startsWith("}")) {
-            if (--d.nendbrace <= 0) {
+            if (--dHead.nendbrace <= 0) {
                 int rem = capture.length() - 1;
                 String opener = capture.substring(0, 1);
                 popData();
@@ -430,7 +430,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
                 return true;
             }
         } else if (capture.startsWith("{")) {
-            ++d.nendbrace;
+            ++dHead.nendbrace;
         }
         return false;
     }
@@ -477,22 +477,22 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (d.endqchar == '\0') {
+        if (dHead.endqchar == '\0') {
             return null;
         }
-        if (d.collateralCapture != null) {
-            return d.collateralCapture;
+        if (dHead.collateralCapture != null) {
+            return dHead.collateralCapture;
         }
 
         StringBuilder patb = new StringBuilder("[");
-        patb.append(Pattern.quote(String.valueOf(d.endqchar)));
-        if (d.nestqchar != '\0') {
-            patb.append(Pattern.quote(String.valueOf(d.nestqchar)));
+        patb.append(Pattern.quote(String.valueOf(dHead.endqchar)));
+        if (dHead.nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(dHead.nestqchar)));
         }
         patb.append("]");
         patb.append(RegexUtils.getNotFollowingEscapePattern());
-        d.collateralCapture = Pattern.compile(patb.toString());
-        return d.collateralCapture;
+        dHead.collateralCapture = Pattern.compile(patb.toString());
+        return dHead.collateralCapture;
     }
 
     /**
@@ -514,12 +514,12 @@ abstract class RubyLexer extends JFlexSymbolMatcher
         if (data == null) {
             data = new Stack<>();
         }
-        data.push(d);
-        d = new RubyLexerData();
+        data.push(dHead);
+        dHead = new RubyLexerData();
     }
 
     void popData() {
-        d = data.pop();
+        dHead = data.pop();
     }
 
     /**
