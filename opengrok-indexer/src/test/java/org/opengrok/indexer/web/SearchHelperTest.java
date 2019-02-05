@@ -76,7 +76,7 @@ public class SearchHelperTest {
 
         Indexer.getInstance().prepareIndexer(env, true, true,
             new TreeSet<>(Collections.singletonList("/c")),
-            false, false, null, null);
+            false, null, null);
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 

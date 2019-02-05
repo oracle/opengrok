@@ -108,7 +108,6 @@ public class RepositoriesControllerTest extends JerseyTest {
                 true, // search for repositories
                 true, // scan and add projects
                 null, // no default project
-                false, // don't list files
                 false, // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially

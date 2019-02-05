@@ -88,7 +88,7 @@ public class IndexDatabaseTest {
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                false, false, null, null);
+                false, null, null);
         indexer.doIndexerExecution(true, null, null);
     }
 

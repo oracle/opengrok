@@ -1312,10 +1312,9 @@ public class IndexDatabase {
     }
 
     /**
-     * List all files in some of the index databases.
+     * Get all files in some of the index databases.
      *
-     * @param subFiles Subdirectories for the various projects to list the files
-     * for (or null or an empty list to dump all projects)
+     * @param subFiles Subdirectories of various projects or null or an empty list to get everything
      * @throws IOException if an error occurs
      * @return set of files in the index databases specified by the subFiles parameter
      */
@@ -1369,7 +1368,13 @@ public class IndexDatabase {
                 iter = terms.iterator(); // init uid iterator
             }
             while (iter != null && iter.term() != null) {
-                files.add(Util.uid2url(iter.term().utf8ToString()));
+                String value = iter.term().utf8ToString();
+                if (value.isEmpty()) {
+                    iter.next();
+                    continue;
+                }
+
+                files.add(Util.uid2url(value));
                 BytesRef next = iter.next();
                 if (next == null) {
                     iter = null;

@@ -136,7 +136,6 @@ public final class Indexer {
         ArrayList<String> subFiles = new ArrayList<>();
         ArrayList<String> subFilesList = new ArrayList<>();
 
-        boolean listFiles = false;
         boolean createDict = false;
 
         try {
@@ -315,7 +314,7 @@ public final class Indexer {
             // Create history cache first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
-                    listFiles, createDict, runIndex, subFiles, new ArrayList<>(repositories));
+                    createDict, runIndex, subFiles, new ArrayList<>(repositories));
 
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
@@ -877,11 +876,11 @@ public final class Indexer {
                                boolean searchRepositories,
                                boolean addProjects,
                                Set<String> defaultProjects,
-                               boolean listFiles,
                                boolean createDict,
                                List<String> subFiles,
                                List<String> repositories) throws IndexerException, IOException {
-        prepareIndexer(env, searchRepositories, addProjects, defaultProjects, listFiles, createDict, true,
+
+        prepareIndexer(env, searchRepositories, addProjects, defaultProjects, createDict, true,
                 subFiles, repositories);
     }
 
@@ -899,7 +898,6 @@ public final class Indexer {
      * @param searchRepositories if true, search for repositories
      * @param addProjects if true, add projects
      * @param defaultProjects default projects
-     * @param listFiles list files and return
      * @param createDict if true, create dictionary
      * @param createHistoryCache create history cache flag
      * @param subFiles list of directories
@@ -912,7 +910,6 @@ public final class Indexer {
             boolean searchRepositories,
             boolean addProjects,
             Set<String> defaultProjects,
-            boolean listFiles,
             boolean createDict,
             boolean createHistoryCache,
             List<String> subFiles,
@@ -972,14 +969,6 @@ public final class Indexer {
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
-        }
-
-        if (listFiles) {
-            for (String file : IndexDatabase.getAllFiles(subFiles)) {
-                LOGGER.fine(file);
-            }
-
-            return;
         }
 
         if (defaultProjects != null && !defaultProjects.isEmpty()) {

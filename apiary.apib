@@ -172,6 +172,15 @@ This entry point is used by the Indexer once it finishes indexing given project.
 
 + Response 204
 
+## Project index files [/projects/{project}/files]
+
+### Get a list of files tracked by the index database for given project [GET]
+
++ Response 200 (application/json)
+  + Body
+
+            ["/project/foo.txt","/project/bar.txt"]
+
 ## Project metadata [/projects/{project}/property/{field}]
 
 ### sets property field for the project [PUT]
