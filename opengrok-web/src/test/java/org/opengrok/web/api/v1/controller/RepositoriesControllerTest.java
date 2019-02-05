@@ -111,8 +111,7 @@ public class RepositoriesControllerTest extends JerseyTest {
                 false, // don't list files
                 false, // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
-                null, // repositories - needed when refreshing history partially
-                false); // don't list repos
+                null); // repositories - needed when refreshing history partially
 
         assertEquals(Paths.get("/mercurial").toString() + ":Mercurial",
                 getRepoType(Paths.get("/mercurial").toString()));

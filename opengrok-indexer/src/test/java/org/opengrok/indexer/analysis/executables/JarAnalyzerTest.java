@@ -85,7 +85,7 @@ public class JarAnalyzerTest {
         IndexChangedListener progress = new DefaultIndexChangedListener();
         Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Collections.singletonList("/c")),
-                false, false, null, null, false);
+                false, false, null, null);
 
         Indexer.getInstance().doIndexerExecution(true, null, progress);
 

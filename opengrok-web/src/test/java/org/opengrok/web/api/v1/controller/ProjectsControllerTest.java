@@ -313,8 +313,7 @@ public class ProjectsControllerTest extends JerseyTest {
                 false, // don't list files
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
-                repos, // repositories - needed when refreshing history partially
-                false); // don't list repos
+                repos); // repositories - needed when refreshing history partially
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         for (String proj : projectsToDelete) {
