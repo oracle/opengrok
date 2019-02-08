@@ -19,14 +19,13 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -38,6 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -165,10 +165,10 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
         ArrayList<String> cmd = new ArrayList<>();
-        InputStream inputStream = null;
         File directory = new File(parent);
 
         /*
@@ -216,12 +216,16 @@ public class AccuRevRepository extends Repository {
 
             executor = new Executor(cmd, directory);
             executor.exec();
-
-            inputStream
-                    = new ByteArrayInputStream(executor.getOutputString().getBytes());
+            try {
+                copyBytes(sink, executor.getOutputStream());
+                return true;
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to obtain content for {0}",
+                        basename);
+            }
         }
 
-        return inputStream;
+        return false;
     }
 
     @Override

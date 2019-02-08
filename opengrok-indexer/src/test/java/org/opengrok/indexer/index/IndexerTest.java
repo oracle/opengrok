@@ -77,7 +77,6 @@ import org.opengrok.indexer.util.TestRepository;
 public class IndexerTest {
 
     TestRepository repository;
-    private static IndexerParallelizer parallelizer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
@@ -86,16 +85,6 @@ public class IndexerTest {
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
-
-        parallelizer = new IndexerParallelizer(env);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (parallelizer != null) {
-            parallelizer.close();
-            parallelizer = null;
-        }
     }
 
     @Before
@@ -257,14 +246,14 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(2, listener.files.size());
             repository.purgeData();
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
             idb = new IndexDatabase(project);
             listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
@@ -340,7 +329,7 @@ public class IndexerTest {
         assertNotNull(idb);
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
@@ -356,7 +345,7 @@ public class IndexerTest {
         fw.close();
 
         // reindex
-        idb.update(parallelizer);
+        idb.update();
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
@@ -396,7 +385,7 @@ public class IndexerTest {
         assertNotNull(idb);
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals(1, listener.files.size());
     }
 
@@ -416,14 +405,14 @@ public class IndexerTest {
         assertNotNull(idb);
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals(1, listener.files.size());
         listener.reset();
         repository.addDummyFile(ppath);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals("No new file added", 1, listener.files.size());
         repository.removeDummyFile(ppath);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals("(added)files changed unexpectedly", 1, listener.files.size());
         assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
         assertEquals("Should have added then removed the same file",
@@ -462,7 +451,7 @@ public class IndexerTest {
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
             System.out.println("Trying to index a special file - FIFO in this case.");
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(0, listener.files.size());
 
         } else {

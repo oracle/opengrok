@@ -19,13 +19,11 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.StringUtils;
 
@@ -171,14 +170,18 @@ public class GitRepository extends Repository {
     /**
      * Try to get file contents for given revision.
      *
+     * @param sink a required target sink
      * @param fullpath full pathname of the file
      * @param rev revision
-     * @return contents of the file in revision rev
+     * @return a defined instance with {@code success} == {@code true} if no
+     * error occurred and with non-zero {@code iterations} if some data was
+     * transferred
      */
-    private InputStream getHistoryRev(String fullpath, String rev) {
-        InputStream ret = null;
-        File directory = new File(getDirectoryName());
+    private HistoryRevResult getHistoryRev(
+            BufferSink sink, String fullpath, String rev) {
 
+        HistoryRevResult result = new HistoryRevResult();
+        File directory = new File(getDirectoryName());
         try {
             /*
              * Be careful, git uses only forward slashes in its command and output (not in file path).
@@ -196,38 +199,25 @@ public class GitRepository extends Repository {
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = executor.getOutputStream()) {
-                int len;
-                while ((len = in.read(buffer)) != -1) {
-                    if (len > 0) {
-                        out.write(buffer, 0, len);
-                    }
-                }
-            }
+            result.iterations = copyBytes(sink, executor.getOutputStream());
 
             /*
              * If exit value of the process was not 0 then the file did
              * not exist or internal git error occured.
              */
-            if (status == 0) {
-                ret = new ByteArrayInputStream(out.toByteArray());
-            } else {
-                ret = null;
-            }
+            result.success = (status == 0);
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history for file {0} in revision {1}: ",
                         new Object[]{fullpath, rev, exp.getClass().toString(), exp});
         }
-
-        return ret;
+        return result;
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
+
         String fullpath;
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
@@ -238,12 +228,11 @@ public class GitRepository extends Repository {
                     return String.format("Failed to get canonical path: %s/%s", parent, basename);
                 }
             });
-            return null;
+            return false;
         }
 
-        InputStream ret = getHistoryRev(fullpath, rev);
-
-        if (ret == null) {
+        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
              * renamed so we need to find its original name in that revision
@@ -259,14 +248,14 @@ public class GitRepository extends Repository {
                         return String.format("Failed to get original revision: %s/%s (revision %s)", parent, basename, rev);
                     }
                 });
-                return null;
+                return false;
             }
-            if (origpath != null) {
-                ret = getHistoryRev(origpath, rev);
+            if (origpath != null && !origpath.equals(fullpath)) {
+                result = getHistoryRev(sink, origpath, rev);
             }
         }
 
-        return ret;
+        return result.success;
     }
 
     /**

@@ -42,7 +42,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -265,6 +264,24 @@ public final class HistoryGuru {
         }
 
         return null;
+    }
+
+    /**
+     * Gets a named revision of the specified file into the specified target.
+     *
+     * @param target a require target file
+     * @param parent The directory containing the file
+     * @param basename The name of the file
+     * @param rev The revision to get
+     * @return {@code true} if content was found
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public boolean getRevision(File target, String parent, String basename,
+            String rev) throws IOException {
+
+        Repository repo = getRepository(new File(parent));
+        return repo != null && repo.getHistoryGet(target, parent,
+                basename, rev);
     }
 
     /**
@@ -589,7 +606,8 @@ public final class HistoryGuru {
 
     private void createCacheReal(Collection<Repository> repositories) {
         Statistics elapsed = new Statistics();
-        ExecutorService executor = RuntimeEnvironment.getHistoryExecutor();
+        ExecutorService executor = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer().getHistoryExecutor();
         // Since we know each repository object from the repositories
         // collection is unique, we can abuse HashMap to create a list of
         // repository,revision tuples with repository as key (as the revision
@@ -643,25 +661,7 @@ public final class HistoryGuru {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE,
                     "latch exception{0}", ex);
-        }
-
-        executor.shutdown();
-        while (!executor.isTerminated()) {
-            try {
-                // Wait forever
-                executor.awaitTermination(999, TimeUnit.DAYS);
-            } catch (InterruptedException exp) {
-                LOGGER.log(Level.WARNING,
-                        "Received interrupt while waiting for executor to finish", exp);
-            }
-        }
-        RuntimeEnvironment.freeHistoryExecutor();
-        try {
-            /* Thread pool for handling renamed files needs to be destroyed too. */
-            RuntimeEnvironment.destroyRenamedHistoryExecutor();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE,
-                    "destroying of renamed thread pool failed", ex);
+            return;
         }
 
         // The cache has been populated. Now, optimize how it is stored on

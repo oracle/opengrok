@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -145,7 +146,6 @@ public class IndexDatabase {
     private List<String> directories;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
-    private IndexerParallelizer parallelizer;
 
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
@@ -184,23 +184,20 @@ public class IndexDatabase {
      * Update the index database for all of the projects. Print progress to
      * standard out.
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public static void updateAll(IndexerParallelizer parallelizer)
-            throws IOException {
-        updateAll(parallelizer, null);
+    public static void updateAll() throws IOException {
+        updateAll(null);
     }
 
     /**
      * Update the index database for all of the projects
      *
-     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static void updateAll(IndexerParallelizer parallelizer,
-        IndexChangedListener listener) throws IOException {
+    static CountDownLatch updateAll(IndexChangedListener listener)
+            throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -212,6 +209,9 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer();
+        CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (listener != null) {
@@ -222,28 +222,31 @@ public class IndexDatabase {
                 @Override
                 public void run() {
                     try {
-                        db.update(parallelizer);
+                        db.update();
                     } catch (Throwable e) {
                         LOGGER.log(Level.SEVERE,
                                 String.format("Problem updating index database in directory %s: ",
                                         db.indexDirectory.getDirectory()), e);
+                    } finally {
+                        latch.countDown();
                     }
                 }
             });
         }
+        return latch;
     }
 
     /**
      * Update the index database for a number of sub-directories
      *
-     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @param paths list of paths to be indexed
      * @throws IOException if an error occurs
      */
-    public static void update(IndexerParallelizer parallelizer,
-        IndexChangedListener listener, List<String> paths) throws IOException {
+    public static void update(IndexChangedListener listener, List<String> paths)
+            throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         List<IndexDatabase> dbs = new ArrayList<>();
 
         for (String path : paths) {
@@ -284,7 +287,7 @@ public class IndexDatabase {
                     @Override
                     public void run() {
                         try {
-                            db.update(parallelizer);
+                            db.update();
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                         }
@@ -396,11 +399,9 @@ public class IndexDatabase {
     /**
      * Update the content of this index database
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public void update(IndexerParallelizer parallelizer)
-            throws IOException {
+    public void update() throws IOException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -409,7 +410,6 @@ public class IndexDatabase {
             interrupted = false;
         }
 
-        this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         reader = null;
@@ -572,13 +572,12 @@ public class IndexDatabase {
     /**
      * Optimize all index databases
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    static void optimizeAll(IndexerParallelizer parallelizer)
-            throws IOException {
+    static CountDownLatch optimizeAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         if (env.hasProjects()) {
             for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
@@ -587,6 +586,7 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
+        CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
@@ -594,15 +594,18 @@ public class IndexDatabase {
                     @Override
                     public void run() {
                         try {
-                            db.update(parallelizer);
+                            db.update();
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE,
                                 "Problem updating lucene index database: ", e);
+                        } finally {
+                            latch.countDown();
                         }
                     }
                 });
             }
         }
+        return latch;
     }
 
     /**
@@ -1173,6 +1176,8 @@ public class IndexDatabase {
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
         AtomicInteger alreadyClosedCounter = new AtomicInteger();
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;

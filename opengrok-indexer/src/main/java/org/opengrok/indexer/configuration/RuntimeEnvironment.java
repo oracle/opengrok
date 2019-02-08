@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -65,9 +64,11 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Statistics;
@@ -88,11 +89,10 @@ public final class RuntimeEnvironment {
     private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
-    private ReentrantReadWriteLock configLock;
+    private final ReentrantReadWriteLock configLock;
+    private final LazilyInstantiate<IndexerParallelizer> lzIndexerParallelizer;
+    private final LazilyInstantiate<ExecutorService> lzSearchExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
-    private static ExecutorService historyExecutor = null;
-    private static ExecutorService historyRenamedExecutor = null;
-    private static ExecutorService searchExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
@@ -127,43 +127,21 @@ public final class RuntimeEnvironment {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
         watchDog = new WatchDogService();
+        lzIndexerParallelizer = LazilyInstantiate.using(() ->
+                new IndexerParallelizer(this));
+        lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
     }
 
     /** Instance of authorization framework.*/
     private AuthorizationFramework authFramework;
 
-    /* Get thread pool used for top-level repository history generation. */
-    public static synchronized ExecutorService getHistoryExecutor() {
-        if (historyExecutor == null) {
-            historyExecutor = Executors.newFixedThreadPool(getInstance().getHistoryParallelism(),
-                    runnable -> {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("history-handling-" + thread.getId());
-                        return thread;
-                    });
-        }
-
-        return historyExecutor;
+    /** Gets the thread pool used for multi-project searches. */
+    public ExecutorService getSearchExecutor() {
+        return lzSearchExecutor.get();
     }
 
-    /* Get thread pool used for history generation of renamed files. */
-    public static synchronized ExecutorService getHistoryRenamedExecutor() {
-        if (historyRenamedExecutor == null) {
-            historyRenamedExecutor = Executors.newFixedThreadPool(getInstance().getHistoryRenamedParallelism(),
-                    runnable -> {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("renamed-handling-" + thread.getId());
-                        return thread;
-                    });
-        }
-
-        return historyRenamedExecutor;
-    }
-
-    /* Get thread pool used for multi-project searches. */
-    public synchronized ExecutorService getSearchExecutor() {
-        if (searchExecutor == null) {
-            searchExecutor = Executors.newFixedThreadPool(
+    private ExecutorService newSearchExecutor() {
+        return Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
                 new ThreadFactory() {
                 @Override
@@ -173,23 +151,6 @@ public final class RuntimeEnvironment {
                     return thread;
                 }
             });
-        }
-
-        return searchExecutor;
-    }
-
-    public static synchronized void freeHistoryExecutor() {
-        historyExecutor = null;
-    }
-
-    public static synchronized void destroyRenamedHistoryExecutor() throws InterruptedException {
-        if (historyRenamedExecutor != null) {
-            historyRenamedExecutor.shutdown();
-            // All the jobs should be completed by now however for testing
-            // we would like to make sure the threads are gone.
-            historyRenamedExecutor.awaitTermination(1, TimeUnit.MINUTES);
-            historyRenamedExecutor = null;
-        }
     }
 
     /**
@@ -202,6 +163,10 @@ public final class RuntimeEnvironment {
     }
 
     public WatchDogService watchDog;
+
+    public IndexerParallelizer getIndexerParallelizer() {
+        return lzIndexerParallelizer.get();
+    }
 
     private String getCanonicalPath(String s) {
         if (s == null) { return null; }
@@ -1090,6 +1055,14 @@ public final class RuntimeEnvironment {
 
     public void setWebappLAF(String laf) {
         setConfigurationValue("webappLAF", laf);
+    }
+
+    /**
+     * Gets a value indicating if the web app should run ctags as necessary.
+     * @return the value of {@link Configuration#isWebappCtags()}
+     */
+    public boolean isWebappCtags() {
+        return (boolean)getConfigurationValue("webappCtags");
     }
 
     public Configuration.RemoteSCM getRemoteScmSupported() {

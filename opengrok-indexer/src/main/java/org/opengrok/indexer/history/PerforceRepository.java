@@ -19,19 +19,20 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -78,7 +79,9 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
+
         ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
@@ -86,8 +89,17 @@ public class PerforceRepository extends Repository {
         cmd.add("-q");
         cmd.add(basename + getRevisionCmd(rev));
         Executor executor = new Executor(cmd, new File(parent));
+        // TODO: properly evaluate Perforce return code
         executor.exec();
-        return new ByteArrayInputStream(executor.getOutputString().getBytes());
+        try {
+            copyBytes(sink, executor.getOutputStream());
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE,
+                    "Failed to get history for file {0}/{1} in revision {2}: ",
+                    new Object[]{parent, basename, rev});
+        }
+        return false;
     }
 
     @Override
