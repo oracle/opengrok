@@ -315,7 +315,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                 case QUERY:
                     out.write("<a href=\"");
                     out.write(urlPrefix);
-                    out.write("q=");
+                    out.write("full=");
                     Util.qurlencode(lstr, out);
                     JFlexXrefUtils.appendProject(out, project);
                     out.write("\">");

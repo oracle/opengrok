@@ -597,7 +597,7 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
+            queryBuilder = new QueryBuilder().setFreetext(req.getParameter(QueryBuilder.FULL))
                     .setDefs(req.getParameter(QueryBuilder.DEFS))
                     .setRefs(req.getParameter(QueryBuilder.REFS))
                     .setPath(req.getParameter(QueryBuilder.PATH))
@@ -1602,8 +1602,8 @@ public final class PageConfig {
     public String getSearchTitle() {
         String title = "";
 
-        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
-            title += req.getParameter("q") + " (full)";
+        if (req.getParameter(QueryBuilder.FULL) != null && !req.getParameter(QueryBuilder.FULL).isEmpty()) {
+            title += req.getParameter(QueryBuilder.FULL) + " (full)";
         }
         if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
             title = addTitleDelimiter(title);

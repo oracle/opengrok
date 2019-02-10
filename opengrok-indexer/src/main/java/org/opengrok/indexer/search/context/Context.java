@@ -18,14 +18,9 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
- */
-
-/**
- * This is supposed to get the matching lines from sourcefile.
- * since lucene does not easily give the match context.
  */
 package org.opengrok.indexer.search.context;
 
@@ -55,6 +50,10 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
 
+/**
+ * This is supposed to get the matching lines from sourcefile.
+ * since lucene does not easily give the match context.
+ */
 public class Context {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
@@ -245,9 +244,6 @@ public class Context {
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
-            if (QueryBuilder.FULL.equals(field)) {
-                field = "q"; // bah - search query params should be consistent!
-            }
             sb.append(field).append("=").append(Util.URIEncode(queryText))
                 .append('&');
         }

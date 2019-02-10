@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -413,9 +413,9 @@ public class SuggesterControllerTest extends JerseyTest {
         // terms for prefix t: "text", "texttrim", "tell", "teach", "trimmargin"
 
         List<String> queries = Arrays.asList(
-                "http://localhost:8080/source/search?project=kotlin&q=text",
-                "http://localhost:8080/source/search?project=kotlin&q=text",
-                "http://localhost:8080/source/search?project=kotlin&q=teach"
+                "http://localhost:8080/source/search?project=kotlin&full=text",
+                "http://localhost:8080/source/search?project=kotlin&full=text",
+                "http://localhost:8080/source/search?project=kotlin&full=teach"
         );
 
         target(SuggesterController.PATH)

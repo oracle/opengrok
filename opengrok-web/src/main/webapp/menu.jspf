@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -156,8 +156,8 @@ document.domReady.push(function() { domReadyMenu(); });
     %>
     <tbody>
     <tr>
-        <td><label for="q" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
+        <td><label for="full" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td colspan="2"><input tabindex="1" class="q" name="full" id="full" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
