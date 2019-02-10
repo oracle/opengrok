@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -102,6 +102,7 @@ import org.opengrok.indexer.analysis.swift.SwiftAnalyzerFactory;
 import org.opengrok.indexer.analysis.tcl.TclAnalyzerFactory;
 import org.opengrok.indexer.analysis.uue.UuencodeAnalyzerFactory;
 import org.opengrok.indexer.analysis.vb.VBAnalyzerFactory;
+import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
@@ -293,7 +294,8 @@ public class AnalyzerGuru {
                 new PascalAnalyzerFactory(),
                 new AdaAnalyzerFactory(),
                 new RubyAnalyzerFactory(),
-                new EiffelAnalyzerFactory()
+                new EiffelAnalyzerFactory(),
+                new VerilogAnalyzerFactory()
             };
 
             for (AnalyzerFactory analyzer : analyzers) {

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search;
@@ -276,7 +276,7 @@ public final class Results {
             fargs.morePrefix, true, fargs.tabSize);
 
         if (!didPresentNew) {
-            /**
+            /*
              * Fall back to the old view, which re-analyzes text using
              * PlainLinetokenizer. E.g., when source code is updated (thus
              * affecting timestamps) but re-indexing is not yet complete.
@@ -295,12 +295,15 @@ public final class Results {
             }
             boolean isDefSearch = fargs.shelp.builder.isDefSearch();
             // SRCROOT is read with UTF-8 as a default.
+            File sourceFile = new File(fargs.shelp.sourceRoot, rpath);
             try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
-                    new File(fargs.shelp.sourceRoot, rpath)),
-                    StandardCharsets.UTF_8.name())) {
+                    sourceFile), StandardCharsets.UTF_8.name())) {
                 fargs.shelp.sourceContext.getContext(r, fargs.out,
                     fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
                     isDefSearch, null, scopes);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, String.format("No context for %s",
+                        sourceFile, ex));
             }
         }
     }

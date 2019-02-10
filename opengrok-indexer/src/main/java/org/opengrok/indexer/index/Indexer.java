@@ -20,12 +20,13 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -92,6 +93,10 @@ public final class Indexer {
     public static final char PATH_SEPARATOR ='/';
     public static String PATH_SEPARATOR_STRING =Character.toString(PATH_SEPARATOR);
 
+    private static final String HELP_OPT_1 = "--help";
+    private static final String HELP_OPT_2 = "-?";
+    private static final String HELP_OPT_3 = "-h";
+
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
     private static boolean checkIndexVersion = false;
@@ -141,12 +146,11 @@ public final class Indexer {
         try {
             argv = parseOptions(argv);
             if (help) {
-                status = 1;
-                System.err.println(helpUsage);
+                PrintStream helpStream = status != 0 ? System.err : System.out;
+                helpStream.println(helpUsage);
                 if (helpDetailed) {
-                    System.err.println(AnalyzerGuruHelp.getUsage());
-                    System.err.println(
-                        ConfigurationHelp.getSamples());
+                    helpStream.println(AnalyzerGuruHelp.getUsage());
+                    helpStream.println(ConfigurationHelp.getSamples());
                 }
                 System.exit(status);
             }
@@ -402,7 +406,7 @@ public final class Indexer {
      * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
-        String[] usage = {"--help"};
+        String[] usage = {HELP_OPT_1};
         String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
@@ -410,13 +414,22 @@ public final class Indexer {
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
-            status = 1;
+            status = 1; // with non-zero EXIT STATUS
         }
+
+        /*
+         * Pre-match any of the --help options so that some possible exception-
+         * generating args handlers (e.g. -R) can be short-circuited.
+         */
+        help = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
+                HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
 
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do(cfgFile -> {
                 try {
-                    cfg = Configuration.read(new File((String)cfgFile));
+                    if (!help) {
+                        cfg = Configuration.read(new File((String) cfgFile));
+                    }
                 } catch(IOException e) {
                     die(e.getMessage());
                 }
@@ -430,7 +443,8 @@ public final class Indexer {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
-            parser.on("-?", "-h", "--help", "Display this usage summary.").Do(v -> {
+            parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
+                    "Display this usage summary.").Do(v -> {
                 help = true;
                 helpUsage = parser.getUsage();
             });
