@@ -17,52 +17,35 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ /*
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.indexer.analysis.ruby;
+package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.Resettable;
 import org.opengrok.indexer.util.RegexUtils;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 
 /**
- * Represents an API for object's using {@link RubyLexHelper}
+ * Represents an abstract base class for Perl lexers.
  */
-interface RubyLexer extends JFlexJointLexer {
-    void maybeIntraState();
-    void popHelper();
-}
+@SuppressWarnings("Duplicates")
+abstract class PerlLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
-/**
- * Represents a helper for Ruby lexers
- */
-class RubyLexHelper implements Resettable {
-
-    // Using equivalent of {Local_nextchar} from RubyProductions.lexh
+    // Using equivalent of {Identifier} from PerlProductions.lexh
     private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
-        "^[a-zA-Z0-9_\u00160-\u0255]+");
-
-    private final RubyLexer lexer;
-
-    private final int QUOxLxN;
-    private final int QUOxN;
-    private final int QUOxL;
-    private final int QUO;
-    private final int HEREinxN;
-    private final int HERExN;
-    private final int HEREin;
-    private final int HERE;
-    private final int SCOMMENT;
-    private final int POD;
+        "^[a-zA-Z0-9_]+");
 
     private Queue<HereDocSettings> hereSettings;
 
@@ -75,13 +58,13 @@ class RubyLexHelper implements Resettable {
     private String qopname;
 
     /**
-     * When matching a quoting construct like %w(), '', %[], etc., the
+     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
      * terminating character is stored.
      */
     private char endqchar;
 
     /**
-     * When matching a quoting construct like %[], %w(), %&lt;&gt; etc. that
+     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
      * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
      * nesting is tracked and {@code nendqchar} is incremented appropriately.
      * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
@@ -89,17 +72,25 @@ class RubyLexHelper implements Resettable {
     private char nestqchar;
 
     /**
-     * When matching a quoting construct like %[], %w(), etc., the
-     * number of remaining end separators is stored. It starts at 1, and
-     * any nesting increases the value.
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of remaining end separators in an operator section is stored.
+     * It starts at 1, and any nesting increases the value.
      */
     private int nendqchar;
 
     /**
-     * When interpolating inside a quoting construct, the number of remaining
-     * '}' is stored. It starts at 1, and any nesting increases the value.
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of sections for the operator is stored. E.g., for m//, it is 1;
+     * for tr/// it is 2.
      */
-    private int nendbrace;
+    private int nsections;
+
+    /**
+     * When matching a two part construct like tr/// or s```, etc., after the
+     * first end separator, {@code waitq} is set to true so that nesting is not
+     * active.
+     */
+    private boolean waitq;
 
     /**
      * When matching a quoting construct, a Pattern to identify collateral
@@ -107,39 +98,22 @@ class RubyLexHelper implements Resettable {
      */
     private Pattern collateralCapture;
 
-    RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN, RubyLexer lexer,
-        int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
-        int pOD) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.QUOxLxN = qUOxLxN;
-        this.QUOxN = qUOxN;
-        this.QUOxL = qUOxL;
-        this.QUO = qUO;
-        this.HEREinxN = hEREinxN;
-        this.HERExN = hERExN;
-        this.HEREin = hEREin;
-        this.HERE = hERE;
-        this.SCOMMENT = sCOMMENT;
-        this.POD = pOD;
-    }
-
     /**
      * Resets the instance to an initial state.
      */
     @Override
     public void reset() {
+        super.reset();
         collateralCapture = null;
         endqchar = '\0';
         if (hereSettings != null) {
             hereSettings.clear();
         }
-        nendbrace = 0;
         nendqchar = 0;
         nestqchar = '\0';
+        nsections = 0;
         qopname = null;
+        waitq = false;
     }
 
     /**
@@ -155,12 +129,23 @@ class RubyLexHelper implements Resettable {
         char c = capture.charAt(0);
         if (c == endqchar) {
             if (--nendqchar <= 0) {
-                endqchar = '\0';
-                nestqchar = '\0';
-                return true;
+                if (--nsections <= 0) {
+                    endqchar = '\0';
+                    nestqchar = '\0';
+                    return true;
+                } else if (nestqchar != '\0') {
+                    waitq = true;
+                } else {
+                    nendqchar = 1;
+                }
             }
         } else if (nestqchar != '\0' && c == nestqchar) {
-            ++nendqchar;
+            if (waitq) {
+                waitq = false;
+                nendqchar = 1;
+            } else {
+                ++nendqchar;
+            }
         }
         return false;
     }
@@ -172,7 +157,11 @@ class RubyLexHelper implements Resettable {
      */
     public boolean areModifiersOK() {
         switch (qopname) {
-            case "m": // named here a la Perl for the Ruby /pat/ operator
+            case "m":
+            case "qr":
+            case "s":
+            case "tr":
+            case "y":
                 return true;
             default:
                 return false;
@@ -181,7 +170,7 @@ class RubyLexHelper implements Resettable {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and gives the {@code op} for the {@code listener} to take.
+     * {@code op}, and gives the {@code op} for the {@code lexer} to take.
      */
     public void qop(String op, int namelength, boolean nointerp)
         throws IOException {
@@ -190,65 +179,78 @@ class RubyLexHelper implements Resettable {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and gives the {@code capture} for the {@code listener} to
+     * {@code op}, and gives the {@code capture} for the {@code lexer} to
      * take if {@code doWrite} is true.
      */
     public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException {
-
-        // N.b. the following will write anyway -- despite any `doWrite'
-        // setting -- if interpolation is truly ending, but that is OK as a
-        // quote-like operator is not starting in that case.
-        if (maybeEndInterpolation(capture)) {
-            return;
-        }
-
         // If namelength is positive, allow that a non-zero-width word boundary
         // character may have needed to be matched since jflex does not conform
         // with \b as a zero-width simple word boundary. Excise it into
         // `boundary'.
-        String postop = capture;
+        String boundary = "";
+        String postboundary = capture;
         qopname = "";
         if (namelength > 0) {
-            qopname = capture.substring(0, namelength);
-            postop = capture.substring(qopname.length());
+            postboundary = capture.replaceFirst("^\\W+", "");
+            boundary = capture.substring(0, capture.length() -
+                postboundary.length());
+            qopname = postboundary.substring(0, namelength);
         }
+        waitq = false;
         nendqchar = 1;
         collateralCapture = null;
 
-        char opc = postop.charAt(0);
+        switch (qopname) {
+            case "tr":
+            case "s":
+            case "y":
+                nsections = 2;
+                break;
+            default:
+                nsections = 1;
+                break;
+        }
+
+        String postop = postboundary.substring(qopname.length());
+        String ltpostop = postop.replaceFirst("^\\s+", "");
+        char opc = ltpostop.charAt(0);
         setEndQuoteChar(opc);
-        setState(postop, nointerp);
+        setState(ltpostop, nointerp);
 
         if (doWrite) {
-            lexer.offer(qopname);
-            lexer.skipSymbol();
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offer(postop);
+            offer(boundary);
+            if (qopname.length() > 0) {
+                offerSymbol(qopname, boundary.length(), false);
+            } else {
+                skipSymbol();
+            }
+            disjointSpan(HtmlConsts.STRING_CLASS);
+            offer(postop);
         }
     }
 
     /**
-     * Sets the jflex state reflecting {@code postop} and {@code nointerp}.
+     * Sets the jflex state reflecting {@code ltpostop} and {@code nointerp}.
      */
-    public void setState(String postop, boolean nointerp) {
+    public void setState(String ltpostop, boolean nointerp) {
         int state;
         boolean nolink = false;
 
-        // "no link" for values in the rules for "string links" if `postop'
+        // "no link" for values in the rules for "string links" if `ltpostop'
         // starts path-like or with the e-mail delimiter.
-        if (StringUtils.startsWithFpathChar(postop) ||
-            postop.startsWith("@")) {
+        if (StringUtils.startsWithFpathChar(ltpostop) ||
+            ltpostop.startsWith("@")) {
             nolink = true;
         }
 
         if (nointerp) {
-            state = nolink ? QUOxLxN : QUOxN;
+            state = nolink ? QUOxLxN() : QUOxN();
         } else {
-            state = nolink ? QUOxL : QUO;
+            state = nolink ? QUOxL() : QUO();
         }
-        lexer.maybeIntraState();
-        lexer.yypush(state);
+        maybeIntraState();
+        yypush(state);
     }
 
     /**
@@ -287,10 +289,6 @@ class RubyLexHelper implements Resettable {
      * to output.
      */
     public void hqopPunc(String capture) throws IOException {
-        if (maybeEndInterpolation(capture)) {
-            return;
-        }
-
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -299,10 +297,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offer(lede);
+        offer(lede);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -312,10 +310,6 @@ class RubyLexHelper implements Resettable {
      * parts to output.
      */
     public void hqopSymbol(String capture) throws IOException {
-        if (maybeEndInterpolation(capture)) {
-            return;
-        }
-
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -324,10 +318,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerSymbol(lede, 0, false);
+        offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -337,7 +331,7 @@ class RubyLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            lexer.offer(whsp);
+            offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
@@ -345,17 +339,17 @@ class RubyLexHelper implements Resettable {
                 off = i + 1;
             }
             while (numlf-- > 0) {
-                lexer.startNewLine();
+                startNewLine();
             }
             if (off < whsp.length()) {
-                lexer.offer(whsp.substring(off));
+                offer(whsp.substring(off));
             }
         }
     }
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link RubyLexer#offer(java.lang.String)}. If the
+     * {@link PerlLexer#offer(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -363,7 +357,7 @@ class RubyLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offer(capture);
+        offer(capture);
         if (hereSettings == null) {
             hereSettings = new LinkedList<>();
         }
@@ -377,11 +371,11 @@ class RubyLexHelper implements Resettable {
 
         String opener = remaining.substring(0, i + 2);
         remaining = remaining.substring(opener.length());
-        if (remaining.startsWith("~") || remaining.startsWith("-")) {
+        if (remaining.startsWith("~")) {
             indented = true;
             remaining = remaining.substring(1);
         }
-
+        remaining = remaining.replaceFirst("^\\s+", "");
         char c = remaining.charAt(0);
         switch (c) {
             case '\'':
@@ -389,8 +383,13 @@ class RubyLexHelper implements Resettable {
                 remaining = remaining.substring(1);
                 break;
             case '`':
-                // (Ruby, unlike Perl, does not recognize '"' here.)
+            case '\"':
                 nointerp = false;
+                remaining = remaining.substring(1);
+                break;
+            case '\\':
+                c = '\0';
+                nointerp = true;
                 remaining = remaining.substring(1);
                 break;
             default:
@@ -415,9 +414,9 @@ class RubyLexHelper implements Resettable {
 
         int state;
         if (nointerp) {
-            state = indented ? HEREinxN : HERExN;
+            state = indented ? HEREinxN() : HERExN();
         } else {
-            state = indented ? HEREin : HERE;
+            state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
         hereSettings.add(settings);
@@ -431,8 +430,8 @@ class RubyLexHelper implements Resettable {
     public boolean maybeStartHere() throws IOException {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
-            lexer.yypush(settings.state);
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            yypush(settings.state);
+            disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -449,104 +448,152 @@ class RubyLexHelper implements Resettable {
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            lexer.disjointSpan(null);
+            disjointSpan(null);
             didZspan = true;
             hereSettings.remove();
         }
 
-        lexer.offer(capture);
+        offer(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
-            lexer.yybegin(settings.state);
+            yybegin(settings.state);
             if (didZspan) {
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                disjointSpan(HtmlConsts.STRING_CLASS);
             }
             return false;
         } else {
-            lexer.yypop();
+            yypop();
             return true;
         }
     }
 
     /**
-     * Resets the interpolation counter to 1.
-     */
-    public void interpop() {
-        nendbrace = 1;
-    }
-
-    /**
-     * Determine if the interpolation should end based on the first character
-     * of {@code capture}, recognizing tokens that increase the nesting level
-     * instead.
+     * Splits a sigil identifier -- where the {@code capture} starts with
+     * a sigil and ends in an identifier and where Perl allows whitespace after
+     * the sigil -- and write the parts to output.
      * <p>
-     * Calling this method has side effects to possibly modify
-     * {@code nendbrace}.
-     * @return true if the interpolation state should end
+     * Seeing the {@code endqchar} in the capture will affect an active
+     * quote-like operator.
      */
-    public boolean maybeEndInterpolation(String capture) throws IOException {
-        if (nendbrace <= 0) {
-            return false;
+    public void sigilID(String capture) throws IOException {
+        String sigil = capture.substring(0, 1);
+
+        if (capture.charAt(0) == endqchar) {
+            skipSymbol();
+            offer(sigil);
+            if (maybeEndQuote(sigil)) {
+                abortQuote();
+            }
+            yypushback(capture.length() - 1);
+            return;
         }
-        if (capture.startsWith("}")) {
-            if (--nendbrace <= 0) {
-                int rem = capture.length() - 1;
-                String opener = capture.substring(0, 1);
-                lexer.popHelper();
-                lexer.yypop();
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-                lexer.offer(opener);
-                if (rem > 0) {
-                    lexer.yypushback(rem);
+
+        String postsigil = capture.substring(1);
+        String id = postsigil.replaceFirst("^\\s+", "");
+        String s0 = postsigil.substring(0, postsigil.length() - id.length());
+
+        int ohnooo;
+        if ((ohnooo = id.indexOf(endqchar)) == -1) {
+            offer(sigil);
+            offer(s0);
+            offerSymbol(id, sigil.length() + s0.length(), true);
+        } else {
+            // If the identifier contains the end quoting character, then it
+            // may or may not parse in Perl. Treat everything before the first
+            // instance of the `endqchar' as inside the quote -- and possibly
+            // as real identifier -- and possibly abort the quote early.
+            // e.g.: qr z$abcz;
+            //     OK
+            // e.g.: qr z$abziz;
+            //     Unknown regexp modifier "/z" at -e line 1, near "= "
+            //     Global symbol "$ab" requires explicit package name ...
+            // e.g.: qr i$abixi;
+            //     OK
+            String w0 = id.substring(0, ohnooo);
+            String p0 = id.substring(ohnooo, ohnooo + 1);
+            String w1 = id.substring(ohnooo + 1);
+            offer(sigil);
+            offer(s0);
+            if (w0.length() > 0) {
+                offerSymbol(w0, sigil.length() + s0.length(), true);
+            } else {
+                skipSymbol();
+            }
+            offer(p0);
+            if (maybeEndQuote(p0)) {
+                abortQuote();
+            }
+            yypushback(w1.length());
+        }
+    }
+
+    /**
+     * Splits a braced sigil identifier -- where the {@code capture} starts
+     * with a sigil and ends with a '}' and where Perl allows whitespace after
+     * the sigil and around the identifier -- and write the parts to output.
+     */
+    public void bracedSigilID(String capture) throws IOException {
+        // $      {      identifier      }
+        //
+        // S|_________interior0_________|r
+        //        |_____ltinterior0_____|r
+        //        l|_____interior1______|r
+        //               |_ltinterior1__|r
+        // S|_s0_|l|_s1_||---id---||_s2_|r
+
+        String sigil = capture.substring(0, 1);
+        String rpunc = capture.substring(capture.length() - 1);
+        String interior0 = capture.substring(1, capture.length() - 1);
+        String ltinterior0 = interior0.replaceFirst("^\\s+", "");
+        String s0 = interior0.substring(0, interior0.length() -
+            ltinterior0.length());
+
+        String lpunc = ltinterior0.substring(0, 1);
+        String interior1 = ltinterior0.substring(1);
+        String ltinterior1 = interior1.replaceFirst("^\\s+", "");
+        String s1 = interior1.substring(0, interior1.length() -
+            ltinterior1.length());
+
+        String s2 = ltinterior1.replaceFirst("^\\S+", "");
+        String id = ltinterior1.substring(0, ltinterior1.length() -
+            s2.length());
+
+        offer(sigil);
+        offer(s0);
+        offer(lpunc);
+        offer(s1);
+        offerSymbol(id, sigil.length() + s0.length() +
+                lpunc.length() + s1.length(), true);
+        offer(s2);
+        offer(rpunc);
+    }
+
+    /**
+     * Write a special identifier as a keyword -- unless {@code endqchar} is in
+     * the {@code capture}, which will affect an active quote-like operator
+     * instead.
+     */
+    public void specialID(String capture) throws IOException {
+        if (capture.indexOf(endqchar) == -1) {
+            offerKeyword(capture);
+        } else {
+            for (int i = 0; i < capture.length(); ++i) {
+                char c = capture.charAt(i);
+                String w = new String(new char[] {c});
+                offer(w);
+                if (maybeEndQuote(w)) {
+                    abortQuote();
+                    yypushback(capture.length() - i - 1);
+                    break;
                 }
-                return true;
             }
-        } else if (capture.startsWith("{")) {
-            ++nendbrace;
         }
-        return false;
-    }
-
-    /**
-     * Take a series of module names separated by "::".
-     */
-    public void takeModules(String capture) throws IOException {
-        final String SEP = "::";
-        int o = 0, i;
-        while (o < capture.length() && (i = capture.indexOf(SEP, o)) != -1) {
-            String module = capture.substring(o, i);
-            lexer.offerSymbol(module, o, false);
-            lexer.offer(SEP);
-            o = i + 2;
-        }
-        if (o < capture.length()) {
-            String module = capture.substring(o);
-            lexer.offerSymbol(module, o, false);
-        }
-    }
-
-    /**
-     * Subtract the number of initial, non-word characters from the length of
-     * {@code capture}.
-     * @param capture a defined value
-     * @return the length of {@code value} minus the number of initial,
-     * non-word characters
-     */
-    public int nameLength(String capture) {
-        int len = capture.length();
-        for (int i = 0; i < capture.length(); ++i) {
-            if (Character.isLetterOrDigit(capture.charAt(i))) {
-                break;
-            }
-            --len;
-        }
-        return len;
     }
 
     /**
      * Gets a pattern to match the collateral capture for the current quoting
-     * state or null if there is no active quoting state.
+     * state or null if there is no active quoting state. 
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
@@ -569,16 +616,86 @@ class RubyLexHelper implements Resettable {
     }
 
     /**
-     * Calls {@link RubyLexer#phLOC()} if the yystate is not SCOMMENT or POD.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT or POD.
      */
     public void chkLOC() {
-        int yystate = lexer.yystate();
-        if (yystate != SCOMMENT && yystate != POD) {
-            lexer.phLOC();
+        int yystate = yystate();
+        if (yystate != SCOMMENT() && yystate != POD()) {
+            phLOC();
         }
     }
 
-    private class HereDocSettings {
+    abstract void maybeIntraState();
+
+    /**
+     * Indicates that a premature end of quoting occurred. Everything up to the
+     * causal character has been written, and anything following will be
+     * indicated via {@link #yypushback}.
+     * @throws IOException I/O exception
+     */
+    abstract void abortQuote() throws IOException;
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxLxN.
+     */
+    abstract int QUOxLxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxN.
+     */
+    abstract int QUOxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxL.
+     */
+    abstract int QUOxL();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUO.
+     */
+    abstract int QUO();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREinxN.
+     */
+    abstract int HEREinxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERExN.
+     */
+    abstract int HERExN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREin.
+     */
+    abstract int HEREin();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERE.
+     */
+    abstract int HERE();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent POD.
+     */
+    abstract int POD();
+
+    private static class HereDocSettings {
         private final String terminator;
         private final int state;
 
@@ -586,9 +703,5 @@ class RubyLexHelper implements Resettable {
             this.terminator = terminator;
             this.state = state;
         }
-
-        public String getTerminator() { return terminator; }
-
-        public int getState() { return state; }
     }
 }

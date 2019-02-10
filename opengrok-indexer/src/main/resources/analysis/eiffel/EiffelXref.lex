@@ -18,22 +18,20 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.eiffel;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import java.util.Set;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class EiffelXref
-%extends JFlexSymbolMatcher
-%implements EiffelLexer
+%extends EiffelLexer
 %char
 %init{
-    h = new EiffelLexHelper(VSTRING, SCOMMENT, this);
     yyline = 1;
 %init}
 %unicode
@@ -42,17 +40,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{
-    private final EiffelLexHelper h;
-
-    /**
-     * Resets the Eiffel tracked state; {@inheritDoc}
-     */
-    @Override
-    public void reset() {
-        super.reset();
-        h.reset();
-    }
-
     @Override
     public void offer(String value) throws IOException {
         onNonSymbolMatched(value, yychar);
@@ -60,13 +47,9 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     @Override
     public boolean offerSymbol(String value, int captureOffset,
-        boolean ignoreKwd)
-            throws IOException {
-        if (ignoreKwd) {
-            return onFilteredSymbolMatched(value, yychar, null, false);
-        } else {
-            return onFilteredSymbolMatched(value, yychar, Consts.kwd, false);
-        }
+            boolean ignoreKwd) throws IOException {
+        Set<String> keywords = ignoreKwd ? null : Consts.kwd;
+        return onFilteredSymbolMatched(value, yychar, keywords, false);
     }
 
     @Override
@@ -96,6 +79,18 @@ import org.opengrok.indexer.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return false;
     }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent VSTRING.
+     */
+    @Override
+    int VSTRING() { return VSTRING; }
 %}
 
 /*

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.fortran;
 
@@ -45,11 +45,11 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180208_00
+     * @return 20190118_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180208_00; // Edit comment above too!
+        return 20190118_00; // Edit comment above too!
     }
 
     /**

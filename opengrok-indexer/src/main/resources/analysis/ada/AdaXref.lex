@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -29,35 +29,22 @@
 package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import java.util.Set;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class AdaXref
-%extends JFlexSymbolMatcher
-%implements AdaLexer
+%extends AdaLexer
 %unicode
 %ignorecase
 %int
 %char
 %init{
-    h = new AdaLexHelper(SCOMMENT, this);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{
-    private final AdaLexHelper h;
-
-    /**
-     * Resets the Ada tracked state; {@inheritDoc}
-     */
-    @Override
-    public void reset() {
-        super.reset();
-        h.reset();
-    }
-
     @Override
     public void offer(String value) throws IOException {
         onNonSymbolMatched(value, yychar);
@@ -65,18 +52,9 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     @Override
     public boolean offerSymbol(String value, int captureOffset,
-        boolean ignoreKwd)
-            throws IOException {
-        if (ignoreKwd) {
-            if (value.length() > 1) {
-                return onFilteredSymbolMatched(value, yychar, null, false);
-            } else {
-                onNonSymbolMatched(value, yychar);
-                return false;
-            }
-        } else {
-            return onFilteredSymbolMatched(value, yychar, Consts.kwd, false);
-        }
+            boolean ignoreKwd) throws IOException {
+        Set<String> keywords = ignoreKwd ? null : Consts.kwd;
+        return onFilteredSymbolMatched(value, yychar, keywords, false);
     }
 
     @Override
@@ -106,6 +84,12 @@ import org.opengrok.indexer.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return false;
     }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
 %}
 
 %include Common.lexh

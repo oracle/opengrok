@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -30,26 +30,20 @@ package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class PerlSymbolTokenizer
-%extends JFlexSymbolMatcher
-%implements PerlLexer
+%extends PerlLexer
 %unicode
 %int
 %char
 %init{
-    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-        HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
 %{
-    private final PerlLexHelper h;
-
     private String lastSymbol;
 
     /**
@@ -57,7 +51,6 @@ import org.opengrok.indexer.web.HtmlConsts;
      */
     public void reset() {
         super.reset();
-        h.reset();
         lastSymbol = null;
     }
 
@@ -108,14 +101,18 @@ import org.opengrok.indexer.web.HtmlConsts;
     @Override
     public void abortQuote() throws IOException {
         yypop();
-        if (h.areModifiersOK()) yypush(QM);
+        if (areModifiersOK()) {
+            yypush(QM);
+        }
         disjointSpan(null);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
     // nothing, because other transitions would have saved the state.
     public void maybeIntraState() {
-        if (yystate() == YYINITIAL) yybegin(INTRA);
+        if (yystate() == YYINITIAL) {
+            yybegin(INTRA);
+        }
     }
 
     protected boolean takeAllContent() {
@@ -128,8 +125,70 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     protected void skipLink(String url, Pattern p) {
         int n = StringUtils.countPushback(url, p);
-        if (n > 0) yypushback(n);
+        if (n > 0) {
+            yypushback(n);
+        }
     }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxLxN.
+     */
+    @Override
+    int QUOxLxN() { return QUOxLxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxN.
+     */
+    @Override
+    int QUOxN() { return QUOxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxL.
+     */
+    @Override
+    int QUOxL() { return QUOxL; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUO.
+     */
+    @Override
+    int QUO() { return QUO; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HEREinxN.
+     */
+    @Override
+    int HEREinxN() { return HEREinxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HERExN.
+     */
+    @Override
+    int HERExN() { return HERExN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HEREin.
+     */
+    @Override
+    int HEREin() { return HEREin; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HERE.
+     */
+    @Override
+    int HERE() { return HERE; }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent POD.
+     */
+    @Override
+    int POD() { return POD; }
 %}
 
 %include Common.lexh

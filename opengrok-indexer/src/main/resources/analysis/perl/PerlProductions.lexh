@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -142,15 +142,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 %%
 <HERE, HERExN> {
     ^ {Identifier} / {MaybeWhsp}{EOL}    {
-        h.chkLOC();
-        h.maybeEndHere(yytext());
+        chkLOC();
+        maybeEndHere(yytext());
     }
 }
 
 <HEREin, HEREinxN> {
     ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}    {
-        h.chkLOC();
-        h.maybeEndHere(yytext());
+        chkLOC();
+        maybeEndHere(yytext());
     }
 }
 
@@ -160,7 +160,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "&&" |
     "||" |
     {ProtoAttr}    {
-        h.chkLOC();
+        chkLOC();
         yyjump(YYINITIAL);
         offer(yytext());
     }
@@ -168,18 +168,18 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
     // as it seems the look-ahead would apply to all cases.
     "}" / {MaybeWhsp} {EOL}    {
-        h.chkLOC();
+        chkLOC();
         yyjump(YYINITIAL);
         offer(yytext());
     }
 
  "<<"[~]? {MaybeWhsp} ({HereEOF1}|{HereEOF2}|{HereEOF3}|{HereEOF4})    {
-    h.chkLOC();
-    h.hop(yytext());
+    chkLOC();
+    hop(yytext());
  }
 
  {Identifier}    {
-    h.chkLOC();
+    chkLOC();
     maybeIntraState();
     String id = yytext();
     if (offerSymbol(id, 0, false) && returnOnSymbol()) {
@@ -188,7 +188,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  }
 
  "<" ({File} | {FPath}) ">"    {
-    h.chkLOC();
+    chkLOC();
     maybeIntraState();
     if (takeAllContent()) {
         offer("<");
@@ -200,15 +200,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  }
 
  {Number}    {
-    h.chkLOC();
+    chkLOC();
     maybeIntraState();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     offer(yytext());
     onDisjointSpanChanged(null, yychar);
  }
 
- [\"\`] { h.chkLOC(); h.qop(yytext(), 0, false); }
- \'     { h.chkLOC(); h.qop(yytext(), 0, true); }
+ [\"\`] { chkLOC(); qop(yytext(), 0, false); }
+ \'     { chkLOC(); qop(yytext(), 0, true); }
  \#     {
         yypush(SCOMMENT);
         onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
@@ -217,53 +217,53 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
  ^ {QXRapos} |
- {WxSigils}{QXRapos}   { h.chkLOC(); h.qop(yytext(), 2, true); } // qx'' qr''
+ {WxSigils}{QXRapos}   { chkLOC(); qop(yytext(), 2, true); } // qx'' qr''
  ^ {QQXRhash} |
- {WxSigils}{QQXRhash}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QQXRhash}  { chkLOC(); qop(yytext(), 2, false); }
  ^ {QQXRPunc} |
- {WxSigils}{QQXRPunc}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QQXRPunc}  { chkLOC(); qop(yytext(), 2, false); }
  ^ {QQXRword} |
- {WxSigils}{QQXRword}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QQXRword}  { chkLOC(); qop(yytext(), 2, false); }
 
  // In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
  // xref just means to cross-reference, which is appropriate for qw//.
  ^ {QWhash} |
- {WxSigils}{QWhash}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QWhash}  { chkLOC(); qop(yytext(), 2, false); }
  ^ {QWpunc} |
- {WxSigils}{QWpunc}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QWpunc}  { chkLOC(); qop(yytext(), 2, false); }
  ^ {QWword} |
- {WxSigils}{QWword}  { h.chkLOC(); h.qop(yytext(), 2, false); }
+ {WxSigils}{QWword}  { chkLOC(); qop(yytext(), 2, false); }
 
  ^ {TRhash} |
- {WxSigils}{TRhash}  { h.chkLOC(); h.qop(yytext(), 2, true); }
+ {WxSigils}{TRhash}  { chkLOC(); qop(yytext(), 2, true); }
  ^ {TRpunc} |
- {WxSigils}{TRpunc}  { h.chkLOC(); h.qop(yytext(), 2, true); }
+ {WxSigils}{TRpunc}  { chkLOC(); qop(yytext(), 2, true); }
  ^ {TRword} |
- {WxSigils}{TRword}  { h.chkLOC(); h.qop(yytext(), 2, true); }
+ {WxSigils}{TRword}  { chkLOC(); qop(yytext(), 2, true); }
 
  // capture hyphen plus [qmsy] to prevent that combination from being mistaken
  // for q//, m//, s//, y// and variants
  ^ "-" [qmsy] |
  {WxSigils} "-" [qmsy]    {
-    h.chkLOC();
+    chkLOC();
     maybeIntraState();
     offer(yytext());
  }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
- {WxSigils}{MSapos}  { h.chkLOC(); h.qop(yytext(), 1, true); } // m'' s''
+ {WxSigils}{MSapos}  { chkLOC(); qop(yytext(), 1, true); } // m'' s''
  ^ {MShash} |
- {WxSigils}{MShash}  { h.chkLOC(); h.qop(yytext(), 1, false); }
+ {WxSigils}{MShash}  { chkLOC(); qop(yytext(), 1, false); }
  ^ {MSpunc} |
- {WxSigils}{MSpunc}  { h.chkLOC(); h.qop(yytext(), 1, false); }
+ {WxSigils}{MSpunc}  { chkLOC(); qop(yytext(), 1, false); }
  ^ {MSword} |
- {WxSigils}{MSword}  { h.chkLOC(); h.qop(yytext(), 1, false); }
+ {WxSigils}{MSword}  { chkLOC(); qop(yytext(), 1, false); }
  ^ {QYhash} |
- {WxSigils}{QYhash}  { h.chkLOC(); h.qop(yytext(), 1, true); }
+ {WxSigils}{QYhash}  { chkLOC(); qop(yytext(), 1, true); }
  ^ {QYpunc} |
- {WxSigils}{QYpunc}  { h.chkLOC(); h.qop(yytext(), 1, true); }
+ {WxSigils}{QYpunc}  { chkLOC(); qop(yytext(), 1, true); }
  ^ {QYword} |
- {WxSigils}{QYword}  { h.chkLOC(); h.qop(yytext(), 1, true); }
+ {WxSigils}{QYword}  { chkLOC(); qop(yytext(), 1, true); }
 
  // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
@@ -280,7 +280,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  // FORMAT start
  ^ {MaybeWhsp} "format" ({WhspChar}+ {Identifier})? {MaybeWhsp} "=" /
      {MaybeWhsp}{EOL}    {
-    h.chkLOC();
+    chkLOC();
     yypush(FMT);
     if (takeAllContent()) {
         // split off the "  format" as `initial' for keyword processing
@@ -300,9 +300,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 <YYINITIAL> {
     "/"    {
-        h.chkLOC();
+        chkLOC();
         // OK to pass a fake "m/" with doWrite=false
-        h.qop(false, "m/", 1, false);
+        qop(false, "m/", 1, false);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
@@ -314,90 +314,96 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // first slash cannot always be distinguished from division (/) without
     // true parsing.
 
-    {Mpunc1YYIN} \s* "/"    { h.chkLOC(); h.hqopPunc(yytext()); }
+    {Mpunc1YYIN} \s* "/"    { chkLOC(); hqopPunc(yytext()); }
 }
 
 <INTRA> {
     // Continue with more punctuation heuristics
 
-    {Mpunc2IN} \s* "/"      { h.chkLOC(); h.hqopPunc(yytext()); }
+    {Mpunc2IN} \s* "/"      { chkLOC(); hqopPunc(yytext()); }
 }
 
 <YYINITIAL, INTRA> {
     // Define keyword heuristics
 
     ^ {Mwords} \s* "/"    {
-        h.chkLOC();
-        h.hqopSymbol(yytext());
+        chkLOC();
+        hqopSymbol(yytext());
     }
 
     {WxSigils}{Mwords} \s* "/"    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
         if (takeAllContent()) {
             String boundary = capture.substring(0, 1);
             offer(boundary);
         }
-        h.hqopSymbol(capture.substring(1));
+        hqopSymbol(capture.substring(1));
     }
 }
 
 <YYINITIAL, INTRA> {
     {Sigils} {MaybeWhsp} {Identifier} {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
-        h.sigilID(yytext());
-        if (returnOnSymbol()) return yystate();
+        sigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
     }
 }
 
 <YYINITIAL, INTRA, FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
-        h.bracedSigilID(yytext());
-        if (returnOnSymbol()) return yystate();
+        bracedSigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
     }
 
     {SPIdentifier1} |
     {SPIdentifier3} |
     {SPIdentifier4} {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
-        h.specialID(yytext());
+        specialID(yytext());
     }
 }
 
 <YYINITIAL, INTRA, FMT, HERE, HEREin> {
     {SPIdentifier2Xquo}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
-        h.specialID(yytext());
+        specialID(yytext());
     }
 }
 
 <QUO, QUOxL> {
     {SPIdentifier2Quo}    {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
-        h.specialID(yytext());
+        specialID(yytext());
     }
 }
 
 <FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {Identifier} {
-        h.chkLOC();
+        chkLOC();
         //we ignore keywords if the identifier starts with a sigil ...
-        h.sigilID(yytext());
-        if (returnOnSymbol()) return yystate();
+        sigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
     }
 }
 
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 }
@@ -405,12 +411,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <QUO, QUOxN, QUOxL, QUOxLxN> {
     {Quo0} |
     \w    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
         offer(capture);
-        if (h.maybeEndQuote(capture)) {
+        if (maybeEndQuote(capture)) {
             yypop();
-            if (h.areModifiersOK()) yypush(QM);
+            if (areModifiersOK()) {
+                yypush(QM);
+            }
             onDisjointSpanChanged(null, yychar);
         }
     }
@@ -431,7 +439,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // tr/SEARCHLIST/REPLACEMENTLIST/cdsr
     // y/SEARCHLIST/REPLACEMENTLIST/cdsr
     [a-z]    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 
@@ -457,7 +465,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <FMT> {
     // terminate a format
     ^ "." / {MaybeWhsp} {EOL}    {
-        h.chkLOC();
+        chkLOC();
         yypop();
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
@@ -488,7 +496,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <YYINITIAL, INTRA> {
     {WhspChar}*{EOL}    {
         String capture = yytext();
-        if (h.maybeStartHere()) {
+        if (maybeStartHere()) {
             yypushback(capture.length());
         } else {
             onEndOfLineMatched(yytext(), yychar);
@@ -506,7 +514,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  }
  // Only one char at a time due to restriction on {WhspChar} above.
  [^\n\r]          {
-        h.chkLOC();
+        chkLOC();
         maybeIntraState();
         offer(yytext());
  }
@@ -515,14 +523,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 // "string links" and "comment links"
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {FPath}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onPathlikeMatched(yytext(), '/', false, yychar);
         }
     }
 
     {File}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             String path = yytext();
             onFilelikeMatched(path, yychar);
@@ -530,7 +538,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onEmailAddressMatched(yytext(), yychar);
         }
@@ -539,7 +547,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 <SCOMMENT, POD, FMT, HERE, HERExN, HEREin, HEREinxN> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onUriMatched(yytext(), yychar, null);
         }
@@ -549,9 +557,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 <QUO, QUOxN> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         String capture = yytext();
-        Pattern collateralCapture = h.getCollateralCapturePattern();
+        Pattern collateralCapture = getCollateralCapturePattern();
         if (takeAllContent()) {
             onUriMatched(capture, yychar, collateralCapture);
         } else {
