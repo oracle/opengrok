@@ -25,121 +25,28 @@
 package org.opengrok.indexer.analysis.verilog;
 
 import org.junit.Test;
-import org.opengrok.indexer.analysis.AbstractAnalyzer;
-import org.opengrok.indexer.analysis.CtagsReader;
-import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.WriteXrefArgs;
-import org.opengrok.indexer.analysis.Xrefer;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+import org.opengrok.indexer.analysis.XrefTestBase;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
-import static org.opengrok.indexer.util.StreamUtils.copyStream;
+import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 
 /**
  * Tests the {@link VerilogXref} class.
  */
-public class VerilogXrefTest {
+public class VerilogXrefTest extends XrefTestBase {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("analysis/verilog/sample.v",
+        writeAndCompare(new VerilogAnalyzerFactory(),
+                "analysis/verilog/sample.v",
                 "analysis/verilog/sample_xref.html",
-                getTagsDefinitions(), 81);
+                readTagsFromResource("analysis/verilog/sampletags"), 81);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("analysis/verilog/truncated.v",
-            "analysis/verilog/truncated_xref.html",
-            null, 1);
-    }
-
-    private void writeAndCompare(String sourceResource, String resultResource,
-            Definitions defs, int expLOC) throws IOException {
-
-        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-
-        InputStream sourceRes = getClass().getClassLoader().getResourceAsStream(
-                sourceResource);
-        assertNotNull(sourceResource + " should get-as-stream", sourceRes);
-        int actLOC = writeVerilogXref(new PrintStream(bytesOut), sourceRes, defs);
-        sourceRes.close();
-
-        InputStream resRes = getClass().getClassLoader().getResourceAsStream(
-                resultResource);
-        assertNotNull(resultResource + " should get-as-stream", resRes);
-        byte[] expectedBytes = copyStream(resRes);
-        resRes.close();
-        bytesOut.close();
-
-        String outStr = new String(bytesOut.toByteArray(), StandardCharsets.UTF_8);
-        String[] gotten = outStr.split("\n");
-
-        String expStr = new String(expectedBytes, StandardCharsets.UTF_8);
-        String[] expected = expStr.split("\n");
-
-        assertLinesEqual("Verilog xref", expected, gotten);
-        assertEquals("Verilog LOC", expLOC, actLOC);
-    }
-
-    private int writeVerilogXref(PrintStream oss, InputStream iss,
-             Definitions defs) throws IOException {
-
-        oss.print(getHtmlBegin());
-
-        Writer sw = new StringWriter();
-        VerilogAnalyzerFactory fac = new VerilogAnalyzerFactory();
-        AbstractAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.setScopesEnabled(true);
-        analyzer.setFoldingEnabled(true);
-        WriteXrefArgs writeArgs = new WriteXrefArgs(
-                new InputStreamReader(iss, StandardCharsets.UTF_8), sw);
-        writeArgs.setDefs(defs);
-        Xrefer xref = analyzer.writeXref(writeArgs);
-        oss.print(sw.toString());
-
-        oss.print(getHtmlEnd());
-        return xref.getLOC();
-    }
-
-    private Definitions getTagsDefinitions() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "analysis/verilog/sampletags");
-        assertNotNull("though sampletags should stream,", res);
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                res, StandardCharsets.UTF_8));
-
-        CtagsReader rdr = new CtagsReader();
-        String line;
-        while ((line = in.readLine()) != null) {
-            rdr.readLine(line);
-        }
-        return rdr.getDefinitions();
-    }
-
-    private static String getHtmlBegin() {
-        return "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "<meta charset=\"UTF-8\">\n" +
-                "<title>sampleFile - OpenGrok cross reference" +
-                " for /sampleFile</title></head><body>\n";
-    }
-
-    private static String getHtmlEnd() {
-        return "</body>\n" +
-                "</html>\n";
+        writeAndCompare(new VerilogAnalyzerFactory(),
+                "analysis/verilog/truncated.v",
+                "analysis/verilog/truncated_xref.html", null, 1);
     }
 }
