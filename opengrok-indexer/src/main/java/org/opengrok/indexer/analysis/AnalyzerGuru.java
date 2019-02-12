@@ -319,16 +319,17 @@ public class AnalyzerGuru {
 
     /**
      * Gets a version number to be used to tag documents examined by the guru so
-     * that analysis can be re-done later if a stored version number is
-     * different from the current implementation or if customization has been
-     * done by the user to change the {@link AnalyzerGuru} operation.
+     * that {@link AbstractAnalyzer} selection can be re-done later if a stored
+     * version number is different from the current implementation or if guru
+     * factory registrations are modified by the user to change the guru
+     * operation.
      * <p>
      * The static part of the version is bumped in a release when e.g. new
      * {@link FileAnalyzerFactory} subclasses are registered or when existing
      * {@link FileAnalyzerFactory} subclasses are revised to target more or
      * different files.
      * @return a value whose lower 32-bits are a static value
-     * 20171230_00
+     * 20190211_00
      * for the current implementation and whose higher-32 bits are non-zero if
      * {@link #addExtension(java.lang.String, AnalyzerFactory)}
      * or
@@ -336,7 +337,7 @@ public class AnalyzerGuru {
      * has been called.
      */
     public static long getVersionNo() {
-        final int ver32 = 20171230_00; // Edit comment above too!
+        final int ver32 = 20190211_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
             ver |= (long)customizationHashCode << 32;
