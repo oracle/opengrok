@@ -911,17 +911,13 @@ public final class PageConfig {
             return projectNames;
         }
 
-        /**
-         * Use a project determined directly from the URL
-         */
+        // Use a project determined directly from the URL
         if (getProject() != null && getProject().isIndexed()) {
             projectNames.add(getProject().getName());
             return projectNames;
         }
 
-        /**
-         * Use a project if the application has only single project.
-         */
+        // Use a project if there is just a single project.
         if (projects.size() == 1) {
             Project p = projects.get(0);
             if (p.isIndexed() && authFramework.isAllowed(req, p)) {
@@ -930,9 +926,7 @@ public final class PageConfig {
             return projectNames;
         }
 
-        /**
-         * Add all projects which match the project parameter name values
-         */
+        // Add all projects which match the project parameter name values/
         List<String> names = getParamVals(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
@@ -941,9 +935,7 @@ public final class PageConfig {
             }
         }
 
-        /**
-         * Add all projects which are part of a group that matches the group parameter name
-         */
+        // Add all projects which are part of a group that matches the group parameter name.
         names = getParamVals(groupParamName);
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
@@ -956,6 +948,7 @@ public final class PageConfig {
             }
         }
 
+        // Add projects based on cookie.
         if (projectNames.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
@@ -966,6 +959,7 @@ public final class PageConfig {
             }
         }
 
+        // Add default projects.
         if (projectNames.isEmpty()) {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
