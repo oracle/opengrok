@@ -102,16 +102,18 @@ document.domReady.push(function() { domReadyMenu(); });
                 %><option value="<%= p.getName() %>"<%
                     if (pRequested.contains(p.getName())) {
                         %> selected="selected"<%
+                        pRequested.remove(p.getName());
                     }
                     if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
-                    %> data-messages='<%= messages %>' <%
-                        }
+                        %> data-messages='<%= messages %>' <%
+                    }
                     %>><%= Util.formQuoteEscape(p.getName()) %></option><%
                 }
                 %></optgroup><%
             }
         }
-  
+
+        // Handle projects not listed in any group.
         if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
             %><optgroup label="Other"><%
         }
@@ -123,6 +125,7 @@ document.domReady.push(function() { domReadyMenu(); });
         %><option value="<%= p.getName() %>"<%
             if (pRequested.contains(p.getName())) {
                 %> selected="selected"<%
+                pRequested.remove(p.getName());
             }
             if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
                 %> data-messages='<%= messages %>' <%
