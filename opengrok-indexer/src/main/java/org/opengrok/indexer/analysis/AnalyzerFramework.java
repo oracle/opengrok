@@ -190,7 +190,7 @@ public class AnalyzerFramework extends PluginFramework<IAnalyzerPlugin, Analyzer
             localInfo.fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
         }
 
-        LOGGER.log(Level.FINER, "An analyzer factory {0} has been loaded.", analyzer.getClass().getCanonicalName());
+        LOGGER.log(Level.INFO, "An analyzer factory {0} has been loaded.", analyzer.getClass().getCanonicalName());
     }
 
     /**
