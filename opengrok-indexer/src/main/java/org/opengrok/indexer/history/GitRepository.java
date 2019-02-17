@@ -47,6 +47,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.util.Version;
 
 /**
  * Access to a Git repository.
@@ -84,6 +85,13 @@ public class GitRepository extends Repository {
      * {@code getDateFormat()} should use this option.
      */
     private static final String GIT_DATE_OPT = "--date=iso8601-strict";
+
+    /**
+     * Minimum git version which supports the date format
+     *
+     * @see #GIT_DATE_OPT
+     */
+    private static final Version MINIMUM_VERSION = new Version(1, 2, 1);
 
     public GitRepository() {
         type = "git";
@@ -521,8 +529,22 @@ public class GitRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand, "--help");
+            Executor exec = new Executor(new String[]{RepoCommand, "--version"});
+
+            if (exec.exec(false) == 0) {
+                final String outputVersion = exec.getOutputString();
+                final String version = outputVersion.replaceAll(".*(\\d+(\\.\\d+)*).*", "$1");
+                try {
+                    working = Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
+                    working = false;
+                }
+            } else {
+                working = false;
+            }
         }
+
         return working;
     }
 
