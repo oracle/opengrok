@@ -34,19 +34,21 @@ public class VersionTest {
         Assert.assertTrue(new Version(1, 2, 3).compareTo(new Version(1, 3)) < 0);
         Assert.assertTrue(new Version(1, 2, 3).compareTo(new Version(1, 2, 4)) < 0);
         Assert.assertTrue(new Version(2, 1, 2).compareTo(new Version(2, 11, 0)) < 0);
+        Assert.assertTrue(new Version(2, 1, 2).compareTo(new Version(2, 20, 1)) < 0);
         Assert.assertTrue(new Version(1, 0, 0).compareTo(new Version(1, 0, 0, 0, 0, 1)) < 0);
     }
 
     @Test
     public void testGreaterComparsion() {
-     /*   Assert.assertTrue(new Version(2).compareTo(new Version(1)) > 0);
+        Assert.assertTrue(new Version(2).compareTo(new Version(1)) > 0);
         Assert.assertTrue(new Version(20).compareTo(new Version(1)) > 0);
         Assert.assertTrue(new Version(1, 3).compareTo(new Version(1, 2)) > 0);
         Assert.assertTrue(new Version(2).compareTo(new Version(1, 2)) > 0);
         Assert.assertTrue(new Version(1, 100).compareTo(new Version(1, 2)) > 0);
         Assert.assertTrue(new Version(1, 3).compareTo(new Version(1, 2, 3)) > 0);
-       Assert.assertTrue(new Version(1, 2, 4).compareTo(new Version(1, 2, 3)) > 0);
-    */    Assert.assertTrue(new Version(2, 11, 0).compareTo(new Version(2, 1, 2)) > 0);
+        Assert.assertTrue(new Version(1, 2, 4).compareTo(new Version(1, 2, 3)) > 0);
+        Assert.assertTrue(new Version(2, 11, 0).compareTo(new Version(2, 1, 2)) > 0);
+        Assert.assertTrue(new Version(2, 20, 1).compareTo(new Version(2, 1, 2)) > 0);
         Assert.assertTrue(new Version(1, 0, 0, 0, 0, 1).compareTo(new Version(1, 0, 0)) > 0);
     }
 
