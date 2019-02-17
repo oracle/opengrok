@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  * @see <a href="https://semver.org/">https://semver.org/</a>
  */
 public class Version implements Comparable<Version> {
-    private final Integer versions[];
+    private final Integer[] versions;
 
     /**
      * Construct the version from integer parts.
