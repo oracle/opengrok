@@ -18,7 +18,9 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Use is subject to license terms.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -31,6 +33,11 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.configuration.Project;
 
+/**
+ * Created on September 21, 2005
+ *
+ * @author Chandan
+ */
 public abstract class AbstractAnalyzer extends Analyzer {
     public static final Reader DUMMY_READER = new StringReader("");
     protected AnalyzerFactory factory;
