@@ -56,7 +56,15 @@ public class Version implements Comparable<Version> {
      * @param parts integer values for version partials
      */
     public Version(Integer... parts) {
-        versions = Arrays.copyOf(parts, parts.length);
+        // cut off trailing zeros
+        int cutOffLength = parts.length;
+        for (int i = parts.length - 1; i >= 0; i--) {
+            if (parts[i] != 0) {
+                break;
+            }
+            cutOffLength--;
+        }
+        versions = Arrays.copyOf(parts, cutOffLength);
     }
 
     /**
@@ -98,12 +106,16 @@ public class Version implements Comparable<Version> {
             return 1;
         }
 
-        for (int i = Math.min(versions.length, o.versions.length) - 1; i >= 0; i--) {
+        // first different number determines the result
+        for (int i = 0; i < Math.min(versions.length, o.versions.length); i++) {
             if (!versions[i].equals(o.versions[i])) {
                 return Integer.compare(versions[i], o.versions[i]);
             }
         }
 
-        return 0;
+        // the comparable parts are the same, the longer has some trailing non-null element which
+        // makes it greater then the shorter
+        // e. g. 1.0.0.0.1 vs. 1.0.0
+        return Integer.compare(versions.length, o.versions.length);
     }
 }
