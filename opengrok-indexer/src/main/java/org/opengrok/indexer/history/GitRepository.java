@@ -533,7 +533,7 @@ public class GitRepository extends Repository {
 
             if (exec.exec(false) == 0) {
                 final String outputVersion = exec.getOutputString();
-                final String version = outputVersion.replaceAll(".*(\\d+(\\.\\d+)*).*", "$1");
+                final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
                 try {
                     working = Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
                 } catch (NumberFormatException ex) {
