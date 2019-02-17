@@ -91,7 +91,7 @@ public class GitRepository extends Repository {
      *
      * @see #GIT_DATE_OPT
      */
-    private static final Version MINIMUM_VERSION = new Version(1, 2, 1);
+    private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
 
     public GitRepository() {
         type = "git";
