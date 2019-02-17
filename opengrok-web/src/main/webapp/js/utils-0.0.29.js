@@ -1703,7 +1703,7 @@ function domReadyMast() {
                     $("<dt>").text(definitions.shift().trim()).appendTo($el);
                     var $dd = $("<dd>");
                     $.each(definitions.join(":").split("<br/>"), function (i, el) {
-                        $dd.append(el.trim());
+                        $dd.append(escapeHtml(el.trim()));
                         $dd.append($("<br/>"));
                     });
                     $dd.appendTo($el);
