@@ -21,21 +21,21 @@ CDDL HEADER END
 Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<%@page import="java.util.TreeSet"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="java.util.Set"%>
-<%@page import="org.opengrok.indexer.web.Prefix"%>
-<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
-<%@page import="java.util.LinkedList"%>
+<%@page import="java.io.File"%>
 <%@page import="java.util.Collections"%>
 <%@page import="java.util.Comparator"%>
-<%@page import="java.io.File"%>
-<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
-<%@page import="org.opengrok.indexer.web.Util"%>
-<%@page import="org.opengrok.indexer.configuration.Project"%>
-<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="java.util.LinkedList"%>
 <%@page import="java.util.List"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.TreeSet"%>
+<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="org.opengrok.indexer.configuration.Project"%>
+<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
 <%@page import="org.opengrok.indexer.web.PageConfig"%>
+<%@page import="org.opengrok.indexer.web.Prefix"%>
+<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@page import="org.opengrok.indexer.web.Util"%>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
 <%
@@ -158,7 +158,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 continue;
 
                             boolean subrepository = !ri.getDirectoryNameRelative().equals(project.getPath());
-                            if(subrepository && cnt == 0) {
+                            if (subrepository && cnt == 0) {
                             %>
                                 <tr>
                                     <td class="name repository" colspan="3">
@@ -303,7 +303,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                     // discard repositories without a parent url
                                     continue;
                                 boolean subrepository = !ri.getDirectoryNameRelative().equals(proj.getPath());
-                                if(subrepository && cnt == 0) {
+                                if (subrepository && cnt == 0) {
                                     %>
                                         <tr>
                                             <td class="name repository" colspan="3">
