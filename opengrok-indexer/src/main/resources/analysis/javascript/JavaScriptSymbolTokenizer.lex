@@ -94,6 +94,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 \n      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, REGEXP, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, REGEXP_START, REGEXP, COMMENT, SCOMMENT, QSTRING> {
 [^]    {}
 }
