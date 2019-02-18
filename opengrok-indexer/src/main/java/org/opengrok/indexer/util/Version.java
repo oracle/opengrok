@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Krystof Tulinger (tulinkry).
  */
 package org.opengrok.indexer.util;
 
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
  *     d ... - others
  * </pre>
  *
+ * @author Krystof Tulinger (tulinkry)
  * @see <a href="https://semver.org/">https://semver.org/</a>
  */
 public class Version implements Comparable<Version> {
