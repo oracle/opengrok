@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -68,7 +68,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
     [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
     [Ii][Nn][Ii] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
-%state  STRING COMMENT SCOMMENT QSTRING
+%state  STRING REGEXP_START REGEXP COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -98,7 +98,6 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
-
  \"     {
     chkLOC();
     yypush(STRING);
@@ -121,6 +120,16 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
+ /*
+  * Literal regexps are in conflict with division "/" and are detected
+  * in javascript based on context and when ambiguous, the division has
+  * a higher precedence. We do a best-effort context matching for
+  * preceding "=" (variable), "(" (function call) or ":" (object).
+  */
+ [:=(]{WhspChar}*/\/  {
+    yypush(REGEXP_START);
+    onNonSymbolMatched(yytext(), yychar);
+ }
 }
 
 <STRING> {
@@ -131,6 +140,19 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
+}
+
+<REGEXP_START> {
+    \/ {
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        yybegin(REGEXP);
+    }
+}
+
+<REGEXP> {
+    \\[/]   { onNonSymbolMatched(yytext(), yychar); }
+    \/[gimsuy]* { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <QSTRING> {
@@ -154,7 +176,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
   }
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, REGEXP_START, REGEXP, COMMENT, SCOMMENT, QSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
  [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
  [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }

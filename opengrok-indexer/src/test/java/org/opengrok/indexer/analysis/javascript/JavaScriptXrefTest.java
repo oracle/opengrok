@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
 
+import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
+
+import java.io.IOException;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
-import java.io.IOException;
-
-import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 
 /**
  * Tests the {@link JavaScriptXref} class.
@@ -48,5 +48,19 @@ public class JavaScriptXrefTest extends XrefTestBase {
         writeAndCompare(new JavaScriptAnalyzerFactory(),
                 "analysis/javascript/truncated.js",
                 "analysis/javascript/truncated_xref.html", null, 1);
+    }
+
+    @Test
+    public void shouldDetectRegularExpressionWithoutModifiers() throws IOException {
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/regexp_plain.js",
+                "analysis/javascript/regexp_plain_xref.html", null, 14);
+    }
+
+    @Test
+    public void shouldDetectRegularExpressionWithModifiers() throws IOException {
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/regexp_modifiers.js",
+                "analysis/javascript/regexp_modifiers_xref.html", null, 14);
     }
 }
