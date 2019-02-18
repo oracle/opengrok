@@ -1092,6 +1092,7 @@ public final class Indexer {
 
         // Wait forever for the executors to finish.
         try {
+            LOGGER.info("Waiting for the executors to finish");
             latch.await(999, TimeUnit.DAYS);
         } catch (InterruptedException exp) {
             LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
