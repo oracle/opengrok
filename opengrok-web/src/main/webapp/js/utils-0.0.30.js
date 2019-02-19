@@ -1754,7 +1754,7 @@ function initAutocomplete(config, minisearch) {
 }
 
 function initMinisearchAutocomplete(config) {
-    if (config.allowedFields && config.allowedFields.indexOf('full')<0) {
+    if (config.allowedFields && config.allowedFields.indexOf('full') < 0) {
         return;
     }
 
@@ -1784,7 +1784,7 @@ function initMinisearchAutocomplete(config) {
 }
 
 function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
-    if (config.allowedFields && config.allowedFields.indexOf(field)<0) {
+    if (config.allowedFields && config.allowedFields.indexOf(field) < 0) {
         return;
     }
 
