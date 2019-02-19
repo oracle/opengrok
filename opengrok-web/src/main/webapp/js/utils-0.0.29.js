@@ -1754,7 +1754,7 @@ function initAutocomplete(config, minisearch) {
 }
 
 function initMinisearchAutocomplete(config) {
-    if (config.allowedFields && !config.allowedFields.includes('full')) {
+    if (config.allowedFields && !config.allowedFields.indexOf('full')<0) {
         return;
     }
 
@@ -1784,7 +1784,7 @@ function initMinisearchAutocomplete(config) {
 }
 
 function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
-    if (config.allowedFields && !config.allowedFields.includes(field)) {
+    if (config.allowedFields && !config.allowedFields.indexOf(field)<0) {
         return;
     }
 
@@ -2389,4 +2389,24 @@ function getCookie(cname) {
         }
     }
     return "";
+}
+
+//polyfills for IE10-11
+// References:
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+
+
+if (!Number.isInteger)
+{
+    Number.isInteger = function numberIsInteger(value)
+    {
+        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+    };
+}
+
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(searchString, position) {
+    position = position || 0;
+    return this.indexOf(searchString, position) === position;
+  };
 }
