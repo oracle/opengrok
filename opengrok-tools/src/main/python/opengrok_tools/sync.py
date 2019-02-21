@@ -19,15 +19,11 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
  This script runs OpenGrok parallel project processing.
-
- It is intended to work on Unix systems. (mainly because it relies on the
- OpenGrok shell script - for the time being)
-
 """
 
 import argparse
