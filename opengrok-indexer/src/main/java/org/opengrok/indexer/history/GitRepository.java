@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -104,6 +104,7 @@ public class GitRepository extends Repository {
         };
 
         ignoredDirs.add(".git");
+        ignoredFiles.add(".git");
         ignoredFiles.add(".gitignore");
     }
 
@@ -515,7 +516,7 @@ public class GitRepository extends Repository {
     boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".git");
-            return f.exists() && f.isDirectory();
+            return f.exists();
         }
         return false;
     }
