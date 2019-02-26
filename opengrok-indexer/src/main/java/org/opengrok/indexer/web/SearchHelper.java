@@ -470,14 +470,7 @@ public class SearchHelper {
             try {
                 if (!closeOnDestroy) {
                     SuperIndexSearcher searcher;
-                    try {
-                        searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.SEVERE,
-                                "cannot construct IndexSearcher for project " + proj, ex);
-                        return res;
-                    }
-
+                    searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
                     searcherList.add(searcher);
                     ir = searcher.getIndexReader();
                 } else {
@@ -511,7 +504,7 @@ public class SearchHelper {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Got exception while getting "
-                        + "spelling suggestions: ", e);
+                        + "spelling suggestions for project " + proj + " :", e);
             } finally {
                 if (ir != null && closeOnDestroy) {
                     try {
