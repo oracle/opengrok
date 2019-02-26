@@ -1715,27 +1715,21 @@ public final class RuntimeEnvironment {
      * to the SearcherManager. This is done with returnIndexSearcher().
      * The return of the IndexSearcher should happen only after the search result data are read fully.
      *
-     * @param proj project
+     * @param projectName project
      * @return SearcherManager for given project
      * @throws IOException I/O exception
      */
-    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
-        SearcherManager mgr = searcherManagerMap.get(proj);
-        SuperIndexSearcher searcher = null;
+    public SuperIndexSearcher getIndexSearcher(String projectName) throws IOException {
+        SearcherManager mgr = searcherManagerMap.get(projectName);
+        SuperIndexSearcher searcher;
 
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
-
-            try {
-                Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
-                mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
-                searcherManagerMap.put(proj, mgr);
-                searcher = (SuperIndexSearcher) mgr.acquire();
-                searcher.setSearcherManager(mgr);
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "cannot construct IndexSearcher for project " + proj, ex);
-            }
+            Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
+            mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+            searcherManagerMap.put(projectName, mgr);
+            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher.setSearcherManager(mgr);
         } else {
             searcher = (SuperIndexSearcher) mgr.acquire();
             searcher.setSearcherManager(mgr);

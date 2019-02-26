@@ -469,7 +469,15 @@ public class SearchHelper {
             Suggestion s = new Suggestion(proj);
             try {
                 if (!closeOnDestroy) {
-                    SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                    SuperIndexSearcher searcher;
+                    try {
+                        searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.SEVERE,
+                                "cannot construct IndexSearcher for project " + proj, ex);
+                        return res;
+                    }
+
                     searcherList.add(searcher);
                     ir = searcher.getIndexReader();
                 } else {
