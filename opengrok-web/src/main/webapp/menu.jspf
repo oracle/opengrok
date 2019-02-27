@@ -86,8 +86,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
-        SortedSet<String> pRequested = new TreeSet<>();
-        pRequested.addAll(cfg.getRequestedProjects());
+        SortedSet<String> pRequested = new TreeSet<>(cfg.getRequestedProjects());
         for (Group group : ph.getGroups()) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if (groupProjects.size() > 0) {
