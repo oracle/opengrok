@@ -503,7 +503,7 @@ public class SearchHelper {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Got exception while getting "
-                        + "spelling suggestions for project " + proj + " :", e);
+                        + "spelling suggestions for project " + proj + ":", e);
             } finally {
                 if (ir != null && closeOnDestroy) {
                     try {
