@@ -469,8 +469,7 @@ public class SearchHelper {
             Suggestion s = new Suggestion(proj);
             try {
                 if (!closeOnDestroy) {
-                    SuperIndexSearcher searcher;
-                    searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                    SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
                     searcherList.add(searcher);
                     ir = searcher.getIndexReader();
                 } else {
