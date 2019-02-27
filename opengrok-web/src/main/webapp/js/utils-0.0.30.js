@@ -1754,7 +1754,7 @@ function initAutocomplete(config, minisearch) {
 }
 
 function initMinisearchAutocomplete(config) {
-    if (config.allowedFields && !config.allowedFields.includes('full')) {
+    if (config.allowedFields && config.allowedFields.indexOf('full') < 0) {
         return;
     }
 
@@ -1769,7 +1769,7 @@ function initMinisearchAutocomplete(config) {
 
     initAutocompleteForField('search', 'full', config, function (input, field) {
         var caretPos = input.caret();
-        if (!Number.isInteger(caretPos)) {
+        if (!(typeof caretPos === 'number')) {
             console.error("Suggest: could not get caret position");
             return;
         }
@@ -1784,7 +1784,7 @@ function initMinisearchAutocomplete(config) {
 }
 
 function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
-    if (config.allowedFields && !config.allowedFields.includes(field)) {
+    if (config.allowedFields && config.allowedFields.indexOf(field) < 0) {
         return;
     }
 
@@ -1865,7 +1865,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 event.preventDefault();
                 return;
             }
-            if (event.originalEvent.originalEvent.type.startsWith('key')) { // replace value only on key events
+            if (event.originalEvent.originalEvent.type.indexOf('key') == 0) { // replace value only on key events
                 replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
             }
 
