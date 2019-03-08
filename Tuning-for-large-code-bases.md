@@ -20,7 +20,7 @@ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0;
 * which might grow as big as 16GB (though `DEFAULT_RAM_BUFFER_SIZE_MB` shouldn't
  really allow it, but keep it around 1-2GB)
 
-* the Lucene `RAM_BUFFER_SIZE_MB` can be tuned now using the parameter `-m`, so
+* the Lucene `RAM_BUFFER_SIZE_MB` can be tuned now using indexer parameter `-m`, so
 running a 8GB 64 bit server JDK indexer with tuned docs flushing (assuming the indexer is being run from the Python wrapper. Otherwise pass the indexer options directly.):
 
   ```shell
