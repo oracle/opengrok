@@ -108,12 +108,13 @@ class MercurialRepository(Repository):
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.debug(cmd.getoutputstr())
-        if cmd.getstate() != Command.FINISHED:
+        retcode = cmd.getretcode()
+        if cmd.getstate() != Command.FINISHED or retcode not in [0,1]:
             cmd.log_error("failed to perform incoming")
             raise RepositoryException('failed to perform incoming command '
                                       'for repository {}'.format(self))
 
-        if cmd.getretcode() == 0:
+        if retcode == 0:
             return True
         else:
             return False
