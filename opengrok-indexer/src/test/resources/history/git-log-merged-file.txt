@@ -1,0 +1,21 @@
+commit 4c3d5e8e (from 06b00dcb)
+Merge: 06b00dcb 618516be
+Author: jhb <jhb@FreeBSD.org>
+Date:   Tue Oct 9 15:28:06 2018 +0000
+
+    Update Apache Serf to 1.3.9 to support OpenSSL 1.1.1.
+
+    Approved by:    re (rgrimes)
+
+contrib/serf/STATUS
+
+commit 4c3d5e8e (from 618516be)
+Merge: 06b00dcb 618516be
+Author: jhb <jhb@FreeBSD.org>
+Date:   Tue Oct 9 15:28:06 2018 +0000
+
+    Update Apache Serf to 1.3.9 to support OpenSSL 1.1.1.
+
+    Approved by:    re (rgrimes)
+
+contrib/serf/STATUS
