@@ -153,6 +153,7 @@ public class GitRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("log");
         cmd.add("--find-renames=8"); // similarity 80%
+        cmd.add("--diff-filter=R");
         cmd.add("--summary");
         cmd.add(ABBREV_LOG);
         cmd.add("--name-status");
