@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<a class="l" name="1" href="#1">1</a><b>function</b> <a href="/source/s?defs=escapeLuceneCharacters1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">escapeLuceneCharacters1</a>(<a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>) {
+<a class="l" name="2" href="#2">2</a>    <span class="c">// must escape: + - &amp;&amp; || ! ( ) { } [ ] ^ &quot; ~ * ? : \</span>
+<a class="l" name="3" href="#3">3</a>    <b>var</b> <a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a> = <span class="s">/([\+\-\!\(\)\{\}\[\]\^\&quot;\~\*\?\:\\]|&amp;&amp;|\|\|)/</span>;
+<a class="l" name="4" href="#4">4</a>
+<a class="l" name="5" href="#5">5</a>    <b>return</b> <a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>.<a href="/source/s?defs=replace" class="intelliWindow-symbol" data-definition-place="undefined-in-file">replace</a>(<a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a>, <span class="s">&quot;\\$1&quot;</span>);
+<a class="l" name="6" href="#6">6</a>}
+<a class="l" name="7" href="#7">7</a>
+<a class="l" name="8" href="#8">8</a><b>function</b> <a href="/source/s?defs=escapeLuceneCharacters2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">escapeLuceneCharacters2</a>(<a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>) {
+<a class="l" name="9" href="#9">9</a>    <span class="c">// must escape: + - &amp;&amp; || ! ( ) { } [ ] ^ &quot; ~ * ? : \</span>
+<a class="hl" name="10" href="#10">10</a>    <b>var</b> <a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a> = {
+<a class="l" name="11" href="#11">11</a>        <a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a>: <span class="s">/([\+\-\!\(\)\{\}\[\]\^\&quot;\~\*\?\:\\]|&amp;&amp;|\|\|)/</span>
+<a class="l" name="12" href="#12">12</a>    };
+<a class="l" name="13" href="#13">13</a>
+<a class="l" name="14" href="#14">14</a>    <b>return</b> <a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>.<a href="/source/s?defs=replace" class="intelliWindow-symbol" data-definition-place="undefined-in-file">replace</a>(<a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a>, <span class="s">&quot;\\$1&quot;</span>);
+<a class="l" name="15" href="#15">15</a>}
+<a class="l" name="16" href="#16">16</a>
+<a class="l" name="17" href="#17">17</a><b>function</b> <a href="/source/s?defs=escapeLuceneCharacters3" class="intelliWindow-symbol" data-definition-place="undefined-in-file">escapeLuceneCharacters3</a>(<a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>) {
+<a class="l" name="18" href="#18">18</a>    <span class="c">// must escape: + - &amp;&amp; || ! ( ) { } [ ] ^ &quot; ~ * ? : \</span>
+<a class="l" name="19" href="#19">19</a>    <b>var</b> <a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a> = <b>new</b> <b>RegExp</b>(<span class="s">/([\+\-\!\(\)\{\}\[\]\^\&quot;\~\*\?\:\\]|&amp;&amp;|\|\|)/</span>);
+<a class="hl" name="20" href="#20">20</a>
+<a class="l" name="21" href="#21">21</a>    <b>return</b> <a href="/source/s?defs=term" class="intelliWindow-symbol" data-definition-place="undefined-in-file">term</a>.<a href="/source/s?defs=replace" class="intelliWindow-symbol" data-definition-place="undefined-in-file">replace</a>(<a href="/source/s?defs=pattern" class="intelliWindow-symbol" data-definition-place="undefined-in-file">pattern</a>, <span class="s">&quot;\\$1&quot;</span>);
+<a class="l" name="22" href="#22">22</a>}
+<a class="l" name="23" href="#23">23</a></body>
+</html>

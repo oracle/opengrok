@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -435,7 +435,7 @@ public final class Suggester implements Closeable {
      * Sets the new maximum number of elements the suggester should suggest.
      * @param resultSize new number of suggestions to return
      */
-    public final void setResultSize(final int resultSize) {
+    public void setResultSize(final int resultSize) {
         if (resultSize < 0) {
             throw new IllegalArgumentException("Result size cannot be negative");
         }
@@ -447,7 +447,7 @@ public final class Suggester implements Closeable {
      * running initialization.
      * @param awaitTerminationTime maximum duration for which to wait for initialization
      */
-    public final void setAwaitTerminationTime(final Duration awaitTerminationTime) {
+    public void setAwaitTerminationTime(final Duration awaitTerminationTime) {
         if (awaitTerminationTime.isNegative() || awaitTerminationTime.isZero()) {
             throw new IllegalArgumentException(
                     "Time to await termination of building the suggester data cannot be 0 or negative");
@@ -471,6 +471,13 @@ public final class Suggester implements Closeable {
         } else {
             data = projectData.get(project);
         }
+
+        if (data == null) {
+            logger.log(Level.WARNING, "Cannot update search count because of missing suggester data{}",
+                    projectsEnabled ? " for project " + project : "");
+            return;
+        }
+
         data.incrementSearchCount(term, value);
     }
 
@@ -490,7 +497,7 @@ public final class Suggester implements Closeable {
     ) {
         SuggesterProjectData data = projectData.get(project);
         if (data == null) {
-            logger.log(Level.FINE, "Cannot retrieve search counts because data for project {0} were not found",
+            logger.log(Level.FINE, "Cannot retrieve search counts because suggester data for project {0} was not found",
                     project);
             return Collections.emptyList();
         }

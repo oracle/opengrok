@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -181,7 +181,7 @@ public final class SuggesterController {
      * Initializes the search data used by suggester to perform most popular completion. The passed {@code urls} are
      * decomposed into single terms which search counts are then increased by 1.
      * @param urls list of URLs in JSON format, e.g.
-     * {@code ["http://demo.opengrok.org/search?project=opengrok&q=test"]}
+     * {@code ["http://demo.opengrok.org/search?project=opengrok&full=test"]}
      */
     @POST
     @Path("/init/queries")
@@ -227,7 +227,7 @@ public final class SuggesterController {
         QueryBuilder builder = new QueryBuilder();
 
         switch (field) {
-            case "q":
+            case QueryBuilder.FULL:
                 builder.setFreetext(value);
                 break;
             case QueryBuilder.DEFS:
@@ -272,6 +272,7 @@ public final class SuggesterController {
      * @param field field for which to return the data
      * @param page which page of data to retrieve
      * @param pageSize number of results to return
+     * @param all return all pages
      * @return list of terms with their popularity
      */
     @GET

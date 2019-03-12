@@ -19,12 +19,12 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.fortran;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -38,9 +38,20 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
 
     FortranAnalyzer(FortranAnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new FortranSymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
-    
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20190118_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20190118_00; // Edit comment above too!
+    }
+
     /**
      * Creates a wrapped {@link FortranXref} instance.
      * @param reader the data to produce xref for

@@ -22,17 +22,24 @@
  */
 package org.opengrok.indexer.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,8 +56,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for the {@code PageConfig} class.
@@ -104,8 +109,8 @@ public class PageConfigTest {
         }
     }
 
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
@@ -245,6 +250,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -260,6 +266,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetRevisionLocation() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -286,6 +293,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetRevisionLocationNullQuery() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -312,6 +320,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
@@ -485,7 +494,8 @@ public class PageConfigTest {
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
         Files.createDirectories(temp.toPath());
-        temp.setReadable(false);
+        // skip the test if the implementation does not permit setting permissions
+        Assume.assumeTrue(temp.setReadable(false));
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();

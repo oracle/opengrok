@@ -164,7 +164,7 @@ public class ContextFormatter extends PassageFormatter {
 
     /**
      * Sets the optional definitions.
-     * @param value
+     * @param value definitions
      */
     public void setDefs(Definitions value) {
         this.defs = value;
@@ -180,7 +180,7 @@ public class ContextFormatter extends PassageFormatter {
 
     /**
      * Sets the optional scopes to use.
-     * @param value
+     * @param value scopes
      */
     public void setScopes(Scopes value) {
         this.scopes = value;

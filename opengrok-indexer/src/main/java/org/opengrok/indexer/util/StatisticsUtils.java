@@ -23,11 +23,9 @@
 
 package org.opengrok.indexer.util;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.web.Util;
+import org.opengrok.indexer.web.Statistics;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,12 +35,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 
 public class StatisticsUtils {
     /**
      * Dump statistics in JSON format into the file specified in configuration.
      *
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics() throws IOException {
         String path = RuntimeEnvironment.getInstance().getStatisticsFilePath();
@@ -56,7 +55,7 @@ public class StatisticsUtils {
      * Dump statistics in JSON format into a file.
      *
      * @param out the output file
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics(File out) throws IOException {
         if (out == null) {
@@ -71,19 +70,18 @@ public class StatisticsUtils {
      * Dump statistics in JSON format into an output stream.
      *
      * @param out the output stream
-     * @throws IOException
+     * @throws IOException I/O
      */
     public static void saveStatistics(OutputStream out) throws IOException {
-        out.write(Util.statisticToJson(RuntimeEnvironment.getInstance().getStatistics()).toJSONString().getBytes());
+        out.write(RuntimeEnvironment.getInstance().getStatistics().toJson().getBytes());
     }
 
     /**
      * Load statistics from JSON file specified in configuration.
      *
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException I/O
      */
-    public static void loadStatistics() throws IOException, ParseException {
+    public static void loadStatistics() throws IOException {
         String path = RuntimeEnvironment.getInstance().getStatisticsFilePath();
         if (path == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
@@ -95,10 +93,9 @@ public class StatisticsUtils {
      * Load statistics from JSON file.
      *
      * @param in the file with json
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException I/O
      */
-    public static void loadStatistics(File in) throws IOException, ParseException {
+    public static void loadStatistics(File in) throws IOException {
         if (in == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
@@ -111,13 +108,20 @@ public class StatisticsUtils {
      * Load statistics from an input stream.
      *
      * @param in the file with json
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException I/O
      */
-    public static void loadStatistics(InputStream in) throws IOException, ParseException {
-        try (InputStreamReader iReader = new InputStreamReader(in)) {
-            JSONParser jsonParser = new JSONParser();
-            RuntimeEnvironment.getInstance().setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
+    public static void loadStatistics(InputStream in) throws IOException {
+        try (Reader iReader = new InputStreamReader(in, "UTF-8")) {
+            StringBuilder outputString = new StringBuilder();
+            final char[] buf = new char[1024];
+            int rsz;
+            while ((rsz = iReader.read(buf, 0, buf.length)) > 0) {
+                outputString.append(buf, 0, rsz);
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            org.opengrok.indexer.web.Statistics newstats = mapper.readValue(outputString.toString(), Statistics.class);
+            RuntimeEnvironment.getInstance().setStatistics(newstats);
         }
     }
 

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -29,39 +29,22 @@
 package org.opengrok.indexer.analysis.ruby;
 
 import java.io.IOException;
-import java.util.Stack;
+import java.util.Set;
 import java.util.regex.Pattern;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class RubyXref
-%extends JFlexSymbolMatcher
-%implements RubyLexer
+%extends RubyLexer
 %unicode
 %int
 %char
 %init{
-    h = getNewHelper();
     yyline = 1;
 %init}
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{
-    protected Stack<RubyLexHelper> helpers;
-
-    private RubyLexHelper h;
-
-    /**
-     * Resets the Ruby tracked state; {@inheritDoc}
-     */
-    @Override
-    public void reset() {
-        super.reset();
-        if (helpers != null) helpers.clear();
-        h.reset();
-    }
-
     @Override
     public void offer(String value) throws IOException {
         onNonSymbolMatched(value, yychar);
@@ -69,16 +52,13 @@ import org.opengrok.indexer.web.HtmlConsts;
 
     @Override
     public boolean offerSymbol(String value, int captureOffset,
-        boolean ignoreKwd)
-            throws IOException {
-        if (h.nameLength(value) <= 1) {
+            boolean ignoreKwd) throws IOException {
+        if (nameLength(value) <= 0) {
             onNonSymbolMatched(value, yychar);
             return false;
-        } else if (ignoreKwd) {
-            return onFilteredSymbolMatched(value, yychar, null);
-        } else {
-            return onFilteredSymbolMatched(value, yychar, Consts.kwd);
         }
+        Set<String> keywords = ignoreKwd ? null : Consts.kwd;
+        return onFilteredSymbolMatched(value, yychar, keywords);
     }
 
     @Override
@@ -109,21 +89,6 @@ import org.opengrok.indexer.web.HtmlConsts;
         if (yystate() == YYINITIAL) yybegin(INTRA);
     }
 
-    protected void pushHelper() {
-        if (helpers == null) helpers = new Stack<>();
-        helpers.push(h);
-        h = getNewHelper();
-    }
-
-    public void popHelper() {
-        h = helpers.pop();
-    }
-
-    protected RubyLexHelper getNewHelper() {
-        return new RubyLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
-    }
-
     protected boolean takeAllContent() {
         return true;
     }
@@ -133,6 +98,66 @@ import org.opengrok.indexer.web.HtmlConsts;
     }
 
     protected void skipLink(String s, Pattern p) { /* noop */ }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxLxN.
+     */
+    @Override
+    int QUOxLxN() { return QUOxLxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxN.
+     */
+    @Override
+    int QUOxN() { return QUOxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUOxL.
+     */
+    @Override
+    int QUOxL() { return QUOxL; }
+
+    /**
+     * Gets the constant value created by JFlex to represent QUO.
+     */
+    @Override
+    int QUO() { return QUO; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HEREinxN.
+     */
+    @Override
+    int HEREinxN() { return HEREinxN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HERExN.
+     */
+    @Override
+    int HERExN() { return HERExN; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HEREin.
+     */
+    @Override
+    int HEREin() { return HEREin; }
+
+    /**
+     * Gets the constant value created by JFlex to represent HERE.
+     */
+    @Override
+    int HERE() { return HERE; }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent POD.
+     */
+    @Override
+    int POD() { return POD; }
 %}
 
 %include Common.lexh

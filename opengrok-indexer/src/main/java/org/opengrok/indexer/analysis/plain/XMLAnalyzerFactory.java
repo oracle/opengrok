@@ -23,8 +23,7 @@
 
 package org.opengrok.indexer.analysis.plain;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class XMLAnalyzerFactory extends FileAnalyzerFactory {
@@ -42,11 +41,11 @@ public class XMLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public XMLAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/html", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new XMLAnalyzer(this);
     }
 }

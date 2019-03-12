@@ -42,8 +42,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.StreamSource;
@@ -63,7 +63,7 @@ public class CAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
-    private static FileAnalyzer analyzer;
+    private static AbstractAnalyzer analyzer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();

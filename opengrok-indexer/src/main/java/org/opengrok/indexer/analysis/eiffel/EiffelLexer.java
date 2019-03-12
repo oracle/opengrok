@@ -18,51 +18,35 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.eiffel;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.Resettable;
+
 import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.Resettable;
 import org.opengrok.indexer.web.HtmlConsts;
 
 /**
- * Represents an API for object's using {@link EiffelLexHelper}.
+ * Represents an abstract base class for Eiffel lexers.
  */
-interface EiffelLexer extends JFlexJointLexer {
-}
-
-/**
- * Represents a helper for Eiffel lexers.
- */
-class EiffelLexHelper implements Resettable {
-
-    private final EiffelLexer lexer;
-
-    private final int VSTRING;
-    private final int SCOMMENT;
+abstract class EiffelLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
     /**
      * When matching a Verbatim_string, the expected closer is stored here.
      */
     private String vstring_closer;
 
-    public EiffelLexHelper(int vSTRING, int sCOMMENT, EiffelLexer lexer) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.VSTRING = vSTRING;
-        this.SCOMMENT = sCOMMENT;
-    }
-
     /**
      * Resets the instance to an initial state.
      */
     @Override
     public void reset() {
+        super.reset();
         vstring_closer = null;
     }
 
@@ -94,9 +78,9 @@ class EiffelLexHelper implements Resettable {
         }
         vstring_closer = close0 + alpha + "\"";
 
-        lexer.yypush(VSTRING);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer(opener);
+        yypush(VSTRING());
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer(opener);
     }
 
     /**
@@ -112,26 +96,38 @@ class EiffelLexHelper implements Resettable {
         int npushback;
         if (!capture.startsWith(vstring_closer)) {
             // Nope--so just write the double quote, and push back the rest.
-            lexer.offer(capture.substring(0, 1));
+            offer(capture.substring(0, 1));
             npushback = capture.length() - 1;
         } else {
-            lexer.offer(vstring_closer);
-            lexer.disjointSpan(null);
-            lexer.yypop();
+            offer(vstring_closer);
+            disjointSpan(null);
+            yypop();
             npushback = capture.length() - vstring_closer.length();
             vstring_closer = null;
         }
         if (npushback > 0) {
-            lexer.yypushback(npushback);
+            yypushback(npushback);
         }
     }
 
     /**
-     * Calls {@link EiffelLexer#phLOC()} if the yystate is not SCOMMENT.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT.
      */
     public void chkLOC() {
-        if (lexer.yystate() != SCOMMENT) {
-            lexer.phLOC();
+        if (yystate() != SCOMMENT()) {
+            phLOC();
         }
     }
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent VSTRING.
+     */
+    abstract int VSTRING();
 }

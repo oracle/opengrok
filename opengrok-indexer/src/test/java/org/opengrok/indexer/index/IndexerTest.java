@@ -52,8 +52,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.CtagsInstalled;
@@ -77,7 +77,6 @@ import org.opengrok.indexer.util.TestRepository;
 public class IndexerTest {
 
     TestRepository repository;
-    private static IndexerParallelizer parallelizer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
@@ -86,16 +85,6 @@ public class IndexerTest {
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
-
-        parallelizer = new IndexerParallelizer(env);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (parallelizer != null) {
-            parallelizer.close();
-            parallelizer = null;
-        }
     }
 
     @Before
@@ -120,8 +109,9 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Collections.singletonList("/c")),
-                false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 
@@ -154,13 +144,9 @@ public class IndexerTest {
                 env,
                 false, // don't search for repositories
                 true, // scan and add projects
-                null, // no default project
-                false, // don't list files
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
-                null, // repositories - not needed when not refreshing history
-                new ArrayList<>(), // don't zap cache
-                false); // don't list repos
+                null); // repositories - not needed when not refreshing history
 
         List<Project> newProjects = env.getProjectList();
 
@@ -260,14 +246,14 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(2, listener.files.size());
             repository.purgeData();
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
             idb = new IndexDatabase(project);
             listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
@@ -343,7 +329,7 @@ public class IndexerTest {
         assertNotNull(idb);
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
@@ -359,7 +345,7 @@ public class IndexerTest {
         fw.close();
 
         // reindex
-        idb.update(parallelizer);
+        idb.update();
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
@@ -373,7 +359,7 @@ public class IndexerTest {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
-            FileAnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
+            AnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
             if (factory == null) {
                 continue;
             }
@@ -399,7 +385,7 @@ public class IndexerTest {
         assertNotNull(idb);
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals(1, listener.files.size());
     }
 
@@ -419,14 +405,14 @@ public class IndexerTest {
         assertNotNull(idb);
         MyIndexChangeListener listener = new MyIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals(1, listener.files.size());
         listener.reset();
         repository.addDummyFile(ppath);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals("No new file added", 1, listener.files.size());
         repository.removeDummyFile(ppath);
-        idb.update(parallelizer);
+        idb.update();
         assertEquals("(added)files changed unexpectedly", 1, listener.files.size());
         assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
         assertEquals("Should have added then removed the same file",
@@ -465,7 +451,7 @@ public class IndexerTest {
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
             System.out.println("Trying to index a special file - FIFO in this case.");
-            idb.update(parallelizer);
+            idb.update();
             assertEquals(0, listener.files.size());
 
         } else {
@@ -484,10 +470,9 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/c").toString()
-                })),
-                false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"c"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -504,16 +489,16 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        System.out.println(Paths.get("/lisp").toString());
+        Set<String> projectSet = new TreeSet<>();
+        projectSet.add("/lisp");
+        projectSet.add("/pascal");
+        projectSet.add("/perl");
+        projectSet.add("/data");
+        projectSet.add("/no-project-x32ds1");
+
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/lisp").toString(),
-                        Paths.get("/pascal").toString(),
-                        Paths.get("/perl").toString(),
-                        Paths.get("/data").toString(),
-                        Paths.get("/no-project-x32ds1").toString()
-                })),
-                false, false, null, null, new ArrayList<>(), false);
+                false, null, null);
+        env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"lisp", "pascal", "perl", "data"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
@@ -530,14 +515,15 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
+        Set<String> defaultProjects = new TreeSet<>();
+        defaultProjects.add("/c");
+        defaultProjects.add("/data");
+        defaultProjects.add("__all__");
+        defaultProjects.add("/no-project-x32ds1");
+
         Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{
-                        Paths.get("/c").toString(),
-                        Paths.get("/data").toString(),
-                        Paths.get("__all__").toString(),
-                        Paths.get("/no-project-x32ds1").toString()
-                })),
-                false, false, null, null, new ArrayList<>(), false);
+                false, null, null);
+        env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
         assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));

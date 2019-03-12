@@ -73,11 +73,11 @@ public class SearchEngineTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
-        Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Collections.singletonList("/c")),
-                false, false, null, null, new ArrayList<>(), false);
-        Indexer.getInstance().doIndexerExecution(true, null, null);
 
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);

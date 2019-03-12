@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -51,7 +51,7 @@ import org.opengrok.indexer.configuration.Project;
  *
  * @author Krystof Tulinger
  */
-abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
+public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
 
     /**
      * This is used to ensure that every instance of this plug-in has its own
@@ -62,7 +62,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     protected static final String CONFIGURATION_PARAM = "configuration";
     protected static final String FAKE_PARAM = "fake";
 
-    private final static String SESSION_PREFIX = "opengrok-abstract-ldap-plugin-";
+    private static final String SESSION_PREFIX = "opengrok-abstract-ldap-plugin-";
     protected String SESSION_USERNAME = SESSION_PREFIX + "username";
     protected String SESSION_ESTABLISHED = SESSION_PREFIX + "session-established";
 
@@ -94,7 +94,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param req the current request
      * @param user user decoded from the headers
      */
-    abstract public void fillSession(HttpServletRequest req, User user);
+    public abstract void fillSession(HttpServletRequest req, User user);
 
     /**
      * Decide if the project should be allowed for this request.
@@ -103,7 +103,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param project the project
      * @return true if yes; false otherwise
      */
-    abstract public boolean checkEntity(HttpServletRequest request, Project project);
+    public abstract boolean checkEntity(HttpServletRequest request, Project project);
 
     /**
      * Decide if the group should be allowed for this request.
@@ -112,7 +112,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param group the group
      * @return true if yes; false otherwise
      */
-    abstract public boolean checkEntity(HttpServletRequest request, Group group);
+    public abstract boolean checkEntity(HttpServletRequest request, Group group);
 
     /**
      * Loads the configuration into memory.

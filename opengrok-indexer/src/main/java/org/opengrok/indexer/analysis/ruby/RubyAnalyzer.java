@@ -19,14 +19,14 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.ruby;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -41,20 +41,20 @@ public class RubyAnalyzer extends AbstractSourceCodeAnalyzer {
      * Creates a new instance of {@link RubyAnalyzer}.
      * @param factory defined instance for the analyzer
      */
-    protected RubyAnalyzer(FileAnalyzerFactory factory) {
+    protected RubyAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new RubySymbolTokenizer(
-            FileAnalyzer.dummyReader)));
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20171218_00
+     * @return 20190118_01
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20171218_00; // Edit comment above too!
+        return 20190118_01; // Edit comment above too!
     }
 
     /**

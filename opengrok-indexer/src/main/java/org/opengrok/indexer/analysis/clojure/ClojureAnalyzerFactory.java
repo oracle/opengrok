@@ -22,8 +22,7 @@
  */
 package org.opengrok.indexer.analysis.clojure;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ClojureAnalyzerFactory extends FileAnalyzerFactory {
@@ -37,11 +36,11 @@ public class ClojureAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ClojureAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new ClojureAnalyzer(this);
     }
 }

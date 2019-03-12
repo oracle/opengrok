@@ -126,8 +126,15 @@ public class DirectoryListing {
      * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
      * with {@code contextPath}, {@code dir}, {@code out}, {@code path},
      * and a list mapped from {@code files}.
+     * @param contextPath context path
+     * @param dir directory
+     * @param out writer
+     * @param path path
+     * @param files list of files
      * @return see
      * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
+     * @throws HistoryException history exception
+     * @throws IOException I/O exception
      */
     public List<String> listTo(String contextPath, File dir, Writer out,
         String path, List<String> files)

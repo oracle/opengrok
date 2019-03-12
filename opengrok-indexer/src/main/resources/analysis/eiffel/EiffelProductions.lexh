@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -110,7 +110,7 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
 %%
 <YYINITIAL> {
     {Identifier}    {
-        h.chkLOC();
+        chkLOC();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
@@ -118,14 +118,14 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
     }
 
     {Number}    {
-        h.chkLOC();
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
     }
 
     {Character_constant}    {
-        h.chkLOC();
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
@@ -138,14 +138,14 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
     }
 
     \"    {
-        h.chkLOC();
+        chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
     \" {Vstring_alpha}* [\[\{]    {
-        h.chkLOC();
-        h.vop(yytext());
+        chkLOC();
+        vop(yytext());
     }
 }
 
@@ -159,7 +159,7 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
 
 <STRING> {
     \"    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
         yypop();
@@ -175,14 +175,14 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
 
 <VSTRING> {
     [\]\}] {Vstring_alpha}* \"    {
-        h.chkLOC();
-        h.maybeEndVerbatim(yytext());
+        chkLOC();
+        maybeEndVerbatim(yytext());
     }
 }
 
 <STRING, VSTRING> {
     {Special_character}    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 
@@ -197,14 +197,14 @@ Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
     \s    { offer(yytext()); }
     [^]    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
     }
 }
 
 <SCOMMENT, STRING, VSTRING> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onUriMatched(yytext(), yychar);
         }

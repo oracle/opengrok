@@ -18,18 +18,14 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -67,38 +64,25 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
-        File directory = new File(getDirectoryName());
-        String revision = rev;
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
+        File directory = new File(getDirectoryName());
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "cat", "-r", revision, filename};
+            String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = executor.getOutputStream()) {
-                int len;
-
-                while ((len = in.read(buffer)) != -1) {
-                    if (len > 0) {
-                        out.write(buffer, 0, len);
-                    }
-                }
-            }
-
-            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
+            copyBytes(sink, executor.getOutputStream());
+            return true;
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history: {0}", exp.getClass().toString());
         }
 
-        return ret;
+        return false;
     }
 
     /**
@@ -268,7 +252,7 @@ public class MonotoneRepository extends Repository {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("database") && line.contains("default-server")) {
-                    String parts[] = line.split("\\s+");
+                    String[] parts = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", getDirectoryName());

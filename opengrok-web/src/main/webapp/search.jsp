@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
@@ -32,6 +32,7 @@ org.opengrok.indexer.web.SortOrder,
 org.opengrok.indexer.web.Suggestion"
 %>
 <%@ page import="org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory" %>
+<%@ page import="java.util.List" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
@@ -51,7 +52,7 @@ include file="projects.jspf"
             Util.appendQuery(url, "sort", sh.order.toString());
         }
         if (qb != null) {
-            Util.appendQuery(url, "q", qb.getFreetext());
+            Util.appendQuery(url, "full", qb.getFreetext());
             Util.appendQuery(url, "defs", qb.getDefs());
             Util.appendQuery(url, "refs", qb.getRefs());
             Util.appendQuery(url, "path", qb.getPath());
@@ -169,7 +170,7 @@ include file="menu.jspf"
         %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
 	  if (hint.freetext!=null) { 
 	    for (String word : hint.freetext) {
-            %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
+            %> <a href="search?full=<%= Util.URIEncode(word) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }

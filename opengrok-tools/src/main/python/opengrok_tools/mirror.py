@@ -368,7 +368,8 @@ def main():
                             break
                     except RepositoryException:
                         logger.error('Cannot determine incoming changes for '
-                                     'repository {}, driving on'.format(repo))
+                                     'repository {}'.format(repo))
+                        sys.exit(1)
 
                 if not got_incoming:
                     logger.info('No incoming changes for repositories in '

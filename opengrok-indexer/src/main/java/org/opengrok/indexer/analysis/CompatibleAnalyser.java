@@ -57,12 +57,12 @@ public class CompatibleAnalyser extends Analyzer {
 
     private JFlexTokenizer createPlainSymbolTokenizer() {
         return new JFlexTokenizer(new PlainSymbolTokenizer(
-                FileAnalyzer.dummyReader));
+                AbstractAnalyzer.DUMMY_READER));
     }
 
     private JFlexTokenizer createPlainFullTokenizer() {
         return new JFlexTokenizer(new PlainFullTokenizer(
-                FileAnalyzer.dummyReader));
+                AbstractAnalyzer.DUMMY_READER));
     }
 
     @Override

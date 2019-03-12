@@ -45,6 +45,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -309,13 +310,9 @@ public class ProjectsControllerTest extends JerseyTest {
                 env,
                 false, // don't search for repositories
                 false, // don't scan and add projects
-                null, // no default project
-                false, // don't list files
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
-                repos, // repositories - needed when refreshing history partially
-                new ArrayList<>(), // don't zap cache
-                false); // don't list repos
+                repos); // repositories - needed when refreshing history partially
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         for (String proj : projectsToDelete) {
@@ -541,4 +538,33 @@ public class ProjectsControllerTest extends JerseyTest {
                 .put(Entity.text(Boolean.FALSE.toString()));
     }
 
+    @Test
+    public void testListFiles() throws IOException, IndexerException {
+        final String projectName = "mercurial";
+        GenericType<List<String>> type = new GenericType<List<String>>() {};
+
+        Indexer.getInstance().prepareIndexer(
+                env,
+                false, // don't search for repositories
+                true, // add projects
+                false, // don't create dictionary
+                new ArrayList<>(), // subFiles - needed when refreshing history partially
+                new ArrayList<>()); // repositories - needed when refreshing history partially
+        Indexer.getInstance().doIndexerExecution(true, null, null);
+
+        List<String> filesFromRequest = target("projects")
+                .path(projectName)
+                .path("files")
+                .request()
+                .get(type);
+        filesFromRequest.sort(String::compareTo);
+        String files[] = {"Makefile", "bar.txt", "header.h", "main.c", "novel.txt"};
+        for (int i = 0; i < files.length; i++) {
+            files[i] = "/" + projectName + "/" + files[i];
+        }
+        List<String> expectedFiles = Arrays.asList(files);
+        expectedFiles.sort(String::compareTo);
+
+        assertEquals(expectedFiles, filesFromRequest);
+    }
 }

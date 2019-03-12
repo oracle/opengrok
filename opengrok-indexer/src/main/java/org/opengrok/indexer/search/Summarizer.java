@@ -125,7 +125,7 @@ public class Summarizer {
      *
      * @param text input text
      * @return summary of hits
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public Summary getSummary(String text) throws IOException {
         if (text == null) {
@@ -293,7 +293,7 @@ public class Summarizer {
 
     private class SToken extends PackedTokenAttributeImpl {
 
-        public SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
+        SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
             copyBuffer(startTermBuffer, termBufferOffset, termBufferLength);
             setOffset(start, end);
         }

@@ -19,11 +19,14 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -41,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -192,16 +196,53 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Get an input stream that I may use to read a specific version of a named
-     * file.
+     * Gets the contents of a specific version of a named file, and copies
+     * into the specified target.
      *
+     * @param target a required target file which will be overwritten
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
      * @param rev the revision to get
-     * @return An input stream containing the correct revision.
+     * @return {@code true} if contents were found
+     * @throws java.io.IOException if an I/O error occurs
      */
-    abstract InputStream getHistoryGet(
-            String parent, String basename, String rev);
+    public boolean getHistoryGet(
+            File target, String parent, String basename, String rev)
+            throws IOException {
+        try (FileOutputStream out = new FileOutputStream(target)) {
+            return getHistoryGet(out::write, parent, basename, rev);
+        }
+    }
+
+    /**
+     * Gets an {@link InputStream} of the contents of a specific version of a
+     * named file.
+     * @param parent the name of the directory containing the file
+     * @param basename the name of the file to get
+     * @param rev the revision to get
+     * @return a defined instance if contents were found; or else {@code null}
+     */
+    public InputStream getHistoryGet(
+            String parent, String basename, String rev) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (getHistoryGet(out::write, parent, basename, rev)) {
+            return new ByteArrayInputStream(out.toByteArray());
+        }
+        return null;
+    }
+
+    /**
+     * Subclasses must override to get the contents of a specific version of a
+     * named file, and copy to the specified {@code sink}.
+     *
+     * @param sink a defined instance
+     * @param parent the name of the directory containing the file
+     * @param basename the name of the file to get
+     * @param rev the revision to get
+     * @return a value indicating if the get was successful.
+     */
+    abstract boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev);
 
     /**
      * Checks whether this parser can annotate files.
@@ -385,6 +426,7 @@ public abstract class Repository extends RepositoryInfo {
      * Check if this it the right repository type for the given file.
      *
      * @param file File to check if this is a repository for.
+     * @param interactive is this run from interactive mode
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file, boolean interactive);
@@ -401,7 +443,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Determine parent of this repository.
      * @return parent
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public final String determineParent() throws IOException {
         return determineParent(false);
@@ -415,7 +457,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Determine branch of this repository.
      * @return branch
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     public final String determineBranch() throws IOException {
         return determineBranch(false);
@@ -547,6 +589,28 @@ public abstract class Repository extends RepositoryInfo {
             }
         }
         return filename;
+    }
+
+    /**
+     * Copies all bytes from {@code in} to the {@code sink}.
+     * @return the number of writes to {@code sink}
+     */
+    static int copyBytes(BufferSink sink, InputStream in) throws IOException {
+        byte[] buffer = new byte[8 * 1024];
+        int iterations = 0;
+        int len;
+        while ((len = in.read(buffer)) != -1) {
+            if (len > 0) {
+                ++iterations;
+                sink.write(buffer, 0, len);
+            }
+        }
+        return iterations;
+    }
+
+    static class HistoryRevResult {
+        public boolean success;
+        public int iterations;
     }
 
     private class RepositoryDateFormat extends DateFormat {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -42,7 +42,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -268,6 +267,24 @@ public final class HistoryGuru {
     }
 
     /**
+     * Gets a named revision of the specified file into the specified target.
+     *
+     * @param target a require target file
+     * @param parent The directory containing the file
+     * @param basename The name of the file
+     * @param rev The revision to get
+     * @return {@code true} if content was found
+     * @throws java.io.IOException if an I/O error occurs
+     */
+    public boolean getRevision(File target, String parent, String basename,
+            String rev) throws IOException {
+
+        Repository repo = getRepository(new File(parent));
+        return repo != null && repo.getHistoryGet(target, parent,
+                basename, rev);
+    }
+
+    /**
      * Get a named revision of the specified file.
      *
      * @param parent The directory containing the file
@@ -309,7 +326,7 @@ public final class HistoryGuru {
 
     /**
      * Does the history cache contain entry for this directory ?
-     * @param file
+     * @param file file object
      * @return true if there is cache, false otherwise
      */
     public boolean hasCacheForFile(File file) {
@@ -401,7 +418,7 @@ public final class HistoryGuru {
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
                     if (!ignoredNames.ignore(file)) {
-                        File subFiles[] = file.listFiles();
+                        File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', " +
@@ -421,7 +438,7 @@ public final class HistoryGuru {
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
-                        File subFiles[] = file.listFiles();
+                        File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
@@ -589,7 +606,8 @@ public final class HistoryGuru {
 
     private void createCacheReal(Collection<Repository> repositories) {
         Statistics elapsed = new Statistics();
-        ExecutorService executor = RuntimeEnvironment.getHistoryExecutor();
+        ExecutorService executor = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer().getHistoryExecutor();
         // Since we know each repository object from the repositories
         // collection is unique, we can abuse HashMap to create a list of
         // repository,revision tuples with repository as key (as the revision
@@ -643,25 +661,7 @@ public final class HistoryGuru {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE,
                     "latch exception{0}", ex);
-        }
-
-        executor.shutdown();
-        while (!executor.isTerminated()) {
-            try {
-                // Wait forever
-                executor.awaitTermination(999, TimeUnit.DAYS);
-            } catch (InterruptedException exp) {
-                LOGGER.log(Level.WARNING,
-                        "Received interrupt while waiting for executor to finish", exp);
-            }
-        }
-        RuntimeEnvironment.freeHistoryExecutor();
-        try {
-            /* Thread pool for handling renamed files needs to be destroyed too. */
-            RuntimeEnvironment.destroyRenamedHistoryExecutor();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE,
-                    "destroying of renamed thread pool failed", ex);
+            return;
         }
 
         // The cache has been populated. Now, optimize how it is stored on
@@ -878,6 +878,7 @@ public final class HistoryGuru {
      * Set list of known repositories which match the list of directories.
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
+     * @param interactive interactive mode flag
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, boolean interactive) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
@@ -910,6 +911,7 @@ public final class HistoryGuru {
      *
      * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
+     * @param interactive interactive mode flag
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, boolean interactive) {
         if (repos == null || repos.isEmpty()) {

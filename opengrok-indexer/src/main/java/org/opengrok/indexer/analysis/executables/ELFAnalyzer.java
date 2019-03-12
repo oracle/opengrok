@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -34,13 +34,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
-import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
@@ -71,7 +70,7 @@ public class ELFAnalyzer extends FileAnalyzer {
      * Creates a new instance of ELFAnalyzer
      * @param factory The factory that creates ELFAnalyzers
      */
-    protected ELFAnalyzer(FileAnalyzerFactory factory) {
+    protected ELFAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -209,7 +208,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public int e_shnum;
         public int e_shstrndx;
 
-        public ELFHeader(MappedByteBuffer fmap) throws IllegalArgumentException {
+        ELFHeader(MappedByteBuffer fmap) throws IllegalArgumentException {
             if (fmap.get(ELFIdentification.EI_MAG0.value()) != 0x7f ||
                 fmap.get(ELFIdentification.EI_MAG1.value()) != 'E' ||
                 fmap.get(ELFIdentification.EI_MAG2.value()) != 'L' ||
@@ -291,7 +290,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public int sh_addralign;
         public int sh_entsize;
 
-        public ELFSection(MappedByteBuffer fmap) {
+        ELFSection(MappedByteBuffer fmap) {
             sh_name = fmap.getInt();
             sh_type = fmap.getInt();
             sh_flags = fmap.getInt();
@@ -310,7 +309,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum ELFIdentification {
+    private enum ELFIdentification {
 
         EI_MAG0(0),
         EI_MAG1(1),
@@ -323,7 +322,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         EI_NIDENT(16);
         private final int value;
 
-        private ELFIdentification(int value) {
+        ELFIdentification(int value) {
             this.value = value;
         }
 
@@ -332,7 +331,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum EI_Class {
+    private enum EI_Class {
         ELFCLASSNONE(0),
         ELFCLASS32(1),
         ELFCLASS64(2);
@@ -343,7 +342,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         private final int value;
 
-        private EI_Class(int value) {
+        EI_Class(int value) {
             this.value = value;
         }
 
@@ -367,14 +366,14 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum EI_Data {
+    private enum EI_Data {
         ELFDATANONE(0),
         ELFDATA2LSB(1),
         ELFDATA2MSB(2);
 
         private final int value;
 
-        private EI_Data(int value) {
+        EI_Data(int value) {
             this.value = value;
         }
 
@@ -393,7 +392,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum E_Type {
+    private enum E_Type {
         ET_NONE(0),
         ET_REL(1),
         ET_EXEC(2),
@@ -407,7 +406,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         private final int value;
 
-        private E_Type(int value) {
+        E_Type(int value) {
             this.value = value;
         }
 
@@ -436,7 +435,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum E_Machine {
+    private enum E_Machine {
         EM_NONE(0),
         EM_M32(1),
         EM_SPARC(2),
@@ -455,7 +454,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         private final int value;
 
-        private E_Machine(int value) {
+        E_Machine(int value) {
             this.value = value;
         }
 
@@ -487,7 +486,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
     }
 
-    private static enum E_Version {
+    private enum E_Version {
         EV_NONE(0),
         EV_CURRENT(1);
 
@@ -497,7 +496,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         private final int value;
 
-        private E_Version(int value) {
+        E_Version(int value) {
             this.value = value;
         }
 

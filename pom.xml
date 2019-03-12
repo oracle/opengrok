@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.3</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
@@ -60,12 +60,14 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     </scm>
 
     <properties>
-        <lucene.version>7.5.0</lucene.version>
-        <mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
+        <lucene.version>7.7.0</lucene.version>
+        <mavenjavadocplugin.version>3.0.1</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.version>2.27</jersey.version>
+        <!-- Jackson version needs to match the version of Jackson Jersey depends on otherwise weird things will happen. -->
+        <jackson.version>2.8.10</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -125,11 +127,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.1.0</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.json-simple</groupId>
-                <artifactId>json-simple</artifactId>
-                <version>1.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
@@ -264,6 +261,22 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     <phase>verify</phase>
                   </execution>
                 </executions>
+                <configuration>
+                    <verbose>true</verbose>
+                    <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                    <javaApiLinks>
+                        <property>
+                            <name>foo</name>
+                            <value>bar</value>
+                        </property>
+                    </javaApiLinks>
+                    <sourceFileExcludes>
+                        <!-- workarounds for https://github.com/jflex-de/jflex/issues/542 -->
+                        <exclude>**/HistoryLineTokenizer.java</exclude>
+                        <exclude>**/PlainLineTokenizer.java</exclude>
+                        <exclude>**/XrefSourceTransformer.java</exclude>
+                    </sourceFileExcludes>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>

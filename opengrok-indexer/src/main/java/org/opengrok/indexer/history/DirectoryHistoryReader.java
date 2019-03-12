@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -190,7 +190,7 @@ public class DirectoryHistoryReader {
     // Fill the giant hash with some data from one history entry.
     private void put(Date date, String revision, String author, String comment, String path) {
         long time = date.getTime();
-        date.setTime(time - (time % 3600000l));
+        date.setTime(time - (time % 3600000L));
 
         Map<String, Map<List<String>, SortedSet<String>>> ac = hash.get(date);
         if (ac == null) {

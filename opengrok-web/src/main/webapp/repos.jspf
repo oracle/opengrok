@@ -21,29 +21,30 @@ CDDL HEADER END
 Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<%@page import="java.util.TreeSet"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="org.json.simple.JSONArray"%>
-<%@page import="java.util.Set"%>
-<%@page import="org.opengrok.indexer.web.Prefix"%>
-<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
-<%@page import="java.util.LinkedList"%>
+<%@page import="java.io.File"%>
 <%@page import="java.util.Collections"%>
 <%@page import="java.util.Comparator"%>
-<%@page import="java.io.File"%>
-<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
-<%@page import="org.opengrok.indexer.web.Util"%>
-<%@page import="org.opengrok.indexer.configuration.Project"%>
-<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="java.util.LinkedList"%>
 <%@page import="java.util.List"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.TreeSet"%>
+<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="org.opengrok.indexer.configuration.Project"%>
+<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
 <%@page import="org.opengrok.indexer.web.PageConfig"%>
+<%@page import="org.opengrok.indexer.web.Prefix"%>
+<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@page import="org.opengrok.indexer.web.Util"%>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.addScript("repos");
-    JSONArray messages;
+    String messages;
 
-    Util.printMessages(out, cfg.getMessages());
+    printMessages(out, cfg.getMessages());
 
     Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
         public int compare(RepositoryInfo r1, RepositoryInfo r2) {
@@ -110,7 +111,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                             <span class="pull-left">
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
                                 <%
-                                if (!(messages = Util.messagesToJson(group)).isEmpty()) { %>
+                                if (!(messages = MessagesUtils.messagesToJson(group)).isEmpty()) { %>
                                     <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                 <% } %>
                                 <small>
@@ -155,19 +156,34 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                             if (cnt > 0 && ri.getParent() == null)
                                 // discard repositories without a parent url
                                 continue;
-                            if (cnt != 0) {
+
+                            boolean subrepository = !ri.getDirectoryNameRelative().equals(project.getPath());
+                            if (subrepository && cnt == 0) {
+                            %>
+                                <tr>
+                                    <td class="name repository" colspan="3">
+                                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                                           title="Xref for project <%= Util.htmlize(projDesc) %>">
+                                            <%= Util.htmlize(projDesc) %>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <%
+                            }
+
+                            if (subrepository) {
                                 projDesc = ri.getDirectoryName()
                                              .replace(cfg.getSourceRootPath() + File.separator, "");
                             }
                             %>
                             <tr>
-                                <td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
+                                <td class="name <%= subrepository ? "subrepository" : "repository" %>">
                     <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    if (!(messages = Util.messagesToJson(project)).isEmpty()) { %>
+                    if (!(messages = MessagesUtils.messagesToJson(project)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                                 </td><%
@@ -246,7 +262,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 <span class="pull-left">
                                     <span class="name">Other</span>
                                     <%
-                                    if (!(messages = Util.messagesToJson("other")).isEmpty()) { %>
+                                    if (!(messages = messagesToJson("other")).isEmpty()) { %>
                                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                     <% } %>
                                     <small>
@@ -286,18 +302,32 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 if (cnt > 0 && ri.getParent() == null)
                                     // discard repositories without a parent url
                                     continue;
-                                if (cnt != 0) {
+                                boolean subrepository = !ri.getDirectoryNameRelative().equals(proj.getPath());
+                                if (subrepository && cnt == 0) {
+                                    %>
+                                        <tr>
+                                            <td class="name repository" colspan="3">
+                                                <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                                                   title="Xref for project <%= Util.htmlize(projDesc) %>">
+                                                    <%= Util.htmlize(projDesc) %>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <%
+                                }
+
+                                if (subrepository) {
                                     projDesc = ri.getDirectoryName()
                                                  .replace(cfg.getSourceRootPath() + File.separator, "");
                                 }
                                 %>
-                                <tr><td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
+                                <tr><td class="name <%= subrepository ? "subrepository" : "repository" %>">
                     <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    if (!(messages = Util.messagesToJson(proj)).isEmpty()) { %>
+                    if (!(messages = messagesToJson(proj)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                     </td><%

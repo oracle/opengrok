@@ -28,8 +28,8 @@ import java.io.InputStream;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * Represents a container for tests of {@link ZipAnalyzerFactory}.
@@ -47,7 +47,7 @@ public class ZipAnalyzerFactoryTest {
         assertNotNull("zip.bin should be available,", res);
 
         // assert that it is matched
-        FileAnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = AnalyzerGuru.find(res);
         assertNotNull("zip.bin should have factory", fac);
         assertSame("should be ZipAnalyzerFactory", fac.getClass(),
             ZipAnalyzerFactory.class);

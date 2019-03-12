@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -61,7 +61,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 
-/*
+/**
  * Class representing file based storage of per source file history.
  */
 class FileHistoryCache implements HistoryCache {
@@ -70,9 +70,9 @@ class FileHistoryCache implements HistoryCache {
 
     private final Object lock = new Object();
 
-    private final static String HISTORY_CACHE_DIR_NAME = "historycache";
-    private final static String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
-    private final static String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
+    private static final String HISTORY_CACHE_DIR_NAME = "historycache";
+    private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
+    private static final String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
     private boolean historyIndexDone = false;
 
@@ -333,7 +333,7 @@ class FileHistoryCache implements HistoryCache {
     /**
      * Store history object (encoded as XML and compressed with gzip) in a file.
      *
-     * @param history history object to store
+     * @param histNew history object to store
      * @param file file to store the history object into
      * @param repo repository for the file
      * @param mergeHistory whether to merge the history with existing or
@@ -536,9 +536,7 @@ class FileHistoryCache implements HistoryCache {
         final CountDownLatch latch = new CountDownLatch(renamed_map.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
-            RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
-                @Override
-                public void run() {
+            env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
                     try {
                         doFileHistory(map_entry.getKey(), map_entry.getValue(),
                             env, repositoryF,
@@ -552,7 +550,6 @@ class FileHistoryCache implements HistoryCache {
                     } finally {
                         latch.countDown();
                     }
-                }
             });
         }
 

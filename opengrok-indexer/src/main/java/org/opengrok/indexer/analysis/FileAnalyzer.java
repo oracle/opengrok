@@ -18,20 +18,17 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
@@ -39,7 +36,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.opengrok.indexer.analysis.plain.PlainFullTokenizer;
 import org.opengrok.indexer.analysis.plain.PlainSymbolTokenizer;
-import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 
@@ -59,75 +55,9 @@ import org.opengrok.indexer.search.QueryBuilder;
  *
  * @author Chandan
  */
-public class FileAnalyzer extends Analyzer {
+public class FileAnalyzer extends AbstractAnalyzer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAnalyzer.class);
-
-    protected Project project;
-    protected Ctags ctags;
-    protected boolean scopesEnabled;
-    protected boolean foldingEnabled;
-    private final FileAnalyzerFactory factory;
-
-    /**
-     * What kind of file is this?
-     */
-    public static enum Genre {
-        /**
-         * xrefed - line numbered context
-         */
-        PLAIN("p"),
-        /**
-         * xrefed - summarizer context
-         */
-        XREFABLE("x"),
-        /**
-         * not xrefed - no context - used by diff/list
-         */
-        IMAGE("i"),
-        /**
-         * not xrefed - no context
-         */
-        DATA("d"),
-        /**
-         * not xrefed - summarizer context from original file
-         */
-        HTML("h");
-        private final String typeName;
-
-        private Genre(String typename) {
-            this.typeName = typename;
-        }
-
-        /**
-         * Get the type name value used to tag lucene documents.
-         *
-         * @return a none-null string.
-         */
-        public String typeName() {
-            return typeName;
-        }
-
-        /**
-         * Get the Genre for the given type name.
-         *
-         * @param typeName name to check
-         * @return {@code null} if it doesn't match any genre, the genre
-         * otherwise.
-         * @see #typeName()
-         */
-        public static Genre get(String typeName) {
-            if (typeName == null) {
-                return null;
-            }
-            for (Genre g : values()) {
-                if (g.typeName.equals(typeName)) {
-                    return g;
-                }
-            }
-            return null;
-        }
-    }
 
     /**
      * Gets a version number to be used to tag processed documents so that
@@ -140,61 +70,23 @@ public class FileAnalyzer extends Analyzer {
      * {@link #getSpecializedVersionNo()} to allow changes that affect a few.
      * @return (20061115_01 &lt;&lt; 32) | {@link #getSpecializedVersionNo()}
      */
+    @Override
     public final long getVersionNo() {
         final int rootVersionNo = 20061115_01; // Edit comment above too!
         return ((long)rootVersionNo << 32) | getSpecializedVersionNo();
     }
 
-    /**
-     * Subclasses should override to produce a value relevant for the evolution
-     * of their analysis in each release.
-     * @return 0
-     */
-    protected int getSpecializedVersionNo() {
-        return 0; // FileAnalyzer is not specialized.
-    }
-
-    public void setCtags(Ctags ctags) {
-        this.ctags = ctags;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void setScopesEnabled(boolean scopesEnabled) {
-        this.scopesEnabled = supportsScopes() && scopesEnabled;
-    }
-
-    public void setFoldingEnabled(boolean foldingEnabled) {
-        this.foldingEnabled = supportsScopes() && foldingEnabled;
-    }
-
+    @Override
     protected boolean supportsScopes() {
         return false;
     }
-
-    /**
-     * Get the factory which created this analyzer.
-     *
-     * @return the {@code FileAnalyzerFactory} which created this analyzer
-     */
-    public final FileAnalyzerFactory getFactory() {
-        return factory;
-    }
-
-    public Genre getGenre() {
-        return factory.getGenre();
-    }
-
-    public static Reader dummyReader = new StringReader("");
 
     /**
      * Creates a new instance of FileAnalyzer
      *
      * @param factory defined instance for the analyzer
      */
-    public FileAnalyzer(FileAnalyzerFactory factory) {
+    public FileAnalyzer(AnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         if (factory == null) {
             throw new IllegalArgumentException("`factory' is null");
@@ -209,7 +101,7 @@ public class FileAnalyzer extends Analyzer {
      * @param factory defined instance for the analyzer
      * @param symbolTokenizer a defined instance relevant for the file
      */
-    protected FileAnalyzer(FileAnalyzerFactory factory,
+    protected FileAnalyzer(AnalyzerFactory factory,
             JFlexTokenizer symbolTokenizer) {
 
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
@@ -230,6 +122,7 @@ public class FileAnalyzer extends Analyzer {
      *
      * @return Normalized name of the analyzer.
      */
+    @Override
     public String getFileTypeName() {
         String name = this.getClass().getSimpleName().toLowerCase(Locale.ROOT);
         String suffix = "analyzer";
@@ -252,6 +145,7 @@ public class FileAnalyzer extends Analyzer {
      * @throws IOException if any I/O error
      * @throws InterruptedException if a timeout occurs
      */
+    @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
         // not used
@@ -265,13 +159,11 @@ public class FileAnalyzer extends Analyzer {
      * @return the instance used to write the cross-referencing
      * @throws java.io.IOException if an error occurs
      */
+    @Override
     public Xrefer writeXref(WriteXrefArgs args) throws IOException {
         throw new UnsupportedOperationException(
                 "Base FileAnalyzer cannot write xref");
     }
-
-    // you analyzer HAS to override this to get proper symbols in results
-    protected final JFlexTokenizer symbolTokenizer;
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
@@ -301,6 +193,7 @@ public class FileAnalyzer extends Analyzer {
      * @param doc the target document
      * @param value the number of lines
      */
+    @Override
     protected void addNumLines(Document doc, int value)  {
         doc.add(new StoredField(QueryBuilder.NUML, value));
     }
@@ -310,18 +203,19 @@ public class FileAnalyzer extends Analyzer {
      * @param doc the target document
      * @param value the loc
      */
+    @Override
     protected void addLOC(Document doc, int value)  {
         doc.add(new StoredField(QueryBuilder.LOC, value));
     }
 
     private JFlexTokenizer createPlainSymbolTokenizer() {
         return new JFlexTokenizer(new PlainSymbolTokenizer(
-                FileAnalyzer.dummyReader));
+                AbstractAnalyzer.DUMMY_READER));
     }
 
     private JFlexTokenizer createPlainFullTokenizer() {
         return new JFlexTokenizer(new PlainFullTokenizer(
-                FileAnalyzer.dummyReader));
+                AbstractAnalyzer.DUMMY_READER));
     }
 
     @Override

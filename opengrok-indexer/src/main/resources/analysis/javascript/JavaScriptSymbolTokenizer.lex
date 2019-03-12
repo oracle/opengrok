@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -42,7 +42,7 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %include CommonLexer.lexh
 %char
 
-%state STRING COMMENT SCOMMENT QSTRING
+%state STRING REGEXP_START REGEXP COMMENT SCOMMENT QSTRING
 
 %include JavaScript.lexh
 %%
@@ -56,6 +56,13 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
  {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
+ /*
+  * Literal regexps are in conflict with division "/" and are detected
+  * in javascript based on context and when ambiguous, the division has
+  * a higher precedence. We do a best-effort context matching for
+  * preceding "=" (variable), "(" (function call) or ":" (object).
+  */
+ [:=(][ \t\r\n]*/\/    { yybegin(REGEXP_START); }
  "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
@@ -63,6 +70,15 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 <STRING> {
  \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
+}
+
+<REGEXP_START> {
+    \/  { yybegin(REGEXP); }
+}
+
+<REGEXP> {
+    \\[/]   {}
+    \/[gimsuy]* { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
@@ -78,6 +94,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 \n      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, REGEXP_START, REGEXP, COMMENT, SCOMMENT, QSTRING> {
 [^]    {}
 }

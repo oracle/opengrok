@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -61,27 +61,27 @@ include file="menu.jspf"
 <pre class="example">
 
 To find where setResourceMonitors is defined:
-<a href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
+<a href="search?full=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
 
 To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
 <a href="search?refs=sprintf&amp;path=usr%2Fsrc%2Fcmd%2Fcmd-inet%2Fusr.sbin%2F"
 >refs:sprintf path:usr/src/cmd/cmd-inet/usr.sbin</a>
 
 To find assignments to variable foo:
-<a href="search?q=%22foo+%3D%22">"foo ="</a>
+<a href="search?full=%22foo+%3D%22">"foo ="</a>
 
 To find Makefiles where pstack binary is being built:
-<a href="search?q=pstack&amp;path=Makefile">pstack path:Makefile</a>
+<a href="search?full=pstack&amp;path=Makefile">pstack path:Makefile</a>
 
 to search for phrase "Bill Joy":
-<a href="search?q=%22Bill+Joy%22">"Bill Joy"</a>
+<a href="search?full=%22Bill+Joy%22">"Bill Joy"</a>
 
 To find perl files that do not use /usr/bin/perl but something else:
-<a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22"
+<a href="search?full=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22"
 >-"/usr/bin/perl" +"/bin/perl"</a>
 
 To find all strings beginning with foo use the wildcard:
-<a href="search?q=foo*">foo*</a>
+<a href="search?full=foo*">foo*</a>
 
 To find all files which have . c in their name (dot is a token!):
 <a href="search?path=%22. c%22">". c"</a>
@@ -90,7 +90,7 @@ To find all files which start with "ma" and then have only alphabet characters d
 <a href="search?path=/ma[a-zA-Z]*/">path:/ma[a-zA-Z]*/</a>
 
 To find all main methods in all files analyzed by C analyzer (so .c, .h, ...) do:
-<a href="search?q=main&type=c">main type:c</a>
+<a href="search?full=main&type=c">main type:c</a>
 </pre>
 
 <h4>More info:</h4>

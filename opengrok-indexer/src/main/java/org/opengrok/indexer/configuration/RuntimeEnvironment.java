@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opengrok.indexer.configuration;
@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -65,12 +64,15 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Statistics;
+import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
@@ -87,11 +89,10 @@ public final class RuntimeEnvironment {
     private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
-    private ReentrantReadWriteLock configLock;
+    private final ReentrantReadWriteLock configLock;
+    private final LazilyInstantiate<IndexerParallelizer> lzIndexerParallelizer;
+    private final LazilyInstantiate<ExecutorService> lzSearchExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
-    private static ExecutorService historyExecutor = null;
-    private static ExecutorService historyRenamedExecutor = null;
-    private static ExecutorService searchExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
@@ -126,43 +127,21 @@ public final class RuntimeEnvironment {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
         watchDog = new WatchDogService();
+        lzIndexerParallelizer = LazilyInstantiate.using(() ->
+                new IndexerParallelizer(this));
+        lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
     }
 
     /** Instance of authorization framework.*/
     private AuthorizationFramework authFramework;
 
-    /* Get thread pool used for top-level repository history generation. */
-    public static synchronized ExecutorService getHistoryExecutor() {
-        if (historyExecutor == null) {
-            historyExecutor = Executors.newFixedThreadPool(getInstance().getHistoryParallelism(),
-                    runnable -> {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("history-handling-" + thread.getId());
-                        return thread;
-                    });
-        }
-
-        return historyExecutor;
+    /** Gets the thread pool used for multi-project searches. */
+    public ExecutorService getSearchExecutor() {
+        return lzSearchExecutor.get();
     }
 
-    /* Get thread pool used for history generation of renamed files. */
-    public static synchronized ExecutorService getHistoryRenamedExecutor() {
-        if (historyRenamedExecutor == null) {
-            historyRenamedExecutor = Executors.newFixedThreadPool(getInstance().getHistoryRenamedParallelism(),
-                    runnable -> {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("renamed-handling-" + thread.getId());
-                        return thread;
-                    });
-        }
-
-        return historyRenamedExecutor;
-    }
-
-    /* Get thread pool used for multi-project searches. */
-    public synchronized ExecutorService getSearchExecutor() {
-        if (searchExecutor == null) {
-            searchExecutor = Executors.newFixedThreadPool(
+    private ExecutorService newSearchExecutor() {
+        return Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
                 new ThreadFactory() {
                 @Override
@@ -172,23 +151,6 @@ public final class RuntimeEnvironment {
                     return thread;
                 }
             });
-        }
-
-        return searchExecutor;
-    }
-
-    public static synchronized void freeHistoryExecutor() {
-        historyExecutor = null;
-    }
-
-    public static synchronized void destroyRenamedHistoryExecutor() throws InterruptedException {
-        if (historyRenamedExecutor != null) {
-            historyRenamedExecutor.shutdown();
-            // All the jobs should be completed by now however for testing
-            // we would like to make sure the threads are gone.
-            historyRenamedExecutor.awaitTermination(1, TimeUnit.MINUTES);
-            historyRenamedExecutor = null;
-        }
     }
 
     /**
@@ -201,6 +163,10 @@ public final class RuntimeEnvironment {
     }
 
     public WatchDogService watchDog;
+
+    public IndexerParallelizer getIndexerParallelizer() {
+        return lzIndexerParallelizer.get();
+    }
 
     private String getCanonicalPath(String s) {
         if (s == null) { return null; }
@@ -236,7 +202,7 @@ public final class RuntimeEnvironment {
      * Get value of configuration field
      * @param fieldName name of the field
      * @return object value
-     * @throws IOException
+     * @throws IOException I/O
      */
     public Object getConfigurationValueException(String fieldName) throws IOException {
         try {
@@ -285,6 +251,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, Object value) throws IOException {
         try {
@@ -299,6 +266,7 @@ public final class RuntimeEnvironment {
      * Set configuration value
      * @param fieldName name of the field
      * @param value string value
+     * @throws IOException I/O exception
      */
     public void setConfigurationValueException(String fieldName, String value) throws IOException {
         try {
@@ -776,6 +744,35 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Set the specified projects as default in the configuration.
+     * This method should be called only after projects were discovered and became part of the configuration,
+     * i.e. after {@link org.opengrok.indexer.index.Indexer#prepareIndexer} was called.
+     *
+     * @param defaultProjects The default project to use
+     * @see #setDefaultProjects
+     */
+    public void setDefaultProjectsFromNames(Set<String> defaultProjects) {
+        if (defaultProjects != null && !defaultProjects.isEmpty()) {
+            Set<Project> projects = new TreeSet<>();
+            for (String projectPath : defaultProjects) {
+                if (projectPath.equals("__all__")) {
+                    projects.addAll(getProjects().values());
+                    break;
+                }
+                for (Project p : getProjectList()) {
+                    if (p.getPath().equals(Util.fixPathIfWindows(projectPath))) {
+                        projects.add(p);
+                        break;
+                    }
+                }
+            }
+            if (!projects.isEmpty()) {
+                setDefaultProjects(projects);
+            }
+        }
+    }
+
+    /**
      * Set the projects that are specified to be the default projects to use.
      * The default projects are the projects you will search (from the web
      * application) if the page request didn't contain the cookie..
@@ -1009,7 +1006,7 @@ public final class RuntimeEnvironment {
      * Sets the bug regex for the history listing
      *
      * @param bugPattern the regex to search history comments
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void setBugPattern(String bugPattern) throws IOException {
         setConfigurationValueException("bugPattern", bugPattern);
@@ -1046,7 +1043,7 @@ public final class RuntimeEnvironment {
      * Sets the review(ARC) regex for the history listing
      *
      * @param reviewPattern the regex to search history comments
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void setReviewPattern(String reviewPattern) throws IOException {
         setConfigurationValueException("reviewPattern", reviewPattern);
@@ -1058,6 +1055,14 @@ public final class RuntimeEnvironment {
 
     public void setWebappLAF(String laf) {
         setConfigurationValue("webappLAF", laf);
+    }
+
+    /**
+     * Gets a value indicating if the web app should run ctags as necessary.
+     * @return the value of {@link Configuration#isWebappCtags()}
+     */
+    public boolean isWebappCtags() {
+        return (boolean)getConfigurationValue("webappCtags");
     }
 
     public Configuration.RemoteSCM getRemoteScmSupported() {
@@ -1339,7 +1344,7 @@ public final class RuntimeEnvironment {
      * Read configuration from a file and put it into effect.
      * @param file the file to read
      * @param interactive true if run in interactive mode
-     * @throws IOException
+     * @throws IOException I/O
      */
     public void readConfiguration(File file, boolean interactive) throws IOException {
         setConfiguration(Configuration.read(file), null, interactive);
@@ -1579,7 +1584,7 @@ public final class RuntimeEnvironment {
      *
      * @return the framework
      */
-    synchronized public AuthorizationFramework getAuthorizationFramework() {
+    public synchronized AuthorizationFramework getAuthorizationFramework() {
         if (authFramework == null) {
             authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
         }
@@ -1592,7 +1597,7 @@ public final class RuntimeEnvironment {
      *
      * @param fw the new framework
      */
-    synchronized public void setAuthorizationFramework(AuthorizationFramework fw) {
+    public synchronized void setAuthorizationFramework(AuthorizationFramework fw) {
         if (this.authFramework != null) {
             this.authFramework.removeAll();
         }
@@ -1710,27 +1715,21 @@ public final class RuntimeEnvironment {
      * to the SearcherManager. This is done with returnIndexSearcher().
      * The return of the IndexSearcher should happen only after the search result data are read fully.
      *
-     * @param proj project
+     * @param projectName project
      * @return SearcherManager for given project
      * @throws IOException I/O exception
      */
-    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
-        SearcherManager mgr = searcherManagerMap.get(proj);
-        SuperIndexSearcher searcher = null;
+    public SuperIndexSearcher getIndexSearcher(String projectName) throws IOException {
+        SearcherManager mgr = searcherManagerMap.get(projectName);
+        SuperIndexSearcher searcher;
 
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
-
-            try {
-                Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
-                mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
-                searcherManagerMap.put(proj, mgr);
-                searcher = (SuperIndexSearcher) mgr.acquire();
-                searcher.setSearcherManager(mgr);
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "cannot construct IndexSearcher for project " + proj, ex);
-            }
+            Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
+            mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+            searcherManagerMap.put(projectName, mgr);
+            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher.setSearcherManager(mgr);
         } else {
             searcher = (SuperIndexSearcher) mgr.acquire();
             searcher.setSearcherManager(mgr);

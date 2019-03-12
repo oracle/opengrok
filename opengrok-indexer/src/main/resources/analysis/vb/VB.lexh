@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  *
  * ##Legal Notices
  * Microsoft and any contributors grant you a license to the Microsoft documentation and other content
@@ -38,9 +38,6 @@
  * or trademarks, whether by implication, estoppel or otherwise.
  */
 
-/*
- * For historical reasons, VBXref does not link identifiers of length=1
- */
 Identifier = ([a-zA-Z] [a-zA-Z0-9_]* | [_] [a-zA-Z0-9_]+)
 
 Number = [\-]? ({Numeric_integer} | {Numeric_fp} | {Hexadecimal} | {Binary} |

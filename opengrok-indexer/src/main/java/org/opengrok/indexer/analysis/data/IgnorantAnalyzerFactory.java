@@ -23,6 +23,7 @@
 
 package org.opengrok.indexer.analysis.data;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
@@ -49,7 +50,7 @@ public class IgnorantAnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         // just use a FileAnalyzer since it won't analyze or xref the file
         return new FileAnalyzer(this);
     }

@@ -18,17 +18,21 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 /**
  * Framework for statistics gathering. So far used only by the webapp.
@@ -51,27 +55,45 @@ public class Statistics {
     protected static final String STATISTIC_DAY_HISTOGRAM = "day_histogram";
     protected static final String STATISTIC_MONTH_HISTOGRAM = "month_histogram";
 
+    @JsonProperty(STATISTIC_REQUEST_CATEGORIES)
     private Map<String, Long> requestCategories = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING)
     private Map<String, Long> timing = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_MIN)
     private Map<String, Long> timingMin = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_MAX)
     private Map<String, Long> timingMax = new TreeMap<>();
+    @JsonProperty(STATISTIC_TIMING_AVG)
+    private Map<String, Double> timingAvg = new TreeMap<>();
+    @JsonProperty(STATISTIC_DAY_HISTOGRAM)
     private long[] dayHistogram = new long[24];
+    @JsonProperty(STATISTIC_MONTH_HISTOGRAM)
     private long[] monthHistogram = new long[31];
-    private long timeStart = System.currentTimeMillis();
+    @JsonProperty(STATISTIC_REQUESTS)
     private long requests = 0;
+    @JsonProperty(STATISTIC_MINUTES)
     private long minutes = 1;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE)
     private long requestsPerMinute = 0;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_MIN)
     private long requestsPerMinuteMin = Long.MAX_VALUE;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_MAX)
     private long requestsPerMinuteMax = Long.MIN_VALUE;
+    @JsonProperty(STATISTIC_REQUESTS_PER_MINUTE_AVG)
+    private double requestsPerMinuteAvg = 0;
+
+    @JsonIgnore
+    private long timeStart = System.currentTimeMillis();
 
     /**
      * Adds a single request into all requests.
      */
-    synchronized public void addRequest() {
+    public synchronized void addRequest() {
         maybeRefresh();
 
         requestsPerMinute++;
         requests++;
+        requestsPerMinuteAvg = requests / (double) minutes;
 
         if (requestsPerMinute > requestsPerMinuteMax) {
             requestsPerMinuteMax = requestsPerMinute;
@@ -87,7 +109,7 @@ public class Statistics {
     /**
      * Refreshes the last timestamp and number of minutes since start if needed.
      */
-    synchronized protected void maybeRefresh() {
+    protected synchronized void maybeRefresh() {
         if (timeStart + 60 * 1000 <= System.currentTimeMillis()) {
             // several minutes have passed
             minutes += (System.currentTimeMillis() - timeStart) / (60 * 1000);
@@ -101,7 +123,8 @@ public class Statistics {
      *
      * @param category category
      */
-    synchronized public void addRequest(String category) {
+    public synchronized void addRequest(String category) {
+        maybeRefresh();
         Long val = requestCategories.get(category);
         if (val == null) {
             val = 0L;
@@ -115,7 +138,7 @@ public class Statistics {
      * @param category category
      * @return Long value
      */
-    synchronized public Long getRequest(String category) {
+    public synchronized Long getRequest(String category) {
         return requestCategories.get(category);
     }
 
@@ -125,7 +148,7 @@ public class Statistics {
      * @param category category
      * @param v time spent on processing this request
      */
-    synchronized public void addRequestTime(String category, long v) {
+    public synchronized void addRequestTime(String category, long v) {
         addRequest(category);
         Long val = timing.get(category);
         Long min = timingMin.get(category);
@@ -146,6 +169,10 @@ public class Statistics {
         timing.put(category, val);
         timingMin.put(category, min);
         timingMax.put(category, max);
+
+        // Recompute the average for given category.
+        timingAvg.put(category,
+                timing.get(category).doubleValue() / requestCategories.get(category));
     }
 
     public Map<String, Long> getRequestCategories() {
@@ -171,35 +198,34 @@ public class Statistics {
      * @return map of averages for each category
      */
     public Map<String, Double> getTimingAvg() {
-        Map<String, Double> timingAvg = new TreeMap<>();
-        for (Map.Entry<String, Long> entry : timing.entrySet()) {
-            timingAvg.put(entry.getKey(), entry.getValue().doubleValue()
-                    / requestCategories.get(entry.getKey()));
-        }
         return timingAvg;
     }
 
-    synchronized public void setRequestCategories(Map<String, Long> requestCategories) {
+    public synchronized void setRequestCategories(Map<String, Long> requestCategories) {
         this.requestCategories = requestCategories;
     }
 
-    synchronized public void setTiming(Map<String, Long> timing) {
+    public synchronized void setTiming(Map<String, Long> timing) {
         this.timing = timing;
     }
 
-    synchronized public void setTimingMin(Map<String, Long> timing_min) {
+    public synchronized void setTimingMin(Map<String, Long> timing_min) {
         this.timingMin = timing_min;
     }
 
-    synchronized public void setTimingMax(Map<String, Long> timing_max) {
+    public synchronized void setTimingMax(Map<String, Long> timing_max) {
         this.timingMax = timing_max;
+    }
+
+    public synchronized void setTimingAvg(Map<String, Double> timing_avg) {
+        this.timingAvg = timing_avg;
     }
 
     public long getTimeStart() {
         return timeStart;
     }
 
-    synchronized public void setTimeStart(long timeStart) {
+    public synchronized void setTimeStart(long timeStart) {
         this.timeStart = timeStart;
     }
 
@@ -207,25 +233,23 @@ public class Statistics {
         return requests;
     }
 
-    synchronized public void setRequests(long requests) {
+    public synchronized void setRequests(long requests) {
         this.requests = requests;
     }
 
     public long getMinutes() {
-        maybeRefresh();
         return minutes;
     }
 
-    synchronized public void setMinutes(long minutes) {
+    public synchronized void setMinutes(long minutes) {
         this.minutes = minutes;
     }
 
     public long getRequestsPerMinute() {
-        maybeRefresh();
         return requestsPerMinute;
     }
 
-    synchronized public void setRequestsPerMinute(long requestsPerMinute) {
+    public synchronized void setRequestsPerMinute(long requestsPerMinute) {
         this.requestsPerMinute = requestsPerMinute;
     }
 
@@ -236,7 +260,7 @@ public class Statistics {
         return requestsPerMinuteMin;
     }
 
-    synchronized public void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
+    public synchronized void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
         this.requestsPerMinuteMin = requestsPerMinuteMin;
     }
 
@@ -247,20 +271,23 @@ public class Statistics {
         return requestsPerMinuteMax;
     }
 
-    synchronized public void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
+    public synchronized void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
         this.requestsPerMinuteMax = requestsPerMinuteMax;
     }
 
     public double getRequestsPerMinuteAvg() {
-        maybeRefresh();
-        return requests / (double) minutes;
+        return this.requestsPerMinuteAvg;
+    }
+
+    public synchronized void setRequestsPerMinuteAvg(double value) {
+        this.requestsPerMinuteAvg = value;
     }
 
     public long[] getDayHistogram() {
         return dayHistogram;
     }
 
-    synchronized public void setDayHistogram(long[] dayHistogram) {
+    public synchronized void setDayHistogram(long[] dayHistogram) {
         this.dayHistogram = dayHistogram;
     }
 
@@ -268,121 +295,49 @@ public class Statistics {
         return monthHistogram;
     }
 
-    synchronized public void setMonthHistogram(long[] monthHistogram) {
+    public synchronized void setMonthHistogram(long[] monthHistogram) {
         this.monthHistogram = monthHistogram;
     }
 
     /**
-     * Convert this statistics object into JSONObject.
+     * Convert this {@code Statistics} object into JSON
      *
-     * @return the json object
+     * @return the JSON string
+     * @throws JsonProcessingException JSON processing exception
      */
-    public JSONObject toJson() {
+    public String toJson() throws JsonProcessingException {
         return toJson(this);
     }
 
     /**
-     * Convert JSONObject object into statistics.
+     * Convert JSON into {@code Statistics} object.
      *
-     * @param input object containing statistics
-     * @return the statistics object
+     * @param jsonString String with JSON
+     * @return the {@code Statistics} object
+     * @throws IOException I/O exception
      */
     @SuppressWarnings("unchecked")
-    public static Statistics from(JSONObject input) {
-        Statistics stats = new Statistics();
-        Object o;
-        if ((o = input.get(STATISTIC_REQUEST_CATEGORIES)) != null) {
-            stats.setRequestCategories((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING)) != null) {
-            stats.setTiming((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING_MIN)) != null) {
-            stats.setTimingMin((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_TIMING_MAX)) != null) {
-            stats.setTimingMax((Map<String, Long>) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS)) != null) {
-            stats.setRequests((long) o);
-        }
-        if ((o = input.get(STATISTIC_MINUTES)) != null) {
-            stats.setMinutes((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE)) != null) {
-            stats.setRequestsPerMinute((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE_MIN)) != null) {
-            stats.setRequestsPerMinuteMin((long) o);
-        }
-        if ((o = input.get(STATISTIC_REQUESTS_PER_MINUTE_MAX)) != null) {
-            stats.setRequestsPerMinuteMax((long) o);
-        }
-        if ((o = input.get(STATISTIC_DAY_HISTOGRAM)) != null) {
-            stats.setDayHistogram(convertJSONArrayToArray((JSONArray) o, stats.getDayHistogram()));
-        }
-        if ((o = input.get(STATISTIC_MONTH_HISTOGRAM)) != null) {
-            stats.setMonthHistogram(convertJSONArrayToArray((JSONArray) o, stats.getMonthHistogram()));
-        }
+    public static Statistics fromJson(String jsonString) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Statistics stats = mapper.readValue(jsonString, Statistics.class);
         stats.setTimeStart(System.currentTimeMillis());
+
         return stats;
     }
 
     /**
-     * Convert statistics object into JSONObject.
+     * Convert statistics object into JSON.
      *
      * @param stats the statistics object
-     * @return the json object or empty json object if there was no request
+     * @return String with JSON
+     * @throws JsonProcessingException JSON processing exception
      */
     @SuppressWarnings("unchecked")
-    public static JSONObject toJson(Statistics stats) {
-        JSONObject output = new JSONObject();
-        if (stats.getRequests() == 0) {
-            return output;
-        }
-        output.put(STATISTIC_REQUEST_CATEGORIES, new JSONObject(stats.getRequestCategories()));
-        output.put(STATISTIC_TIMING, new JSONObject(stats.getTiming()));
-        output.put(STATISTIC_TIMING_MIN, new JSONObject(stats.getTimingMin()));
-        output.put(STATISTIC_TIMING_MAX, new JSONObject(stats.getTimingMax()));
-        output.put(STATISTIC_TIMING_AVG, new JSONObject(stats.getTimingAvg()));
-        output.put(STATISTIC_MINUTES, stats.getMinutes());
-        output.put(STATISTIC_REQUESTS, stats.getRequests());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE, stats.getRequestsPerMinute());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_MIN, stats.getRequestsPerMinuteMin());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_MAX, stats.getRequestsPerMinuteMax());
-        output.put(STATISTIC_REQUESTS_PER_MINUTE_AVG, stats.getRequestsPerMinuteAvg());
-        output.put(STATISTIC_DAY_HISTOGRAM, convertArrayToJSONArray(stats.getDayHistogram()));
-        output.put(STATISTIC_MONTH_HISTOGRAM, convertArrayToJSONArray(stats.getMonthHistogram()));
-        return output;
-    }
+    public static String toJson(Statistics stats) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonStr = mapper.writeValueAsString(stats);
 
-    /**
-     * Converts an array into json array.
-     *
-     * @param array the input array
-     * @return the output json array
-     */
-    @SuppressWarnings("unchecked")
-    private static JSONArray convertArrayToJSONArray(long[] array) {
-        JSONArray ret = new JSONArray();
-        for (long o : array) {
-            ret.add(o);
-        }
-        return ret;
-    }
-
-    /**
-     * Converts an json array into an array.
-     *
-     * @param dest the input json array
-     * @param target the output array
-     * @return target
-     */
-    private static long[] convertJSONArrayToArray(JSONArray dest, long[] target) {
-        for (int i = 0; i < target.length && i < dest.size(); i++) {
-            target[i] = (long) dest.get(i);
-        }
-        return target;
+        return jsonStr;
     }
 
     @Override
@@ -400,6 +355,5 @@ public class Statistics {
                 + "\nrequestsPerMinuteAvg = " + getRequestsPerMinuteAvg()
                 + "\ndayHistogram = " + LongStream.of(getDayHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "))
                 + "\nmonthHistogram = " + LongStream.of(getMonthHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "));
-
     }
 }

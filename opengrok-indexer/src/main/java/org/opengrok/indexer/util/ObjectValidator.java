@@ -22,7 +22,7 @@ public interface ObjectValidator<T> {
      * @param t the object to check.
      * @return true if the object is valid
      */
-    public boolean isValid(T t);
+    boolean isValid(T t);
 
     /**
      * Performs any cleanup activities
@@ -34,5 +34,5 @@ public interface ObjectValidator<T> {
      * invalidate() method.
      * @param t the object to cleanup
      */
-    public void invalidate(T t);
+    void invalidate(T t);
 }

@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.perl;
@@ -28,48 +28,24 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.Resettable;
+import org.opengrok.indexer.util.RegexUtils;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
-import org.opengrok.indexer.analysis.JFlexJointLexer;
-import org.opengrok.indexer.util.RegexUtils;
 
 /**
- * Represents an API for object's using {@link PerlLexHelper}
+ * Represents an abstract base class for Perl lexers.
  */
-interface PerlLexer extends JFlexJointLexer {
-    void maybeIntraState();
-
-    /**
-     * Indicates that a premature end of quoting occurred. Everything up to the
-     * causal character has been written, and anything following will be
-     * indicated via {@link yypushback}.
-     */
-    void abortQuote() throws IOException;
-}
-
-/**
- * Represents a helper for Perl lexers to work around jflex's lack of lex
- * inheritance
- */
-class PerlLexHelper implements Resettable {
+@SuppressWarnings("Duplicates")
+abstract class PerlLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
     // Using equivalent of {Identifier} from PerlProductions.lexh
-    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
+    private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_]+");
-
-    private final PerlLexer lexer;
-
-    private final int QUOxLxN;
-    private final int QUOxN;
-    private final int QUOxL;
-    private final int QUO;
-    private final int HEREinxN;
-    private final int HERExN;
-    private final int HEREin;
-    private final int HERE;
-    private final int SCOMMENT;
-    private final int POD;
 
     private Queue<HereDocSettings> hereSettings;
 
@@ -122,31 +98,12 @@ class PerlLexHelper implements Resettable {
      */
     private Pattern collateralCapture;
 
-    public PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-        PerlLexer lexer,
-        int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
-        int pOD) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.QUOxLxN = qUOxLxN;
-        this.QUOxN = qUOxN;
-        this.QUOxL = qUOxL;
-        this.QUO = qUO;
-        this.HEREinxN = hEREinxN;
-        this.HERExN = hERExN;
-        this.HEREin = hEREin;
-        this.HERE = hERE;
-        this.SCOMMENT = sCOMMENT;
-        this.POD = pOD;
-    }
-
     /**
      * Resets the instance to an initial state.
      */
     @Override
     public void reset() {
+        super.reset();
         collateralCapture = null;
         endqchar = '\0';
         if (hereSettings != null) {
@@ -262,14 +219,14 @@ class PerlLexHelper implements Resettable {
         setState(ltpostop, nointerp);
 
         if (doWrite) {
-            lexer.offer(boundary);
+            offer(boundary);
             if (qopname.length() > 0) {
-                lexer.offerSymbol(qopname, boundary.length(), false);
+                offerSymbol(qopname, boundary.length(), false);
             } else {
-                lexer.skipSymbol();
+                skipSymbol();
             }
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offer(postop);
+            disjointSpan(HtmlConsts.STRING_CLASS);
+            offer(postop);
         }
     }
 
@@ -288,12 +245,12 @@ class PerlLexHelper implements Resettable {
         }
 
         if (nointerp) {
-            state = nolink ? QUOxLxN : QUOxN;
+            state = nolink ? QUOxLxN() : QUOxN();
         } else {
-            state = nolink ? QUOxL : QUO;
+            state = nolink ? QUOxL() : QUO();
         }
-        lexer.maybeIntraState();
-        lexer.yypush(state);
+        maybeIntraState();
+        yypush(state);
     }
 
     /**
@@ -340,10 +297,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offer(lede);
+        offer(lede);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -361,10 +318,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerSymbol(lede, 0, false);
+        offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -374,7 +331,7 @@ class PerlLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            lexer.offer(whsp);
+            offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
@@ -382,10 +339,10 @@ class PerlLexHelper implements Resettable {
                 off = i + 1;
             }
             while (numlf-- > 0) {
-                lexer.startNewLine();
+                startNewLine();
             }
             if (off < whsp.length()) {
-                lexer.offer(whsp.substring(off));
+                offer(whsp.substring(off));
             }
         }
     }
@@ -400,7 +357,7 @@ class PerlLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offer(capture);
+        offer(capture);
         if (hereSettings == null) {
             hereSettings = new LinkedList<>();
         }
@@ -457,9 +414,9 @@ class PerlLexHelper implements Resettable {
 
         int state;
         if (nointerp) {
-            state = indented ? HEREinxN : HERExN;
+            state = indented ? HEREinxN() : HERExN();
         } else {
-            state = indented ? HEREin : HERE;
+            state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
         hereSettings.add(settings);
@@ -473,8 +430,8 @@ class PerlLexHelper implements Resettable {
     public boolean maybeStartHere() throws IOException {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
-            lexer.yypush(settings.state);
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            yypush(settings.state);
+            disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -491,22 +448,22 @@ class PerlLexHelper implements Resettable {
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            lexer.disjointSpan(null);
+            disjointSpan(null);
             didZspan = true;
             hereSettings.remove();
         }
 
-        lexer.offer(capture);
+        offer(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
-            lexer.yybegin(settings.state);
+            yybegin(settings.state);
             if (didZspan) {
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                disjointSpan(HtmlConsts.STRING_CLASS);
             }
             return false;
         } else {
-            lexer.yypop();
+            yypop();
             return true;
         }
     }
@@ -516,19 +473,19 @@ class PerlLexHelper implements Resettable {
      * a sigil and ends in an identifier and where Perl allows whitespace after
      * the sigil -- and write the parts to output.
      * <p>
-     * Seeing the {@link endqchar} in the capture will affect an active
+     * Seeing the {@code endqchar} in the capture will affect an active
      * quote-like operator.
      */
     public void sigilID(String capture) throws IOException {
         String sigil = capture.substring(0, 1);
 
         if (capture.charAt(0) == endqchar) {
-            lexer.skipSymbol();
-            lexer.offer(sigil);
+            skipSymbol();
+            offer(sigil);
             if (maybeEndQuote(sigil)) {
-                lexer.abortQuote();
+                abortQuote();
             }
-            lexer.yypushback(capture.length() - 1);
+            yypushback(capture.length() - 1);
             return;
         }
 
@@ -538,9 +495,9 @@ class PerlLexHelper implements Resettable {
 
         int ohnooo;
         if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            lexer.offer(sigil);
-            lexer.offer(s0);
-            lexer.offerSymbol(id, sigil.length() + s0.length(), true);
+            offer(sigil);
+            offer(s0);
+            offerSymbol(id, sigil.length() + s0.length(), true);
         } else {
             // If the identifier contains the end quoting character, then it
             // may or may not parse in Perl. Treat everything before the first
@@ -556,18 +513,18 @@ class PerlLexHelper implements Resettable {
             String w0 = id.substring(0, ohnooo);
             String p0 = id.substring(ohnooo, ohnooo + 1);
             String w1 = id.substring(ohnooo + 1);
-            lexer.offer(sigil);
-            lexer.offer(s0);
+            offer(sigil);
+            offer(s0);
             if (w0.length() > 0) {
-                lexer.offerSymbol(w0, sigil.length() + s0.length(), true);
+                offerSymbol(w0, sigil.length() + s0.length(), true);
             } else {
-                lexer.skipSymbol();
+                skipSymbol();
             }
-            lexer.offer(p0);
+            offer(p0);
             if (maybeEndQuote(p0)) {
-                lexer.abortQuote();
+                abortQuote();
             }
-            lexer.yypushback(w1.length());
+            yypushback(w1.length());
         }
     }
 
@@ -602,32 +559,32 @@ class PerlLexHelper implements Resettable {
         String id = ltinterior1.substring(0, ltinterior1.length() -
             s2.length());
 
-        lexer.offer(sigil);
-        lexer.offer(s0);
-        lexer.offer(lpunc);
-        lexer.offer(s1);
-        lexer.offerSymbol(id, sigil.length() + s0.length() +
-            lpunc.length() + s1.length(), true);
-        lexer.offer(s2);
-        lexer.offer(rpunc);
+        offer(sigil);
+        offer(s0);
+        offer(lpunc);
+        offer(s1);
+        offerSymbol(id, sigil.length() + s0.length() +
+                lpunc.length() + s1.length(), true);
+        offer(s2);
+        offer(rpunc);
     }
 
     /**
-     * Write a special identifier as a keyword -- unless {@link endqchar} is in
+     * Write a special identifier as a keyword -- unless {@code endqchar} is in
      * the {@code capture}, which will affect an active quote-like operator
      * instead.
      */
     public void specialID(String capture) throws IOException {
         if (capture.indexOf(endqchar) == -1) {
-            lexer.offerKeyword(capture);
+            offerKeyword(capture);
         } else {
             for (int i = 0; i < capture.length(); ++i) {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
-                lexer.offer(w);
+                offer(w);
                 if (maybeEndQuote(w)) {
-                    lexer.abortQuote();
-                    lexer.yypushback(capture.length() - i - 1);
+                    abortQuote();
+                    yypushback(capture.length() - i - 1);
                     break;
                 }
             }
@@ -659,26 +616,92 @@ class PerlLexHelper implements Resettable {
     }
 
     /**
-     * Calls {@link PerlLexer#phLOC()} if the yystate is not SCOMMENT or POD.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT or POD.
      */
     public void chkLOC() {
-        int yystate = lexer.yystate();
-        if (yystate != SCOMMENT && yystate != POD) {
-            lexer.phLOC();
+        int yystate = yystate();
+        if (yystate != SCOMMENT() && yystate != POD()) {
+            phLOC();
         }
     }
 
-    class HereDocSettings {
+    abstract void maybeIntraState();
+
+    /**
+     * Indicates that a premature end of quoting occurred. Everything up to the
+     * causal character has been written, and anything following will be
+     * indicated via {@link #yypushback}.
+     * @throws IOException I/O exception
+     */
+    abstract void abortQuote() throws IOException;
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxLxN.
+     */
+    abstract int QUOxLxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxN.
+     */
+    abstract int QUOxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxL.
+     */
+    abstract int QUOxL();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUO.
+     */
+    abstract int QUO();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREinxN.
+     */
+    abstract int HEREinxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERExN.
+     */
+    abstract int HERExN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREin.
+     */
+    abstract int HEREin();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERE.
+     */
+    abstract int HERE();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent POD.
+     */
+    abstract int POD();
+
+    private static class HereDocSettings {
         private final String terminator;
         private final int state;
 
-        public HereDocSettings(String terminator, int state) {
+        HereDocSettings(String terminator, int state) {
             this.terminator = terminator;
             this.state = state;
         }
-
-        public String getTerminator() { return terminator; }
-
-        public int getState() { return state; }
     }
 }

@@ -77,14 +77,14 @@ public class OptionParser {
 
     // Used to hold data type converters
     @SuppressWarnings("rawtypes")
-    static private HashMap<Class,DataParser> converters = new HashMap<>();
+    private static HashMap<Class,DataParser> converters = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     static class DataParser {
         Class dataType;
         Function<String,Object> converter;
         
-        public DataParser(Class cls, Function<String,Object> converter) {
+        DataParser(Class cls, Function<String,Object> converter) {
             this.dataType = cls;
             this.converter = converter;
         }
@@ -100,26 +100,18 @@ public class OptionParser {
     }
     
     // Option object referenced by its name(s)
-    final private HashMap<String,Option> options;
+    private final HashMap<String, Option> options;
     
     // List of options in order of declaration
-    final private List<Option> optionList;
+    private final List<Option> optionList;
     
     // Keeps track of separator elements placed in option summary
-    final private List<Object> usageSummary;
+    private final List<Object> usageSummary;
     
     private boolean scanning = false;
     
     private String prologue;  // text emitted before option summary
     private String epilogue;  // text emitted after options summary
-    
-    class DuplicateOptionName extends Exception {
-        private static final long serialVersionUID = -2807551057713512315L;
-
-        public DuplicateOptionName(String message) {
-            super(message);
-        }
-    }
     
     public class Option {
         
@@ -234,8 +226,8 @@ public class OptionParser {
     }
     
     // Allowable text values for Boolean.class, with case insensitivity.
-    final private static Pattern VERITY = Pattern.compile("(?i)(true|yes|on)");
-    final private static Pattern FALSEHOOD = Pattern.compile("(?i)(false|no|off)");
+    private static final Pattern VERITY = Pattern.compile("(?i)(true|yes|on)");
+    private static final Pattern FALSEHOOD = Pattern.compile("(?i)(false|no|off)");
     
     private static Boolean parseVerity(String text) {
         Matcher m = VERITY.matcher(text);
@@ -275,7 +267,8 @@ public class OptionParser {
      * Instantiate a new options parser and construct option actionable components.
      * 
      * As an example:
-     * 
+     *
+     * <code>
      *   OptionParser opts = OptionParser.Do(parser -&gt; {
      *
      *      parser.prologue = 
@@ -287,8 +280,9 @@ public class OptionParser {
      * 
      *      parser.epilogue = "That's all folks!";
      *   }
-     * 
-     * @param parser
+     * </code>
+     *
+     * @param parser consumer
      * @return OptionParser object
      */
     public static OptionParser Do(Consumer<OptionParser> parser) {
@@ -305,7 +299,7 @@ public class OptionParser {
      * That is, it won't raise any errors for unrecognizable input as
      * the normal option parser would.
      * 
-     * @param parser
+     * @param parser consumer
      * @return OptionParser object
      */
     public static OptionParser scan(Consumer<OptionParser> parser) {
@@ -321,8 +315,7 @@ public class OptionParser {
      * This method is used to build the option object which holds
      * its recognition and validation criteria, description and 
      * ultimately its data handler. 
-     * 
-     * @param args
+     *
      * The 'on' parameters consist of formatted strings which provide the 
      * option names, whether or not the option takes on a value and,
      * if so, the option value type (mandatory/optional). The data type
@@ -371,9 +364,11 @@ public class OptionParser {
      * second form indicates that the value is optional. For example
      * the following code says there is an option known by the aliases
      * -a, -b, and -c and that it needs a required value shown as N.
-     * 
+     *
+     * <code>
      *     opt.on( "-a", "-b", "-c", "=N" )
-     * 
+     * </code>
+     *
      * When an option takes on a value, 'on' may accept a regular expression
      * indicating what kind of values are acceptable. The regular expression
      * is indicated by surrounding the expression with '/' character. For
@@ -387,7 +382,8 @@ public class OptionParser {
      * For programmers:  If a switch starts with 3 dashes (---) it will
      * be hidden from the usage summary and manual generation. It is meant
      * for unit testing access.
-     * 
+     *
+     * @param args arguments
      * @return Option
      */
     public Option on(Object ... args) {
@@ -526,7 +522,7 @@ public class OptionParser {
      * 
      * @param args argument vector
      * @return non-option parameters, or all arguments after "--" encountered.
-     * @throws ParseException 
+     * @throws ParseException parse exception
      */
 
     public String[] parse(String[] args) throws ParseException {
@@ -700,6 +696,7 @@ public class OptionParser {
      * @param text to be inserted into option summary.
      * 
      * Example usage:
+     * <code>
      *  OptionParser opts = OptionParser.Do( parser -&gt; {
      *   
      *    parser.prologue = String.format("Usage: %s [options] bubba smith", program);
@@ -715,6 +712,7 @@ public class OptionParser {
      * 
      *    parser.separator("  ----------------------------------------------");
      *    parser.epilogue = "  That's all Folks!";
+     * </code>
      */
     public void separator(String text) {
         usageSummary.add(text);
@@ -723,7 +721,7 @@ public class OptionParser {
     /**
      * Obtain option summary
      * @param indent a string to be used as the option summary initial indent.
-     * @return 
+     * @return usage string
      */
     public String getUsage(String indent) {
         
@@ -763,7 +761,7 @@ public class OptionParser {
 
     /**
      * Print out option summary on provided output stream
-     * @param out 
+     * @param out print stream
      */
     public void help(PrintStream out) {
         out.println(getUsage());
@@ -781,9 +779,9 @@ public class OptionParser {
     
     /**
      * Generate XML manual page
-     * This requires the template file opengrok.xml as input.
+     * This requires the template file <code>opengrok.xml</code> as input.
      * @return String containing generated XML manual page
-     * @throws IOException 
+     * @throws IOException I/O exception
      */
     public String getManPage() throws IOException {
         StringWriter wrt = new StringWriter();

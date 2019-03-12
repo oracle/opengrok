@@ -1,0 +1,180 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ */
+
+IdentifierAnyChar = [A-Za-z_$0-9]
+CompilerDirective = \` [A-Za-z_]+
+EscapedIdentifier = \\[^\s]+
+SimpleIdentifier = [A-Za-z_] {IdentifierAnyChar}*
+SystemTaskFunctionIdentifier = "$" {IdentifierAnyChar}+
+
+Number = {Sign}? ({Integer} | {Real})
+Integer = ({Decimal_integer} | {Hexadecimal} | {Binary} | {Octal})
+Decimal_integer = ({UnsignedNumber} |
+        {NzUnsignedNumber}? {DecimalBase} ({UnsignedNumber} | [XxZz\?]) _*)
+Hexadecimal = {Size}? {HexBase} {HEXDIG} ("_" | {HEXDIG})*
+Binary = {Size}? {BinaryBase} {BINDIG} ("_" | {BINDIG})*
+Octal = {Size}? {OctalBase} {OCTDIG} ("_" | {OCTDIG})*
+Real = ({FixedPointNumber} |
+        {UnsignedNumber} ("." {UnsignedNumber})? [Ee] {Sign}? {UnsignedNumber})
+UnbasedUnsized = \' [01XxZz]
+Time = ({UnsignedNumber} | {FixedPointNumber})
+        ("s" | "fs" | "ms" | "ns" | "ps" | "us")
+UnsignedNumber = {DIGIT} ("_" | {DIGIT})*
+NzUnsignedNumber = [1-9] ("_" | {DIGIT})*
+FixedPointNumber = {UnsignedNumber} "." {UnsignedNumber}
+BasePrefix = \' [Ss]?
+DecimalBase = {BasePrefix} [Dd]
+HexBase =     {BasePrefix} [Hh]
+BinaryBase =  {BasePrefix} [Bb]
+OctalBase =   {BasePrefix} [Oo]
+DIGIT = [0-9]
+HEXDIG = [0-9a-fA-FXxZz\?]
+BINDIG = [01XxZz\?]
+OCTDIG = [0-7XxZz\?]
+Size = {NzUnsignedNumber}
+Sign = [\+\-]
+
+Delay = "#" ({UnsignedNumber} | {Real} | {Time} | "1step")
+
+/*
+ * COMMENT : block comment
+ * SCOMMENT : single-line comment
+ * STRING : string literal
+ */
+%state COMMENT SCOMMENT STRING
+
+%%
+<YYINITIAL> {
+    {SimpleIdentifier} | {SystemTaskFunctionIdentifier} |
+            {CompilerDirective}    {
+        chkLOC();
+        if (offerSymbol(yytext(), 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {EscapedIdentifier}    {
+        chkLOC();
+        String id = yytext().substring(1);
+        offer("\\");
+        if (offerSymbol(id, 1, true) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Number} | {UnbasedUnsized} | {Time} | {Delay}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    "/*"    {
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "//"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+}
+
+<COMMENT> {
+    /*
+     * Nesting of block comments is not recognized by SystemVerilog.
+     */
+
+    "*/"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    }
+}
+
+<SCOMMENT> {
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<STRING> {
+    \"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    \\[\"\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<YYINITIAL, COMMENT, SCOMMENT, STRING> {
+    {WhspChar}*{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
+    }
+
+    \s    {
+        offer(yytext());
+    }
+
+    [^]    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+<COMMENT, SCOMMENT, STRING> {
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar);
+        }
+    }
+}

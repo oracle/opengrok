@@ -106,7 +106,7 @@ public class HistoryContext {
      * @param context   the servlet context path of the application (the path
      *  prefix for URLs)
      * @return {@code true} if at least one line has been written out.
-     * @throws HistoryException
+     * @throws HistoryException history exception
      */
     public boolean getContext(File src, String path, Writer out, String context)
         throws HistoryException
@@ -208,6 +208,7 @@ public class HistoryContext {
      * @param nrev old revision
      * @param rev current revision
      * line? If {@code true}, replace newline with space.
+     * @throws IOException IO exception
      */
     protected static void writeMatch(Appendable out, String line,
                             int start, int end, boolean flatten, String path,

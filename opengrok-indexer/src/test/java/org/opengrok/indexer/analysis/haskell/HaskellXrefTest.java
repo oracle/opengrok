@@ -35,9 +35,10 @@ import java.io.Writer;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
@@ -55,7 +56,7 @@ public class HaskellXrefTest {
         String s = "putStrLn \"Hello, world!\"";
         Writer w = new StringWriter();
         HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
         Xrefer xref = analyzer.writeXref(xargs);
         assertLinesEqual("Haskell basicTest",
@@ -75,7 +76,7 @@ public class HaskellXrefTest {
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs args = new WriteXrefArgs(
             new InputStreamReader(is, "UTF-8"), w);
         args.setDefs(defs);

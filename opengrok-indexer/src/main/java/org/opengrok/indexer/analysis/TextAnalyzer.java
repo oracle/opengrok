@@ -35,7 +35,7 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      * Creates a new instance of {@link TextAnalyzer}.
      * @param factory defined instance for the analyzer
      */
-    protected TextAnalyzer(FileAnalyzerFactory factory) {
+    protected TextAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -44,7 +44,7 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      * @param factory defined instance for the analyzer
      * @param symbolTokenizer defined instance for the analyzer
      */
-    protected TextAnalyzer(FileAnalyzerFactory factory,
+    protected TextAnalyzer(AnalyzerFactory factory,
         JFlexTokenizer symbolTokenizer) {
         super(factory, symbolTokenizer);
     }

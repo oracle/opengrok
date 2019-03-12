@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.query.customized;
 
@@ -35,6 +35,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.junit.Test;
 import org.opengrok.suggest.query.PhraseScorer;
@@ -47,7 +48,6 @@ import java.util.Set;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 
-@SuppressWarnings("deprecation") // for RAMDirectory
 public class CustomSloppyPhraseScorerTest {
 
     @SuppressWarnings("unchecked") // for contains()
@@ -57,7 +57,7 @@ public class CustomSloppyPhraseScorerTest {
             final String[] terms,
             final Integer[] expectedPositions
     ) throws IOException {
-        Directory dir = new org.apache.lucene.store.RAMDirectory();
+        Directory dir = new ByteBuffersDirectory();
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             Document doc = new Document();

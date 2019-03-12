@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -45,12 +45,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
@@ -82,12 +86,11 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
@@ -100,10 +103,6 @@ import org.opengrok.indexer.util.ObjectPool;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -147,7 +146,6 @@ public class IndexDatabase {
     private List<String> directories;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
-    private IndexerParallelizer parallelizer;
 
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
@@ -186,23 +184,20 @@ public class IndexDatabase {
      * Update the index database for all of the projects. Print progress to
      * standard out.
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public static void updateAll(IndexerParallelizer parallelizer)
-            throws IOException {
-        updateAll(parallelizer, null);
+    public static void updateAll() throws IOException {
+        updateAll(null);
     }
 
     /**
      * Update the index database for all of the projects
      *
-     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static void updateAll(IndexerParallelizer parallelizer,
-        IndexChangedListener listener) throws IOException {
+    static CountDownLatch updateAll(IndexChangedListener listener)
+            throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -214,6 +209,9 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer();
+        CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (listener != null) {
@@ -224,26 +222,31 @@ public class IndexDatabase {
                 @Override
                 public void run() {
                     try {
-                        db.update(parallelizer);
+                        db.update();
                     } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE, "Problem updating lucene index database: ", e);
+                        LOGGER.log(Level.SEVERE,
+                                String.format("Problem updating index database in directory %s: ",
+                                        db.indexDirectory.getDirectory()), e);
+                    } finally {
+                        latch.countDown();
                     }
                 }
             });
         }
+        return latch;
     }
 
     /**
      * Update the index database for a number of sub-directories
      *
-     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @param paths list of paths to be indexed
      * @throws IOException if an error occurs
      */
-    public static void update(IndexerParallelizer parallelizer,
-        IndexChangedListener listener, List<String> paths) throws IOException {
+    public static void update(IndexChangedListener listener, List<String> paths)
+            throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         List<IndexDatabase> dbs = new ArrayList<>();
 
         for (String path : paths) {
@@ -284,7 +287,7 @@ public class IndexDatabase {
                     @Override
                     public void run() {
                         try {
-                            db.update(parallelizer);
+                            db.update();
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                         }
@@ -396,11 +399,9 @@ public class IndexDatabase {
     /**
      * Update the content of this index database
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public void update(IndexerParallelizer parallelizer)
-            throws IOException {
+    public void update() throws IOException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -409,7 +410,6 @@ public class IndexDatabase {
             interrupted = false;
         }
 
-        this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         reader = null;
@@ -572,13 +572,12 @@ public class IndexDatabase {
     /**
      * Optimize all index databases
      *
-     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    static void optimizeAll(IndexerParallelizer parallelizer)
-            throws IOException {
+    static CountDownLatch optimizeAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         if (env.hasProjects()) {
             for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
@@ -587,6 +586,7 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
+        CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
@@ -594,19 +594,23 @@ public class IndexDatabase {
                     @Override
                     public void run() {
                         try {
-                            db.update(parallelizer);
+                            db.update();
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE,
                                 "Problem updating lucene index database: ", e);
+                        } finally {
+                            latch.countDown();
                         }
                     }
                 });
             }
         }
+        return latch;
     }
 
     /**
      * Optimize the index database
+     * @throws IOException I/O exception
      */
     public void optimize() throws IOException {
         synchronized (lock) {
@@ -744,7 +748,7 @@ public class IndexDatabase {
      */
     private void addFile(File file, String path, Ctags ctags)
             throws IOException, InterruptedException {
-        FileAnalyzer fa = getAnalyzerFor(file, path);
+        AbstractAnalyzer fa = getAnalyzerFor(file, path);
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -798,9 +802,9 @@ public class IndexDatabase {
         }
     }
 
-    private FileAnalyzer getAnalyzerFor(File file, String path)
+    private AbstractAnalyzer getAnalyzerFor(File file, String path)
             throws IOException {
-        FileAnalyzer fa;
+        AbstractAnalyzer fa;
         try (InputStream in = new BufferedInputStream(
                 new FileInputStream(file))) {
             return AnalyzerGuru.getAnalyzer(in, path);
@@ -1172,6 +1176,8 @@ public class IndexDatabase {
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
         AtomicInteger alreadyClosedCounter = new AtomicInteger();
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
+                getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
@@ -1311,10 +1317,9 @@ public class IndexDatabase {
     }
 
     /**
-     * List all files in some of the index databases.
+     * Get all files in some of the index databases.
      *
-     * @param subFiles Subdirectories for the various projects to list the files
-     * for (or null or an empty list to dump all projects)
+     * @param subFiles Subdirectories of various projects or null or an empty list to get everything
      * @throws IOException if an error occurs
      * @return set of files in the index databases specified by the subFiles parameter
      */
@@ -1368,7 +1373,13 @@ public class IndexDatabase {
                 iter = terms.iterator(); // init uid iterator
             }
             while (iter != null && iter.term() != null) {
-                files.add(Util.uid2url(iter.term().utf8ToString()));
+                String value = iter.term().utf8ToString();
+                if (value.isEmpty()) {
+                    iter.next();
+                    continue;
+                }
+
+                files.add(Util.uid2url(value));
                 BytesRef next = iter.next();
                 if (next == null) {
                     iter = null;
@@ -1587,16 +1598,16 @@ public class IndexDatabase {
         return hash;
     }
 
-    private boolean isXrefWriter(FileAnalyzer fa) {
-        Genre g = fa.getFactory().getGenre();
-        return (g == Genre.PLAIN || g == Genre.XREFABLE);
+    private boolean isXrefWriter(AbstractAnalyzer fa) {
+        AbstractAnalyzer.Genre g = fa.getFactory().getGenre();
+        return (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.XREFABLE);
     }
 
     /**
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer newXrefWriter(FileAnalyzer fa, String path)
+    private Writer newXrefWriter(AbstractAnalyzer fa, String path)
             throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isGenerateHtml() && isXrefWriter(fa)) {
@@ -1710,7 +1721,7 @@ public class IndexDatabase {
                 break;
             }
 
-            FileAnalyzer fa = null;
+            AbstractAnalyzer fa = null;
             String fileTypeName;
             if (actGuruVersion.equals(reqGuruVersion)) {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
@@ -1720,7 +1731,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                FileAnalyzerFactory fac =
+                AnalyzerFactory fac =
                         AnalyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();
@@ -1799,8 +1810,9 @@ public class IndexDatabase {
 
     private boolean xrefExistsFor(String path) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (!whatXrefFile(path, env.isCompressXref()).exists()) {
-            LOGGER.log(Level.FINEST, "Missing {0}", path);
+        File xrefFile = whatXrefFile(path, env.isCompressXref());
+        if (!xrefFile.exists()) {
+            LOGGER.log(Level.FINEST, "Missing {0}", xrefFile);
             return false;
         }
 
@@ -1819,7 +1831,7 @@ public class IndexDatabase {
         final String path;
         Exception exception;
 
-        public IndexFileWork(File file, String path) {
+        IndexFileWork(File file, String path) {
             this.file = file;
             this.path = path;
         }

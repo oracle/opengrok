@@ -24,13 +24,13 @@
 package org.opengrok.indexer.analysis.sql;
 
 import java.io.Reader;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
 
 public class SQLAnalyzer extends PlainAnalyzer {
 
-    public SQLAnalyzer(FileAnalyzerFactory factory) {
+    public SQLAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -38,11 +38,11 @@ public class SQLAnalyzer extends PlainAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20171218_00
+     * @return 20180208_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20171218_00; // Edit comment above too!
+        return 20180208_00; // Edit comment above too!
     }
 
     /**

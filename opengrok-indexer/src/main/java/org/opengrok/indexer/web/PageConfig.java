@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -58,9 +58,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -129,8 +129,8 @@ public final class PageConfig {
     private Boolean annotate;
     private Annotation annotation;
     private Boolean hasHistory;
-    private static final EnumSet<Genre> txtGenres
-            = EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
+    private static final EnumSet<AbstractAnalyzer.Genre> txtGenres
+            = EnumSet.of(AbstractAnalyzer.Genre.DATA, AbstractAnalyzer.Genre.PLAIN, AbstractAnalyzer.Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private List<String> dirFileList;
@@ -277,7 +277,7 @@ public final class PageConfig {
                     }
                 }
 
-                if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
+                if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
                     return data;
                 }
 
@@ -597,7 +597,7 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
+            queryBuilder = new QueryBuilder().setFreetext(req.getParameter(QueryBuilder.FULL))
                     .setDefs(req.getParameter(QueryBuilder.DEFS))
                     .setRefs(req.getParameter(QueryBuilder.REFS))
                     .setPath(req.getParameter(QueryBuilder.PATH))
@@ -837,7 +837,7 @@ public final class PageConfig {
         if (value == null || value.length() == 0) {
             return;
         }
-        String p[] = COMMA_PATTERN.split(value);
+        String[] p = COMMA_PATTERN.split(value);
         for (String p1 : p) {
             if (p1.length() != 0) {
                 result.add(p1);
@@ -878,7 +878,7 @@ public final class PageConfig {
      * @return a possible empty list.
      */
     private List<String> getParamVals(String paramName) {
-        String vals[] = req.getParameterValues(paramName);
+        String[] vals = req.getParameterValues(paramName);
         List<String> res = new ArrayList<>();
         if (vals != null) {
             for (int i = vals.length - 1; i >= 0; i--) {
@@ -911,17 +911,13 @@ public final class PageConfig {
             return projectNames;
         }
 
-        /**
-         * Use a project determined directly from the URL
-         */
+        // Use a project determined directly from the URL
         if (getProject() != null && getProject().isIndexed()) {
             projectNames.add(getProject().getName());
             return projectNames;
         }
 
-        /**
-         * Use a project if the application has only single project.
-         */
+        // Use a project if there is just a single project.
         if (projects.size() == 1) {
             Project p = projects.get(0);
             if (p.isIndexed() && authFramework.isAllowed(req, p)) {
@@ -930,9 +926,7 @@ public final class PageConfig {
             return projectNames;
         }
 
-        /**
-         * Add all projects which match the project parameter name values
-         */
+        // Add all projects which match the project parameter name values/
         List<String> names = getParamVals(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
@@ -941,9 +935,7 @@ public final class PageConfig {
             }
         }
 
-        /**
-         * Add all projects which are part of a group that matches the group parameter name
-         */
+        // Add all projects which are part of a group that matches the group parameter name.
         names = getParamVals(groupParamName);
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
@@ -956,6 +948,7 @@ public final class PageConfig {
             }
         }
 
+        // Add projects based on cookie.
         if (projectNames.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
@@ -966,6 +959,7 @@ public final class PageConfig {
             }
         }
 
+        // Add default projects.
         if (projectNames.isEmpty()) {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
@@ -1572,6 +1566,7 @@ public final class PageConfig {
     /**
      * Get basename of the path or "/" if the path is empty.
      * This is used for setting title of various pages.
+     * @param path path
      * @return short version of the path
      */
     public String getShortPath(String path) {
@@ -1599,10 +1594,10 @@ public final class PageConfig {
      * @return string used for setting page title of search results page
      */
     public String getSearchTitle() {
-        String title = new String();
+        String title = "";
 
-        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
-            title += req.getParameter("q") + " (full)";
+        if (req.getParameter(QueryBuilder.FULL) != null && !req.getParameter(QueryBuilder.FULL).isEmpty()) {
+            title += req.getParameter(QueryBuilder.FULL) + " (full)";
         }
         if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
             title = addTitleDelimiter(title);
@@ -1626,7 +1621,7 @@ public final class PageConfig {
                 title += " ";
             }
             title += "in projects: ";
-            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            String[] projects = req.getParameterValues(QueryBuilder.PROJECT);
             title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
         }
 
@@ -1697,15 +1692,17 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
+     * </p>
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
      * <li>last timestamp for index</li>
      * <li>OpenGrok current deployed version</li>
      * </ul>
-     * <p>
+     *
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
+     * </p>
      *
      * @param request the http request containing the headers
      * @param response the http response for setting the headers

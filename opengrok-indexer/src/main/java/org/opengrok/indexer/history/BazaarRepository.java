@@ -18,16 +18,13 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -35,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -96,31 +94,19 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
-
         Process process = null;
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "cat", "-r", rev, filename};
+            String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            InputStream in = process.getInputStream();
-            int len;
-
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    out.write(buffer, 0, len);
-                }
-            }
-
-            ret = new ByteArrayInputStream(out.toByteArray());
+            copyBytes(sink, process.getInputStream());
+            return true;
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history: " + exp.getClass().toString(), exp);
@@ -136,7 +122,7 @@ public class BazaarRepository extends Repository {
             }
         }
 
-        return ret;
+        return false;
     }
 
     /**

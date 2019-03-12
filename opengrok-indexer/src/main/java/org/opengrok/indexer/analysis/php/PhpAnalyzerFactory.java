@@ -24,8 +24,7 @@
 
 package org.opengrok.indexer.analysis.php;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class PhpAnalyzerFactory extends FileAnalyzerFactory {
@@ -47,11 +46,11 @@ public class PhpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PhpAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new PhpAnalyzer(this);
     }
 }

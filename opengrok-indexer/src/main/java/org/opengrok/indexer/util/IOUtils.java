@@ -286,6 +286,8 @@ public final class IOUtils {
 
     /**
      * Get the contents of a file or empty string if the file cannot be read.
+     * @param file file object
+     * @return string with the file contents
      */
     public static String getFileContent(File file) {
         if (file == null || !file.canRead()) {

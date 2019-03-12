@@ -29,7 +29,7 @@ final class PhraseQueue extends PriorityQueue<PhrasePositions> {
     }
 
     @Override
-    protected final boolean lessThan(PhrasePositions pp1, PhrasePositions pp2) {
+    protected boolean lessThan(PhrasePositions pp1, PhrasePositions pp2) {
         if (pp1.position == pp2.position) {
             // same doc and pp.position, so decide by actual term positions.
             // rely on: pp.position == tp.position - offset.

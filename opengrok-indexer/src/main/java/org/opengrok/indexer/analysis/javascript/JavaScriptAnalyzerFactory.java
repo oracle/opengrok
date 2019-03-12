@@ -24,8 +24,7 @@
 
 package org.opengrok.indexer.analysis.javascript;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
@@ -38,11 +37,11 @@ public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public JavaScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new JavaScriptAnalyzer(this);
     }
 }

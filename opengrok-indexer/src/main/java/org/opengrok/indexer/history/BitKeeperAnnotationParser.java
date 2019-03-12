@@ -73,7 +73,7 @@ public class BitKeeperAnnotationParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         final BufferedReader in = new BufferedReader(new InputStreamReader(input));
         for (String line = in.readLine(); line != null; line = in.readLine()) {
-            final String fields[] = line.split("\t");
+            final String[] fields = line.split("\t");
             if (fields.length >= 2) {
                 final String author = fields[0];
                 final String rev = fields[1];

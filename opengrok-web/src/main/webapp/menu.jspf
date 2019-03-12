@@ -18,15 +18,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
+--%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
-<%@page import="java.util.LinkedList"%>
 <%@page import="org.opengrok.indexer.configuration.Group"%>
 <%@page import="org.opengrok.indexer.web.ProjectHelper"%>
 <%@page import="org.opengrok.indexer.web.SearchHelper"%>
@@ -34,22 +32,20 @@ Portions Copyright 2011 Jens Elkner.
 <%@page import="
 java.util.SortedSet,
 java.util.TreeMap,
-java.util.Map.Entry,
-java.util.List,
-java.util.HashMap,
-java.util.ArrayList,
 
 org.opengrok.indexer.configuration.Project,
 org.opengrok.indexer.search.QueryBuilder,
 org.opengrok.indexer.web.PageConfig,
-org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.messages.MessagesUtils,
 org.opengrok.indexer.web.Util"
-%><%
+%>
+<%@ page import="org.opengrok.indexer.web.messages.Message" %>
+<%
 /* ---------------------- menu.jspf start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
     ProjectHelper ph = ProjectHelper.getInstance(cfg);
-    JSONArray messages;
+    String messages;
     Set<Project> projects = ph.getAllProjects();
     if (projects == null) {
         projects = new TreeSet<>();
@@ -90,7 +86,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
-        SortedSet<String> pRequested = cfg.getRequestedProjects();
+        SortedSet<String> pRequested = new TreeSet<>(cfg.getRequestedProjects());
         for (Group group : ph.getGroups()) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if (groupProjects.size() > 0) {
@@ -106,16 +102,18 @@ document.domReady.push(function() { domReadyMenu(); });
                 %><option value="<%= p.getName() %>"<%
                     if (pRequested.contains(p.getName())) {
                         %> selected="selected"<%
+                        pRequested.remove(p.getName());
                     }
-                    if (!(messages = Util.messagesToJson(p)).isEmpty()) {
-                    %> data-messages='<%= messages %>' <%
-                        }
+                    if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
+                        %> data-messages='<%= messages %>' <%
+                    }
                     %>><%= Util.formQuoteEscape(p.getName()) %></option><%
                 }
                 %></optgroup><%
             }
         }
-  
+
+        // Handle projects not listed in any group.
         if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
             %><optgroup label="Other"><%
         }
@@ -127,8 +125,9 @@ document.domReady.push(function() { domReadyMenu(); });
         %><option value="<%= p.getName() %>"<%
             if (pRequested.contains(p.getName())) {
                 %> selected="selected"<%
+                pRequested.remove(p.getName());
             }
-            if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+            if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
                 %> data-messages='<%= messages %>' <%
             }
             %>><%= Util.formQuoteEscape(p.getName()) %></option><%
@@ -160,8 +159,8 @@ document.domReady.push(function() { domReadyMenu(); });
     %>
     <tbody>
     <tr>
-        <td><label for="q" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
+        <td><label for="full" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td colspan="2"><input tabindex="1" class="q" name="full" id="full" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>

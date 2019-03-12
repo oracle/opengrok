@@ -19,13 +19,12 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -231,8 +231,8 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
 
@@ -242,7 +242,7 @@ public class SubversionRepository extends Repository {
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get canonical path: {0}", exp.getClass().toString());
-            return null;
+            return false;
         }
         String filename = filepath.substring(getDirectoryName().length() + 1);
 
@@ -259,10 +259,16 @@ public class SubversionRepository extends Repository {
         Executor executor = new Executor(cmd, directory,
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec() == 0) {
-            ret = executor.getOutputStream();
+            try {
+                copyBytes(sink, executor.getOutputStream());
+                return true;
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to get content for {0}",
+                        basename);
+            }
         }
 
-        return ret;
+        return false;
     }
 
     @Override

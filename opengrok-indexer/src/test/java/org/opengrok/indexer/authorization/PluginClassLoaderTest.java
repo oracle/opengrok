@@ -25,26 +25,25 @@ package org.opengrok.indexer.authorization;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.logging.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.logger.LoggerUtil;
+import org.opengrok.indexer.framework.PluginClassLoader;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-public class AuthorizationPluginClassLoaderTest {
+public class PluginClassLoaderTest {
 
     private final File pluginDirectory;
 
-    public AuthorizationPluginClassLoaderTest() throws URISyntaxException {
+    public PluginClassLoaderTest() throws URISyntaxException {
         pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
         Assert.assertTrue(pluginDirectory.isDirectory());
     }
 
     @Test
     public void testProhibitedPackages() {
-        AuthorizationPluginClassLoader instance = new AuthorizationPluginClassLoader(null);
+        PluginClassLoader instance = new PluginClassLoader(null);
 
         try {
             instance.loadClass("java.lang.plugin.MyPlugin");
@@ -97,7 +96,7 @@ public class AuthorizationPluginClassLoaderTest {
 
     @Test
     public void testProhibitedNames() {
-        AuthorizationPluginClassLoader instance = new AuthorizationPluginClassLoader(null);
+        PluginClassLoader instance = new PluginClassLoader(null);
 
         try {
             instance.loadClass("org.opengrok.indexer.configuration.Group");
@@ -139,8 +138,8 @@ public class AuthorizationPluginClassLoaderTest {
     @Test
     @SuppressWarnings("rawtypes")
     public void testNonExistingPlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
         loadClass(instance, "org.sample.plugin.NoPlugin", true);
     }
@@ -148,8 +147,8 @@ public class AuthorizationPluginClassLoaderTest {
     @Test
     @SuppressWarnings("rawtypes")
     public void testFalsePlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
         Class clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
 
@@ -169,8 +168,8 @@ public class AuthorizationPluginClassLoaderTest {
     @Test
     @SuppressWarnings("rawtypes")
     public void testTruePlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
         Class clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");
 
@@ -203,12 +202,12 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @SuppressWarnings("rawtypes")
-    private Class loadClass(AuthorizationPluginClassLoader loader, String name) {
+    private Class loadClass(PluginClassLoader loader, String name) {
         return loadClass(loader, name, false);
     }
 
     @SuppressWarnings("rawtypes")
-    private Class loadClass(AuthorizationPluginClassLoader loader, String name, boolean shouldFail) {
+    private Class loadClass(PluginClassLoader loader, String name, boolean shouldFail) {
         Class clazz = null;
         try {
             clazz = loader.loadClass(name);

@@ -23,8 +23,8 @@
 
 package org.opengrok.indexer.analysis.data;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -39,11 +39,11 @@ public class ImageAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ImageAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, Genre.IMAGE, name);
+        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.IMAGE, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         // just use a FileAnalyzer since it won't analyze or xref the file
         return new FileAnalyzer(this);
     }

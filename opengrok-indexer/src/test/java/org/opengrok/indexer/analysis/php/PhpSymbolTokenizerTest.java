@@ -36,7 +36,7 @@ import java.util.List;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 
 /**
@@ -46,7 +46,7 @@ import org.opengrok.indexer.analysis.JFlexTokenizer;
  */
 public class PhpSymbolTokenizerTest {    
 
-    private final FileAnalyzer analyzer;
+    private final AbstractAnalyzer analyzer;
 
     public PhpSymbolTokenizerTest() {
         PhpAnalyzerFactory analFact = new PhpAnalyzerFactory();

@@ -4,16 +4,15 @@
  * http://javawithswaranga.blogspot.com/2011/10/generic-and-concurrent-object-pool.html
  * https://dzone.com/articles/generic-and-concurrent-object : "Feel free to use
  * it, change it, add more implementations. Happy coding!"
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,11 +34,11 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         BoundedBlockingObjectPool.class);
 
     private final int size;
-    private final BlockingQueue<T> objects;
+    private final LinkedBlockingDeque<T> objects;
     private final ObjectValidator<T> validator;
     private final ObjectFactory<T> objectFactory;
     private final ExecutorService executor = Executors.newCachedThreadPool();
-
+    private volatile boolean puttingLast;
     private volatile boolean shutdownCalled;
 
     public BoundedBlockingObjectPool(int size, ObjectValidator<T> validator,
@@ -49,20 +48,27 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         this.size = size;
         this.validator = validator;
 
-        objects = new LinkedBlockingQueue<>(size);
+        objects = new LinkedBlockingDeque<>(size);
         initializeObjects();
     }
 
     @Override
     public T get(long timeOut, TimeUnit unit) {
         if (!shutdownCalled) {
+            T ret = null;
             try {
-                return objects.poll(timeOut, unit);
+                ret = objects.pollFirst(timeOut, unit);
+                /*
+                 * When the queue first empties, switch to a strategy of putting
+                 * returned objects last instead of first.
+                 */
+                if (!puttingLast && objects.size() < 1) {
+                    puttingLast = true;
+                }
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             }
-
-            return null;
+            return ret;
         }
         throw new IllegalStateException("Object pool is already shutdown");
     }
@@ -70,13 +76,20 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
     @Override
     public T get() {
         if (!shutdownCalled) {
+            T ret = null;
             try {
-                return objects.take();
+                ret = objects.takeFirst();
+                /*
+                 * When the queue first empties, switch to a strategy of putting
+                 * returned objects last instead of first.
+                 */
+                if (!puttingLast && objects.size() < 1) {
+                    puttingLast = true;
+                }
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             }
-
-            return null;
+            return ret;
         }
         throw new IllegalStateException("Object pool is already shutdown");
     }
@@ -97,13 +110,12 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
     @Override
     protected void returnToPool(T t) {
         if (validator.isValid(t)) {
-            executor.submit(new ObjectReturner<T>(objects, t));
+            executor.submit(new ObjectReturner<>(objects, t, puttingLast));
         }
     }
 
-    /**
+    /*
      * Creates a new instance, and returns that instead to the pool.
-     * @param t 
      */
     @Override
     protected void handleInvalidReturn(T t) {
@@ -113,7 +125,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         }
 
         t = objectFactory.createNew();
-        executor.submit(new ObjectReturner<T>(objects, t));
+        executor.submit(new ObjectReturner<>(objects, t, puttingLast));
     }
 
     @Override
@@ -128,19 +140,25 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
     }
 
     private class ObjectReturner<E> implements Callable<Void> {
-        private final BlockingQueue<E> queue;
+        private final LinkedBlockingDeque<E> queue;
         private final E e;
+        private final boolean puttingLast;
 
-        public ObjectReturner(BlockingQueue<E> queue, E e) {
+        ObjectReturner(LinkedBlockingDeque<E> queue, E e, boolean puttingLast) {
             this.queue = queue;
             this.e = e;
+            this.puttingLast = puttingLast;
         }
 
         @Override
         public Void call() {
             while (true) {
                 try {
-                    queue.put(e);
+                    if (puttingLast) {
+                        queue.putLast(e);
+                    } else {
+                        queue.putFirst(e);
+                    }
                     break;
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();

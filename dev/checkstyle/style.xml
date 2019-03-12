@@ -32,5 +32,14 @@
             <property name="offCommentFormat" value="&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;Generated Code&quot;&gt;"/>
             <property name="onCommentFormat" value="&lt;/editor-fold&gt;"/>
         </module>
+
+        <module name="ModifierOrder"/>
+        <module name="RedundantModifier"/>
+
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <module name="ArrayTypeStyle"/>
+        <module name="UpperEll"/>
     </module>
 </module>

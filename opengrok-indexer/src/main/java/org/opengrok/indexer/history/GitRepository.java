@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,8 +44,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.util.Version;
 
 /**
  * Access to a Git repository.
@@ -86,6 +86,13 @@ public class GitRepository extends Repository {
      */
     private static final String GIT_DATE_OPT = "--date=iso8601-strict";
 
+    /**
+     * Minimum git version which supports the date format
+     *
+     * @see #GIT_DATE_OPT
+     */
+    private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
+
     public GitRepository() {
         type = "git";
         /*
@@ -97,6 +104,7 @@ public class GitRepository extends Repository {
         };
 
         ignoredDirs.add(".git");
+        ignoredFiles.add(".git");
         ignoredFiles.add(".gitignore");
     }
 
@@ -171,14 +179,18 @@ public class GitRepository extends Repository {
     /**
      * Try to get file contents for given revision.
      *
+     * @param sink a required target sink
      * @param fullpath full pathname of the file
      * @param rev revision
-     * @return contents of the file in revision rev
+     * @return a defined instance with {@code success} == {@code true} if no
+     * error occurred and with non-zero {@code iterations} if some data was
+     * transferred
      */
-    private InputStream getHistoryRev(String fullpath, String rev) {
-        InputStream ret = null;
-        File directory = new File(getDirectoryName());
+    private HistoryRevResult getHistoryRev(
+            BufferSink sink, String fullpath, String rev) {
 
+        HistoryRevResult result = new HistoryRevResult();
+        File directory = new File(getDirectoryName());
         try {
             /*
              * Be careful, git uses only forward slashes in its command and output (not in file path).
@@ -187,7 +199,7 @@ public class GitRepository extends Repository {
             String filename = fullpath.substring(getDirectoryName().length() + 1)
                                       .replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {
+            String[] argv = {
                 RepoCommand,
                 "show",
                 rev + ":" + filename
@@ -196,38 +208,25 @@ public class GitRepository extends Repository {
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = executor.getOutputStream()) {
-                int len;
-                while ((len = in.read(buffer)) != -1) {
-                    if (len > 0) {
-                        out.write(buffer, 0, len);
-                    }
-                }
-            }
+            result.iterations = copyBytes(sink, executor.getOutputStream());
 
             /*
              * If exit value of the process was not 0 then the file did
              * not exist or internal git error occured.
              */
-            if (status == 0) {
-                ret = new ByteArrayInputStream(out.toByteArray());
-            } else {
-                ret = null;
-            }
+            result.success = (status == 0);
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history for file {0} in revision {1}: ",
                         new Object[]{fullpath, rev, exp.getClass().toString(), exp});
         }
-
-        return ret;
+        return result;
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
+
         String fullpath;
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
@@ -238,12 +237,11 @@ public class GitRepository extends Repository {
                     return String.format("Failed to get canonical path: %s/%s", parent, basename);
                 }
             });
-            return null;
+            return false;
         }
 
-        InputStream ret = getHistoryRev(fullpath, rev);
-
-        if (ret == null) {
+        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
              * renamed so we need to find its original name in that revision
@@ -259,14 +257,14 @@ public class GitRepository extends Repository {
                         return String.format("Failed to get original revision: %s/%s (revision %s)", parent, basename, rev);
                     }
                 });
-                return null;
+                return false;
             }
-            if (origpath != null) {
-                ret = getHistoryRev(origpath, rev);
+            if (origpath != null && !origpath.equals(fullpath)) {
+                result = getHistoryRev(sink, origpath, rev);
             }
         }
 
-        return ret;
+        return result.success;
     }
 
     /**
@@ -518,7 +516,7 @@ public class GitRepository extends Repository {
     boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".git");
-            return f.exists() && f.isDirectory();
+            return f.exists();
         }
         return false;
     }
@@ -532,8 +530,22 @@ public class GitRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand, "--help");
+            Executor exec = new Executor(new String[]{RepoCommand, "--version"});
+
+            if (exec.exec(false) == 0) {
+                final String outputVersion = exec.getOutputString();
+                final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
+                try {
+                    working = Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
+                } catch (NumberFormatException ex) {
+                    LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
+                    working = false;
+                }
+            } else {
+                working = false;
+            }
         }
+
         return working;
     }
 
@@ -658,7 +670,7 @@ public class GitRepository extends Repository {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("origin") && line.contains("(fetch)")) {
-                    String parts[] = line.split("\\s+");
+                    String[] parts = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", getDirectoryName());
