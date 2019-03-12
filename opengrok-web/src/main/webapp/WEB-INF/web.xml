@@ -49,11 +49,13 @@
     </filter>
     <filter>
         <filter-name>CorsFilter</filter-name>
-        <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+        <filter-class>org.opengrok.web.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/search</url-pattern>
+        <url-pattern>/suggest</url-pattern>
+        <url-pattern>/suggest/config</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>ExpiresOneDayFilter</filter-name>
