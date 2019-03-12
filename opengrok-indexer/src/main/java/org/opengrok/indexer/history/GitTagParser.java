@@ -19,9 +19,11 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
+
+import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -114,7 +116,7 @@ class GitTagParser implements Executor.StreamHandler {
                      * See Repository assignTagsInHistory() where multiple
                      * identified tags are joined with comma-space.
                      */
-                    String joinedTagNames = String.join(", ", tagNames);
+                    String joinedTagNames = String.join(TAGS_SEPARATOR, tagNames);
                     GitTagEntry tagEntry = new GitTagEntry(hash, date, joinedTagNames);
                     entries.add(tagEntry);
                 }

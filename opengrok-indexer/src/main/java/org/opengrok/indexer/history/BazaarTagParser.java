@@ -19,8 +19,11 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
+
+import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,7 +73,7 @@ public class BazaarTagParser implements Executor.StreamHandler {
                 if (higher != null && higher.equals(tagEntry)) {
                     // Found in the tree, merge tags
                     entries.remove(higher);
-                    tagEntry.setTags(higher.getTags() + ", " + tag);
+                    tagEntry.setTags(higher.getTags() + TAGS_SEPARATOR + tag);
                 }
                 entries.add(tagEntry);
             }

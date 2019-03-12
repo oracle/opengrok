@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 /*
  * Copyright 2006 Trond Norbye.  All rights reserved.
@@ -30,6 +31,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -38,6 +40,8 @@ import org.opengrok.indexer.logger.LoggerFactory;
  * @author Trond Norbye
  */
 public class HistoryEntry {
+
+    static final String TAGS_SEPARATOR = ", ";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
 
