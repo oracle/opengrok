@@ -23,6 +23,8 @@
  */
 package org.opengrok.indexer.history;
 
+import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -278,12 +280,12 @@ public abstract class Repository extends RepositoryInfo {
      * @see getTagList
      * @param hist History we want to assign tags to.
      */
-    void assignTagsInHistory(History hist) throws HistoryException {
+    void assignTagsInHistory(History hist) {
         if (hist == null) {
             return;
         }
         if (this.getTagList() == null) {
-            throw new HistoryException("Tag list was not created before assigning tags to changesets!");
+            throw new IllegalStateException("getTagList() is null");
         }
         Iterator<TagEntry> it = this.getTagList().descendingIterator();
         TagEntry lastTagEntry = null;
@@ -301,7 +303,7 @@ public abstract class Repository extends RepositoryInfo {
                     if (ent.getTags() == null) {
                         ent.setTags(lastTagEntry.getTags());
                     } else {
-                        ent.setTags(ent.getTags() + ", " + lastTagEntry.getTags());
+                        ent.setTags(ent.getTags() + TAGS_SEPARATOR + lastTagEntry.getTags());
                     }
                 } else {
                     break;

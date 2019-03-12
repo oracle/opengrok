@@ -1,0 +1,30 @@
+commit 3595fbc9 (HEAD -> master, origin/master, origin/HEAD)
+Author: jhibbits <jhibbits@FreeBSD.org>
+Date:   Wed Feb 27 03:30:49 2019 +0000
+
+    powerpc/mpc85xx: Synchronize timebase the platform correct way
+
+    Summary:
+    To safely synchronize timebase we need to disable the timebase on all
+    cores, set timebase, and resynchronize.  This adds two new devices, mutually
+    exclusive, which attach on the SoC simplebus, to freeze and unfreeze the
+    timebase.  The devices are singletons, and platform-specific, so no reason
+    to make them optional and in separate files.
+
+    This was found to be necessary for top(1) to work correctly on an AmigaOne
+    X5000 (P5020 SoC).  It also fixes bufdaemon and bufspacedaemon hangs at
+    shutdown.
+
+    Test Plan: Regression test on various Book-E hardware.
+
+    Reviewed by:    nwhitehorn
+    Tested by:      Brandon Bergren (git_bdragon.rtk0.net)
+    MFC after:      2 weeks
+    Differential Revision: https://reviews.freebsd.org/D19208
+
+commit 90691f35
+Author: ian <ian@FreeBSD.org>
+Date:   Tue Feb 26 22:52:41 2019 +0000
+
+    Add a module dependency on fdt_slicer.  Also, move the PNP_INFO to its more
+    usual location, down near the DRIVER_MODULE() stuff.

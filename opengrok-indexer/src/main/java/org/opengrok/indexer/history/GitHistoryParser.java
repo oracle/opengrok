@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -57,16 +58,25 @@ class GitHistoryParser implements Executor.StreamHandler {
     private String myDir;
     private GitRepository repository = new GitRepository();
     private List<HistoryEntry> entries = new ArrayList<>();
+    private History history;
 
     private final boolean handleRenamedFiles;
     
     GitHistoryParser(boolean flag) {
         handleRenamedFiles = flag;
     }
-    
+
     /**
-     * Process the output from the log command and insert the HistoryEntries
-     * into the history field.
+     * Gets the instance from the most recent processing or parsing.
+     * @return a defined instance or {@code null} if not yet processed
+     */
+    public History getHistory() {
+        return history;
+    }
+
+    /**
+     * Process the output from the log command, and insert the
+     * {@link HistoryEntry} instances to the {@link #getHistory()} property.
      *
      * @param input The output from the process
      * @throws java.io.IOException If an error occurs while reading the stream
@@ -76,6 +86,7 @@ class GitHistoryParser implements Executor.StreamHandler {
         try (BufferedReader in = new BufferedReader(GitRepository.newLogReader(input))) {
             process(in);
         }
+        history = new History(entries);
     }
     
     private void process(BufferedReader in) throws IOException {
@@ -88,12 +99,39 @@ class GitHistoryParser implements Executor.StreamHandler {
             if (state == ParseState.HEADER) {
 
                 if (s.startsWith("commit")) {
-                    if (entry != null) {
-                        entries.add(entry);
-                    }
-                    entry = new HistoryEntry();
-                    entry.setActive(true);
                     String commit = s.substring("commit".length()).trim();
+
+                    /*
+                     * Git might show branch labels for a commit. E.g.
+                     *   commit 3595fbc9 (HEAD -> master, origin/master, origin/HEAD)
+                     * or it might show a merge parent. E.g.
+                     *   commit 4c3d5e8e (from 06b00dcb)
+                     * So trim those off too.
+                     */
+                    int offset = commit.indexOf(' ');
+                    if (offset >= 1) {
+                        commit = commit.substring(0, offset);
+                    }
+
+                    if (entry != null) {
+                        /*
+                         * With -m, a commit hash repeats for each merged head.
+                         * For OpenGrok's purposes, the same HistoryEntry would
+                         * get reused for each head. If the commit hash differs,
+                         * then add the entry to the list, and prepare to start
+                         * a new entry.
+                         */
+                        if (commit.equals(entry.getRevision())) {
+                            entry.setMessage(""); // Avoid message repetition.
+                        } else {
+                            entries.add(entry);
+                            entry = null;
+                        }
+                    }
+                    if (entry == null) {
+                        entry = new HistoryEntry();
+                    }
+                    entry.setActive(true);
                     entry.setRevision(commit);
                 } else if (s.startsWith("Author:") && entry != null) {
                     entry.setAuthor(s.substring("Author:".length()).trim());
@@ -210,14 +248,14 @@ class GitHistoryParser implements Executor.StreamHandler {
      */
     History parse(String buffer) throws IOException {
         myDir = RuntimeEnvironment.getInstance().getSourceRootPath();
-        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
+        processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return new History(entries);
     }
 
     /**
      * Class for handling renamed files stream.
      */
-    private class RenamedFilesParser implements Executor.StreamHandler {
+    private static class RenamedFilesParser implements Executor.StreamHandler {
 
         private final List<String> renamedFiles = new ArrayList<>();
 
@@ -262,8 +300,6 @@ class GitHistoryParser implements Executor.StreamHandler {
              * A foo2.f
              * A main.c
              */
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
             try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
                 String line;
                 Pattern pattern = Pattern.compile("^R\\d+\\s.*");
