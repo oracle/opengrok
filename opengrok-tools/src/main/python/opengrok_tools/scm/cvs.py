@@ -45,6 +45,7 @@ class CVSRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("outout of " + cmd + ":")
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform update: command {}"

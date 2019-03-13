@@ -45,6 +45,7 @@ class GitRepository(Repository):
         cmd = self.getCommand(git_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of " + git_command + ":")
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
@@ -57,6 +58,8 @@ class GitRepository(Repository):
         cmd = self.getCommand(git_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of " + git_command + ":")
+        self.logger.info(cmd.geterroutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
             raise RepositoryException('failed to check for incoming in '

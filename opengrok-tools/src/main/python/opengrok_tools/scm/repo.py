@@ -45,6 +45,7 @@ class RepoRepository(Repository):
         cmd = self.getCommand(repo_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of " + cmd + ":")
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform sync")
@@ -57,6 +58,8 @@ class RepoRepository(Repository):
         cmd = self.getCommand(repo_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of " + cmd + ":")
+        self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform sync")
             raise RepositoryException('failed to check for incoming in '
