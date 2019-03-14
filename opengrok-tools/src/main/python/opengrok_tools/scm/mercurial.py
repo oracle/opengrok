@@ -45,7 +45,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.info("output of {}:".format())
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to get branch")
