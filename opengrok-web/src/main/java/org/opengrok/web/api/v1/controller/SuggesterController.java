@@ -35,6 +35,7 @@ import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
+import org.opengrok.web.CorsEnable;
 import org.opengrok.web.api.v1.suggester.model.SuggesterData;
 import org.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;
@@ -96,6 +97,7 @@ public final class SuggesterController {
      */
     @GET
     @Authorized
+    @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
     public Result getSuggestions(@Valid @BeanParam final SuggesterQueryData data) throws ParseException {
         Instant start = Instant.now();
@@ -160,6 +162,7 @@ public final class SuggesterController {
      */
     @GET
     @Path("/config")
+    @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
         return env.getSuggesterConfig();

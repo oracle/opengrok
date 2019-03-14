@@ -149,7 +149,18 @@ public class SuggesterControllerTest extends JerseyTest {
                 .request()
                 .get(SuggesterConfig.class);
 
-        assertEquals(env.getSuggesterConfig(), config);
+//        assertEquals(env.getSuggesterConfig(), config);
+        assertEquals(1234, config);
+    }
+
+    @Test
+    public void testGetSuggesterConfigHeader() {
+        Response response = target(SuggesterController.PATH)
+                .path("config")
+                .request()
+                .get();
+
+        assertEquals(response.getHeaderString("Access-Control-Allow-Origin"), "d343");
     }
 
     @Test
