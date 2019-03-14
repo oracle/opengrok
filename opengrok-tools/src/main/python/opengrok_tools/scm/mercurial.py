@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
@@ -45,7 +45,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.info("output of " + cmd + ":")
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to get branch")
@@ -74,7 +74,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.info("output of " + cmd + ":")
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
@@ -88,7 +88,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.info("output of " + cmd + ":")
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull and update")
@@ -110,7 +110,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.info("output of " + cmd + ":")
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         retcode = cmd.getretcode()
         if cmd.getstate() != Command.FINISHED or retcode not in [0, 1]:
