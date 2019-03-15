@@ -76,7 +76,7 @@ Type following commands to the console:
 ```bash
 ./mvnw install
 cd opengrok-web
-./mvnw tomcat7:redeploy
+../mvnw tomcat7:redeploy
 ```
 
 or use IDE - in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
