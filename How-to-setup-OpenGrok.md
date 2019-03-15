@@ -10,8 +10,7 @@ You need the following:
 - https://github.com/universal-ctags for analysis (avoid Exuberant ctags, they are not maintained anymore)
 - A servlet container like [GlassFish](https://glassfish.dev.java.net/) or [Tomcat](http://tomcat.apache.org) 8.0 or later also running with Java at least 1.8
 - If history is needed, appropriate SCM binaries (in some cases also local CVS/Subversion repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
-- 2GB of memory for the indexing process (bigger deployments will need more - see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
-- potentially increased memory for the application server (based on indexed data)
+- increased Java heap for both the indexing process and also for the application server (based on indexed data, bigger deployments will need more - see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
 - GIT version 2.6 or higher for GIT repositories (see PR [#1314](https://github.com/oracle/opengrok/pull/1314) for more info)
 
