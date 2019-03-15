@@ -9,10 +9,10 @@ You need the following:
 - OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
 - https://github.com/universal-ctags for analysis (avoid Exuberant ctags, they are not maintained anymore)
 - A servlet container like [GlassFish](https://glassfish.dev.java.net/) or [Tomcat](http://tomcat.apache.org) 8.0 or later also running with Java at least 1.8
-- If history is needed, appropriate binaries (in some cases also cvs/svn repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
-- 2GB of memory for the indexing process (bigger deployments will need more)
+- If history is needed, appropriate SCM binaries (in some cases also local CVS/Subversion repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
+- 2GB of memory for the indexing process (bigger deployments will need more - see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
+- potentially increased memory for the application server (based on indexed data)
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
-- Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 - GIT version 2.6 or higher for GIT repositories (see PR [#1314](https://github.com/oracle/opengrok/pull/1314) for more info)
 
 After unpacking the binaries to your target directory, the index needs to be created and the web application deployed.
@@ -158,7 +158,7 @@ In some setups, it might be desirable to run the indexing (and especially mirror
 
 See https://github.com/oracle/opengrok/wiki/Indexer-configuration for more indexer configuration options.
 
-## <u>Step.4</u> - setting up periodic reindex
+## <u>Step.4</u> - setting up periodic reindex and data synchronization
 
 The index needs to be kept consistent with the data being indexed. Also, the data needs to be kept in sync with their origin. Therefore, there has to be periodic process that syncs the data and runs reindex. On Unix this is normally done by setting up a `crontab` entry.
 
