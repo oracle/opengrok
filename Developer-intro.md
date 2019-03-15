@@ -44,15 +44,26 @@ To build the code from command line, just run `./mvnw compile`. It will download
 
 ### Deploy the web app to the web server
 
-There are multiple possibilities.
+There are two possibilities - either copy the `source.war` directly or use Maven Tomcat plugin that will upload it. The net effect will be the same.
+
+Firstly, start your application server. E.g. for Tomcat that could look something like this (depending on where you extracted Tomcat):
+```shell
+$ ~/apache-tomcat-8.0.27/bin/startup.sh 
+Using CATALINA_BASE:   /home/vkotal/apache-tomcat-8.0.27
+Using CATALINA_HOME:   /home/vkotal/apache-tomcat-8.0.27
+Using CATALINA_TMPDIR: /home/vkotal/apache-tomcat-8.0.27/temp
+Using JRE_HOME:        /usr/lib/jvm/java-8-oracle
+Using CLASSPATH:       /home/vkotal/apache-tomcat-8.0.27/bin/bootstrap.jar:/home/vkotal/apache-tomcat-8.0.27/bin/tomcat-juli.jar
+Tomcat started.
+```
 
 #### Deploy `.war` directly
 
 Run command `./mvnw package -DskipTests` which will create a release as in the [releases page](https://github.com/oracle/opengrok/releases). This release can be found in the `distribution/target` directory with file name `opengrok-{version}.tar.gz`. Unzip the file by `tar xvf opengrok-{version}.tar.gz`. The `.war` file is located in `opengrok-{version}/lib/source.war`. You can copy this file to the web applications directory of your application server (e.g. `webapps` for Tomcat). Or you can use different means specific to application servers (e.g. Tomcat Manager).
 
-#### Use Tomcat Maven plugin
+#### Use Maven Maven plugin
 
-Modify `~/.m2/settings.xml` to:
+Modify Maven configuration (`~/.m2/settings.xml`) so that it contains:
 ```xml
 <settings>
   <servers>
@@ -72,7 +83,7 @@ Add this to the `tomcat_users.xml` file located in the `conf/` directory of your
 
 **Note:** Do not add `manager-gui` role because it won't work.
 
-Build the artifacts:
+Build the artifacts from the top directory of the project:
 ```bash
 ./mvnw install
 ```
