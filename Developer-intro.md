@@ -65,21 +65,28 @@ Modify `~/.m2/settings.xml` to:
 </settings>
 ```
 
-Add to `tomcat_users.xml` located in `conf` directory of your Tomcat server:
+Add this to the `tomcat_users.xml` file located in the `conf/` directory of your Tomcat server:
 ```xml
-<user password="admin1" roles="manager-script,admin" username="admin1"/>
+<username="admin1" user password="admin1" roles="tomcat,manager-script"/>
 ```
 
 **Note:** Do not add `manager-gui` role because it won't work.
 
-Type following commands to the console:
+Build the artifacts:
 ```bash
 ./mvnw install
-cd opengrok-web
-../mvnw tomcat7:redeploy
 ```
 
-or use IDE - in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
+If the web application has not been deployed before, deploy it:
+```bash
+cd opengrok-web && ../mvnw tomcat7:deploy
+```
+otherwise redeploy it:
+```bash
+cd opengrok-web && ../mvnw tomcat7:redeploy
+```
+
+Or invoke the Maven target via an IDE - e.g. in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
 
 [![redeploy of the webapp in IDEA via Maven Tomcat plugin](images/IDEA-tomcat_redeploy.png)](images/IDEA-tomcat_redeploy.png)
 
