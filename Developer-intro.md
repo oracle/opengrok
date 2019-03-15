@@ -137,7 +137,7 @@ If you now refresh the web page mentioned above it will reflect the reindex and 
 
 See [[Debugging wiki|Debugging]] for more information on debugging.
 
-### Test
+### Testing
 
 To run tests type `./mvnw test` command. For specific tests you can use `-Dtest` option, e.g. `./mvnw test -Dtest=IndexerTest -DfailIfNoTests=false`.
 
