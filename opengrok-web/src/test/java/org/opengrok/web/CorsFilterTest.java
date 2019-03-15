@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.opengrok.web.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.CorsFilter.CORS_REQUEST_HEADER;
 
 public class CorsFilterTest {
     @Test
@@ -29,7 +30,7 @@ public class CorsFilterTest {
     private void testBoth(String origin, List<Object> headerValue) {
         CorsFilter filter = new CorsFilter();
         ContainerRequestContext request = mock(ContainerRequestContext.class);
-        when(request.getHeaderString("Origin")).thenReturn(origin);
+        when(request.getHeaderString(CORS_REQUEST_HEADER)).thenReturn(origin);
 
         ContainerResponseContext response = mock(ContainerResponseContext.class);
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
