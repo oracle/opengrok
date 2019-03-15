@@ -161,7 +161,7 @@ $ ./mvnw test
 ...
 ```
 
-These are test counts for indexer, authorization modules, suggester and web, respectively.
+These are sample test counts for indexer, authorization modules, suggester and web, respectively.
 
 If the numbers on your system are drastically lower you might need to want to install more pre-requisites in order to get better test coverage.
 
