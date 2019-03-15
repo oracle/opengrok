@@ -141,7 +141,29 @@ See [[Debugging wiki|Debugging]] for more information on debugging.
 
 To run tests type `./mvnw test` command. For specific tests you can use `-Dtest` option, e.g. `./mvnw test -Dtest=IndexerTest -DfailIfNoTests=false`.
 
-Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github (first it is necessary to enable Travis for your fork on the Travis web).
+Note that the tests need some pre-requisites to run, namely Universal ctags and also some SCMs (at least Mercurial and Git are recommended). The JUnit tests are set so that if the pre-requisites are not present the tests will be skipped.
+
+On a Linux system with Ctags, Subversion, Mercurial, Git, CVS the result as of OpenGrok 1.2.4 looks like this:
+```
+$ ./mvnw test
+
+...
+
+[WARNING] Tests run: 779, Failures: 0, Errors: 0, Skipped: 16
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
+[WARNING] Tests run: 89, Failures: 0, Errors: 0, Skipped: 1
+```
+
+These are test counts for indexer, authorization modules, suggester and web, respectively.
+
+If the numbers on your system are drastically lower you might need to want to install more pre-requisites in order to get better test coverage.
+
+Usually it takes couple of minutes on modern laptop to finish the tests.
+
+Also, OpenGrok repository on Github is setup so that pushes will trigger builds in various environments so it is not necessary to run tests on your workstation - just commit and push to Github (first it is necessary to enable at least Travis for your fork on the Travis web). These environments install complete set of the pre-requisite so could catch more problems than running the tests locally.
+
+Of course, individual unit tests can be run from an IDE like IDEA.
 
 See [Testing wiki](https://github.com/oracle/opengrok/wiki/Testing) for more info on testing.
 
