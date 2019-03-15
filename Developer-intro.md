@@ -59,11 +59,11 @@ Using CLASSPATH:       /home/vkotal/apache-tomcat-8.0.27/bin/bootstrap.jar:/home
 Tomcat started.
 ```
 
-#### Deploy `.war` directly
+#### a) Deploy `.war` directly
 
 Run command `./mvnw package -DskipTests` which will create a release as in the [releases page](https://github.com/oracle/opengrok/releases). This release can be found in the `distribution/target` directory with file name `opengrok-{version}.tar.gz`. Unzip the file by `tar xvf opengrok-{version}.tar.gz`. The `.war` file is located in `opengrok-{version}/lib/source.war`. You can copy this file to the web applications directory of your application server (e.g. `webapps` for Tomcat). Or you can use different means specific to application servers (e.g. Tomcat Manager).
 
-#### Use Maven Tomcat plugin
+#### b) Use Maven Tomcat plugin
 
 Modify Maven configuration (`~/.m2/settings.xml`) so that it contains:
 ```xml
