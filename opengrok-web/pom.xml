@@ -171,8 +171,8 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <url>http://localhost:8080/manager/text</url>
-                    <server>OpenGrok</server>
+                    <url>${tomcat.url}</url>
+                    <server>${tomcat.server.id}</server>
                     <path>/${project.build.finalName}</path>
                 </configuration>
             </plugin>
