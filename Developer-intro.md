@@ -8,8 +8,10 @@ OpenGrok can be built and tested on any system with Java. You will need:
 
 1. At least JDK8
 1. [Universal ctags](https://github.com/universal-ctags) (built from source)
-1. Git (for cloning the repository), Subversion (needed for successful build)
+1. Git (for cloning the repository)
+1. Subversion (needed for successful build)
 1. Any modern IDE (e.g. [IDEA](https://www.jetbrains.com/idea/), [Eclipse](http://www.eclipse.org/downloads/packages/))
+1. Python 3.x (for OpenGrok tools)
 1. other SCMs 
 
 Also, it would not hurt if you created an issue (https://github.com/oracle/OpenGrok/issues) and mentioned that you will be working on it.
@@ -141,7 +143,7 @@ See [[Debugging wiki|Debugging]] for more information on debugging.
 
 To run tests type `./mvnw test` command. For specific tests you can use `-Dtest` option, e.g. `./mvnw test -Dtest=IndexerTest -DfailIfNoTests=false`.
 
-Note that the tests need some pre-requisites to run, namely Universal ctags and also some SCMs (at least Mercurial and Git are recommended). The JUnit tests are set so that if the pre-requisites are not present the tests will be skipped.
+Note that the tests need some pre-requisites to run, namely Universal ctags and also some SCMs (at least Mercurial and Git are recommended). The JUnit tests are made so that if some pre-requisites are not present the tests using those will be skipped. Thus, nothing should be failing even on stripped down system.
 
 On a Linux system with Ctags, Subversion, Mercurial, Git, CVS the result as of OpenGrok 1.2.4 looks like this:
 ```
