@@ -79,11 +79,11 @@ Build the artifacts:
 
 If the web application has not been deployed before, deploy it:
 ```bash
-cd opengrok-web && ../mvnw tomcat7:deploy
+cd opengrok-web && ../mvnw -DskipTests=true tomcat7:deploy
 ```
 otherwise redeploy it:
 ```bash
-cd opengrok-web && ../mvnw tomcat7:redeploy
+cd opengrok-web && ../mvnw -DskipTests=true tomcat7:redeploy
 ```
 
 Or invoke the Maven target via an IDE - e.g. in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
