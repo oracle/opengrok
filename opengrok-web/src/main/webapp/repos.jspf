@@ -55,7 +55,6 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
     ProjectHelper pHelper = cfg.getProjectHelper();
     if (pHelper.getAllProjects().size() > 0) {
         Set<Group> groups = pHelper.getGroups();
-        Set<Project> repositories = pHelper.getUngroupedRepositories();
         if (groups.size() > 0) {
             // recursively print all groups
             %>
@@ -78,10 +77,10 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                     stack.addLast(x);
                 }
             }
-            
-            while ( ! stack.isEmpty() ) {
+
+            while (!stack.isEmpty()) {
                 Group group = stack.element();
-                
+
                 if (group.getFlag() > 0) {
                     // already processed
                     stack.pollFirst();
@@ -89,7 +88,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                     </div><!-- panel --><%
                     continue;
                 }
-                
+
                 stack.element().setFlag(1);
 
                 Set<Group> subgroups = new TreeSet<>(pHelper.getSubgroups(group));
@@ -117,7 +116,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 <small>
                                     [<a href="#" class="projects_select_all">select all</a>]
                                     (<span title="Number of groups directly in this group"><%= pHelper.getSubgroups(group).size() %></span> +
-                                        <span title="Number of repositories directly in this group"><%= pHelper.getRepositories(group).size() %></span>)
+                                        <span title="Number of projects directly in this group"><%= pHelper.getAllGrouped(group).size() %></span>)
                                 </small>
                             </span>
                             <span class="pull-right">
@@ -127,115 +126,150 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                     </div>
                         <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
                          <% if (pHelper.hasFavourite(group)
-                            || (pHelper.getRepositories(group).size() > 0 && pHelper.getRepositories(group).size() <= cfg.getGroupsCollapseThreshold())) {
+                            || (pHelper.getAllGrouped(group).size() > 0 && pHelper.getAllGrouped(group).size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                 <%
-                if (pHelper.getRepositories(group).size() > 0 ) {
+                if (pHelper.getAllGrouped(group).size() > 0) {
                 %>
                     <table>
-                    <thead>
-                    <tr>
-                    <td><b>Repository</b></td>
-                    <td><b>SCM Type: Parent (branch)</b></td>
-                    <td><b>Current version</b></td>
-                    </tr>
-                    </thead>
-                    <tbody>
                     <%
-                    for (Project project : pHelper.getRepositories(group)) {
-                        if (!project.isIndexed()) {
-                            continue;
-                        }
-                        List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
-                        String projDesc = project.getName();
-                        Integer cnt = 0;
-                        Collections.sort(repos, comparatorRepo);
-                        %>
+                        if (pHelper.getRepositories(group).size() > 0) {
+                    %>
+                        <thead>
+                        <tr>
+                        <td><b>Repository</b></td>
+                        <td><b>SCM Type: Parent (branch)</b></td>
+                        <td><b>Current version</b></td>
+                        </tr>
+                        </thead>
+                        <tbody>
                         <%
-                        for (RepositoryInfo ri : repos) {
-                            if (cnt > 0 && ri.getParent() == null)
-                                // discard repositories without a parent url
+                        for (Project project : pHelper.getRepositories(group)) {
+                            if (!project.isIndexed()) {
                                 continue;
-
-                            boolean subrepository = !ri.getDirectoryNameRelative().equals(project.getPath());
-                            if (subrepository && cnt == 0) {
+                            }
+                            List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
+                            String projDesc = project.getName();
+                            Integer cnt = 0;
+                            Collections.sort(repos, comparatorRepo);
                             %>
+                            <%
+                            for (RepositoryInfo ri : repos) {
+                                if (cnt > 0 && ri.getParent() == null)
+                                    // discard repositories without a parent url
+                                    continue;
+
+                                boolean subrepository = !ri.getDirectoryNameRelative().equals(project.getPath());
+                                if (subrepository && cnt == 0) {
+                                %>
+                                    <tr>
+                                        <td class="name repository" colspan="3">
+                                            <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                                               title="Xref for project <%= Util.htmlize(projDesc) %>">
+                                                <%= Util.htmlize(projDesc) %>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <%
+                                }
+
+                                if (subrepository) {
+                                    projDesc = ri.getDirectoryName()
+                                                 .replace(cfg.getSourceRootPath() + File.separator, "");
+                                }
+                                %>
                                 <tr>
-                                    <td class="name repository" colspan="3">
+                                    <td class="name <%= subrepository ? "subrepository" : "repository" %>">
+                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
+                           title="Xref for project <%= Util.htmlize(projDesc) %>">
+                            <%= Util.htmlize(projDesc) %>
+                        </a>
+                        <%
+                        if (!(messages = MessagesUtils.messagesToJson(project)).isEmpty()) { %>
+                            <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                        <% } %>
+                                    </td><%
+                                String parent = Util.redactUrl(ri.getParent());
+                                if (parent == null) {
+                                    parent = "N/A";
+                                }
+                                String type = ri.getType();
+                                if (type == null) {
+                                    type = "N/A";
+                                }
+                                String branch = ri.getBranch();
+                                if (branch == null) {
+                                    branch = "N/A";
+                                }
+                                String currentVersion = ri.getCurrentVersion();
+                                if (currentVersion == null) {
+                                    currentVersion = "N/A";
+                                }
+                                    %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%
+
+                                // Current index collapse threshold minimum of 10
+                                int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                                String cout = Util.htmlize(currentVersion);
+
+                                boolean showSummary = false;
+                                String coutSummary = currentVersion;
+                                if (coutSummary.length() > summaryLength) {
+                                    showSummary = true;
+                                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                    coutSummary = Util.htmlize(coutSummary);
+                                }
+                                if (showSummary) {
+                                    %>
+                                    <span class="rev-message-summary"><%= coutSummary %></span>
+                                    <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                    <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                    <%
+                                }
+                                else {
+                                     %><span class="rev-message-full"><%= cout %></span><%
+                                }
+                                %></td><%
+                                %></tr><%
+                                cnt++;
+                            }
+                        }
+
+                        %></tbody><%
+                    }
+
+                    if (pHelper.getProjects(group).size() > 0) {
+                    %>
+                        <thead>
+                            <tr>
+                                <td colspan="3"><b>Project</b></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <%
+                            for (Project project : pHelper.getProjects(group)) {
+                                if (!project.isIndexed()) {
+                                    continue;
+                                }
+                                String projDesc = project.getName();
+                                %>
+                                <tr>
+                                    <td colspan="3" class="name repository">
                                         <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
                                            title="Xref for project <%= Util.htmlize(projDesc) %>">
                                             <%= Util.htmlize(projDesc) %>
                                         </a>
                                     </td>
                                 </tr>
-                            <%
-                            }
-
-                            if (subrepository) {
-                                projDesc = ri.getDirectoryName()
-                                             .replace(cfg.getSourceRootPath() + File.separator, "");
-                            }
-                            %>
-                            <tr>
-                                <td class="name <%= subrepository ? "subrepository" : "repository" %>">
-                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
-                       title="Xref for project <%= Util.htmlize(projDesc) %>">
-                        <%= Util.htmlize(projDesc) %>
-                    </a>
-                    <%
-                    if (!(messages = MessagesUtils.messagesToJson(project)).isEmpty()) { %>
-                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
-                    <% } %>
-                                </td><%
-                            String parent = Util.redactUrl(ri.getParent());
-                            if (parent == null) {
-                                parent = "N/A";
-                            }
-                            String type = ri.getType();
-                            if (type == null) {
-                                type = "N/A";
-                            }
-                            String branch = ri.getBranch();
-                            if (branch == null) {
-                                branch = "N/A";
-                            }
-                            String currentVersion = ri.getCurrentVersion();
-                            if (currentVersion == null) {
-                                currentVersion = "N/A";
-                            }
-                                %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                            %><td><%
-
-                            // Current index collapse threshold minimum of 10
-                            int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
-                            String cout = Util.htmlize(currentVersion);
-
-                            boolean showSummary = false;
-                            String coutSummary = currentVersion;
-                            if (coutSummary.length() > summaryLength) {
-                                showSummary = true;
-                                coutSummary = coutSummary.substring(0, summaryLength - 1);
-                                coutSummary = Util.htmlize(coutSummary);
-                            }
-                            if (showSummary) {
-                                %>
-                                <span class="rev-message-summary"><%= coutSummary %></span>
-                                <span class="rev-message-full rev-message-hidden"><%= cout %></span>
-                                <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
                                 <%
                             }
-                            else {
-                                 %><span class="rev-message-full"><%= cout %></span><%
-                            }
-                            %></td><%
-                            %></tr><%
-                            cnt++;
-                        }
+                        %>
+                        </tbody>
+                    <%
                     }
-
-                    %></tbody>
+                    %>
                     </table><%
-                } else if ( pHelper.getRepositories(group).size() <= 0 && !pHelper.hasAllowedSubgroup(group) ) {
+                } else if ( pHelper.getAllGrouped(group).size() <= 0 && !pHelper.hasAllowedSubgroup(group) ) {
                     %>No projects<%
                 }
             }
@@ -243,7 +277,8 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
         }
 
         // print the rest of projects which don't have a group
-        if (repositories.size() > 0) { %>
+        Set<Project> projects = pHelper.getAllUngrouped();
+        if (projects.size() > 0) { %>
             <div class="panel-group projects">
                 <% if (groups.size() > 0) { %>
                     <div class="toggle-buttons">
@@ -267,7 +302,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                     <% } %>
                                     <small>
                                         [<a href="#" class="projects_select_all">select all</a>]
-                                        (<span title="Number of repositories inside"><%= repositories.size() %></span>)
+                                        (<span title="Number of projects inside"><%= projects.size() %></span>)
                                     </small>
                                 </span>
                                 <span class="pull-right">
@@ -278,107 +313,140 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                     <% } %>
                     <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
                          <% if (pHelper.hasUngroupedFavourite()
-                                || (repositories.size() > 0 && repositories.size() <= cfg.getGroupsCollapseThreshold())) {
+                                || (projects.size() > 0 && projects.size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                         <table>
-                        <thead>
-                        <tr>
-                        <td><b>Repository</b></td>
-                        <td><b>SCM Type: Parent (branch)</b></td>
-                        <td><b>Current version</b></td>
-                        </tr>
+                        <%
+                        if (pHelper.getUngroupedRepositories().size() > 0) {
+                        %>
+                            <thead>
+                            <tr>
+                            <td><b>Repository</b></td>
+                            <td><b>SCM Type: Parent (branch)</b></td>
+                            <td><b>Current version</b></td>
+                            </tr>
+                                </thead>
+                                <tbody>
+                            <%
+                            for (Project proj : projects) {
+                                if (!proj.isIndexed()) {
+                                    continue;
+                                }
+                                List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
+                                String projDesc = proj.getName();
+                                Integer cnt = 0;
+                                Collections.sort(repos, comparatorRepo);
+                                for (RepositoryInfo ri : repos) {
+                                    if (cnt > 0 && ri.getParent() == null)
+                                        // discard repositories without a parent url
+                                        continue;
+                                    boolean subrepository = !ri.getDirectoryNameRelative().equals(proj.getPath());
+                                    if (subrepository && cnt == 0) {
+                                        %>
+                                            <tr>
+                                                <td class="name repository" colspan="3">
+                                                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                                                       title="Xref for project <%= Util.htmlize(projDesc) %>">
+                                                        <%= Util.htmlize(projDesc) %>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <%
+                                    }
+
+                                    if (subrepository) {
+                                        projDesc = ri.getDirectoryName()
+                                                     .replace(cfg.getSourceRootPath() + File.separator, "");
+                                    }
+                                    %>
+                                    <tr><td class="name <%= subrepository ? "subrepository" : "repository" %>">
+                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                           title="Xref for project <%= Util.htmlize(projDesc) %>">
+                            <%= Util.htmlize(projDesc) %>
+                        </a>
+                        <%
+                        if (!(messages = messagesToJson(proj)).isEmpty()) { %>
+                            <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                        <% } %>
+                        </td><%
+                                    String parent = Util.redactUrl(ri.getParent());
+                                    if (parent == null) {
+                                        parent = "N/A";
+                                    }
+                                    String type = ri.getType();
+                                    if (type == null) {
+                                        type = "N/A";
+                                    }
+                                    String branch = ri.getBranch();
+                                    if (branch == null) {
+                                        branch = "N/A";
+                                    }
+                                    String currentVersion = ri.getCurrentVersion();
+                                    if (currentVersion == null) {
+                                        currentVersion = "N/A";
+                                    }
+                                    %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                    %><td><%
+
+                                    // Current index message collapse threshold minimum of 10
+                                    int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                                    String cout = Util.htmlize(currentVersion);
+
+                                    boolean showSummary = false;
+                                    String coutSummary = currentVersion;
+                                    if (coutSummary.length() > summaryLength) {
+                                        showSummary = true;
+                                        coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                        coutSummary = Util.htmlize(coutSummary);
+                                    }
+
+                                    if (showSummary) {
+                                        %>
+                                        <span class="rev-message-summary"><%= coutSummary %></span>
+                                        <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                        <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                        <%
+                                    }
+                                    else {
+                                         %><span class="rev-message-full"><%= cout %></span><%
+                                    }
+                                    %></td><%
+                                    %></tr><%
+                                    cnt++;
+                                }
+                            }
+                            %></tbody><%
+                        }
+                        if (pHelper.getUngroupedProjects().size() > 0) {
+                        %>
+                            <thead>
+                            <tr>
+                                <td colspan="3"><b>Project</b></td>
+                            </tr>
                             </thead>
                             <tbody>
-                        <%
-                        for (Project proj : repositories) {
-                            if (!proj.isIndexed()) {
-                                continue;
-                            }
-                            List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
-                            String projDesc = proj.getName();
-                            Integer cnt = 0;
-                            Collections.sort(repos, comparatorRepo);
-                            for (RepositoryInfo ri : repos) {
-                                if (cnt > 0 && ri.getParent() == null)
-                                    // discard repositories without a parent url
-                                    continue;
-                                boolean subrepository = !ri.getDirectoryNameRelative().equals(proj.getPath());
-                                if (subrepository && cnt == 0) {
-                                    %>
-                                        <tr>
-                                            <td class="name repository" colspan="3">
-                                                <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                                                   title="Xref for project <%= Util.htmlize(projDesc) %>">
-                                                    <%= Util.htmlize(projDesc) %>
-                                                </a>
-                                            </td>
-                                        </tr>
+                            <%
+                                for (Project project : pHelper.getUngroupedProjects()) {
+                                    if (!project.isIndexed()) {
+                                        continue;
+                                    }
+                                    String projDesc = project.getName();
+                            %>
+                                    <tr>
+                                        <td colspan="3" class="name repository">
+                                            <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
+                                               title="Xref for project <%= Util.htmlize(projDesc) %>">
+                                                <%= Util.htmlize(projDesc) %>
+                                            </a>
+                                        </td>
+                                    </tr>
                                     <%
                                 }
-
-                                if (subrepository) {
-                                    projDesc = ri.getDirectoryName()
-                                                 .replace(cfg.getSourceRootPath() + File.separator, "");
-                                }
-                                %>
-                                <tr><td class="name <%= subrepository ? "subrepository" : "repository" %>">
-                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                       title="Xref for project <%= Util.htmlize(projDesc) %>">
-                        <%= Util.htmlize(projDesc) %>
-                    </a>
-                    <%
-                    if (!(messages = messagesToJson(proj)).isEmpty()) { %>
-                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
-                    <% } %>
-                    </td><%
-                                String parent = Util.redactUrl(ri.getParent());
-                                if (parent == null) {
-                                    parent = "N/A";
-                                }
-                                String type = ri.getType();
-                                if (type == null) {
-                                    type = "N/A";
-                                }
-                                String branch = ri.getBranch();
-                                if (branch == null) {
-                                    branch = "N/A";
-                                }
-                                String currentVersion = ri.getCurrentVersion();
-                                if (currentVersion == null) {
-                                    currentVersion = "N/A";
-                                }
-                                %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                                %><td><%
-
-                                // Current index message collapse threshold minimum of 10
-                                int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
-                                String cout = Util.htmlize(currentVersion);
-
-                                boolean showSummary = false;
-                                String coutSummary = currentVersion;
-                                if (coutSummary.length() > summaryLength) {
-                                    showSummary = true;
-                                    coutSummary = coutSummary.substring(0, summaryLength - 1);
-                                    coutSummary = Util.htmlize(coutSummary);
-                                }
-
-                                if (showSummary) {
-                                    %>
-                                    <span class="rev-message-summary"><%= coutSummary %></span>
-                                    <span class="rev-message-full rev-message-hidden"><%= cout %></span>
-                                    <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
-                                    <%
-                                }
-                                else {
-                                     %><span class="rev-message-full"><%= cout %></span><%
-                                }
-                                %></td><%
-                                %></tr><%
-                                cnt++;
-                            }
-                        }
-                        %>
+                            %>
                             </tbody>
+                        <%
+                            }
+                        %>
                         </table>
                     </div>
                 </div>
