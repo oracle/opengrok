@@ -18,12 +18,15 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
+import static org.opengrok.indexer.web.PageConfig.OPEN_GROK_PROJECT;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,11 +34,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.history.RepositoryInfo;
-
-import static org.opengrok.indexer.web.PageConfig.OPEN_GROK_PROJECT;
 
 /**
  * Preprocessing of projects, repositories and groups for the UI
@@ -56,6 +58,12 @@ public final class ProjectHelper {
     private static final String PROJECT_HELPER_GROUPED_PROJECTS = "project_helper_grouped_projects";
     private static final String PROJECT_HELPER_SUBGROUPS_OF = "project_helper_subgroups_of_";
     private static final String PROJECT_HELPER_FAVOURITE_GROUP = "project_helper_favourite_group";
+
+    private static final Comparator<RepositoryInfo> REPOSITORY_COMPARATOR = new Comparator<RepositoryInfo>() {
+        public int compare(RepositoryInfo r1, RepositoryInfo r2) {
+            return r1.getDirectoryName().compareTo(r2.getDirectoryName());
+        }
+    };
 
     private PageConfig cfg;
     /**
@@ -121,6 +129,23 @@ public final class ProjectHelper {
         Map<Project, List<RepositoryInfo>> map = cfg.getEnv().getProjectRepositoriesMap();
         List<RepositoryInfo> info = map.get(p);
         return info == null ? new ArrayList<>() : new ArrayList<>(info);
+    }
+
+    /**
+     * Get repository info list for particular project. A copy of the list is
+     * returned always to allow concurrent modifications of the list in the
+     * caller. The items in the list shall not be modified concurrently, though.
+     * This list is sorted with respect {@link #REPOSITORY_COMPARATOR}.
+     *
+     * @param p the project for which we find the repository info list
+     * @return Copy of a list of repository info or empty list if no info is
+     * found
+     */
+    public List<RepositoryInfo> getSortedRepositoryInfo(Project p) {
+        return getRepositoryInfo(p)
+                .stream()
+                .sorted(REPOSITORY_COMPARATOR)
+                .collect(Collectors.toList());
     }
 
     /**

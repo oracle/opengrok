@@ -18,29 +18,27 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<%@page import="java.io.File"%>
-<%@page import="java.util.Collections"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="opengrok" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page import="java.util.Comparator"%>
 <%@page import="java.util.Iterator"%>
 <%@page import="java.util.LinkedList"%>
-<%@page import="java.util.List"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="org.opengrok.indexer.configuration.Group"%>
 <%@page import="org.opengrok.indexer.configuration.Project"%>
 <%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
 <%@page import="org.opengrok.indexer.web.PageConfig"%>
-<%@page import="org.opengrok.indexer.web.Prefix"%>
 <%@page import="org.opengrok.indexer.web.ProjectHelper"%>
-<%@page import="org.opengrok.indexer.web.Util"%>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
+    pageContext.setAttribute("pageConfig", cfg);
     cfg.addScript("repos");
     String messages;
 
@@ -132,142 +130,15 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                 if (pHelper.getAllGrouped(group).size() > 0) {
                 %>
                     <table>
-                    <%
-                        if (pHelper.getRepositories(group).size() > 0) {
-                    %>
-                        <thead>
-                        <tr>
-                        <td><b>Repository</b></td>
-                        <td><b>SCM Type: Parent (branch)</b></td>
-                        <td><b>Current version</b></td>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <%
-                        for (Project project : pHelper.getRepositories(group)) {
-                            if (!project.isIndexed()) {
-                                continue;
-                            }
-                            List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
-                            String projDesc = project.getName();
-                            Integer cnt = 0;
-                            Collections.sort(repos, comparatorRepo);
-                            %>
-                            <%
-                            for (RepositoryInfo ri : repos) {
-                                if (cnt > 0 && ri.getParent() == null)
-                                    // discard repositories without a parent url
-                                    continue;
+                        <opengrok:repositories
+                                pageConfig="${pageConfig}"
+                                repositories="<%= pHelper.getRepositories(group) %>"
+                                />
 
-                                boolean subrepository = !ri.getDirectoryNameRelative().equals(project.getPath());
-                                if (subrepository && cnt == 0) {
-                                %>
-                                    <tr>
-                                        <td class="name repository" colspan="3">
-                                            <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                                               title="Xref for project <%= Util.htmlize(projDesc) %>">
-                                                <%= Util.htmlize(projDesc) %>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <%
-                                }
-
-                                if (subrepository) {
-                                    projDesc = ri.getDirectoryName()
-                                                 .replace(cfg.getSourceRootPath() + File.separator, "");
-                                }
-                                %>
-                                <tr>
-                                    <td class="name <%= subrepository ? "subrepository" : "repository" %>">
-                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
-                           title="Xref for project <%= Util.htmlize(projDesc) %>">
-                            <%= Util.htmlize(projDesc) %>
-                        </a>
-                        <%
-                        if (!(messages = MessagesUtils.messagesToJson(project)).isEmpty()) { %>
-                            <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
-                        <% } %>
-                                    </td><%
-                                String parent = Util.redactUrl(ri.getParent());
-                                if (parent == null) {
-                                    parent = "N/A";
-                                }
-                                String type = ri.getType();
-                                if (type == null) {
-                                    type = "N/A";
-                                }
-                                String branch = ri.getBranch();
-                                if (branch == null) {
-                                    branch = "N/A";
-                                }
-                                String currentVersion = ri.getCurrentVersion();
-                                if (currentVersion == null) {
-                                    currentVersion = "N/A";
-                                }
-                                    %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                                %><td><%
-
-                                // Current index collapse threshold minimum of 10
-                                int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
-                                String cout = Util.htmlize(currentVersion);
-
-                                boolean showSummary = false;
-                                String coutSummary = currentVersion;
-                                if (coutSummary.length() > summaryLength) {
-                                    showSummary = true;
-                                    coutSummary = coutSummary.substring(0, summaryLength - 1);
-                                    coutSummary = Util.htmlize(coutSummary);
-                                }
-                                if (showSummary) {
-                                    %>
-                                    <span class="rev-message-summary"><%= coutSummary %></span>
-                                    <span class="rev-message-full rev-message-hidden"><%= cout %></span>
-                                    <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
-                                    <%
-                                }
-                                else {
-                                     %><span class="rev-message-full"><%= cout %></span><%
-                                }
-                                %></td><%
-                                %></tr><%
-                                cnt++;
-                            }
-                        }
-
-                        %></tbody><%
-                    }
-
-                    if (pHelper.getProjects(group).size() > 0) {
-                    %>
-                        <thead>
-                            <tr>
-                                <td colspan="3"><b>Project</b></td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <%
-                            for (Project project : pHelper.getProjects(group)) {
-                                if (!project.isIndexed()) {
-                                    continue;
-                                }
-                                String projDesc = project.getName();
-                                %>
-                                <tr>
-                                    <td colspan="3" class="name repository">
-                                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                                           title="Xref for project <%= Util.htmlize(projDesc) %>">
-                                            <%= Util.htmlize(projDesc) %>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <%
-                            }
-                        %>
-                        </tbody>
-                    <%
-                    }
-                    %>
+                        <opengrok:projects
+                                pageConfig="${pageConfig}"
+                                projects="<%= pHelper.getProjects(group) %>"
+                        />
                     </table><%
                 } else if ( pHelper.getAllGrouped(group).size() <= 0 && !pHelper.hasAllowedSubgroup(group) ) {
                     %>No projects<%
@@ -316,137 +187,14 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                                 || (projects.size() > 0 && projects.size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                         <table>
-                        <%
-                        if (pHelper.getUngroupedRepositories().size() > 0) {
-                        %>
-                            <thead>
-                            <tr>
-                            <td><b>Repository</b></td>
-                            <td><b>SCM Type: Parent (branch)</b></td>
-                            <td><b>Current version</b></td>
-                            </tr>
-                                </thead>
-                                <tbody>
-                            <%
-                            for (Project proj : projects) {
-                                if (!proj.isIndexed()) {
-                                    continue;
-                                }
-                                List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
-                                String projDesc = proj.getName();
-                                Integer cnt = 0;
-                                Collections.sort(repos, comparatorRepo);
-                                for (RepositoryInfo ri : repos) {
-                                    if (cnt > 0 && ri.getParent() == null)
-                                        // discard repositories without a parent url
-                                        continue;
-                                    boolean subrepository = !ri.getDirectoryNameRelative().equals(proj.getPath());
-                                    if (subrepository && cnt == 0) {
-                                        %>
-                                            <tr>
-                                                <td class="name repository" colspan="3">
-                                                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                                                       title="Xref for project <%= Util.htmlize(projDesc) %>">
-                                                        <%= Util.htmlize(projDesc) %>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <%
-                                    }
-
-                                    if (subrepository) {
-                                        projDesc = ri.getDirectoryName()
-                                                     .replace(cfg.getSourceRootPath() + File.separator, "");
-                                    }
-                                    %>
-                                    <tr><td class="name <%= subrepository ? "subrepository" : "repository" %>">
-                        <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                           title="Xref for project <%= Util.htmlize(projDesc) %>">
-                            <%= Util.htmlize(projDesc) %>
-                        </a>
-                        <%
-                        if (!(messages = messagesToJson(proj)).isEmpty()) { %>
-                            <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
-                        <% } %>
-                        </td><%
-                                    String parent = Util.redactUrl(ri.getParent());
-                                    if (parent == null) {
-                                        parent = "N/A";
-                                    }
-                                    String type = ri.getType();
-                                    if (type == null) {
-                                        type = "N/A";
-                                    }
-                                    String branch = ri.getBranch();
-                                    if (branch == null) {
-                                        branch = "N/A";
-                                    }
-                                    String currentVersion = ri.getCurrentVersion();
-                                    if (currentVersion == null) {
-                                        currentVersion = "N/A";
-                                    }
-                                    %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                                    %><td><%
-
-                                    // Current index message collapse threshold minimum of 10
-                                    int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
-                                    String cout = Util.htmlize(currentVersion);
-
-                                    boolean showSummary = false;
-                                    String coutSummary = currentVersion;
-                                    if (coutSummary.length() > summaryLength) {
-                                        showSummary = true;
-                                        coutSummary = coutSummary.substring(0, summaryLength - 1);
-                                        coutSummary = Util.htmlize(coutSummary);
-                                    }
-
-                                    if (showSummary) {
-                                        %>
-                                        <span class="rev-message-summary"><%= coutSummary %></span>
-                                        <span class="rev-message-full rev-message-hidden"><%= cout %></span>
-                                        <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
-                                        <%
-                                    }
-                                    else {
-                                         %><span class="rev-message-full"><%= cout %></span><%
-                                    }
-                                    %></td><%
-                                    %></tr><%
-                                    cnt++;
-                                }
-                            }
-                            %></tbody><%
-                        }
-                        if (pHelper.getUngroupedProjects().size() > 0) {
-                        %>
-                            <thead>
-                            <tr>
-                                <td colspan="3"><b>Project</b></td>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <%
-                                for (Project project : pHelper.getUngroupedProjects()) {
-                                    if (!project.isIndexed()) {
-                                        continue;
-                                    }
-                                    String projDesc = project.getName();
-                            %>
-                                    <tr>
-                                        <td colspan="3" class="name repository">
-                                            <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
-                                               title="Xref for project <%= Util.htmlize(projDesc) %>">
-                                                <%= Util.htmlize(projDesc) %>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <%
-                                }
-                            %>
-                            </tbody>
-                        <%
-                            }
-                        %>
+                            <opengrok:repositories
+                                    pageConfig="${pageConfig}"
+                                    repositories="<%= pHelper.getUngroupedRepositories() %>"
+                            />
+                            <opengrok:projects
+                                    pageConfig="${pageConfig}"
+                                    projects="<%= pHelper.getUngroupedProjects() %>"
+                            />
                         </table>
                     </div>
                 </div>
