@@ -2301,7 +2301,6 @@ function preprocess_searched_projects(form) {
         var $all = $input
             .attr('id', 'search_all_projects')
             .attr('type', 'checkbox')
-            .attr('type', 'checkbox')
             .prop('checked', true)
             .css('display', 'none')
             .attr('value', true)
