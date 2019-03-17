@@ -59,11 +59,7 @@ public final class ProjectHelper {
     private static final String PROJECT_HELPER_SUBGROUPS_OF = "project_helper_subgroups_of_";
     private static final String PROJECT_HELPER_FAVOURITE_GROUP = "project_helper_favourite_group";
 
-    private static final Comparator<RepositoryInfo> REPOSITORY_COMPARATOR = new Comparator<RepositoryInfo>() {
-        public int compare(RepositoryInfo r1, RepositoryInfo r2) {
-            return r1.getDirectoryName().compareTo(r2.getDirectoryName());
-        }
-    };
+    private static final Comparator<RepositoryInfo> REPOSITORY_NAME_COMPARATOR = Comparator.comparing(RepositoryInfo::getDirectoryName);
 
     private PageConfig cfg;
     /**
@@ -135,7 +131,7 @@ public final class ProjectHelper {
      * Get repository info list for particular project. A copy of the list is
      * returned always to allow concurrent modifications of the list in the
      * caller. The items in the list shall not be modified concurrently, though.
-     * This list is sorted with respect {@link #REPOSITORY_COMPARATOR}.
+     * This list is sorted with respect {@link #REPOSITORY_NAME_COMPARATOR}.
      *
      * @param p the project for which we find the repository info list
      * @return Copy of a list of repository info or empty list if no info is
@@ -144,7 +140,7 @@ public final class ProjectHelper {
     public List<RepositoryInfo> getSortedRepositoryInfo(Project p) {
         return getRepositoryInfo(p)
                 .stream()
-                .sorted(REPOSITORY_COMPARATOR)
+                .sorted(REPOSITORY_NAME_COMPARATOR)
                 .collect(Collectors.toList());
     }
 
