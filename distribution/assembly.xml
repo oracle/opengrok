@@ -10,9 +10,9 @@
         <destName>opengrok.jar</destName>
       </file>
       <file>
-        <source>${project.basedir}/../plugins/target/plugins-${version}.jar</source>
+        <source>${project.basedir}/../opengrok-plugins/target/opengrok-plugins-${version}.jar</source>
         <outputDirectory>share/lib</outputDirectory>
-        <destName>plugins.jar</destName>
+        <destName>opengrok-plugins.jar</destName>
       </file>
       <file>
         <source>${project.build.directory}/dist/opengrok-web-${version}.war</source>

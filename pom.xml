@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -45,11 +45,11 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     </licenses>
 
     <modules>
-        <module>plugins</module>
+        <module>opengrok-plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
         <module>distribution</module>
-        <module>suggester</module>
+        <module>opengrok-suggester</module>
         <module>opengrok-tools</module>
     </modules>
 
