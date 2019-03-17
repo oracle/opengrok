@@ -40,19 +40,16 @@ from logging.handlers import RotatingFileHandler
 
 from filelock import Timeout, FileLock
 
+from .scm.repofactory import get_repository
+from .scm.repository import RepositoryException
 from .utils.hook import run_hook
 from .utils.log import get_console_logger, get_class_basename, \
     print_exc_exit
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
-from .utils.repofactory import get_repository
 from .utils.utils import is_exe, check_create_dir, get_int, diff_list, \
     is_web_uri
-
-# do not reorder this import, it must be imported after utils.
-# (for me) idea reorders the import to the top, causing an import error
-from .scm.repository import RepositoryException
 
 major_version = sys.version_info[0]
 if major_version < 3:
