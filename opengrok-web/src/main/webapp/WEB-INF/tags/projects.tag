@@ -17,6 +17,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
