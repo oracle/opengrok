@@ -180,7 +180,7 @@ public class PageConfigRequestedProjectsTest {
      */
     @Test
     public void testNonExistentProject() {
-        final HttpServletRequest request = createRequest(null, new String[]{"no-project"});
+        final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
         Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
@@ -195,6 +195,42 @@ public class PageConfigRequestedProjectsTest {
 
         final PageConfig cfg = PageConfig.get(request);
         Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjects() {
+        final HttpServletRequest request = createRequest(null, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjectsOverrideProjectParam() {
+        final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjectsOverrideGroupParam() {
+        final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllOverrideNonExistentProject() {
+        final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     /**
