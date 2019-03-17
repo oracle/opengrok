@@ -53,4 +53,4 @@ def test_opengrok_version(command):
     cmd.execute()
     assert cmd.getretcode() == 0
     assert cmd.getstate() == Command.FINISHED
-    assert cmd.getoutputstr() == version
+    assert version in cmd.getoutputstr()
