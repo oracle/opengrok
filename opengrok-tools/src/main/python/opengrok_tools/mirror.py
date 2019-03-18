@@ -49,6 +49,9 @@ from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
 from .utils.utils import is_exe, check_create_dir, get_int, diff_list, \
     is_web_uri
+
+# do not reorder this import, it must be imported after utils.
+# (for me) idea reorders the import to the top, causing an import error
 from .scm.repository import RepositoryException
 
 major_version = sys.version_info[0]
@@ -122,7 +125,9 @@ def main():
     ret = 0
 
     parser = argparse.ArgumentParser(description='project mirroring',
-                                     parents=[get_baseparser()])
+                                     parents=[get_baseparser(
+                                         tool_version=__version__)
+                                     ])
 
     parser.add_argument('project')
     parser.add_argument('-c', '--config',

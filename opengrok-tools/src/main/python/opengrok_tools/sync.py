@@ -67,7 +67,10 @@ def main():
     dirs_to_process = []
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.',
-                                     parents=[get_baseparser()])
+                                     parents=[
+                                         get_baseparser(
+                                             tool_version=__version__)
+                                     ])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 

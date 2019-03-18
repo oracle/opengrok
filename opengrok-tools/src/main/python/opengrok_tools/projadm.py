@@ -207,7 +207,9 @@ def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter,
-                                     parents=[get_baseparser()])
+                                     parents=[get_baseparser(
+                                         tool_version=__version__)
+                                     ])
 
     parser.add_argument('-b', '--base', default="/var/opengrok",
                         help='OpenGrok instance base directory')
