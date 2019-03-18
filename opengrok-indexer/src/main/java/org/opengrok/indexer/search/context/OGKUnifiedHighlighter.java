@@ -41,7 +41,6 @@ import org.apache.lucene.search.uhighlight.PhraseHelper;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.CharacterRunAutomaton;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -97,7 +96,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         if (ftname == null) {
             return indexAnalyzer;
         }
-        Analyzer fa = AnalyzerGuru.getAnalyzer(ftname);
+        Analyzer fa = env.getAnalyzerGuru().getAnalyzer(ftname);
         return fa == null ? indexAnalyzer : fa;
     }
 

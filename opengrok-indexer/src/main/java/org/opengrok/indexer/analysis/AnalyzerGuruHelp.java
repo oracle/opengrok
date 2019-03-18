@@ -40,35 +40,36 @@ public class AnalyzerGuruHelp {
      * {@link AnalyzerGuru#getMagicsMap()}, and
      * {@link AnalyzerGuru#getAnalyzerFactoryMatchers()}.
      * @return a defined, multi-line String
+     * @param analyzerGuru an instance of analyzer guru with info about analyzers
      */
-    public static String getUsage() {
+    public static String getUsage(AnalyzerGuru analyzerGuru) {
         StringBuilder b = new StringBuilder();
         b.append("AnalyzerGuru prefixes:\n");
-        byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
+        byKey(analyzerGuru.getPrefixesMap()).forEach((kv) -> {
             b.append(String.format("%-10s : %s\n", reportable(kv.key + '*'),
                 reportable(kv.fac)));
         });
 
         b.append("\nAnalyzerGuru extensions:\n");
-        byKey(AnalyzerGuru.getExtensionsMap()).forEach((kv) -> {
+        byKey(analyzerGuru.getExtensionsMap()).forEach((kv) -> {
             b.append(String.format("*.%-7s : %s\n",
                 reportable(kv.key.toLowerCase(Locale.ROOT)),
                 reportable(kv.fac)));
         });
 
         b.append("\nAnalyzerGuru magic strings:\n");
-        byFactory(AnalyzerGuru.getMagicsMap()).forEach((kv) -> {
+        byFactory(analyzerGuru.getMagicsMap()).forEach((kv) -> {
             b.append(String.format("%-23s : %s\n", reportable(kv.key),
                 reportable(kv.fac)));
         });
 
         b.append("\nAnalyzerGuru magic matchers:\n");
-        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
+        analyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
             if (m.getIsPreciseMagic()) {
                 b.append(reportable(m));
             }
         });
-        AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
+        analyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
             if (!m.getIsPreciseMagic()) {
                 b.append(reportable(m));
             }

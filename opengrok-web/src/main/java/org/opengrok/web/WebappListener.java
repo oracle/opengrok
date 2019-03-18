@@ -23,27 +23,25 @@
  */
 package org.opengrok.web;
 
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import org.opengrok.indexer.Info;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
-import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
 
 /**
  * Initialize webapp context
@@ -65,7 +63,7 @@ public final class WebappListener
 
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
-        
+
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
             LOGGER.severe("CONFIGURATION section missing in web.xml");
@@ -84,6 +82,10 @@ public final class WebappListener
          */
         env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory(), env.getPluginStack()));
         env.getAuthorizationFramework().reload();
+
+        // set the new plugin directory and reload the analyzer framework
+        env.getAnalyzerGuru().getPluginFramework().setPluginDirectory(env.getPluginDirectory());
+        env.getAnalyzerGuru().getPluginFramework().reload();
 
         try {
             loadStatistics();
@@ -136,7 +138,7 @@ public final class WebappListener
             sh.destroy();
         }
 
-        AnalyzerGuru.returnAnalyzers();
+        RuntimeEnvironment.getInstance().getAnalyzerGuru().returnAnalyzers();
     }
 
     /**

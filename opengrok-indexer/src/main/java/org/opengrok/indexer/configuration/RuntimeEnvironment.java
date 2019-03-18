@@ -57,6 +57,7 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -135,10 +136,15 @@ public final class RuntimeEnvironment {
     /** Instance of authorization framework.*/
     private AuthorizationFramework authFramework;
 
-    /** Gets the thread pool used for multi-project searches. */
+    private AnalyzerGuru analyzerGuru;
+
+    /**
+     * Gets the thread pool used for multi-project searches.
+     */
     public ExecutorService getSearchExecutor() {
         return lzSearchExecutor.get();
     }
+
 
     private ExecutorService newSearchExecutor() {
         return Executors.newFixedThreadPool(
@@ -300,7 +306,7 @@ public final class RuntimeEnvironment {
     public void setInteractiveCommandTimeout(int timeout) {
         setConfigurationValue("interactiveCommandTimeout", timeout);
     }
-    
+
     public Statistics getStatistics() {
         return statistics;
     }
@@ -706,7 +712,7 @@ public final class RuntimeEnvironment {
     public void setRepositories(List<RepositoryInfo> repositories) {
         setConfigurationValue("repositories", repositories);
     }
-    
+
     public void removeRepositories() {
         try {
             configLock.writeLock().lock();
@@ -715,7 +721,7 @@ public final class RuntimeEnvironment {
             configLock.writeLock().unlock();
         }
     }
-    
+
     /**
      * Search through the directory for repositories and use the result to replace
      * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.
@@ -1592,6 +1598,18 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Return the analyzer guru.
+     *
+     * @return the analyzer guru instance, never {@code null}.
+     */
+    public synchronized AnalyzerGuru getAnalyzerGuru() {
+        if (analyzerGuru == null) {
+            analyzerGuru = new AnalyzerGuru(getPluginDirectory());
+        }
+        return analyzerGuru;
+    }
+
+    /**
      * Set the authorization framework for this environment. Unload all
      * previously load plugins.
      *
@@ -1670,6 +1688,10 @@ public final class RuntimeEnvironment {
         getAuthorizationFramework().setPluginDirectory(getPluginDirectory());
         getAuthorizationFramework().setStack(getPluginStack());
         getAuthorizationFramework().reload();
+
+        // set the new plugin directory and reload the analyzer framework
+        getAnalyzerGuru().getPluginFramework().setPluginDirectory(getPluginDirectory());
+        getAnalyzerGuru().getPluginFramework().reload();
 
         messagesContainer.setMessageLimit(getMessageLimit());
     }

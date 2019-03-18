@@ -33,15 +33,15 @@ java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
-java.util.logging.Level,
 java.util.Set,
+java.util.logging.Level,
 java.util.logging.Logger,
-org.opengrok.indexer.analysis.AnalyzerGuru,
-org.opengrok.indexer.analysis.Ctags,
-org.opengrok.indexer.analysis.Definitions,
 org.opengrok.indexer.analysis.AbstractAnalyzer,
 org.opengrok.indexer.analysis.AbstractAnalyzer.Genre,
 org.opengrok.indexer.analysis.AnalyzerFactory,
+org.opengrok.indexer.analysis.AnalyzerGuru,
+org.opengrok.indexer.analysis.Ctags,
+org.opengrok.indexer.analysis.Definitions,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
 org.opengrok.indexer.logger.LoggerFactory,
@@ -49,10 +49,10 @@ org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.search.DirectoryExtraReader,
 org.opengrok.indexer.search.FileExtra,
 org.opengrok.indexer.util.FileExtraZipper,
-org.opengrok.indexer.util.ObjectPool,
 org.opengrok.indexer.util.IOUtils,
-org.opengrok.web.DirectoryListing,
-org.opengrok.indexer.web.SearchHelper"
+org.opengrok.indexer.util.ObjectPool,
+org.opengrok.indexer.web.SearchHelper,
+org.opengrok.web.DirectoryListing"
 %>
 <%
 {
@@ -186,11 +186,11 @@ document.pageReady.push(function() { pageReadyList();});
                 BufferedInputStream bin =
                     new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
-                    AnalyzerFactory a = AnalyzerGuru.find(basename);
-                    AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
+                    AnalyzerFactory a = cfg.getEnv().getAnalyzerGuru().find(basename);
+                    AbstractAnalyzer.Genre g = cfg.getEnv().getAnalyzerGuru().getGenre(a);
                     if (g == null) {
-                        a = AnalyzerGuru.find(bin);
-                        g = AnalyzerGuru.getGenre(a);
+                        a = cfg.getEnv().getAnalyzerGuru().find(bin);
+                        g = cfg.getEnv().getAnalyzerGuru().getGenre(a);
                     }
                     if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
@@ -247,8 +247,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
-            AnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
+            AnalyzerFactory a = cfg.getEnv().getAnalyzerGuru().find(basename);
+            AbstractAnalyzer.Genre g = cfg.getEnv().getAnalyzerGuru().getGenre(a);
             String error = null;
             if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
@@ -278,8 +278,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 if (in != null) {
                     try {
                         if (g == null) {
-                            a = AnalyzerGuru.find(in, basename);
-                            g = AnalyzerGuru.getGenre(a);
+                            a = cfg.getEnv().getAnalyzerGuru().find(in, basename);
+                            g = cfg.getEnv().getAnalyzerGuru().getGenre(a);
                         }
                         if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
     %>

@@ -32,10 +32,10 @@ import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
 
@@ -82,7 +82,7 @@ public class JarAnalyzer extends FileAnalyzer {
                 fout.write(ename);
                 fout.write("\n");
 
-                AnalyzerFactory fac = AnalyzerGuru.find(ename);
+                AnalyzerFactory fac = RuntimeEnvironment.getInstance().getAnalyzerGuru().find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
                     if (xrefOut != null) {
                         xrefOut.append("<br/>");

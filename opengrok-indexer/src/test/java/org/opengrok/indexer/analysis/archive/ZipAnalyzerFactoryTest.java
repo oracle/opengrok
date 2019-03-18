@@ -23,10 +23,11 @@
 
 package org.opengrok.indexer.analysis.archive;
 
-import java.io.IOException;
-import java.io.InputStream;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -38,18 +39,19 @@ public class ZipAnalyzerFactoryTest {
 
     /**
      * Tests a ZIP file.
+     *
      * @throws IOException I/O exception
      */
     @Test
     public void testZipWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "analysis/archive/zip.bin");
+                "analysis/archive/zip.bin");
         assertNotNull("zip.bin should be available,", res);
 
         // assert that it is matched
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = new AnalyzerGuru().find(res);
         assertNotNull("zip.bin should have factory", fac);
         assertSame("should be ZipAnalyzerFactory", fac.getClass(),
-            ZipAnalyzerFactory.class);
+                ZipAnalyzerFactory.class);
     }
 }

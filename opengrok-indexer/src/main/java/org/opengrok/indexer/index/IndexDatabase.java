@@ -317,7 +317,7 @@ public class IndexDatabase {
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
-            analyzerGuru = new AnalyzerGuru();
+            analyzerGuru = env.getAnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
@@ -804,10 +804,9 @@ public class IndexDatabase {
 
     private AbstractAnalyzer getAnalyzerFor(File file, String path)
             throws IOException {
-        AbstractAnalyzer fa;
         try (InputStream in = new BufferedInputStream(
                 new FileInputStream(file))) {
-            return AnalyzerGuru.getAnalyzer(in, path);
+            return analyzerGuru.getAnalyzer(in, path);
         }
     }
 
@@ -1710,7 +1709,7 @@ public class IndexDatabase {
                 continue;
             }
 
-            long reqGuruVersion = AnalyzerGuru.getVersionNo();
+            long reqGuruVersion = analyzerGuru.getVersionNo();
             Long actGuruVersion = settings.getAnalyzerGuruVersion();
             /*
              * For an older OpenGrok index that does not yet have a defined,
@@ -1731,8 +1730,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                AnalyzerFactory fac =
-                        AnalyzerGuru.findByFileTypeName(fileTypeName);
+                AnalyzerFactory fac = analyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();
                 }
@@ -1757,7 +1755,7 @@ public class IndexDatabase {
             }
 
             // Verify Analyzer version, or return a value to indicate mismatch.
-            long reqVersion = AnalyzerGuru.getAnalyzerVersionNo(fileTypeName);
+            long reqVersion = analyzerGuru.getAnalyzerVersionNo(fileTypeName);
             Long actVersion = settings.getAnalyzerVersion(fileTypeName);
             if (actVersion == null || !actVersion.equals(reqVersion)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -1796,8 +1794,8 @@ public class IndexDatabase {
         settings.setProjectName(project != null ? project.getName() : null);
         settings.setTabSize(project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0);
-        settings.setAnalyzerGuruVersion(AnalyzerGuru.getVersionNo());
-        settings.setAnalyzersVersions(AnalyzerGuru.getAnalyzersVersionNos());
+        settings.setAnalyzerGuruVersion(analyzerGuru.getVersionNo());
+        settings.setAnalyzersVersions(analyzerGuru.getAnalyzersVersionNos());
 
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         dao.write(writer, settings);

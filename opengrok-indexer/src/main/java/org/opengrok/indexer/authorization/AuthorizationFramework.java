@@ -44,7 +44,7 @@ import org.opengrok.indexer.web.Statistics;
  *
  * @author Krystof Tulinger
  */
-public final class AuthorizationFramework extends PluginFramework<IAuthorizationPlugin> {
+public final class AuthorizationFramework extends PluginFramework<IAuthorizationPlugin, AuthorizationStack> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
 
@@ -58,11 +58,6 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      * reconfiguration in {@code reload()}.
      */
     AuthorizationStack newStack;
-
-    /**
-     * Stack of plugins intended for loading.
-     */
-    AuthorizationStack loadingStack;
 
     /**
      * Lock for safe reloads.
@@ -305,9 +300,15 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         }
     }
 
+    /**
+     * Add the plugin to the given authorization stack.
+     *
+     * @param localStack a local stack used for loading the plugins
+     * @param plugin     the authorization plugin
+     */
     @Override
-    protected void classLoaded(IAuthorizationPlugin plugin) {
-        if (!loadingStack.setPlugin(plugin)) {
+    protected void classLoaded(AuthorizationStack localStack, IAuthorizationPlugin plugin) {
+        if (!localStack.setPlugin(plugin)) {
             LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack", plugin.getClass().getCanonicalName());
         }
     }
@@ -315,15 +316,21 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
     /**
      * Prepare the loading stack for new plugins.
      *
-     * @see #classLoaded(IAuthorizationPlugin)
+     * @return a local stack used for loading the plugins
+     * @see #classLoaded(AuthorizationStack, IAuthorizationPlugin)
      */
     @Override
-    protected void beforeReload() {
+    protected AuthorizationStack beforeReload() {
+        if (stack == null) {
+            LOGGER.log(Level.WARNING, "Plugin stack not found in configuration: null. All requests allowed.");
+            return null;
+        }
+
         if (this.newStack == null) {
             // Clone a new stack not interfering with the current stack.
-            loadingStack = getStack().clone();
+            return getStack().clone();
         } else {
-            loadingStack = this.newStack.clone();
+            return this.newStack.clone();
         }
     }
 
@@ -341,20 +348,26 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      * This method is thread safe with respect to the currently running
      * authorization checks.</p>
      *
+     * @param localStack a local stack used for loading the plugins
      * @see IAuthorizationPlugin#load(java.util.Map)
      * @see IAuthorizationPlugin#unload()
      * @see Configuration#getPluginDirectory()
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
-    protected void afterReload() {
+    protected void afterReload(AuthorizationStack localStack) {
+        if (getPluginDirectory() == null || !getPluginDirectory().isDirectory() || !getPluginDirectory().canRead()) {
+            LOGGER.log(Level.WARNING, "All requests allowed.");
+            return;
+        }
+
         if (stack == null) {
             LOGGER.log(Level.WARNING, "Plugin stack not found in configuration: null. All requests allowed.");
             return;
         }
 
         // fire load events
-        loadAllPlugins(loadingStack);
+        loadAllPlugins(localStack);
 
         AuthorizationStack oldStack;
         /**
@@ -367,7 +380,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         lock.writeLock().lock();
         try {
             oldStack = stack;
-            stack = loadingStack;
+            stack = localStack;
 
             // increase the current plugin version tracked by the framework
             increasePluginVersion();
@@ -381,7 +394,6 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         // clean the old stack
         removeAll(oldStack);
         oldStack = null;
-        loadingStack = null;
     }
 
     /**

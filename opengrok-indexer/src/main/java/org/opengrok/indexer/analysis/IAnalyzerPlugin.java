@@ -18,24 +18,11 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.analysis;
 
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
+public interface IAnalyzerPlugin {
 
-/**
- * Represents a container for tests of {@link AnalyzerGuruHelp}.
- */
-public class AnalyzerGuruHelpTest {
-    @Test
-    public void shouldCreateReadableUsage() {
-        String usage = AnalyzerGuruHelp.getUsage(RuntimeEnvironment.getInstance().getAnalyzerGuru());
-        assertTrue("usage is not empty", !usage.isEmpty());
-        assertTrue("usage contains \"*.\"", usage.contains("*."));
-        assertTrue("usage contains \"#!\"", usage.contains("#!"));
-    }
+    AnalyzerFactory getFactory();
 }
