@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path(SearchController.PATH)
-@CorsEnable
 public class SearchController {
 
     public static final String PATH = "search";
@@ -59,6 +58,7 @@ public class SearchController {
     private SuggesterService suggester;
 
     @GET
+    @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
     public SearchResult search(
             @Context final HttpServletRequest req,

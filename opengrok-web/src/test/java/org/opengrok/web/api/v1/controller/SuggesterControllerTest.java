@@ -59,6 +59,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.opengrok.web.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.CorsFilter.CORS_REQUEST_HEADER;
 
 @ConditionalRun(CtagsInstalled.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -149,6 +151,17 @@ public class SuggesterControllerTest extends JerseyTest {
                 .get(SuggesterConfig.class);
 
         assertEquals(env.getSuggesterConfig(), config);
+    }
+
+    @Test
+    public void testGetSuggesterCors() {
+        Response response = target(SuggesterController.PATH)
+                .path("config")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+
+        assertEquals(Arrays.asList("*"), response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
