@@ -35,7 +35,7 @@ import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
-import org.opengrok.web.CorsEnable;
+import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.model.SuggesterData;
 import org.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;

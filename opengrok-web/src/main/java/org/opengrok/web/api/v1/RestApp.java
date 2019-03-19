@@ -23,7 +23,6 @@
 package org.opengrok.web.api.v1;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.opengrok.web.CorsFilter;
 import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
 
 import javax.ws.rs.ApplicationPath;
@@ -34,9 +33,7 @@ public class RestApp extends ResourceConfig {
     public static final String API_PATH = "/api/v1";
     
     public RestApp() {
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         register(new SuggesterAppBinder());
-        register(CorsFilter.class);
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");
         packages(true, "org.opengrok.web.api.v1");
     }

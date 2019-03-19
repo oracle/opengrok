@@ -1,6 +1,7 @@
 package org.opengrok.web;
 
 import org.junit.Test;
+import org.opengrok.web.api.v1.filter.CorsFilter;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -13,8 +14,8 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.opengrok.web.CorsFilter.ALLOW_CORS_HEADER;
-import static org.opengrok.web.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 public class CorsFilterTest {
     @Test

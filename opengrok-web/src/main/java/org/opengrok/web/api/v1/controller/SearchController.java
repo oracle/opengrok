@@ -25,7 +25,7 @@ package org.opengrok.web.api.v1.controller;
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.SearchEngine;
-import org.opengrok.web.CorsEnable;
+import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;

@@ -59,8 +59,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.opengrok.web.CorsFilter.ALLOW_CORS_HEADER;
-import static org.opengrok.web.CorsFilter.CORS_REQUEST_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @ConditionalRun(CtagsInstalled.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -105,6 +105,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
         repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));

@@ -1,4 +1,4 @@
-package org.opengrok.web;
+package org.opengrok.web.api.v1.filter;
 
 import javax.ws.rs.container.*;
 import javax.ws.rs.ext.Provider;
