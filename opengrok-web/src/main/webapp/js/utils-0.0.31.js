@@ -2299,12 +2299,14 @@ function preprocess_searched_projects(form) {
         $sel.find('.sol-checkbox').prop('checked', false);
         var $input = $('<input>')
         var $all = $input
-            .attr('id', 'search_all_projects')
-            .attr('type', 'checkbox')
+            .attr({
+                id: 'search_all_projects',
+                type: 'checkbox',
+                value: true,
+                name: 'searchall',
+            })
             .prop('checked', true)
             .css('display', 'none')
-            .attr('value', true)
-            .attr('name', 'searchall');
         $all.appendTo($(form));
         return;
     }
