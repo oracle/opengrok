@@ -111,7 +111,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
     }
 
-    private final static Comparator<Script> SCRIPTS_COMPARATOR = Comparator
+    private static final Comparator<Script> SCRIPTS_COMPARATOR = Comparator
             .comparingInt(Script::getPriority)
             .thenComparing(Script::getScriptData);
 
