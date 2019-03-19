@@ -23,13 +23,13 @@
  */
 package org.opengrok.indexer.web;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * A list-like container for javascripts in the page.
@@ -111,11 +111,14 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
     }
 
+    private final static Comparator<Script> SCRIPTS_COMPARATOR = Comparator
+            .comparingInt(Script::getPriority)
+            .thenComparing(Script::getScriptData);
+
     /**
-     * Scripts which will be written to the page. We assume that the length
-     * could be the same as for {@link #SCRIPTS}.
+     * Scripts which will be written to the page.
      */
-    private final List<Script> outputScripts = new ArrayList<>(SCRIPTS.size());
+    private final NavigableSet<Script> outputScripts = new TreeSet<>(SCRIPTS_COMPARATOR);
 
     /**
      * Convert the page scripts into HTML.
@@ -134,7 +137,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Return the HTML representation of the page scripts.
      *
      * @return the HTML
-     *
      * @see #toHtml()
      */
     @Override
@@ -146,7 +148,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Return the size of the page scripts.
      *
      * @return the size
-     *
      * @see List#size()
      */
     public int size() {
@@ -157,7 +158,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Check if there is any script for this page.
      *
      * @return true if there is not; false otherwise
-     *
      * @see List#isEmpty()
      */
     public boolean isEmpty() {
@@ -179,7 +179,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Add a script which is identified by the name.
      *
      * @param contextPath given context path for the used URL
-     * @param scriptName name of the script
+     * @param scriptName  name of the script
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName) {
@@ -195,46 +195,11 @@ public class Scripts implements Iterable<Scripts.Script> {
     }
 
     /**
-     * Add a script to the page, taking the script priority into account. The
-     * position is determined as the upper bound for the given priority.
+     * Add a script to the page, taking the script priority into account.
      *
      * @param script the script
      */
     public void addScript(Script script) {
-        int index = Collections.binarySearch(outputScripts, script, new Comparator<Script>() {
-            @Override
-            public int compare(Script a, Script b) {
-                return a.getPriority() - b.getPriority();
-            }
-        });
-        if (index < 0) {
-            /**
-             * Key is not found in the list the index<br>
-             * equals to -(insertion index) - 1.
-             */
-            this.outputScripts.add(Math.abs(index + 1), script);
-        } else {
-            /**
-             * Key found in the list, append it after the last element with the
-             * same priority => insert it at the upper bound index.
-             */
-            while (index < this.outputScripts.size()
-                    && this.outputScripts.get(index).getPriority() == script.getPriority()) {
-                index++;
-            }
-            this.outputScripts.add(index, script);
-        }
-    }
-
-    /**
-     * Get the page script by the index
-     *
-     * @param index index of the script
-     * @return the script
-     *
-     * @see List#get(int)
-     */
-    public Script get(int index) {
-        return outputScripts.get(index);
+        this.outputScripts.add(script);
     }
 }
