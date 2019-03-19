@@ -106,6 +106,7 @@ public final class PageConfig {
     public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
 
     // query parameters
+    protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
 
@@ -806,6 +807,8 @@ public final class PageConfig {
      * <li>If there is no project in the configuration an empty set is returned. Otherwise:</li>
      * <li>If there is only one project in the configuration,
      * this one gets returned (no matter, what the request actually says). Otherwise</li>
+     * <li>If the request parameter {@code ALL_PROJECT_SEARCH} contains a true value,
+     * all projects are added to searching. Otherwise:</li>
      * <li>If the request parameter {@code PROJECT_PARAM_NAME} contains any available project,
      * the set with invalid projects removed gets returned. Otherwise:</li>
      * <li>If the request parameter {@code GROUP_PARAM_NAME} contains any available group,
@@ -819,6 +822,7 @@ public final class PageConfig {
      * </ol>
      *
      * @return a possible empty set of project names but never {@code null}.
+     * @see #ALL_PROJECT_SEARCH
      * @see #PROJECT_PARAM_NAME
      * @see #GROUP_PARAM_NAME
      * @see #OPEN_GROK_PROJECT
@@ -826,7 +830,7 @@ public final class PageConfig {
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects(PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
+                    = getRequestedProjects(ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
@@ -892,13 +896,15 @@ public final class PageConfig {
      * Same as {@link #getRequestedProjects()}, but with a variable cookieName
      * and parameter name.
      *
-     * @param projectParamName the name of the request parameter corresponding to a project name.
-     * @param groupParamName   the name of the request parameter corresponding to a group name
-     * @param cookieName       name of the cookie which possible contains project
-     *                         names used as fallback
+     * @param searchAllParamName the name of the request parameter corresponding to search all projects.
+     * @param projectParamName   the name of the request parameter corresponding to a project name.
+     * @param groupParamName     the name of the request parameter corresponding to a group name
+     * @param cookieName         name of the cookie which possible contains project
+     *                           names used as fallback
      * @return set of project names. Possibly empty set but never {@code null}.
      */
     protected SortedSet<String> getRequestedProjects(
+            String searchAllParamName,
             String projectParamName,
             String groupParamName,
             String cookieName
@@ -909,6 +915,14 @@ public final class PageConfig {
 
         if (projects == null) {
             return projectNames;
+        }
+
+        if (Boolean.parseBoolean(req.getParameter(searchAllParamName))) {
+            return getProjectHelper()
+                    .getAllProjects()
+                    .stream()
+                    .map(Project::getName)
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
 
         // Use a project determined directly from the URL

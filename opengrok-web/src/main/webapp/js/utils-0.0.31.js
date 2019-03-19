@@ -2273,11 +2273,49 @@ function isOnSearchPage() {
     return $(document.documentElement).hasClass('search');
 }
 
-function transform_projects_to_groups() {
+/**
+ * Preprocess the searched projects in the form with:
+ *
+ * <ol>
+ *  <li>For all project search -> replace the projects with simple searchall parameter</li>
+ *  <li>For group search -> replace all projects in a group by the group parameter</li>
+ * </ol>
+ * @param form the form containing the checkboxes
+ */
+function preprocess_searched_projects(form) {
     var sol = $('#project').searchableOptionList();
 
     var $sel = sol.$selectionContainer;
 
+    /*
+     * For all project search check if all project checkbox are checked and then uncheck them (they
+     * would appear in the url) and add a hidden checkbox with searchall name.
+     */
+    var allProjectsSearch = $.makeArray($sel.find('.sol-checkbox[name=project]')).every(function (checkbox) {
+        return $(checkbox).is(':checked')
+    });
+
+    if (allProjectsSearch && $('#search_all_projects').length === 0) {
+        $sel.find('.sol-checkbox').prop('checked', false);
+        var $input = $('<input>')
+        var $all = $input
+            .attr({
+                id: 'search_all_projects',
+                type: 'checkbox',
+                value: true,
+                name: 'searchall',
+            })
+            .prop('checked', true)
+            .css('display', 'none')
+        $all.appendTo($(form));
+        return;
+    }
+
+    /*
+     * For selecting groups instead of projects, ommit the "Other" group. Loop over
+     * all project checkbox in a group and when all of them are checked, uncheck them (they
+     * would appear in the URL) and then check the group checkbox.
+     */
     $sel.find('.sol-optiongroup').each(function () {
         var $el = $(this);
 
@@ -2324,8 +2362,9 @@ function searchSubmit(form) {
         form.appendChild(input);
     }
 
+    // replace all projects search with searchall parameter
     // select groups instead of projects if all projects in one group are selected
-    transform_projects_to_groups();
+    preprocess_searched_projects(form);
 }
 
 /**
