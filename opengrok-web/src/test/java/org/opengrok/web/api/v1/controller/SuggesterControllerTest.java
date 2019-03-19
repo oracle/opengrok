@@ -154,14 +154,13 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetSuggesterCors() {
+    public void testGetSuggesterConfigCors() {
         Response response = target(SuggesterController.PATH)
                 .path("config")
                 .request()
                 .header(CORS_REQUEST_HEADER, "http://example.com")
                 .get();
-
-        assertEquals(Arrays.asList("*"), response.getHeaderString(ALLOW_CORS_HEADER));
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
@@ -175,6 +174,19 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("innermethod", "innerclass"));
+    }
+
+    @Test
+    public void testGetSuggestionsCors() {
+        Response response = target(SuggesterController.PATH)
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "inner")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
