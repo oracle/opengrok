@@ -45,7 +45,6 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +59,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @ConditionalRun(CtagsInstalled.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -104,6 +105,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
         repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
@@ -153,6 +155,16 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    public void testGetSuggesterConfigCors() {
+        Response response = target(SuggesterController.PATH)
+                .path("config")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
     public void testGetSuggestionsSimpleFull() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
@@ -163,6 +175,19 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("innermethod", "innerclass"));
+    }
+
+    @Test
+    public void testGetSuggestionsCors() {
+        Response response = target(SuggesterController.PATH)
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "inner")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
