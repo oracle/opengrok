@@ -196,8 +196,9 @@ public class GitRepository extends Repository {
              * Be careful, git uses only forward slashes in its command and output (not in file path).
              * Using backslashes together with git show will get empty output and 0 status code.
              */
-            String filename = fullpath.substring(getDirectoryName().length() + 1)
-                                      .replace(File.separatorChar, '/');
+            String filename = Paths.get(getDirectoryName()).relativize(Paths.get(fullpath))
+                                   .toString()
+                                   .replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {
                 RepoCommand,
@@ -263,8 +264,12 @@ public class GitRepository extends Repository {
                 });
                 return false;
             }
-            if (origpath != null && !origpath.equals(fullpath)) {
-                result = getHistoryRev(sink, origpath, rev);
+
+            if (origpath != null) {
+                final String fullRenamedPath = Paths.get(getDirectoryName(), origpath).toString();
+                if (!fullRenamedPath.equals(fullpath)) {
+                    result = getHistoryRev(sink, fullRenamedPath, rev);
+                }
             }
         }
 
@@ -325,7 +330,7 @@ public class GitRepository extends Repository {
             ABBREV_LOG,
             "--abbrev-commit",
             "--name-status",
-            "--pretty=format:commit %h%b",
+            "--pretty=format:commit %h%n%d",
             "--",
             fileInRepo
         };
@@ -367,7 +372,7 @@ public class GitRepository extends Repository {
                     new Object[]{fullpath, String.valueOf(status), changeset});
             return null;
         }
-        
+
         return originalFile;
     }
 
