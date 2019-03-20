@@ -30,13 +30,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,12 +63,11 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
-import org.opengrok.indexer.index.IndexAnalysisSettings3;
-import org.opengrok.indexer.index.IndexAnalysisSettingsAccessor;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.IndexedSymlink;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.SettingsHelper;
 import org.opengrok.indexer.search.Summarizer;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
@@ -83,7 +79,6 @@ import org.opengrok.indexer.util.IOUtils;
  * complexity from UI design.
  *
  * @author Jens Elkner
- * @version $Revision$
  */
 public class SearchHelper {
 
@@ -219,16 +214,7 @@ public class SearchHelper {
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
 
-    /**
-     * Key is Project name or empty string for null Project.
-     */
-    private Map<String, IndexAnalysisSettings3> mappedAnalysisSettings;
-
-    /**
-     * Key is Project name or empty string for null Project. Map is ordered by
-     * canonical length (ASC) and then canonical value (ASC).
-     */
-    private Map<String, Map<String, IndexedSymlink>> mappedIndexedSymlinks;
+    private SettingsHelper settingsHelper;
 
     /**
      * User readable description for file types. Only those listed in
@@ -271,7 +257,7 @@ public class SearchHelper {
             return this;
         }
 
-        mappedAnalysisSettings = null;
+        settingsHelper = null;
         // the Query created by the QueryBuilder
         try {
             indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
@@ -624,22 +610,15 @@ public class SearchHelper {
     }
 
     /**
-     * Gets the persisted tabSize via {@link #getSettings(java.lang.String)} if
-     * available or returns the {@code proj} tabSize if available -- or zero.
+     * Gets the persisted tabSize via {@link SettingsHelper} for the active
+     * reader.
      * @param proj a defined instance or {@code null} if no project is active
      * @return tabSize
      * @throws IOException if an I/O error occurs querying the active reader
      */
     public int getTabSize(Project proj) throws IOException {
-        String projectName = proj != null ? proj.getName() : null;
-        IndexAnalysisSettings3 settings = getSettings(projectName);
-        int tabSize;
-        if (settings != null && settings.getTabSize() != null) {
-            tabSize = settings.getTabSize();
-        } else {
-            tabSize = proj != null ? proj.getTabSize() : 0;
-        }
-        return tabSize;
+        ensureSettingsHelper();
+        return settingsHelper.getTabSize(proj);
     }
 
     /**
@@ -661,12 +640,10 @@ public class SearchHelper {
         }
         File absolute = new File(sourceRoot + relativePath);
 
-        getSettings(project);
-
-        Map<String, IndexedSymlink> indexedSymlinks;
-        if (mappedIndexedSymlinks != null && (indexedSymlinks =
-                mappedIndexedSymlinks.get(project)) != null) {
-
+        ensureSettingsHelper();
+        settingsHelper.getSettings(project);
+        Map<String, IndexedSymlink> indexedSymlinks = settingsHelper.getSymlinks(project);
+        if (indexedSymlinks != null) {
             String canonical = absolute.getCanonicalFile().getPath();
             for (IndexedSymlink entry : indexedSymlinks.values()) {
                 if (canonical.equals(entry.getCanonical())) {
@@ -686,49 +663,9 @@ public class SearchHelper {
         return relativePath;
     }
 
-    /**
-     * Gets the settings for a specified project, querying the active reader
-     * upon the first call after {@link #prepareExec(java.util.SortedSet)}.
-     * @param projectName a defined instance or {@code null} if no project is
-     * active (or empty string to mean the same thing)
-     * @return a defined instance or {@code null} if none is found
-     * @throws IOException if an I/O error occurs querying the active reader
-     */
-    private IndexAnalysisSettings3 getSettings(String projectName)
-            throws IOException {
-        if (mappedAnalysisSettings == null) {
-            IndexAnalysisSettingsAccessor dao =
-                new IndexAnalysisSettingsAccessor();
-            IndexAnalysisSettings3[] setts = dao.read(reader, Short.MAX_VALUE);
-            map(setts);
+    private void ensureSettingsHelper() {
+        if (settingsHelper == null) {
+            settingsHelper = new SettingsHelper(reader);
         }
-
-        String k = projectName != null ? projectName : "";
-        return mappedAnalysisSettings.get(k);
-    }
-
-    private void map(IndexAnalysisSettings3[] setts) {
-
-        Map<String, IndexAnalysisSettings3> settingsMap = new HashMap<>();
-        Map<String, Map<String, IndexedSymlink>> symlinksMap = new HashMap<>();
-
-        for (IndexAnalysisSettings3 settings : setts) {
-            String k = settings.getProjectName() != null ?
-                settings.getProjectName() : "";
-            settingsMap.put(k, settings);
-            symlinksMap.put(k, mapSymlinks(settings));
-        }
-        mappedAnalysisSettings = settingsMap;
-        mappedIndexedSymlinks = symlinksMap;
-    }
-
-    private Map<String, IndexedSymlink> mapSymlinks(IndexAnalysisSettings3 settings) {
-
-        Map<String, IndexedSymlink> res = new TreeMap<>(
-                Comparator.comparingInt(String::length).thenComparing(o -> o));
-        for (IndexedSymlink entry : settings.getIndexedSymlinks().values()) {
-            res.put(entry.getCanonical(), entry);
-        }
-        return res;
     }
 }
