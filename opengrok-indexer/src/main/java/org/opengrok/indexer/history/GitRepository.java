@@ -299,12 +299,14 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Get the name of file in given revision.
+     * Get the name of file in given revision. The returned file name is relative
+     * to the repository root.
      *
-     * @param fullpath file path
+     * @param fullpath  file path
      * @param changeset changeset
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
+     * @see #getPathRelativeToRepositoryRoot(String)
      */
     protected String findOriginalName(String fullpath, String changeset)
             throws IOException {
