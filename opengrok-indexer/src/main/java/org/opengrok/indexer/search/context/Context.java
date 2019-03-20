@@ -60,6 +60,7 @@ public class Context {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
+    private final RuntimeEnvironment env;
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
@@ -89,6 +90,7 @@ public class Context {
             throw new IllegalArgumentException("qbuilder is null");
         }
 
+        this.env = RuntimeEnvironment.getInstance();
         this.query = query;
         this.qbuilder = qbuilder;
         QueryMatchers qm = new QueryMatchers();
@@ -114,7 +116,6 @@ public class Context {
     /**
      * Look for context for this instance's initialized query in a search result
      * {@link Document}, and output according to the parameters.
-     * @param env required environment
      * @param searcher required search that produced the document
      * @param docId document ID for producing context
      * @param dest required target to write
@@ -131,7 +132,7 @@ public class Context {
      * re-indexing
      * @return Did it get any matching context?
      */
-    public boolean getContext2(RuntimeEnvironment env, IndexSearcher searcher,
+    public boolean getContext2(IndexSearcher searcher,
         int docId, Appendable dest, String urlPrefix, String morePrefix,
         boolean limit, int tabSize) {
 
@@ -372,7 +373,6 @@ public class Context {
         PlainLineTokenizer tokens = new PlainLineTokenizer(null);
         boolean truncated = false;
         boolean lim = limit;
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (!env.isQuickContextScan()) {
             lim = false;
         }

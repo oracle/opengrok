@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
 --%><%@page errorPage="error.jsp" import="
 java.io.File,
@@ -88,12 +88,12 @@ file="mast.jsp"
             String xrefPrefix = request.getContextPath() + Prefix.XREF_P;
             boolean didPresentNew = false;
             if (docId >= 0) {
-                didPresentNew = searchHelper.sourceContext.getContext2(env,
+                didPresentNew = searchHelper.sourceContext.getContext2(
                     searchHelper.searcher, docId, out, xrefPrefix, null, false,
                     tabSize);
             }
             if (!didPresentNew) {
-                /**
+                /*
                  * Fall back to the old view, which re-analyzes text using
                  * PlainLinetokenizer. E.g., when source code is updated (thus
                  * affecting timestamps) but re-indexing is not yet complete.
