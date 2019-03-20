@@ -52,3 +52,5 @@ pmd.bat
 *.pyc
 .wercker
 .DS_Store
+.project
+**/bin/
