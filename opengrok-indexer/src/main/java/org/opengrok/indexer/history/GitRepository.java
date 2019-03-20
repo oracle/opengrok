@@ -215,10 +215,14 @@ public class GitRepository extends Repository {
              * not exist or internal git error occured.
              */
             result.success = (status == 0);
-        } catch (Exception exp) {
+        } catch (Exception exception) {
             LOGGER.log(Level.SEVERE,
-                    "Failed to get history for file {0} in revision {1}: ",
-                        new Object[]{fullpath, rev, exp.getClass().toString(), exp});
+                    String.format(
+                            "Failed to get history for file %s in revision %s:",
+                            fullpath, rev
+                    ),
+                    exception
+            );
         }
         return result;
     }
