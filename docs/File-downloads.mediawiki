@@ -1,0 +1,20 @@
+See License page for licensing information.
+
+=== Source code ===
+
+The main repository is here: https://github.com/OpenGrok/OpenGrok
+
+How to get a local clone:
+
+  $ git clone https://github.com/OpenGrok/OpenGrok
+
+Similarly for any of your forks, ev. use ssh.
+
+=== Distribution ===
+
+See https://github.com/OpenGrok/OpenGrok/releases
+
+=== User scripts ===
+
+* Firefox Greasemonkey [http://userscripts.org/scripts/show/4758 auto-complete script] for opengrok - courtesy of Jim Wilson
+* VIM plugin from Jacobo de Vera - [https://github.com/jdevera/vim-opengrok-search github jdevera]

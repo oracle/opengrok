@@ -1,0 +1,12 @@
+= Useful Tools =
+
+Travis CI: <a href="https://travis-ci.org/OpenGrok/OpenGrok">OpenGrok on Travis <img src="https://travis-ci.org/OpenGrok/OpenGrok.png?branch=master"/></a>
+
+Coverity scan: <a href="https://scan.coverity.com/projects/2627">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/2627/badge.svg"/>
+</a>
+
+Snyk <a href='https://app.snyk.io/org/tarzanek/project/bab0ac81-4038-44f2-ba59-57d8b81f6e43'>dashboard</a>
+
+Inspecting indexes: [http://code.google.com/p/luke/ Luke] - this site is abandoned, we maintain a fork on [http://github.com/tarzanek/luke tarzanek/Luke] 

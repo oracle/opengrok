@@ -1,0 +1,405 @@
+Disclaimer: this table might be obsolete, if you think it needs adjusting go ahead and modify the wiki page.
+
+{|
+|'''Feature'''
+|'''LXR'''
+|'''ctags'''
+|'''cscope'''
+|'''ViewVC'''
+|'''GNU GLOBAL'''
+|'''OpenGrok'''
+|'''Woboq'''
+|'''Hound'''
+|'''Debian code search'''
+|-
+|Full text Search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|Definition Search
+|P
+|Y
+|Y
+| 
+|Y
+|Y
+|Y
+|XXX
+|XXX
+|-
+|Identifier Search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|Y
+|XXX
+|XXX
+|-
+|Path search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|Y
+|XXX
+|XXX
+|-
+|History Search
+| 
+| 
+| 
+| 
+| 
+|Y
+|
+|XXX
+|XXX
+|-
+|Caller/Callee Search
+| 
+| 
+|Y
+| 
+|P
+|
+|
+|XXX
+|XXX
+|-
+|RegExp Search
+| 
+| 
+|Y
+| 
+|Y
+|P (only wildcards)
+|
+|XXX
+|XXX
+|-
+|Shows matching lines
+| 
+|Y
+|Y
+| 
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|Hierarchical Search
+| 
+| 
+| 
+| 
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|query syntax like AND, OR, field:
+| 
+| 
+| 
+| 
+| 
+|Y
+|
+|XXX
+|XXX
+|-
+|Incremental update
+| 
+| 
+|P
+| 
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|RSS Feed
+| 
+| 
+| 
+|Y
+| 
+|Y
+|
+|XXX
+|XXX
+|-
+|Syntax highlighting-Xref
+|Y
+| 
+| 
+|P
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|Interface for SCM
+| 
+| 
+| 
+|Y
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|open source
+|Y
+|Y
+|Y
+|Y
+|Y
+|Y
+|
+|Y
+|XXX
+|-
+|Usable URLs
+|Y
+|N/A
+|N/A
+| 
+|Y
+|Y
+|Y
+|XXX
+|XXX
+|-
+|Individual file download
+| 
+|N/A
+|N/A
+|Y
+|N/A
+|Y
+|
+|XXX
+|XXX
+|-
+|Changes at directory level
+| 
+|N/A
+|N/A
+|P
+|N/A
+|Y
+|
+|XXX
+|XXX
+|-
+|Multi language support
+|P
+|Y
+|P
+|N/A
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|User interface
+|WEB
+|CLI
+|CLI
+|WEB
+|WEB / CLI
+|WEB / CLI
+|WEB / CLI
+|WEB
+|XXX
+|-
+|Static HTML
+| 
+| 
+| 
+| 
+|Y
+|P (for xrefs)
+|Y
+|XXX
+|XXX
+|-
+|Input completion
+| 
+| 
+| 
+| 
+|Y
+|P (with greasemonkey script)
+|
+|XXX
+|XXX
+|-
+|Built-in parser
+| 
+|Y
+|Y
+| 
+|Y
+|P (lexical analysis)
+|
+|XXX
+|XXX
+|-
+|Plug-in parser
+| 
+| 
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with (exuberant) ctags
+| 
+|N/A
+| 
+| 
+|Y
+|Y
+|
+|XXX
+|XXX
+|-
+|Integration with cscope
+| 
+| 
+|N/A
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with emacs
+| 
+|Y
+|Y
+| 
+|Y
+|Y
+|
+|Y
+|XXX
+|-
+|Integration with vim
+| 
+|Y
+|Y
+| 
+|Y
+|P (through [https://github.com/jdevera/vim-opengrok-search])
+|
+|Y
+|XXX
+|-
+|Integration with doxygen
+| 
+| 
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with Netbeans
+| 
+| 
+| 
+| 
+| 
+|
+|
+|XXX
+|XXX
+|-
+|Integration with Eclipse
+| 
+| 
+| 
+| 
+| 
+|Y
+|
+|XXX
+|XXX
+|-
+|Integration with less
+| 
+|Y
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with bash
+| 
+| 
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with idutils
+| 
+| 
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|Integration with Elvis
+| 
+|Y
+| 
+| 
+|Y
+|
+|
+|XXX
+|XXX
+|-
+|}
+
+Legend:
+* Y : Yes the feature is present
+* P : the feature may be partly present
+* N/A : not applicable
