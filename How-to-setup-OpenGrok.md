@@ -24,7 +24,7 @@ The data to be indexed should be stored in a directory called **source root**. E
 
 The indexer will process any input data - be it source code checkouts, plain files, binaries, etc.
 
-The concept of projects was introduced to effectively replace the need for multiple web applications with opengrok <code>.war</code> file (see below) and leave you with one indexer and one web application serving more source code repositories - projects.
+The concept of projects was introduced to effectively replace the need for multiple web applications with opengrok `.war` file (see below) and leave you with one indexer and one web application serving more source code repositories - projects.
 
 That said, OpenGrok can be run in project-less setup where all the input data is always searched at once.
 
@@ -41,6 +41,7 @@ The source root directory needs to be created first, e.g. on Unix: `mkdir -p /va
 The indexer assumes the input data is stored in the UTF-8 encoding (ASCII works therefore too).
 
 For example, to add 2 sample code checkouts using the default source root on Unix system:
+
 ```shell
 cd /var/opengrok/src
 
@@ -59,9 +60,11 @@ This step is optional, the python package contains wrappers for OpenGrok's index
 In the release tarball navigate to `tools` subdirectory and install the `opengrok-tools.tar.gz` as a python package. Then you can use [defined commands](https://github.com/oracle/opengrok/tree/master/opengrok-tools#content). You can of course run the plain java yourself, without these wrappers. The tools are mainly useful for [parallel repository synchronization and indexing](https://github.com/oracle/opengrok/wiki/Repository-synchronization) and also in case when managing multiple OpenGrok instances with diverse Java installations.
 
 In shell, you can install the package simply by:
-```bash
-$ python3 -m pip install opengrok-tools.tar.gz
+
+```shell
+python3 -m pip install opengrok-tools.tar.gz
 ```
+
 Of course, the Python package can be installed into Python virtual environment.
 
 ## <u>Step.2</u> - Deploy the web application
@@ -94,7 +97,7 @@ After application server unpacks the War file, it will search for the `WEB-INF/w
 ...
 ```
 
-This is where the web application will read the configuration from. The default value is `/var/opengrok/etc/configuration.xml` (notice that in the above example non-default path was used). This configuration file is created by the indexer when using the `-W` option and the web application reads the file on startup - this is a way how to make the configuration persistent.
+This is where the web application will read the configuration from. The default value is `/var/opengrok/etc/configuration.xml`. This configuration file is created by the indexer when using the `-W` option and the web application reads the file on startup - this is a way how to make the configuration persistent.
 
 If you happen to be using the Python tools distributed with OpenGrok, you can use the `opengrok-deploy` script to perform the copying of the War file while optionally changing the `CONFIGURATION` value if the configuration file is stored in non-default location.
 
@@ -105,23 +108,31 @@ Also see https://github.com/oracle/opengrok/wiki/Security
 ## <u>Step.3</u> - Indexing
 
 This step consists of these operations:
-  - create index
-  - let the indexer generate the configuration file
-  - notify the web application that new index is available
+
+- create index
+- let the indexer generate the configuration file
+- notify the web application that new index is available
 
 For the indexing step, the directories that store the output data need to be created first, e.g. for Unix system: `mkdir -p /var/opengrok/{data,etc}`
 
 The initial indexing can take a lot of time - for large code bases (meaning both amount of source code and history) it can take many hours. Subsequent indexing will be much faster as it is incremental.
 
 The indexer can be run either using `opengrok.jar` directly:
-```
+
+(but where is this `opengrok.jar` comes from?)
+
+```shell
 java -Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -jar /opengrok/dist/lib/opengrok.jar \
     -c /path/to/universal/ctags \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080/source
 ```
+
 or using the `opengrok-indexer` wrapper like so:
+
+(And where is this `opengrok-indexer` comes from?)
+
 ```
 opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -a /opengrok/dist/lib/opengrok.jar -- \
@@ -129,6 +140,7 @@ opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.proper
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080/source
 ```
+
 Notice how the indexer arguments in both commands are the same. The `opengrok-indexer` will merely find the Java executable and run it.
 
 At the end of the indexing the indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state. The indexer needs to know where to upload the configuration to - this is what the `-U` option is there for. The URI supplied by this option needs to match the location where the web application was deployed to, e.g. for War file called `source.war` the URI will be `http://localhost:PORT_NUMBER/source`.
@@ -136,11 +148,14 @@ At the end of the indexing the indexer automatically attempts to upload newly ge
 The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing. The location of the configuration file needs to match the configuration location in the `web.xml` file (see the Deploy section above).
 
 Run the command with `-h` to get more information about the options, i.e.:
-```
+
+```shell
 java -jar /opengrok/dist/lib/opengrok.jar -h
 ```
+
 or when using the Python scripts:
-```
+
+```shell
 opengrok-indexer -a /opengrok/dist/lib/opengrok.jar -- -h
 ```
 
