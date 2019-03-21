@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
 
@@ -196,8 +197,9 @@ public class GitRepository extends Repository {
              * Be careful, git uses only forward slashes in its command and output (not in file path).
              * Using backslashes together with git show will get empty output and 0 status code.
              */
-            String filename = fullpath.substring(getDirectoryName().length() + 1)
-                                      .replace(File.separatorChar, '/');
+            String filename = Paths.get(getDirectoryName()).relativize(Paths.get(fullpath))
+                                   .toString()
+                                   .replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {
                 RepoCommand,
@@ -215,10 +217,14 @@ public class GitRepository extends Repository {
              * not exist or internal git error occured.
              */
             result.success = (status == 0);
-        } catch (Exception exp) {
+        } catch (Exception exception) {
             LOGGER.log(Level.SEVERE,
-                    "Failed to get history for file {0} in revision {1}: ",
-                        new Object[]{fullpath, rev, exp.getClass().toString(), exp});
+                    String.format(
+                            "Failed to get history for file %s in revision %s:",
+                            fullpath, rev
+                    ),
+                    exception
+            );
         }
         return result;
     }
@@ -259,8 +265,12 @@ public class GitRepository extends Repository {
                 });
                 return false;
             }
-            if (origpath != null && !origpath.equals(fullpath)) {
-                result = getHistoryRev(sink, origpath, rev);
+
+            if (origpath != null) {
+                final String fullRenamedPath = Paths.get(getDirectoryName(), origpath).toString();
+                if (!fullRenamedPath.equals(fullpath)) {
+                    result = getHistoryRev(sink, fullRenamedPath, rev);
+                }
             }
         }
 
@@ -289,12 +299,14 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Get the name of file in given revision.
+     * Get the name of file in given revision. The returned file name is relative
+     * to the repository root.
      *
-     * @param fullpath file path
+     * @param fullpath  file path
      * @param changeset changeset
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
+     * @see #getPathRelativeToRepositoryRoot(String)
      */
     protected String findOriginalName(String fullpath, String changeset)
             throws IOException {
@@ -321,7 +333,7 @@ public class GitRepository extends Repository {
             ABBREV_LOG,
             "--abbrev-commit",
             "--name-status",
-            "--pretty=format:commit %h%b",
+            "--pretty=format:commit %h%n%d",
             "--",
             fileInRepo
         };
@@ -363,7 +375,7 @@ public class GitRepository extends Repository {
                     new Object[]{fullpath, String.valueOf(status), changeset});
             return null;
         }
-        
+
         return originalFile;
     }
 

@@ -18,8 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
 
@@ -32,10 +33,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -174,6 +176,16 @@ public class GitRepositoryTest {
         }
     }
 
+    /**
+     * For the following renamed tests the structure in the git repo is as following:
+     * <pre>
+     *     ce4c98ec - new file renamed.c (with some content)
+     *     b6413947 - renamed.c renamed to moved/renamed.c
+     *     1086eaf5 - modification of file moved/renamed.c (different content)
+     *     67dfbe26 - moved/renamed.c renamed to moved/renamed2.c
+     *     84599b3c - moved/renamed2.c renamed to moved2/renamed2.c
+     * </pre>
+     */
     @Test
     public void testRenamedFiles() throws Exception {
         String[][] tests = new String[][]{
@@ -281,10 +293,26 @@ public class GitRepositoryTest {
      * file.
      *
      * @throws java.lang.Exception
+     * @see #testRenamedFiles for git repo structure info
      */
     @Test
-    public void testGetHistoryForOnceRenamed() throws Exception {
-        String exp_str
+    public void testGetRenamedFileContent() throws Exception {
+        String old_content
+                = "#include <stdio.h>\n"
+                + "#include <stdlib.h>\n"
+                + "\n"
+                + "int main ( int argc, const char * argv[] )\n"
+                + "{\n"
+                + "\tint i;\n"
+                + "\tfor ( i = 1; i < argc; i ++ )\n"
+                + "\t{\n"
+                + "\t\tprintf ( \"%s called with %d\\n\", argv [ 0 ], argv [ i ] );\n"
+                + "\t}\n"
+                + "\n"
+                + "\treturn 0;\n"
+                + "}\n";
+
+        String new_content
                 = "#include <stdio.h>\n"
                 + "#include <stdlib.h>\n"
                 + "\n"
@@ -311,8 +339,30 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved2/renamed2.c", "84599b3", exp_str);
-        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+        final List<String[]> tests = Arrays.asList(
+                // old content (after revision 1086eaf5 inclusively)
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content},
+
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content},
+
+                new String[]{Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content},
+
+                // old content (before revision b6413947 inclusively)
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("renamed.c").toString(), "ce4c98ec", old_content}
+        );
+
+        for (String[] params : tests) {
+            runRenamedTest(params[0], params[1], params[2]);
+        }
     }
 
     /**
@@ -320,77 +370,25 @@ public class GitRepositoryTest {
      * file.
      *
      * @throws java.lang.Exception
-     */
-    @Test
-    public void testGetHistoryForTwiceRenamed() throws Exception {
-        String exp_str
-                = "#include <stdio.h>\n"
-                + "#include <stdlib.h>\n"
-                + "\n"
-                + "int foo ( const char * path )\n"
-                + "{\n"
-                + "\treturn path && *path == 'A';\n"
-                + "}\n"
-                + "\n"
-                + "int main ( int argc, const char * argv[] )\n"
-                + "{\n"
-                + "\tint i;\n"
-                + "\tfor ( i = 1; i < argc; i ++ )\n"
-                + "\t{\n"
-                + "\t\tprintf ( \"%s called with %d\\n\", argv [ 0 ], argv [ i ] );\n"
-                + "\t}\n"
-                + "\n"
-                + "\tprintf ( \"Hello, world!\\n\" );\n"
-                + "\n"
-                + "\tif ( foo ( argv [ 0 ] ) )\n"
-                + "\t{\n"
-                + "\t\tprintf ( \"Correct call\\n\" );\n"
-                + "\t}\n"
-                + "\n"
-                + "\treturn 0;\n"
-                + "}\n";
-
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "1086eaf", exp_str);
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
-    }
-
-    /**
-     * Test that {@code getHistoryGet()} returns historical contents of renamed
-     * file.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testGetHistoryForThreeTimesRenamed() throws Exception {
-        String exp_str
-                = "#include <stdio.h>\n"
-                + "#include <stdlib.h>\n"
-                + "\n"
-                + "int main ( int argc, const char * argv[] )\n"
-                + "{\n"
-                + "\tint i;\n"
-                + "\tfor ( i = 1; i < argc; i ++ )\n"
-                + "\t{\n"
-                + "\t\tprintf ( \"%s called with %d\\n\", argv [ 0 ], argv [ i ] );\n"
-                + "\t}\n"
-                + "\n"
-                + "\treturn 0;\n"
-                + "}\n";
-
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "b641394", exp_str);
-        runRenamedTest(Paths.get("renamed.c").toString(), "ce4c98e", exp_str);
-    }
-
-    /**
-     * Test that {@code getHistoryGet()} returns historical contents of renamed
-     * file.
-     *
-     * @throws java.lang.Exception
+     * @see #testRenamedFiles for git repo structure info
      */
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "67dfbe2", null);
-        runRenamedTest(Paths.get("renamed.c").toString(), "67dfbe2", null);
+        final List<String[]> tests = Arrays.asList(
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
+
+                new String[]{Paths.get("moved", "renamed.c").toString(), "84599b3c"},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "67dfbe26"},
+
+                new String[]{Paths.get("renamed.c").toString(), "84599b3c"},
+                new String[]{Paths.get("renamed.c").toString(), "67dfbe26"},
+                new String[]{Paths.get("renamed.c").toString(), "1086eaf5"},
+                new String[]{Paths.get("renamed.c").toString(), "b6413947"}
+        );
+
+        for (String[] params : tests) {
+            runRenamedTest(params[0], params[1], null);
+        }
     }
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {
@@ -402,13 +400,39 @@ public class GitRepositoryTest {
         InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(),
                 fname, cset);
         if (content == null) {
-            Assert.assertNull(input);
+            Assert.assertNull(
+                    String.format("Expecting the revision %s for file %s does not exist",
+                            cset,
+                            fname
+                    ),
+                    input
+            );
         } else {
-            Assert.assertNotNull("expecting not null", input);
+            Assert.assertNotNull(
+                    String.format("Expecting the revision %s for file %s does exist",
+                            cset,
+                            fname
+                    ),
+                    input
+            );
             int len = input.read(buffer);
-            Assert.assertNotEquals(-1, len);
+            Assert.assertNotEquals(
+                    String.format("Expecting the revision %s for file %s does have some content",
+                            cset,
+                            fname
+                    ),
+                    -1,
+                    len
+            );
             String str = new String(buffer, 0, len);
-            Assert.assertEquals(content, str);
+            Assert.assertEquals(
+                    String.format("Expecting the revision %s for file %s does match the expected content",
+                            cset,
+                            fname
+                    ),
+                    content,
+                    str
+            );
         }
     }
 
