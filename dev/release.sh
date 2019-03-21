@@ -6,6 +6,8 @@
 # see https://github.com/OpenGrok/opengrok/wiki/Release-process
 #
 
+set -e
+
 if (( $# != 1 )); then
 	echo "usage: `basename $0` <version>"
 	exit 1
@@ -28,9 +30,9 @@ if [[ $ver == $VERSION ]]; then
 	exit 1
 fi
 
-git pull --ff-only && \
-    mvn versions:set -DgenerateBackupPoms=false -DnewVersion=$VERSION && \
-    git commit pom.xml **/pom.xml -m $VERSION && \
-    git push && \
-    git tag $VERSION
-    git push origin tag $VERSION
+git pull --ff-only
+mvn versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
+git commit pom.xml '**/pom.xml' -m "$VERSION"
+git push
+git tag "$VERSION"
+git push origin tag "$VERSION"
