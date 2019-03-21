@@ -1,0 +1,55 @@
+# Supported Languages and Formats
+
+This page lists which file formats are supported by OpenGrok. This largely depends on the support in both Exuberant ctags and OpenGrok analyzers.
+
+The following table lists all supported formats and OpenGrok version in which they have been introduced(the version might not be released yet, so you need to build trunk):
+
+|                 |             |                                                                                               |
+| --------------- | ----------- | --------------------------------------------------------------------------------------------- |
+| **File format** | **Version** | **File suffixes**                                                                             |
+| Ada             | 1.1         | "ADA","ADB","ADS"                                                                             |
+| bzip2           | 0.3.1       | "BZ","BZ2"                                                                                    |
+| C               | 0.3.1       | "C","H","I","L","Y","LEX","YACC","D","S","XS","X"                                             |
+| C++             | 0.3.1       | "CPP","HPP","CC","C++","HH","CXX","HXX","TXX"                                                 |
+| C\#             | 0.11        | CS                                                                                            |
+| Clojure         | 0.XXX       | "CLJ","CLJS","CLJX"                                                                           |
+| ELF             | 0.XXX       |                                                                                               |
+| Erlang          | 0.13        | "ERL", "HRL", "ESCRIPT"                                                                       |
+| Eiffel          | 1.1         | "E"                                                                                           |
+| Fortran         | 0.XXX       | "F","F90","INC"                                                                               |
+| generic data    | 0.XXX       | "BDF","XPM","PS","AFM","PDF"                                                                  |
+| Go              | 0.13        | "GO"                                                                                          |
+| gzip            | 0.3.1       | "GZ"                                                                                          |
+|                 |             |                                                                                               |
+| Haskell         | 0.13        | "HS", "HSC"                                                                                   |
+| Java            | 0.XXX       | "JAVA"                                                                                        |
+| Java archive    | 0.XXX       | "JAR","WAR","EAR"                                                                             |
+| Java class      | 0.XXX       | "CLASS"                                                                                       |
+| Java script     | 0.11        | "JS"                                                                                          |
+| JSON            | 1.1         | "JSON"                                                                                        |
+| Kotlin          | 1.1         | "KT","KTS"                                                                                    |
+| Lisp            | 0.XXX       | "LISP","LSP","EL","SCM"                                                                       |
+| Lua             | 1.XXX       | "LUA"                                                                                         |
+| Pascal          | 1.XXX       | "PAS"                                                                                         |
+| Perl            | 0.10        | "PL","PLX","PERL","PH","PM"                                                                   |
+| PHP             | 0.11        | "PHP","PHP3","PHP4","PHPS","PHTML"                                                            |
+| plaintext       | 0.XXX       |                                                                                               |
+| PowerShell      | 1.1         | "PS1","PSM1"                                                                                  |
+| Python          | 0.10        | "PY"                                                                                          |
+| Ruby            | 1.1         | "RB","RUBY"                                                                                   |
+| Rust            | 1.XXX       | "RS"                                                                                          |
+| Scala           | 0.12        | "SCALA"                                                                                       |
+| Shell           | 0.XXX       | "SH","KSH","KSHLIB","CSH","BASH","RUBY","RB","P5","AWK","GMK","CONF","COM","SPEC","FLG","XCL" |
+| SQL             | 0.XXX       | "SQL"                                                                                         |
+| PLSQL           | 0.12        | "PLS","PKS","PLD","PLB","PKB","PCK"                                                           |
+| Swift           | 1.1         | "SWIFT"                                                                                       |
+| tar             | 0.3.1       | "TAR"                                                                                         |
+| Tcl             | 0.XXX       | "TCL","TM","TK","WISH","EXP","TCLX","ITCL","ITK"                                              |
+| troff           | 0.XXX       |                                                                                               |
+| Visual basic    | 0.XXX       | "VB","CLS","CTL","BAS","FRM","VBS"                                                            |
+| XML             | 0.XXX       | "HTML","HTM","XML","ASPX","ASCX","ASAX","MASTER","XAML"                                       |
+| zip             | 0.3.1       | "ZIP"                                                                                         |
+
+Note: 0.3.1 is the initial import version of OpenGrok into the original Mercurial repository back in opensolaris.org days.
+
+The SUFFIXES can be found in the \*AnalyzerFactory.java files in OpenGrok repository.

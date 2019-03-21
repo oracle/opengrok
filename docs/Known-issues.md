@@ -1,0 +1,14 @@
+# Known Issues Outside of OpenGrok
+
+- Due to Exuberant ctags bugs [1187505](http://sourceforge.net/tracker/?func=detail&group_id=6556&atid=106556&aid=1187505), [2991345](http://sourceforge.net/tracker/?func=detail&group_id=6556&atid=106556&aid=2991345), [2996602](http://sourceforge.net/tracker/?func=detail&group_id=6556&atid=106556&aid=2996602) ctags fails to recognize certain definitions. So OpenGrok will not be able search these
+- Indexing is a memory intensive process. If you get "java.lang.OutOfMemoryError: Java heap space" error, try the -Xms<size> and -Xmx<size> options to java (Eg JAVA\_OPTS="-Xms2048m -Xmx2048")
+- In Mozilla based browsers (e.g. Firefox) the back button will not take you to previous anchor - gecko bug [565008](https://bugzilla.mozilla.org/show_bug.cgi?id=565008) - WORKAROUND is simple, after you press back, just do a refresh (F5, Ctrl+R, or hit the reload button)
+- Identifiers which have length of 1 character don't have a link generated - this is intentional and not a bug.
+- Due to Exuberant ctags bug [1324663](http://sourceforge.net/tracker/?func=detail&group_id=6556&atid=106556&aid=1324663), OpenGrok might keep waiting for ctags. Workaround is to ignore the problem causing SQL files with -i option to OpenGrok.(fixed in exuberant ctags \>= 5.7)
+- We disabled java local variables in 0.10 because of ctags bug [3150230](http://sourceforge.net/tracker/?func=detail&group_id=6556&atid=106556&aid=3150230).
+- Blank page with "Error parsing HTTP request header" and 400 error status code see: [How-to-install-OpenGrok\#Large\_number\_of\_projects\_on\_Tomcat](How-to-install-OpenGrok#Large_number_of_projects_on_Tomcat "wikilink")
+
+## OpenGrok Issues, Bugs and Requests for Enhancements
+
+Please log bugs and requests for enhancements here:
+<https://github.com/OpenGrok/OpenGrok/issues>
