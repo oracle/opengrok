@@ -34,8 +34,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -337,24 +339,30 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        // old content (after revision 1086eaf5 inclusively)
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content);
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content);
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content);
+        final List<String[]> tests = Arrays.asList(
+                // old content (after revision 1086eaf5 inclusively)
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content},
 
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content);
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content);
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content},
 
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content);
+                new String[]{Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content},
 
-        // old content (before revision b6413947 inclusively)
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content);
-        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content);
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content);
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content);
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "b6413947", old_content);
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content);
-        runRenamedTest(Paths.get("renamed.c").toString(), "ce4c98ec", old_content);
+                // old content (before revision b6413947 inclusively)
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "b6413947", old_content},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content},
+                new String[]{Paths.get("renamed.c").toString(), "ce4c98ec", old_content}
+        );
+
+        for (String[] params : tests) {
+            runRenamedTest(params[0], params[1], params[2]);
+        }
     }
 
     /**
@@ -366,15 +374,21 @@ public class GitRepositoryTest {
      */
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
-        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "84599b3c", null);
+        final List<String[]> tests = Arrays.asList(
+                new String[]{Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
 
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "84599b3c", null);
-        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "67dfbe26", null);
+                new String[]{Paths.get("moved", "renamed.c").toString(), "84599b3c"},
+                new String[]{Paths.get("moved", "renamed.c").toString(), "67dfbe26"},
 
-        runRenamedTest(Paths.get("renamed.c").toString(), "84599b3c", null);
-        runRenamedTest(Paths.get("renamed.c").toString(), "67dfbe26", null);
-        runRenamedTest(Paths.get("renamed.c").toString(), "1086eaf5", null);
-        runRenamedTest(Paths.get("renamed.c").toString(), "b6413947", null);
+                new String[]{Paths.get("renamed.c").toString(), "84599b3c"},
+                new String[]{Paths.get("renamed.c").toString(), "67dfbe26"},
+                new String[]{Paths.get("renamed.c").toString(), "1086eaf5"},
+                new String[]{Paths.get("renamed.c").toString(), "b6413947"}
+        );
+
+        for (String[] params : tests) {
+            runRenamedTest(params[0], params[1], null);
+        }
     }
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {
@@ -386,13 +400,39 @@ public class GitRepositoryTest {
         InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(),
                 fname, cset);
         if (content == null) {
-            Assert.assertNull(input);
+            Assert.assertNull(
+                    String.format("Expecting the revision %s for file %s does not exist",
+                            cset,
+                            fname
+                    ),
+                    input
+            );
         } else {
-            Assert.assertNotNull("expecting not null", input);
+            Assert.assertNotNull(
+                    String.format("Expecting the revision %s for file %s does exist",
+                            cset,
+                            fname
+                    ),
+                    input
+            );
             int len = input.read(buffer);
-            Assert.assertNotEquals(-1, len);
+            Assert.assertNotEquals(
+                    String.format("Expecting the revision %s for file %s does have some content",
+                            cset,
+                            fname
+                    ),
+                    -1,
+                    len
+            );
             String str = new String(buffer, 0, len);
-            Assert.assertEquals(content, str);
+            Assert.assertEquals(
+                    String.format("Expecting the revision %s for file %s does match the expected content",
+                            cset,
+                            fname
+                    ),
+                    content,
+                    str
+            );
         }
     }
 
