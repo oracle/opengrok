@@ -223,7 +223,8 @@ def get_project_properties(project_config, project_name, hookdir):
     if not ignored_repos:
         ignored_repos = []
 
-    return prehook, posthook, hook_timeout, command_timeout, use_proxy, ignored_repos
+    return prehook, posthook, hook_timeout, command_timeout, \
+        use_proxy, ignored_repos
 
 
 def mirror_project(config, project_name, check_incoming, uri, source_root):
