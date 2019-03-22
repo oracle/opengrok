@@ -428,7 +428,7 @@ def check_configuration(config):
     return True
 
 
-def get_batch_logger(logdir, project_name, loglevel):
+def get_batch_logger(logdir, project_name, loglevel, backupcount):
     """
     Get rotating file logger for storing logs of mirroring of given project.
     :param logdir: log directory
@@ -447,7 +447,7 @@ def get_batch_logger(logdir, project_name, loglevel):
     logger.setLevel(loglevel)
     logger.propagate = False
     handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
-                                  backupCount=args.backupcount)
+                                  backupCount=backupcount)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
                                   "%(message)s", '%m/%d/%Y %I:%M:%S %p')
     handler.setFormatter(formatter)
@@ -536,7 +536,8 @@ def main():
                          format(LOGDIR_PROPERTY))
             sys.exit(1)
 
-        logger = get_batch_logger(logdir, args.project, args.loglevel)
+        logger = get_batch_logger(logdir, args.project, args.loglevel,
+                                  args.backupcount)
 
     projects = args.project
     if len(args.project) == 1:
