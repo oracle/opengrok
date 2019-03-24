@@ -46,6 +46,7 @@ import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.search.HitFormatter;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
@@ -202,8 +203,7 @@ public class Context {
         formatter.setMoreUrl(moreURL);
         formatter.setMoreLimit(linelimit);
 
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-            searcher, anz);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(searcher, anz);
         uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(tabSize);
@@ -226,6 +226,72 @@ public class Context {
             throw e;
         }
         return false;
+    }
+
+    /**
+     * Look for context for this instance's initialized query in a search result
+     * {@link Document}, and output according to the parameters.
+     * @param searcher required search that produced the document
+     * @param docId document ID for producing context
+     * @param tabSize optional positive tab size that must accord with the value
+     * used when indexing or else postings may be wrongly shifted until
+     * re-indexing
+     * @param filename the source document filename
+     * @return a defined instance if hits are found or {@code null}
+     */
+    public List<Hit> getHits(IndexSearcher searcher, int docId, int tabSize, String filename) {
+
+        if (isEmpty()) {
+            return null;
+        }
+
+        Document doc;
+        try {
+            doc = searcher.doc(docId);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR getting searcher doc(int)", e);
+            return null;
+        }
+
+        Definitions tags = null;
+        try {
+            IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+            if (tagsField != null) {
+                tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+            }
+        } catch (ClassNotFoundException | IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR Definitions.deserialize(...)", e);
+            return null;
+        }
+
+        /*
+         * UnifiedHighlighter demands an analyzer "even if in some
+         * circumstances it isn't used"; here it is not meant to be used.
+         */
+        PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
+        AbstractAnalyzer anz = fac.getAnalyzer();
+
+        HitFormatter formatter = new HitFormatter();
+        formatter.setDefs(tags);
+        formatter.setFilename(filename);
+
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(searcher, anz);
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
+        uhi.setFormatter(formatter);
+        uhi.setTabSize(tabSize);
+
+        try {
+            List<String> fieldList = qbuilder.getContextFields();
+            String[] fields = fieldList.toArray(new String[0]);
+            return uhi.highlightFieldHits(fields, query, docId);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR highlightFieldHits(...)", e);
+            // Continue below.
+        } catch (Throwable e) {
+            LOGGER.log(Level.SEVERE, "ERROR highlightFieldHits(...)", e);
+            throw e;
+        }
+        return null;
     }
 
     /**

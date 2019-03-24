@@ -69,6 +69,16 @@ public class Hit {
     private final String path;
 
     /**
+     * A phrase match's left offset (inclusive) within the line.
+     */
+    private Integer left;
+
+    /**
+     * A phrase match's right offset (exclusive) within the line.
+     */
+    private Integer right;
+
+    /**
      * Creates a new, possibly-defined instance.
      *
      * @param filename The name of the file this hit represents
@@ -165,5 +175,33 @@ public class Hit {
      */
     public boolean getAlt() {
         return alt;
+    }
+
+    /**
+     * Gets the left line offset (inclusive) of a phrase match.
+     */
+    public Integer getLeft() {
+        return this.left;
+    }
+
+    /**
+     * Sets the left line offset (inclusive) of a phrase match.
+     */
+    public void setLeft(Integer left) {
+        this.left = left;
+    }
+
+    /**
+     * Gets the right line offset (exclusive) of a phrase match.
+     */
+    public Integer getRight() {
+        return this.right;
+    }
+
+    /**
+     * Sets the right line offset (exclusive) of a phrase match.
+     */
+    public void setRight(Integer right) {
+        this.right = right;
     }
 }

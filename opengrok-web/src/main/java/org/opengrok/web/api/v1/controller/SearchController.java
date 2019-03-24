@@ -92,7 +92,8 @@ public class SearchController {
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
                     .collect(Collectors.groupingBy(Hit::getPath,
-                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno()), Collectors.toList())));
+                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno(),
+                                    h.getLeft(), h.getRight()), Collectors.toList())));
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
@@ -222,9 +223,15 @@ public class SearchController {
 
         private final String lineNumber;
 
-        private SearchHit(final String line, final String lineNumber) {
+        private final Integer left;
+
+        private final Integer right;
+
+        private SearchHit(String line, String lineNumber, Integer left, Integer right) {
             this.line = line;
             this.lineNumber = lineNumber;
+            this.left = left;
+            this.right = right;
         }
 
         public String getLine() {
@@ -233,6 +240,14 @@ public class SearchController {
 
         public String getLineNumber() {
             return lineNumber;
+        }
+
+        public Integer getLeft() {
+            return left;
+        }
+
+        public Integer getRight() {
+            return right;
         }
     }
 
