@@ -19,10 +19,11 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.search.Hit;
@@ -214,6 +215,7 @@ public class SearchController {
         }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private static class SearchHit {
 
         private final String line;
