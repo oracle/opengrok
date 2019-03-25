@@ -202,10 +202,6 @@ def get_project_properties(project_config, project_name, hookdir):
 
         ignored_repos = project_config.get(IGNORED_REPOS_PROPERTY)
         if ignored_repos:
-            if not isinstance(ignored_repos, list):
-                logger.error("{} for project {} is not a list".
-                             format(IGNORED_REPOS_PROPERTY, project_name))
-                sys.exit(1)  # TODO raise exception instead of exiting
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
 
@@ -334,10 +330,10 @@ def mirror_project(config, project_name, check_incoming, uri, source_root):
     return ret
 
 
-def check_project_configuration(project_config, hookdir, proxy):
+def check_project_configuration(multiple_project_config, hookdir, proxy):
     """
     Check configuration of given project
-    :param project_config: project configuration dictionary
+    :param multiple_project_config: project configuration dictionary
     :param hookdir: hook directory
     :param proxy: proxy setting
     :return: True if the configuration checks out, False otherwise
@@ -350,18 +346,25 @@ def check_project_configuration(project_config, hookdir, proxy):
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY]
 
-    if not project_config:
+    if not multiple_project_config:
         return True
 
-    for project_name in project_config.keys():
-        diff = diff_list(project_config.get(project_name).keys(),
+    for project_name in multiple_project_config.keys():
+        project_config = multiple_project_config.get(project_name)
+        diff = diff_list(project_config.keys(),
                          known_project_tunables)
         if diff:
             logger.error("unknown project configuration option(s) '{}' "
                          "for project {}".format(diff, project_name))
             return False
 
-        if project_config.get(project_name).get(HOOKS_PROPERTY):
+        if not proxy:
+            logger.error("global proxy setting is needed in order to"
+                         "have per-project proxy")
+            return False
+
+        hooks = project_config.get(HOOKS_PROPERTY)
+        if hooks:
             if not hookdir:
                 logger.error("Need to have '{}' in the configuration "
                              "to run hooks".format(HOOKDIR_PROPERTY))
@@ -371,13 +374,6 @@ def check_project_configuration(project_config, hookdir, proxy):
                 logger.error("Not a directory: {}".format(hookdir))
                 return False
 
-        if not proxy:
-            logger.error("global proxy setting is needed in order to"
-                         "have per-project proxy")
-            return False
-
-        hooks = project_config.get(project_name).get(HOOKS_PROPERTY)
-        if hooks:
             for hookname in hooks.keys():
                 if hookname not in ["pre", "post"]:
                     logger.error("Unknown hook name '{}' for project '{}'".
@@ -390,6 +386,13 @@ def check_project_configuration(project_config, hookdir, proxy):
                                  " or not executable".
                                  format(hookpath, project_name))
                     return False
+
+        ignored_repos = project_config.get(IGNORED_REPOS_PROPERTY)
+        if ignored_repos:
+            if not isinstance(ignored_repos, list):
+                logger.error("{} for project {} is not a list".
+                             format(IGNORED_REPOS_PROPERTY, project_name))
+                return False
 
     return True
 
