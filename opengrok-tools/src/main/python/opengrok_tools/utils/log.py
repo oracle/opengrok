@@ -23,7 +23,9 @@
 
 import logging
 import sys
+import os
 import argparse
+from logging.handlers import RotatingFileHandler
 
 
 def print_exc_exit(e):
@@ -122,7 +124,37 @@ def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.propagate = False
+    logger.handlers = []
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
+
+    return logger
+
+
+def get_batch_logger(logdir, project_name, loglevel, backupcount):
+    """
+    Get rotating file logger for storing logs of mirroring of given project.
+    :param logdir: log directory
+    :param project_name: name of the project
+    :param loglevel: logging level
+    :return logger
+    """
+
+    logger = logging.getLogger(__name__)
+
+    logfile = os.path.join(logdir, project_name + ".log")
+    logger.debug("Switching logging to the {} file".
+                 format(logfile))
+
+    logger = logger.getChild("rotating")
+    logger.setLevel(loglevel)
+    logger.propagate = False
+    handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
+                                  backupCount=backupcount)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
+                                  "%(message)s", '%m/%d/%Y %I:%M:%S %p')
+    handler.setFormatter(formatter)
+    handler.doRollover()
+    logger.addHandler(handler)
 
     return logger

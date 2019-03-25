@@ -36,7 +36,6 @@ import os
 import re
 import sys
 import tempfile
-from logging.handlers import RotatingFileHandler
 
 from filelock import Timeout, FileLock
 
@@ -44,7 +43,7 @@ from .scm.repofactory import get_repository
 from .scm.repository import RepositoryException
 from .utils.hook import run_hook
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit
+    print_exc_exit, get_batch_logger
 from .utils.opengrok import get_repos, get_config_value, get_repo_type, \
     list_indexed_projects
 from .utils.parsers import get_baseparser
@@ -76,15 +75,14 @@ PROJECTS_PROPERTY = 'projects'
 CONTINUE_EXITVAL = 2
 
 
-def get_repos_for_project(project_name, ignored_repos, **kwargs):
+def get_repos_for_project(logger, project_name, ignored_repos, **kwargs):
     """
+    :param logger
     :param project_name: project name
     :param ignored_repos: list of ignored repositories
     :param kwargs: argument dictionary
     :return: list of Repository objects
     """
-
-    logger = logging.getLogger(__name__)
 
     repos = []
     for repo_path in get_repos(logger, project_name, kwargs['uri']):
@@ -226,9 +224,11 @@ def get_project_properties(project_config, project_name, hookdir):
         use_proxy, ignored_repos
 
 
-def mirror_project(config, project_name, check_incoming, uri, source_root):
+def mirror_project(logger, config, project_name, check_incoming, uri,
+                   source_root):
     """
     Mirror the repositories of single project.
+    :param logger logger
     :param config global configuration dictionary
     :param project_name:
     :param check_incoming:
@@ -236,8 +236,6 @@ def mirror_project(config, project_name, check_incoming, uri, source_root):
     :param source_root
     :return exit code
     """
-
-    logger = logging.getLogger(__name__)
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
@@ -261,7 +259,7 @@ def mirror_project(config, project_name, check_incoming, uri, source_root):
     # something is not right, avoiding any needless pre-hook run.
     #
     ret = 0
-    repos = get_repos_for_project(project_name,
+    repos = get_repos_for_project(logger, project_name,
                                   ignored_repos,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
@@ -428,35 +426,6 @@ def check_configuration(config):
     return True
 
 
-def get_batch_logger(logdir, project_name, loglevel, backupcount):
-    """
-    Get rotating file logger for storing logs of mirroring of given project.
-    :param logdir: log directory
-    :param project_name: name of the project
-    :param loglevel: logging level
-    :return: logger object
-    """
-
-    logger = logging.getLogger(__name__)
-
-    logfile = os.path.join(logdir, project_name + ".log")
-    logger.debug("Switching logging to the {} file".
-                 format(logfile))
-
-    logger = logger.getChild("rotating")
-    logger.setLevel(loglevel)
-    logger.propagate = False
-    handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
-                                  backupCount=backupcount)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
-                                  "%(message)s", '%m/%d/%Y %I:%M:%S %p')
-    handler.setFormatter(formatter)
-    handler.doRollover()
-    logger.addHandler(handler)
-
-    return logger
-
-
 def main():
     ret = 0
 
@@ -540,9 +509,6 @@ def main():
                          format(LOGDIR_PROPERTY))
             sys.exit(1)
 
-        logger = get_batch_logger(logdir, args.project, args.loglevel,
-                                  args.backupcount)
-
     projects = args.project
     if len(args.project) == 1:
         lockfile = args.project[0] + "-mirror"
@@ -555,18 +521,16 @@ def main():
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
         with lock.acquire(timeout=0):
-            for project in projects:
-                project_result = mirror_project(config, project, args.incoming,
-                                                args.uri, source_root)
+            for project_name in projects:
+                if args.batch:
+                    logger = get_batch_logger(logdir, project_name,
+                                              args.loglevel,
+                                              args.backupcount)
 
-                #
-                # If there is just one project, treat it as if running from
-                # within the sync.py script and exit with appropriate return
-                # code. Otherwise accumulate failures.
-                #
-                if len(args.project) == 1:
-                    sys.exit(project_result)
-                elif project_result == 1:
+                project_result = mirror_project(logger, config, project_name,
+                                                args.incoming,
+                                                args.uri, source_root)
+                if project_result == 1:
                     ret = 1
     except Timeout:
         logger.warning("Already running, exiting.")
