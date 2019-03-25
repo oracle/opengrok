@@ -230,7 +230,7 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
     Mirror the repositories of single project.
     :param logger logger
     :param config global configuration dictionary
-    :param project_name:
+    :param project_name: name of the project
     :param check_incoming:
     :param uri
     :param source_root
