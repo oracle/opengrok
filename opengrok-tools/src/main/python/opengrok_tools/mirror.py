@@ -317,7 +317,7 @@ def mirror_project(config, project_name, check_incoming, uri, source_root):
         logger.info("Synchronizing repository {}".
                     format(repo.path))
         if repo.sync() != 0:
-            logger.error("failed to sync repository {}".
+            logger.error("failed to synchronize repository {}".
                          format(repo.path))
             ret = 1
 
