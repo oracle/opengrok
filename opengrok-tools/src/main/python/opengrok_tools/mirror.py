@@ -487,6 +487,10 @@ def main():
         logger.fatal("Cannot use both project list and -a/--all")
         sys.exit(1)
 
+    if not args.all and len(args.project) == 0:
+        logger.fatal("Need at least one project or --all")
+        sys.exit(1)
+
     if args.config:
         config = read_config(logger, args.config)
         if config is None:
