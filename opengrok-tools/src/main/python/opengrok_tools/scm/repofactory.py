@@ -68,4 +68,5 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks,
                               commands.get("repo"),
                               env, hooks, timeout)
     else:
+        logger.warning("Unsupported repository type: {}".format(repo_type))
         return None

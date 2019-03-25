@@ -102,20 +102,23 @@ def get_repos_for_project(project_name, ignored_repos, **kwargs):
 
         logger.debug("Repository type = {}".format(repo_type))
 
-        repo = get_repository(logger,
-                              # Not joining the path since the form
-                              # of repo_path is absolute path.
-                              kwargs['source_root'] + repo_path,
-                              repo_type,
-                              project_name,
-                              kwargs[COMMANDS_PROPERTY],
-                              kwargs[PROXY_PROPERTY],
-                              None,
-                              kwargs['command_timeout'])
-        if not repo:
-            raise RepositoryException("Cannot get repository for {}".
-                                      format(repo_path))
-        else:
+        repo = None
+        try:
+            repo = get_repository(logger,
+                                  # Not joining the path since the form
+                                  # of repo_path is absolute path.
+                                  kwargs['source_root'] + repo_path,
+                                  repo_type,
+                                  project_name,
+                                  kwargs[COMMANDS_PROPERTY],
+                                  kwargs[PROXY_PROPERTY],
+                                  None,
+                                  kwargs['command_timeout'])
+        except (RepositoryException, OSError) as e:
+            logger.error("Cannot get repository for {}: {}".
+                         format(repo_path, e))
+
+        if repo:
             repos.append(repo)
 
     return repos
@@ -262,21 +265,14 @@ def mirror_project(config, project_name, check_incoming, uri, source_root):
     # something is not right, avoiding any needless pre-hook run.
     #
     ret = 0
-    repos = []
-    try:
-        repos = get_repos_for_project(project_name,
-                                      ignored_repos,
-                                      commands=config.
-                                      get(COMMANDS_PROPERTY),
-                                      proxy=proxy,
-                                      command_timeout=command_timeout,
-                                      source_root=source_root,
-                                      uri=uri)
-    except RepositoryException as ex:
-        logger.error('failed to get repositories for project {}: {}'.
-                     format(project_name, ex))
-        return 1
-
+    repos = get_repos_for_project(project_name,
+                                  ignored_repos,
+                                  commands=config.
+                                  get(COMMANDS_PROPERTY),
+                                  proxy=proxy,
+                                  command_timeout=command_timeout,
+                                  source_root=source_root,
+                                  uri=uri)
     if not repos:
         logger.info("No repositories for project {}".
                     format(project_name))

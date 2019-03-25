@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 import os
 
 
@@ -54,8 +54,7 @@ class TeamwareRepository(Repository):
             path += ":" + command
             self.env['PATH'] = path
         else:
-            self.logger.error("Cannot get path to Teamware commands")
-            raise OSError
+            raise RepositoryException("Cannot get path to Teamware commands")
 
     def reposync(self):
         #
