@@ -102,8 +102,7 @@ def get_repos_for_project(logger, project_name, ignored_repos, **kwargs):
 
         repo = None
         try:
-            repo = get_repository(logger,
-                                  # Not joining the path since the form
+            repo = get_repository(# Not joining the path since the form
                                   # of repo_path is absolute path.
                                   kwargs['source_root'] + repo_path,
                                   repo_type,
@@ -126,6 +125,7 @@ def get_project_config(config, project_name):
     """
     Return per project configuration, if any.
     :param config:
+    :param project_name name of the project
     :return: project config or None
     """
 
@@ -525,7 +525,8 @@ def main():
                 if args.batch:
                     logger = get_batch_logger(logdir, project_name,
                                               args.loglevel,
-                                              args.backupcount)
+                                              args.backupcount,
+                                              get_class_basename())
 
                 project_result = mirror_project(logger, config, project_name,
                                                 args.incoming,

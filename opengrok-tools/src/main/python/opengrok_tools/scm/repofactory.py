@@ -21,6 +21,8 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
+import logging
+
 from .cvs import CVSRepository
 from .git import GitRepository
 from .mercurial import MercurialRepository
@@ -29,7 +31,7 @@ from .svn import SubversionRepository
 from .teamware import TeamwareRepository
 
 
-def get_repository(logger, path, repo_type, project, commands, env, hooks,
+def get_repository(path, repo_type, project, commands, env, hooks,
                    timeout):
     """
     Repository factory. Returns a Repository derived object according
@@ -38,6 +40,7 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks,
     """
     repo_lower = repo_type.lower()
 
+    logger = logging.getLogger(__name__)
     logger.debug("Constructing repo object for path {}".format(path))
 
     if not commands:
