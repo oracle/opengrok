@@ -79,15 +79,14 @@ def get_repos_for_project(logger, project_name, ignored_repos, **kwargs):
 
         repo = None
         try:
-            repo = get_repository(# Not joining the path since the form
-                # of repo_path is absolute path.
-                kwargs['source_root'] + repo_path,
-                repo_type,
-                project_name,
-                kwargs[COMMANDS_PROPERTY],
-                kwargs[PROXY_PROPERTY],
-                None,
-                kwargs['command_timeout'])
+            # Not joining the path since the form of repo_path is absolute.
+            repo = get_repository(kwargs['source_root'] + repo_path,
+                                  repo_type,
+                                  project_name,
+                                  kwargs[COMMANDS_PROPERTY],
+                                  kwargs[PROXY_PROPERTY],
+                                  None,
+                                  kwargs['command_timeout'])
         except (RepositoryException, OSError) as e:
             logger.error("Cannot get repository for {}: {}".
                          format(repo_path, e))
@@ -198,7 +197,7 @@ def get_project_properties(project_config, project_name, hookdir):
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-           use_proxy, ignored_repos
+        use_proxy, ignored_repos
 
 
 def mirror_project(logger, config, project_name, check_incoming, uri,
@@ -216,9 +215,8 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
-    ignored_repos = \
-        get_project_properties(config, project_config,
-                               config.get(HOOKDIR_PROPERTY))
+        ignored_repos = get_project_properties(config, project_config,
+                                               config.get(HOOKDIR_PROPERTY))
 
     proxy = None
     if use_proxy:

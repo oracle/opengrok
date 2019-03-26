@@ -94,7 +94,8 @@ def get_class_basename():
     return __name__.split('.')[0]
 
 
-def get_console_logger(name=__name__, level=logging.INFO, format='%(message)s'):
+def get_console_logger(name=__name__, level=logging.INFO,
+                       format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest
     to stdout. For logging.DEBUG level more verbose format is used.
@@ -131,7 +132,8 @@ def get_console_logger(name=__name__, level=logging.INFO, format='%(message)s'):
     return logger
 
 
-def get_batch_logger(logdir, project_name, loglevel, backupcount, name=__name__):
+def get_batch_logger(logdir, project_name, loglevel, backupcount,
+                     name=__name__):
     """
     Get rotating file logger for storing logs of mirroring of given project.
     :param name logger name
