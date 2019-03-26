@@ -152,12 +152,12 @@ def main():
         with lock.acquire(timeout=0):
             for project_name in projects:
                 if args.batch:
-                    logger = get_batch_logger(logdir, project_name,
-                                              args.loglevel,
-                                              args.backupcount,
-                                              get_class_basename())
+                    get_batch_logger(logdir, project_name,
+                                     args.loglevel,
+                                     args.backupcount,
+                                     get_class_basename())
 
-                project_result = mirror_project(logger, config, project_name,
+                project_result = mirror_project(config, project_name,
                                                 args.incoming,
                                                 args.uri, source_root)
                 if project_result == 1:

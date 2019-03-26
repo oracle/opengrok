@@ -52,14 +52,15 @@ PROJECTS_PROPERTY = 'projects'
 CONTINUE_EXITVAL = 2
 
 
-def get_repos_for_project(logger, project_name, ignored_repos, **kwargs):
+def get_repos_for_project(project_name, ignored_repos, **kwargs):
     """
-    :param logger
     :param project_name: project name
     :param ignored_repos: list of ignored repositories
     :param kwargs: argument dictionary
     :return: list of Repository objects
     """
+
+    logger = logging.getLogger(__name__)
 
     repos = []
     for repo_path in get_repos(logger, project_name, kwargs['uri']):
@@ -100,7 +101,7 @@ def get_repos_for_project(logger, project_name, ignored_repos, **kwargs):
 def get_project_config(config, project_name):
     """
     Return per project configuration, if any.
-    :param config:
+    :param config: global configuration
     :param project_name name of the project
     :return: project config or None
     """
@@ -200,11 +201,10 @@ def get_project_properties(project_config, project_name, hookdir):
         use_proxy, ignored_repos
 
 
-def mirror_project(logger, config, project_name, check_incoming, uri,
+def mirror_project(config, project_name, check_incoming, uri,
                    source_root):
     """
     Mirror the repositories of single project.
-    :param logger logger
     :param config global configuration dictionary
     :param project_name: name of the project
     :param check_incoming:
@@ -212,6 +212,8 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
     :param source_root
     :return exit code
     """
+
+    logger = logging.getLogger(__name__)
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
@@ -234,7 +236,7 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
     # something is not right, avoiding any needless pre-hook run.
     #
     ret = 0
-    repos = get_repos_for_project(logger, project_name,
+    repos = get_repos_for_project(project_name,
                                   ignored_repos,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
@@ -275,7 +277,6 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
                     hook_timeout) != 0:
             logger.error("pre hook failed for project {}".
                          format(project_name))
-            logging.shutdown()
             return 1
 
     #
@@ -297,7 +298,6 @@ def mirror_project(logger, config, project_name, check_incoming, uri,
                     hook_timeout) != 0:
             logger.error("post hook failed for project {}".
                          format(project_name))
-            logging.shutdown()  # TODO
             return 1
 
     return ret
