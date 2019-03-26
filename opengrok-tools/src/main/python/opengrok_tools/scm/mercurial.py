@@ -37,8 +37,7 @@ class MercurialRepository(Repository):
             self.command = which("hg")
 
         if not self.command:
-            self.logger.error("Cannot get hg command")
-            raise OSError
+            raise OSError("Cannot get hg command")
 
     def get_branch(self):
         hg_command = [self.command, "branch"]

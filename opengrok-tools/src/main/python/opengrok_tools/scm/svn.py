@@ -37,8 +37,7 @@ class SubversionRepository(Repository):
             self.command = which("svn")
 
         if not self.command:
-            self.logger.error("Cannot get svn command")
-            raise OSError
+            raise OSError("Cannot get svn command")
 
     def reposync(self):
         svn_command = [self.command]

@@ -34,10 +34,17 @@ from .teamware import TeamwareRepository
 def get_repository(path, repo_type, project, commands, env, hooks,
                    timeout):
     """
-    Repository factory. Returns a Repository derived object according
-    to the type specified or None if given repository type cannot
-    be found.
+    :param path: full path
+    :param repo_type: repository type
+    :param project: project name
+    :param commands: commands list
+    :param env: environment varibables dictionary
+    :param hooks: hook dictionary
+    :param timeout: timeout in seconds
+    :return: a Repository derived object according to the type specified
+    or None if given repository type cannot be found.
     """
+
     repo_lower = repo_type.lower()
 
     logger = logging.getLogger(__name__)
@@ -71,5 +78,6 @@ def get_repository(path, repo_type, project, commands, env, hooks,
                               commands.get("repo"),
                               env, hooks, timeout)
     else:
-        logger.warning("Unsupported repository type: {}".format(repo_type))
+        logger.warning("Unsupported repository type {}: {}".
+                       format(repo_type, path))
         return None

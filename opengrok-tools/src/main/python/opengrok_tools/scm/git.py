@@ -37,8 +37,7 @@ class GitRepository(Repository):
             self.command = which("git")
 
         if not self.command:
-            self.logger.error("Cannot get git command")
-            raise OSError
+            raise OSError("Cannot get git command")
 
     def reposync(self):
         git_command = [self.command, "pull", "--ff-only"]
