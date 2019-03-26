@@ -103,7 +103,7 @@ def get_project_config(config, project_name):
     Return per project configuration, if any.
     :param config: global configuration
     :param project_name name of the project
-    :return: project config or None
+    :return: project configuration dictionary or None
     """
 
     logger = logging.getLogger(__name__)
@@ -111,22 +111,13 @@ def get_project_config(config, project_name):
     project_config = None
     projects = config.get(PROJECTS_PROPERTY)
     if projects:
-        if projects.get(project_name):
-            project_config = projects.get(project_name)
-        else:
-            for proj in projects.keys():
-                try:
-                    pattern = re.compile(proj)
-                except re.error:
-                    logger.error("Not a valid regular expression: {}".
-                                 format(proj))
-                    # TODO raise exception, move to config check
-                    continue
-
-                if pattern.match(project_name):
+        project_config = projects.get(project_name)
+        if not project_config:
+            for project_pattern in projects.keys():
+                if re.match(project_pattern, project_name):
                     logger.debug("Project '{}' matched pattern '{}'".
-                                 format(project_name, proj))
-                    project_config = projects.get(proj)
+                                 format(project_name, project_pattern))
+                    project_config = projects.get(project_pattern)
                     break
 
     return project_config
@@ -303,7 +294,8 @@ def mirror_project(config, project_name, check_incoming, uri,
     return ret
 
 
-def check_project_configuration(multiple_project_config, hookdir, proxy):
+def check_project_configuration(multiple_project_config, hookdir=False,
+                                proxy=False):
     """
     Check configuration of given project
     :param multiple_project_config: project configuration dictionary
@@ -331,7 +323,7 @@ def check_project_configuration(multiple_project_config, hookdir, proxy):
                          "for project {}".format(diff, project_name))
             return False
 
-        if not proxy:
+        if project_config.get(PROXY_PROPERTY) and not proxy:
             logger.error("global proxy setting is needed in order to"
                          "have per-project proxy")
             return False
@@ -366,6 +358,13 @@ def check_project_configuration(multiple_project_config, hookdir, proxy):
                 logger.error("{} for project {} is not a list".
                              format(IGNORED_REPOS_PROPERTY, project_name))
                 return False
+
+        try:
+            re.compile(project_name)
+        except re.error:
+            logger.error("Not a valid regular expression: {}".
+                         format(project_name))
+            return False
 
     return True
 
