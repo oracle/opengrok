@@ -4,9 +4,11 @@
 echo "Triggering Travis build of OpenGrok/docker repository"
 
 body='{
-"request": {
-"branch":"master"
-}}'
+  "request": {
+    "branch":"master",
+    "message": "build triggered by API request"
+  }
+}'
 
 if [ -n "$TRAVIS_TOKEN" ]; then
 	curl -s -X POST \
