@@ -74,3 +74,8 @@ jobs:
       on:
         condition: "$TRAVIS_TAG =~ ^[0-9\\.]+$"
         all_branches: true
+  - stage: post_deploy
+    name: Post deploy
+    if: repo = "oracle/opengrok" AND tag IS present
+    script: dev/post-deploy.sh
+    install: true
