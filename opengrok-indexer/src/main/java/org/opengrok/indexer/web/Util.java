@@ -743,16 +743,8 @@ public final class Util {
             if (enabled) {
                 out.write(anchorClassStart);
                 out.write("r");
-                if (annotation.getFileVersion(r) != 0) {
-                    /*
-                        version number, 1 is the most recent
-                        generates css classes version_color_n
-                     */
-                    int versionNumber = Math.max(1,
-                            annotation.getFileVersionsCount()
-                            - annotation.getFileVersion(r) + 1);
-                    out.write(" version_color_" + versionNumber);
-                }
+                out.write("\" style=\"background-color: ");
+                out.write(annotation.getColors().getOrDefault(r, "inherit"));
                 out.write("\" href=\"");
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
@@ -770,6 +762,9 @@ public final class Util {
             }
             StringBuilder buf = new StringBuilder();
             htmlize(r, buf);
+            if (annotation.getFileVersion(r) == annotation.getRevisions().size()) {
+                out.write('*');
+            }
             out.write(buf.toString());
             buf.setLength(0);
             if (enabled) {

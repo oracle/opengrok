@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,9 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import java.util.logging.Logger;
-
+import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Util;
 
@@ -188,6 +188,53 @@ public class Annotation {
      */
     public int getFileVersionsCount() {
         return fileVersions.size();
+    }
+
+    /**
+     * Generate the color palette for the annotated revisions.
+     * <p>
+     * First, take into account revisions which are tracked in history fields
+     * and compute their color. Secondly, use all other revisions in order
+     * which is undefined and generate the rest of the colors for them.
+     *
+     * @return map of (revision, css color string) for each revision in {@code getRevisions()}
+     * @see #getRevisions()
+     */
+    public Map<String, String> getColors() {
+        Map<String, String> colors = new HashMap<>();
+        boolean even = true;
+        int hue = 60;
+        final List<String> revisions =
+                getRevisions()
+                        .stream()
+                        /*
+                         * Greater file version means more recent revision.
+                         * 0 file version means unknown revision (untracked by history entries).
+                         *
+                         * The result of this sort is:
+                         * 1) known revisions sorted from most recent to least recent
+                         * 2) all other revisions in non-determined order
+                         */
+                        .sorted(Comparator.comparingInt(this::getFileVersion).reversed())
+                        .collect(Collectors.toList());
+
+        /*
+         * HSL color space let us use the whole color spectrum without any difficult computations.
+         * We use the basic of hsl(60, 90%, 80%) and rotate the HSL circle with step equal 360/revisions_count.
+         *
+         * For two adjacent revisions, we adjust the saturation and lightness a bit so we get a smooth visible
+         * transition.
+         *
+         * The idea of the computation is taken from
+         * https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
+         */
+        for (String revision : revisions) {
+            colors.put(revision, String.format("hsl(%d, %d%%, %d%%)", hue, 90 - (even ? 0 : 10), 80 - (even ? 0 : 10)));
+            hue += 360 / getRevisions().size();
+            hue %= 360;
+            even = !even;
+        }
+        return colors;
     }
 
     /** Class representing one line in the file. */
