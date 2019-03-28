@@ -1,7 +1,7 @@
 #!/bin/bash
-
+#
 # Trigger Travis build of the OpenGrok/docker repository.
-echo "Triggering Travis build of OpenGrok/docker repository"
+#
 
 body='{
   "request": {
@@ -11,6 +11,8 @@ body='{
 }'
 
 if [ -n "$TRAVIS_TOKEN" ]; then
+	echo "Triggering Travis build of OpenGrok/docker repository"
+
 	curl -s -X POST \
 	   -H "Content-Type: application/json" \
 	   -H "Accept: application/json" \
