@@ -5,8 +5,9 @@ cache:
   - "$HOME/.sonar/cache"
 env:
   global:
+  # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+  # via the "travis encrypt" command using the project repo's public key.
   - secure: O_cda5pWDBAP-O3_0nG5RQ
-  - secure: AfVOBReF1weIKT/G0HivaZTnYia3nMCIjI7fkwTLQJnnzEVGQtqZSZJEmbobjUTh6j6gJE/KEEm56OubDylaA7xLHbxtJZAGBKZFq01x5EJ90qFnFrd6Jq2uCkppQzZB18Ai6Bk0Pun86OrGEfjzcBL7wmWuC6p0s31R9Yx68+c=
 addons:
   coverity_scan:
     project:
