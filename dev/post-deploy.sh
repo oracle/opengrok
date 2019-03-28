@@ -6,7 +6,7 @@
 body='{
   "request": {
     "branch":"master",
-    "message": "build triggered by API request"
+    "message": "build triggered by API request from https://github.com/oracle/opengrok"
   }
 }'
 
