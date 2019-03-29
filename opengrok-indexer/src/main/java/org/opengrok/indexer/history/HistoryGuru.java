@@ -181,7 +181,6 @@ public final class HistoryGuru {
                          // file version should be from oldest to newer.
                         ret.addFileVersion(short_rev, revs.size() - revsMatched);
                         revsMatched++;
-
                     }
                 }
             }
