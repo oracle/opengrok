@@ -763,6 +763,7 @@ public final class Util {
             }
             StringBuilder buf = new StringBuilder();
             htmlize(r, buf);
+            // print an asterisk for the most recent revision
             if (annotation.getFileVersion(r) == annotation.getRevisions().size()) {
                 out.write('*');
             }
