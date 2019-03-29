@@ -22,6 +22,7 @@
  */
 package opengrok.auth.plugin;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -37,6 +38,7 @@ import org.opengrok.indexer.util.StringUtils;
 
 /**
  * Authorization plug-in to extract user's LDAP attributes.
+ * The attributes can be then used by the other LDAP plugins down the stack.
  *
  * @author Krystof Tulinger
  */
@@ -45,9 +47,19 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private static final Logger LOGGER = Logger.getLogger(LdapUserPlugin.class.getName());
     
     public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
+
+    /**
+     * configuration names
+     * <ul>
+     * <li><code>objectclass</code> is LDAP object class</li>
+     * <li><code>attributes</code> is comma separated list of LDAP attributes</li>
+     * </ul>
+     */
     protected static final String OBJECT_CLASS = "objectclass";
+    protected static final String ATTRIBUTES = "attributes";
     
     private String objectClass;
+    private String[] attributes;
     private final Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z0-9_-]+)");
 
     @Override
@@ -63,9 +75,17 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             throw new NullPointerException("object class '" + objectClass +
                     "' contains non-alphanumeric characters");
         }
-    
-        LOGGER.log(Level.FINE, "LdapUser plugin loaded with objectclass={0}",
-                objectClass);
+
+        String attributesVal;
+        if ((attributesVal = (String) parameters.get(ATTRIBUTES)) == null) {
+            throw new NullPointerException("Missing param [" + ATTRIBUTES +
+                    "] in the setup");
+        }
+        attributes = attributesVal.split(",");
+
+        LOGGER.log(Level.FINE, "LdapUser plugin loaded with objectclass={0}, " +
+                        "attributes={1}",
+                new Object[]{objectClass, String.join(", ", attributes)});
     }
     
     /**
@@ -108,14 +128,15 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         updateSession(req, null);
 
         if (getLdapProvider() == null) {
+            LOGGER.log(Level.WARNING, "cannot get LDAP provider for LdapUser plugin");
             return;
         }
 
         String filter = getFilter(user);
-        if ((records = getLdapProvider().lookupLdapContent(null, filter,
-                new String[]{"uid", "mail", "ou"})) == null) {
-            LOGGER.log(Level.WARNING, "failed to get LDAP contents for user ''{0}'' with filter ''{1}''",
-                    new Object[]{user, filter});
+        if ((records = getLdapProvider().lookupLdapContent(null, filter, attributes)) == null) {
+            LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{3}'' for user ''{0}'' " +
+                            "with filter ''{1}''",
+                    new Object[]{user, filter, String.join(", ", attributes)});
             return;
         }
 
@@ -125,22 +146,19 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             return;
         }
 
-        if (!records.containsKey("uid") || records.get("uid").isEmpty()) {
-            LOGGER.log(Level.WARNING, "uid record for user {0} is not present or empty",
-                    user);
-            return;
+        for (String attrName : attributes) {
+            if (!records.containsKey(attrName) || records.get(attrName).isEmpty()) {
+                LOGGER.log(Level.WARNING, "{0} record for user {1} is not present or empty",
+                        new Object[]{attrName, user});
+            }
         }
 
-        if (!records.containsKey("mail") || records.get("mail").isEmpty()) {
-            LOGGER.log(Level.WARNING, "mail record for user {0} is not present or empty",
-                    user);
-            return;
+        Map<String, Set<String>> attrSet = new HashMap<>();
+        for (String attrName : attributes) {
+            attrSet.put(attrName, records.get(attrName));
         }
 
-        updateSession(req, new LdapUser(
-                records.get("mail").iterator().next(),
-                records.get("uid").iterator().next(),
-                records.get("ou")));
+        updateSession(req, new LdapUser(attrSet));
     }
 
     /**

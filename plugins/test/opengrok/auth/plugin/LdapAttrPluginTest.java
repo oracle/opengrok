@@ -29,6 +29,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -78,11 +80,16 @@ public class LdapAttrPluginTest {
         plugin.load(parameters);
     }
 
+    @SuppressWarnings("unchecked")
     private void prepareRequest(String username, String mail, String... ous) {
         dummyRequest = new DummyHttpServletRequestLdap();
-        dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR, new User(username, "123", null, false));
-        dummyRequest.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR, new LdapUser(mail, "123",
-                new TreeSet<>(Arrays.asList(ous))));
+        dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR,
+                new User(username, "123", null, false));
+        LdapUser ldapUser = new LdapUser();
+        ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList(mail)));
+        ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("123")));
+        ldapUser.setAttribute("ou", new TreeSet<>(Arrays.asList(ous)));
+        dummyRequest.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR, ldapUser);
         plugin.setSessionEstablished(dummyRequest, true);
         plugin.setSessionUsername(dummyRequest, username);
     }
@@ -104,7 +111,7 @@ public class LdapAttrPluginTest {
      */
     @Test
     public void testIsAllowed() {
-        /**
+        /*
          * whitelist[mail] => [james@bond.com, random@email.com, just_a_text]
          */
         prepareRequest("007", "james@bond.com", "MI6", "MI7");

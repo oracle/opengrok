@@ -26,94 +26,53 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
+ * LDAP user represented as a set of attributes
  *
  * @author Krystof Tulinger
  */
 public class LdapUser implements Serializable {
 
-    private String mail;
-    private String uid;
-    private Set<String> ou;
-    private final Map<String, Set<String>> attrs = new HashMap<>();
+    private final Map<String, Set<String>> attributes;
 
     // Use default serial ID value. If the serialized form of the object
     // changes, feel free to start from 1L.
-    private static final long serialVersionUID = -8207597677599370334L;
+    private static final long serialVersionUID = 1161431688782569843L;
 
-    public LdapUser(String mail, String uid, Set<String> ou) {
-        this.mail = mail;
-        this.uid = uid;
-        this.ou = ou == null ? new TreeSet<>() : ou;
+    public LdapUser() {
+        this(null);
     }
 
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public String getUid() {
-        return uid;
-    }
-
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
-    public Set<String> getOu() {
-        return ou;
-    }
-
-    public void setOu(Set<String> ou) {
-        this.ou = ou == null ? new TreeSet<>() : ou;
-    }
-
-    public boolean hasOu(String name) {
-        return this.ou.contains(name);
+    public LdapUser(Map<String, Set<String>> attrs) {
+        if (attrs == null) {
+            this.attributes = new HashMap<>();
+        } else {
+            this.attributes = attrs;
+        }
     }
 
     /**
-     * Get custom user property.
+     * set attribute value
      *
      * @param key the key
-     * @return the the value associated with the key
-     */
-    public Object getAttribute(String key) {
-        return attrs.get(key);
-    }
-
-    /**
-     * Set custom user property.
-     *
-     * @param key the key
-     * @param value the value
+     * @param value set of values
      * @return the value previously associated with the key
      */
     public Object setAttribute(String key, Set<String> value) {
-        return attrs.put(key, value);
+        return attributes.put(key, value);
     }
 
-    /**
-     * Remote custom user property.
-     *
-     * @param key the key
-     * @return the value previously associated with the key
-     */
-    public Object removeAttribute(String key) {
-        return attrs.remove(key);
+    public Set<String> getAttribute(String key) {
+        return attributes.get(key);
     }
 
     public Map<String, Set<String>> getAttributes() {
-        return this.attrs;
+        return this.attributes;
     }
 
     @Override
     public String toString() {
-        return "LdapUser{" + "mail=" + mail + ", uid=" + uid + ", ou=" + ou + '}';
+        return "LdapUser{attributes=" + attributes + '}';
     }
 }
