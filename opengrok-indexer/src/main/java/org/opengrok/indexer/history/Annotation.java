@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -52,6 +53,7 @@ public class Annotation {
     private final List<Line> lines = new ArrayList<>();
     private final Map<String, String> desc = new HashMap<>();
     private final Map<String, Integer> fileVersions = new HashMap<>(); // maps revision to file version
+    private final LazilyInstantiate<Map<String, String>> colors = LazilyInstantiate.using(this::generateColors);
     private int widestRevision;
     private int widestAuthor;
     private final String filename;
@@ -192,6 +194,16 @@ public class Annotation {
     }
 
     /**
+     * Return the color palette for the annotated file.
+     *
+     * @return map of (revision, css color string) for each revision in {@code getRevisions()}
+     * @see #generateColors()
+     */
+    public Map<String, String> getColors() {
+        return colors.get();
+    }
+
+    /**
      * Generate the color palette for the annotated revisions.
      * <p>
      * First, take into account revisions which are tracked in history fields
@@ -201,7 +213,7 @@ public class Annotation {
      * @return map of (revision, css color string) for each revision in {@code getRevisions()}
      * @see #getRevisions()
      */
-    public Map<String, String> getColors() {
+    private Map<String, String> generateColors() {
         Map<String, String> colors = new HashMap<>();
         boolean even = true;
         int hue = 60;
@@ -230,7 +242,8 @@ public class Annotation {
          * https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
          */
         for (String revision : revisions) {
-            colors.put(revision, String.format("hsl(%d, %d%%, %d%%)", hue, 90 - (even ? 0 : 10), 80 - (even ? 0 : 10)));
+            int adjustment = even ? 0 : 10;
+            colors.put(revision, String.format("hsl(%d, %d%%, %d%%)", hue, 90 - adjustment, 80 - adjustment));
             hue += 360 / getRevisions().size();
             hue %= 360;
             even = !even;
