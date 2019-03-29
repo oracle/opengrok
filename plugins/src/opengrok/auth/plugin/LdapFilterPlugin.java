@@ -83,11 +83,6 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             return;
         }
 
-        if (ldapUser.getUid() == null) {
-            LOGGER.log(Level.FINER, "failed to get uid");
-            return;
-        }
-
         String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
         LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
                 new Object[]{user, expandedFilter});
@@ -103,18 +98,15 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     }
 
     /**
-     * Insert the special values into the filter.
+     * Expand LdapUser attribute values into the filter.
      *
      * Special values are:
      * <ul>
-     * <li>%uid% - to be replaced with LDAP uid value</li>
-     * <li>%mail% - to be replaced with LDAP mail value</li>
-     * <li>%username% - to be replaced with OSSO user value</li>
-     * <li>%guid% - to be replaced with OSSO guid value</li>
+     * <li>%username% - to be replaced with username value from the User object</li>
+     * <li>%guid% - to be replaced with guid value from the User object</li>
      * </ul>
      *
      * Use \% for printing the '%' character.
-     * Also replaces any other LDAP attribute that would not be ambiguous.
      *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
@@ -122,11 +114,9 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      * @return replaced result
      */
     protected String expandFilter(String filter, LdapUser ldapUser, User user) {
-        filter = filter.replaceAll("(?<!\\\\)%uid(?<!\\\\)%", ldapUser.getUid());
-        filter = filter.replaceAll("(?<!\\\\)%mail(?<!\\\\)%", ldapUser.getMail());
         filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
         filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
-        
+
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
                 try {
@@ -137,7 +127,6 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
                     LOGGER.log(Level.WARNING, "The pattern for expanding is not valid", ex);
                 }
             }
-
         }
         
         filter = filter.replaceAll("\\\\%", "%");
