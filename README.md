@@ -55,6 +55,4 @@ There are also Slack channels on https://opengrok.slack.com/
 
 ## 6. Demo
 
-Visit <http://demo.opengrok.org>
-
 Anyway, just demo it yourself - there are Docker images available on https://hub.docker.com/r/opengrok/docker/
