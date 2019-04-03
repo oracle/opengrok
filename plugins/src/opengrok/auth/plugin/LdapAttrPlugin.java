@@ -28,6 +28,8 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
@@ -41,6 +43,9 @@ import org.opengrok.indexer.configuration.Project;
  * @author Krystof Tulinger
  */
 public class LdapAttrPlugin extends AbstractLdapPlugin {
+
+    private static final Logger LOGGER = Logger.getLogger(LdapAttrPlugin.class.getName());
+
 
     protected static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
     protected static final String FILE_PARAM = "file";
@@ -92,7 +97,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         updateSession(req, sessionAllowed);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
-            // TODO log
+            LOGGER.log(Level.FINE, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
