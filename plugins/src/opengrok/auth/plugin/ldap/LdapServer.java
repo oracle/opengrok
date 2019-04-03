@@ -22,6 +22,7 @@
  */
 package opengrok.auth.plugin.ldap;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,21 +35,23 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
-public class LdapServer {
+public class LdapServer implements Serializable {
+
+    private static final long serialVersionUID = -1;
 
     private static final Logger LOGGER = Logger.getLogger(LdapServer.class.getName());
 
-    private static final String LDAP_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.connect.timeout";
+    private static final String LDAP_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.connect.connectTimeout";
     private static final String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
     /**
-     * Timeout for connecting.
+     * default connectTimeout for connecting
      */
-    private static final int LDAP_TIMEOUT = 5000; // ms
+    private static final int LDAP_CONNECT_TIMEOUT = 5000; // ms
 
     private String url;
     private String username;
     private String password;
-    private int timeout;
+    private int connectTimeout;
     private int interval = 10 * 1000;
 
     private Hashtable<String, String> env;
@@ -95,12 +98,12 @@ public class LdapServer {
         return this;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public int getConnectTimeout() {
+        return connectTimeout;
     }
 
-    public LdapServer setTimeout(int timeout) {
-        this.timeout = timeout;
+    public LdapServer setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
         return this;
     }
 
@@ -140,19 +143,19 @@ public class LdapServer {
         }
 
         if (ctx == null) {
+            env.put(Context.PROVIDER_URL, this.url);
+
+            if (this.username != null) {
+                env.put(Context.SECURITY_PRINCIPAL, this.username);
+            }
+            if (this.password != null) {
+                env.put(Context.SECURITY_CREDENTIALS, this.password);
+            }
+            if (this.connectTimeout > 0) {
+                env.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(this.connectTimeout));
+            }
+
             try {
-                env.put(Context.PROVIDER_URL, this.url);
-
-                if (this.username != null) {
-                    env.put(Context.SECURITY_PRINCIPAL, this.username);
-                }
-                if (this.password != null) {
-                    env.put(Context.SECURITY_CREDENTIALS, this.password);
-                }
-                if (this.timeout > 0) {
-                    env.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(this.timeout));
-                }
-
                 ctx = new InitialLdapContext(env, null);
                 ctx.reconnect(null);
                 ctx.setRequestControls(null);
@@ -165,6 +168,7 @@ public class LdapServer {
                 return ctx = null;
             }
         }
+
         return ctx;
     }
 
@@ -231,6 +235,7 @@ public class LdapServer {
             try {
                 ctx.close();
             } catch (NamingException ex) {
+                LOGGER.log(Level.WARNING, "cannot close LDAP server {0}", getUrl());
             }
             ctx = null;
         }
@@ -238,9 +243,10 @@ public class LdapServer {
 
     private static Hashtable<String, String> prepareEnv() {
         Hashtable<String, String> e = new Hashtable<String, String>();
+
         e.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
-        e.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(LDAP_TIMEOUT));
+        e.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));
+
         return e;
     }
-
 }

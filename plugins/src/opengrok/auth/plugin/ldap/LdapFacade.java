@@ -58,11 +58,13 @@ public class LdapFacade extends AbstractLdapProvider {
     private static final String LDAP_FILTER = "objectclass=*";
 
     /**
-     * Timeout for retrieving the results.
+     * default timeout for retrieving the results
      */
-    private static final int LDAP_TIMEOUT = 5000; // ms
+    private static final int LDAP_SEARCH_TIMEOUT = 5000; // ms
 
     /**
+     * default limit of result traversal
+     *
      * @see
      * <a href="https://docs.oracle.com/javase/7/docs/api/javax/naming/directory/SearchControls.html#setCountLimit%28long%29">SearchControls</a>
      *
@@ -178,11 +180,11 @@ public class LdapFacade extends AbstractLdapProvider {
     };
 
     public LdapFacade(Configuration cfg) {
-        setServers(cfg.getServers());
+        setServers(cfg.getServers(), cfg.getConnectTimeout());
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
         setHooks(cfg.getHooks());
-        prepareSearchControls();
+        prepareSearchControls(cfg.getSearchTimeout(), cfg.getCountLimit());
         prepareServers();
     }
 
@@ -218,8 +220,14 @@ public class LdapFacade extends AbstractLdapProvider {
         return servers;
     }
 
-    public LdapFacade setServers(List<LdapServer> servers) {
+    public LdapFacade setServers(List<LdapServer> servers, int timeout) {
         this.servers = servers;
+        // Inherit connect timeout from server pool configuration.
+        for (LdapServer server : servers) {
+            if (server.getConnectTimeout() == 0 && timeout != 0) {
+                server.setConnectTimeout(timeout);
+            }
+        }
         return this;
     }
 
@@ -267,9 +275,16 @@ public class LdapFacade extends AbstractLdapProvider {
                 new ContentAttributeMapper(values));
     }
 
-    private SearchControls prepareSearchControls() {
+    private SearchControls prepareSearchControls(int ldapTimeout, int ldapCountLimit) {
         controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        controls.setTimeLimit(ldapTimeout > 0 ? ldapTimeout : LDAP_SEARCH_TIMEOUT);
+        controls.setCountLimit(ldapCountLimit > 0 ? ldapCountLimit : LDAP_COUNT_LIMIT);
+
+        return controls;
+    }
+
+    public SearchControls getSearchControls() {
         return controls;
     }
 

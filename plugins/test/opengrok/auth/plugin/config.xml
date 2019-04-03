@@ -13,7 +13,7 @@
 					<void property="name">
 						<string>ldap://ldap.foobar.com</string>
 					</void>
-					<void property="timeout">
+					<void property="connectTimeout">
 						<int>10</int>
 					</void>
 				</object>
