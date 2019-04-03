@@ -71,12 +71,11 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     @Override
     public void fillSession(HttpServletRequest req, User user) {
-        Boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
         String[] dn = {"dn"};
 
-        updateSession(req, sessionAllowed);
+        updateSession(req, false);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
             LOGGER.log(Level.FINER, "failed to get attribute " + LdapUserPlugin.SESSION_ATTR);
@@ -92,9 +91,8 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         }
 
         LOGGER.log(Level.FINER, "got {0} records", records.size());
-        sessionAllowed = true;
 
-        updateSession(req, sessionAllowed);
+        updateSession(req, true);
     }
 
     /**

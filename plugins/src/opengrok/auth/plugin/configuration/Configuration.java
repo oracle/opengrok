@@ -36,12 +36,14 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import opengrok.auth.plugin.ldap.LdapServer;
+import opengrok.auth.plugin.util.Hooks;
 
 public class Configuration {
 
     private List<LdapServer> servers = new ArrayList<>();
     private int interval;
     private String searchBase;
+    private Hooks hooks;
 
     public void setServers(List<LdapServer> servers) {
         this.servers = servers;
@@ -49,6 +51,14 @@ public class Configuration {
 
     public List<LdapServer> getServers() {
         return servers;
+    }
+
+    public void setHooks(Hooks hooks) {
+        this.hooks = hooks;
+    }
+
+    public Hooks getHooks() {
+        return hooks;
     }
 
     public int getInterval() {

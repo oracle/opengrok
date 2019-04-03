@@ -53,6 +53,7 @@ public class PluginClassLoader extends ClassLoader {
             "org.opengrok.indexer.configuration.RuntimeEnvironment",
             "org.opengrok.indexer.authorization.IAuthorizationPlugin",
             "org.opengrok.indexer.authorization.plugins.*",
+            "org.opengrok.indexer.authorization.LdapError",
             "org.opengrok.indexer.util.*",
             "org.opengrok.indexer.logger.*"
     };

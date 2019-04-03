@@ -40,8 +40,13 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.util.Hook;
+import opengrok.auth.plugin.util.Hooks;
+import org.opengrok.indexer.authorization.LdapException;
+import opengrok.auth.plugin.util.RestfulClient;
 
 public class LdapFacade extends AbstractLdapProvider {
 
@@ -77,7 +82,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * Also each server uses this same interval since its last failure - per
      * server waiting.
      */
-    private int interval = 10 * 1000;
+    private int interval = 10 * 1000; // ms
 
     /**
      * LDAP search base
@@ -88,6 +93,11 @@ public class LdapFacade extends AbstractLdapProvider {
      * Server pool.
      */
     private List<LdapServer> servers = new ArrayList<>();
+
+    /**
+     * server hooks
+     */
+    Hooks hooks;
 
     private SearchControls controls;
     private int actualServer = 0;
@@ -171,8 +181,13 @@ public class LdapFacade extends AbstractLdapProvider {
         setServers(cfg.getServers());
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
+        setHooks(cfg.getHooks());
         prepareSearchControls();
         prepareServers();
+    }
+
+    private void setHooks(Hooks hooks) {
+        this.hooks = hooks;
     }
 
     /**
@@ -255,8 +270,6 @@ public class LdapFacade extends AbstractLdapProvider {
     private SearchControls prepareSearchControls() {
         controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        controls.setTimeLimit(LDAP_TIMEOUT);
-        controls.setCountLimit(LDAP_COUNT_LIMIT);
         return controls;
     }
 
@@ -292,22 +305,26 @@ public class LdapFacade extends AbstractLdapProvider {
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             if (!reported) {
                 reported = true;
-                LOGGER.log(Level.SEVERE, "Server pool is still broken");
+                LOGGER.log(Level.SEVERE, "LDAP server pool is still broken");
             }
-            return null;
+            throw new LdapException("LDAP server pool is still broken");
         }
 
         if (fail > servers.size() - 1) {
             // did the whole rotation
-            LOGGER.log(Level.SEVERE, "Tried all servers in a pool but no server works");
+            LOGGER.log(Level.SEVERE, "Tried all LDAP servers in a pool but no server works");
             errorTimestamp = System.currentTimeMillis();
             reported = false;
-            return null;
+            Hook hook;
+            if ((hook = hooks.getFail()) != null) {
+                RestfulClient.postIt(hook.getURI(), hook.getContent());
+            }
+            throw new LdapException("Tried all LDAP servers in a pool but no server works");
         }
 
         if (!isConfigured()) {
             LOGGER.log(Level.SEVERE, "LDAP is not configured");
-            return null;
+            throw new LdapException("LDAP is not configured");
         }
 
         NamingEnumeration<SearchResult> namingEnum = null;
@@ -317,11 +334,17 @@ public class LdapFacade extends AbstractLdapProvider {
             for (namingEnum = server.search(dn, filter, controls); namingEnum.hasMore();) {
                 SearchResult sr = namingEnum.next();
                 reported = false;
+                if (errorTimestamp > 0) {
+                    errorTimestamp = 0;
+                    Hook hook;
+                    if ((hook = hooks.getRecover()) != null) {
+                        RestfulClient.postIt(hook.getURI(), hook.getContent());
+                    }
+                }
                 return processResult(sr, mapper);
             }
         } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "The LDAP name was not found.", ex);
-            return null;
+            throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
             LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
             closeActualServer();
@@ -352,7 +375,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 }
             }
         }
-        return null;
+
+        throw new LdapException("LDAP naming problem");
     }
 
     private void closeActualServer() {
