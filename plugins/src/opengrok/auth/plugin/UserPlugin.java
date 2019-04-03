@@ -22,10 +22,12 @@
  */
 package opengrok.auth.plugin;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import opengrok.auth.plugin.decoders.FakeOSSOHeaderDecoder;
-import opengrok.auth.plugin.decoders.OSSOHeaderDecoder;
 import opengrok.auth.plugin.decoders.IUserDecoder;
 import opengrok.auth.plugin.entity.User;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
@@ -39,19 +41,45 @@ import org.opengrok.indexer.configuration.Project;
  */
 public class UserPlugin implements IAuthorizationPlugin {
 
-    private static final String FAKE_PARAM = "fake";
+    private static final Logger LOGGER = Logger.getLogger(UserPlugin.class.getName());
+
+    private static final String DECODER_CLASS_PARAM = "decoder";
 
     public static final String REQUEST_ATTR = "opengrok-user-plugin-user";
 
-    private IUserDecoder decoder = new OSSOHeaderDecoder();
+    private IUserDecoder decoder;
+
+    public UserPlugin() {
+    }
+
+    // for testing
+    protected UserPlugin(IUserDecoder decoder) {
+        this.decoder = decoder;
+    }
+
+    private IUserDecoder getDecoder(String name) throws ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException, InstantiationException {
+        Class<?> clazz = Class.forName(name);
+        Constructor<?> constructor = clazz.getConstructor();
+        Object instance = constructor.newInstance();
+        return (IUserDecoder)instance;
+    }
 
     @Override
     public void load(Map<String, Object> parameters) {
-        Boolean fake;
+        String decoder_name;
+        if ((decoder_name = (String) parameters.get(DECODER_CLASS_PARAM)) == null) {
+            throw new NullPointerException(String.format("missing " +
+                    "parameter '%s' in %s configuration",
+                    DECODER_CLASS_PARAM, UserPlugin.class.getName()));
+        }
 
-        if ((fake = (Boolean) parameters.get(FAKE_PARAM)) != null
-                && fake) {
-            decoder = new FakeOSSOHeaderDecoder();
+        LOGGER.log(Level.INFO, "loading decoder: {0}", decoder_name);
+        try {
+            decoder = getDecoder(decoder_name);
+        } catch (ClassNotFoundException|NoSuchMethodException|IllegalAccessException|
+                InvocationTargetException|InstantiationException e) {
+            throw new RuntimeException("cannot load decoder " + decoder_name, e);
         }
     }
 
@@ -59,23 +87,24 @@ public class UserPlugin implements IAuthorizationPlugin {
     public void unload() {
     }
 
-    @Override
-    public boolean isAllowed(HttpServletRequest request, Project project) {
+    private User getUser(HttpServletRequest request) {
         User user;
-        if ((user = (User) request.getAttribute(REQUEST_ATTR)) == null) {
+
+        if ((user = (User)request.getAttribute(REQUEST_ATTR))==null) {
             user = decoder.fromRequest(request);
             request.setAttribute(REQUEST_ATTR, user);
         }
-        return user != null;
+
+        return user;
+    }
+
+    @Override
+    public boolean isAllowed(HttpServletRequest request, Project project) {
+        return getUser(request) != null;
     }
 
     @Override
     public boolean isAllowed(HttpServletRequest request, Group group) {
-        User user;
-        if ((user = (User) request.getAttribute(REQUEST_ATTR)) == null) {
-            user = decoder.fromRequest(request);
-            request.setAttribute(REQUEST_ATTR, user);
-        }
-        return user != null;
+        return getUser(request) != null;
     }
 }
