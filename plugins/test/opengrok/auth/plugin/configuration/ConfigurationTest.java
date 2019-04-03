@@ -63,6 +63,9 @@ public class ConfigurationTest {
 
         Configuration configuration1 = new Configuration();
         configuration1.setInterval(500);
+        configuration1.setSearchTimeout(1000);
+        configuration1.setConnectTimeout(42);
+        configuration1.setCountLimit(10);
         configuration1.setServers(new ArrayList<>(Arrays.asList(new LdapServer("http://server.com"))));
         Hooks hooks = new Hooks();
         Hook hook = new Hook();

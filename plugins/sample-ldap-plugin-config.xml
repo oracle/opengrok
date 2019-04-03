@@ -4,8 +4,17 @@
                 <void property="interval">
                         <int>900000</int>
                 </void>
+                <void property="searchTimeout">
+                        <int>500</int>
+                </void>
                 <void property="searchBase">
                         <string>dc=foobar,dc=com</string>
+                </void>
+                <void property="connectTimeout">
+                        <int>5000</int>
+                </void>
+                <void property="countLimit">
+                        <int>100</int>
                 </void>
                 <void property="servers">
                         <void method="add">
@@ -13,7 +22,7 @@
                                         <void property="name">
                                                 <string>ldap://ldap1.foobar.com</string>
                                         </void>
-                                        <void property="timeout">
+                                        <void property="connectTimeout">
                                                 <int>5000</int>
                                         </void>
                                 </object>
@@ -22,9 +31,6 @@
                                 <object class="opengrok.auth.plugin.ldap.LdapServer">
                                         <void property="name">
                                                 <string>ldap://ldap2.foobar.com</string>
-                                        </void>
-                                        <void property="timeout">
-                                                <int>5000</int>
                                         </void>
                                 </object>
                         </void>
