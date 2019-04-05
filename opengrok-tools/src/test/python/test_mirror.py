@@ -71,38 +71,34 @@ def test_invalid_project_config_ignoredrepos():
 
 
 def test_invalid_project_config_hooks():
-    tmpdir = tempfile.TemporaryDirectory()
-    config = {"foo": {HOOKS_PROPERTY: {"pre": "nonexistentfile.sh"}}}
-    assert not check_project_configuration(config, hookdir=tmpdir.name)
-    shutil.rmtree(tmpdir.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = {"foo": {HOOKS_PROPERTY: {"pre": "nonexistentfile.sh"}}}
+        assert not check_project_configuration(config, hookdir=tmpdir.name)
 
 
 def test_invalid_project_config_hooknames():
-    tmpdir = tempfile.TemporaryDirectory()
-    config = {"foo": {HOOKS_PROPERTY: {"blah": "value"}}}
-    assert not check_project_configuration(config, hookdir=tmpdir.name)
-    shutil.rmtree(tmpdir.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = {"foo": {HOOKS_PROPERTY: {"blah": "value"}}}
+        assert not check_project_configuration(config, hookdir=tmpdir.name)
 
 
 def test_invalid_project_config_nonexec_hook():
-    tmpdir = tempfile.TemporaryDirectory()
-    with open(os.path.join(tmpdir.name, "foo.sh"), 'w+') as tmpfile:
-        tmpfile.write("foo\n")
-        config = {"foo": {HOOKS_PROPERTY: {"pre": "foo.sh"}}}
-        assert not check_project_configuration(config, hookdir=tmpdir.name)
-        shutil.rmtree(tmpdir.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with open(os.path.join(tmpdir.name, "foo.sh"), 'w+') as tmpfile:
+            tmpfile.write("foo\n")
+            config = {"foo": {HOOKS_PROPERTY: {"pre": "foo.sh"}}}
+            assert not check_project_configuration(config, hookdir=tmpdir.name)
 
 
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
 def test_valid_project_config_hook():
-    tmpdir = tempfile.TemporaryDirectory()
-    with open(os.path.join(tmpdir.name, "foo.sh"), 'w+') as tmpfile:
-        tmpfile.write("foo\n")
-        st = os.stat(tmpfile.name)
-        os.chmod(tmpfile.name, st.st_mode | stat.S_IEXEC)
-        config = {"foo": {HOOKS_PROPERTY: {"pre": "foo.sh"}}}
-        assert check_project_configuration(config, hookdir=tmpdir.name)
-        shutil.rmtree(tmpdir.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with open(os.path.join(tmpdir.name, "foo.sh"), 'w+') as tmpfile:
+            tmpfile.write("foo\n")
+            st = os.stat(tmpfile.name)
+            os.chmod(tmpfile.name, st.st_mode | stat.S_IEXEC)
+            config = {"foo": {HOOKS_PROPERTY: {"pre": "foo.sh"}}}
+            assert check_project_configuration(config, hookdir=tmpdir.name)
 
 
 def test_invalid_config_option():
