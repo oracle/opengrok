@@ -112,7 +112,7 @@ def main():
     # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
-        return False
+        sys.exit(1)
 
     logger.debug("Source root = {}".format(source_root))
 
