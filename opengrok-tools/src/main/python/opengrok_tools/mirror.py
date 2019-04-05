@@ -139,7 +139,7 @@ def main():
             sys.exit(1)
 
     projects = args.project
-    if len(args.project) == 1:
+    if len(projects) == 1:
         lockfile = projects[0] + "-mirror"
     else:
         lockfile = os.path.basename(sys.argv[0])
