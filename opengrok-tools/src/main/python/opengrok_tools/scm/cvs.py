@@ -37,7 +37,7 @@ class CVSRepository(Repository):
             self.command = which("cvs")
 
         if not self.command:
-            raise OSError("Cannot get cvs command")
+            raise RepositoryException("Cannot get cvs command")
 
     def reposync(self):
         hg_command = [self.command, "update", "-dP"]

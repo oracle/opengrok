@@ -41,8 +41,9 @@ class TeamwareRepository(Repository):
         #
         if command:
             if not os.path.isdir(command):
-                raise OSError("Cannot construct Teamware repository:"
-                              " {} is not a directory".format(command))
+                raise RepositoryException("Cannot construct Teamware "
+                                          "repository: {} is not a "
+                                          "directory".format(command))
 
             try:
                 path = os.environ['PATH']
