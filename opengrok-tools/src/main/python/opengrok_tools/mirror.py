@@ -140,7 +140,7 @@ def main():
 
     projects = args.project
     if len(args.project) == 1:
-        lockfile = args.project[0] + "-mirror"
+        lockfile = projects[0] + "-mirror"
     else:
         lockfile = os.path.basename(sys.argv[0])
 
