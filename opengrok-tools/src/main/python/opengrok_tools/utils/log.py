@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -136,10 +136,11 @@ def get_batch_logger(logdir, project_name, loglevel, backupcount,
                      name=__name__):
     """
     Get rotating file logger for storing logs of mirroring of given project.
-    :param name logger name
     :param logdir: log directory
     :param project_name: name of the project
     :param loglevel: logging level
+    :param backupcount count of log files to keep around
+    :param name name of the logger
     :return logger
     """
 
