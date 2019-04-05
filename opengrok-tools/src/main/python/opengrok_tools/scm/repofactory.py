@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -29,6 +29,8 @@ from .mercurial import MercurialRepository
 from .repo import RepoRepository
 from .svn import SubversionRepository
 from .teamware import TeamwareRepository
+
+logger = logging.getLogger(__name__)
 
 
 def get_repository(path, repo_type, project, commands, env, hooks,
@@ -47,7 +49,6 @@ def get_repository(path, repo_type, project, commands, env, hooks,
 
     repo_lower = repo_type.lower()
 
-    logger = logging.getLogger(__name__)
     logger.debug("Constructing repo object for path {}".format(path))
 
     if not commands:
