@@ -34,6 +34,7 @@ import logging
 import os
 import sys
 import tempfile
+from multiprocessing import Pool, cpu_count
 
 from filelock import Timeout, FileLock
 
@@ -52,7 +53,37 @@ if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.7"
+__version__ = "0.8"
+
+
+class workerConfig():
+    """
+    class to wrap parameters of the worker process
+    """
+    def __init__(self, project_name, logdir, loglevel, backupcount, config,
+                 incoming, uri, source_root, batch):
+
+        self.project_name = project_name
+        self.logdir = logdir
+        self.loglevel = loglevel
+        self.backupcount = backupcount
+        self.config = config
+        self.incoming = incoming
+        self.uri = uri
+        self.source_root = source_root
+        self.batch = batch
+
+
+def worker(cfg):
+    if cfg.batch:
+        get_batch_logger(cfg.logdir, cfg.project_name,
+                         cfg.loglevel,
+                         cfg.backupcount,
+                         get_class_basename())
+
+    return mirror_project(cfg.config, cfg.project_name,
+                          cfg.incoming,
+                          cfg.uri, cfg.source_root)
 
 
 def main():
@@ -77,6 +108,9 @@ def main():
     parser.add_argument('-I', '--incoming', action='store_true',
                         help='Check for incoming changes, terminate the '
                              'processing if not found.')
+    parser.add_argument('-w', '--workers', default=cpu_count(),
+                        help='Number of worker processes')
+
     try:
         args = parser.parse_args()
     except ValueError as e:
@@ -150,18 +184,19 @@ def main():
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
         with lock.acquire(timeout=0):
-            for project_name in projects:
-                if args.batch:
-                    get_batch_logger(logdir, project_name,
-                                     args.loglevel,
-                                     args.backupcount,
-                                     get_class_basename())
-
-                project_result = mirror_project(config, project_name,
-                                                args.incoming,
-                                                args.uri, source_root)
-                if project_result == 1:
-                    ret = 1
+            with Pool(processes=int(args.workers)) as pool:
+                worker_configs = [workerConfig(x, logdir, args.loglevel,
+                                               args.backupcount, config,
+                                               args.incoming,
+                                               args.uri, source_root,
+                                               args.batch) for x in projects]
+                try:
+                    project_results = pool.map(worker, worker_configs, 1)
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                else:
+                    if any([True for x in project_results if x == 1]):
+                        ret = 1
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
