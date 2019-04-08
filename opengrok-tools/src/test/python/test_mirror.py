@@ -25,7 +25,6 @@
 
 
 import tempfile
-import shutil
 import os
 import stat
 import pytest
