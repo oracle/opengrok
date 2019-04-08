@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -37,8 +37,7 @@ class SubversionRepository(Repository):
             self.command = which("svn")
 
         if not self.command:
-            self.logger.error("Cannot get svn command")
-            raise OSError
+            raise RepositoryException("Cannot get svn command")
 
     def reposync(self):
         svn_command = [self.command]

@@ -18,8 +18,10 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
+
+import logging
 
 from .cvs import CVSRepository
 from .git import GitRepository
@@ -28,14 +30,23 @@ from .repo import RepoRepository
 from .svn import SubversionRepository
 from .teamware import TeamwareRepository
 
+logger = logging.getLogger(__name__)
 
-def get_repository(logger, path, repo_type, project, commands, env, hooks,
+
+def get_repository(path, repo_type, project, commands, env, hooks,
                    timeout):
     """
-    Repository factory. Returns a Repository derived object according
-    to the type specified or None if given repository type cannot
-    be found.
+    :param path: full path
+    :param repo_type: repository type
+    :param project: project name
+    :param commands: commands list
+    :param env: environment varibables dictionary
+    :param hooks: hook dictionary
+    :param timeout: timeout in seconds
+    :return: a Repository derived object according to the type specified
+    or None if given repository type cannot be found.
     """
+
     repo_lower = repo_type.lower()
 
     logger.debug("Constructing repo object for path {}".format(path))
@@ -68,4 +79,6 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks,
                               commands.get("repo"),
                               env, hooks, timeout)
     else:
+        logger.warning("Unsupported repository type {}: {}".
+                       format(repo_type, path))
         return None

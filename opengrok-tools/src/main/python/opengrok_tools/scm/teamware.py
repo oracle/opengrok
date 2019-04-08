@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 import os
 
 
@@ -41,21 +41,19 @@ class TeamwareRepository(Repository):
         #
         if command:
             if not os.path.isdir(command):
-                self.logger.error("Cannot construct Teamware repository:"
-                                  " {} is not a directory".format(command))
-                raise OSError
+                raise RepositoryException("Cannot construct Teamware "
+                                          "repository: {} is not a "
+                                          "directory".format(command))
 
             try:
                 path = os.environ['PATH']
             except KeyError:
-                self.logger.error("Cannot get PATH env var")
-                raise OSError
+                raise OSError("Cannot get PATH env var")
 
             path += ":" + command
             self.env['PATH'] = path
         else:
-            self.logger.error("Cannot get path to Teamware commands")
-            raise OSError
+            raise RepositoryException("Cannot get path to Teamware commands")
 
     def reposync(self):
         #

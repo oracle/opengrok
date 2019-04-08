@@ -37,8 +37,7 @@ class RepoRepository(Repository):
             self.command = which("repo")
 
         if not self.command:
-            self.logger.error("Cannot get repo command")
-            raise OSError
+            raise RepositoryException("Cannot get repo command")
 
     def reposync(self):
         repo_command = [self.command, "sync", "-cf"]

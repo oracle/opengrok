@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -37,8 +37,7 @@ class CVSRepository(Repository):
             self.command = which("cvs")
 
         if not self.command:
-            self.logger.error("Cannot get cvs command")
-            raise OSError
+            raise RepositoryException("Cannot get cvs command")
 
     def reposync(self):
         hg_command = [self.command, "update", "-dP"]
