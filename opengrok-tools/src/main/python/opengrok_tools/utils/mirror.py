@@ -27,7 +27,7 @@ import os
 import fnmatch
 import logging
 
-from .utils import is_exe, check_create_dir, get_int, diff_list
+from .utils import is_exe, check_create_dir, get_int
 from .opengrok import get_repos, get_repo_type
 from .hook import run_hook
 
@@ -50,12 +50,15 @@ PROJECTS_PROPERTY = 'projects'
 # This is a special exit code that is recognized by sync.py to terminate
 # the processing of the command sequence.
 CONTINUE_EXITVAL = 2
+SUCCESS_EXITVAL = 0
+FAILURE_EXITVAL = 1
 
 
-def get_repos_for_project(project_name, ignored_repos, **kwargs):
+def get_repos_for_project(project_name, ignored_repos, uri, source_root, **kwargs):
     """
     :param project_name: project name
     :param ignored_repos: list of ignored repositories
+    :param uri: web application URI
     :param kwargs: argument dictionary
     :return: list of Repository objects
     """
@@ -63,7 +66,7 @@ def get_repos_for_project(project_name, ignored_repos, **kwargs):
     logger = logging.getLogger(__name__)
 
     repos = []
-    for repo_path in get_repos(logger, project_name, kwargs['uri']):
+    for repo_path in get_repos(logger, project_name, uri):
         logger.debug("Repository path = {}".format(repo_path))
 
         r_path = os.path.relpath(repo_path, '/' + project_name)
@@ -71,7 +74,7 @@ def get_repos_for_project(project_name, ignored_repos, **kwargs):
             logger.info("repository {} ignored".format(repo_path))
             continue
 
-        repo_type = get_repo_type(logger, repo_path, kwargs['uri'])
+        repo_type = get_repo_type(logger, repo_path, uri)
         if not repo_type:
             raise RepositoryException("cannot determine type of repository {}".
                                       format(repo_path))
@@ -81,7 +84,7 @@ def get_repos_for_project(project_name, ignored_repos, **kwargs):
         repo = None
         try:
             # Not joining the path since the form of repo_path is absolute.
-            repo = get_repository(kwargs['source_root'] + repo_path,
+            repo = get_repository(source_root + repo_path,
                                   repo_type,
                                   project_name,
                                   kwargs[COMMANDS_PROPERTY],
@@ -226,15 +229,15 @@ def mirror_project(config, project_name, check_incoming, uri,
     # Cache the repositories first. This way it will be known that
     # something is not right, avoiding any needless pre-hook run.
     #
-    ret = 0
+    ret = SUCCESS_EXITVAL
     repos = get_repos_for_project(project_name,
                                   ignored_repos,
+                                  uri,
+                                  source_root,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
                                   proxy=proxy,
-                                  command_timeout=command_timeout,
-                                  source_root=source_root,
-                                  uri=uri)
+                                  command_timeout=command_timeout)
     if not repos:
         logger.info("No repositories for project {}".
                     format(project_name))
@@ -253,7 +256,7 @@ def mirror_project(config, project_name, check_incoming, uri,
             except RepositoryException:
                 logger.error('Cannot determine incoming changes for '
                              'repository {}'.format(repo))
-                return 1
+                return FAILURE_EXITVAL
 
         if not got_incoming:
             logger.info('No incoming changes for repositories in '
@@ -268,7 +271,7 @@ def mirror_project(config, project_name, check_incoming, uri,
                     hook_timeout) != 0:
             logger.error("pre hook failed for project {}".
                          format(project_name))
-            return 1
+            return FAILURE_EXITVAL
 
     #
     # If one of the repositories fails to sync, the whole project sync
@@ -280,7 +283,7 @@ def mirror_project(config, project_name, check_incoming, uri,
         if repo.sync() != 0:
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
-            ret = 1
+            ret = FAILURE_EXITVAL
 
     if posthook:
         logger.info("Running post hook")
@@ -289,7 +292,7 @@ def mirror_project(config, project_name, check_incoming, uri,
                     hook_timeout) != 0:
             logger.error("post hook failed for project {}".
                          format(project_name))
-            return 1
+            return FAILURE_EXITVAL
 
     return ret
 
@@ -314,11 +317,9 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     if not multiple_project_config:
         return True
 
-    for project_name in multiple_project_config.keys():
-        project_config = multiple_project_config.get(project_name)
-        diff = diff_list(project_config.keys(),
-                         known_project_tunables)
-        if diff:
+    for project_name, project_config in multiple_project_config.items():
+        diff = set(project_config.keys()).difference(known_project_tunables)
+        if len(diff) > 0:
             logger.error("unknown project configuration option(s) '{}' "
                          "for project {}".format(diff, project_name))
             return False
@@ -381,8 +382,8 @@ def check_configuration(config):
     global_tunables = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
-    diff = diff_list(config.keys(), global_tunables)
-    if diff:
+    diff = set(config.keys()).difference(global_tunables)
+    if len(diff) > 0:
         logger.error("unknown global configuration option(s): '{}'"
                      .format(diff))
         return False

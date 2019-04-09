@@ -26,7 +26,7 @@ import logging
 import sys
 
 from .utils.java import Java
-from .utils.log import print_exc_exit
+from .utils.log import fatal
 from .utils.parsers import get_javaparser
 
 """
@@ -42,7 +42,7 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     # Avoid using utils.log.get_console_level() since the stdout of the program
     # is interpreted as data.

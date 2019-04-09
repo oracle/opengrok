@@ -26,7 +26,7 @@ import argparse
 import sys
 
 from .utils.java import Java
-from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.parsers import get_javaparser
 
 
@@ -39,7 +39,7 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 

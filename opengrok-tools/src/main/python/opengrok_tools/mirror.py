@@ -38,7 +38,7 @@ import tempfile
 from filelock import Timeout, FileLock
 
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit, get_batch_logger
+    fatal, get_batch_logger
 from .utils.opengrok import get_config_value, list_indexed_projects
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
@@ -49,8 +49,7 @@ from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
 
 major_version = sys.version_info[0]
 if major_version < 3:
-    print("Need Python 3, you are running {}".format(major_version))
-    sys.exit(1)
+    fatal("Need Python 3, you are running {}".format(major_version))
 
 __version__ = "0.7"
 
@@ -80,30 +79,26 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if len(args.project) > 0 and args.all:
-        logger.fatal("Cannot use both project list and -a/--all")
-        sys.exit(1)
+        fatal("Cannot use both project list and -a/--all")
 
     if not args.all and len(args.project) == 0:
-        logger.fatal("Need at least one project or --all")
-        sys.exit(1)
+        fatal("Need at least one project or --all")
 
     if args.config:
         config = read_config(logger, args.config)
         if config is None:
-            logger.fatal("Cannot read config file from {}".format(args.config))
-            sys.exit(1)
+            fatal("Cannot read config file from {}".format(args.config))
     else:
         config = {}
 
     uri = args.uri
     if not is_web_uri(uri):
-        logger.fatal("Not a URI: {}".format(uri))
-        sys.exit(1)
+        fatal("Not a URI: {}".format(uri))
     logger.debug("web application URI = {}".format(uri))
 
     if not check_configuration(config):
@@ -134,9 +129,8 @@ def main():
     if args.batch:
         logdir = config.get(LOGDIR_PROPERTY)
         if not logdir:
-            logger.fatal("The {} property is required in batch mode".
-                         format(LOGDIR_PROPERTY))
-            sys.exit(1)
+            fatal("The {} property is required in batch mode".
+                  format(LOGDIR_PROPERTY))
 
     projects = args.project
     if len(projects) == 1:
