@@ -54,7 +54,8 @@ SUCCESS_EXITVAL = 0
 FAILURE_EXITVAL = 1
 
 
-def get_repos_for_project(project_name, ignored_repos, uri, source_root, **kwargs):
+def get_repos_for_project(project_name, ignored_repos, uri, source_root,
+                          **kwargs):
     """
     :param project_name: project name
     :param ignored_repos: list of ignored repositories
