@@ -56,34 +56,19 @@ if major_version < 3:
 __version__ = "0.8"
 
 
-class workerConfig():
-    """
-    class to wrap parameters of the worker process
-    """
-    def __init__(self, project_name, logdir, loglevel, backupcount, config,
-                 incoming, uri, source_root, batch):
+def worker(args):
+    project_name, logdir, loglevel, backupcount, config, incoming, uri, \
+        source_root, batch = args
 
-        self.project_name = project_name
-        self.logdir = logdir
-        self.loglevel = loglevel
-        self.backupcount = backupcount
-        self.config = config
-        self.incoming = incoming
-        self.uri = uri
-        self.source_root = source_root
-        self.batch = batch
-
-
-def worker(cfg):
-    if cfg.batch:
-        get_batch_logger(cfg.logdir, cfg.project_name,
-                         cfg.loglevel,
-                         cfg.backupcount,
+    if batch:
+        get_batch_logger(logdir, project_name,
+                         loglevel,
+                         backupcount,
                          get_class_basename())
 
-    return mirror_project(cfg.config, cfg.project_name,
-                          cfg.incoming,
-                          cfg.uri, cfg.source_root)
+    return mirror_project(config, project_name,
+                          incoming,
+                          uri, source_root)
 
 
 def main():
@@ -185,13 +170,16 @@ def main():
     try:
         with lock.acquire(timeout=0):
             with Pool(processes=int(args.workers)) as pool:
-                worker_configs = [workerConfig(x, logdir, args.loglevel,
-                                               args.backupcount, config,
-                                               args.incoming,
-                                               args.uri, source_root,
-                                               args.batch) for x in projects]
+                worker_args = []
+                for x in projects:
+                    worker_args.append([x, logdir, args.loglevel,
+                                        args.backupcount, config,
+                                        args.incoming,
+                                        args.uri, source_root,
+                                        args.batch])
+                print(worker_args)
                 try:
-                    project_results = pool.map(worker, worker_configs, 1)
+                    project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:
                     sys.exit(1)
                 else:

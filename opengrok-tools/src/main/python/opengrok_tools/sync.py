@@ -183,21 +183,19 @@ def main():
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.
-            pool = Pool(processes=int(args.workers))
-            try:
-                cmds_base_results = pool.map(worker, cmds_base, 1)
-            except KeyboardInterrupt:
-                pool.close()
-                pool.terminate()
-                sys.exit(1)
-            else:
-                for cmds_base in cmds_base_results:
-                    logger.debug("Checking results of project {}".
-                                 format(cmds_base))
-                    cmds = CommandSequence(cmds_base)
-                    cmds.fill(cmds_base.retcodes, cmds_base.outputs,
-                              cmds_base.failed)
-                    cmds.check(ignore_errors)
+            with Pool(processes=int(args.workers)) as pool:
+                try:
+                    cmds_base_results = pool.map(worker, cmds_base, 1)
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                else:
+                    for cmds_base in cmds_base_results:
+                        logger.debug("Checking results of project {}".
+                                     format(cmds_base))
+                        cmds = CommandSequence(cmds_base)
+                        cmds.fill(cmds_base.retcodes, cmds_base.outputs,
+                                  cmds_base.failed)
+                        cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
