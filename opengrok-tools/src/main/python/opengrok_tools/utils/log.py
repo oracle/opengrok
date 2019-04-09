@@ -147,8 +147,6 @@ def get_batch_logger(logdir, project_name, loglevel, backupcount,
     logger = logging.getLogger(name)
 
     logfile = os.path.join(logdir, project_name + ".log")
-    logger.debug("Switching logging to the {} file".
-                 format(logfile))
 
     handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
                                   backupCount=backupcount)
