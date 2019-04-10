@@ -43,8 +43,8 @@ import javax.naming.directory.SearchResult;
 
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
-import opengrok.auth.plugin.util.Hook;
-import opengrok.auth.plugin.util.Hooks;
+import opengrok.auth.plugin.util.WebHook;
+import opengrok.auth.plugin.util.WebHooks;
 import org.opengrok.indexer.authorization.LdapException;
 import opengrok.auth.plugin.util.RestfulClient;
 
@@ -97,9 +97,9 @@ public class LdapFacade extends AbstractLdapProvider {
     private List<LdapServer> servers = new ArrayList<>();
 
     /**
-     * server hooks
+     * server webHooks
      */
-    Hooks hooks;
+    private WebHooks webHooks;
 
     private SearchControls controls;
     private int actualServer = 0;
@@ -183,13 +183,13 @@ public class LdapFacade extends AbstractLdapProvider {
         setServers(cfg.getServers(), cfg.getConnectTimeout());
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
-        setHooks(cfg.getHooks());
+        setWebHooks(cfg.getWebHooks());
         prepareSearchControls(cfg.getSearchTimeout(), cfg.getCountLimit());
         prepareServers();
     }
 
-    private void setHooks(Hooks hooks) {
-        this.hooks = hooks;
+    private void setWebHooks(WebHooks webHooks) {
+        this.webHooks = webHooks;
     }
 
     /**
@@ -330,8 +330,8 @@ public class LdapFacade extends AbstractLdapProvider {
             LOGGER.log(Level.SEVERE, "Tried all LDAP servers in a pool but no server works");
             errorTimestamp = System.currentTimeMillis();
             reported = false;
-            Hook hook;
-            if ((hook = hooks.getFail()) != null) {
+            WebHook hook;
+            if ((hook = webHooks.getFail()) != null) {
                 RestfulClient.postIt(hook.getURI(), hook.getContent());
             }
             throw new LdapException("Tried all LDAP servers in a pool but no server works");
@@ -351,8 +351,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 reported = false;
                 if (errorTimestamp > 0) {
                     errorTimestamp = 0;
-                    Hook hook;
-                    if ((hook = hooks.getRecover()) != null) {
+                    WebHook hook;
+                    if ((hook = webHooks.getRecover()) != null) {
                         RestfulClient.postIt(hook.getURI(), hook.getContent());
                     }
                 }
