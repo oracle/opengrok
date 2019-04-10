@@ -321,7 +321,7 @@ def check_project_configuration(multiple_project_config, hookdir=False,
 
     for project_name, project_config in multiple_project_config.items():
         diff = set(project_config.keys()).difference(known_project_tunables)
-        if len(diff) > 0:
+        if diff:
             logger.error("unknown project configuration option(s) '{}' "
                          "for project {}".format(diff, project_name))
             return False
@@ -385,7 +385,7 @@ def check_configuration(config):
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
     diff = set(config.keys()).difference(global_tunables)
-    if len(diff) > 0:
+    if diff:
         logger.error("unknown global configuration option(s): '{}'"
                      .format(diff))
         return False
