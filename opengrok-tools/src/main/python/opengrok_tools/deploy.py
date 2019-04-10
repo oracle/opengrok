@@ -29,7 +29,7 @@ from shutil import copyfile
 from zipfile import ZipFile
 
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit
+    fatal
 from .utils.parsers import get_baseparser
 
 """
@@ -111,7 +111,7 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 

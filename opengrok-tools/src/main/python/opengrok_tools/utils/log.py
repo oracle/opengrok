@@ -28,13 +28,12 @@ import argparse
 from logging.handlers import RotatingFileHandler
 
 
-def print_exc_exit(e):
+def fatal(msg):
     """
-    Print exception and exit
-    :param e: exception
-    :return: nothing
+    Print message to standard error output and exit
+    :param msg: message
     """
-    print(e, file=sys.stderr)
+    print(msg, file=sys.stderr)
     sys.exit(1)
 
 
