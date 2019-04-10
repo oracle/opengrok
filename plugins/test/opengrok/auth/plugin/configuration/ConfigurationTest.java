@@ -32,8 +32,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import junit.framework.AssertionFailedError;
 import opengrok.auth.plugin.ldap.LdapServer;
-import opengrok.auth.plugin.util.Hook;
-import opengrok.auth.plugin.util.Hooks;
+import opengrok.auth.plugin.util.WebHook;
+import opengrok.auth.plugin.util.WebHooks;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -67,12 +67,12 @@ public class ConfigurationTest {
         configuration1.setConnectTimeout(42);
         configuration1.setCountLimit(10);
         configuration1.setServers(new ArrayList<>(Arrays.asList(new LdapServer("http://server.com"))));
-        Hooks hooks = new Hooks();
-        Hook hook = new Hook();
+        WebHooks webHooks = new WebHooks();
+        WebHook hook = new WebHook();
         hook.setContent("foo");
         hook.setURI("http://localhost:8080/source/api/v1/messages");
-        hooks.setFail(hook);
-        configuration1.setHooks(hooks);
+        webHooks.setFail(hook);
+        configuration1.setWebHooks(webHooks);
 
         enc.writeObject(configuration1);
         enc.close();

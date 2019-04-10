@@ -37,7 +37,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import opengrok.auth.plugin.ldap.LdapServer;
-import opengrok.auth.plugin.util.Hooks;
+import opengrok.auth.plugin.util.WebHooks;
 
 public class Configuration implements Serializable {
 
@@ -46,7 +46,7 @@ public class Configuration implements Serializable {
     private List<LdapServer> servers = new ArrayList<>();
     private int interval;
     private String searchBase;
-    private Hooks hooks;
+    private WebHooks webHooks;
     private int searchTimeout;
     private int connectTimeout;
     private int countLimit;
@@ -59,12 +59,12 @@ public class Configuration implements Serializable {
         return servers;
     }
 
-    public void setHooks(Hooks hooks) {
-        this.hooks = hooks;
+    public void setWebHooks(WebHooks webHooks) {
+        this.webHooks = webHooks;
     }
 
-    public Hooks getHooks() {
-        return hooks;
+    public WebHooks getWebHooks() {
+        return webHooks;
     }
 
     public int getInterval() {

@@ -25,15 +25,21 @@ package opengrok.auth.plugin.util;
 
 import java.io.Serializable;
 
-public class Hook implements Serializable {
+public class WebHooks implements Serializable {
     private static final long serialVersionUID = -1;
 
-    private String URI;
-    private String content;
+    WebHook fail;
+    WebHook recover;
 
-    public void setURI(String URI) { this.URI = URI; }
-    public String getURI() { return URI; }
+    public void setFail(WebHook fail) {
+        this.fail = fail;
+    }
 
-    public void setContent(String content) { this.content = content; }
-    public String getContent() { return content; }
+    public WebHook getFail() { return fail; }
+
+    public void setRecover(WebHook recover) {
+        this.recover = recover;
+    }
+
+    public WebHook getRecover() { return recover; }
 }
