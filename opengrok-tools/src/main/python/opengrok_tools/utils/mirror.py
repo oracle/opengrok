@@ -60,6 +60,7 @@ def get_repos_for_project(project_name, ignored_repos, uri, source_root,
     :param project_name: project name
     :param ignored_repos: list of ignored repositories
     :param uri: web application URI
+    :param source_root source root
     :param kwargs: argument dictionary
     :return: list of Repository objects
     """
