@@ -257,9 +257,9 @@ public class AuthorizationStack extends AuthorizationEntity {
                     overallDecision = true;
                     break;
                 }
-            } catch (LdapException ex) {
+            } catch (AuthorizationException ex) {
                 // Propagate up so that proper HTTP error can be given.
-                LOGGER.log(Level.FINEST, "got LDAP exception: " + ex.getMessage());
+                LOGGER.log(Level.FINEST, "got authorization exception: " + ex.getMessage());
                 throw ex;
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING,

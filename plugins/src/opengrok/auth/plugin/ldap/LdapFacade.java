@@ -45,7 +45,6 @@ import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
-import org.opengrok.indexer.authorization.LdapException;
 import opengrok.auth.plugin.util.RestfulClient;
 
 public class LdapFacade extends AbstractLdapProvider {
@@ -266,7 +265,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return set of strings describing the user's attributes
      */
     @Override
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException {
 
         return lookup(
                 user != null ? user.getUsername() : getSearchBase(),
@@ -299,7 +298,7 @@ public class LdapFacade extends AbstractLdapProvider {
      *
      * @return results transformed with mapper
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) {
+    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) throws LdapException {
         return lookup(dn, filter, attributes, mapper, 0);
     }
 
@@ -314,8 +313,9 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param fail current count of failures
      *
      * @return results transformed with mapper or {@code null} on failure
+     * @throws LdapException LDAP exception
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) {
+    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) throws LdapException {
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             if (!reported) {

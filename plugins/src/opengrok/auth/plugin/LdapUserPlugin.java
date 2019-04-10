@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.LdapException;
+import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.StringUtils;
@@ -133,11 +135,15 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
 
         String filter = getFilter(user);
-        if ((records = getLdapProvider().lookupLdapContent(null, filter, attributes)) == null) {
-            LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{3}'' for user ''{0}'' " +
-                            "with filter ''{1}''",
-                    new Object[]{user, filter, String.join(", ", attributes)});
-            return;
+        try {
+            if ((records = getLdapProvider().lookupLdapContent(null, filter, attributes)) == null) {
+                LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{3}'' for user ''{0}'' " +
+                                "with filter ''{1}''",
+                        new Object[]{user, filter, String.join(", ", attributes)});
+                return;
+            }
+        } catch (LdapException ex) {
+            throw new AuthorizationException(ex);
         }
 
         if (records.isEmpty()) {
