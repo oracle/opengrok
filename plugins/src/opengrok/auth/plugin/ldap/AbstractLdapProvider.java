@@ -37,7 +37,7 @@ public abstract class AbstractLdapProvider {
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String)
      */
-    public Map<String, Set<String>> lookupLdapContent(User user) {
+    public Map<String, Set<String>> lookupLdapContent(User user) throws LdapException {
         // calling the lookupLdapContent(user, filter)
         return lookupLdapContent(user, (String) null);
     }
@@ -52,7 +52,7 @@ public abstract class AbstractLdapProvider {
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String filter) throws LdapException {
         return lookupLdapContent(user, filter, null);
     }
 
@@ -66,7 +66,7 @@ public abstract class AbstractLdapProvider {
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String[] values) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String[] values) throws LdapException {
         return lookupLdapContent(user, null, values);
     }
 
@@ -78,7 +78,7 @@ public abstract class AbstractLdapProvider {
      * @param values match these LDAP value
      * @return set of important attributes for the user
      */
-    public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values);
+    public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException;
 
     /**
      * @return if the provider is correctly configured

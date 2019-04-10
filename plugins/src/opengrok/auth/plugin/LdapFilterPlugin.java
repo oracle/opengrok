@@ -31,6 +31,8 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.LdapException;
+import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
@@ -85,9 +87,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
         LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
                 new Object[]{user, expandedFilter});
-        if ((records = getLdapProvider().lookupLdapContent(null, expandedFilter, dn)) == null) {
-            LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
-            return;
+        try {
+            if ((records = getLdapProvider().lookupLdapContent(null, expandedFilter, dn)) == null) {
+                LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
+                return;
+            }
+        } catch (LdapException ex) {
+            throw new AuthorizationException(ex);
         }
 
         LOGGER.log(Level.FINER, "got {0} records", records.size());

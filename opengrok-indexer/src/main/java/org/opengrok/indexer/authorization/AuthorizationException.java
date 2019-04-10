@@ -18,26 +18,24 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.authorization;
 
-/**
- * Unchecked exception to be thrown when LDAP server pool is down.
- */
-public class LdapException extends RuntimeException {
-    public static final long serialVersionUID = -1;
+public class AuthorizationException extends RuntimeException {
 
-    public LdapException() {
-        super();
+    private static final long serialVersionUID = -1;
+
+    public AuthorizationException(Throwable ex) {
+        super(ex);
     }
 
-    public LdapException(String str) {
-        super(str);
+    AuthorizationException(String msg) {
+        super(msg);
     }
 
-    public LdapException(String str, Throwable ex) {
-        super(str, ex);
+    AuthorizationException(String msg, Throwable ex) {
+        super(msg, ex);
     }
 }
