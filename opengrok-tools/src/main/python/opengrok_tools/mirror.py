@@ -171,7 +171,6 @@ def main():
                                         args.incoming,
                                         args.uri, source_root,
                                         args.batch])
-                print(worker_args)
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:
