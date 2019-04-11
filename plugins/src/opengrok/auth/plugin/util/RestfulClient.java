@@ -23,6 +23,7 @@
 
 package opengrok.auth.plugin.util;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -45,8 +46,9 @@ public class RestfulClient {
      * Perform HTTP PUT request
      * @param URI URI
      * @param input JSON string contents
+     * @return HTTP status or -1
      */
-    public static void postIt(String URI, String input) {
+    public static int postIt(String URI, String input) {
         try {
             Client client = ClientBuilder.newClient();
 
@@ -57,11 +59,14 @@ public class RestfulClient {
                     .post(Entity.entity(input, MediaType.APPLICATION_JSON));
 
             int status = response.getStatus();
-            if (status != 201) {  // TODO use definition
+            if (status != HttpServletResponse.SC_CREATED) {
                 LOGGER.log(Level.WARNING, "REST request failed: HTTP error code : {0}", status);
             }
+
+            return status;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "REST request failed: {0}", e);
+            return -1;
         }
     }
 }

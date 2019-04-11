@@ -24,6 +24,9 @@
 package opengrok.auth.plugin.util;
 
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class WebHook implements Serializable {
     private static final long serialVersionUID = -1;
@@ -31,9 +34,30 @@ public class WebHook implements Serializable {
     private String URI;
     private String content;
 
+    public WebHook() {
+    }
+
+    WebHook(String URI, String content) {
+        this.URI = URI;
+        this.content = content;
+    }
+
     public void setURI(String URI) { this.URI = URI; }
     public String getURI() { return URI; }
 
     public void setContent(String content) { this.content = content; }
     public String getContent() { return content; }
+
+    public Future<String> post() {
+        CompletableFuture<String> completableFuture
+                = new CompletableFuture<>();
+
+        Executors.newCachedThreadPool().submit(() -> {
+            int status = RestfulClient.postIt(getURI(), getContent());
+            completableFuture.complete(String.valueOf(status));
+            return null;
+        });
+
+        return completableFuture;
+    }
 }
