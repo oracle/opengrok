@@ -34,6 +34,10 @@ public class User {
     private boolean timeouted;
     private final Map<String, Object> attrs = new HashMap<>();
 
+    public User(String username) {
+        this.username = username;
+    }
+
     public User(String username, String id, Date cookieTimestamp, boolean timeouted) {
         this.id = id;
         this.username = username;
