@@ -29,25 +29,24 @@ import opengrok.auth.plugin.entity.User;
 public abstract class AbstractLdapProvider {
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String)
      */
     public Map<String, Set<String>> lookupLdapContent(User user) throws LdapException {
-        // calling the lookupLdapContent(user, filter)
         return lookupLdapContent(user, (String) null);
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
@@ -57,11 +56,11 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param values match these LDAP value
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
@@ -71,12 +70,12 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter
      * @param values match these LDAP value
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      */
     public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException;
 
@@ -89,5 +88,4 @@ public abstract class AbstractLdapProvider {
      * Closes the LDAP provider.
      */
     public abstract void close();
-
 }
