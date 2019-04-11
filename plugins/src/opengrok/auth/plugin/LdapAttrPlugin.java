@@ -99,7 +99,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         updateSession(req, sessionAllowed);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
-            LOGGER.log(Level.FINE, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
+            LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
@@ -111,6 +111,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         } else {
             try {
                 if ((records = getLdapProvider().lookupLdapContent(user, new String[]{ldapAttr})) == null) {
+                    LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1}",
+                        new Object[]{ldapAttr, user});
                     return;
                 }
             } catch (LdapException ex) {
@@ -118,6 +120,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             }
 
             if (records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
+                LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1}",
+                        new Object[]{ldapAttr, user});
                 return;
             }
 
