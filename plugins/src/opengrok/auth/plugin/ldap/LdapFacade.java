@@ -45,7 +45,6 @@ import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
-import opengrok.auth.plugin.util.RestfulClient;
 
 public class LdapFacade extends AbstractLdapProvider {
 
@@ -332,7 +331,7 @@ public class LdapFacade extends AbstractLdapProvider {
             reported = false;
             WebHook hook;
             if ((hook = webHooks.getFail()) != null) {
-                RestfulClient.postIt(hook.getURI(), hook.getContent());
+                hook.post();
             }
             throw new LdapException("Tried all LDAP servers in a pool but no server works");
         }
@@ -353,7 +352,7 @@ public class LdapFacade extends AbstractLdapProvider {
                     errorTimestamp = 0;
                     WebHook hook;
                     if ((hook = webHooks.getRecover()) != null) {
-                        RestfulClient.postIt(hook.getURI(), hook.getContent());
+                        hook.post();
                     }
                 }
                 return processResult(sr, mapper);
