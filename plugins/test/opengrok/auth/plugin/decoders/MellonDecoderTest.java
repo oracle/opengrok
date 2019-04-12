@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static opengrok.auth.plugin.decoders.MellonHeaderDecoder.MELLON_EMAIL_HEADER;
+import static org.junit.Assert.assertNull;
 
 public class MellonDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
@@ -47,7 +48,12 @@ public class MellonDecoderTest {
 
         Assert.assertNotNull(result);
         Assert.assertEquals("foo@bar.cz", result.getUsername());
-        Assert.assertNull(result.getId());
+        assertNull(result.getId());
         Assert.assertFalse(result.isTimeouted());
+    }
+
+    @Test
+    public void testMissingHeader() {
+        assertNull(decoder.fromRequest(new DummyHttpServletRequestUser()));
     }
 }
