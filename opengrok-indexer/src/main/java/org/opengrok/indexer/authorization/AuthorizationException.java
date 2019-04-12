@@ -31,7 +31,7 @@ public class AuthorizationException extends RuntimeException {
         super(ex);
     }
 
-    AuthorizationException(String msg) {
+    public AuthorizationException(String msg) {
         super(msg);
     }
 

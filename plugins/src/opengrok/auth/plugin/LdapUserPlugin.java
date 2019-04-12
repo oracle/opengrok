@@ -104,7 +104,6 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     }
 
     protected String getFilter(User user) {
-        String filter = null;
         String commonName;
 
         Matcher matcher = usernameCnPattern.matcher(user.getUsername());
@@ -113,14 +112,11 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             LOGGER.log(Level.FINEST, "extracted common name {0} from {1}",
                 new Object[]{commonName, user.getUsername()});
         } else {
-            LOGGER.log(Level.WARNING, "cannot get common name out of {0}",
-                    user.getUsername());
-            return filter;
+            throw new AuthorizationException(String.format("cannot get common name out of %s",
+                    user.getUsername()));
         }
         
-        filter = "(&(objectclass=" + this.objectClass + ")(" + commonName + "))";
-        
-        return filter;
+        return "(&(objectclass=" + this.objectClass + ")(" + commonName + "))";
     }
     
     @Override
