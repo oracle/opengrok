@@ -26,6 +26,7 @@ package opengrok.auth.plugin.decoders;
 import opengrok.auth.plugin.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +54,9 @@ public class MellonHeaderDecoder implements IUserDecoder {
         String username = request.getHeader(MELLON_EMAIL_HEADER);
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct an user: username could not be extracted");
+                    "Can not construct User object: header ''{1}'' not found in request headers: {0}",
+                    new Object[]{String.join(",", Collections.list(request.getHeaderNames())),
+                            MELLON_EMAIL_HEADER});
             return null;
         }
 
