@@ -25,7 +25,6 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="opengrok" tagdir="/WEB-INF/tags" %>
 
-<%@ attribute name="pageConfig" required="true" type="org.opengrok.indexer.web.PageConfig" %>
 <%@ attribute name="project" required="true" type="org.opengrok.indexer.configuration.Project" %>
 
 <tr>

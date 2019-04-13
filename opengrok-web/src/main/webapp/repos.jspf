@@ -136,7 +136,6 @@ Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
                                 />
 
                         <opengrok:projects
-                                pageConfig="${pageConfig}"
                                 projects="<%= pHelper.getProjects(group) %>"
                         />
                     </table><%
@@ -192,7 +191,6 @@ Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
                                     repositories="<%= pHelper.getUngroupedRepositories() %>"
                             />
                             <opengrok:projects
-                                    pageConfig="${pageConfig}"
                                     projects="<%= pHelper.getUngroupedProjects() %>"
                             />
                         </table>

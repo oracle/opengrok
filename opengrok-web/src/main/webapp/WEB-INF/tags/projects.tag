@@ -23,7 +23,6 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="opengrok" tagdir="/WEB-INF/tags" %>
 
-<%@ attribute name="pageConfig" required="true" type="org.opengrok.indexer.web.PageConfig" %>
 <%@ attribute name="projects" required="true" type="java.util.Set<org.opengrok.indexer.configuration.Project>" %>
 
 <c:if test="${projects.size() > 0}">
@@ -36,7 +35,6 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
     <c:forEach var="project" items="${projects}">
         <c:if test="${project.indexed}">
             <opengrok:project
-                    pageConfig="${pageConfig}"
                     project="${project}"
             />
         </c:if>
