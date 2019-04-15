@@ -47,7 +47,7 @@ public class MellonHeaderDecoder implements IUserDecoder {
 
     private static final Logger LOGGER = Logger.getLogger(MellonHeaderDecoder.class.getName());
 
-    static String MELLON_EMAIL_HEADER = "MELLON_email";
+    static final String MELLON_EMAIL_HEADER = "MELLON_email";
 
     @Override
     public User fromRequest(HttpServletRequest request) {
