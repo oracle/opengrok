@@ -143,15 +143,8 @@ public class LdapFacade extends AbstractLdapProvider {
                         attrEnum.hasMore();) {
                     Attribute attr = attrEnum.next();
 
-                    if (!map.containsKey(attr.getID())) {
-                        map.put(attr.getID(), new TreeSet<>());
-                    }
 
-                    final Set<String> valueSet = map.get(attr.getID());
-
-                    for (NamingEnumeration<?> values = attr.getAll(); values.hasMore();) {
-                        valueSet.add((String) values.next());
-                    }
+                    addAttrToMap(map, attr);
                 }
             } else {
                 for (String value : values) {
@@ -161,21 +154,25 @@ public class LdapFacade extends AbstractLdapProvider {
                         continue;
                     }
 
-                    if (!map.containsKey(attr.getID())) {
-                        map.put(attr.getID(), new TreeSet<>());
-                    }
-
-                    final Set<String> valueSet = map.get(attr.getID());
-
-                    for (NamingEnumeration<?> values = attr.getAll(); values.hasMore(); ) {
-                        valueSet.add((String) values.next());
-                    }
+                    addAttrToMap(map, attr);
                 }
             }
 
             map.put("dn", Collections.singleton(dn));
 
             return map;
+        }
+
+        private void addAttrToMap(Map<String, Set<String>> map, Attribute attr) throws NamingException {
+            if (!map.containsKey(attr.getID())) {
+                map.put(attr.getID(), new TreeSet<>());
+            }
+
+            final Set<String> valueSet = map.get(attr.getID());
+
+            for (NamingEnumeration<?> values = attr.getAll(); values.hasMore(); ) {
+                valueSet.add((String) values.next());
+            }
         }
     }
 
