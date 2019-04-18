@@ -112,7 +112,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      *
      * Use \% for printing the '%' character.
      *
-     * @param user User object from the request (created by {@see UserPlugin})
+     * @param user User object from the request (created by {@code UserPlugin})
      * @return replaced result
      */
     protected String expandFilter(User user) {

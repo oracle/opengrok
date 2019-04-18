@@ -54,6 +54,7 @@ public abstract class AbstractLdapProvider {
      *
      * @param dn LDAP DN
      * @return set of attributes for the user or null
+     * @throws LdapException LDAP exception
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String)
      */
@@ -67,6 +68,7 @@ public abstract class AbstractLdapProvider {
      * @param dn LDAP DN
      * @param filter the LDAP filter
      * @return set of attributes for the user or null
+     * @throws LdapException LDAP exception
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
@@ -80,6 +82,7 @@ public abstract class AbstractLdapProvider {
      * @param dn LDAP DN
      * @param values match these LDAP value
      * @return set of attributes for the user or null
+     * @throws LdapException LDAP exception
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
@@ -94,6 +97,7 @@ public abstract class AbstractLdapProvider {
      * @param filter the LDAP filter
      * @param values match these LDAP value
      * @return set of attributes for the user or null
+     * @throws LdapException LDAP exception
      */
     public abstract LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException;
 
