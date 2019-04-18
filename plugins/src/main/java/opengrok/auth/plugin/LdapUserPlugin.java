@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
@@ -36,7 +36,6 @@ import opengrok.auth.plugin.ldap.LdapException;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.util.StringUtils;
 
 /**
  * Authorization plug-in to extract user's LDAP attributes.
@@ -50,39 +49,43 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     
     public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
-    /** Configuration name for LDAP object class. */
-    protected static final String OBJECT_CLASS = "objectclass";
-    /** Configuration names for comma separated list of LDAP attributes. */
+    /**
+     * configuration names
+     * <ul>
+     * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
+     * <li><code>useDN</code> boolean value indicating if User.username should be used as search DN</li>
+     * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
+     * </ul>
+     */
+    protected static final String LDAP_FILTER = "filter";
     protected static final String ATTRIBUTES = "attributes";
-    
-    private String objectClass;
-    private String[] attributes;
-    private final Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z0-9_-]+)");
+    protected static final String USE_DN = "useDN";
+
+    private String ldapFilter;
+    private Boolean useDN;
+    private Set<String> attributes;
 
     @Override
     public void load(Map<String, Object> parameters) {
         super.load(parameters);
 
-        if ((objectClass = (String) parameters.get(OBJECT_CLASS)) == null) {
-            throw new NullPointerException("Missing param [" + OBJECT_CLASS +
-                    "] in the setup");
-        }
-
-        if (!StringUtils.isAlphanumeric(objectClass)) {
-            throw new NullPointerException("object class '" + objectClass +
-                    "' contains non-alphanumeric characters");
-        }
-
         String attributesVal;
         if ((attributesVal = (String) parameters.get(ATTRIBUTES)) == null) {
-            throw new NullPointerException("Missing param [" + ATTRIBUTES +
+            throw new NullPointerException("Missing configuration parameter [" + ATTRIBUTES +
                     "] in the setup");
         }
-        attributes = attributesVal.split(",");
+        attributes = new HashSet<>(Arrays.asList(attributesVal.split(",")));
+        attributes.add("dn");
 
-        LOGGER.log(Level.FINE, "LdapUser plugin loaded with objectclass={0}, " +
-                        "attributes={1}",
-                new Object[]{objectClass, String.join(", ", attributes)});
+        ldapFilter = (String) parameters.get(LDAP_FILTER);
+
+        if ((useDN = (Boolean) parameters.get(USE_DN)) == null) {
+            useDN = false;
+        }
+
+        LOGGER.log(Level.FINE, "LdapUser plugin loaded with filter={0}, " +
+                        "attributes={1}, useDN={2}",
+                new Object[]{ldapFilter, String.join(", ", attributes), useDN});
     }
     
     /**
@@ -98,22 +101,31 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                 && req.getSession().getAttribute(SESSION_ATTR) != null;
     }
 
-    protected String getFilter(User user) {
-        String commonName;
+    /**
+     * Expand User attribute values into the filter.
+     *
+     * Special values are:
+     * <ul>
+     * <li>%username% - to be replaced with username value from the User object</li>
+     * <li>%guid% - to be replaced with guid value from the User object</li>
+     * </ul>
+     *
+     * Use \% for printing the '%' character.
+     *
+     * @param user User object from the request (created by {@see UserPlugin})
+     * @return replaced result
+     */
+    protected String expandFilter(User user) {
+        String filter = ldapFilter;
 
-        Matcher matcher = usernameCnPattern.matcher(user.getUsername());
-        if (matcher.find()) {
-            commonName = matcher.group(1);
-            LOGGER.log(Level.FINEST, "extracted common name {0} from {1}",
-                new Object[]{commonName, user.getUsername()});
-        } else {
-            throw new AuthorizationException(String.format("cannot get common name out of %s",
-                    user.getUsername()));
-        }
-        
-        return "(&(objectclass=" + this.objectClass + ")(" + commonName + "))";
+        filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
+        filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+
+        filter = filter.replaceAll("\\\\%", "%");
+
+        return filter;
     }
-    
+
     @Override
     public void fillSession(HttpServletRequest req, User user) {
         Map<String, Set<String>> records;
@@ -121,16 +133,20 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         updateSession(req, null);
 
         if (getLdapProvider() == null) {
-            LOGGER.log(Level.WARNING, "cannot get LDAP provider for LdapUser plugin");
+            LOGGER.log(Level.WARNING, "cannot get LDAP provider");
             return;
         }
 
-        String filter = getFilter(user);
+        String expandedFilter = null;
+        if (ldapFilter != null) {
+            expandedFilter = expandFilter(user);
+        }
         try {
-            if ((records = getLdapProvider().lookupLdapContent(null, filter, attributes)) == null) {
+            if ((records = getLdapProvider().lookupLdapContent(useDN ? user.getUsername() : null,
+                    expandedFilter, attributes.toArray(new String[attributes.size()]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{3}'' for user ''{0}'' " +
                                 "with filter ''{1}''",
-                        new Object[]{user, filter, String.join(", ", attributes)});
+                        new Object[]{user, expandedFilter, String.join(", ", attributes)});
                 return;
             }
         } catch (LdapException ex) {
@@ -145,8 +161,8 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
         for (String attrName : attributes) {
             if (!records.containsKey(attrName) || records.get(attrName).isEmpty()) {
-                LOGGER.log(Level.WARNING, "{0} record for user {1} is not present or empty",
-                        new Object[]{attrName, user});
+                LOGGER.log(Level.WARNING, "''{0}'' record for user {1} is not present or empty (LDAP provider: {2})",
+                        new Object[]{attrName, user, getLdapProvider()});
             }
         }
 

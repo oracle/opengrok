@@ -80,7 +80,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         updateSession(req, false);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
-            LOGGER.log(Level.FINER, "failed to get attribute " + LdapUserPlugin.SESSION_ATTR);
+            LOGGER.log(Level.FINER, "failed to get LDAP attribute " + LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
@@ -102,7 +102,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     }
 
     /**
-     * Expand LdapUser attribute values into the filter.
+     * Expand LdapUser/User attribute values into the filter.
      *
      * Special values are:
      * <ul>

@@ -23,6 +23,7 @@
 package opengrok.auth.plugin.ldap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.naming.CommunicationException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -42,7 +44,6 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import opengrok.auth.plugin.configuration.Configuration;
-import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
 
@@ -111,7 +112,7 @@ public class LdapFacade extends AbstractLdapProvider {
      */
     private interface AttributeMapper<T> {
 
-        T mapFromAttributes(Attributes attr) throws NamingException;
+        T mapFromAttributes(String dn, Attributes attr) throws NamingException;
     }
 
     /**
@@ -134,7 +135,7 @@ public class LdapFacade extends AbstractLdapProvider {
         }
 
         @Override
-        public Map<String, Set<String>> mapFromAttributes(Attributes attrs) throws NamingException {
+        public Map<String, Set<String>> mapFromAttributes(String dn, Attributes attrs) throws NamingException {
             Map<String, Set<String>> map = new HashMap<>();
 
             if (values == null) {
@@ -170,8 +171,9 @@ public class LdapFacade extends AbstractLdapProvider {
                         valueSet.add((String) values.next());
                     }
                 }
-
             }
+
+            map.put("dn", Collections.singleton(dn));
 
             return map;
         }
@@ -255,17 +257,17 @@ public class LdapFacade extends AbstractLdapProvider {
     /**
      * Lookups the authorization values.
      *
-     * @param user user information. If @{code null} then search base will be used.
+     * @param dn LDAP DN attribute. If @{code null} then {@code searchBase} will be used.
      * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
      * @param values match these LDAP values
      *
      * @return set of strings describing the user's attributes
      */
     @Override
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException {
+    public Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException {
 
         return lookup(
-                user != null ? user.getUsername() : getSearchBase(),
+                dn != null ? dn : getSearchBase(),
                 filter == null ? LDAP_FILTER : filter,
                 values,
                 new ContentAttributeMapper(values));
@@ -356,6 +358,7 @@ public class LdapFacade extends AbstractLdapProvider {
                 return processResult(sr, mapper);
             }
         } catch (NameNotFoundException ex) {
+            LOGGER.log(Level.WARNING, "The LDAP name was not found.", ex);
             throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
             LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
@@ -417,8 +420,13 @@ public class LdapFacade extends AbstractLdapProvider {
     private <T> T processResult(SearchResult result, AttributeMapper<T> mapper) throws NamingException {
         Attributes attrs = result.getAttributes();
         if (attrs != null) {
-            return mapper.mapFromAttributes(attrs);
+            return mapper.mapFromAttributes(result.getNameInNamespace(), attrs);
         }
         return null;
+    }
+
+    public String toString() {
+        return String.join(",",
+                getServers().stream().map(x -> x.getUrl()).collect(Collectors.toList()));
     }
 }
