@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import opengrok.auth.plugin.entity.User;
 
 /**
  *
@@ -37,7 +36,7 @@ import opengrok.auth.plugin.entity.User;
 public class FakeLdapFacade extends AbstractLdapProvider {
 
     @Override
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {
+    public Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) {
         Map<String, Set<String>> map = new TreeMap<>();
 
         filter = filter == null ? "objectclass=*" : filter;

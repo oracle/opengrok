@@ -49,59 +49,29 @@ public class LdapUserPluginTest {
         return params;
     }
     
-    @Test
+    @Test(expected = NullPointerException.class)
     public void loadTestNegative1() {
         Map<String, Object> params = getParamsMap();
         params.put("foo", (Object)"bar");
-        try {
-            plugin.load(params);
-            Assert.fail("should have caused exception");
-        } catch (NullPointerException e) {
-        }
-    }
-    
-    @Test
-    public void loadTestNegative2() {
-        Map<String, Object> params = getParamsMap();
-        params.put(LdapUserPlugin.OBJECT_CLASS, (Object)"#$@");
-        try {
-            plugin.load(params);
-            Assert.fail("should have caused exception");
-        } catch (NullPointerException e) {
-        }
+        plugin.load(params);
     }
     
     @Test
     public void loadTestPostitive() {
         Map<String, Object> params = getParamsMap();
-        params.put(LdapUserPlugin.OBJECT_CLASS, (Object)"posixUser");
         params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
-        try {
-            plugin.load(params);
-        } catch (NullPointerException e) {
-            Assert.fail("should not cause exception");
-        }
+        plugin.load(params);
     }
     
     @Test
-    public void getFilterTest1() {
+    public void filterTest() {
         Map<String, Object> params = getParamsMap();
-        String cl = "posixUser";
-        params.put(LdapUserPlugin.OBJECT_CLASS, (Object) cl);
+        params.put(LdapUserPlugin.LDAP_FILTER, (Object) "(&(objectclass=person)(mail=%username%))");
         params.put(LdapUserPlugin.ATTRIBUTES, (Object) "uid,mail");
         plugin.load(params);
-        String cn = "cn=foo-foo_bar1";
-        User user = new User(cn + ",l=EMEA,dc=foobar,dc=com", "id", null, false);
-        String filter = plugin.getFilter(user);
-        Assert.assertEquals("(&(" + LdapUserPlugin.OBJECT_CLASS + "=" + cl + ")(" + cn + "))",
-                filter);
-    }
 
-    @Test(expected = NullPointerException.class)
-    public void testLoadWithoutAttributes() {
-        Map<String, Object> params = getParamsMap();
-        String cl = "posixUser";
-        params.put(LdapUserPlugin.OBJECT_CLASS, (Object) cl);
-        plugin.load(params);
+        User user = new User("foo@bar.cz", "id", null, false);
+        String filter = plugin.expandFilter(user);
+        Assert.assertEquals("(&(objectclass=person)(mail=foo@bar.cz))", filter);
     }
 }

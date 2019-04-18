@@ -48,7 +48,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapAttrPlugin.class.getName());
 
-
     protected static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
     protected static final String FILE_PARAM = "file";
 
@@ -93,7 +92,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     public void fillSession(HttpServletRequest req, User user) {
         boolean sessionAllowed = false;
         LdapUser ldapUser;
-        Map<String, Set<String>> records;
+        Map<String, Set<String>> records = null;
         Set<String> attributeValues;
 
         updateSession(req, sessionAllowed);
@@ -110,16 +109,21 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         } else {
             try {
-                if ((records = getLdapProvider().lookupLdapContent(user, new String[]{ldapAttr})) == null) {
-                    LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1}",
-                        new Object[]{ldapAttr, user});
-                    return;
+                for (String dn : ldapUser.getAttribute("dn")) {
+                    LOGGER.log(Level.FINEST, "searching with dn={0}", dn);
+                    if ((records = getLdapProvider().lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
+                        LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} (LDAP provider: {2})",
+                                new Object[]{ldapAttr, user, getLdapProvider()});
+                        continue;
+                    }
+
+                    break;
                 }
             } catch (LdapException ex) {
                 throw new AuthorizationException(ex);
             }
 
-            if (records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
+            if (records == null || records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
                 LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1}",
                         new Object[]{ldapAttr, user});
                 return;

@@ -24,60 +24,56 @@ package opengrok.auth.plugin.ldap;
 
 import java.util.Map;
 import java.util.Set;
-import opengrok.auth.plugin.entity.User;
 
 public abstract class AbstractLdapProvider {
 
     /**
      * Lookups user's records.
      *
-     * @param user find LDAP information about this user
+     * @param dn LDAP DN
      * @return set of attributes for the user or null
      *
-     * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
-     * java.lang.String)
+     * @see #lookupLdapContent(java.lang.String, java.lang.String)
      */
-    public Map<String, Set<String>> lookupLdapContent(User user) throws LdapException {
-        return lookupLdapContent(user, (String) null);
+    public Map<String, Set<String>> lookupLdapContent(String dn) throws LdapException {
+        return lookupLdapContent(dn, (String) null);
     }
 
     /**
      * Lookups user's records.
      *
-     * @param user find LDAP information about this user
+     * @param dn LDAP DN
      * @param filter the LDAP filter
      * @return set of attributes for the user or null
      *
-     * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
-     * java.lang.String, java.lang.String[])
+     * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter) throws LdapException {
-        return lookupLdapContent(user, filter, null);
+    public Map<String, Set<String>> lookupLdapContent(String dn, String filter) throws LdapException {
+        return lookupLdapContent(dn, filter, null);
     }
 
     /**
      * Lookups user's records.
      *
-     * @param user find LDAP information about this user
+     * @param dn LDAP DN
      * @param values match these LDAP value
      * @return set of attributes for the user or null
      *
-     * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
-     * java.lang.String, java.lang.String[])
+     * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String[] values) throws LdapException {
-        return lookupLdapContent(user, null, values);
+    public Map<String, Set<String>> lookupLdapContent(String dn, String[] values) throws LdapException {
+        return lookupLdapContent(dn, null, values);
     }
 
     /**
      * Lookups user's records.
      *
-     * @param user find LDAP information about this user
+     * @param dn LDAP DN
      * @param filter the LDAP filter
      * @param values match these LDAP value
      * @return set of attributes for the user or null
      */
-    public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException;
+    public abstract Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException;
 
     /**
      * @return if the provider is correctly configured
