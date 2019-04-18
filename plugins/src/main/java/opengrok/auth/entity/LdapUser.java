@@ -34,6 +34,7 @@ import java.util.Set;
  */
 public class LdapUser implements Serializable {
 
+    private String DN;
     private final Map<String, Set<String>> attributes;
 
     // Use default serial ID value. If the serialized form of the object
@@ -41,10 +42,12 @@ public class LdapUser implements Serializable {
     private static final long serialVersionUID = 1161431688782569843L;
 
     public LdapUser() {
-        this(null);
+        this(null,null);
     }
 
-    public LdapUser(Map<String, Set<String>> attrs) {
+    public LdapUser(String dn, Map<String, Set<String>> attrs) {
+        this.DN = dn;
+
         if (attrs == null) {
             this.attributes = new HashMap<>();
         } else {
@@ -71,8 +74,16 @@ public class LdapUser implements Serializable {
         return this.attributes;
     }
 
+    public void setDN(String dn) {
+        this.DN = dn;
+    }
+
+    public String getDN() {
+        return DN;
+    }
+
     @Override
     public String toString() {
-        return "LdapUser{attributes=" + attributes + '}';
+        return "LdapUser{DN=" + DN + ",attributes=" + attributes + '}';
     }
 }

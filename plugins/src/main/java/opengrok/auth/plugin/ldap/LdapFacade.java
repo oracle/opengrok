@@ -23,7 +23,6 @@
 package opengrok.auth.plugin.ldap;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +111,7 @@ public class LdapFacade extends AbstractLdapProvider {
      */
     private interface AttributeMapper<T> {
 
-        T mapFromAttributes(String dn, Attributes attr) throws NamingException;
+        T mapFromAttributes(Attributes attr) throws NamingException;
     }
 
     /**
@@ -135,14 +134,12 @@ public class LdapFacade extends AbstractLdapProvider {
         }
 
         @Override
-        public Map<String, Set<String>> mapFromAttributes(String dn, Attributes attrs) throws NamingException {
+        public Map<String, Set<String>> mapFromAttributes(Attributes attrs) throws NamingException {
             Map<String, Set<String>> map = new HashMap<>();
 
             if (values == null) {
-                for (NamingEnumeration<? extends Attribute> attrEnum = attrs.getAll();
-                        attrEnum.hasMore();) {
+                for (NamingEnumeration<? extends Attribute> attrEnum = attrs.getAll(); attrEnum.hasMore();) {
                     Attribute attr = attrEnum.next();
-
 
                     addAttrToMap(map, attr);
                 }
@@ -157,8 +154,6 @@ public class LdapFacade extends AbstractLdapProvider {
                     addAttrToMap(map, attr);
                 }
             }
-
-            map.put("dn", Collections.singleton(dn));
 
             return map;
         }
@@ -252,7 +247,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the authorization values.
+     * Get LDAP attributes
      *
      * @param dn LDAP DN attribute. If @{code null} then {@code searchBase} will be used.
      * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
@@ -261,7 +256,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return set of strings describing the user's attributes
      */
     @Override
-    public Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException {
+    public LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException {
 
         return lookup(
                 dn != null ? dn : getSearchBase(),
@@ -294,7 +289,7 @@ public class LdapFacade extends AbstractLdapProvider {
      *
      * @return results transformed with mapper
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) throws LdapException {
+    private <T> LdapSearchResult<T> lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) throws LdapException {
         return lookup(dn, filter, attributes, mapper, 0);
     }
 
@@ -311,7 +306,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return results transformed with mapper or {@code null} on failure
      * @throws LdapException LDAP exception
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) throws LdapException {
+    private <T> LdapSearchResult<T> lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) throws LdapException {
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             if (!reported) {
@@ -339,8 +334,9 @@ public class LdapFacade extends AbstractLdapProvider {
         }
 
         NamingEnumeration<SearchResult> namingEnum = null;
+        LdapServer server = null;
         try {
-            LdapServer server = servers.get(actualServer);
+            server = servers.get(actualServer);
             controls.setReturningAttributes(attributes);
             for (namingEnum = server.search(dn, filter, controls); namingEnum.hasMore();) {
                 SearchResult sr = namingEnum.next();
@@ -352,10 +348,11 @@ public class LdapFacade extends AbstractLdapProvider {
                         hook.post();
                     }
                 }
-                return processResult(sr, mapper);
+
+                return new LdapSearchResult<>(sr.getNameInNamespace(), processResult(sr, mapper));
             }
         } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.WARNING, "The LDAP name was not found.", ex);
+            LOGGER.log(Level.WARNING, String.format("The LDAP name was not found on server %s", server), ex);
             throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
             LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
@@ -412,13 +409,14 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param mapper mapper to transform the result into the result type
      * @return transformed result
      *
-     * @throws NamingException
+     * @throws NamingException naming exception
      */
     private <T> T processResult(SearchResult result, AttributeMapper<T> mapper) throws NamingException {
         Attributes attrs = result.getAttributes();
         if (attrs != null) {
-            return mapper.mapFromAttributes(result.getNameInNamespace(), attrs);
+            return mapper.mapFromAttributes(attrs);
         }
+
         return null;
     }
 

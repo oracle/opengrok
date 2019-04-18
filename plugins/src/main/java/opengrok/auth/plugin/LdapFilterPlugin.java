@@ -74,8 +74,6 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     @Override
     public void fillSession(HttpServletRequest req, User user) {
         LdapUser ldapUser;
-        Map<String, Set<String>> records;
-        String[] dn = {"dn"};
 
         updateSession(req, false);
 
@@ -88,15 +86,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
                 new Object[]{user, expandedFilter});
         try {
-            if ((records = getLdapProvider().lookupLdapContent(null, expandedFilter, dn)) == null) {
+            if ((getLdapProvider().lookupLdapContent(null, expandedFilter)) == null) {
                 LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
                 return;
             }
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
         }
-
-        LOGGER.log(Level.FINER, "got {0} records", records.size());
 
         updateSession(req, true);
     }
@@ -117,7 +113,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      * @param user user from the request
      * @return replaced result
      */
-    protected String expandFilter(String filter, LdapUser ldapUser, User user) {
+    String expandFilter(String filter, LdapUser ldapUser, User user) {
         filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
         filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
 

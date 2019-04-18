@@ -36,7 +36,7 @@ import java.util.TreeSet;
 public class FakeLdapFacade extends AbstractLdapProvider {
 
     @Override
-    public Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) {
+    public LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String filter, String[] values) {
         Map<String, Set<String>> map = new TreeMap<>();
 
         filter = filter == null ? "objectclass=*" : filter;
@@ -54,17 +54,15 @@ public class FakeLdapFacade extends AbstractLdapProvider {
                     }
                 }
             }
-            return map;
+            return new LdapSearchResult<>("fakedn", map);
         }
 
         if (filter.contains("objectclass")) {
             map.put("dn", new TreeSet<>(Arrays.asList(new String[]{"cn=mi6,cn=mi6,cn=james,dc=bond,dc=com",
                 "cn=mi7,cn=mi7,cn=james,dc=bond,dc=com"})));
-            return map;
         }
 
-        return map;
-
+        return new LdapSearchResult<>("fakedn", map);
     }
 
     @Override

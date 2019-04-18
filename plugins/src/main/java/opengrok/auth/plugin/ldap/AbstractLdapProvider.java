@@ -28,19 +28,41 @@ import java.util.Set;
 public abstract class AbstractLdapProvider {
 
     /**
-     * Lookups user's records.
+     * Encapsulates the result of LDAP search, namely single object's
+     * DN and attributes.
+     */
+    public static class LdapSearchResult<T> {
+        private String DN;
+        private T attrs;
+
+        LdapSearchResult(String dn, T attrs) {
+            this.DN = dn;
+            this.attrs = attrs;
+        }
+
+        public String getDN() {
+            return DN;
+        }
+
+        public T getAttrs() {
+            return attrs;
+        }
+    }
+
+    /**
+     * Perform LDAP lookup
      *
      * @param dn LDAP DN
      * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String)
      */
-    public Map<String, Set<String>> lookupLdapContent(String dn) throws LdapException {
+    public LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn) throws LdapException {
         return lookupLdapContent(dn, (String) null);
     }
 
     /**
-     * Lookups user's records.
+     * Perform LDAP lookup
      *
      * @param dn LDAP DN
      * @param filter the LDAP filter
@@ -48,12 +70,12 @@ public abstract class AbstractLdapProvider {
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(String dn, String filter) throws LdapException {
+    public LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String filter) throws LdapException {
         return lookupLdapContent(dn, filter, null);
     }
 
     /**
-     * Lookups user's records.
+     * Perform LDAP lookup
      *
      * @param dn LDAP DN
      * @param values match these LDAP value
@@ -61,19 +83,19 @@ public abstract class AbstractLdapProvider {
      *
      * @see #lookupLdapContent(java.lang.String, java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(String dn, String[] values) throws LdapException {
+    public LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String[] values) throws LdapException {
         return lookupLdapContent(dn, null, values);
     }
 
     /**
-     * Lookups user's records.
+     * Perform LDAP lookup
      *
      * @param dn LDAP DN
      * @param filter the LDAP filter
      * @param values match these LDAP value
      * @return set of attributes for the user or null
      */
-    public abstract Map<String, Set<String>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException;
+    public abstract LdapSearchResult<Map<String, Set<String>>> lookupLdapContent(String dn, String filter, String[] values) throws LdapException;
 
     /**
      * @return if the provider is correctly configured
