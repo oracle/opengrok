@@ -387,7 +387,7 @@ class FileHistoryCache implements HistoryCache {
                 repository.getDirectoryName());
         } else {
             storeLatestCachedRevision(repository, latestRev);
-            LOGGER.log(Level.FINE,
+            LOGGER.log(Level.FINEST,
                 "Done storing history for repository {0}",
                 repository.getDirectoryName());
         }
@@ -417,7 +417,7 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        LOGGER.log(Level.FINE,
+        LOGGER.log(Level.FINEST,
             "Storing history for repository {0}",
             new Object[] {repository.getDirectoryName()});
 
@@ -491,7 +491,7 @@ class FileHistoryCache implements HistoryCache {
             fileHistoryCount++;
         }
 
-        LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
+        LOGGER.log(Level.FINEST, "Stored history for {0} files", fileHistoryCount);
 
         if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
@@ -560,7 +560,7 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception ",ex);
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
+        LOGGER.log(Level.FINEST, "Stored history for {0} renamed files",
                 renamedFileHistoryCount.intValue());
         finishStore(repository, latestRev);
     }
@@ -817,7 +817,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty history cache dir:{0}",
+            LOGGER.log(Level.FINEST, "Removed empty history cache dir:{0}",
                 parent.getAbsolutePath());
         }
     }

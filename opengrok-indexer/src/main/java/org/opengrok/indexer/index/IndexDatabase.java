@@ -486,13 +486,13 @@ public class IndexDatabase {
 
                     IndexDownArgs args = new IndexDownArgs();
                     Statistics elapsed = new Statistics();
-                    LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
+                    LOGGER.log(Level.FINER, "Starting traversal of directory {0}", dir);
                     indexDown(sourceRoot, dir, args);
                     showFileCount(dir, args, elapsed);
 
                     args.cur_count = 0;
                     elapsed = new Statistics();
-                    LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
+                    LOGGER.log(Level.FINER, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
                     elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir));
 
@@ -613,7 +613,7 @@ public class IndexDatabase {
         try {
             Statistics elapsed = new Statistics();
             String projectDetail = this.project != null ? " for project " + project.getName() : "";
-            LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
+            LOGGER.log(Level.FINEST, "Optimizing the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -623,7 +623,7 @@ public class IndexDatabase {
             elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail));
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
+                    LOGGER.log(Level.FINEST, "Failed to remove \"dirty-file\": {0}",
                         dirtyFile.getAbsolutePath());
                 }
                 dirty = false;
@@ -664,7 +664,7 @@ public class IndexDatabase {
             try {
                 if (!dirty) {
                     if (!dirtyFile.createNewFile() && !dirtyFile.exists()) {
-                        LOGGER.log(Level.FINE,
+                        LOGGER.log(Level.FINEST,
                                 "Failed to create \"dirty-file\": {0}",
                                 dirtyFile.getAbsolutePath());
                     }
@@ -837,12 +837,12 @@ public class IndexDatabase {
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
-            LOGGER.log(Level.FINER, "not including {0}", absolutePath);
+            LOGGER.log(Level.FINEST, "not including {0}", absolutePath);
             return false;
         }
 
         if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
+            LOGGER.log(Level.FINEST, "ignoring {0}", absolutePath);
             return false;
         }
 
@@ -858,7 +858,7 @@ public class IndexDatabase {
                 if (!absolutePath.equals(canonical.getPath())
                         && !acceptSymlink(absolute, canonical,
                                 outLocalRelPath)) {
-                    LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
+                    LOGGER.log(Level.FINEST, "Skipped symlink ''{0}'' -> ''{1}''",
                         new Object[]{absolutePath, canonical});
                     return false;
                 }
@@ -889,7 +889,7 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean res = !env.isIndexVersionedFilesOnly();
         if (!res) {
-            LOGGER.log(Level.FINER, "not accepting unversioned {0}",
+            LOGGER.log(Level.FINEST, "not accepting unversioned {0}",
                 absolutePath);
         }
         return res;
@@ -913,7 +913,7 @@ public class IndexDatabase {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
             if (f1.equals(f2)) {
-                LOGGER.log(Level.INFO, "Skipping links to itself...: {0} {1}",
+                LOGGER.log(Level.FINEST, "Skipping links to itself...: {0} {1}",
                         new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                 return false;
             }
@@ -922,7 +922,7 @@ public class IndexDatabase {
             File t1 = f1;
             while ((t1 = t1.getParentFile()) != null) {
                 if (f2.equals(t1)) {
-                    LOGGER.log(Level.INFO, "Skipping links to parent...: {0} {1}",
+                    LOGGER.log(Level.FINEST, "Skipping links to parent...: {0} {1}",
                             new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                     return false;
                 }
@@ -1658,7 +1658,7 @@ public class IndexDatabase {
             hasPendingCommit = true;
 
             int n = completer.complete();
-            LOGGER.log(Level.FINE, "completed {0} object(s)", n);
+            LOGGER.log(Level.FINEST, "completed {0} object(s)", n);
 
             // Just before commit(), reset the `hasPendingCommit' flag,
             // since after commit() is called, there is no need for
@@ -1691,7 +1691,7 @@ public class IndexDatabase {
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
         if (actTabSize != null && !actTabSize.equals(reqTabSize)) {
-            LOGGER.log(Level.FINE, "Tabsize mismatch: {0}", path);
+            LOGGER.log(Level.FINEST, "Tabsize mismatch: {0}", path);
             return false;
         }
 
@@ -1702,7 +1702,7 @@ public class IndexDatabase {
             // Read a limited-fields version of the document.
             Document doc = reader.document(postsIter.docID(), CHECK_FIELDS);
             if (doc == null) {
-                LOGGER.log(Level.FINER, "No Document: {0}", path);
+                LOGGER.log(Level.FINEST, "No Document: {0}", path);
                 continue;
             }
 
@@ -1738,7 +1738,7 @@ public class IndexDatabase {
                  * selection of analyzer or return a value to indicate the
                  * analyzer is now mis-matched.
                  */
-                LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
+                LOGGER.log(Level.FINEST, "Guru version mismatch: {0}", path);
 
                 fa = getAnalyzerFor(file, path);
                 fileTypeName = fa.getFileTypeName();
@@ -1771,7 +1771,7 @@ public class IndexDatabase {
             break;
         }
         if (n < 1) {
-            LOGGER.log(Level.FINER, "Missing index Documents: {0}", path);
+            LOGGER.log(Level.FINEST, "Missing index Documents: {0}", path);
             return false;
         }
 

@@ -134,7 +134,7 @@ public class AuthorizationStack extends AuthorizationEntity {
         getCurrentSetup().putAll(parameters);
         getCurrentSetup().putAll(getSetup());
 
-        LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is loading.",
+        LOGGER.log(Level.FINEST, "[{0}] Stack \"{1}\" is loading.",
                 new Object[]{getFlag().toString().toUpperCase(Locale.ROOT),
                 getName()});
 
@@ -155,7 +155,7 @@ public class AuthorizationStack extends AuthorizationEntity {
             setFailed();
         }
 
-        LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is {2}.",
+        LOGGER.log(Level.FINEST, "[{0}] Stack \"{1}\" is {2}.",
                 new Object[]{
                     getFlag().toString().toUpperCase(Locale.ROOT),
                     getName(),
@@ -192,17 +192,17 @@ public class AuthorizationStack extends AuthorizationEntity {
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate) {
         boolean overallDecision = true;
-        LOGGER.log(Level.FINER, "Authorization for \"{0}\" in \"{1}\" [{2}]",
+        LOGGER.log(Level.FINEST, "Authorization for \"{0}\" in \"{1}\" [{2}]",
                 new Object[]{entity.getName(), this.getName(), this.getFlag()});
 
         if (skippingPredicate.shouldSkip(this)) {
-            LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
+            LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
                     new Object[]{this.getName(), this.getFlag(), entity.getName()});
         } else {
             overallDecision = processStack(entity, pluginPredicate, skippingPredicate);
         }
 
-        LOGGER.log(Level.FINER, "Authorization for \"{0}\" in \"{1}\" [{2}] => {3}",
+        LOGGER.log(Level.FINEST, "Authorization for \"{0}\" in \"{1}\" [{2}] => {3}",
                 new Object[]{entity.getName(), this.getName(), this.getFlag(), overallDecision ? "true" : "false"});
         return overallDecision;
     }
@@ -229,18 +229,18 @@ public class AuthorizationStack extends AuthorizationEntity {
         for (AuthorizationEntity authEntity : getStack()) {
 
             if (skippingPredicate.shouldSkip(authEntity)) {
-                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
+                LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
                 continue;
             }
             // run the plugin's test method
             try {
-                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\"",
+                LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\"",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
 
                 boolean pluginDecision = authEntity.isAllowed(entity, pluginPredicate, skippingPredicate);
 
-                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
+                LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                                 pluginDecision ? "true" : "false"});
 
@@ -259,7 +259,7 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             } catch (AuthorizationException ex) {
                 // Propagate up so that proper HTTP error can be given.
-                LOGGER.log(Level.FINEST, "got authorization exception: " + ex.getMessage());
+                LOGGER.log(Level.FINER, "got authorization exception: " + ex.getMessage());
                 throw ex;
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING,
@@ -268,7 +268,7 @@ public class AuthorizationStack extends AuthorizationEntity {
                                 entity.getName()),
                         ex);
 
-                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
+                LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                             "false (failed)"});
 

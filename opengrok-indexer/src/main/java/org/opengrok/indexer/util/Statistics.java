@@ -38,17 +38,17 @@ public class Statistics {
   public void report(Logger log, String msg) {
       long stopTime = System.currentTimeMillis();
       String time_str = StringUtils.getReadableTime(stopTime - startTime);
-      log.log(Level.INFO, msg + " (took {0})", time_str);
+      log.log(Level.FINEST, msg + " (took {0})", time_str);
   }
 
   public void report(Logger log) {
     long stopTime = System.currentTimeMillis() - startTime;
-    log.log(Level.INFO, "Total time: {0}", getReadableTime(stopTime));
+    log.log(Level.FINEST, "Total time: {0}", getReadableTime(stopTime));
 
     System.gc();
     Runtime r = Runtime.getRuntime();
     long mb = 1024L * 1024;
-    log.log(Level.INFO, "Final Memory: {0}M/{1}M", 
+    log.log(Level.FINEST, "Final Memory: {0}M/{1}M", 
             new Object[]{(r.totalMemory() - r.freeMemory()) / 
                     mb, r.totalMemory() / mb});    
   }    

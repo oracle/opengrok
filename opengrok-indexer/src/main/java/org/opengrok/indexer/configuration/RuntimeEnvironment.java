@@ -1647,7 +1647,7 @@ public final class RuntimeEnvironment {
      */
     public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
         setConfiguration(config, interactive);
-        LOGGER.log(Level.INFO, "Configuration updated");
+        LOGGER.log(Level.FINEST, "Configuration updated");
 
         if (reindex) {
             // We are assuming that each update of configuration means reindex. If dedicated thread is introduced
@@ -1751,7 +1751,7 @@ public final class RuntimeEnvironment {
             // so that it cannot produce new IndexSearcher objects.
             if (!getProjectNames().contains(entry.getKey())) {
                 try {
-                    LOGGER.log(Level.FINE,
+                    LOGGER.log(Level.FINEST,
                         "closing SearcherManager for project" + entry.getKey());
                     entry.getValue().close();
                 } catch (IOException ex) {

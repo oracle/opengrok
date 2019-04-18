@@ -104,7 +104,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
                     + "This can cause the authorization to fail always.",
                     getName());
             setFailed();
-            LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
+            LOGGER.log(Level.FINEST, "[{0}] Plugin \"{1}\" {2} and is {3}.",
                     new Object[]{
                         getFlag().toString().toUpperCase(Locale.ROOT),
                         getName(),
@@ -125,7 +125,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
             setFailed();
         }
 
-        LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
+        LOGGER.log(Level.FINEST, "[{0}] Plugin \"{1}\" {2} and is {3}.",
                 new Object[]{
                     getFlag().toString().toUpperCase(Locale.ROOT),
                     getName(),

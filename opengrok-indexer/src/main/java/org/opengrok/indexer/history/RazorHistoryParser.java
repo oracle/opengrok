@@ -201,7 +201,7 @@ class RazorHistoryParser {
     }
 
     private void parseDebug(String message) {
-        LOGGER.log(Level.FINE, "RazorHistoryParser: " + message );
+        LOGGER.log(Level.FINEST, "RazorHistoryParser: " + message );
     }
 
     private void parseProblem(String message) {

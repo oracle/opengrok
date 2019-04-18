@@ -112,7 +112,7 @@ public final class SuggesterController {
         modifyDataBasedOnConfiguration(suggesterData, config);
 
         if (!satisfiesConfiguration(suggesterData, config)) {
-            logger.log(Level.FINER, "Suggester request with data {0} does not satisfy configuration settings", data);
+            logger.log(Level.FINEST, "Suggester request with data {0} does not satisfy configuration settings", data);
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 

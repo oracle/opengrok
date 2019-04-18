@@ -62,7 +62,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         if ((ldapFilter = (String) parameters.get(FILTER_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILTER_PARAM + "] in the setup");
         }
-        LOGGER.log(Level.FINE, "LdapFilter plugin loaded");
+        LOGGER.log(Level.FINEST, "LdapFilter plugin loaded");
     }
 
     @Override

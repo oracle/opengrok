@@ -308,7 +308,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
     @Override
     protected void classLoaded(IAuthorizationPlugin plugin) {
         if (!loadingStack.setPlugin(plugin)) {
-            LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack", plugin.getClass().getCanonicalName());
+            LOGGER.log(Level.FINEST, "plugin {0} is not configured in the stack", plugin.getClass().getCanonicalName());
         }
     }
 

@@ -70,10 +70,10 @@ public class WatchDogService {
         stop();
 
         if (directory == null || !directory.isDirectory() || !directory.canRead()) {
-            LOGGER.log(Level.INFO, "Watch dog cannot be started - invalid directory: {0}", directory);
+            LOGGER.log(Level.FINEST, "Watch dog cannot be started - invalid directory: {0}", directory);
             return;
         }
-        LOGGER.log(Level.INFO, "Starting watchdog in: {0}", directory);
+        LOGGER.log(Level.FINEST, "Starting watchdog in: {0}", directory);
         watchDogThread = new Thread(() -> {
             try {
                 watchDogWatcher = FileSystems.getDefault().newWatchService();
@@ -89,7 +89,7 @@ public class WatchDogService {
                     }
                 });
 
-                LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
+                LOGGER.log(Level.FINEST, "Watch dog started {0}", directory);
                 while (!Thread.currentThread().isInterrupted()) {
                     final WatchKey key;
                     try {
@@ -117,7 +117,7 @@ public class WatchDogService {
                 LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)", ex);
                 Thread.currentThread().interrupt();
             }
-            LOGGER.log(Level.FINER, "Watchdog finishing (exiting)");
+            LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)");
         }, "watchDogService");
         watchDogThread.start();
     }
@@ -141,6 +141,6 @@ public class WatchDogService {
                 LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
             }
         }
-        LOGGER.log(Level.INFO, "Watchdog stoped");
+        LOGGER.log(Level.FINEST, "Watchdog stoped");
     }
 }

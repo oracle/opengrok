@@ -192,7 +192,7 @@ class SuggesterProjectData implements Closeable {
                     WFSTCompletionLookup WFST = loadStoredWFST(WFSTfile);
                     lookups.put(field, WFST);
                 } else {
-                    logger.log(Level.INFO, "Missing WFST file for {0} field in {1}, creating a new one",
+                    logger.log(Level.FINEST, "Missing WFST file for {0} field in {1}, creating a new one",
                             new Object[] {field, suggesterDir});
 
                     WFSTCompletionLookup lookup = build(indexReader, field);
@@ -334,7 +334,7 @@ class SuggesterProjectData implements Closeable {
         if (averageLengths.containsKey(field)) {
             return averageLengths.get(field);
         }
-        logger.log(Level.FINE, "Could not determine average length for field {0}, using default one", field);
+        logger.log(Level.FINEST, "Could not determine average length for field {0}, using default one", field);
         return AVERAGE_LENGTH_DEFAULT;
     }
 
@@ -513,7 +513,7 @@ class SuggesterProjectData implements Closeable {
         try {
             PopularityMap map = searchCountMaps.get(field);
             if (map == null) {
-                logger.log(Level.FINE, "No search count map initialized for field {0}", field);
+                logger.log(Level.FINEST, "No search count map initialized for field {0}", field);
                 return Collections.emptyList();
             }
 

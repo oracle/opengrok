@@ -347,7 +347,7 @@ public class AccuRevRepository extends Repository {
                         // from the path known by Accurev)
  
                         if (Files.isSymbolicLink(given)) {
-                            LOGGER.log(Level.INFO,"{0} is symbolic link.", wsPath);
+                            LOGGER.log(Level.FINEST,"{0} is symbolic link.", wsPath);
                             
                             // When we know that the two paths DO NOT point to the
                             // same place (that is, the given path is deeper into
@@ -372,7 +372,7 @@ public class AccuRevRepository extends Repository {
                         }
                         
                         if (relRoot.length() > 0) {
-                            LOGGER.log(Level.INFO,"Source root relative to workspace root by: {0}", relRoot);
+                            LOGGER.log(Level.FINEST,"Source root relative to workspace root by: {0}", relRoot);
                         }
                     }
                 }

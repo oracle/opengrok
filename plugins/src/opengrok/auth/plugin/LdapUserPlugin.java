@@ -85,7 +85,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
         attributes = attributesVal.split(",");
 
-        LOGGER.log(Level.FINE, "LdapUser plugin loaded with objectclass={0}, " +
+        LOGGER.log(Level.FINEST, "LdapUser plugin loaded with objectclass={0}, " +
                         "attributes={1}",
                 new Object[]{objectClass, String.join(", ", attributes)});
     }
@@ -109,7 +109,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         Matcher matcher = usernameCnPattern.matcher(user.getUsername());
         if (matcher.find()) {
             commonName = matcher.group(1);
-            LOGGER.log(Level.FINEST, "extracted common name {0} from {1}",
+            LOGGER.log(Level.FINER, "extracted common name {0} from {1}",
                 new Object[]{commonName, user.getUsername()});
         } else {
             throw new AuthorizationException(String.format("cannot get common name out of %s",

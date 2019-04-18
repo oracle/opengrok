@@ -368,7 +368,7 @@ public abstract class Repository extends RepositoryInfo {
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
             LOGGER.log(
-                    Level.INFO,
+                    Level.FINEST,
                     "Skipping creation of history cache for {0}, since retrieval "
                             + "of history for directories is not implemented for this "
                             + "repository type.", getDirectoryName());

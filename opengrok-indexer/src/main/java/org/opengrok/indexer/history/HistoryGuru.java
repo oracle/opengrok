@@ -519,7 +519,7 @@ public final class HistoryGuru {
             String type = repository.getClass().getSimpleName();
 
             if (repository.isWorking()) {
-                LOGGER.info(String.format("Update %s repository in %s",
+                LOGGER.finest(String.format("Update %s repository in %s",
                         type, path));
 
                 try {
@@ -550,7 +550,7 @@ public final class HistoryGuru {
             String type = repository.getClass().getSimpleName();
 
             if (repository.isWorking()) {
-                LOGGER.info(String.format("Update %s repository in %s", type,
+                LOGGER.finest(String.format("Update %s repository in %s", type,
                         repository.getDirectoryName()));
 
                 try {
@@ -576,7 +576,7 @@ public final class HistoryGuru {
         String type = repository.getClass().getSimpleName();
 
         if (!repository.isHistoryEnabled()) {
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.FINEST,
                     "Skipping history cache creation of {0} repository in {1} and its subdirectories",
                     new Object[]{type, path});
             return;
@@ -585,7 +585,7 @@ public final class HistoryGuru {
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 
-            LOGGER.log(Level.INFO, "Creating historycache for {0} ({1}) {2} renamed file handling",
+            LOGGER.log(Level.FINEST, "Creating historycache for {0} ({1}) {2} renamed file handling",
                     new Object[]{path, type, repository.isHandleRenamedFiles() ? "with" : "without"});
 
             try {
@@ -631,7 +631,7 @@ public final class HistoryGuru {
             }
         }
 
-        LOGGER.log(Level.INFO, "Creating historycache for {0} repositories",
+        LOGGER.log(Level.FINEST, "Creating historycache for {0} repositories",
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
         for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
@@ -711,7 +711,7 @@ public final class HistoryGuru {
             try {
                 cache.clear(r);
                 clearedRepos.add(r.getDirectoryName());
-                LOGGER.log(Level.INFO,
+                LOGGER.log(Level.FINEST,
                         "History cache for {0} cleared.", r.getDirectoryName());
             } catch (HistoryException e) {
                 LOGGER.log(Level.WARNING,
@@ -924,7 +924,7 @@ public final class HistoryGuru {
             Collections.synchronizedMap(new HashMap<>(repos.size()));
         Statistics elapsed = new Statistics();
 
-        LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
+        LOGGER.log(Level.FINEST, "invalidating {0} repositories", repos.size());
 
         /*
          * getRepository() below does various checks of the repository

@@ -89,22 +89,22 @@ public class HistoryEntry {
 
     public void dump() {
 
-        LOGGER.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
-        LOGGER.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
-        LOGGER.log(Level.FINE, "HistoryEntry : date           = {0}", date);
-        LOGGER.log(Level.FINE, "HistoryEntry : author         = {0}", author);
-        LOGGER.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
+        LOGGER.log(Level.FINEST, "HistoryEntry : revision       = {0}", revision);
+        LOGGER.log(Level.FINEST, "HistoryEntry : tags           = {0}", tags);
+        LOGGER.log(Level.FINEST, "HistoryEntry : date           = {0}", date);
+        LOGGER.log(Level.FINEST, "HistoryEntry : author         = {0}", author);
+        LOGGER.log(Level.FINEST, "HistoryEntry : active         = {0}", (active ?
                 "True" : "False"));
         String[] lines = message.toString().split("\n");
         String separator = "=";
         for (String line : lines) {
-            LOGGER.log(Level.FINE, "HistoryEntry : message        {0} {1}",
+            LOGGER.log(Level.FINEST, "HistoryEntry : message        {0} {1}",
                     new Object[]{separator, line});
             separator = ">";
         }
         separator = "=";
         for (String file : files) {
-            LOGGER.log(Level.FINE, "HistoryEntry : files          {0} {1}",
+            LOGGER.log(Level.FINEST, "HistoryEntry : files          {0} {1}",
                     new Object[]{separator, file});
             separator = ">";
         }

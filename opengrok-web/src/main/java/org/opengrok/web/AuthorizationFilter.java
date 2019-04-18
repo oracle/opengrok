@@ -68,11 +68,11 @@ public class AuthorizationFilter implements Filter {
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
             if (httpReq.getRemoteUser() != null) {
-                LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
+                LOGGER.log(Level.FINER, "Access denied for user ''{0}'' for URI: {1}",
                         new Object[]{httpReq.getRemoteUser(),
                             httpReq.getRequestURI()});
             } else {
-                LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
+                LOGGER.log(Level.FINER, "Access denied for URI: {0}", httpReq.getRequestURI());
             }
 
             /*

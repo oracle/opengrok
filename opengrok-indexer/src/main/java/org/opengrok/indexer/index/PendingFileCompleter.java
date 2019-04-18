@@ -167,11 +167,11 @@ class PendingFileCompleter {
      */
     public int complete() throws IOException {
         int numDeletions = completeDeletions();
-        LOGGER.log(Level.FINE, "deleted {0} file(s)", numDeletions);
+        LOGGER.log(Level.FINEST, "deleted {0} file(s)", numDeletions);
         int numRenamings = completeRenamings();
-        LOGGER.log(Level.FINE, "renamed {0} file(s)", numRenamings);
+        LOGGER.log(Level.FINEST, "renamed {0} file(s)", numRenamings);
         int numLinkages = completeLinkages();
-        LOGGER.log(Level.FINE, "affirmed links for {0} path(s)", numLinkages);
+        LOGGER.log(Level.FINEST, "affirmed links for {0} path(s)", numLinkages);
         return numDeletions + numRenamings + numLinkages;
     }
 
@@ -331,7 +331,7 @@ class PendingFileCompleter {
 
     private void doDelete(File f) {
         if (f.delete()) {
-            LOGGER.log(Level.FINER, "Deleted obsolete file: {0}", f.getPath());
+            LOGGER.log(Level.FINEST, "Deleted obsolete file: {0}", f.getPath());
         } else if (f.exists()) {
             LOGGER.log(Level.WARNING, "Failed to delete obsolete file: {0}",
                     f.getPath());
@@ -471,7 +471,7 @@ class PendingFileCompleter {
 
     private void tryDeleteDirectory(File dir) {
         if (dir.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty parent dir: {0}",
+            LOGGER.log(Level.FINEST, "Removed empty parent dir: {0}",
                 dir.getAbsolutePath());
         }
     }

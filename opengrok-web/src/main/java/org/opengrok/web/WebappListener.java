@@ -63,7 +63,7 @@ public final class WebappListener
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
+        LOGGER.log(Level.FINEST, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
         
         String config = context.getInitParameter("CONFIGURATION");

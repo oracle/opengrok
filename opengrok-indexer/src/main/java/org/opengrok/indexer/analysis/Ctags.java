@@ -110,7 +110,7 @@ public class Ctags implements Resettable {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
             closing = true;
-            LOGGER.log(Level.FINE, "Destroying ctags command");
+            LOGGER.log(Level.FINEST, "Destroying ctags command");
             ctags.destroyForcibly();
         }
     }
@@ -178,7 +178,7 @@ public class Ctags implements Resettable {
 
         /* Add extra command line options for ctags. */
         if (CTagsExtraOptionsFile != null) {
-            LOGGER.log(Level.INFO, "Adding extra options to ctags");
+            LOGGER.log(Level.FINEST, "Adding extra options to ctags");
             command.add("--options=" + CTagsExtraOptionsFile);
         }
 
@@ -187,7 +187,7 @@ public class Ctags implements Resettable {
             sb.append(s).append(" ");
         }
         String commandStr = sb.toString();
-        LOGGER.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
+        LOGGER.log(Level.FINEST, "Executing ctags command [{0}]", commandStr);
 
         processBuilder = new ProcessBuilder(command);
 

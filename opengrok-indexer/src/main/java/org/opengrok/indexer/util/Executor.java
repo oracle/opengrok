@@ -165,7 +165,7 @@ public class Executor {
             dir_str = cwd.toString();
         }
 
-        LOGGER.log(Level.FINE,
+        LOGGER.log(Level.FINEST,
                 "Executing command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
 
@@ -217,7 +217,7 @@ public class Executor {
 
             ret = process.waitFor();
             
-            LOGGER.log(Level.FINE,
+            LOGGER.log(Level.FINEST,
                 "Finished command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
 
@@ -383,7 +383,7 @@ public class Executor {
         UncaughtExceptionHandler dueh =
             Thread.getDefaultUncaughtExceptionHandler();
         if (dueh == null) {
-            LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
+            LOGGER.log(Level.FINEST, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {

@@ -285,7 +285,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             throws IOException {
 
         if (storedU == null) {
-            LOGGER.log(Level.FINE, "Missing U[UID] for: {0}",
+            LOGGER.log(Level.FINEST, "Missing U[UID] for: {0}",
                 repoRelPath);
             return null;
         }
@@ -293,7 +293,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         String repoAbsPath = env.getSourceRootPath() + repoRelPath;
         File repoAbsFile = new File(repoAbsPath);
         if (!repoAbsFile.exists()) {
-            LOGGER.log(Level.FINE, "Missing file: {0}", repoAbsPath);
+            LOGGER.log(Level.FINEST, "Missing file: {0}", repoAbsPath);
             return null;
         }
 
@@ -305,7 +305,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         BytesRef buid = new BytesRef(uid);
         BytesRef storedBuid = new BytesRef(storedU);
         if (storedBuid.compareTo(buid) != 0) {
-            LOGGER.log(Level.FINE, "Last-modified differs for: {0}",
+            LOGGER.log(Level.FINEST, "Last-modified differs for: {0}",
                 repoRelPath);
             return null;
         }

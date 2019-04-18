@@ -312,7 +312,7 @@ public final class Indexer {
                 }
             }
 
-            LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
+            LOGGER.log(Level.FINEST, "Indexer version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
 
             // Create history cache first.
@@ -886,9 +886,9 @@ public final class Indexer {
      */
     public static void writeConfigToFile(RuntimeEnvironment env, String filename) throws IOException {
         if (filename != null) {
-            LOGGER.log(Level.INFO, "Writing configuration to {0}", filename);
+            LOGGER.log(Level.FINEST, "Writing configuration to {0}", filename);
             env.writeConfiguration(new File(filename));
-            LOGGER.info("Done...");
+            LOGGER.finest("Done...");
         }
     }
 
@@ -982,7 +982,7 @@ public final class Indexer {
         }
         
         if (searchRepositories) {
-            LOGGER.log(Level.INFO, "Scanning for repositories...");
+            LOGGER.log(Level.FINEST, "Scanning for repositories...");
             Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
@@ -992,14 +992,14 @@ public final class Indexer {
         if (createHistoryCache) {
             // Even if history is disabled globally, it can be enabled for some repositories.
             if (repositories != null && !repositories.isEmpty()) {
-                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                LOGGER.log(Level.FINEST, "Generating history cache for repositories: " +
                         repositories.stream().collect(Collectors.joining(",")));
                 HistoryGuru.getInstance().createCache(repositories);
-                LOGGER.info("Done...");
+                LOGGER.finest("Done...");
             } else {
-                LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                LOGGER.log(Level.FINEST, "Generating history cache for all repositories ...");
                 HistoryGuru.getInstance().createCache();
-                LOGGER.info("Done...");
+                LOGGER.finest("Done...");
             }
         }
 
@@ -1024,7 +1024,7 @@ public final class Indexer {
             throws IOException {
         Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        LOGGER.info("Starting indexing");
+        LOGGER.finest("Starting indexing");
 
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
@@ -1092,7 +1092,7 @@ public final class Indexer {
 
         // Wait forever for the executors to finish.
         try {
-            LOGGER.info("Waiting for the executors to finish");
+            LOGGER.finest("Waiting for the executors to finish");
             latch.await(999, TimeUnit.DAYS);
         } catch (InterruptedException exp) {
             LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
@@ -1102,13 +1102,13 @@ public final class Indexer {
     }
 
     public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host) {
-        LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
+        LOGGER.log(Level.FINEST, "Refreshing searcher managers to: {0}", host);
 
         env.signalTorefreshSearcherManagers(projects, host);
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String host) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
+        LOGGER.log(Level.FINEST, "Sending configuration to: {0}", host);
         try {
             env.writeConfiguration(host);
         } catch (IOException ex) {
@@ -1116,7 +1116,7 @@ public final class Indexer {
                     "Failed to send configuration to %s "
                     + "(is web application server running with opengrok deployed?)", host), ex);
         }
-        LOGGER.info("Configuration update routine done, check log output for errors.");
+        LOGGER.finest("Configuration update routine done, check log output for errors.");
     }
 
     private static void pauseToAwaitProfiler() {

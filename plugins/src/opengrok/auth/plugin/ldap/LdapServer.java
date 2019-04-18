@@ -134,10 +134,10 @@ public class LdapServer implements Serializable {
      * @return the new connection or null
      */
     private synchronized LdapContext connect() {
-        LOGGER.log(Level.INFO, "Server {0} connecting", this.url);
+        LOGGER.log(Level.FINER, "Server {0} connecting", this.url);
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
-            LOGGER.log(Level.INFO, "LDAP server {0} is down", this.url);
+            LOGGER.log(Level.FINER, "LDAP server {0} is down", this.url);
             close();
             return null;
         }
@@ -159,7 +159,7 @@ public class LdapServer implements Serializable {
                 ctx = new InitialLdapContext(env, null);
                 ctx.reconnect(null);
                 ctx.setRequestControls(null);
-                LOGGER.log(Level.INFO, "Connected to LDAP server {0}", env.get(Context.PROVIDER_URL));
+                LOGGER.log(Level.FINER, "Connected to LDAP server {0}", env.get(Context.PROVIDER_URL));
                 errorTimestamp = 0;
             } catch (NamingException ex) {
                 LOGGER.log(Level.INFO, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
@@ -207,7 +207,7 @@ public class LdapServer implements Serializable {
         }
 
         if (reconnected) {
-            LOGGER.log(Level.INFO, "LDAP server {0} reconnect", env.get(Context.PROVIDER_URL));
+            LOGGER.log(Level.FINEST, "LDAP server {0} reconnect", env.get(Context.PROVIDER_URL));
             close();
             if ((ctx = connect()) == null) {
                 throw new CommunicationException(String.format("LDAP server \"%s\" cannot reconnect",

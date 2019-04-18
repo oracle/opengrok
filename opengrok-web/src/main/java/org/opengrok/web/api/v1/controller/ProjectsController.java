@@ -204,7 +204,7 @@ public class ProjectsController {
     public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
 
         Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
+        logger.log(Level.FINER, "deleting history cache for project {0}", projectName);
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
 

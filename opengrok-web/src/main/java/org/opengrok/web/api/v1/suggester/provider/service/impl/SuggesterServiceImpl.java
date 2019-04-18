@@ -156,7 +156,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh() {
-        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
+        logger.log(Level.FINEST, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
         lock.writeLock().lock();
         try {
             // close and init from scratch because many things may have changed in the configuration
@@ -178,7 +178,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot perform rebuild because suggester is not initialized");
+                logger.log(Level.FINEST, "Cannot perform rebuild because suggester is not initialized");
                 return;
             }
             suggester.rebuild(getAllProjectIndexDirs());
@@ -203,7 +203,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot rebuild {0} because suggester is not initialized", project);
+                logger.log(Level.FINEST, "Cannot rebuild {0} because suggester is not initialized", project);
                 return;
             }
             suggester.rebuild(Collections.singleton(getNamedIndexDir(p)));
@@ -223,7 +223,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot remove {0} because suggester is not initialized", project);
+                logger.log(Level.FINEST, "Cannot remove {0} because suggester is not initialized", project);
                 return;
             }
             suggester.remove(Collections.singleton(project));
@@ -272,7 +272,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot retrieve popularity data because suggester is not initialized");
+                logger.log(Level.FINEST, "Cannot retrieve popularity data because suggester is not initialized");
                 return Collections.emptyList();
             }
             return suggester.getSearchCounts(project, field, page, pageSize);
@@ -284,7 +284,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     private void initSuggester() {
         SuggesterConfig suggesterConfig = env.getSuggesterConfig();
         if (!suggesterConfig.isEnabled()) {
-            logger.log(Level.INFO, "Suggester disabled");
+            logger.log(Level.FINEST, "Suggester disabled");
             return;
         }
 
@@ -293,7 +293,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         if (rebuildParalleismLevel == 0) {
             rebuildParalleismLevel = 1;
         }
-        logger.log(Level.FINER, "Suggester rebuild parallelism level: " + rebuildParalleismLevel);
+        logger.log(Level.FINEST, "Suggester rebuild parallelism level: " + rebuildParalleismLevel);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
@@ -340,17 +340,17 @@ public class SuggesterServiceImpl implements SuggesterService {
         cancelScheduledRebuild();
 
         if (!env.getSuggesterConfig().isAllowMostPopular()) { // no need to rebuild
-            logger.log(Level.INFO, "Suggester rebuild not scheduled");
+            logger.log(Level.FINEST, "Suggester rebuild not scheduled");
             return;
         }
 
         Duration timeToNextRebuild = getTimeToNextRebuild();
         if (timeToNextRebuild == null) {
-            logger.log(Level.INFO, "Suggester rebuild not scheduled");
+            logger.log(Level.FINEST, "Suggester rebuild not scheduled");
             return;
         }
 
-        logger.log(Level.INFO, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
+        logger.log(Level.FINEST, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
 
         future = instance.scheduler.schedule(instance.getRebuildAllProjectsRunnable(), timeToNextRebuild.toMillis(),
                 TimeUnit.MILLISECONDS);

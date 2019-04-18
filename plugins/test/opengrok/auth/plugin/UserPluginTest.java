@@ -56,7 +56,7 @@ public class UserPluginTest {
 
     @Test
     public void testUser() {
-        HttpServletRequest req;
+        HttpServletRequest req = null;
         Assert.assertTrue(plugin.isAllowed(req = createRequest("007"), new Group()));
         Assert.assertEquals("007", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
         Assert.assertTrue(plugin.isAllowed(req = createRequest("008"), new Project()));
@@ -69,7 +69,7 @@ public class UserPluginTest {
 
     @Test
     public void testTimeoutedUser() {
-        HttpServletRequest req;
+        HttpServletRequest req = null;
         Assert.assertFalse(plugin.isAllowed(req = createRequest("007", true), new Group()));
         Assert.assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
         Assert.assertFalse(plugin.isAllowed(req = createRequest("008", true), new Project()));

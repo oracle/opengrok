@@ -52,7 +52,7 @@ public class RestfulClient {
         try {
             Client client = ClientBuilder.newClient();
 
-            LOGGER.log(Level.FINEST, "sending REST POST request to {0}: {1}",
+            LOGGER.log(Level.FINE, "sending REST POST request to {0}: {1}",
                     new Object[]{URI, input});
             Response response = client.target(URI)
                     .request(MediaType.APPLICATION_JSON)

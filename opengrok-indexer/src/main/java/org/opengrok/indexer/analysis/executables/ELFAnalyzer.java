@@ -108,7 +108,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         ELFHeader eh = new ELFHeader(fmap);
 
         if (eh.e_shnum <= 0) {
-            LOGGER.log(Level.FINE, "Skipping file, no section headers");
+            LOGGER.log(Level.FINEST, "Skipping file, no section headers");
             return null;
         }
 
@@ -116,7 +116,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         ELFSection stringSection = new ELFSection(fmap);
 
         if (stringSection.sh_size == 0) {
-            LOGGER.log(Level.FINE, "Skipping file, no section name string table");
+            LOGGER.log(Level.FINEST, "Skipping file, no section name string table");
             return null;
         }
 
