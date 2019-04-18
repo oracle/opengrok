@@ -25,9 +25,9 @@ package opengrok.auth.plugin.util;
 import java.util.Date;
 
 /**
- * Implementation of timestamp decoding as mentinoned in
- * <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
- * in chapter 9.5 .
+ * Implementation of timestamp decoding as mentioned in
+ * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
+ * in chapter 9.5.
  *
  * @author Krystof Tulinger
  */
