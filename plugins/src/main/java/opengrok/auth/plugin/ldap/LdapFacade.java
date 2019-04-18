@@ -391,7 +391,7 @@ public class LdapFacade extends AbstractLdapProvider {
             }
         }
 
-        throw new LdapException("LDAP naming problem");
+        return null;
     }
 
     private void closeActualServer() {
