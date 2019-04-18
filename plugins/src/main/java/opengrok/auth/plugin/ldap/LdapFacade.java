@@ -355,22 +355,26 @@ public class LdapFacade extends AbstractLdapProvider {
             LOGGER.log(Level.WARNING, String.format("The LDAP name was not found on server %s", server), ex);
             throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
-            LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
+            LOGGER.log(Level.SEVERE, String.format("The maximum size of the LDAP result has exceeded "
+                    + "on server %s", server), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (TimeLimitExceededException ex) {
-            LOGGER.log(Level.SEVERE, "Time limit for LDAP operation has exceeded.", ex);
+            LOGGER.log(Level.SEVERE, String.format("Time limit for LDAP operation has exceeded on server %s",
+                    server), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (CommunicationException ex) {
-            LOGGER.log(Level.INFO, "Communication error received, reconnecting to next server.", ex);
+            LOGGER.log(Level.INFO, String.format("Communication error received on server %s, " +
+                    "reconnecting to next server.", server), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (NamingException ex) {
-            LOGGER.log(Level.SEVERE, "An arbitrary LDAP error occurred.", ex);
+            LOGGER.log(Level.SEVERE, String.format("An arbitrary LDAP error occurred on server %s",
+                    server), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
