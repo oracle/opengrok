@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
@@ -109,15 +110,16 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         } else {
             try {
-                for (String dn : ldapUser.getAttribute("dn")) {
+                String dn = ldapUser.getDN();
+                if (dn != null) {
                     LOGGER.log(Level.FINEST, "searching with dn={0}", dn);
-                    if ((records = getLdapProvider().lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
+                    AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
+                    if ((res = getLdapProvider().lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
                         LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} (LDAP provider: {2})",
                                 new Object[]{ldapAttr, user, getLdapProvider()});
-                        continue;
                     }
 
-                    break;
+                    records = res.getAttrs();
                 }
             } catch (LdapException ex) {
                 throw new AuthorizationException(ex);

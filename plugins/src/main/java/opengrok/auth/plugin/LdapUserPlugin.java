@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
@@ -75,7 +76,6 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                     "] in the setup");
         }
         attributes = new HashSet<>(Arrays.asList(attributesVal.split(",")));
-        attributes.add("dn");
 
         ldapFilter = (String) parameters.get(LDAP_FILTER);
 
@@ -138,17 +138,22 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
 
         String expandedFilter = null;
+        String dn;
         if (ldapFilter != null) {
             expandedFilter = expandFilter(user);
         }
         try {
-            if ((records = getLdapProvider().lookupLdapContent(useDN ? user.getUsername() : null,
+            AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
+            if ((res = getLdapProvider().lookupLdapContent(useDN ? user.getUsername() : null,
                     expandedFilter, attributes.toArray(new String[attributes.size()]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{3}'' for user ''{0}'' " +
                                 "with filter ''{1}''",
                         new Object[]{user, expandedFilter, String.join(", ", attributes)});
                 return;
             }
+
+            records = res.getAttrs();
+            dn = res.getDN();
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
         }
@@ -171,7 +176,8 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             attrSet.put(attrName, records.get(attrName));
         }
 
-        updateSession(req, new LdapUser(attrSet));
+        // TODO useDN
+        updateSession(req, new LdapUser(dn, attrSet));
     }
 
     /**

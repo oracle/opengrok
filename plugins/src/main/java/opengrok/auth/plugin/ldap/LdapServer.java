@@ -249,4 +249,9 @@ public class LdapServer implements Serializable {
 
         return e;
     }
+
+    @Override
+    public String toString() {
+        return getUrl();
+    }
 }
