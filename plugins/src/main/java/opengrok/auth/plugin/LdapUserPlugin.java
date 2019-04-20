@@ -38,6 +38,8 @@ import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
+import static opengrok.auth.plugin.util.FilterUtil.expandUserFilter;
+
 /**
  * Authorization plug-in to extract user's LDAP attributes.
  * The attributes can be then used by the other LDAP plugins down the stack.
@@ -102,13 +104,9 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     }
 
     /**
-     * Expand User attribute values into the filter.
+     * Expand {@code User} object attribute values into the filter.
      *
-     * Special values are:
-     * <ul>
-     * <li>%username% - to be replaced with username value from the User object</li>
-     * <li>%guid% - to be replaced with guid value from the User object</li>
-     * </ul>
+     * @see opengrok.auth.plugin.util.FilterUtil
      *
      * Use \% for printing the '%' character.
      *
@@ -118,8 +116,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     protected String expandFilter(User user) {
         String filter = ldapFilter;
 
-        filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
-        filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+        filter = expandUserFilter(user, filter);
 
         filter = filter.replaceAll("\\\\%", "%");
 

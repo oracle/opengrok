@@ -36,6 +36,8 @@ import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
+import static opengrok.auth.plugin.util.FilterUtil.expandUserFilter;
+
 /**
  * Authorization plug-in to check if given user matches configured LDAP filter.
  *
@@ -98,24 +100,20 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     }
 
     /**
-     * Expand LdapUser/User attribute values into the filter.
+     * Expand {@code LdapUser} / {@code User} object attribute values into the filter.
      *
-     * Special values are:
-     * <ul>
-     * <li>%username% - to be replaced with username value from the User object</li>
-     * <li>%guid% - to be replaced with guid value from the User object</li>
-     * </ul>
+     * @see opengrok.auth.plugin.util.FilterUtil
      *
      * Use \% for printing the '%' character.
      *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
      * @param user user from the request
-     * @return replaced result
+     * @return the filter with replacements
      */
     String expandFilter(String filter, LdapUser ldapUser, User user) {
-        filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
-        filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+
+        filter = expandUserFilter(user, filter);
 
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
