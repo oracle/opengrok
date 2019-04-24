@@ -2,6 +2,7 @@
 
 LOCKFILE=/var/run/opengrok-indexer
 URI="http://localhost:8080"
+OPS=${INDEXER_FLAGS:='-H -P -S -G'}
 
 if [ -f "$LOCKFILE" ]; then
 	date +"%F %T Indexer still locked, skipping indexing"
@@ -21,10 +22,10 @@ opengrok-indexer \
     -a /opengrok/lib/opengrok.jar -- \
     -s /opengrok/src \
     -d /opengrok/data \
-    -H -P -S -G \
     --leadingWildCards on \
     -W /var/opengrok/etc/configuration.xml \
     -U "$URI" \
+    $INDEXER_FLAGS \
     $INDEXER_OPT "$@"
 date +"%F %T Indexing finished"
 
