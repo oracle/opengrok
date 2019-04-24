@@ -2,6 +2,7 @@
 
 LOCKFILE=/var/run/opengrok-indexer
 URI="http://localhost:8080"
+# $OPTS an be overwriteb by environment variable
 OPS=${INDEXER_FLAGS:='-H -P -S -G'}
 
 if [ -f "$LOCKFILE" ]; then
@@ -25,7 +26,7 @@ opengrok-indexer \
     --leadingWildCards on \
     -W /var/opengrok/etc/configuration.xml \
     -U "$URI" \
-    $INDEXER_FLAGS \
+    $OPS \
     $INDEXER_OPT "$@"
 date +"%F %T Indexing finished"
 

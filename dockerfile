@@ -5,7 +5,7 @@ WORKDIR /opengrok-source
 
 RUN apt-get update && apt-get install -y python3 python3-venv
 RUN mvn -f pom.xml clean package -DskipTests=true
-
+# find most recent package file
 RUN cp `ls -t distribution/target/*.tar.gz | head -n1 |awk '{printf("%s",$0)}'` /opengrok.tar.gz
 
 FROM tomcat:9-jre8
