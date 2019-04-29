@@ -118,11 +118,12 @@ public class PerforceRepositoryTest {
                 add(new SimpleImmutableEntry<>("Test@", "Test%40"));
                 add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
                 add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
+                add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
             }
         };
         for (SimpleImmutableEntry<String,String> ent : testmap) {
             String prot = instance.protectPerforceFilename(ent.getKey());
-            assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), prot, ent.getValue());
+            assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
         }
 //        instance.update();
     }
