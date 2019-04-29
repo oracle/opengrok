@@ -65,8 +65,10 @@ public class PerforceRepository extends Repository {
     public static String protectPerforceFilename(String name) {
         ArrayList<SimpleImmutableEntry<String,String>>   transmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
             {
-                add(new SimpleImmutableEntry<>("#", "%23"));
+                /* NOTE: Must replace '%' first, or that translation will */
+                /* will affect the result of the others. */
                 add(new SimpleImmutableEntry<>("%", "%25"));
+                add(new SimpleImmutableEntry<>("#", "%23"));
                 add(new SimpleImmutableEntry<>("\\*", "%2A"));
                 add(new SimpleImmutableEntry<>("@", "%40"));
             }
@@ -77,8 +79,8 @@ public class PerforceRepository extends Repository {
         }
         /* Instead of iterating over a list, just force each? */
 /*
-        String t = name.replaceAll("#", "%23");
-        t = t.replaceAll("%", "%25");
+        String t = name.replaceAll("%", "%25");
+        t = t.replaceAll("#", "%23");
         t = t.replaceAll("\\*", "%2A");
         t = t.replaceAll("@", "%40");
 */
