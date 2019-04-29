@@ -172,7 +172,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.enumeration(headers.keySet());
     }
 
     @Override

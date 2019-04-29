@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import junit.framework.AssertionFailedError;
 import opengrok.auth.plugin.ldap.LdapServer;
+import opengrok.auth.plugin.util.WebHook;
+import opengrok.auth.plugin.util.WebHooks;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -61,7 +63,16 @@ public class ConfigurationTest {
 
         Configuration configuration1 = new Configuration();
         configuration1.setInterval(500);
+        configuration1.setSearchTimeout(1000);
+        configuration1.setConnectTimeout(42);
+        configuration1.setCountLimit(10);
         configuration1.setServers(new ArrayList<>(Arrays.asList(new LdapServer("http://server.com"))));
+        WebHooks webHooks = new WebHooks();
+        WebHook hook = new WebHook();
+        hook.setContent("foo");
+        hook.setURI("http://localhost:8080/source/api/v1/messages");
+        webHooks.setFail(hook);
+        configuration1.setWebHooks(webHooks);
 
         enc.writeObject(configuration1);
         enc.close();

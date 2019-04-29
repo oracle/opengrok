@@ -38,7 +38,7 @@ from filelock import Timeout, FileLock
 
 from .utils.command import Command
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit
+    fatal
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
 from .utils.parsers import get_baseparser
@@ -247,7 +247,7 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     doit = not args.noop
     configmerge = None

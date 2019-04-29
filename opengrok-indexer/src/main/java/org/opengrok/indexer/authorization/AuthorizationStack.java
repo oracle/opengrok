@@ -242,7 +242,7 @@ public class AuthorizationStack extends AuthorizationEntity {
 
                 LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
-                            pluginDecision ? "true" : "false"});
+                                pluginDecision ? "true" : "false"});
 
                 if (!pluginDecision && authEntity.isRequired()) {
                     // required sets a failure but still invokes all other plugins
@@ -257,6 +257,10 @@ public class AuthorizationStack extends AuthorizationEntity {
                     overallDecision = true;
                     break;
                 }
+            } catch (AuthorizationException ex) {
+                // Propagate up so that proper HTTP error can be given.
+                LOGGER.log(Level.FINEST, "got authorization exception: " + ex.getMessage());
+                throw ex;
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING,
                         String.format("AuthEntity \"%s\" has failed the testing of \"%s\" with an exception.",

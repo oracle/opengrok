@@ -28,13 +28,12 @@ import argparse
 from logging.handlers import RotatingFileHandler
 
 
-def print_exc_exit(e):
+def fatal(msg):
     """
-    Print exception and exit
-    :param e: exception
-    :return: nothing
+    Print message to standard error output and exit
+    :param msg: message
     """
-    print(e, file=sys.stderr)
+    print(msg, file=sys.stderr)
     sys.exit(1)
 
 
@@ -147,8 +146,6 @@ def get_batch_logger(logdir, project_name, loglevel, backupcount,
     logger = logging.getLogger(name)
 
     logfile = os.path.join(logdir, project_name + ".log")
-    logger.debug("Switching logging to the {} file".
-                 format(logfile))
 
     handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
                                   backupCount=backupcount)

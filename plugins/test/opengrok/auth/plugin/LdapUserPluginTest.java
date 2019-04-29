@@ -75,6 +75,7 @@ public class LdapUserPluginTest {
     public void loadTestPostitive() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.OBJECT_CLASS, (Object)"posixUser");
+        params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
         try {
             plugin.load(params);
         } catch (NullPointerException e) {
@@ -87,11 +88,20 @@ public class LdapUserPluginTest {
         Map<String, Object> params = getParamsMap();
         String cl = "posixUser";
         params.put(LdapUserPlugin.OBJECT_CLASS, (Object) cl);
+        params.put(LdapUserPlugin.ATTRIBUTES, (Object) "uid,mail");
         plugin.load(params);
         String cn = "cn=foo-foo_bar1";
         User user = new User(cn + ",l=EMEA,dc=foobar,dc=com", "id", null, false);
         String filter = plugin.getFilter(user);
         Assert.assertEquals("(&(" + LdapUserPlugin.OBJECT_CLASS + "=" + cl + ")(" + cn + "))",
                 filter);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testLoadWithoutAttributes() {
+        Map<String, Object> params = getParamsMap();
+        String cl = "posixUser";
+        params.put(LdapUserPlugin.OBJECT_CLASS, (Object) cl);
+        plugin.load(params);
     }
 }

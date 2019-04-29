@@ -28,10 +28,14 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.LdapException;
+import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
@@ -42,7 +46,10 @@ import org.opengrok.indexer.configuration.Project;
  */
 public class LdapAttrPlugin extends AbstractLdapPlugin {
 
-    protected static final String ATTR_PARAM = "attribute";
+    private static final Logger LOGGER = Logger.getLogger(LdapAttrPlugin.class.getName());
+
+
+    protected static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
     protected static final String FILE_PARAM = "file";
 
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-attr-plugin-allowed";
@@ -87,33 +94,39 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         Boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
-        Set<String> attributes;
+        Set<String> attributeValues;
 
         updateSession(req, sessionAllowed);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
+            LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
-        if (ldapAttr.equals("mail")) {
-            sessionAllowed = whitelist.contains(ldapUser.getMail());
-        } else if (ldapAttr.equals("uid")) {
-            sessionAllowed = whitelist.contains(ldapUser.getUid());
-        } else if (ldapAttr.equals("ou")) {
-            sessionAllowed = ldapUser.getOu().stream().anyMatch((t) -> whitelist.contains(t));
-        } else if ((attributes = (Set<String>) ldapUser.getAttribute(ldapAttr)) != null) {
-            sessionAllowed = attributes.stream().anyMatch((t) -> whitelist.contains(t));
+        // Check attributes cached in LDAP user object first, then query LDAP server
+        // (and if found, cache the result in the LDAP user object).
+        attributeValues = ldapUser.getAttribute(ldapAttr);
+        if (attributeValues != null) {
+            sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         } else {
-            if ((records = getLdapProvider().lookupLdapContent(user, new String[]{ldapAttr})) == null) {
+            try {
+                if ((records = getLdapProvider().lookupLdapContent(user, new String[]{ldapAttr})) == null) {
+                    LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1}",
+                        new Object[]{ldapAttr, user});
+                    return;
+                }
+            } catch (LdapException ex) {
+                throw new AuthorizationException(ex);
+            }
+
+            if (records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
+                LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1}",
+                        new Object[]{ldapAttr, user});
                 return;
             }
 
-            if (records.isEmpty() || (attributes = records.get(ldapAttr)) == null) {
-                return;
-            }
-
-            ldapUser.setAttribute(ldapAttr, attributes);
-            sessionAllowed = attributes.stream().anyMatch((t) -> whitelist.contains(t));
+            ldapUser.setAttribute(ldapAttr, attributeValues);
+            sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         }
 
         updateSession(req, sessionAllowed);
