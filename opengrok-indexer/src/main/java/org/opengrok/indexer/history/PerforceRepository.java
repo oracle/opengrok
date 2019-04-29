@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -61,6 +62,34 @@ public class PerforceRepository extends Repository {
         ignoredFiles.add(".p4config");
     }
 
+    public static String protectPerforceFilename(String name) {
+        ArrayList<SimpleImmutableEntry<String,String>>   transmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
+            {
+                add(new SimpleImmutableEntry<>("#", "%23"));
+                add(new SimpleImmutableEntry<>("%", "%25"));
+                add(new SimpleImmutableEntry<>("\\*", "%2A"));
+                add(new SimpleImmutableEntry<>("@", "%40"));
+            }
+        };
+        String t = name;   /* XXX remove? */
+        for (SimpleImmutableEntry<String,String> ent : transmap) {
+            t = t.replaceAll(ent.getKey(), ent.getValue());
+        }
+        /* Instead of iterating over a list, just force each? */
+/*
+        String t = name.replaceAll("#", "%23");
+        t = t.replaceAll("%", "%25");
+        t = t.replaceAll("\\*", "%2A");
+        t = t.replaceAll("@", "%40");
+*/
+        if (name != t) {
+            LOGGER.log(Level.INFO,
+                       "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
+                       new Object[]{name, t});
+        }
+        return t;
+    }
+
     @Override
     public Annotation annotate(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<>();
@@ -68,7 +97,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-qci");
-        cmd.add(file.getPath() + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(file.getPath()) + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
@@ -87,7 +116,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("print");
         cmd.add("-q");
-        cmd.add(basename + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(basename) + getRevisionCmd(rev));
         Executor executor = new Executor(cmd, new File(parent));
         // TODO: properly evaluate Perforce return code
         executor.exec();
@@ -140,7 +169,7 @@ public class PerforceRepository extends Repository {
         boolean status = false;
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<>();
-            String name = file.getName();
+            String name = protectPerforceFilename(file.getName());
             File dir = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;

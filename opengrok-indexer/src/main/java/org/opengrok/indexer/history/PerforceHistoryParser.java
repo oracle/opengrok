@@ -87,7 +87,7 @@ public class PerforceHistoryParser {
         cmd.add("p4");
         cmd.add("filelog");
         cmd.add("-lti");
-        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev));
+        cmd.add(PerforceRepository.protectPerforceFilename(file.getName()) + PerforceRepository.getRevisionCmd(rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 

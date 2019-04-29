@@ -35,8 +35,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
@@ -104,5 +105,25 @@ public class PerforceRepositoryTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testProtectFilename() throws Exception {
+        PerforceRepository instance = new PerforceRepository();
+        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
+            {
+                add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
+                add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
+                add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
+                add(new SimpleImmutableEntry<>("Test@", "Test%40"));
+                add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
+                add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
+            }
+        };
+        for (SimpleImmutableEntry<String,String> ent : testmap) {
+            String prot = instance.protectPerforceFilename(ent.getKey());
+            assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), prot, ent.getValue());
+        }
+//        instance.update();
     }
 }
