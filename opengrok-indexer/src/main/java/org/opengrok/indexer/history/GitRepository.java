@@ -590,20 +590,20 @@ public class GitRepository extends Repository {
         return true;
     }
 
-    private TagEntry buildTagEntry(File directory, String tags, boolean interactive) throws HistoryException, IOException {
+    private TagEntry buildTagEntry(File directory, String tag, boolean interactive) {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("log");
-        argv.add("--format=commit:%H" + System.getProperty("line.separator")
-                + "Date:%at");
-        argv.add("-r");
-        argv.add(tags + "^.." + tags);
+        argv.add("--format=commit:%H%nDate:%at");
+        argv.add("-n");
+        argv.add("1");
+        argv.add(tag);
         
         Executor executor = new Executor(argv, directory, interactive ?
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
                 RuntimeEnvironment.getInstance().getCommandTimeout());
-        GitTagParser parser = new GitTagParser(tags);
+        GitTagParser parser = new GitTagParser(tag);
         executor.exec(true, parser);
         return parser.getEntries().first();
     }
@@ -645,21 +645,11 @@ public class GitRepository extends Repository {
             this.tagList = null;
         }
         
-        try {
-            // Now get hash & date for each tag
-            for (String tags : tagsList) {
-                TagEntry tagEntry = buildTagEntry(directory, tags, interactive);
-                // Reverse the order of the list
-                this.tagList.add(tagEntry);
-            }
-        } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to parse tag list: {0}", e.getMessage());
-            this.tagList = null;
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to read tag list: {0}", e.getMessage());
-            this.tagList = null;
+        // Now get hash & date for each tag.
+        for (String tag : tagsList) {
+            TagEntry tagEntry = buildTagEntry(directory, tag, interactive);
+            // Reverse the order of the list
+            this.tagList.add(tagEntry);
         }
     }
 
