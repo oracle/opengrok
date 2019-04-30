@@ -202,6 +202,12 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+        return new PerforceHistoryParser().parse(file, sinceRevision, this);
+    }
+
+    @Override
     String determineParent(boolean interactive) throws IOException {
         return null;
     }
@@ -216,10 +222,34 @@ public class PerforceRepository extends Repository {
      * @return rev number formatted for P4 command-line.
      */
     public static String getRevisionCmd(String rev) {
-        if(rev == null || "".equals(rev)) {
+        if (rev == null || "".equals(rev)) {
             return "";
         }
         return "@" + rev;
+    }
+    /**
+     * Parse rev number range and returns it in format suitable for P4 command-line.
+     * @param first First revision number.
+     * @param last Last revision number.
+     * @return rev number formatted for P4 command-line.
+     */
+    public static String getRevisionCmd(String first, String last) {
+        if ((first == null || "".equals(first)) &&
+            ((last == null) || "".equals(last))) {
+            return "";
+        }
+        String ret = "@";
+        if (first == null || "".equals(first)) {
+            ret += "0,";
+        } else {
+            ret += first + ",";
+        }
+        if (last == null || "".equals(last)) {
+            ret += "now";
+        } else {
+            ret += last;
+        }
+        return ret;
     }
 
     @Override

@@ -43,15 +43,20 @@ import org.opengrok.indexer.util.Executor;
  */
 public class PerforceHistoryParser {
 
+    History parse(File file, Repository repos) throws HistoryException {
+        return this.parse(file, null, repos);
+    }
+
     /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
+     * @param sinceRevision the revision before the start of desired history
      * @param repos Pointer to the {@code PerforceRepository}
      * @return object representing the file's history
      * @throws HistoryException if a problem occurs while executing p4 command
      */
-    History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, String sinceRevision, Repository repos) throws HistoryException {
         History history;
 
         if (!PerforceRepository.isInP4Depot(file, false)) {
@@ -60,9 +65,16 @@ public class PerforceHistoryParser {
 
         try {
             if (file.isDirectory()) {
+                /* TODO: Do I need to think about revisions here? */
                 history = parseDirectory(file);
             } else {
-                history = getRevisions(file, null);
+                if (sinceRevision == null) {
+                    /* Get all revisions */
+                    history = getRevisions(file, null);
+                } else {
+                    /* Get revisions between specified and head */
+                    history = getRevisionsSince(file, sinceRevision);
+                }
             }
         } catch (IOException ioe) {
             throw new HistoryException(ioe);
@@ -88,6 +100,18 @@ public class PerforceHistoryParser {
         cmd.add("filelog");
         cmd.add("-lti");
         cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev));
+        Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
+        executor.exec();
+
+        return parseFileLog(executor.getOutputReader());
+    }
+
+    public static History getRevisionsSince(File file, String rev) throws IOException {
+        ArrayList<String> cmd = new ArrayList<String>();
+        cmd.add("p4");
+        cmd.add("filelog");
+        cmd.add("-lti");
+        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev, "now"));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 
