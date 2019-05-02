@@ -37,7 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
@@ -109,7 +110,6 @@ public class PerforceRepositoryTest {
 
     @Test
     public void testProtectFilename() throws Exception {
-        PerforceRepository instance = new PerforceRepository();
         ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
             {
                 add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
@@ -119,12 +119,15 @@ public class PerforceRepositoryTest {
                 add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
                 add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
                 add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
+                add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
+                add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
             }
         };
+        // XXX: We don't need an instance here, to unit-test a static function?
+        PerforceRepository instance = new PerforceRepository();
         for (SimpleImmutableEntry<String,String> ent : testmap) {
             String prot = instance.protectPerforceFilename(ent.getKey());
             assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
         }
-//        instance.update();
     }
 }

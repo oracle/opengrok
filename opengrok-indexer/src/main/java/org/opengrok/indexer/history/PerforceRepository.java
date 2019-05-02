@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -63,29 +62,16 @@ public class PerforceRepository extends Repository {
     }
 
     public static String protectPerforceFilename(String name) {
-        ArrayList<SimpleImmutableEntry<String,String>>   transmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
-            {
-                /* NOTE: Must replace '%' first, or that translation will */
-                /* will affect the result of the others. */
-                add(new SimpleImmutableEntry<>("%", "%25"));
-                add(new SimpleImmutableEntry<>("#", "%23"));
-                add(new SimpleImmutableEntry<>("\\*", "%2A"));
-                add(new SimpleImmutableEntry<>("@", "%40"));
-            }
-        };
-        String t = name;   /* XXX remove? */
-        for (SimpleImmutableEntry<String,String> ent : transmap) {
-            t = t.replaceAll(ent.getKey(), ent.getValue());
-        }
-        /* Instead of iterating over a list, just force each? */
-/*
+        /* For each of the [four] special characters, replace them with */
+        /* the recognized escape sequence for perforce. */
+        /* NOTE: Must replace '%' first, or that translation would */
+        /* affect the output of the others. */
         String t = name.replaceAll("%", "%25");
         t = t.replaceAll("#", "%23");
         t = t.replaceAll("\\*", "%2A");
         t = t.replaceAll("@", "%40");
-*/
         if (name != t) {
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.FINEST,
                        "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
                        new Object[]{name, t});
         }
