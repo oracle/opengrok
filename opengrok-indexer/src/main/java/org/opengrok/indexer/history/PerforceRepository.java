@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -61,7 +62,7 @@ public class PerforceRepository extends Repository {
         ignoredFiles.add(".p4config");
     }
 
-    public static String protectPerforceFilename(String name) {
+    static String protectPerforceFilename(String name) {
         /* For each of the [four] special characters, replace them with */
         /* the recognized escape sequence for perforce. */
         /* NOTE: Must replace '%' first, or that translation would */

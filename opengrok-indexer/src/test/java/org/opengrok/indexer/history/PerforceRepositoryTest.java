@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -110,19 +111,17 @@ public class PerforceRepositoryTest {
 
     @Test
     public void testProtectFilename() throws Exception {
-        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<SimpleImmutableEntry<String,String>>() {
-            {
-                add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
-                add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
-                add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
-                add(new SimpleImmutableEntry<>("Test@", "Test%40"));
-                add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
-                add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
-                add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
-                add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
-                add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
-            }
-        };
+        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<>();
+        testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
+        testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
+        testmap.add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
+        testmap.add(new SimpleImmutableEntry<>("Test@", "Test%40"));
+        testmap.add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
+        testmap.add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
+        testmap.add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
+        testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
+        testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
+
         // XXX: We don't need an instance here, to unit-test a static function?
         PerforceRepository instance = new PerforceRepository();
         for (SimpleImmutableEntry<String,String> ent : testmap) {
