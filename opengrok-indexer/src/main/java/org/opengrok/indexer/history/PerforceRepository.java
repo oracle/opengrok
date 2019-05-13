@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -61,6 +62,23 @@ public class PerforceRepository extends Repository {
         ignoredFiles.add(".p4config");
     }
 
+    static String protectPerforceFilename(String name) {
+        /* For each of the [four] special characters, replace them with */
+        /* the recognized escape sequence for perforce. */
+        /* NOTE: Must replace '%' first, or that translation would */
+        /* affect the output of the others. */
+        String t = name.replaceAll("%", "%25");
+        t = t.replaceAll("#", "%23");
+        t = t.replaceAll("\\*", "%2A");
+        t = t.replaceAll("@", "%40");
+        if (name != t) {
+            LOGGER.log(Level.FINEST,
+                       "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
+                       new Object[]{name, t});
+        }
+        return t;
+    }
+
     @Override
     public Annotation annotate(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<>();
@@ -68,7 +86,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-qci");
-        cmd.add(file.getPath() + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(file.getPath()) + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
@@ -87,7 +105,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("print");
         cmd.add("-q");
-        cmd.add(basename + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(basename) + getRevisionCmd(rev));
         Executor executor = new Executor(cmd, new File(parent));
         // TODO: properly evaluate Perforce return code
         executor.exec();
@@ -140,7 +158,7 @@ public class PerforceRepository extends Repository {
         boolean status = false;
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<>();
-            String name = file.getName();
+            String name = protectPerforceFilename(file.getName());
             File dir = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;

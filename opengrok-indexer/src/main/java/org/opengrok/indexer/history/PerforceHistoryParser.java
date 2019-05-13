@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -35,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.opengrok.indexer.util.Executor;
+import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
 /**
  * Parse source history for a Perforce Repository
@@ -99,7 +101,7 @@ public class PerforceHistoryParser {
         cmd.add("p4");
         cmd.add("filelog");
         cmd.add("-lti");
-        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(file.getName()) + PerforceRepository.getRevisionCmd(rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 

@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -35,9 +36,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
 /**
  * Do basic testing of the Perforce support
@@ -103,6 +107,25 @@ public class PerforceRepositoryTest {
                     }
                 }
             }
+        }
+    }
+
+    @Test
+    public void testProtectFilename() throws Exception {
+        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<>();
+        testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
+        testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
+        testmap.add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
+        testmap.add(new SimpleImmutableEntry<>("Test@", "Test%40"));
+        testmap.add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
+        testmap.add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
+        testmap.add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
+        testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
+        testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
+
+        for (SimpleImmutableEntry<String,String> ent : testmap) {
+            String prot = protectPerforceFilename(ent.getKey());
+            assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
         }
     }
 }
