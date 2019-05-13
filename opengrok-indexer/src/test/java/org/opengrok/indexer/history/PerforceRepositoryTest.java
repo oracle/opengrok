@@ -41,6 +41,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
 /**
  * Do basic testing of the Perforce support
@@ -122,10 +123,8 @@ public class PerforceRepositoryTest {
         testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
         testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
 
-        // XXX: We don't need an instance here, to unit-test a static function?
-        PerforceRepository instance = new PerforceRepository();
         for (SimpleImmutableEntry<String,String> ent : testmap) {
-            String prot = instance.protectPerforceFilename(ent.getKey());
+            String prot = protectPerforceFilename(ent.getKey());
             assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
         }
     }
