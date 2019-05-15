@@ -235,7 +235,7 @@ public class PerforceRepository extends Repository {
         return null;
     }
     /**
-     * Parse internal rev number and returns it in a format suitable for P4 command-line.
+     * Parse internal rev number and return it in a format suitable for P4 command-line.
      * @param rev Internal rev number.
      * @return rev number formatted for P4 command-line.
      */
@@ -246,7 +246,7 @@ public class PerforceRepository extends Repository {
         return "@" + rev;
     }
     /**
-     * Parse rev numbers and returns it as a range in a format suitable for P4 command-line.
+     * Parse rev numbers and return it as a range in a format suitable for P4 command-line.
      * @param first First revision number.
      * @param last Last revision number.
      * @return rev number formatted for P4 command-line.
