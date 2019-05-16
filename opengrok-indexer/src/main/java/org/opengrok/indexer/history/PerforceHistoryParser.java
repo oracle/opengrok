@@ -32,9 +32,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
@@ -44,16 +47,22 @@ import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFil
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceHistoryParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerforceHistoryParser.class);
+
+    History parse(File file, Repository repos) throws HistoryException {
+        return this.parse(file, null, repos);
+    }
 
     /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
+     * @param sinceRevision the revision before the start of desired history
      * @param repos Pointer to the {@code PerforceRepository}
      * @return object representing the file's history
      * @throws HistoryException if a problem occurs while executing p4 command
      */
-    History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, String sinceRevision, Repository repos) throws HistoryException {
         History history;
 
         if (!PerforceRepository.isInP4Depot(file, false)) {
@@ -62,9 +71,16 @@ public class PerforceHistoryParser {
 
         try {
             if (file.isDirectory()) {
+                /* TODO: Do I need to think about revisions here? */
                 history = parseDirectory(file);
             } else {
-                history = getRevisions(file, null);
+                if (sinceRevision == null || "".equals(sinceRevision)) {
+                    /* Get all revisions */
+                    history = getRevisions(file, null);
+                } else {
+                    /* Get revisions between specified and head */
+                    history = getRevisionsSince(file, sinceRevision);
+                }
             }
         } catch (IOException ioe) {
             throw new HistoryException(ioe);
@@ -84,12 +100,54 @@ public class PerforceHistoryParser {
         return parseChanges(executor.getOutputReader());
     }
 
+    /**
+     * Retrieve the history of a given file.
+     *
+     * @param file the file to parse history for
+     * @param rev the revision at which to end history
+     * @return object representing the file's history
+     */
     public static History getRevisions(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("filelog");
         cmd.add("-lti");
         cmd.add(protectPerforceFilename(file.getName()) + PerforceRepository.getRevisionCmd(rev));
+        Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
+        executor.exec();
+
+        return parseFileLog(executor.getOutputReader());
+    }
+
+    /**
+     * Retrieve the history of a given file, beginning after the specified
+     * revision.
+     *
+     * @param file the file to parse history for
+     * @param rev the revision before the start of desired history
+     * @return object representing the file's history
+     */
+    public static History getRevisionsSince(File file, String rev) throws IOException {
+        ArrayList<String> cmd = new ArrayList<String>();
+        cmd.add("p4");
+        cmd.add("filelog");
+        cmd.add("-lti");
+        /* Okay.  This is a little cheeky.  getRevisionCmd(String,String) gives
+         * a range spec that _includes_ the first revision.  But, we don't want
+         * that in this case here.  So, presume that "rev" is always an integer
+         * for perforce, add one to it, then convert back into a string to
+         * pass into getRevisionCmd as a starting revision. */
+        try {
+            Integer irev = Integer.parseInt(rev);
+            irev += 1;
+            rev = irev.toString();
+        } catch (NumberFormatException e) {
+            LOGGER.log(Level.WARNING,
+                    "Unable to increment revision {}, NumberFormatException",
+                    new Object[]{rev});
+            /* Move along with rev unchanged... */
+        }
+        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev, "now"));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 
