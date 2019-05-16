@@ -140,20 +140,20 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <repository>
             <id>maven.org</id>
             <name>maven.org</name>
-            <url>http://repo.maven.apache.org/maven2/</url>
+            <url>https://repo.maven.apache.org/maven2/</url>
             <layout>default</layout>
         </repository>
         <repository>
             <id>apache.snapshots</id>
             <name>apache.snapshots</name>
-            <url>http://repository.apache.org/snapshots/</url>
+            <url>https://repository.apache.org/snapshots/</url>
             <layout>default</layout>
         </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>maven.org</id>
-            <url>http://repo.maven.apache.org/maven2/</url>
+            <url>https://repo.maven.apache.org/maven2/</url>
         </pluginRepository>
     </pluginRepositories>
 
