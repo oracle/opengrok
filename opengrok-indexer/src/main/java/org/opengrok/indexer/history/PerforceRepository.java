@@ -67,10 +67,10 @@ public class PerforceRepository extends Repository {
         /* the recognized escape sequence for perforce. */
         /* NOTE: Must replace '%' first, or that translation would */
         /* affect the output of the others. */
-        String t = name.replaceAll("%", "%25");
-        t = t.replaceAll("#", "%23");
-        t = t.replaceAll("\\*", "%2A");
-        t = t.replaceAll("@", "%40");
+        String t = name.replace("%", "%25");
+        t = t.replace("#", "%23");
+        t = t.replace("*", "%2A");
+        t = t.replace("@", "%40");
         if (!name.equals(t)) {
             LOGGER.log(Level.FINEST,
                        "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
