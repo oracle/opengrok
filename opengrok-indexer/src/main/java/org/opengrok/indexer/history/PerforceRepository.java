@@ -154,7 +154,7 @@ public class PerforceRepository extends Repository {
      * @param interactive interactive mode flag
      * @return true if the given file is in the depot, false otherwise
      */
-    public static boolean isInP4Depot(File file, boolean interactive) {
+    static boolean isInP4Depot(File file, boolean interactive) {
         boolean status = false;
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<>();
@@ -239,7 +239,7 @@ public class PerforceRepository extends Repository {
      * @param rev Internal rev number.
      * @return rev number formatted for P4 command-line.
      */
-    public static String getRevisionCmd(String rev) {
+    static String getRevisionCmd(String rev) {
         if (rev == null || "".equals(rev)) {
             return "";
         }
@@ -251,7 +251,7 @@ public class PerforceRepository extends Repository {
      * @param last Last revision number.
      * @return rev number formatted for P4 command-line.
      */
-    public static String getRevisionCmd(String first, String last) {
+    static String getRevisionCmd(String first, String last) {
         if ((first == null || "".equals(first)) &&
             ((last == null) || "".equals(last))) {
             return "";
