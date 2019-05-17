@@ -71,7 +71,7 @@ public class PerforceRepository extends Repository {
         t = t.replaceAll("#", "%23");
         t = t.replaceAll("\\*", "%2A");
         t = t.replaceAll("@", "%40");
-        if (name != t) {
+        if (!name.equals(t)) {
             LOGGER.log(Level.FINEST,
                        "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
                        new Object[]{name, t});
