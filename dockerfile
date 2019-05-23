@@ -47,11 +47,11 @@ RUN rm -rf /usr/local/tomcat/webapps/* && \
     echo '<% response.sendRedirect("/"); %>' > "/usr/local/tomcat/webapps/source/index.jsp"
 
 # disable all file logging
-ADD docker.logging.properties /usr/local/tomcat/conf/logging.properties
+ADD docker/logging.properties /usr/local/tomcat/conf/logging.properties
 RUN sed -i -e 's/Valve/Disabled/' /usr/local/tomcat/conf/server.xml
 
 # add our scripts
-ADD scripts /scripts
+ADD docker /scripts
 RUN chmod -R +x /scripts
 
 # run
