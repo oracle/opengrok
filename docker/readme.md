@@ -2,7 +2,7 @@
 
 # A Docker container for OpenGrok
 
-## OpenGrok from official source:
+## OpenGrok from official source
 
 Directly downloaded from official source:
 https://github.com/oracle/opengrok/releases/
@@ -15,7 +15,7 @@ The container is available from DockerHub at https://hub.docker.com/r/opengrok/d
 
 This image is simple wrapper around OpenGrok environment. The indexer and the web container are **not** tuned for large workloads. If you happen to have either large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like) or stable service or both, it is advisable to run the service standalone.
 
-## Additional info about the container:
+## Additional info about the container
 
 * Tomcat 9
 * JRE 8 (Required for Opengrok 1.0+)
@@ -27,11 +27,21 @@ repositories).
 
 The indexer/mirroring is set so that it does not log into files.
 
-## How to run:
+## How to run
 
-The container exports ports 8080 for OpenGrok.
+### From DockerHub
 
     docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok/docker:latest
+
+### Build image locally
+
+    docker build -t opengrok-dev .
+
+Then run the container,
+
+    docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok-dev
+
+The container exports ports 8080 for OpenGrok.
 
 The volume mounted to `/opengrok/src` should contain the projects you want to make searchable (in sub directories). You can use common revision control checkouts (git, svn, etc...) and OpenGrok will make history and blame information available.
 
