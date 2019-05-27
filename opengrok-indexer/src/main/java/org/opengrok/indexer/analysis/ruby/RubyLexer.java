@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.ruby;
@@ -26,104 +26,34 @@ package org.opengrok.indexer.analysis.ruby;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.Resettable;
+import org.opengrok.indexer.util.RegexUtils;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
-import org.opengrok.indexer.analysis.JFlexJointLexer;
-import org.opengrok.indexer.util.RegexUtils;
 
 /**
- * Represents an API for object's using {@link RubyLexHelper}
+ * Represents an abstract base class for Ruby lexers.
  */
-interface RubyLexer extends JFlexJointLexer {
-    void maybeIntraState();
-    void popHelper();
-}
-
-/**
- * Represents a helper for Ruby lexers
- */
-class RubyLexHelper implements Resettable {
+@SuppressWarnings("Duplicates")
+abstract class RubyLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
     // Using equivalent of {Local_nextchar} from RubyProductions.lexh
-    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
+    private static final Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_\u00160-\u0255]+");
 
-    private final RubyLexer lexer;
+    private RubyLexerData dHead;
 
-    private final int QUOxLxN;
-    private final int QUOxN;
-    private final int QUOxL;
-    private final int QUO;
-    private final int HEREinxN;
-    private final int HERExN;
-    private final int HEREin;
-    private final int HERE;
-    private final int SCOMMENT;
-    private final int POD;
+    private Stack<RubyLexerData> data;
 
-    private Queue<HereDocSettings> hereSettings;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
-     * operator name (e.g., "m" or "tr") is stored. Unlike {@code endqchar} it
-     * is not unset when the quote ends, because it is useful to indicate if
-     * quote modifier characters are expected.
-     */
-    private String qopname;
-
-    /**
-     * When matching a quoting construct like %w(), '', %[], etc., the
-     * terminating character is stored.
-     */
-    private char endqchar;
-
-    /**
-     * When matching a quoting construct like %[], %w(), %&lt;&gt; etc. that
-     * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
-     * nesting is tracked and {@code nendqchar} is incremented appropriately.
-     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
-     */
-    private char nestqchar;
-
-    /**
-     * When matching a quoting construct like %[], %w(), etc., the
-     * number of remaining end separators is stored. It starts at 1, and
-     * any nesting increases the value.
-     */
-    private int nendqchar;
-
-    /**
-     * When interpolating inside a quoting construct, the number of remaining
-     * '}' is stored. It starts at 1, and any nesting increases the value.
-     */
-    private int nendbrace;
-
-    /**
-     * When matching a quoting construct, a Pattern to identify collateral
-     * capture characters is stored.
-     */
-    private Pattern collateralCapture;
-
-    public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN, RubyLexer lexer,
-        int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
-        int pOD) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.QUOxLxN = qUOxLxN;
-        this.QUOxN = qUOxN;
-        this.QUOxL = qUOxL;
-        this.QUO = qUO;
-        this.HEREinxN = hEREinxN;
-        this.HERExN = hERExN;
-        this.HEREin = hEREin;
-        this.HERE = hERE;
-        this.SCOMMENT = sCOMMENT;
-        this.POD = pOD;
+    RubyLexer() {
+        dHead = new RubyLexerData();
     }
 
     /**
@@ -131,15 +61,11 @@ class RubyLexHelper implements Resettable {
      */
     @Override
     public void reset() {
-        collateralCapture = null;
-        endqchar = '\0';
-        if (hereSettings != null) {
-            hereSettings.clear();
+        super.reset();
+        dHead = new RubyLexerData();
+        if (data != null) {
+            data.clear();
         }
-        nendbrace = 0;
-        nendqchar = 0;
-        nestqchar = '\0';
-        qopname = null;
     }
 
     /**
@@ -153,14 +79,14 @@ class RubyLexHelper implements Resettable {
      */
     public boolean maybeEndQuote(String capture) {
         char c = capture.charAt(0);
-        if (c == endqchar) {
-            if (--nendqchar <= 0) {
-                endqchar = '\0';
-                nestqchar = '\0';
+        if (c == dHead.endqchar) {
+            if (--dHead.nendqchar <= 0) {
+                dHead.endqchar = '\0';
+                dHead.nestqchar = '\0';
                 return true;
             }
-        } else if (nestqchar != '\0' && c == nestqchar) {
-            ++nendqchar;
+        } else if (dHead.nestqchar != '\0' && c == dHead.nestqchar) {
+            ++dHead.nendqchar;
         }
         return false;
     }
@@ -171,7 +97,7 @@ class RubyLexHelper implements Resettable {
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (qopname) {
+        switch (dHead.qopname) {
             case "m": // named here a la Perl for the Ruby /pat/ operator
                 return true;
             default:
@@ -208,23 +134,23 @@ class RubyLexHelper implements Resettable {
         // with \b as a zero-width simple word boundary. Excise it into
         // `boundary'.
         String postop = capture;
-        qopname = "";
+        dHead.qopname = "";
         if (namelength > 0) {
-            qopname = capture.substring(0, namelength);
-            postop = capture.substring(qopname.length());
+            dHead.qopname = capture.substring(0, namelength);
+            postop = capture.substring(dHead.qopname.length());
         }
-        nendqchar = 1;
-        collateralCapture = null;
+        dHead.nendqchar = 1;
+        dHead.collateralCapture = null;
 
         char opc = postop.charAt(0);
         setEndQuoteChar(opc);
         setState(postop, nointerp);
 
         if (doWrite) {
-            lexer.offer(qopname);
-            lexer.skipSymbol();
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offer(postop);
+            offer(dHead.qopname);
+            skipSymbol();
+            disjointSpan(HtmlConsts.STRING_CLASS);
+            offer(postop);
         }
     }
 
@@ -243,12 +169,12 @@ class RubyLexHelper implements Resettable {
         }
 
         if (nointerp) {
-            state = nolink ? QUOxLxN : QUOxN;
+            state = nolink ? QUOxLxN() : QUOxN();
         } else {
-            state = nolink ? QUOxL : QUO;
+            state = nolink ? QUOxL() : QUO();
         }
-        lexer.maybeIntraState();
-        lexer.yypush(state);
+        maybeIntraState();
+        yypush(state);
     }
 
     /**
@@ -258,24 +184,24 @@ class RubyLexHelper implements Resettable {
     private void setEndQuoteChar(char opener) {
         switch (opener) {
             case '[':
-                nestqchar = opener;
-                endqchar = ']';
+                dHead.nestqchar = opener;
+                dHead.endqchar = ']';
                 break;
             case '<':
-                nestqchar = opener;
-                endqchar = '>';
+                dHead.nestqchar = opener;
+                dHead.endqchar = '>';
                 break;
             case '(':
-                nestqchar = opener;
-                endqchar = ')';
+                dHead.nestqchar = opener;
+                dHead.endqchar = ')';
                 break;
             case '{':
-                nestqchar = opener;
-                endqchar = '}';
+                dHead.nestqchar = opener;
+                dHead.endqchar = '}';
                 break;
             default:
-                nestqchar = '\0';
-                endqchar = opener;
+                dHead.nestqchar = '\0';
+                dHead.endqchar = opener;
                 break;
         }
     }
@@ -299,10 +225,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offer(lede);
+        offer(lede);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -324,10 +250,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerSymbol(lede, 0, false);
+        offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offer("/");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer("/");
     }
 
     /**
@@ -337,7 +263,7 @@ class RubyLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            lexer.offer(whsp);
+            offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
@@ -345,10 +271,10 @@ class RubyLexHelper implements Resettable {
                 off = i + 1;
             }
             while (numlf-- > 0) {
-                lexer.startNewLine();
+                startNewLine();
             }
             if (off < whsp.length()) {
-                lexer.offer(whsp.substring(off));
+                offer(whsp.substring(off));
             }
         }
     }
@@ -363,9 +289,9 @@ class RubyLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offer(capture);
-        if (hereSettings == null) {
-            hereSettings = new LinkedList<>();
+        offer(capture);
+        if (dHead.hereSettings == null) {
+            dHead.hereSettings = new LinkedList<>();
         }
 
         String remaining = capture;
@@ -415,12 +341,12 @@ class RubyLexHelper implements Resettable {
 
         int state;
         if (nointerp) {
-            state = indented ? HEREinxN : HERExN;
+            state = indented ? HEREinxN() : HERExN();
         } else {
-            state = indented ? HEREin : HERE;
+            state = indented ? HEREin() : HERE();
         }
         settings = new HereDocSettings(terminator, state);
-        hereSettings.add(settings);
+        dHead.hereSettings.add(settings);
     }
 
     /**
@@ -429,10 +355,10 @@ class RubyLexHelper implements Resettable {
      * @return true if a Here state was pushed
      */
     public boolean maybeStartHere() throws IOException {
-        if (hereSettings != null && hereSettings.size() > 0) {
-            HereDocSettings settings = hereSettings.peek();
-            lexer.yypush(settings.state);
-            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        if (dHead.hereSettings != null && dHead.hereSettings.size() > 0) {
+            HereDocSettings settings = dHead.hereSettings.peek();
+            yypush(settings.state);
+            disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -445,26 +371,27 @@ class RubyLexHelper implements Resettable {
      */
     public boolean maybeEndHere(String capture) throws IOException {
         String trimmed = capture.replaceFirst("^\\s+", "");
-        HereDocSettings settings = hereSettings.peek();
+        HereDocSettings settings = dHead.hereSettings.peek();
+        assert settings != null;
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            lexer.disjointSpan(null);
+            disjointSpan(null);
             didZspan = true;
-            hereSettings.remove();
+            dHead.hereSettings.remove();
         }
 
-        lexer.offer(capture);
+        offer(capture);
 
-        if (hereSettings.size() > 0) {
-            settings = hereSettings.peek();
-            lexer.yybegin(settings.state);
+        if (dHead.hereSettings.size() > 0) {
+            settings = dHead.hereSettings.peek();
+            yybegin(settings.state);
             if (didZspan) {
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                disjointSpan(HtmlConsts.STRING_CLASS);
             }
             return false;
         } else {
-            lexer.yypop();
+            yypop();
             return true;
         }
     }
@@ -473,7 +400,7 @@ class RubyLexHelper implements Resettable {
      * Resets the interpolation counter to 1.
      */
     public void interpop() {
-        nendbrace = 1;
+        dHead.nendbrace = 1;
     }
 
     /**
@@ -486,24 +413,24 @@ class RubyLexHelper implements Resettable {
      * @return true if the interpolation state should end
      */
     public boolean maybeEndInterpolation(String capture) throws IOException {
-        if (nendbrace <= 0) {
+        if (dHead.nendbrace <= 0) {
             return false;
         }
         if (capture.startsWith("}")) {
-            if (--nendbrace <= 0) {
+            if (--dHead.nendbrace <= 0) {
                 int rem = capture.length() - 1;
                 String opener = capture.substring(0, 1);
-                lexer.popHelper();
-                lexer.yypop();
-                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-                lexer.offer(opener);
+                popData();
+                yypop();
+                disjointSpan(HtmlConsts.STRING_CLASS);
+                offer(opener);
                 if (rem > 0) {
-                    lexer.yypushback(rem);
+                    yypushback(rem);
                 }
                 return true;
             }
         } else if (capture.startsWith("{")) {
-            ++nendbrace;
+            ++dHead.nendbrace;
         }
         return false;
     }
@@ -516,13 +443,13 @@ class RubyLexHelper implements Resettable {
         int o = 0, i;
         while (o < capture.length() && (i = capture.indexOf(SEP, o)) != -1) {
             String module = capture.substring(o, i);
-            lexer.offerSymbol(module, o, false);
-            lexer.offer(SEP);
+            offerSymbol(module, o, false);
+            offer(SEP);
             o = i + 2;
         }
         if (o < capture.length()) {
             String module = capture.substring(o);
-            lexer.offerSymbol(module, o, false);
+            offerSymbol(module, o, false);
         }
     }
 
@@ -550,45 +477,165 @@ class RubyLexHelper implements Resettable {
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (endqchar == '\0') {
+        if (dHead.endqchar == '\0') {
             return null;
         }
-        if (collateralCapture != null) {
-            return collateralCapture;
+        if (dHead.collateralCapture != null) {
+            return dHead.collateralCapture;
         }
 
         StringBuilder patb = new StringBuilder("[");
-        patb.append(Pattern.quote(String.valueOf(endqchar)));
-        if (nestqchar != '\0') {
-            patb.append(Pattern.quote(String.valueOf(nestqchar)));
+        patb.append(Pattern.quote(String.valueOf(dHead.endqchar)));
+        if (dHead.nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(dHead.nestqchar)));
         }
         patb.append("]");
         patb.append(RegexUtils.getNotFollowingEscapePattern());
-        collateralCapture = Pattern.compile(patb.toString());
-        return collateralCapture;
+        dHead.collateralCapture = Pattern.compile(patb.toString());
+        return dHead.collateralCapture;
     }
 
     /**
-     * Calls {@link RubyLexer#phLOC()} if the yystate is not SCOMMENT or POD.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT or POD.
      */
     public void chkLOC() {
-        int yystate = lexer.yystate();
-        if (yystate != SCOMMENT && yystate != POD) {
-            lexer.phLOC();
+        int yystate = yystate();
+        if (yystate != SCOMMENT() && yystate != POD()) {
+            phLOC();
         }
     }
 
-    private class HereDocSettings {
+    /**
+     * Subclasses must override to possibly set the INTRA state.
+     */
+    abstract void maybeIntraState();
+
+    void pushData() {
+        if (data == null) {
+            data = new Stack<>();
+        }
+        data.push(dHead);
+        dHead = new RubyLexerData();
+    }
+
+    void popData() {
+        dHead = data.pop();
+    }
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxLxN.
+     */
+    abstract int QUOxLxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxN.
+     */
+    abstract int QUOxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUOxL.
+     */
+    abstract int QUOxL();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent QUO.
+     */
+    abstract int QUO();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREinxN.
+     */
+    abstract int HEREinxN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERExN.
+     */
+    abstract int HERExN();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HEREin.
+     */
+    abstract int HEREin();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent HERE.
+     */
+    abstract int HERE();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent POD.
+     */
+    abstract int POD();
+
+    private static class HereDocSettings {
         private final String terminator;
         private final int state;
 
-        public HereDocSettings(String terminator, int state) {
+        HereDocSettings(String terminator, int state) {
             this.terminator = terminator;
             this.state = state;
         }
+    }
 
-        public String getTerminator() { return terminator; }
+    private static class RubyLexerData {
+        private Queue<HereDocSettings> hereSettings;
 
-        public int getState() { return state; }
+        /**
+         * When matching a quoting construct like qq[], q(), m//, s```, etc.,
+         * the operator name (e.g., "m" or "tr") is stored. Unlike
+         * {@code endqchar} it is not unset when the quote ends, because it is
+         * useful to indicate if quote modifier characters are expected.
+         */
+        private String qopname;
+
+        /**
+         * When matching a quoting construct like %w(), '', %[], etc., the
+         * terminating character is stored.
+         */
+        private char endqchar;
+
+        /**
+         * When matching a quoting construct like %[], %w(), %&lt;&gt; etc.
+         * that nest, the begin character ('[', '&lt;', '(', or '{') is stored
+         * so that nesting is tracked and {@code nendqchar} is incremented
+         * appropriately.  Otherwise, {@code nestqchar} is set to '\0' if no
+         * nesting occurs.
+         */
+        private char nestqchar;
+
+        /**
+         * When matching a quoting construct like %[], %w(), etc., the number
+         * of remaining end separators is stored. It starts at 1, and any
+         * nesting increases the value.
+         */
+        private int nendqchar;
+
+        /**
+         * When interpolating inside a quoting construct, the number of
+         * remaining '}' is stored. It starts at 1, and any nesting increases
+         * the value.
+         */
+        private int nendbrace;
+
+        /**
+         * When matching a quoting construct, a Pattern to identify collateral
+         * capture characters is stored.
+         */
+        private Pattern collateralCapture;
     }
 }

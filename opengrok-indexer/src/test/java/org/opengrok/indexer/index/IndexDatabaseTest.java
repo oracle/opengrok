@@ -50,6 +50,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -59,7 +60,6 @@ import org.opengrok.indexer.util.TestRepository;
 public class IndexDatabaseTest {
 
     private static TestRepository repository;
-    private static IndexerParallelizer parallelizer;
 
     @ClassRule
     public static ConditionalRunRule rule = new ConditionalRunRule();
@@ -78,27 +78,21 @@ public class IndexDatabaseTest {
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
 
-        parallelizer = new IndexerParallelizer(env);
-
         // Note that all tests in this class share the index created below.
         // Ergo, if they need to modify it, this has to be done in such a way
         // so that it does not affect other tests, no matter in which order
         // the tests are run.
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
-                env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                false, false, null, null, new ArrayList<String>(), false);
+                env, true, true,
+                false, null, null);
+        env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList(new String[]{"/c"})));
         indexer.doIndexerExecution(true, null, null);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         repository.destroy();
-
-        if (parallelizer != null) {
-            parallelizer.close();
-            parallelizer = null;
-        }
     }
 
     @Test
@@ -134,7 +128,7 @@ public class IndexDatabaseTest {
 
         for (String dirName : new String[]{"historycache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
-            File dataFile = new File(dataDir, fileName + ".gz");
+            File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
             if (shouldExist) {
                 Assert.assertTrue("file " + fileName + " not found in " + dirName,
@@ -149,12 +143,9 @@ public class IndexDatabaseTest {
     /**
      * Test removal of IndexDatabase. xrefs and history index entries after
      * file has been removed from a repository.
-     *
-     * @throws Exception 
      */
     @Test
     public void testCleanupAfterIndexRemoval() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         final int origNumFiles;
 
         String projectName = "git";
@@ -180,7 +171,7 @@ public class IndexDatabaseTest {
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
         file.delete();
         Assert.assertFalse("file " + fileName + " not removed", file.exists());
-        idb.update(parallelizer);
+        idb.update();
 
         // Check that the data for the file has been removed.
         checkDataExistence(projectName + File.separator + fileName, false);
@@ -190,7 +181,6 @@ public class IndexDatabaseTest {
     /**
      * This is a test of {@code populateDocument} so it should be rather in {@code AnalyzerGuruTest}
      * however it lacks the pre-requisite indexing phase.
-     * @throws IOException
      */
     @Test
     public void testIndexPath() throws IOException {

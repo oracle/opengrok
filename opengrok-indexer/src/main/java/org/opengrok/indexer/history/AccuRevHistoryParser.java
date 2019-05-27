@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -27,12 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -99,7 +97,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        DateFormat df = repository.getDateFormat();
         String line;
         String user;
         Date date;
@@ -134,7 +131,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
             if (line.startsWith("t")) {             // found transaction
 
-                String data[] = line.split("; ");
+                String[] data = line.split("; ");
                 entry = new HistoryEntry();
 
                 user = data[3].replaceFirst("user: ", "");
@@ -143,7 +140,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(user);
 
                 try {
-                    date = df.parse(data[2]);
+                    date = repository.parse(data[2]);
                     entry.setDate(date);
                 } catch (ParseException pe) {
                     //
@@ -159,7 +156,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
 
             } else if (line.startsWith("  v")) {  // found version
 
-                String data[] = line.split("\\s+");
+                String[] data = line.split("\\s+");
                 entry.setRevision(data[2]);
                 entry.setActive(true);
                 entries.add(entry);

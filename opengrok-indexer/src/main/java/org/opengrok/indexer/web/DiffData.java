@@ -19,12 +19,12 @@
 
 /*
  * Copyright 2009 - 2011 Jens Elkner.
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.suigeneris.jrcs.diff.Revision;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 
 /**
  * A simple container to store the data required to generated a view of diffs
@@ -41,14 +41,14 @@ public class DiffData {
     /** the HTML escaped filename used */
     public String filename;
     /** the genre of the requested diff */
-    public Genre genre;
+    public AbstractAnalyzer.Genre genre;
     /** the original and new revision container */
     public Revision revision;
     /** the URI encoded parameter values of the request. {@code param[0]}
      * belongs to {@code r1}, {@code param[1]} to {@code r2}. */
-    public String param[];
+    public String[] param;
     /** the revision names extracted from {@link #param} */
-    public String rev[];
+    public String[] rev;
     /** the content of the original and new file line-by-line corresponding
      * with {@link #rev} */
     public String[][] file;

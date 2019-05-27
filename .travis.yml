@@ -1,68 +1,82 @@
 language: java
 cache:
   directories:
-  - '$HOME/.m2'
-  - '$HOME/.sonar/cache'
+  - "$HOME/.m2"
+  - "$HOME/.sonar/cache"
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "O_cda5pWDBAP-O3_0nG5RQ"
+  # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+  # via the "travis encrypt" command using the project repo's public key.
+  - secure: O_cda5pWDBAP-O3_0nG5RQ
 addons:
   coverity_scan:
     project:
-      name: "OpenGrok/OpenGrok"
-      description: "Build submitted via Travis CI"
-      branch_pattern: "coverity_scan"
-      #    build_command_prepend: "mvn clean"
-      build_command: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"
+      name: OpenGrok/OpenGrok
+      description: Build submitted via Travis CI
+      branch_pattern: coverity_scan
+      build_command: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile
   sonarcloud:
-    organization: "opengrok"
+    organization: opengrok
     token:
-      secure: "ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0="
+      secure: ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0=
 jobs:
   include:
-    - stage: test
-      os: linux
-      dist: trusty
-      sudo: required
-      jdk: oraclejdk8
-      install: true
-      script: dev/main
-      before_install: dev/before_install
-      before_script: dev/before
-    - stage: test
-      os: osx
-      osx_image: xcode8.3
-      install: true
-      script: dev/main
-      before_install: dev/before_install
-      before_script: dev/before
-    - stage: deploy
-      name: Github Release
-      if: repo = "oracle/opengrok" AND tag IS present
-      before_install: dev/before_install
-      install: true
-      script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
-      deploy:
-        # Pre-release
-        - provider: releases
-          name: $TRAVIS_TAG
-          prerelease: true
-          api_key:
-            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-          skip_cleanup: true
-          on:
-            condition: $TRAVIS_TAG =~ rc[0-9]+$
-            all_branches: true
-        # Full release
-        - provider: releases
-          name: $TRAVIS_TAG
-          api_key:
-            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-          skip_cleanup: true
-          on:
-            condition: ! $TRAVIS_TAG =~ rc[0-9]+$
-            all_branches: true
+  - stage: test
+    name: Linux + Oracle JDK 8
+    os: linux
+    dist: trusty
+    sudo: required
+    jdk: oraclejdk8
+    install: true
+    script: dev/main
+    before_install: dev/before_install
+    before_script: dev/before
+  - stage: test
+    name: Linux + Oracle JDK 11
+    os: linux
+    dist: trusty
+    sudo: required
+    jdk: oraclejdk11
+    install: true
+    script: dev/main
+    before_install: dev/before_install
+    before_script: dev/before
+  - stage: test
+    name: macOS + Oracle JDK 8
+    os: osx
+    osx_image: xcode8.3
+    install: true
+    script: dev/main
+    before_install: dev/before_install
+    before_script: dev/before
+  - stage: deploy
+    name: Github Release
+    if: repo = "oracle/opengrok" AND tag IS present
+    before_install: dev/before_install
+    install: true
+    script: dev/pre-deploy.sh
+    deploy:
+    - provider: releases
+      name: "$TRAVIS_TAG"
+      prerelease: true
+      api_key:
+        secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+      file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+      skip_cleanup: true
+      on:
+        condition: "$TRAVIS_TAG =~ rc[0-9]+$"
+        all_branches: true
+    - provider: releases
+      name: "$TRAVIS_TAG"
+      api_key:
+        secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+      file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+      skip_cleanup: true
+      on:
+        condition: "$TRAVIS_TAG =~ ^[0-9\\.]+$"
+        all_branches: true
+  - stage: post_deploy
+    name: Post deploy
+    if: repo = "oracle/opengrok" AND tag IS present
+    script: dev/post-deploy.sh
+    install: true

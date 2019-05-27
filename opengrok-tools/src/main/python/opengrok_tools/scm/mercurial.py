@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
@@ -37,14 +37,14 @@ class MercurialRepository(Repository):
             self.command = which("hg")
 
         if not self.command:
-            self.logger.error("Cannot get hg command")
-            raise OSError
+            raise RepositoryException("Cannot get hg command")
 
     def get_branch(self):
         hg_command = [self.command, "branch"]
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to get branch")
@@ -73,6 +73,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
@@ -86,6 +87,7 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull and update")
@@ -107,13 +109,15 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        self.logger.debug(cmd.getoutputstr())
-        if cmd.getstate() != Command.FINISHED:
+        self.logger.info("output of {}:".format(cmd))
+        self.logger.info(cmd.getoutputstr())
+        retcode = cmd.getretcode()
+        if cmd.getstate() != Command.FINISHED or retcode not in [0, 1]:
             cmd.log_error("failed to perform incoming")
             raise RepositoryException('failed to perform incoming command '
                                       'for repository {}'.format(self))
 
-        if cmd.getretcode() == 0:
+        if retcode == 0:
             return True
         else:
             return False

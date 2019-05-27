@@ -80,6 +80,7 @@ public class LuceneCompatibilityTest extends TestCase {
      * Set up the test environment with repositories and a cache instance.
      */
     @Override
+    @SuppressWarnings("rawtypes")
     protected void setUp() throws Exception {
         guru = new AnalyzerGuru();
         Class<?> c = Class.forName(LUCENE_TEST_CLASS);
@@ -92,9 +93,10 @@ public class LuceneCompatibilityTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
+    @SuppressWarnings("rawtypes")
     public void testCompatibility() throws Exception, IOException, IllegalAccessException, IllegalArgumentException {
         for (Iterator it = guru.getAnalyzerFactories().iterator(); it.hasNext();) {
-            FileAnalyzerFactory fa = (FileAnalyzerFactory) it.next();
+            AnalyzerFactory fa = (AnalyzerFactory) it.next();
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();

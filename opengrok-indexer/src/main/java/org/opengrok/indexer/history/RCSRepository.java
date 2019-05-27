@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -33,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -68,15 +70,19 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
         try {
             File file = new File(parent, basename);
             File rcsFile = getRCSFile(file);
-            return new RCSget(rcsFile.getPath(), rev);
+            try (InputStream in = new RCSget(rcsFile.getPath(), rev)) {
+                copyBytes(sink, in);
+            }
+            return true;
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE,
                     "Failed to retrieve revision " + rev + " of " + basename, ioe);
-            return null;
+            return false;
         }
     }
 

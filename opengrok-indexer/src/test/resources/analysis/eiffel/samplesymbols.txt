@@ -464,3 +464,11 @@ INITIAL
 output			# 709:	output (a_text: like text)
 a_text
 text
+special_chars
+value
+value
+abc
+value
+value
+value
+value

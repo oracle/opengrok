@@ -1,0 +1,6 @@
+[extensions]
+eol =
+
+[eol]
+native = LF
+only-consistent = True

@@ -18,11 +18,11 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -37,14 +37,14 @@ class CVSRepository(Repository):
             self.command = which("cvs")
 
         if not self.command:
-            self.logger.error("Cannot get cvs command")
-            raise OSError
+            raise RepositoryException("Cannot get cvs command")
 
     def reposync(self):
         hg_command = [self.command, "update", "-dP"]
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform update: command {}"

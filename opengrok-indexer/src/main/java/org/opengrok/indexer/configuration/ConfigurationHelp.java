@@ -52,6 +52,7 @@ public class ConfigurationHelp {
      * @return a defined instance
      * @throws RuntimeException if an error occurs producing the sample
      */
+    @SuppressWarnings("rawtypes")
     public static String getSamples()
             throws RuntimeException {
 
@@ -103,6 +104,7 @@ public class ConfigurationHelp {
         return b.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     private static List<Method> getSetters(Class klass) {
         List<Method> res = new ArrayList<>();
         Method[] methods = klass.getDeclaredMethods();
@@ -121,6 +123,7 @@ public class ConfigurationHelp {
         return res;
     }
 
+    @SuppressWarnings("rawtypes")
     private static Object getSampleValue(Method setter, Object defaultValue) {
 
         Class paramType = setter.getParameterTypes()[0];

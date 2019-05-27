@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  * (derived from Ctags.java).
  */
@@ -99,13 +99,13 @@ public class MandocRunner {
             command.add("os=" + oo);
         }
 
-        if (LOGGER.isLoggable(Level.FINE)) {
+        if (LOGGER.isLoggable(Level.FINER)) {
             StringBuilder sb = new StringBuilder();
             command.forEach((s) -> {
                 sb.append(s).append(" ");
             });
             String cmd = sb.toString();
-            LOGGER.log(Level.FINE, "Executing mandoc command [{0}]", cmd);
+            LOGGER.log(Level.FINER, "Executing mandoc command [{0}]", cmd);
         }
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -122,8 +122,7 @@ public class MandocRunner {
 
         errThread = new Thread(() -> {
             // implicitly capture `errorStream' for the InputStreamReader
-            try (final BufferedReader error = new BufferedReader(
-                new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+            try (BufferedReader error = new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     LOGGER.log(Level.WARNING, "Error from mandoc: {0}", s);

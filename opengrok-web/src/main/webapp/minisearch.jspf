@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
@@ -96,7 +96,7 @@ org.opengrok.indexer.web.Util"%><%
             %>"><span id="download"></span>Download</a></li>
 	<%
     }
-        %><li><input type="text" id="search" name="q" class="q" /></li>
+        %><li><input type="text" id="search" name="full" class="q" /></li>
             <li><input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();

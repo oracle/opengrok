@@ -53,6 +53,7 @@ public class GroupsTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testDeleteGroup() {
         Set<Group> groups = cfg.getGroups();
 
@@ -76,6 +77,7 @@ public class GroupsTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testAddGroup() {
         Set<Group> groups = cfg.getGroups();
         Group grp;
@@ -96,6 +98,7 @@ public class GroupsTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testAddGroupToParent() {
         Set<Group> groups = cfg.getGroups();
         Group grp;
@@ -125,6 +128,7 @@ public class GroupsTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testModifyGroup() {
         Set<Group> groups = cfg.getGroups();
         Group grp;
@@ -163,6 +167,7 @@ public class GroupsTest {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void testSingleMatch(Set<Group> groups, int expectedlines, String match) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(os);
@@ -179,6 +184,7 @@ public class GroupsTest {
         );
     }
 
+    @SuppressWarnings("rawtypes")
     private void invokeMethod(String name, Class[] params, Object[] values) {
         try {
             Method method = Groups.class.getDeclaredMethod(name, params);

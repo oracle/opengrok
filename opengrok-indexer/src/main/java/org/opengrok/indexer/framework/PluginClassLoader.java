@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.authorization;
+package org.opengrok.indexer.framework;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,41 +37,44 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Class loader for authorization plugins.
+ * Class loader for plugins from .class and .jar files.
  *
  * @author Krystof Tulinger
  */
-public class AuthorizationPluginClassLoader extends ClassLoader {
+public class PluginClassLoader extends ClassLoader {
 
+    @SuppressWarnings("rawtypes")
     private final Map<String, Class> cache = new HashMap<>();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
-    private final static String[] CLASS_WHITELIST = new String[]{
-        "org.opengrok.indexer.configuration.Group",
-        "org.opengrok.indexer.configuration.Project",
-        "org.opengrok.indexer.configuration.RuntimeEnvironment",
-        "org.opengrok.indexer.authorization.IAuthorizationPlugin",
-        "org.opengrok.indexer.authorization.plugins.*",
-        "org.opengrok.indexer.util.*",
-        "org.opengrok.indexer.logger.*"
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginClassLoader.class);
+    private static final String[] CLASS_WHITELIST = new String[]{
+            "org.opengrok.indexer.configuration.Group",
+            "org.opengrok.indexer.configuration.Project",
+            "org.opengrok.indexer.configuration.RuntimeEnvironment",
+            "org.opengrok.indexer.authorization.IAuthorizationPlugin",
+            "org.opengrok.indexer.authorization.plugins.*",
+            "org.opengrok.indexer.authorization.AuthorizationException",
+            "org.opengrok.indexer.util.*",
+            "org.opengrok.indexer.logger.*"
     };
 
-    private final static String[] PACKAGE_BLACKLIST = new String[]{
-        "java",
-        "javax",
-        "org.w3c",
-        "org.xml",
-        "org.omg",
-        "sun"
+    private static final String[] PACKAGE_BLACKLIST = new String[]{
+            "java",
+            "javax",
+            "org.w3c",
+            "org.xml",
+            "org.omg",
+            "sun"
     };
 
     private final File directory;
 
-    public AuthorizationPluginClassLoader(File directory) {
-        super(AuthorizationPluginClassLoader.class.getClassLoader());
+    public PluginClassLoader(File directory) {
+        super(PluginClassLoader.class.getClassLoader());
         this.directory = directory;
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClassFromJar(String classname) throws ClassNotFoundException {
         File[] jars = directory.listFiles(new FilenameFilter() {
             @Override
@@ -88,7 +91,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
         for (File f : jars) {
             try (JarFile jar = new JarFile(f)) {
-                String filename = classname.replace('.', File.separatorChar) + ".class";
+                // jar files always use / separator
+                String filename = classname.replace('.', '/') + ".class";
                 JarEntry entry = (JarEntry) jar.getEntry(filename);
                 if (entry != null && entry.getName().endsWith(".class")) {
                     try (InputStream is = jar.getInputStream(entry)) {
@@ -96,8 +100,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                         Class c = defineClass(classname, bytes, 0, bytes.length);
                         LOGGER.log(Level.FINE, "Class \"{0}\" found in file \"{1}\"",
                                 new Object[]{
-                                    classname,
-                                    f.getAbsolutePath()
+                                        classname,
+                                        f.getAbsolutePath()
                                 });
                         return c;
                     }
@@ -105,12 +109,13 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Loading class threw an exception:", ex);
             } catch (Throwable ex) {
-                LOGGER.log(Level.SEVERE, "Loading class threw an unknown exception:", ex);
+                LOGGER.log(Level.SEVERE, "Loading class threw an unknown exception", ex);
             }
         }
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClassFromFile(String classname) throws ClassNotFoundException {
         try {
             String filename = classname.replace('.', File.separatorChar) + ".class";
@@ -121,8 +126,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 Class c = defineClass(classname, bytes, 0, bytes.length);
                 LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
                         new Object[]{
-                            classname,
-                            f.getAbsolutePath()
+                                classname,
+                                f.getAbsolutePath()
                         });
                 return c;
             }
@@ -174,7 +179,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
     /**
      * Loads the class with given name.
-     *
+     * <p>
      * Order of lookup:
      * <ol>
      * <li>already loaded classes </li>
@@ -182,14 +187,14 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .class files</li>
      * <li>loading from .jar files</li>
      * </ol>
-     *
+     * <p>
      * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br>
      * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
      * @return loaded class or null
      * @throws ClassNotFoundException if class is not found
-     * @throws SecurityException if the loader cannot access the class
+     * @throws SecurityException      if the loader cannot access the class
      */
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException, SecurityException {
@@ -198,7 +203,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
     /**
      * Loads the class with given name.
-     *
+     * <p>
      * Order of lookup:
      * <ol>
      * <li>already loaded classes </li>
@@ -206,17 +211,18 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .class files</li>
      * <li>loading from .jar files</li>
      * </ol>
-     *
+     * <p>
      * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br>
      * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
-     * @param name class name
+     * @param name      class name
      * @param resolveIt if the class should be resolved
      * @return loaded class or null
      * @throws ClassNotFoundException if class is not found
-     * @throws SecurityException if the loader cannot access the class
+     * @throws SecurityException      if the loader cannot access the class
      */
     @Override
+    @SuppressWarnings("rawtypes")
     public Class loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
         Class c;
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -35,6 +35,7 @@ import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
+import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.model.SuggesterData;
 import org.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;
@@ -50,6 +51,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -95,6 +97,7 @@ public final class SuggesterController {
      */
     @GET
     @Authorized
+    @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
     public Result getSuggestions(@Valid @BeanParam final SuggesterQueryData data) throws ParseException {
         Instant start = Instant.now();
@@ -159,16 +162,29 @@ public final class SuggesterController {
      */
     @GET
     @Path("/config")
+    @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
         return env.getSuggesterConfig();
+    }
+
+    @PUT
+    @Path("/rebuild")
+    public void rebuild() {
+        new Thread(() -> suggester.rebuild()).start();
+    }
+
+    @PUT
+    @Path("/rebuild/{project}")
+    public void rebuild(@PathParam("project") final String project) {
+        new Thread(() -> suggester.rebuild(project)).start();
     }
 
     /**
      * Initializes the search data used by suggester to perform most popular completion. The passed {@code urls} are
      * decomposed into single terms which search counts are then increased by 1.
      * @param urls list of URLs in JSON format, e.g.
-     * {@code ["http://demo.opengrok.org/search?project=opengrok&q=test"]}
+     * {@code ["http://demo.opengrok.org/search?project=opengrok&full=test"]}
      */
     @POST
     @Path("/init/queries")
@@ -214,7 +230,7 @@ public final class SuggesterController {
         QueryBuilder builder = new QueryBuilder();
 
         switch (field) {
-            case "q":
+            case QueryBuilder.FULL:
                 builder.setFreetext(value);
                 break;
             case QueryBuilder.DEFS:
@@ -259,6 +275,7 @@ public final class SuggesterController {
      * @param field field for which to return the data
      * @param page which page of data to retrieve
      * @param pageSize number of results to return
+     * @param all return all pages
      * @return list of terms with their popularity
      */
     @GET

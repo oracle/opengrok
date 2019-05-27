@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -58,9 +58,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -74,6 +74,7 @@ import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
@@ -105,6 +106,7 @@ public final class PageConfig {
     public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
 
     // query parameters
+    protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
 
@@ -128,8 +130,8 @@ public final class PageConfig {
     private Boolean annotate;
     private Annotation annotation;
     private Boolean hasHistory;
-    private static final EnumSet<Genre> txtGenres
-            = EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
+    private static final EnumSet<AbstractAnalyzer.Genre> txtGenres
+            = EnumSet.of(AbstractAnalyzer.Genre.DATA, AbstractAnalyzer.Genre.PLAIN, AbstractAnalyzer.Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private List<String> dirFileList;
@@ -276,7 +278,7 @@ public final class PageConfig {
                     }
                 }
 
-                if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
+                if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
                     return data;
                 }
 
@@ -596,7 +598,7 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
+            queryBuilder = new QueryBuilder().setFreetext(req.getParameter(QueryBuilder.FULL))
                     .setDefs(req.getParameter(QueryBuilder.DEFS))
                     .setRefs(req.getParameter(QueryBuilder.REFS))
                     .setPath(req.getParameter(QueryBuilder.PATH))
@@ -805,6 +807,8 @@ public final class PageConfig {
      * <li>If there is no project in the configuration an empty set is returned. Otherwise:</li>
      * <li>If there is only one project in the configuration,
      * this one gets returned (no matter, what the request actually says). Otherwise</li>
+     * <li>If the request parameter {@code ALL_PROJECT_SEARCH} contains a true value,
+     * all projects are added to searching. Otherwise:</li>
      * <li>If the request parameter {@code PROJECT_PARAM_NAME} contains any available project,
      * the set with invalid projects removed gets returned. Otherwise:</li>
      * <li>If the request parameter {@code GROUP_PARAM_NAME} contains any available group,
@@ -818,6 +822,7 @@ public final class PageConfig {
      * </ol>
      *
      * @return a possible empty set of project names but never {@code null}.
+     * @see #ALL_PROJECT_SEARCH
      * @see #PROJECT_PARAM_NAME
      * @see #GROUP_PARAM_NAME
      * @see #OPEN_GROK_PROJECT
@@ -825,7 +830,7 @@ public final class PageConfig {
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects(PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
+                    = getRequestedProjects(ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
@@ -836,7 +841,7 @@ public final class PageConfig {
         if (value == null || value.length() == 0) {
             return;
         }
-        String p[] = COMMA_PATTERN.split(value);
+        String[] p = COMMA_PATTERN.split(value);
         for (String p1 : p) {
             if (p1.length() != 0) {
                 result.add(p1);
@@ -873,11 +878,11 @@ public final class PageConfig {
      * Get the parameter values for the given name. Splits comma separated
      * values automatically into a list of Strings.
      *
-     * @param name name of the parameter.
+     * @param paramName name of the parameter.
      * @return a possible empty list.
      */
     private List<String> getParamVals(String paramName) {
-        String vals[] = req.getParameterValues(paramName);
+        String[] vals = req.getParameterValues(paramName);
         List<String> res = new ArrayList<>();
         if (vals != null) {
             for (int i = vals.length - 1; i >= 0; i--) {
@@ -891,13 +896,15 @@ public final class PageConfig {
      * Same as {@link #getRequestedProjects()}, but with a variable cookieName
      * and parameter name.
      *
-     * @param projectParamName the name of the request parameter corresponding to a project name.
-     * @param groupParamName   the name of the request parameter corresponding to a group name
-     * @param cookieName       name of the cookie which possible contains project
-     *                         names used as fallback
+     * @param searchAllParamName the name of the request parameter corresponding to search all projects.
+     * @param projectParamName   the name of the request parameter corresponding to a project name.
+     * @param groupParamName     the name of the request parameter corresponding to a group name
+     * @param cookieName         name of the cookie which possible contains project
+     *                           names used as fallback
      * @return set of project names. Possibly empty set but never {@code null}.
      */
     protected SortedSet<String> getRequestedProjects(
+            String searchAllParamName,
             String projectParamName,
             String groupParamName,
             String cookieName
@@ -910,62 +917,68 @@ public final class PageConfig {
             return projectNames;
         }
 
-        /**
-         * Use a project determined directly from the URL
-         */
-        if (getProject() != null) {
+        if (Boolean.parseBoolean(req.getParameter(searchAllParamName))) {
+            return getProjectHelper()
+                    .getAllProjects()
+                    .stream()
+                    .map(Project::getName)
+                    .collect(Collectors.toCollection(TreeSet::new));
+        }
+
+        // Use a project determined directly from the URL
+        if (getProject() != null && getProject().isIndexed()) {
             projectNames.add(getProject().getName());
             return projectNames;
         }
 
-        /**
-         * Use a project if the application has only single project.
-         */
+        // Use a project if there is just a single project.
         if (projects.size() == 1) {
             Project p = projects.get(0);
-            if (authFramework.isAllowed(req, p)) {
+            if (p.isIndexed() && authFramework.isAllowed(req, p)) {
                 projectNames.add(p.getName());
             }
             return projectNames;
         }
 
-        /**
-         * Add all projects which match the project parameter name values
-         */
+        // Add all projects which match the project parameter name values/
         List<String> names = getParamVals(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
-            if (project != null && authFramework.isAllowed(req, project)) {
+            if (project != null && project.isIndexed() && authFramework.isAllowed(req, project)) {
                 projectNames.add(projectName);
             }
         }
 
-        /**
-         * Add all projects which are part of a group that matches the group parameter name
-         */
+        // Add all projects which are part of a group that matches the group parameter name.
         names = getParamVals(groupParamName);
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
             if (group != null) {
-                projectNames.addAll(getProjectHelper().getAllGrouped(group).stream().map(Project::getName).collect(Collectors.toSet()));
+                projectNames.addAll(getProjectHelper().getAllGrouped(group)
+                                                      .stream()
+                                                      .filter(project -> project.isIndexed())
+                                                      .map(Project::getName)
+                                                      .collect(Collectors.toSet()));
             }
         }
 
+        // Add projects based on cookie.
         if (projectNames.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
                 Project x = Project.getByName(s);
-                if (x != null && authFramework.isAllowed(req, x)) {
+                if (x != null && x.isIndexed() && authFramework.isAllowed(req, x)) {
                     projectNames.add(s);
                 }
             }
         }
 
+        // Add default projects.
         if (projectNames.isEmpty()) {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
                 for (Project project : defaultProjects) {
-                    if (authFramework.isAllowed(req, project)) {
+                    if (project.isIndexed() && authFramework.isAllowed(req, project)) {
                         projectNames.add(project.getName());
                     }
                 }
@@ -1181,7 +1194,7 @@ public final class PageConfig {
     private File checkFile(File dir, String name, boolean compressed) {
         File f;
         if (compressed) {
-            f = new File(dir, name + ".gz");
+            f = new File(dir, TandemPath.join(name, ".gz"));
             if (f.exists() && f.isFile()
                     && f.lastModified() >= resourceFile.lastModified()) {
                 return f;
@@ -1202,7 +1215,7 @@ public final class PageConfig {
         }
         File f;
         if (compressed) {
-            f = new File(dir, name + ".gz");
+            f = new File(dir, TandemPath.join(name, ".gz"));
             if (f.exists() && f.isFile()
                     && f.lastModified() >= lresourceFile.lastModified()) {
                 return f;
@@ -1567,7 +1580,7 @@ public final class PageConfig {
     /**
      * Get basename of the path or "/" if the path is empty.
      * This is used for setting title of various pages.
-     * @param path
+     * @param path path
      * @return short version of the path
      */
     public String getShortPath(String path) {
@@ -1595,10 +1608,10 @@ public final class PageConfig {
      * @return string used for setting page title of search results page
      */
     public String getSearchTitle() {
-        String title = new String();
+        String title = "";
 
-        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
-            title += req.getParameter("q") + " (full)";
+        if (req.getParameter(QueryBuilder.FULL) != null && !req.getParameter(QueryBuilder.FULL).isEmpty()) {
+            title += req.getParameter(QueryBuilder.FULL) + " (full)";
         }
         if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
             title = addTitleDelimiter(title);
@@ -1622,7 +1635,7 @@ public final class PageConfig {
                 title += " ";
             }
             title += "in projects: ";
-            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            String[] projects = req.getParameterValues(QueryBuilder.PROJECT);
             title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
         }
 
@@ -1693,15 +1706,17 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
+     * </p>
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
      * <li>last timestamp for index</li>
      * <li>OpenGrok current deployed version</li>
      * </ul>
-     * <p>
+     *
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
+     * </p>
      *
      * @param request the http request containing the headers
      * @param response the http response for setting the headers

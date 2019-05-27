@@ -86,6 +86,28 @@ public class PageConfigRequestedProjectsTest {
     }
 
     @Test
+    public void testNonIndexedProject() {
+        env.getProjects().get("project-1").setIndexed(false);
+        final HttpServletRequest request = createRequest(new String[]{"project-1"}, null);
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+
+        env.getProjects().get("project-1").setIndexed(true);
+    }
+
+    @Test
+    public void testMultipleWithNonIndexedProject() {
+        env.getProjects().get("project-1").setIndexed(false);
+        final HttpServletRequest request = createRequest(new String[]{"project-1", "project-3", "project-6"}, null);
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("project-3", "project-6")), cfg.getRequestedProjects());
+
+        env.getProjects().get("project-1").setIndexed(true);
+    }
+
+    @Test
     public void testSingleGroup1() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
 
@@ -142,12 +164,23 @@ public class PageConfigRequestedProjectsTest {
                 "project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
 
+    @Test
+    public void testNonIndexedInGroup() {
+        env.getProjects().get("project-1").setIndexed(false);
+        final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("project-2", "project-3")), cfg.getRequestedProjects());
+
+        env.getProjects().get("project-1").setIndexed(true);
+    }
+
     /**
      * Assumes that there is no defaultProjects and no cookie set up.
      */
     @Test
     public void testNonExistentProject() {
-        final HttpServletRequest request = createRequest(null, new String[]{"no-project"});
+        final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
         Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
@@ -162,6 +195,42 @@ public class PageConfigRequestedProjectsTest {
 
         final PageConfig cfg = PageConfig.get(request);
         Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjects() {
+        final HttpServletRequest request = createRequest(null, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjectsOverrideProjectParam() {
+        final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllProjectsOverrideGroupParam() {
+        final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+    }
+
+    @Test
+    public void testSelectAllOverrideNonExistentProject() {
+        final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
+        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+
+        final PageConfig cfg = PageConfig.get(request);
+        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     /**

@@ -18,12 +18,14 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search;
+
+import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,20 +49,19 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import org.json.simple.JSONArray;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.Util;
-
-import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
+import org.opengrok.indexer.web.messages.MessagesUtils;
 
 /**
  * @author Chandan slightly rewritten by Lubos Kosco
@@ -116,9 +117,9 @@ public final class Results {
             int len = r.read(content);
             return new String(content, 0, len);
         } catch (Exception e) {
-            LOGGER.log(
-                    Level.WARNING, "An error reading tags from " + basedir + path
-                    + (compressed ? ".gz" : ""), e);
+            String fnm = compressed ? TandemPath.join(basedir + path, ".gz") :
+                    basedir + path;
+            LOGGER.log(Level.WARNING, "An error reading tags from " + fnm, e);
         }
         return "";
     }
@@ -127,13 +128,14 @@ public final class Results {
     private static Reader getXrefReader(
                     File basedir, String path, boolean compressed)
             throws IOException {
-        /**
+        /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
         if (compressed) {
             return new BufferedReader(IOUtils.createBOMStrippedReader(
-                    new GZIPInputStream(new FileInputStream(new File(basedir, path + ".gz")))));
+                    new GZIPInputStream(new FileInputStream(new File(basedir,
+                            TandemPath.join(path, ".gz"))))));
         } else {
             return new BufferedReader(IOUtils.createBOMStrippedReader(
                     new FileInputStream(new File(basedir, path))));
@@ -157,9 +159,9 @@ public final class Results {
      * @param sh search helper which has all required fields set
      * @param start index of the first hit to print
      * @param end index of the last hit to print
-     * @throws HistoryException
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws HistoryException history exception
+     * @throws IOException I/O exception
+     * @throws ClassNotFoundException class not found
      */
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
             long end)
@@ -189,9 +191,10 @@ public final class Results {
                 out.write(sh.desc.get(parent));
                 out.write("</i>");
             }
-            JSONArray messages;
-            if ((p = Project.getProject(parent)) != null
-                    && (messages = Util.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG)).size() > 0) {
+
+            p = Project.getProject(parent);
+            String messages = MessagesUtils.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG);
+            if (p != null && !messages.isEmpty()) {
                 out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
@@ -225,17 +228,17 @@ public final class Results {
                 out.write("</a>");
                 out.write("</td><td><code class=\"con\">");
                 if (sh.sourceContext != null) {
-                    Genre genre = Genre.get(doc.get("t"));
-                    if (Genre.XREFABLE == genre && sh.summarizer != null) {
+                    AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get("t"));
+                    if (AbstractAnalyzer.Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
                         // instead of summarizer, we'd also get rid of
                         // apache lucene in whole source ...
                         out.write(sh.summarizer.getSummary(xtags).toString());
-                    } else if (Genre.HTML == genre && sh.summarizer != null) {
+                    } else if (AbstractAnalyzer.Genre.HTML == genre && sh.summarizer != null) {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
-                    } else if (genre == Genre.PLAIN) {
+                    } else if (genre == AbstractAnalyzer.Genre.PLAIN) {
                         printPlain(fargs, doc, docId, rpath);
                     }
                 }
@@ -273,7 +276,7 @@ public final class Results {
             fargs.morePrefix, true, fargs.tabSize);
 
         if (!didPresentNew) {
-            /**
+            /*
              * Fall back to the old view, which re-analyzes text using
              * PlainLinetokenizer. E.g., when source code is updated (thus
              * affecting timestamps) but re-indexing is not yet complete.
@@ -292,12 +295,20 @@ public final class Results {
             }
             boolean isDefSearch = fargs.shelp.builder.isDefSearch();
             // SRCROOT is read with UTF-8 as a default.
+            File sourceFile = new File(fargs.shelp.sourceRoot, rpath);
             try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
-                    new File(fargs.shelp.sourceRoot, rpath)),
-                    StandardCharsets.UTF_8.name())) {
+                    sourceFile), StandardCharsets.UTF_8.name())) {
                 fargs.shelp.sourceContext.getContext(r, fargs.out,
                     fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
                     isDefSearch, null, scopes);
+            } catch (IOException ex) {
+                String errMsg = String.format("No context for %s", sourceFile);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    // WARNING but with FINE detail
+                    LOGGER.log(Level.WARNING, errMsg, ex);
+                } else {
+                    LOGGER.log(Level.WARNING, errMsg);
+                }
             }
         }
     }
@@ -314,7 +325,7 @@ public final class Results {
         final String morePrefix;
         final int tabSize;
 
-        public PrintPlainFinalArgs(Writer out, SearchHelper shelp,
+        PrintPlainFinalArgs(Writer out, SearchHelper shelp,
                 RuntimeEnvironment env, String xrefPrefix, int tabSize,
                 String morePrefix) {
             this.out = out;

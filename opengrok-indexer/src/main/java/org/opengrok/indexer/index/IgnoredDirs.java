@@ -32,6 +32,8 @@ import java.io.File;
  * @author Chandan
  */
 public final class IgnoredDirs extends Filter {
+    private static final long serialVersionUID = -6771850658877396699L;
+
     private static final String[] defaultPatternsDirs = {
         "Codemgr_wsdata", // Teamware
         "deleted_files",  // Teamware

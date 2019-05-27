@@ -30,9 +30,10 @@ import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.StreamSource;
 
 /**
@@ -52,7 +53,7 @@ public class BZip2Analyzer extends FileAnalyzer {
         return super.getGenre();
     }
 
-    protected BZip2Analyzer(FileAnalyzerFactory factory) {
+    protected BZip2Analyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -70,7 +71,7 @@ public class BZip2Analyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
-        FileAnalyzer fa;
+        AbstractAnalyzer fa;
 
         StreamSource bzSrc = wrap(src);
         String path = doc.get("path");

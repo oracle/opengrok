@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -69,7 +70,7 @@ public class AnalyzerGuruTest {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "#!/bin/sh\nexec /usr/bin/zip \"$@\"\n".getBytes("US-ASCII"));
         String file = "/dummy/path/to/source/zip";
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, file);
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, file);
         assertSame(ShAnalyzer.class, fa.getClass());
     }
 
@@ -80,7 +81,7 @@ public class AnalyzerGuruTest {
                        'v', 'e', 'r', 's', 'i', 'o', 'n', '=',
                        '"', '1', '.', '0', '"', '?', '>'};
         ByteArrayInputStream in = new ByteArrayInputStream(xml);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame(XMLAnalyzer.class, fa.getClass());
     }
 
@@ -89,7 +90,7 @@ public class AnalyzerGuruTest {
         byte[] doc = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, // UTF-8 BOM
                        '/', '/', ' ', (byte) 0xC2, (byte)0xA9};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite BOM as precise match,", PlainAnalyzer.class,
             fa.getClass());
     }
@@ -101,7 +102,7 @@ public class AnalyzerGuruTest {
                        'w', 'o', 'r', 'l', 'd'};
         
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame(PlainAnalyzer.class, fa.getClass());
     }
 
@@ -110,7 +111,7 @@ public class AnalyzerGuruTest {
         byte[] doc = {(byte) 0xFE, (byte) 0xFF, // UTF-16BE BOM
                        0, '#', 0, ' ', (byte) 0xC2, (byte) 0xA9};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite BOM as precise match,", PlainAnalyzer.class,
             fa.getClass());
     }
@@ -120,7 +121,7 @@ public class AnalyzerGuruTest {
         byte[] doc = {(byte) 0xFF, (byte) 0xFE, // UTF-16BE BOM
                        '#', 0, ' ', 0, (byte) 0xA9, (byte) 0xC2};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite BOM as precise match,", PlainAnalyzer.class,
             fa.getClass());
     }
@@ -130,8 +131,8 @@ public class AnalyzerGuruTest {
         // should not find analyzer for this unlikely extension
         assertNull(AnalyzerGuru.find("file.unlikely_extension"));
 
-        FileAnalyzerFactory
-            faf = AnalyzerGuru.findFactory(ShAnalyzerFactory.class.getName());
+        AnalyzerFactory
+                faf = AnalyzerGuru.findFactory(ShAnalyzerFactory.class.getName());
         // should be the same factory as the built-in analyzer for sh scripts
         assertSame(AnalyzerGuru.find("myscript.sh"), faf);
 
@@ -150,8 +151,8 @@ public class AnalyzerGuruTest {
         // should not find analyzer for this unlikely extension
         assertNull(AnalyzerGuru.find("unlikely_prefix.foo"));
 
-        FileAnalyzerFactory
-            faf = AnalyzerGuru.findFactory(ShAnalyzerFactory.class.getName());
+        AnalyzerFactory
+                faf = AnalyzerGuru.findFactory(ShAnalyzerFactory.class.getName());
         // should be the same factory as the built-in analyzer for sh scripts
         assertSame(AnalyzerGuru.find("myscript.sh"), faf);
 
@@ -173,7 +174,7 @@ public class AnalyzerGuruTest {
         zos.closeEntry();
         zos.close();
         InputStream in = new ByteArrayInputStream(baos.toByteArray());
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
         assertSame(ZipAnalyzer.class, fa.getClass());
     }
 
@@ -185,7 +186,7 @@ public class AnalyzerGuruTest {
         jos.closeEntry();
         jos.close();
         InputStream in = new ByteArrayInputStream(baos.toByteArray());
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
         assertSame(JarAnalyzer.class, fa.getClass());
     }
 
@@ -199,16 +200,16 @@ public class AnalyzerGuruTest {
 
     @Test
     public void rfe2969() {
-        FileAnalyzerFactory faf = AnalyzerGuru.find("foo.hxx");
+        AnalyzerFactory faf = AnalyzerGuru.find("foo.hxx");
         assertNotNull(faf);
         assertSame(CxxAnalyzerFactory.class, faf.getClass());
     }
 
     @Test
     public void rfe3401() {
-        FileAnalyzerFactory f1 = AnalyzerGuru.find("main.c");
+        AnalyzerFactory f1 = AnalyzerGuru.find("main.c");
         assertNotNull(f1);
-        FileAnalyzerFactory f2 = AnalyzerGuru.find("main.cc");
+        AnalyzerFactory f2 = AnalyzerGuru.find("main.cc");
         assertNotNull(f2);
         assertNotSame(f1.getClass(), f2.getClass());
 
@@ -218,10 +219,11 @@ public class AnalyzerGuruTest {
      * Test that matching of full names works. Bug #859.
      */
     @Test
+    @SuppressWarnings("rawtypes")
     public void matchesFullName() {
         String s = File.separator;  // so test works on Unix and Windows
         String path = s+"path"+s+"to"+s+"Makefile";
-        FileAnalyzerFactory faf = AnalyzerGuru.find(path);
+        AnalyzerFactory faf = AnalyzerGuru.find(path);
         Class c = faf.getClass();
         assertSame(ShAnalyzerFactory.class, faf.getClass());
         faf = AnalyzerGuru.find("GNUMakefile");
@@ -238,6 +240,7 @@ public class AnalyzerGuruTest {
      *  language + "AnalyzerFactory"
      */
     @Test
+    @SuppressWarnings("rawtypes")
     public void getAnalyzerFactoryClass() {
         Class fc_forSh = AnalyzerGuru.getFactoryClass("Sh");
         Class fc_forShAnalyzer = AnalyzerGuru.getFactoryClass("ShAnalyzer");
@@ -304,7 +307,7 @@ public class AnalyzerGuruTest {
         byte[] elfmt = {(byte)0x7F, 'E', 'L', 'F', (byte) 2, (byte) 2, (byte) 1,
             (byte) 0x06};
         ByteArrayInputStream in = new ByteArrayInputStream(elfmt);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite \\177ELF magic,", ELFAnalyzer.class,
             fa.getClass());
     }
@@ -313,14 +316,14 @@ public class AnalyzerGuruTest {
     public void shouldMatchJavaClassMagic() throws Exception {
         String oldMagic = "\312\376\272\276";      // cafebabe?
         String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
-            (byte) 0xBA, (byte) 0xBE});
-        assertNotEquals("despite octal escape as unicode,", oldMagic, newMagic);
+            (byte) 0xBA, (byte) 0xBE}, Charset.forName("UTF-8"));
+        assertNotEquals("despite octal string, escape it as unicode,", oldMagic, newMagic);
 
         // 0xCAFEBABE (4), minor (2), major (2)
         byte[] dotclass = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE,
             (byte) 0, (byte) 1, (byte) 0, (byte) 0x34};
         ByteArrayInputStream in = new ByteArrayInputStream(dotclass);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite 0xCAFEBABE magic,", JavaClassAnalyzer.class,
             fa.getClass());
     }
@@ -330,7 +333,7 @@ public class AnalyzerGuruTest {
         byte[] mandoc = {' ', '\n', '.', '\"', '\n', '.', 'T', 'H',
             (byte) 0x20, '\n'};
         ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite .TH magic,", TroffAnalyzer.class,
             fa.getClass());
     }
@@ -340,7 +343,7 @@ public class AnalyzerGuruTest {
         byte[] mandoc = {'\n', ' ', '.', '\"', '\n', '.', 'D', 'd',
             (byte) 0x20, '\n'};
         ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite .Dd magic,", MandocAnalyzer.class,
             fa.getClass());
     }

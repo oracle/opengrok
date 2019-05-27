@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.api.constraints.PositiveDuration;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.util.TreeSet;
 
 import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
-public class Message implements Comparable<Message> {
+public class Message implements Comparable<Message>, JSONable {
 
     @NotEmpty(message = "tags cannot be empty")
     private Set<String> tags = Collections.singleton(MESSAGES_MAIN_PAGE_TAG);
@@ -52,6 +53,7 @@ public class Message implements Comparable<Message> {
     private String cssClass = "info";
 
     @NotBlank(message = "text cannot be empty")
+    @JsonSerialize(using = HTMLSerializer.class)
     private String text;
 
     @PositiveDuration(message = "duration must be positive")
@@ -144,6 +146,8 @@ public class Message implements Comparable<Message> {
 
     private static class DurationSerializer extends StdSerializer<Duration> {
 
+        private static final long serialVersionUID = 5275434375701446542L;
+
         DurationSerializer() {
             this(null);
         }
@@ -167,6 +171,7 @@ public class Message implements Comparable<Message> {
     }
 
     private static class DurationDeserializer extends StdDeserializer<Duration> {
+        private static final long serialVersionUID = 5513386447457242809L;
 
         DurationDeserializer() {
             this(null);
@@ -187,4 +192,29 @@ public class Message implements Comparable<Message> {
         }
     }
 
+    protected static class HTMLSerializer extends StdSerializer<String> {
+
+        private static final long serialVersionUID = -2843900664165513923L;
+
+        HTMLSerializer() {
+            this(null);
+        }
+
+        HTMLSerializer(final Class<String> cl) {
+            super(cl);
+        }
+
+        @Override
+        public void serialize(
+                final String string,
+                final JsonGenerator jsonGenerator,
+                final SerializerProvider serializerProvider
+        ) throws IOException {
+            if (string != null) {
+                jsonGenerator.writeString(Util.encode(string));
+            } else {
+                jsonGenerator.writeNull();
+            }
+        }
+    }
 }

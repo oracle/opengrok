@@ -18,17 +18,15 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +36,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -91,8 +90,8 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
 
@@ -110,35 +109,33 @@ public class ClearCaseRepository extends Repository {
 
             String decorated = filename + "@@" + rev;
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {RepoCommand, "get", "-to", tmpName, decorated};
+            String[] argv = {RepoCommand, "get", "-to", tmpName, decorated};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             int status = executor.exec();
             if (status != 0) {
                 LOGGER.log(Level.SEVERE, "Failed to get history: {0}",
                         executor.getErrorString());
-                return null;
+                return false;
             }
 
-            ret = new BufferedInputStream(new FileInputStream(tmp)) {
-
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    // delete the temporary file on close
-                    if (!tmp.delete()) {
-                        // failed, lets do the next best thing then ..
-                        // delete it on JVM exit
-                        tmp.deleteOnExit();
-                    }
+            try (FileInputStream in = new FileInputStream(tmp)) {
+                copyBytes(sink, in);
+            } finally {
+                // delete the temporary file on close
+                if (!tmp.delete()) {
+                    // failed, lets do the next best thing then ..
+                    // delete it on JVM exit
+                    tmp.deleteOnExit();
                 }
-            };
+            }
+            return true;
         } catch (Exception exp) {
             LOGGER.log(Level.WARNING,
                     "Failed to get history: " + exp.getClass().toString(), exp);
         }
 
-        return ret;
+        return false;
     }
 
     /**

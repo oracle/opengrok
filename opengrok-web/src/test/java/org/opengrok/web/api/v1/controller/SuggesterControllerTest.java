@@ -18,17 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.index.Term;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runners.MethodSorters;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
@@ -48,7 +45,6 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -63,8 +59,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
+import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @ConditionalRun(CtagsInstalled.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SuggesterControllerTest extends JerseyTest {
 
     public static class Result {
@@ -106,6 +105,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
         repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
@@ -113,8 +113,8 @@ public class SuggesterControllerTest extends JerseyTest {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         Indexer.getInstance().prepareIndexer(env, true, true,
-                Collections.singleton("__all__"),
-                false, false, null, null, new ArrayList<>(), false);
+                false, null, null);
+        env.setDefaultProjectsFromNames(Collections.singleton("__all__"));
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         env.getSuggesterConfig().setRebuildCronConfig(null);
@@ -155,6 +155,16 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    public void testGetSuggesterConfigCors() {
+        Response response = target(SuggesterController.PATH)
+                .path("config")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
+    }
+
+    @Test
     public void testGetSuggestionsSimpleFull() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
@@ -165,6 +175,19 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("innermethod", "innerclass"));
+    }
+
+    @Test
+    public void testGetSuggestionsCors() {
+        Response response = target(SuggesterController.PATH)
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "inner")
+                .request()
+                .header(CORS_REQUEST_HEADER, "http://example.com")
+                .get();
+
+        assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
     }
 
     @Test
@@ -237,6 +260,8 @@ public class SuggesterControllerTest extends JerseyTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
+    // temporarily disabled, see https://github.com/oracle/opengrok/issues/2030
+    @Ignore
     @Test
     public void testGetSuggestionsMultipleProjects() {
         Result res = target(SuggesterController.PATH)
@@ -413,9 +438,9 @@ public class SuggesterControllerTest extends JerseyTest {
         // terms for prefix t: "text", "texttrim", "tell", "teach", "trimmargin"
 
         List<String> queries = Arrays.asList(
-                "http://localhost:8080/source/search?project=kotlin&q=text",
-                "http://localhost:8080/source/search?project=kotlin&q=text",
-                "http://localhost:8080/source/search?project=kotlin&q=teach"
+                "http://localhost:8080/source/search?project=kotlin&full=text",
+                "http://localhost:8080/source/search?project=kotlin&full=text",
+                "http://localhost:8080/source/search?project=kotlin&full=teach"
         );
 
         target(SuggesterController.PATH)
@@ -581,6 +606,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataSimple() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("rust", new Term(QueryBuilder.FULL, "main"), 10);
 
@@ -595,6 +621,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataAll() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
                 new Term(QueryBuilder.FULL, "mynamespace"), 10);
@@ -613,6 +640,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataDifferentField() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.DEFS, "greet"), 4);
@@ -638,5 +666,26 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("print", "printf"));
+    }
+
+    @Test
+    public void ZtestRebuild() {
+        Response res = target(SuggesterController.PATH)
+                .path("rebuild")
+                .request()
+                .put(Entity.text(""));
+
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+    }
+
+    @Test
+    public void ZtestRebuildProject() {
+        Response res = target(SuggesterController.PATH)
+                .path("rebuild")
+                .path("c")
+                .request()
+                .put(Entity.text(""));
+
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
     }
 }

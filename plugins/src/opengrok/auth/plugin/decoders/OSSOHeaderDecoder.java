@@ -22,6 +22,7 @@
  */
 package opengrok.auth.plugin.decoders;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,13 +58,15 @@ public class OSSOHeaderDecoder implements IUserDecoder {
         
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct an user: username could not be extracted");
+                    "Can not construct an user: username could not be extracted from headers: {0}",
+                    String.join(",", Collections.list(request.getHeaderNames())));
             return null;
         }
         
         if (userguid == null || userguid.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct an user: userguid could not be extracted");
+                    "Can not construct an user: userguid could not be extracted from headers: {0}",
+                    String.join(",", Collections.list(request.getHeaderNames())));
             return null;
         }
 
@@ -74,8 +77,8 @@ public class OSSOHeaderDecoder implements IUserDecoder {
             cookieTimestamp = Timestamp.decodeTimeCookie(timestamp);
         } catch (NumberFormatException ex) {
             LOGGER.log(Level.WARNING,
-                    String.format("Unparseable timestamp cookie \"%s\" for user \"%s\"", timestamp, username),
-                    ex);
+                    String.format("Unparseable timestamp cookie \"%s\" for user \"%s\"",
+                            timestamp, username), ex);
         }
 
         /**
@@ -89,7 +92,8 @@ public class OSSOHeaderDecoder implements IUserDecoder {
         user.setAttribute("subscriber", request.getHeader(OSSO_SUBSCRIBER_HEADER));
 
         if (user.isTimeouted()) {
-            LOGGER.log(Level.WARNING, "Can not construct an user \"{0}\": header is timeouted", username);
+            LOGGER.log(Level.WARNING, "Can not construct an user \"{0}\": header is timeouted",
+                    username);
             return null;
         }
 

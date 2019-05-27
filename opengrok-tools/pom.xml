@@ -29,11 +29,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc74</version>
+        <version>1.2.8</version>
     </parent>
 
     <artifactId>opengrok-tools</artifactId>
-    <version>1.1-rc74</version>
+    <version>1.2.8</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok tools</name>
@@ -205,6 +205,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
                                 <argument>setuptools</argument>
+                                <argument>certifi</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
@@ -289,8 +290,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>-m</argument>
                                 <argument>flake8</argument>
                                 <argument>-v</argument>
-                                <argument>--exclude=test_command.py,test_commands.py</argument>
                                 <argument>${project.build.sourceDirectory}</argument>
+                                <argument>${project.build.testSourceDirectory}</argument>
                                 <argument>setup.py</argument>
                             </arguments>
                         </configuration>

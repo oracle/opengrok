@@ -31,7 +31,7 @@ import java.util.Date;
  *
  * @author Stanislav Kozina
  */
-public abstract class TagEntry implements Comparable {
+public abstract class TagEntry implements Comparable<TagEntry> {
 
     protected int revision;
     /**
@@ -88,16 +88,14 @@ public abstract class TagEntry implements Comparable {
     /**
      * Necessary Comparable method, used for sorting of TagEntries.
      *
-     * @param aThat Compare to.
+     * @param that Compare to.
      * @return 1 for greater, 0 for equal and -1 for smaller objects.
      */
     @Override
-    public int compareTo(Object aThat) {
-        if (this == aThat) {
+    public int compareTo(TagEntry that) {
+        if (this == that) {
             return 0;
         }
-
-        final TagEntry that = (TagEntry) aThat;
 
         if (this.revision != NOREV) {
             return ((Integer) this.revision).compareTo(that.revision);

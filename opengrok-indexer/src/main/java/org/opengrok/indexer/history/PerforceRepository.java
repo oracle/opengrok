@@ -19,19 +19,21 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -60,6 +62,23 @@ public class PerforceRepository extends Repository {
         ignoredFiles.add(".p4config");
     }
 
+    static String protectPerforceFilename(String name) {
+        /* For each of the [four] special characters, replace them with */
+        /* the recognized escape sequence for perforce. */
+        /* NOTE: Must replace '%' first, or that translation would */
+        /* affect the output of the others. */
+        String t = name.replace("%", "%25");
+        t = t.replace("#", "%23");
+        t = t.replace("*", "%2A");
+        t = t.replace("@", "%40");
+        if (!name.equals(t)) {
+            LOGGER.log(Level.FINEST,
+                       "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
+                       new Object[]{name, t});
+        }
+        return t;
+    }
+
     @Override
     public Annotation annotate(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<>();
@@ -67,7 +86,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-qci");
-        cmd.add(file.getPath() + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(file.getPath()) + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
@@ -78,16 +97,27 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet(String parent, String basename, String rev) {
+    boolean getHistoryGet(
+            BufferSink sink, String parent, String basename, String rev) {
+
         ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("print");
         cmd.add("-q");
-        cmd.add(basename + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(basename) + getRevisionCmd(rev));
         Executor executor = new Executor(cmd, new File(parent));
+        // TODO: properly evaluate Perforce return code
         executor.exec();
-        return new ByteArrayInputStream(executor.getOutputString().getBytes());
+        try {
+            copyBytes(sink, executor.getOutputStream());
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE,
+                    "Failed to get history for file {0}/{1} in revision {2}: ",
+                    new Object[]{parent, basename, rev});
+        }
+        return false;
     }
 
     @Override
@@ -121,13 +151,14 @@ public class PerforceRepository extends Repository {
      * Check if a given file is in the depot
      *
      * @param file The file to test
+     * @param interactive interactive mode flag
      * @return true if the given file is in the depot, false otherwise
      */
-    public static boolean isInP4Depot(File file, boolean interactive) {
+    static boolean isInP4Depot(File file, boolean interactive) {
         boolean status = false;
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<>();
-            String name = file.getName();
+            String name = protectPerforceFilename(file.getName());
             File dir = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;
@@ -189,6 +220,12 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+        return new PerforceHistoryParser().parse(file, sinceRevision, this);
+    }
+
+    @Override
     String determineParent(boolean interactive) throws IOException {
         return null;
     }
@@ -198,15 +235,39 @@ public class PerforceRepository extends Repository {
         return null;
     }
     /**
-     * Parse internal rev number and returns it in format suitable for P4 command-line.
+     * Parse internal rev number and return it in a format suitable for P4 command-line.
      * @param rev Internal rev number.
      * @return rev number formatted for P4 command-line.
      */
-    public static String getRevisionCmd(String rev) {
-        if(rev == null || "".equals(rev)) {
+    static String getRevisionCmd(String rev) {
+        if (rev == null || "".equals(rev)) {
             return "";
         }
         return "@" + rev;
+    }
+    /**
+     * Parse rev numbers and return it as a range in a format suitable for P4 command-line.
+     * @param first First revision number.
+     * @param last Last revision number.
+     * @return rev number formatted for P4 command-line.
+     */
+    static String getRevisionCmd(String first, String last) {
+        if ((first == null || "".equals(first)) &&
+            ((last == null) || "".equals(last))) {
+            return "";
+        }
+        String ret = "@";
+        if (first == null || "".equals(first)) {
+            ret += "0,";
+        } else {
+            ret += first + ",";
+        }
+        if (last == null || "".equals(last)) {
+            ret += "now";
+        } else {
+            ret += last;
+        }
+        return ret;
     }
 
     @Override

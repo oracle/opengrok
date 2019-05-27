@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -64,14 +64,14 @@ public class GitTagParser implements Executor.StreamHandler {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("commit")) {
-                    String parts[] = line.split(":");
+                    String[] parts = line.split(":");
                     if (parts.length < 2) {
                         throw new IOException("Tag line contains more than 2 columns: " + line);
                     }
                     hash = parts[1];
                 }
                 if (line.startsWith("Date")) {
-                    String parts[] = line.split(":");
+                    String[] parts = line.split(":");
                     if (parts.length < 2) {
                         throw new IOException("Tag line contains more than 2 columns: " + line);
                     }

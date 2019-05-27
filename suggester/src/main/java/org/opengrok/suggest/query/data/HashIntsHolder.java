@@ -29,6 +29,8 @@ import java.util.HashSet;
  */
 public class HashIntsHolder extends HashSet<Integer> implements IntsHolder {
 
+    private static final long serialVersionUID = -7601626314360464324L;
+
     /** {@inheritDoc} */
     @Override
     public boolean has(final int i) {

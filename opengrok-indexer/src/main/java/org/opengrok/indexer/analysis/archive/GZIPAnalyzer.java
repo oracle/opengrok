@@ -27,14 +27,16 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -57,7 +59,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
         return super.getGenre();
     }
 
-    protected GZIPAnalyzer(FileAnalyzerFactory factory) {
+    protected GZIPAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -75,12 +77,11 @@ public class GZIPAnalyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
-        FileAnalyzer fa;
+        AbstractAnalyzer fa;
 
         StreamSource gzSrc = wrap(src);
         String path = doc.get("path");
-        if (path != null
-                && (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
+        if (path != null && path.toLowerCase(Locale.ROOT).endsWith(".gz")) {
             String newname = path.substring(0, path.length() - 3);
             //System.err.println("GZIPPED OF = " + newname);
             try (InputStream gzis = gzSrc.getStream()) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -40,8 +40,11 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.util.WebHook;
+import opengrok.auth.plugin.util.WebHooks;
 
 public class LdapFacade extends AbstractLdapProvider {
 
@@ -53,11 +56,13 @@ public class LdapFacade extends AbstractLdapProvider {
     private static final String LDAP_FILTER = "objectclass=*";
 
     /**
-     * Timeout for retrieving the results.
+     * default timeout for retrieving the results
      */
-    private static final int LDAP_TIMEOUT = 5000; // ms
+    private static final int LDAP_SEARCH_TIMEOUT = 5000; // ms
 
     /**
+     * default limit of result traversal
+     *
      * @see
      * <a href="https://docs.oracle.com/javase/7/docs/api/javax/naming/directory/SearchControls.html#setCountLimit%28long%29">SearchControls</a>
      *
@@ -77,7 +82,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * Also each server uses this same interval since its last failure - per
      * server waiting.
      */
-    private int interval = 10 * 1000;
+    private int interval = 10 * 1000; // ms
 
     /**
      * LDAP search base
@@ -88,6 +93,11 @@ public class LdapFacade extends AbstractLdapProvider {
      * Server pool.
      */
     private List<LdapServer> servers = new ArrayList<>();
+
+    /**
+     * server webHooks
+     */
+    private WebHooks webHooks;
 
     private SearchControls controls;
     private int actualServer = 0;
@@ -101,8 +111,8 @@ public class LdapFacade extends AbstractLdapProvider {
      */
     private interface AttributeMapper<T> {
 
-        public T mapFromAttributes(Attributes attr) throws NamingException;
-    };
+        T mapFromAttributes(Attributes attr) throws NamingException;
+    }
 
     /**
      * Transforms the attributes to the set of strings used for authorization.
@@ -119,7 +129,7 @@ public class LdapFacade extends AbstractLdapProvider {
          *
          * @param values include these values in the result
          */
-        public ContentAttributeMapper(String[] values) {
+        ContentAttributeMapper(String[] values) {
             this.values = values;
         }
 
@@ -168,11 +178,16 @@ public class LdapFacade extends AbstractLdapProvider {
     };
 
     public LdapFacade(Configuration cfg) {
-        setServers(cfg.getServers());
+        setServers(cfg.getServers(), cfg.getConnectTimeout());
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
-        prepareSearchControls();
+        setWebHooks(cfg.getWebHooks());
+        prepareSearchControls(cfg.getSearchTimeout(), cfg.getCountLimit());
         prepareServers();
+    }
+
+    private void setWebHooks(WebHooks webHooks) {
+        this.webHooks = webHooks;
     }
 
     /**
@@ -203,8 +218,14 @@ public class LdapFacade extends AbstractLdapProvider {
         return servers;
     }
 
-    public LdapFacade setServers(List<LdapServer> servers) {
+    public LdapFacade setServers(List<LdapServer> servers, int timeout) {
         this.servers = servers;
+        // Inherit connect timeout from server pool configuration.
+        for (LdapServer server : servers) {
+            if (server.getConnectTimeout() == 0 && timeout != 0) {
+                server.setConnectTimeout(timeout);
+            }
+        }
         return this;
     }
 
@@ -243,7 +264,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return set of strings describing the user's attributes
      */
     @Override
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException {
 
         return lookup(
                 user != null ? user.getUsername() : getSearchBase(),
@@ -252,11 +273,16 @@ public class LdapFacade extends AbstractLdapProvider {
                 new ContentAttributeMapper(values));
     }
 
-    private SearchControls prepareSearchControls() {
+    private SearchControls prepareSearchControls(int ldapTimeout, int ldapCountLimit) {
         controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        controls.setTimeLimit(LDAP_TIMEOUT);
-        controls.setCountLimit(LDAP_COUNT_LIMIT);
+        controls.setTimeLimit(ldapTimeout > 0 ? ldapTimeout : LDAP_SEARCH_TIMEOUT);
+        controls.setCountLimit(ldapCountLimit > 0 ? ldapCountLimit : LDAP_COUNT_LIMIT);
+
+        return controls;
+    }
+
+    public SearchControls getSearchControls() {
         return controls;
     }
 
@@ -271,7 +297,7 @@ public class LdapFacade extends AbstractLdapProvider {
      *
      * @return results transformed with mapper
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) {
+    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) throws LdapException {
         return lookup(dn, filter, attributes, mapper, 0);
     }
 
@@ -286,28 +312,33 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param fail current count of failures
      *
      * @return results transformed with mapper or {@code null} on failure
+     * @throws LdapException LDAP exception
      */
-    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) {
+    private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) throws LdapException {
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             if (!reported) {
                 reported = true;
-                LOGGER.log(Level.SEVERE, "Server pool is still broken");
+                LOGGER.log(Level.SEVERE, "LDAP server pool is still broken");
             }
-            return null;
+            throw new LdapException("LDAP server pool is still broken");
         }
 
         if (fail > servers.size() - 1) {
             // did the whole rotation
-            LOGGER.log(Level.SEVERE, "Tried all servers in a pool but no server works");
+            LOGGER.log(Level.SEVERE, "Tried all LDAP servers in a pool but no server works");
             errorTimestamp = System.currentTimeMillis();
             reported = false;
-            return null;
+            WebHook hook;
+            if ((hook = webHooks.getFail()) != null) {
+                hook.post();
+            }
+            throw new LdapException("Tried all LDAP servers in a pool but no server works");
         }
 
         if (!isConfigured()) {
             LOGGER.log(Level.SEVERE, "LDAP is not configured");
-            return null;
+            throw new LdapException("LDAP is not configured");
         }
 
         NamingEnumeration<SearchResult> namingEnum = null;
@@ -317,11 +348,17 @@ public class LdapFacade extends AbstractLdapProvider {
             for (namingEnum = server.search(dn, filter, controls); namingEnum.hasMore();) {
                 SearchResult sr = namingEnum.next();
                 reported = false;
+                if (errorTimestamp > 0) {
+                    errorTimestamp = 0;
+                    WebHook hook;
+                    if ((hook = webHooks.getRecover()) != null) {
+                        hook.post();
+                    }
+                }
                 return processResult(sr, mapper);
             }
         } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "The LDAP name was not found.", ex);
-            return null;
+            throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
             LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
             closeActualServer();
@@ -352,7 +389,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 }
             }
         }
-        return null;
+
+        throw new LdapException("LDAP naming problem");
     }
 
     private void closeActualServer() {

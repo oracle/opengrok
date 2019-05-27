@@ -38,7 +38,7 @@ from filelock import Timeout, FileLock
 
 from .utils.command import Command
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit
+    fatal
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
 from .utils.parsers import get_baseparser
@@ -207,7 +207,9 @@ def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter,
-                                     parents=[get_baseparser()])
+                                     parents=[get_baseparser(
+                                         tool_version=__version__)
+                                     ])
 
     parser.add_argument('-b', '--base', default="/var/opengrok",
                         help='OpenGrok instance base directory')
@@ -219,7 +221,7 @@ def main():
                         help='path to the ConfigMerge binary')
     parser.add_argument('--java', help='Path to java binary '
                                        '(needed for config merge program)')
-    parser.add_argument('--jar', help='Path to jar archive to run')
+    parser.add_argument('-j', '--jar', help='Path to jar archive to run')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='Upload configuration at the end')
     parser.add_argument('-n', '--noop', action='store_true', default=False,
@@ -245,7 +247,7 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     doit = not args.noop
     configmerge = None

@@ -23,8 +23,7 @@
 
 package org.opengrok.indexer.analysis.eiffel;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -41,7 +40,7 @@ public class EiffelAnalyzerFactory extends FileAnalyzerFactory {
      * {@link EiffelAnalyzer}.
      */
     public EiffelAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN,
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN,
             NAME);
     }
 
@@ -50,7 +49,7 @@ public class EiffelAnalyzerFactory extends FileAnalyzerFactory {
      * @return a defined instance
      */
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new EiffelAnalyzer(this);
     }
 }

@@ -18,20 +18,21 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
+
+import static org.junit.Assert.assertNotNull;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link JavaScriptSymbolTokenizer} class.
@@ -40,29 +41,44 @@ public class JavaScriptSymbolTokenizerTest {
 
     /**
      * Test sample.js v. samplesymbols.txt
+     *
      * @throws java.lang.Exception thrown on error
      */
     @Test
     public void testJavaScriptSymbolStream() throws Exception {
+        testSymbols("analysis/javascript/sample.js", "analysis/javascript/samplesymbols.txt");
+    }
+
+    @Test
+    public void testRegexpWithModifiersSymbols() throws Exception {
+        testSymbols("analysis/javascript/regexp_modifiers.js", "analysis/javascript/regexp_modifiers_symbols.txt");
+    }
+
+    @Test
+    public void testRegexpSymbols() throws Exception {
+        testSymbols("analysis/javascript/regexp_plain.js", "analysis/javascript/regexp_plain_symbols.txt");
+    }
+
+    private void testSymbols(String codeResource, String symbolsResource) throws Exception {
         InputStream jsres = getClass().getClassLoader().getResourceAsStream(
-            "analysis/javascript/sample.js");
-        assertNotNull("despite sample.js as resource,", jsres);
+                codeResource);
+        assertNotNull(String.format("Unable to find %s as a resource", codeResource), jsres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "analysis/javascript/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+                symbolsResource);
+        assertNotNull(String.format("Unable to find %s as a resource", symbolsResource), symres);
 
         List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(
-            symres, "UTF-8"))) {
+        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(symres, "UTF-8"))) {
             String line;
             while ((line = wdsr.readLine()) != null) {
                 int hasho = line.indexOf('#');
-                if (hasho != -1) line = line.substring(0, hasho);
+                if (hasho != -1) {
+                    line = line.substring(0, hasho);
+                }
                 expectedSymbols.add(line.trim());
             }
         }
 
-        assertSymbolStream(JavaScriptSymbolTokenizer.class, jsres,
-            expectedSymbols);
+        assertSymbolStream(JavaScriptSymbolTokenizer.class, jsres, expectedSymbols);
     }
 }

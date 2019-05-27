@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -56,8 +56,8 @@ import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -82,7 +82,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
      *
      * @param factory The factory that creates JavaClassAnalyzers
      */
-    protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
+    protected JavaClassAnalyzer(AnalyzerFactory factory) {
         super(factory);
     }
 
@@ -252,7 +252,7 @@ private static final String RCBREOL="}\n";
         for (int i : c.getInterfaceIndices()) {
             v[i] = 1;
         }
-        String ins[] = c.getInterfaceNames();
+        String[] ins = c.getInterfaceNames();
         if (ins != null && ins.length > 0) {
             out.write(IMPLEMENTS);
             fout.write(IMPLEMENTS);

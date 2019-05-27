@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -96,7 +96,9 @@ Real = ({Decimal_integer}? "." {Decimal_integer} |
 /*
  * Character_constant = Δ "'" Character "'"
  */
-Character_constant = \' [^\']+ \'
+Character_constant = \' ([^\'\n\r] | {Special_character}) \'
+
+Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/")
 
 /*
  * SCOMMENT : single-line comment
@@ -108,7 +110,7 @@ Character_constant = \' [^\']+ \'
 %%
 <YYINITIAL> {
     {Identifier}    {
-        h.chkLOC();
+        chkLOC();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
@@ -116,14 +118,14 @@ Character_constant = \' [^\']+ \'
     }
 
     {Number}    {
-        h.chkLOC();
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
     }
 
     {Character_constant}    {
-        h.chkLOC();
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
@@ -136,14 +138,14 @@ Character_constant = \' [^\']+ \'
     }
 
     \"    {
-        h.chkLOC();
+        chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
     \" {Vstring_alpha}* [\[\{]    {
-        h.chkLOC();
-        h.vop(yytext());
+        chkLOC();
+        vop(yytext());
     }
 }
 
@@ -157,7 +159,7 @@ Character_constant = \' [^\']+ \'
 
 <STRING> {
     \"    {
-        h.chkLOC();
+        chkLOC();
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
         yypop();
@@ -166,18 +168,24 @@ Character_constant = \' [^\']+ \'
      * Eiffel defines "Line_wrapping_part" as a sequence of characters
      * consisting of the following, in order: % (percent character); zero or
      * more blanks or tabs; New_line; zero or more blanks or tabs; % again. For
-     * OpenGrok purposes, just recognizing LFs in STRING is good enough.
+     * OpenGrok purposes, just recognizing LFs in STRING is good enough; though
+     * see also the {Special_character} handling for STRING,VSTRING.
      */
 }
 
 <VSTRING> {
     [\]\}] {Vstring_alpha}* \"    {
-        h.chkLOC();
-        h.maybeEndVerbatim(yytext());
+        chkLOC();
+        maybeEndVerbatim(yytext());
     }
 }
 
 <STRING, VSTRING> {
+    {Special_character}    {
+        chkLOC();
+        offer(yytext());
+    }
+
     {WhspChar}*{EOL}    {
         onDisjointSpanChanged(null, yychar);
         onEndOfLineMatched(yytext(), yychar);
@@ -188,12 +196,15 @@ Character_constant = \' [^\']+ \'
 <YYINITIAL, SCOMMENT, STRING, VSTRING> {
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
     \s    { offer(yytext()); }
-    [^]    { h.chkLOC(); offer(yytext()); }
+    [^]    {
+        chkLOC();
+        offer(yytext());
+    }
 }
 
 <SCOMMENT, STRING, VSTRING> {
     {BrowseableURI}    {
-        h.chkLOC();
+        chkLOC();
         if (takeAllContent()) {
             onUriMatched(yytext(), yychar);
         }

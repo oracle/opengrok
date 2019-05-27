@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+/*
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.condition;
 
@@ -29,6 +29,9 @@ package org.opengrok.indexer.condition;
  * https://stackoverflow.com/questions/1754315/how-to-create-custom-exceptions-in-java
  */
 public class DeliberateRuntimeException extends RuntimeException {
+
+      private static final long serialVersionUID = 7870938126523334656L;
+
       public DeliberateRuntimeException() { super(); }
       public DeliberateRuntimeException(String message) { super(message); }
       public DeliberateRuntimeException(String message, Throwable cause) { super(message, cause); }

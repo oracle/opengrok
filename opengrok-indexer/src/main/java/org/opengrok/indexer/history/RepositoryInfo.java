@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,10 +70,6 @@ public class RepositoryInfo implements Serializable {
     private boolean handleRenamedFiles;
     private boolean historyEnabled;
 
-    /**
-     * format used for printing the date in {@code currentVersion}
-     */
-    protected static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
 
     /**
      * Empty constructor to support serialization.
@@ -272,7 +267,7 @@ public class RepositoryInfo implements Serializable {
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
     }
-    
+
     /**
      * Fill configurable properties from associated project (if any) or Configuration.
      */

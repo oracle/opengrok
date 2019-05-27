@@ -26,8 +26,8 @@ package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.util.IOUtils;
 
@@ -44,7 +44,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             }
 
             @Override
-            public FileAnalyzerFactory isMagic(byte[] content, InputStream in)
+            public AnalyzerFactory isMagic(byte[] content, InputStream in)
                     throws IOException {
                 if (isPlainText(content)) {
                     return DEFAULT_INSTANCE;
@@ -54,7 +54,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             }
 
             @Override
-            public FileAnalyzerFactory forFactory() {
+            public AnalyzerFactory forFactory() {
                 return DEFAULT_INSTANCE;
             }
 
@@ -98,11 +98,11 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN, name);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new PlainAnalyzer(this);
     }
 }

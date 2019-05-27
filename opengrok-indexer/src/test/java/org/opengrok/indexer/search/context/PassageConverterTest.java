@@ -26,12 +26,12 @@ package org.opengrok.indexer.search.context;
 import java.util.SortedMap;
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.util.BytesRef;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.util.SourceSplitter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Represents a container for tests of {@link PassageConverter} etc.
@@ -121,14 +121,58 @@ public class PassageConverterTest {
         assertNotNull("get LineHighlight", lhi);
         assertEquals("getLelide()", 41, lhi.getLelide());
         assertEquals("getRelide()", 139, lhi.getRelide());
-        assertEquals("getRelide()", 139 - 41, cvt.getArgs().getContextWidth() -
-            2);
+        assertEquals("context width minus 2", 139 - 41,
+                cvt.getArgs().getContextWidth() - 2);
         assertEquals("countMarkups()", 1, lhi.countMarkups());
 
         PhraseHighlight phi = lhi.getMarkup(0);
         assertNotNull("get PhraseHighlight", phi);
         assertEquals("getLineStart()", 113, phi.getLineStart());
         assertEquals("getLineEnd()", 113 + WORD.length(), phi.getLineEnd());
+    }
+
+    @Test
+    public void testTwoWordsElided() {
+        final String WORD1 = "Maecenas";
+        int woff1 = DOC.indexOf(WORD1);
+        assertTrue(WORD1, woff1 >= 0);
+
+        final String WORD2 = "rhoncus";
+        int woff2 = DOC.indexOf(WORD2);
+        assertTrue(WORD2, woff2 >= 0);
+
+        Passage p = new Passage();
+        p.setStartOffset(woff1);
+        p.setEndOffset(woff2 + WORD2.length());
+        p.addMatch(woff1, woff1 + WORD1.length(), new BytesRef(WORD1),1);
+        p.addMatch(woff2, woff2 + WORD2.length(), new BytesRef(WORD2),1);
+        assertEquals("getNumMatches()", 2, p.getNumMatches());
+
+        PassageConverter cvt = getConverter((short)0);
+        SortedMap<Integer, LineHighlight> linemap =
+                cvt.convert(new Passage[] {p}, splitter);
+
+        assertEquals("linemap size()", 1, linemap.size());
+        int lineno = linemap.firstKey();
+        assertEquals("lineno", 5, lineno);
+
+        LineHighlight lhi = linemap.get(lineno);
+        assertNotNull("get LineHighlight", lhi);
+        assertEquals("getLelide()", 4, lhi.getLelide());
+        assertEquals("getRelide()", 102, lhi.getRelide());
+        assertEquals("context width minus 2", 139 - 41,
+                cvt.getArgs().getContextWidth() - 2);
+        assertEquals("countMarkups()", 2, lhi.countMarkups());
+
+        PhraseHighlight phi = lhi.getMarkup(0);
+        assertNotNull("get PhraseHighlight", phi);
+        assertEquals("0:getLineStart()", 4, phi.getLineStart());
+        assertEquals("0:getLineEnd()", 4 + WORD1.length(), phi.getLineEnd());
+
+        phi = lhi.getMarkup(1);
+        assertNotNull("get PhraseHighlight", phi);
+        assertEquals("1:getLineStart()", 132, phi.getLineStart());
+        assertEquals("1:getLineEnd()", 132 + WORD2.length(), phi.getLineEnd());
     }
 
     @Test

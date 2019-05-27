@@ -26,8 +26,8 @@ package org.opengrok.indexer.analysis.document;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class TroffAnalyzerFactory extends FileAnalyzerFactory {
@@ -36,13 +36,13 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
-        public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+        public AnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException {
             return getTrueMatcher().isMagic(contents, in);
         }
 
         @Override
-        public FileAnalyzerFactory forFactory() {
+        public AnalyzerFactory forFactory() {
             return getTrueMatcher().forFactory();
         }
     };
@@ -51,11 +51,11 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
         new TroffAnalyzerFactory();
 
     protected TroffAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN, name);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new TroffAnalyzer(this);
     }
 

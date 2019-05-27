@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -29,7 +30,9 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
@@ -230,6 +233,7 @@ public class FileHistoryCacheTest {
     /**
      * Basic tests for the {@code store()} and {@code get()} methods.
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testStoreAndGet() throws Exception {
@@ -353,6 +357,7 @@ public class FileHistoryCacheTest {
      * - change+rename the file again
      * - incremental reindex
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenameFileThenDoIncrementalReindex() throws Exception {
@@ -480,6 +485,7 @@ public class FileHistoryCacheTest {
      * (i.e. there should not be history entries from the default branch made
      * there after the branch was created).
      */
+    @ConditionalRun(UnixPresent.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenamedFilePlusChangesBranched() throws Exception {
@@ -621,13 +627,15 @@ public class FileHistoryCacheTest {
         // FetchHistoryWhenNotInCache is set to false.
         File dataRoot = new File(repositories.getDataRoot(),
                 "historycache" + File.separatorChar + reponame);
-        File fileHistory = new File(dataRoot, filename + ".gz");
+        File fileHistory = new File(dataRoot, TandemPath.join(filename, ".gz"));
         assertEquals(historyFileExists, fileHistory.exists());
     }
 
     /*
      * Functional test for the FetchHistoryWhenNotInCache configuration option.
      */
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.SCCSInstalled.class)
     @Test
     public void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.

@@ -35,7 +35,6 @@ import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
 import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.query.SuggesterQuery;
-import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
@@ -175,21 +174,36 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public void refresh(final String project) {
+    public void rebuild() {
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINE, "Cannot perform rebuild because suggester is not initialized");
+                return;
+            }
+            suggester.rebuild(getAllProjectIndexDirs());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void rebuild(final String project) {
         Project p = env.getProjects().get(project);
         if (p == null) {
-            logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found",
+            logger.log(Level.WARNING, "Cannot rebuild suggester because project for name {0} was not found",
                     project);
             return;
         }
         if (!p.isIndexed()) {
-            logger.log(Level.WARNING, "Cannot refresh project {0} because it is not indexed yet", project);
+            logger.log(Level.WARNING, "Cannot rebuild project {0} because it is not indexed yet", project);
             return;
         }
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                logger.log(Level.FINE, "Cannot refresh {0} because suggester is not initialized", project);
+                logger.log(Level.FINE, "Cannot rebuild {0} because suggester is not initialized", project);
                 return;
             }
             suggester.rebuild(Collections.singleton(getNamedIndexDir(p)));
@@ -275,13 +289,19 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
 
         File suggesterDir = new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR);
+        int rebuildParalleismLevel = (int)(((float)suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent() / 100) * Runtime.getRuntime().availableProcessors());
+        if (rebuildParalleismLevel == 0) {
+            rebuildParalleismLevel = 1;
+        }
+        logger.log(Level.FINER, "Suggester rebuild parallelism level: " + rebuildParalleismLevel);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
                 suggesterConfig.isAllowMostPopular(),
                 env.isProjectsEnabled(),
                 suggesterConfig.getAllowedFields(),
-                suggesterConfig.getTimeThreshold());
+                suggesterConfig.getTimeThreshold(),
+                rebuildParalleismLevel);
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());

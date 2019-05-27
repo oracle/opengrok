@@ -38,7 +38,7 @@ def run_hook(logger, script, path, env, timeout):
     cmd = Command([script], logger=logger, work_dir=path, env_vars=env,
                   timeout=timeout)
     cmd.execute()
-    if cmd.state is not "finished" or cmd.getretcode() != 0:
+    if cmd.state != "finished" or cmd.getretcode() != 0:
         logger.error("command failed: {} -> {}".format(cmd, cmd.getretcode()))
         ret = 1
 

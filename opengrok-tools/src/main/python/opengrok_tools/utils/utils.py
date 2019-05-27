@@ -94,14 +94,6 @@ def get_int(logger, name, value):
         return None
 
 
-def diff_list(first, second):
-    """
-    Get difference of lists.
-    """
-    second = set(second)
-    return [item for item in first if item not in second]
-
-
 def is_web_uri(url):
     """
     Check if given string is web URL.

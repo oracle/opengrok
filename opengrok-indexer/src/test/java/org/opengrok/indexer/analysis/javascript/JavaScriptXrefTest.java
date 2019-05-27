@@ -18,126 +18,49 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 
-import org.opengrok.indexer.analysis.CtagsReader;
-import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.WriteXrefArgs;
+import java.io.IOException;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.opengrok.indexer.analysis.Xrefer;
-import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
-import static org.opengrok.indexer.util.StreamUtils.copyStream;
+import org.opengrok.indexer.analysis.XrefTestBase;
 
 /**
  * Tests the {@link JavaScriptXref} class.
  */
-public class JavaScriptXrefTest {
+public class JavaScriptXrefTest extends XrefTestBase {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("analysis/javascript/sample.js",
-            "analysis/javascript/sample_xref.html",
-            getTagsDefinitions(), 206);
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/sample.js",
+                "analysis/javascript/sample_xref.html",
+                readTagsFromResource("analysis/javascript/sampletags"), 206);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("analysis/javascript/truncated.js",
-            "analysis/javascript/truncated_xref.html",
-            null, 1);
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/truncated.js",
+                "analysis/javascript/truncated_xref.html", null, 1);
     }
 
-    private void writeAndCompare(String sourceResource, String resultResource,
-        Definitions defs, int expLOC) throws IOException {
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            sourceResource);
-        assertNotNull(sourceResource + " should get-as-stream", res);
-        int actLOC = writeJavaScriptXref(new PrintStream(baos), res, defs);
-        res.close();
-
-        InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            resultResource);
-        assertNotNull(resultResource + " should get-as-stream", exp);
-        byte[] expbytes = copyStream(exp);
-        exp.close();
-        baos.close();
-
-        String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
-        String estr = new String(expbytes, "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("JavaScript xref", expected, gotten);
-        assertEquals("JavaScript LOC", expLOC, actLOC);
+    @Test
+    public void shouldDetectRegularExpressionWithoutModifiers() throws IOException {
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/regexp_plain.js",
+                "analysis/javascript/regexp_plain_xref.html", null, 14);
     }
 
-    private int writeJavaScriptXref(PrintStream oss, InputStream iss,
-        Definitions defs) throws IOException {
-
-        oss.print(getHtmlBegin());
-
-        Writer sw = new StringWriter();
-        JavaScriptAnalyzerFactory fac = new JavaScriptAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.setScopesEnabled(true);
-        analyzer.setFoldingEnabled(true);
-        WriteXrefArgs wargs = new WriteXrefArgs(
-            new InputStreamReader(iss, "UTF-8"), sw);
-        wargs.setDefs(defs);
-        Xrefer xref = analyzer.writeXref(wargs);
-        oss.print(sw.toString());
-
-        oss.print(getHtmlEnd());
-        return xref.getLOC();
-    }
-
-    private Definitions getTagsDefinitions() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "analysis/javascript/sampletags");
-        assertNotNull("though sampletags should stream,", res);
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-            res, "UTF-8"));
-
-        CtagsReader rdr = new CtagsReader();
-        String line;
-        while ((line = in.readLine()) != null) {
-            rdr.readLine(line);
-        }
-        return rdr.getDefinitions();
-    }
-
-    private static String getHtmlBegin() {
-        return "<!DOCTYPE html>\n" +
-            "<html lang=\"en\">\n" +
-            "<head>\n" +
-            "<meta charset=\"UTF-8\">\n" +
-            "<title>sampleFile - OpenGrok cross reference" +
-            " for /sampleFile</title></head><body>\n";
-    }
-
-    private static String getHtmlEnd() {
-        return "</body>\n" +
-            "</html>\n";
+    @Test
+    public void shouldDetectRegularExpressionWithModifiers() throws IOException {
+        writeAndCompare(new JavaScriptAnalyzerFactory(),
+                "analysis/javascript/regexp_modifiers.js",
+                "analysis/javascript/regexp_modifiers_xref.html", null, 14);
     }
 }

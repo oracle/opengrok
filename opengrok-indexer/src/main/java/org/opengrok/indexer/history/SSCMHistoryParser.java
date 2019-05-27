@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -74,7 +73,6 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
         history = new History();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -124,7 +122,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(author);
                 entry.setRevision(revision);
                 try {
-                    entry.setDate(df.parse(date));
+                    entry.setDate(repository.parse(date));
                 } catch (ParseException ex) {
                     LOGGER.log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
                 }

@@ -98,14 +98,14 @@ public class SuggesterTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullSuggesterDir() {
-        new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE);
+        new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE, 1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullDuration() throws IOException {
         Path tempFile = Files.createTempFile("opengrok", "test");
         try {
-            new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE);
+            new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE, 1);
         } finally {
             tempFile.toFile().delete();
         }
@@ -115,7 +115,7 @@ public class SuggesterTest {
     public void testNegativeDuration() throws IOException {
         Path tempFile = Files.createTempFile("opengrok", "test");
         try {
-            new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE);
+            new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE, 1);
         } finally {
             tempFile.toFile().delete();
         }
@@ -132,7 +132,7 @@ public class SuggesterTest {
         Path tempSuggesterDir = Files.createTempDirectory("opengrok");
 
         Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
-                true, Collections.singleton("test"), Integer.MAX_VALUE);
+                true, Collections.singleton("test"), Integer.MAX_VALUE, Runtime.getRuntime().availableProcessors());
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
 
@@ -142,6 +142,7 @@ public class SuggesterTest {
         testData.s = s;
         testData.indexDir = tempIndexDir;
         testData.suggesterDir = tempSuggesterDir;
+
         return testData;
     }
 
@@ -204,7 +205,8 @@ public class SuggesterTest {
         addText(t.getIndexDirectory(), "a1 a2");
 
         t.s = new Suggester(t.suggesterDir.toFile(), 10, Duration.ofMinutes(1), false,
-                true, Collections.singleton("test"), Integer.MAX_VALUE);
+                true, Collections.singleton("test"), Integer.MAX_VALUE,
+                Runtime.getRuntime().availableProcessors());
 
         t.s.init(Collections.singleton(t.getNamedIndexDir()));
 
@@ -247,6 +249,7 @@ public class SuggesterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testOnSearch() throws IOException {
         SuggesterTestData t = initSuggester();
 
@@ -275,6 +278,7 @@ public class SuggesterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testIncreaseSearchCount() throws IOException {
         SuggesterTestData t = initSuggester();
 

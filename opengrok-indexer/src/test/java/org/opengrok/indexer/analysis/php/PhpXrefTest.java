@@ -38,9 +38,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
@@ -58,7 +59,7 @@ public class PhpXrefTest {
         String s = "<?php foo bar";
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
         Xrefer xref = analyzer.writeXref(xargs);
         assertEquals(
@@ -73,7 +74,7 @@ public class PhpXrefTest {
         String s = "<?php define(\"FOO\", 'BAR\\'\"'); $foo='bar'; $hola=\"ls\"; $hola=''; $hola=\"\";";
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
         Xrefer xref =  analyzer.writeXref(xargs);
         assertLinesEqual("PHP quoting",
@@ -95,7 +96,7 @@ public class PhpXrefTest {
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
-        FileAnalyzer analyzer = fac.getAnalyzer();
+        AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(is, "UTF-8"), w);
         wargs.setDefs(getTagsDefinitions());

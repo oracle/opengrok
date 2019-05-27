@@ -42,7 +42,7 @@ public class FormattedLines {
     private String footer;
     private boolean limited;
 
-    /**
+    /*
      * Gets a count of the number of lines in the instance.
      */
     public int getCount() {
@@ -60,14 +60,14 @@ public class FormattedLines {
         footer = value;
     }
 
-    /**
+    /*
      * Gets a value indicating if lines were limited.
      */
     public boolean isLimited() {
         return limited;
     }
 
-    /**
+    /*
      * Sets a value indicating if lines were limited.
      */
     public void setLimited(boolean value) {

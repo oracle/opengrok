@@ -26,8 +26,8 @@ package org.opengrok.indexer.analysis.document;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
@@ -37,7 +37,7 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
-        public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+        public AnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException {
             return RuntimeEnvironment.getInstance().getMandoc() != null ?
                 getTrueMenMatcher().isMagic(contents, in) :
@@ -45,7 +45,7 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
         }
 
         @Override
-        public FileAnalyzerFactory forFactory() {
+        public AnalyzerFactory forFactory() {
             return getTrueMenMatcher().forFactory();
         }
     };
@@ -54,11 +54,11 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
         new MandocAnalyzerFactory();
 
     protected MandocAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN, NAME);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new MandocAnalyzer(this);
     }
 

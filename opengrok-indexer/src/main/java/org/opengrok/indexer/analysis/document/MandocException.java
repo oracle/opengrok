@@ -17,14 +17,17 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
 /**
- * Represents an exception that occurs when mandoc exits non-zero.
+ * Represents an exception that occurs when {@code mandoc} exits non-zero.
  */
 public class MandocException extends Exception {
+
+      private static final long serialVersionUID = -6615441453265859555L;
+
       public MandocException(String message) { super(message); }
 }

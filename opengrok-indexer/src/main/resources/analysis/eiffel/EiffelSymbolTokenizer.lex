@@ -18,22 +18,19 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.eiffel;
 
 import java.io.IOException;
 import java.util.Locale;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class EiffelSymbolTokenizer
-%extends JFlexSymbolMatcher
-%implements EiffelLexer
+%extends EiffelLexer
 %init{
-    h = new EiffelLexHelper(VSTRING, SCOMMENT, this);
     yyline = 1;
 %init}
 %unicode
@@ -42,8 +39,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %char
 %include CommonLexer.lexh
 %{
-    private final EiffelLexHelper h;
-
     private String lastSymbol;
 
     /**
@@ -52,7 +47,6 @@ import org.opengrok.indexer.web.HtmlConsts;
     @Override
     public void reset() {
         super.reset();
-        h.reset();
         lastSymbol = null;
     }
 
@@ -107,6 +101,18 @@ import org.opengrok.indexer.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent VSTRING.
+     */
+    @Override
+    int VSTRING() { return VSTRING; }
 %}
 
 /*

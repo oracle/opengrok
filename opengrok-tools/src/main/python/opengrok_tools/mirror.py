@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -32,97 +32,55 @@
 import argparse
 import logging
 import os
-import re
 import sys
 import tempfile
-from logging.handlers import RotatingFileHandler
+from multiprocessing import Pool, cpu_count
 
 from filelock import Timeout, FileLock
 
-from .utils.hook import run_hook
 from .utils.log import get_console_logger, get_class_basename, \
-    print_exc_exit
-from .utils.opengrok import get_repos, get_config_value, get_repo_type
+    fatal, get_batch_logger
+from .utils.opengrok import get_config_value, list_indexed_projects
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
-from .utils.repofactory import get_repository
-from .utils.utils import is_exe, check_create_dir, get_int, diff_list, \
-    is_web_uri
-from .scm.repository import RepositoryException
+from .utils.utils import get_int, is_web_uri
+from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
+    mirror_project, HOOKDIR_PROPERTY, CMD_TIMEOUT_PROPERTY, \
+    HOOK_TIMEOUT_PROPERTY
 
 major_version = sys.version_info[0]
 if major_version < 3:
-    print("Need Python 3, you are running {}".format(major_version))
-    sys.exit(1)
+    fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "0.6"
-
-# "constants"
-HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
-CMD_TIMEOUT_PROPERTY = 'command_timeout'
-IGNORED_REPOS_PROPERTY = 'ignored_repos'
-PROXY_PROPERTY = 'proxy'
-COMMANDS_PROPERTY = 'commands'
-DISABLED_PROPERTY = 'disabled'
-HOOKDIR_PROPERTY = 'hookdir'
-HOOKS_PROPERTY = 'hooks'
-LOGDIR_PROPERTY = 'logdir'
-PROJECTS_PROPERTY = 'projects'
-
-# This is a special exit code that is recognized by sync.py to terminate
-# the processing of the command sequence.
-CONTINUE_EXITVAL = 2
+__version__ = "0.8"
 
 
-def get_repos_for_project(logger, project, ignored_repos, **kwargs):
-    """
-    :param logger: logger
-    :param project: project name
-    :param ignored_repos: list of ignored repositories
-    :param kwargs: argument dictionary
-    :return: list of Repository objects
-    """
-    repos = []
-    for repo_path in get_repos(logger, project, kwargs['uri']):
-        logger.debug("Repository path = {}".format(repo_path))
+def worker(args):
+    project_name, logdir, loglevel, backupcount, config, incoming, uri, \
+        source_root, batch = args
 
-        if repo_path in ignored_repos:
-            logger.info("repository {} ignored".format(repo_path))
-            continue
+    if batch:
+        get_batch_logger(logdir, project_name,
+                         loglevel,
+                         backupcount,
+                         get_class_basename())
 
-        repo_type = get_repo_type(logger, repo_path, kwargs['uri'])
-        if not repo_type:
-            raise RepositoryException("cannot determine type of repository {}".
-                                      format(repo_path))
-
-        logger.debug("Repository type = {}".format(repo_type))
-
-        repo = get_repository(logger,
-                              # Not joining the path since the form
-                              # of repo_path is absolute path.
-                              kwargs['source_root'] + repo_path,
-                              repo_type,
-                              project,
-                              kwargs['commands'],
-                              kwargs['proxy'],
-                              None,
-                              kwargs['command_timeout'])
-        if not repo:
-            raise RepositoryException("Cannot get repository for {}".
-                                      format(repo_path))
-        else:
-            repos.append(repo)
-
-    return repos
+    return mirror_project(config, project_name,
+                          incoming,
+                          uri, source_root)
 
 
 def main():
     ret = 0
 
     parser = argparse.ArgumentParser(description='project mirroring',
-                                     parents=[get_baseparser()])
+                                     parents=[get_baseparser(
+                                         tool_version=__version__)
+                                     ])
 
-    parser.add_argument('project')
+    parser.add_argument('project', nargs='*', default=None)
+    parser.add_argument('-a', '--all', action='store_true',
+                        help='mirror all indexed projects', default=False)
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
@@ -134,66 +92,43 @@ def main():
     parser.add_argument('-I', '--incoming', action='store_true',
                         help='Check for incoming changes, terminate the '
                              'processing if not found.')
+    parser.add_argument('-w', '--workers', default=cpu_count(),
+                        help='Number of worker processes')
+
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
+
+    if len(args.project) > 0 and args.all:
+        fatal("Cannot use both project list and -a/--all")
+
+    if not args.all and len(args.project) == 0:
+        fatal("Need at least one project or --all")
 
     if args.config:
         config = read_config(logger, args.config)
         if config is None:
-            logger.error("Cannot read config file from {}".format(args.config))
-            sys.exit(1)
+            fatal("Cannot read config file from {}".format(args.config))
     else:
         config = {}
 
-    GLOBAL_TUNABLES = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
-                       COMMANDS_PROPERTY, PROJECTS_PROPERTY,
-                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
-    diff = diff_list(config.keys(), GLOBAL_TUNABLES)
-    if diff:
-        logger.error("unknown global configuration option(s): '{}'"
-                     .format(diff))
-        sys.exit(1)
-
-    # Make sure the log directory exists.
-    logdir = config.get(LOGDIR_PROPERTY)
-    if logdir:
-        check_create_dir(logger, logdir)
-
     uri = args.uri
     if not is_web_uri(uri):
-        logger.error("Not a URI: {}".format(uri))
-        sys.exit(1)
+        fatal("Not a URI: {}".format(uri))
     logger.debug("web application URI = {}".format(uri))
 
+    if not check_configuration(config):
+        sys.exit(1)
+
+    # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
         sys.exit(1)
 
     logger.debug("Source root = {}".format(source_root))
-
-    project_config = None
-    projects = config.get(PROJECTS_PROPERTY)
-    if projects:
-        if projects.get(args.project):
-            project_config = projects.get(args.project)
-        else:
-            for proj in projects.keys():
-                try:
-                    pattern = re.compile(proj)
-                except re.error:
-                    logger.error("Not a valid regular expression: {}".
-                                 format(proj))
-                    continue
-
-                if pattern.match(args.project):
-                    logger.debug("Project '{}' matched pattern '{}'".
-                                 format(args.project, proj))
-                    project_config = projects.get(proj)
-                    break
 
     hookdir = config.get(HOOKDIR_PROPERTY)
     if hookdir:
@@ -209,202 +144,40 @@ def main():
     if hook_timeout:
         logger.debug("Global hook timeout = {}".format(hook_timeout))
 
-    prehook = None
-    posthook = None
-    use_proxy = False
-    ignored_repos = None
-    if project_config:
-        logger.debug("Project '{}' has specific (non-default) config".
-                     format(args.project))
-
-        # Quick sanity check.
-        KNOWN_PROJECT_TUNABLES = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
-                                  HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
-                                  IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY]
-        diff = diff_list(project_config.keys(), KNOWN_PROJECT_TUNABLES)
-        if diff:
-            logger.error("unknown project configuration option(s) '{}' "
-                         "for project {}".format(diff, args.project))
-            sys.exit(1)
-
-        project_command_timeout = get_int(logger, "command timeout for "
-                                                  "project {}".
-                                          format(args.project),
-                                          project_config.
-                                          get(CMD_TIMEOUT_PROPERTY))
-        if project_command_timeout:
-            command_timeout = project_command_timeout
-            logger.debug("Project command timeout = {}".
-                         format(command_timeout))
-
-        project_hook_timeout = get_int(logger, "hook timeout for "
-                                               "project {}".
-                                       format(args.project),
-                                       project_config.
-                                       get(HOOK_TIMEOUT_PROPERTY))
-        if project_hook_timeout:
-            hook_timeout = project_hook_timeout
-            logger.debug("Project hook timeout = {}".
-                         format(hook_timeout))
-
-        ignored_repos = project_config.get(IGNORED_REPOS_PROPERTY)
-        if ignored_repos:
-            if not isinstance(ignored_repos, list):
-                logger.error("{} for project {} is not a list".
-                             format(IGNORED_REPOS_PROPERTY, args.project))
-                sys.exit(1)
-            logger.debug("has ignored repositories: {}".
-                         format(ignored_repos))
-
-        hooks = project_config.get(HOOKS_PROPERTY)
-        if hooks:
-            if not hookdir:
-                logger.error("Need to have '{}' in the configuration "
-                             "to run hooks".format(HOOKDIR_PROPERTY))
-                sys.exit(1)
-
-            if not os.path.isdir(hookdir):
-                logger.error("Not a directory: {}".format(hookdir))
-                sys.exit(1)
-
-            for hookname in hooks:
-                if hookname == "pre":
-                    prehook = hookpath = os.path.join(hookdir, hooks['pre'])
-                    logger.debug("pre-hook = {}".format(prehook))
-                elif hookname == "post":
-                    posthook = hookpath = os.path.join(hookdir, hooks['post'])
-                    logger.debug("post-hook = {}".format(posthook))
-                else:
-                    logger.error("Unknown hook name {} for project {}".
-                                 format(hookname, args.project))
-                    sys.exit(1)
-
-                if not is_exe(hookpath):
-                    logger.error("hook file {} does not exist or not "
-                                 "executable".format(hookpath))
-                    sys.exit(1)
-
-        if project_config.get(PROXY_PROPERTY):
-            if not config.get(PROXY_PROPERTY):
-                logger.error("global proxy setting is needed in order to"
-                             "have per-project proxy")
-                sys.exit(1)
-
-            logger.debug("will use proxy")
-            use_proxy = True
-
-    if not ignored_repos:
-        ignored_repos = []
-
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
+        logdir = config.get(LOGDIR_PROPERTY)
         if not logdir:
-            logger.error("The logdir property is required in batch mode")
-            sys.exit(1)
+            fatal("The {} property is required in batch mode".
+                  format(LOGDIR_PROPERTY))
 
-        logfile = os.path.join(logdir, args.project + ".log")
-        logger.debug("Switching logging to the {} file".
-                     format(logfile))
+    projects = args.project
+    if len(projects) == 1:
+        lockfile = projects[0] + "-mirror"
+    else:
+        lockfile = os.path.basename(sys.argv[0])
 
-        logger = logger.getChild("rotating")
-        logger.setLevel(args.loglevel)
-        logger.propagate = False
-        handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
-                                      backupCount=args.backupcount)
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
-                                      "%(message)s", '%m/%d/%Y %I:%M:%S %p')
-        handler.setFormatter(formatter)
-        handler.doRollover()
-        logger.addHandler(handler)
+    if args.all:
+        projects = list_indexed_projects(logger, args.uri)
 
-    # We want this to be logged to the log file (if any).
-    if project_config:
-        if project_config.get(DISABLED_PROPERTY):
-            logger.info("Project {} disabled, exiting".
-                        format(args.project))
-            sys.exit(CONTINUE_EXITVAL)
-
-    lock = FileLock(os.path.join(tempfile.gettempdir(),
-                                 args.project + "-mirror.lock"))
+    lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
         with lock.acquire(timeout=0):
-            proxy = config.get(PROXY_PROPERTY) if use_proxy else None
-
-            #
-            # Cache the repositories first. This way it will be known that
-            # something is not right, avoiding any needless pre-hook run.
-            #
-            repos = []
-            try:
-                repos = get_repos_for_project(logger, args.project,
-                                              ignored_repos,
-                                              commands=config.
-                                              get(COMMANDS_PROPERTY),
-                                              proxy=proxy,
-                                              command_timeout=command_timeout,
-                                              source_root=source_root,
-                                              uri=uri)
-            except RepositoryException:
-                logger.error('failed to get repositories for project {}'.
-                             format(args.project))
-                sys.exit(1)
-
-            if not repos:
-                logger.info("No repositories for project {}".
-                            format(args.project))
-                sys.exit(CONTINUE_EXITVAL)
-
-            # Check if any of the repositories contains incoming changes.
-            if args.incoming:
-                got_incoming = False
-                for repo in repos:
-                    try:
-                        if repo.incoming():
-                            logger.debug('Repository {} has incoming changes'.
-                                         format(repo))
-                            got_incoming = True
-                            break
-                    except RepositoryException:
-                        logger.error('Cannot determine incoming changes for '
-                                     'repository {}, driving on'.format(repo))
-
-                if not got_incoming:
-                    logger.info('No incoming changes for repositories in '
-                                'project {}'.
-                                format(args.project))
-                    sys.exit(CONTINUE_EXITVAL)
-
-            if prehook:
-                logger.info("Running pre hook")
-                if run_hook(logger, prehook,
-                            os.path.join(source_root, args.project), proxy,
-                            hook_timeout) != 0:
-                    logger.error("pre hook failed for project {}".
-                                 format(args.project))
-                    logging.shutdown()
+            with Pool(processes=int(args.workers)) as pool:
+                worker_args = []
+                for x in projects:
+                    worker_args.append([x, logdir, args.loglevel,
+                                        args.backupcount, config,
+                                        args.incoming,
+                                        args.uri, source_root,
+                                        args.batch])
+                try:
+                    project_results = pool.map(worker, worker_args, 1)
+                except KeyboardInterrupt:
                     sys.exit(1)
-
-            #
-            # If one of the repositories fails to sync, the whole project sync
-            # is treated as failed, i.e. the program will return 1.
-            #
-            for repo in repos:
-                logger.info("Synchronizing repository {}".
-                            format(repo.path))
-                if repo.sync() != 0:
-                    logger.error("failed to sync repository {}".
-                                 format(repo.path))
-                    ret = 1
-
-            if posthook:
-                logger.info("Running post hook")
-                if run_hook(logger, posthook,
-                            os.path.join(source_root, args.project), proxy,
-                            hook_timeout) != 0:
-                    logger.error("post hook failed for project {}".
-                                 format(args.project))
-                    logging.shutdown()
-                    sys.exit(1)
+                else:
+                    if any([True for x in project_results if x == 1]):
+                        ret = 1
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)

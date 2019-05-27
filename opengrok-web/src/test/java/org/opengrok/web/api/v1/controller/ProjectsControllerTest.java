@@ -45,6 +45,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -55,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +75,7 @@ import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-@ConditionalRun(RepositoryInstalled.SubvsersionInstalled.class)
+@ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
 public class ProjectsControllerTest extends JerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -308,13 +310,9 @@ public class ProjectsControllerTest extends JerseyTest {
                 env,
                 false, // don't search for repositories
                 false, // don't scan and add projects
-                null, // no default project
-                false, // don't list files
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially
-                repos, // repositories - needed when refreshing history partially
-                new ArrayList<>(), // don't zap cache
-                false); // don't list repos
+                repos); // repositories - needed when refreshing history partially
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         for (String proj : projectsToDelete) {
@@ -438,7 +436,7 @@ public class ProjectsControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetRepos() throws Exception {
+    public void testGetReposForNonExistentProject() throws Exception {
         GenericType<List<String>> type = new GenericType<List<String>>() {};
 
         // Try to get repos for non-existent project first.
@@ -449,6 +447,11 @@ public class ProjectsControllerTest extends JerseyTest {
                 .get(type);
 
         assertTrue(repos.isEmpty());
+    }
+
+    @Test
+    public void testGetRepos() throws Exception {
+        GenericType<List<String>> type = new GenericType<List<String>>() {};
 
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
@@ -459,19 +462,21 @@ public class ProjectsControllerTest extends JerseyTest {
         addProject("mercurial");
 
         // Get repositories of the project.
-        repos = target("projects")
+        List<String> repos = target("projects")
                 .path("mercurial")
                 .path("repositories")
                 .request()
                 .get(type);
 
-        // Perform cleanup of the subrepository in order not to interefere
+        // Perform cleanup of the subrepository in order not to interfere
         // with other tests.
         removeRecursive(new File(mercurialRoot.getAbsolutePath() +
                 File.separator + "closed").toPath());
 
         // test
-        assertEquals(Arrays.asList("/mercurial", "/mercurial/closed"), repos);
+        assertEquals(
+                new ArrayList<>(Arrays.asList(Paths.get("/mercurial").toString(), Paths.get("/mercurial/closed").toString())),
+                repos);
 
         // Test the types. There should be only one type for project with
         // multiple nested Mercurial repositories.
@@ -533,4 +538,33 @@ public class ProjectsControllerTest extends JerseyTest {
                 .put(Entity.text(Boolean.FALSE.toString()));
     }
 
+    @Test
+    public void testListFiles() throws IOException, IndexerException {
+        final String projectName = "mercurial";
+        GenericType<List<String>> type = new GenericType<List<String>>() {};
+
+        Indexer.getInstance().prepareIndexer(
+                env,
+                false, // don't search for repositories
+                true, // add projects
+                false, // don't create dictionary
+                new ArrayList<>(), // subFiles - needed when refreshing history partially
+                new ArrayList<>()); // repositories - needed when refreshing history partially
+        Indexer.getInstance().doIndexerExecution(true, null, null);
+
+        List<String> filesFromRequest = target("projects")
+                .path(projectName)
+                .path("files")
+                .request()
+                .get(type);
+        filesFromRequest.sort(String::compareTo);
+        String files[] = {"Makefile", "bar.txt", "header.h", "main.c", "novel.txt"};
+        for (int i = 0; i < files.length; i++) {
+            files[i] = "/" + projectName + "/" + files[i];
+        }
+        List<String> expectedFiles = Arrays.asList(files);
+        expectedFiles.sort(String::compareTo);
+
+        assertEquals(expectedFiles, filesFromRequest);
+    }
 }

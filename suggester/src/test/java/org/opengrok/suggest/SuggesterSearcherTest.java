@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -31,8 +31,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -60,7 +60,7 @@ public class SuggesterSearcherTest {
 
     @BeforeClass
     public static void setUpClass() throws IOException {
-        dir = new RAMDirectory();
+        dir = new ByteBuffersDirectory();
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             Document doc1 = new Document();

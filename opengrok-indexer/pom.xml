@@ -28,11 +28,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc74</version>
+        <version>1.2.8</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.1-rc74</version>
+    <version>1.2.8</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -86,10 +86,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
@@ -173,17 +169,46 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+<!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <lexDefinitions>
+                                <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>2.2.4</version>
                 <configuration>
                     <includeOnlyProperties>
-                        <includeOnlyProperty>^git.commit.id$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.id</includeOnlyProperty>
                     </includeOnlyProperties>
                 </configuration>
                 <executions>
@@ -239,6 +264,10 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             </filesToInclude>
                             <replacements>
                                 <replacement>
+                                    <token>git.commit.id.abbrev</token>
+                                    <value>changeset_short</value>
+                                </replacement>
+                                <replacement>
                                     <token>git.commit.id</token>
                                     <value>changeset</value>
                                 </replacement>
@@ -259,9 +288,22 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                         <configuration>
                           <filesToInclude>
-                              ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
+                              ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/json/JsonSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
                           </filesToInclude>
                           <replacements>
+                              <!--
+                              needed for HTML 5 compliance (javadoc in JDK 11)
+                              workaround for https://github.com/jflex-de/jflex/issues/534
+                              -->
+                              <replacement>
+                                  <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
+                                  <valueFile>${basedir}/jflex-code.txt</valueFile>
+                              </replacement>
+                              <replacement>
+                                  <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
+                                  <valueFile>${basedir}/jflex-code-end.txt</valueFile>
+                              </replacement>
+
                               <replacement>
                                   <token>private static final int ZZ_BUFFERSIZE =</token>
                                   <value>private int ZZ_BUFFERSIZE =</value>
@@ -289,6 +331,34 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                           </regexFlags>
                        </configuration>
                     </execution>
+
+                    <execution>
+                        <!--
+                        needed for HTML 5 compliance (javadoc in JDK 11)
+                        workaround for https://github.com/jflex-de/jflex/issues/534
+                        -->
+                        <id>replace-tt-with-code-in-jflex-sources</id>
+                        <phase>generate-sources</phase>
+
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <filesToInclude>
+                                ${basedir}/target/generated-sources/jflex/**/*.java
+                            </filesToInclude>
+                            <replacements>
+                                <replacement>
+                                    <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
+                                    <valueFile>${basedir}/jflex-code.txt</valueFile>
+                                </replacement>
+                                <replacement>
+                                    <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
+                                    <valueFile>${basedir}/jflex-code-end.txt</valueFile>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -311,24 +381,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>de.jflex</groupId>
-                <artifactId>jflex-maven-plugin</artifactId>
-                <version>1.7.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <lexDefinitions>
-                                <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
-                            </lexDefinitions>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -359,7 +411,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target unless="maven.test.skip">
+                            <target unless="skipTests">
                                 <ant target="-post-compile-test"/>
                             </target>
                         </configuration>
@@ -369,21 +421,47 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
                     </excludes>
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>@{surefireArgLine}</argLine>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>java9plus</id>
+            <activation>
+                <jdk>[9,18]</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!-- Test helper class with name that confuses surefire -->
+                                <exclude>**/TestRepository.java</exclude>
+                            </excludes>
+                            <argLine>
+                                @{surefireArgLine}
+                                --illegal-access=permit
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

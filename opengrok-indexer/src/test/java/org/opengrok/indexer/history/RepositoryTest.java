@@ -19,17 +19,17 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opengrok.indexer.util.BufferSink;
 
 /**
  *
@@ -54,8 +54,7 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            DateFormat format = repository.getDateFormat();
-            format.parse(test[0]);
+            repository.parse(test[0]);
         }
     }
 
@@ -78,8 +77,7 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(new String[]{test[1]});
-            DateFormat format = repository.getDateFormat();
-            format.parse(test[0]);
+            repository.parse(test[0]);
         }
     }
 
@@ -106,11 +104,10 @@ public class RepositoryTest {
 
         RepositoryImplementation repository = new RepositoryImplementation();
         repository.setDatePatterns(new String[0]);
-        DateFormat format = repository.getDateFormat();
 
         for (String test : tests) {
             try {
-                format.parse(test);
+                repository.parse(test);
                 Assert.fail("Shouldn't be able to parse the date: " + test);
             } catch (ParseException ex) {
             }
@@ -134,9 +131,8 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            DateFormat format = repository.getDateFormat();
             try {
-                format.parse(test[0]);
+                repository.parse(test[0]);
                 Assert.fail("Shouldn't be able to parse the date: " + test[0]);
             } catch (ParseException ex) {
             }
@@ -144,6 +140,7 @@ public class RepositoryTest {
     }
 
     private class RepositoryImplementation extends Repository {
+        private static final long serialVersionUID = 1686223058901603237L;
 
         @Override
         public boolean fileHasHistory(File file) {
@@ -161,8 +158,9 @@ public class RepositoryTest {
         }
 
         @Override
-        public InputStream getHistoryGet(String parent, String basename, String rev) {
-            return null;
+        boolean getHistoryGet(
+                BufferSink sink, String parent, String basename, String rev) {
+            return false;
         }
 
         @Override

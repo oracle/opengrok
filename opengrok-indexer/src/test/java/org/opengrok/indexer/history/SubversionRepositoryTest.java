@@ -51,11 +51,11 @@ public class SubversionRepositoryTest {
             {"2016-01-01T10:00:00Z", null}
         };
 
-        DateFormat format = new SubversionRepository().getDateFormat();
+        final SubversionRepository repository = new SubversionRepository();
 
         for (String[] test : tests) {
             try {
-                format.parse(test[0]);
+                repository.parse(test[0]);
                 if (test[1] != null) {
                     Assert.fail("Shouldn't be able to parse the date: " + test[0]);
                 }

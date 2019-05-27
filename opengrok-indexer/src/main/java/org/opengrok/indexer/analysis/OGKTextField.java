@@ -44,6 +44,8 @@ public class OGKTextField extends Field {
 
     /**
      * Creates a new un-stored instance with {@link Reader} value.
+     * @param name field name
+     * @param reader reader
      */
     public OGKTextField(String name, Reader reader) {
         super(name, reader, TYPE_NOT_STORED);
@@ -51,6 +53,9 @@ public class OGKTextField extends Field {
 
     /**
      * Creates a new instance with {@link Reader} value.
+     * @param name field name
+     * @param reader reader
+     * @param store store
      */
     public OGKTextField(String name, Reader reader, Store store) {
         super(name, reader, store == Store.YES ? TYPE_STORED : TYPE_NOT_STORED);
@@ -58,6 +63,9 @@ public class OGKTextField extends Field {
 
     /**
      * Creates a new instance with {@code String} value.
+     * @param name field name
+     * @param value string value
+     * @param store store
      */
     public OGKTextField(String name, String value, Store store) {
         super(name, value, store == Store.YES ? TYPE_STORED : TYPE_NOT_STORED);
@@ -65,6 +73,8 @@ public class OGKTextField extends Field {
 
     /**
      * Creates a new un-stored instance with {@link TokenStream} value.
+     * @param name field name
+     * @param stream stream
      */
     public OGKTextField(String name, TokenStream stream) {
         super(name, stream, TYPE_NOT_STORED);

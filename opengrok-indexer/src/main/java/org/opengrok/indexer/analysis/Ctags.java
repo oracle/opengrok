@@ -392,8 +392,20 @@ public class Ctags implements Resettable {
      *
      * @param bufferTags tags file output
      * @return definitions parsed from buffer
+     * @throws java.lang.InterruptedException interrupted
      */
-    public Definitions testCtagsParser(String bufferTags) {
+    public Definitions testCtagsParser(String bufferTags)
+            throws InterruptedException {
+
+        // Ensure output is magic-terminated as expected.
+        StringBuilder tagsBuilder = new StringBuilder(bufferTags);
+        if (!bufferTags.endsWith("\n")) {
+            tagsBuilder.append("\n");
+        }
+        tagsBuilder.append(CTAGS_FILTER_TERMINATOR);
+        tagsBuilder.append("\n");
+        bufferTags = tagsBuilder.toString();
+
         junit_testing = true;
         ctagsOut = new BufferedReader(new StringReader(bufferTags));
         ctags = new Process() {
@@ -429,11 +441,7 @@ public class Ctags implements Resettable {
 
         CtagsReader rdr = new CtagsReader();
         rdr.setTabSize(tabSize);
-        try {
-            readTags(rdr);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "readTags() test", ex);
-        }
+        readTags(rdr);
         Definitions ret = rdr.getDefinitions();
         return ret;
     }
@@ -449,18 +457,22 @@ public class Ctags implements Resettable {
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
                     if (!junit_testing) {
-                        LOGGER.warning("Unexpected end of file!");
+                        LOGGER.warning("ctags: Unexpected end of file!");
                     }
                     try {
                         int val = ctags.exitValue();
                         if (!junit_testing) {
                             LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
                         }
+                    } catch (IllegalThreadStateException e) {
+                        LOGGER.log(Level.WARNING, "ctags EOF but did not exit");
+                        ctags.destroyForcibly();
                     } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, "Ctags problem: ", e);
+                        LOGGER.log(Level.WARNING, "ctags problem:", e);
+                        ctags.destroyForcibly();
                     }
-                    LOGGER.fine("Ctag read");
-                    return;
+                    // Throw the following to indicate non-I/O error for retry.
+                    throw new InterruptedException("tagLine == null");
                 }
 
                 if (CTAGS_FILTER_TERMINATOR.equals(tagLine)) {

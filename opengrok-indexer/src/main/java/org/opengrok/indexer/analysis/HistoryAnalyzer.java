@@ -24,9 +24,9 @@
 package org.opengrok.indexer.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.opengrok.indexer.analysis.plain.PlainFullTokenizer;
 
@@ -62,7 +62,7 @@ public final class HistoryAnalyzer extends Analyzer {
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        
         JFlexTokenizer plainfull = new JFlexTokenizer(new PlainFullTokenizer(
-            FileAnalyzer.dummyReader));
+                AbstractAnalyzer.DUMMY_READER));
         //we are counting position increments, this might affect the queries
         //later and need to be in sync, especially for highlighting of results
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull,

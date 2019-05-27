@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -54,9 +54,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -67,6 +67,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Summary.Fragment;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.ProjectHelper;
@@ -284,6 +285,8 @@ public class SearchEngine {
      * Call to search() must be eventually followed by call to destroy()
      * so that IndexSearcher objects are properly freed.
      *
+     * @param req request
+     * @param projectNames names of the projects
      * @return The number of hits
      * @see ProjectHelper#getAllProjects()
      */
@@ -316,6 +319,7 @@ public class SearchEngine {
      * Call to search() must be eventually followed by call to destroy()
      * so that IndexSearcher objects are properly freed.
      *
+     * @param req request
      * @return The number of hits
      * @see ProjectHelper#getAllProjects()
      */
@@ -424,6 +428,8 @@ public class SearchEngine {
     /**
      * Gets the document of the specified {@code docId} from
      * {@code search(...)} if it was called.
+     *
+     * @param docId document ID
      * @return a defined instance if a query succeeded
      * @throws java.io.IOException if an error occurs obtaining the Lucene
      * document by ID
@@ -490,7 +496,7 @@ public class SearchEngine {
                 Document doc = docs.get(ii);
                 String filename = doc.get(QueryBuilder.PATH);
 
-                Genre genre = Genre.get(doc.get(QueryBuilder.T));
+                AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T));
                 Definitions tags = null;
                 IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
                 if (tagsField != null) {
@@ -506,14 +512,14 @@ public class SearchEngine {
                 if (sourceContext != null) {
                     sourceContext.toggleAlt();
                     try {
-                        if (Genre.PLAIN == genre && (source != null)) {
+                        if (AbstractAnalyzer.Genre.PLAIN == genre && (source != null)) {
                             // SRCROOT is read with UTF-8 as a default.
                             hasContext = sourceContext.getContext(
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
                                 null, null, null, filename, tags, nhits > 100,
                                 false, ret, scopes);
-                        } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
+                        } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /**
                              * For backward compatibility, read the
@@ -521,18 +527,19 @@ public class SearchEngine {
                              * default charset.
                              */
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
-                                    ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz")))))
+                                    ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(
+                                            TandemPath.join(data + Prefix.XREF_P + filename, ".gz"))))))
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
                                 l = r.read(content);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
                             Summary sum = summarizer.getSummary(new String(content, 0, l));
-                            Fragment fragments[] = sum.getFragments();
-                            for (int jj = 0; jj < fragments.length; ++jj) {
-                                String match = fragments[jj].toString();
+                            Fragment[] fragments = sum.getFragments();
+                            for (Fragment fragment : fragments) {
+                                String match = fragment.toString();
                                 if (match.length() > 0) {
-                                    if (!fragments[jj].isEllipsis()) {
-                                        Hit hit = new Hit(filename, fragments[jj].toString(), "", true, alt);
+                                    if (!fragment.isEllipsis()) {
+                                        Hit hit = new Hit(filename, fragment.toString(), "", true, alt);
                                         ret.add(hit);
                                     }
                                     hasContext = true;

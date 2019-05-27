@@ -24,28 +24,26 @@ package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.framework.PluginClassLoader;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-public class AuthorizationPluginClassLoaderTest {
+public class PluginClassLoaderTest {
 
     private final File pluginDirectory;
 
-    public AuthorizationPluginClassLoaderTest() throws URISyntaxException {
-        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("/authorization/plugins/testplugins.jar");
-        pluginDirectory = Paths.get(resource.toURI()).toFile().getParentFile();
+    public PluginClassLoaderTest() throws URISyntaxException {
+        pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
         Assert.assertTrue(pluginDirectory.isDirectory());
     }
 
     @Test
     public void testProhibitedPackages() {
-        AuthorizationPluginClassLoader instance = new AuthorizationPluginClassLoader(null);
+        PluginClassLoader instance = new PluginClassLoader(null);
 
         try {
             instance.loadClass("java.lang.plugin.MyPlugin");
@@ -98,7 +96,7 @@ public class AuthorizationPluginClassLoaderTest {
 
     @Test
     public void testProhibitedNames() {
-        AuthorizationPluginClassLoader instance = new AuthorizationPluginClassLoader(null);
+        PluginClassLoader instance = new PluginClassLoader(null);
 
         try {
             instance.loadClass("org.opengrok.indexer.configuration.Group");
@@ -138,17 +136,19 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testNonExistingPlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "org.sample.plugin.NoPlugin", true);
+        loadClass(instance, "org.sample.plugin.NoPlugin", true);
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testFalsePlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
         Class clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
 
@@ -166,9 +166,10 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testTruePlugin() {
-        AuthorizationPluginClassLoader instance
-                = new AuthorizationPluginClassLoader(pluginDirectory);
+        PluginClassLoader instance
+                = new PluginClassLoader(pluginDirectory);
 
         Class clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");
 
@@ -185,10 +186,11 @@ public class AuthorizationPluginClassLoaderTest {
         );
     }
 
-    private IAuthorizationPlugin getNewInstance(Class c) {
+    @SuppressWarnings("rawtypes")
+    private IAuthorizationPlugin getNewInstance(Class<?> c) {
         IAuthorizationPlugin plugin = null;
         try {
-            plugin = (IAuthorizationPlugin) c.newInstance();
+            plugin = (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
         } catch (InstantiationException ex) {
             Assert.fail("Should not produce InstantiationException");
         } catch (IllegalAccessException ex) {
@@ -199,11 +201,13 @@ public class AuthorizationPluginClassLoaderTest {
         return plugin;
     }
 
-    private Class loadClass(AuthorizationPluginClassLoader loader, String name) {
+    @SuppressWarnings("rawtypes")
+    private Class loadClass(PluginClassLoader loader, String name) {
         return loadClass(loader, name, false);
     }
 
-    private Class loadClass(AuthorizationPluginClassLoader loader, String name, boolean shouldFail) {
+    @SuppressWarnings("rawtypes")
+    private Class loadClass(PluginClassLoader loader, String name, boolean shouldFail) {
         Class clazz = null;
         try {
             clazz = loader.loadClass(name);
@@ -212,15 +216,15 @@ public class AuthorizationPluginClassLoaderTest {
             }
         } catch (ClassNotFoundException ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce ClassNotFoundException");
+                Assert.fail(String.format("Should not produce ClassNotFoundException: %s", ex.getLocalizedMessage()));
             }
         } catch (SecurityException ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce SecurityException");
+                Assert.fail(String.format("Should not produce SecurityException: %s", ex.getLocalizedMessage()));
             }
         } catch (Exception ex) {
             if (!shouldFail) {
-                Assert.fail("Should not produce any exception");
+                Assert.fail(String.format("Should not produce any exception: %s", ex.getLocalizedMessage()));
             }
         }
         return clazz;

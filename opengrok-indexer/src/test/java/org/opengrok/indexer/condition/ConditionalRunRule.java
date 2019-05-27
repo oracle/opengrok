@@ -155,7 +155,7 @@ public class ConditionalRunRule implements TestRule {
                     result = new CompositeCondition();
                 }
                 if (isConditionTypeStandalone(clazz)) {
-                    result.add(clazz.newInstance());
+                    result.add(clazz.getDeclaredConstructor().newInstance());
                 } else {
                     result.add(clazz.getDeclaredConstructor(mTestClass).newInstance(mTestClass));
                 }

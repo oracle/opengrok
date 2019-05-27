@@ -90,8 +90,8 @@ public class IndexVersionTest {
     private void testIndexVersion(boolean projectsEnabled, List<String> subFiles) throws Exception {
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(projectsEnabled);
-        Indexer.getInstance().prepareIndexer(env, true, true, null,
-                false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                false, null, null);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         IndexVersion.check(subFiles);

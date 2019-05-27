@@ -37,7 +37,7 @@ import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
@@ -48,7 +48,7 @@ import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
  */
 public class HaskellSymbolTokenizerTest {
 
-    private final FileAnalyzer analyzer;
+    private final AbstractAnalyzer analyzer;
 
     public HaskellSymbolTokenizerTest() {
         this.analyzer = new HaskellAnalyzerFactory().getAnalyzer();

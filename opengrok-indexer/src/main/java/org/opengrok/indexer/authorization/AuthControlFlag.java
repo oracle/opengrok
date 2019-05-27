@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -58,7 +58,7 @@ public enum AuthControlFlag {
 
     private final String flag;
 
-    private AuthControlFlag(String flag) {
+    AuthControlFlag(String flag) {
         this.flag = flag;
     }
 

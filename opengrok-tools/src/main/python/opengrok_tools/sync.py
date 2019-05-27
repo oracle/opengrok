@@ -19,15 +19,11 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
  This script runs OpenGrok parallel project processing.
-
- It is intended to work on Unix systems. (mainly because it relies on the
- OpenGrok shell script - for the time being)
-
 """
 
 import argparse
@@ -41,7 +37,7 @@ from os import path
 from filelock import Timeout, FileLock
 
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
-from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
@@ -71,7 +67,10 @@ def main():
     dirs_to_process = []
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.',
-                                     parents=[get_baseparser()])
+                                     parents=[
+                                         get_baseparser(
+                                             tool_version=__version__)
+                                     ])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 
@@ -90,10 +89,13 @@ def main():
                         help='config file in JSON format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
+    parser.add_argument('-f', '--driveon', action='store_true', default=False,
+                        help='continue command sequence processing even '
+                        'if one of the commands requests break')
     try:
         args = parser.parse_args()
     except ValueError as e:
-        print_exc_exit(e)
+        fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
@@ -103,19 +105,20 @@ def main():
         sys.exit(1)
     logger.debug("web application URI = {}".format(uri))
 
+    # First read and validate configuration file as it is mandatory argument.
+    config = read_config(logger, args.config)
+    if config is None:
+        logger.error("Cannot read config file from {}".format(args.config))
+        sys.exit(1)
+
     # Changing working directory to root will avoid problems when running
-    # programs via sudo/su.
+    # programs via sudo/su. Do this only after the config file was read
+    # so that its path can be specified as relative.
     try:
         os.chdir("/")
     except OSError:
         logger.error("cannot change working directory to /",
                      exc_info=True)
-        sys.exit(1)
-
-    # First read and validate configuration file as it is mandatory argument.
-    config = read_config(logger, args.config)
-    if config is None:
-        logger.error("Cannot read config file from {}".format(args.config))
         sys.exit(1)
 
     try:
@@ -149,8 +152,6 @@ def main():
                                  "opengrok-sync.lock"))
     try:
         with lock.acquire(timeout=0):
-            pool = Pool(processes=int(args.workers))
-
             if args.projects:
                 dirs_to_process = args.projects
                 logger.debug("Processing directories: {}".
@@ -177,23 +178,24 @@ def main():
             cmds_base = []
             for d in dirs_to_process:
                 cmd_base = CommandSequenceBase(d, commands, args.loglevel,
-                                               config.get("cleanup"))
+                                               config.get("cleanup"),
+                                               args.driveon)
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.
-            try:
-                cmds_base_results = pool.map(worker, cmds_base, 1)
-            except KeyboardInterrupt:
-                # XXX lock.release() or return 1 ?
-                sys.exit(1)
-            else:
-                for cmds_base in cmds_base_results:
-                    logger.debug("Checking results of project {}".
-                                 format(cmds_base))
-                    cmds = CommandSequence(cmds_base)
-                    cmds.fill(cmds_base.retcodes, cmds_base.outputs,
-                              cmds_base.failed)
-                    cmds.check(ignore_errors)
+            with Pool(processes=int(args.workers)) as pool:
+                try:
+                    cmds_base_results = pool.map(worker, cmds_base, 1)
+                except KeyboardInterrupt:
+                    sys.exit(1)
+                else:
+                    for cmds_base in cmds_base_results:
+                        logger.debug("Checking results of project {}".
+                                     format(cmds_base))
+                        cmds = CommandSequence(cmds_base)
+                        cmds.fill(cmds_base.retcodes, cmds_base.outputs,
+                                  cmds_base.failed)
+                        cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)

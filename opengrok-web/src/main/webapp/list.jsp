@@ -33,21 +33,28 @@ java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
+java.util.logging.Level,
 java.util.Set,
+java.util.logging.Logger,
 org.opengrok.indexer.analysis.AnalyzerGuru,
+org.opengrok.indexer.analysis.Ctags,
 org.opengrok.indexer.analysis.Definitions,
-org.opengrok.indexer.analysis.FileAnalyzer.Genre,
-org.opengrok.indexer.analysis.FileAnalyzerFactory,
+org.opengrok.indexer.analysis.AbstractAnalyzer,
+org.opengrok.indexer.analysis.AbstractAnalyzer.Genre,
+org.opengrok.indexer.analysis.AnalyzerFactory,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
+org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.search.DirectoryExtraReader,
 org.opengrok.indexer.search.FileExtra,
 org.opengrok.indexer.util.FileExtraZipper,
+org.opengrok.indexer.util.ObjectPool,
 org.opengrok.indexer.util.IOUtils,
 org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
-%><%
+%>
+<%
 {
     // need to set it here since requesting parameters
     if (request.getCharacterEncoding() == null) {
@@ -77,6 +84,8 @@ document.pageReady.push(function() { pageReadyList();});
 <%
 /* ---------------------- list.jsp start --------------------- */
 {
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
@@ -177,18 +186,18 @@ document.pageReady.push(function() { pageReadyList();});
                 BufferedInputStream bin =
                     new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
-                    FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-                    Genre g = AnalyzerGuru.getGenre(a);
+                    AnalyzerFactory a = AnalyzerGuru.find(basename);
+                    AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
                     if (g == null) {
                         a = AnalyzerGuru.find(bin);
                         g = AnalyzerGuru.getGenre(a);
                     }
-                    if (g == Genre.IMAGE) {
+                    if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
     <img src="<%= rawPath %>"/>
 </div><%
-                    } else if ( g == Genre.HTML) {
+                    } else if ( g == AbstractAnalyzer.Genre.HTML) {
                         /**
                          * For backward compatibility, read the OpenGrok-produced
                          * document using the system default charset.
@@ -196,7 +205,7 @@ document.pageReady.push(function() { pageReadyList();});
                         r = new InputStreamReader(bin);
                         // dumpXref() is also useful here for translating links.
                         Util.dumpXref(out, r, request.getContextPath());
-                    } else if (g == Genre.PLAIN) {
+                    } else if (g == AbstractAnalyzer.Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
@@ -238,29 +247,41 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
-            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
+            AnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
             if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
+                File tempf = null;
                 try {
                     if (rev.equals(DUMMY_REVISION)) {
                         in = new FileInputStream(resourceFile);
                     } else {
-                        in = HistoryGuru.getInstance()
-                                .getRevision(resourceFile.getParent(), basename, rev);
+                        tempf = File.createTempFile("ogtags", basename);
+                        if (HistoryGuru.getInstance().getRevision(tempf,
+                                resourceFile.getParent(), basename, rev)) {
+                            in = new BufferedInputStream(
+                                    new FileInputStream(tempf));
+                        } else {
+                            tempf.delete();
+                            tempf = null;
+                        }
                     }
                 } catch (Exception e) {
                     // fall through to error message
                     error = e.getMessage();
+                    if (tempf != null) {
+                        tempf.delete();
+                        tempf = null;
+                    }
                 }
                 if (in != null) {
                     try {
                         if (g == null) {
-                            a = AnalyzerGuru.find(in);
+                            a = AnalyzerGuru.find(in, basename);
                             g = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
+                        if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
     %>
     <div id="src">
     Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
@@ -269,10 +290,35 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %>
     <div id="src">
         <pre><%
-                            if (g == Genre.PLAIN) {
-                                // We don't have any way to get definitions
-                                // for old revisions currently.
+                            if (g == AbstractAnalyzer.Genre.PLAIN) {
                                 Definitions defs = null;
+                                ObjectPool<Ctags> ctagsPool = cfg.getEnv().
+                                        getIndexerParallelizer().getCtagsPool();
+                                int tries = 2;
+                                while (cfg.getEnv().isWebappCtags()) {
+                                    Ctags ctags = ctagsPool.get();
+                                    try {
+                                        ctags.setTabSize(project != null ?
+                                                project.getTabSize() : 0);
+                                        defs = ctags.doCtags(tempf.getPath());
+                                        break;
+                                    } catch (InterruptedException ex) {
+                                        if (--tries > 0) {
+                                            LOGGER.log(Level.WARNING,
+                                                    "doCtags() interrupted--{0}",
+                                                    ex.getMessage());
+                                            continue;
+                                        }
+                                        LOGGER.log(Level.WARNING, "doCtags()", ex);
+                                        break;
+                                    } catch (Exception ex) {
+                                        LOGGER.log(Level.WARNING, "doCtags()", ex);
+                                        break;
+                                    } finally {
+                                        ctags.reset();
+                                        ctagsPool.release(ctags);
+                                    }
+                                }
                                 Annotation annotation = cfg.getAnnotation();
                                 //not needed yet
                                 //annotation.writeTooltipMap(out);
@@ -283,11 +329,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                         request.getContextPath(),
                                         a, r, out,
                                         defs, annotation, project);
-                            } else if (g == Genre.IMAGE) {
+                            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
         <pre><%
-                            } else if (g == Genre.HTML) {
+                            } else if (g == AbstractAnalyzer.Genre.HTML) {
                                 /**
                                  * For backward compatibility, read the
                                  * OpenGrok-produced document using the system
@@ -314,6 +360,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             try { in.close(); }
                             catch (Exception e) { /* ignore */ }
                         }
+                        if (tempf != null) {
+                            tempf.delete();
+                        }
                     }
         %></pre>
     </div><%
@@ -325,7 +374,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     <p class="error"><%= error %></p><%
                     }
                 }
-            } else if (g == Genre.IMAGE) {
+            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
     %>
     <div id="src">
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>

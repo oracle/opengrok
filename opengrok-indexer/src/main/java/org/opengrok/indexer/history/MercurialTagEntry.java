@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -37,7 +37,7 @@ public class MercurialTagEntry extends TagEntry {
     @Override
     public int compareTo(HistoryEntry that) {
         assert this.revision != NOREV : "Mercurial TagEntry created without revision specified";
-        String revs[] = that.getRevision().split(":");
+        String[] revs = that.getRevision().split(":");
         assert revs.length == 2 : "Unable to parse revision format";
         return ((Integer) this.revision).compareTo(Integer.parseInt(revs[0]));
     }

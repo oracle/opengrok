@@ -24,8 +24,8 @@
 
 package org.opengrok.indexer.analysis.archive;
 
-import org.opengrok.indexer.analysis.FileAnalyzer;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
@@ -44,7 +44,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
         }
 
         @Override
-        public FileAnalyzerFactory forFactory() {
+        public AnalyzerFactory forFactory() {
             return ZipAnalyzerFactory.DEFAULT_INSTANCE;
         }
 
@@ -58,11 +58,11 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
             new ZipAnalyzerFactory();
 
     private ZipAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, name);
     }
 
     @Override
-    protected FileAnalyzer newAnalyzer() {
+    protected AbstractAnalyzer newAnalyzer() {
         return new ZipAnalyzer(this);
     }
 }

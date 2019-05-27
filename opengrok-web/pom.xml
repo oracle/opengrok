@@ -1,15 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc74</version>
+        <version>1.2.8</version>
     </parent>
 
     <artifactId>opengrok-web</artifactId>
-    <version>1.1-rc74</version>
+    <version>1.2.8</version>
     <packaging>war</packaging>
 
     <name>OpenGrok Web</name>
@@ -118,6 +141,23 @@
 
         <plugins>
             <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jspc-maven-plugin</artifactId>
+                <version>9.4.14.v20181114</version>
+                <executions>
+                    <execution>
+                        <id>jspc</id>
+                        <goals>
+                            <goal>jspc</goal>
+                        </goals>
+                        <configuration>
+                            <mergeFragment>false</mergeFragment>
+                            <generatedClasses>${project.build.directory}/jspc</generatedClasses>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.1.0</version>
@@ -131,17 +171,19 @@
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <url>http://localhost:8080/manager/text</url>
-                    <server>OpenGrok</server>
+                    <url>${tomcat.url}</url>
+                    <server>${tomcat.server.id}</server>
                     <path>/${project.build.finalName}</path>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>
+                        -Djna.nosys=true
+                        @{surefireArgLine}
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -151,7 +193,7 @@
         <profile>
             <id>java9plus</id>
             <activation>
-                <jdk>[9,11]</jdk>
+                <jdk>[9,18]</jdk>
             </activation>
             <build>
                 <plugins>
@@ -160,6 +202,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <argLine>
+                                @{surefireArgLine}
+                                -Djna.nosys=true
+                                --illegal-access=permit
                                 --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
                                 --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
                                 --add-exports java.base/sun.nio.ch=ALL-UNNAMED

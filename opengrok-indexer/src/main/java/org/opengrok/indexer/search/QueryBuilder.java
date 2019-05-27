@@ -18,7 +18,7 @@
  */
 
 /* 
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -72,7 +72,7 @@ public class QueryBuilder {
     public static final String OBJSER = "objser"; // object serialized
     public static final String OBJVER = "objver"; // object version
 
-    public static final List<String> searchFields = Arrays.asList("q", DEFS, REFS, PATH, HIST);
+    public static final List<String> searchFields = Arrays.asList(FULL, DEFS, REFS, PATH, HIST);
 
     /** Used for paths, so SHA-1 is completely sufficient */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
@@ -413,6 +413,7 @@ public class QueryBuilder {
      * @param query the query string to escape
      * @return the escaped query string
      */
+    @SuppressWarnings("fallthrough")
     private String escapeQueryString(String field, String query) {
         switch (field) {
             case FULL:

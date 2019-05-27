@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -945,7 +945,7 @@
 
                     this.$search_defs.attr('href', this.getSearchLink('defs'));
                     this.$search_refs.attr('href', this.getSearchLink('refs'));
-                    this.$search_full.attr('href', this.getSearchLink('q'));
+                    this.$search_full.attr('href', this.getSearchLink('full'));
                     this.$search_files.attr('href', this.getSearchLink('path'));
                     this.$search_google.attr('href', this.options.google_url + this.symbol)
                 },
@@ -1117,7 +1117,7 @@
                             $ul.append(
                                     $('<li>')
                                     .addClass('message-group-item')
-                                    .addClass(tag.messages[j].class)
+                                    .addClass(tag.messages[j].cssClass)
                                     .attr('title', 'Expires on ' + tag.messages[j].expiration)
                                     .html(tag.messages[j].created + ': ' + tag.messages[j].text)
                                     )
@@ -1703,7 +1703,7 @@ function domReadyMast() {
                     $("<dt>").text(definitions.shift().trim()).appendTo($el);
                     var $dd = $("<dd>");
                     $.each(definitions.join(":").split("<br/>"), function (i, el) {
-                        $dd.append(el.trim());
+                        $dd.append(escapeHtml(el.trim()));
                         $dd.append($("<br/>"));
                     });
                     $dd.appendTo($el);
@@ -1745,7 +1745,7 @@ function initAutocomplete(config, minisearch) {
     if (minisearch) {
         initMinisearchAutocomplete(config);
     } else {
-        initAutocompleteForField("q", "full", config);
+        initAutocompleteForField("full", "full", config);
         initAutocompleteForField("defs", "defs", config);
         initAutocompleteForField("refs", "refs", config);
         initAutocompleteForField("path", "path", config);
@@ -1754,7 +1754,7 @@ function initAutocomplete(config, minisearch) {
 }
 
 function initMinisearchAutocomplete(config) {
-    if (config.allowedFields && !config.allowedFields.includes('full')) {
+    if (config.allowedFields && config.allowedFields.indexOf('full') < 0) {
         return;
     }
 
@@ -1769,7 +1769,7 @@ function initMinisearchAutocomplete(config) {
 
     initAutocompleteForField('search', 'full', config, function (input, field) {
         var caretPos = input.caret();
-        if (!Number.isInteger(caretPos)) {
+        if (!(typeof caretPos === 'number')) {
             console.error("Suggest: could not get caret position");
             return;
         }
@@ -1784,7 +1784,7 @@ function initMinisearchAutocomplete(config) {
 }
 
 function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
-    if (config.allowedFields && !config.allowedFields.includes(field)) {
+    if (config.allowedFields && config.allowedFields.indexOf(field) < 0) {
         return;
     }
 
@@ -1799,7 +1799,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
         dataFunction = getAutocompleteMenuData;
     }
     if (!errorElemId) {
-        errorElemId = 'q';
+        errorElemId = 'full';
     }
     var errorElem = $('#' + errorElemId);
 
@@ -1865,7 +1865,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 event.preventDefault();
                 return;
             }
-            if (event.originalEvent.originalEvent.type.startsWith('key')) { // replace value only on key events
+            if (event.originalEvent.originalEvent.type.indexOf('key') == 0) { // replace value only on key events
                 replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
             }
 
@@ -1909,7 +1909,7 @@ function getAutocompleteMenuData(input, field) {
     return {
         projects: getSelectedProjectNames(),
         field: field,
-        full: $('#q').val(),
+        full: $('#full').val(),
         defs: $('#defs').val(),
         refs: $('#refs').val(),
         path: $('#path').val(),
@@ -2207,7 +2207,7 @@ function clearSearchFrom() {
 
 function getSelectedProjectNames() {
     try {
-        return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+        return $.map($("#project").searchableOptionList().getSelection().filter("[name='project']"), function (item) {
             return $(item).attr("value");
         });
     } catch (e) { // happens when projects are not enabled
@@ -2273,13 +2273,58 @@ function isOnSearchPage() {
     return $(document.documentElement).hasClass('search');
 }
 
-function transform_projects_to_groups() {
+/**
+ * Preprocess the searched projects in the form with:
+ *
+ * <ol>
+ *  <li>For all project search -> replace the projects with simple searchall parameter</li>
+ *  <li>For group search -> replace all projects in a group by the group parameter</li>
+ * </ol>
+ * @param form the form containing the checkboxes
+ */
+function preprocess_searched_projects(form) {
     var sol = $('#project').searchableOptionList();
 
     var $sel = sol.$selectionContainer;
 
+    /*
+     * For all project search check if all project checkbox are checked and then uncheck them (they
+     * would appear in the url) and add a hidden checkbox with searchall name.
+     */
+    var allProjectsSearch = $.makeArray($sel.find('.sol-checkbox[name=project]')).every(function (checkbox) {
+        return $(checkbox).is(':checked')
+    });
+
+    if (allProjectsSearch && $('#search_all_projects').length === 0) {
+        $sel.find('.sol-checkbox').prop('checked', false);
+        var $input = $('<input>')
+        var $all = $input
+            .attr({
+                id: 'search_all_projects',
+                type: 'checkbox',
+                value: true,
+                name: 'searchall',
+            })
+            .prop('checked', true)
+            .css('display', 'none')
+        $all.appendTo($(form));
+        return;
+    }
+
+    /*
+     * For selecting groups instead of projects, ommit the "Other" group. Loop over
+     * all project checkbox in a group and when all of them are checked, uncheck them (they
+     * would appear in the URL) and then check the group checkbox.
+     */
     $sel.find('.sol-optiongroup').each(function () {
         var $el = $(this);
+
+        // handle "Other" group for ungrouped projects
+        if ($el.find('.sol-optiongroup-label').text() === 'Other') {
+            $el.find('.sol-checkbox[name=group]').prop('checked', false);
+            return;
+        }
+
         var checkboxs = $el.find('.sol-option .sol-checkbox')
         for (var i = 0; i < checkboxs.length; i++) {
             var checkbox = $(checkboxs[i])
@@ -2317,8 +2362,9 @@ function searchSubmit(form) {
         form.appendChild(input);
     }
 
+    // replace all projects search with searchall parameter
     // select groups instead of projects if all projects in one group are selected
-    transform_projects_to_groups();
+    preprocess_searched_projects(form);
 }
 
 /**

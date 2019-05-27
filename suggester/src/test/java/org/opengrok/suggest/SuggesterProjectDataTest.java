@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -30,8 +30,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.suggest.Lookup;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -49,12 +49,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.Assert.assertTrue;
 
 public class SuggesterProjectDataTest {
 
@@ -68,7 +68,7 @@ public class SuggesterProjectDataTest {
 
     @Before
     public void setUp() throws IOException {
-        dir = new RAMDirectory();
+        dir = new ByteBuffersDirectory();
         tempDir = Files.createTempDirectory("test");
     }
 
@@ -263,7 +263,7 @@ public class SuggesterProjectDataTest {
 
     @Test
     public void testRemove() throws IOException {
-        Directory dir = new RAMDirectory();
+        Directory dir = new ByteBuffersDirectory();
         Path tempDir = Files.createTempDirectory("test");
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
@@ -292,6 +292,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testGetSearchCountMapSorted() throws IOException {
         addText(FIELD, "test1 test2");
         init(true);

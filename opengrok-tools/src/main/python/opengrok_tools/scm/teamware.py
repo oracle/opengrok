@@ -18,11 +18,11 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 import os
 
 
@@ -41,21 +41,19 @@ class TeamwareRepository(Repository):
         #
         if command:
             if not os.path.isdir(command):
-                self.logger.error("Cannot construct Teamware repository:"
-                                  " {} is not a directory".format(command))
-                raise OSError
+                raise RepositoryException("Cannot construct Teamware "
+                                          "repository: {} is not a "
+                                          "directory".format(command))
 
             try:
                 path = os.environ['PATH']
             except KeyError:
-                self.logger.error("Cannot get PATH env var")
-                raise OSError
+                raise OSError("Cannot get PATH env var")
 
             path += ":" + command
             self.env['PATH'] = path
         else:
-            self.logger.error("Cannot get path to Teamware commands")
-            raise OSError
+            raise RepositoryException("Cannot get path to Teamware commands")
 
     def reposync(self):
         #
@@ -71,6 +69,7 @@ class TeamwareRepository(Repository):
         cmd = self.getCommand(bringover_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform bringover")

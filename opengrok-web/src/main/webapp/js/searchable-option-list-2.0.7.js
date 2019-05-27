@@ -1192,15 +1192,15 @@
             }
         },
         /*
-         * Modified 2016
+         * Modified 2016, 2019
          */
-        invert: function() {
+        invert: function () {
             if (this.config.multiple) {
                 var $closedInputs = this.$selectionContainer
-                    .find('input[type="checkbox"]:not([disabled], :checked)')
+                    .find('input[type="checkbox"][name=project]:not([disabled], :checked)')
                 var $openedInputs = this.$selectionContainer
-                    .find('input[type="checkbox"]').filter('[disabled], :checked')
-            
+                    .find('input[type="checkbox"][name=project]').filter('[disabled], :checked')
+
                 $openedInputs.prop('checked', false)
                              .trigger('change', true);
                 $closedInputs.prop('checked', true)

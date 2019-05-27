@@ -18,14 +18,9 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
- */
-
-/**
- * This is supposed to get the matching lines from sourcefile.
- * since lucene does not easily give the match context.
  */
 package org.opengrok.indexer.search.context;
 
@@ -43,8 +38,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
@@ -55,6 +50,10 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
 
+/**
+ * This is supposed to get the matching lines from sourcefile.
+ * since lucene does not easily give the match context.
+ */
 public class Context {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
@@ -179,7 +178,7 @@ public class Context {
          * circumstances it isn't used"; here it is not meant to be used.
          */
         PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
-        FileAnalyzer anz = fac.getAnalyzer();
+        AbstractAnalyzer anz = fac.getAnalyzer();
 
         String path = doc.get(QueryBuilder.PATH);
         String pathE = Util.URIEncodePath(path);
@@ -245,9 +244,6 @@ public class Context {
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
-            if (QueryBuilder.FULL.equals(field)) {
-                field = "q"; // bah - search query params should be consistent!
-            }
             sb.append(field).append("=").append(Util.URIEncode(queryText))
                 .append('&');
         }
@@ -268,10 +264,14 @@ public class Context {
      *
      * @param in File to be matched
      * @param out to write the context
+     * @param urlPrefix URL prefix
      * @param morePrefix to link to more... page
      * @param path path of the file
      * @param tags format to highlight defs.
      * @param limit should the number of matching lines be limited?
+     * @param isDefSearch is definition search
+     * @param hits list of hits
+     * @param scopes scopes object
      * @return Did it get any matching context?
      */
     public boolean getContext(Reader in, Writer out, String urlPrefix,

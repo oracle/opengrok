@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
@@ -37,14 +37,14 @@ class GitRepository(Repository):
             self.command = which("git")
 
         if not self.command:
-            self.logger.error("Cannot get git command")
-            raise OSError
+            raise RepositoryException("Cannot get git command")
 
     def reposync(self):
         git_command = [self.command, "pull", "--ff-only"]
         cmd = self.getCommand(git_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(git_command))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
@@ -57,6 +57,8 @@ class GitRepository(Repository):
         cmd = self.getCommand(git_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(git_command))
+        self.logger.info(cmd.geterroutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
             raise RepositoryException('failed to check for incoming in '

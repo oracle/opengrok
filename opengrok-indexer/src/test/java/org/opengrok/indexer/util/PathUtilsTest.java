@@ -38,7 +38,12 @@ import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.UnixPresent;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a container for tests of {@link PathUtils}.
@@ -46,6 +51,9 @@ import org.junit.Test;
 public class PathUtilsTest {
 
     private final List<File> tempDirs = new ArrayList<>();
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @After
     public void tearDown() {
@@ -71,12 +79,13 @@ public class PathUtilsTest {
 
     @Test
     public void shouldHandleEffectivelySameInputs() throws IOException {
-        final String USR_BIN = Paths.get("/usr/bin").toString();
+        String USR_BIN = Paths.get(Paths.get("/usr/bin").toUri()).toString();
         String rel = PathUtils.getRelativeToCanonical(USR_BIN + File.separator, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to ~itself", "", rel);
     }
 
     @Test
+    @ConditionalRun(UnixPresent.class)
     public void shouldHandleLinksOfArbitraryDepthWithValidation()
             throws IOException, ForbiddenSymlinkException {
         // Create real directories

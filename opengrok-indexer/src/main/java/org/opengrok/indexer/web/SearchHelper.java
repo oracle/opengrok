@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -448,7 +448,7 @@ public class SearchHelper {
         if (projects == null) {
             return new ArrayList<>(0);
         }
-        String name[];
+        String[] name;
         if (projects.isEmpty()) {
             name = new String[]{"/"};
         } else if (projects.size() == 1) {
@@ -503,7 +503,7 @@ public class SearchHelper {
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Got exception while getting "
-                        + "spelling suggestions: ", e);
+                        + "spelling suggestions for project " + proj + ":", e);
             } finally {
                 if (ir != null && closeOnDestroy) {
                     try {

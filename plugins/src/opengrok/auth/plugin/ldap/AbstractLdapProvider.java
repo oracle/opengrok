@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -29,65 +29,63 @@ import opengrok.auth.plugin.entity.User;
 public abstract class AbstractLdapProvider {
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String)
      */
-    public Map<String, Set<String>> lookupLdapContent(User user) {
-        // calling the lookupLdapContent(user, filter)
+    public Map<String, Set<String>> lookupLdapContent(User user) throws LdapException {
         return lookupLdapContent(user, (String) null);
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String filter) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String filter) throws LdapException {
         return lookupLdapContent(user, filter, null);
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param values match these LDAP value
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
      */
-    public Map<String, Set<String>> lookupLdapContent(User user, String[] values) {
+    public Map<String, Set<String>> lookupLdapContent(User user, String[] values) throws LdapException {
         return lookupLdapContent(user, null, values);
     }
 
     /**
-     * Lookups user's records - mail address - ou records - uid
+     * Lookups user's records
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter
      * @param values match these LDAP value
-     * @return set of important attributes for the user
+     * @return set of attributes for the user or null
      */
-    abstract public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values);
+    public abstract Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) throws LdapException;
 
     /**
      * @return if the provider is correctly configured
      */
-    abstract public boolean isConfigured();
+    public abstract boolean isConfigured();
 
     /**
      * Closes the LDAP provider.
      */
-    abstract public void close();
-
+    public abstract void close();
 }

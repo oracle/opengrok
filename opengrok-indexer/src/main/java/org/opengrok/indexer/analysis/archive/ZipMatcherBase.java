@@ -26,6 +26,7 @@ package org.opengrok.indexer.analysis.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
@@ -45,7 +46,7 @@ public abstract class ZipMatcherBase implements FileAnalyzerFactory.Matcher {
     public boolean getIsPreciseMagic() { return true; }
 
     @Override
-    public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+    public AnalyzerFactory isMagic(byte[] contents, InputStream in)
             throws IOException {
         assert in.markSupported();
         if (contents.length < MAGIC.length) {

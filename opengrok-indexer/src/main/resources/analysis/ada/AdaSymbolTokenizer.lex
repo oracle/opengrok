@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -30,25 +30,20 @@ package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
 import java.util.Locale;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class AdaSymbolTokenizer
-%extends JFlexSymbolMatcher
-%implements AdaLexer
+%extends AdaLexer
 %unicode
 %ignorecase
 %int
 %char
 %init{
-    h = new AdaLexHelper(SCOMMENT, this);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
 %{
-    private final AdaLexHelper h;
-
     private String lastSymbol;
 
     /**
@@ -57,7 +52,6 @@ import org.opengrok.indexer.web.HtmlConsts;
     @Override
     public void reset() {
         super.reset();
-        h.reset();
         lastSymbol = null;
     }
 
@@ -112,6 +106,12 @@ import org.opengrok.indexer.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    int SCOMMENT() { return SCOMMENT; }
 %}
 
 %include Common.lexh

@@ -18,18 +18,18 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * A list-like container for javascripts in the page.
@@ -41,7 +41,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     /**
      * A script wrapper.
      */
-    static abstract public class Script {
+    public abstract static class Script {
 
         /**
          * Represents the script information, either
@@ -58,7 +58,7 @@ public class Scripts implements Iterable<Scripts.Script> {
             this.priority = priority;
         }
 
-        abstract public String toHtml();
+        public abstract String toHtml();
 
         public String getScriptData() {
             return scriptData;
@@ -72,7 +72,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     /**
      * Script implementing the toHtml() method as an external script resource.
      */
-    static public class FileScript extends Script {
+    public static class FileScript extends Script {
 
         public FileScript(String script, int priority) {
             super(script, priority);
@@ -91,27 +91,6 @@ public class Scripts implements Iterable<Scripts.Script> {
 
     }
 
-    /**
-     * Script implementing the toHtml() method as an inline script resource.
-     */
-    static public class InlineScript extends Script {
-
-        public InlineScript(String script, int priority) {
-            super(script, priority);
-        }
-
-        @Override
-        public String toHtml() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("\t<script type=\"text/javascript\" data-priority=\"");
-            builder.append(this.getPriority());
-            builder.append("\">/* <![CDATA[ */");
-            builder.append(this.getScriptData());
-            builder.append("\n/* ]]> */</script>\n");
-            return builder.toString();
-        }
-    }
-
     protected static final Map<String, Script> SCRIPTS = new TreeMap<>();
 
     /**
@@ -125,18 +104,21 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery-ui", new FileScript("js/jquery-ui-1.12.1-custom.min.js", 11));
         SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1.js", 13));
-        SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.6.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.25.js", 15));
+        SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.7.min.js", 14));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.31.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.3.js", 20));
         SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
     }
 
+    private static final Comparator<Script> SCRIPTS_COMPARATOR = Comparator
+            .comparingInt(Script::getPriority)
+            .thenComparing(Script::getScriptData);
+
     /**
-     * Scripts which will be written to the page. We assume that the length
-     * could be the same as for {@link #SCRIPTS}.
+     * Scripts which will be written to the page.
      */
-    private final List<Script> outputScripts = new ArrayList<>(SCRIPTS.size());
+    private final NavigableSet<Script> outputScripts = new TreeSet<>(SCRIPTS_COMPARATOR);
 
     /**
      * Convert the page scripts into HTML.
@@ -155,7 +137,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Return the HTML representation of the page scripts.
      *
      * @return the HTML
-     *
      * @see #toHtml()
      */
     @Override
@@ -167,7 +148,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Return the size of the page scripts.
      *
      * @return the size
-     *
      * @see List#size()
      */
     public int size() {
@@ -178,7 +158,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Check if there is any script for this page.
      *
      * @return true if there is not; false otherwise
-     *
      * @see List#isEmpty()
      */
     public boolean isEmpty() {
@@ -200,7 +179,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Add a script which is identified by the name.
      *
      * @param contextPath given context path for the used URL
-     * @param scriptName name of the script
+     * @param scriptName  name of the script
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName) {
@@ -216,46 +195,11 @@ public class Scripts implements Iterable<Scripts.Script> {
     }
 
     /**
-     * Add a script to the page, taking the script priority into account. The
-     * position is determined as the upper bound for the given priority.
+     * Add a script to the page, taking the script priority into account.
      *
      * @param script the script
      */
     public void addScript(Script script) {
-        int index = Collections.binarySearch(outputScripts, script, new Comparator<Script>() {
-            @Override
-            public int compare(Script a, Script b) {
-                return a.getPriority() - b.getPriority();
-            }
-        });
-        if (index < 0) {
-            /**
-             * Key is not found in the list the index<br>
-             * equals to -(insertion index) - 1.
-             */
-            this.outputScripts.add(Math.abs(index + 1), script);
-        } else {
-            /**
-             * Key found in the list, append it after the last element with the
-             * same priority => insert it at the upper bound index.
-             */
-            while (index < this.outputScripts.size()
-                    && this.outputScripts.get(index).getPriority() == script.getPriority()) {
-                index++;
-            }
-            this.outputScripts.add(index, script);
-        }
-    }
-
-    /**
-     * Get the page script by the index
-     *
-     * @param index index of the script
-     * @return the script
-     *
-     * @see List#get(int)
-     */
-    public Script get(int index) {
-        return outputScripts.get(index);
+        this.outputScripts.add(script);
     }
 }

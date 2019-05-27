@@ -28,35 +28,13 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 
 /**
  * Factory class which creates a {@code FileAnalyzer} object and
  * provides information about this type of analyzers.
  */
-public class FileAnalyzerFactory {
+public class FileAnalyzerFactory extends AnalyzerFactory {
 
-    /** Cached analyzer object for the current thread (analyzer objects can be
-     * expensive to allocate). */
-    private final ThreadLocal<FileAnalyzer> cachedAnalyzer;
-    /** List of file names on which this kind of analyzer should be used. */
-    private final List<String> names;
-    /** List of file prefixes on which this kind of analyzer should be
-     * used. */
-    private final List<String> prefixes;
-    /** List of file extensions on which this kind of analyzer should be
-     * used. */
-    private final List<String> suffixes;
-    /** List of magic strings used to recognize files on which this kind of
-     * analyzer should be used. */
-    private final List<String> magics;
-    /** List of matchers which delegate files to different types of
-     * analyzers. */
-    private final List<Matcher> matchers;
-    /** The content type for the files recognized by this kind of analyzer. */
-    private final String contentType;
-    /** The genre for files recognized by this kind of analyzer. */
-    private final Genre genre;
     /** The user friendly name of this analyzer. */
     private final String name;
 
@@ -84,19 +62,13 @@ public class FileAnalyzerFactory {
     protected FileAnalyzerFactory(
             String[] names, String[] prefixes, String[] suffixes,
             String[] magics, Matcher matcher, String contentType,
-            Genre genre, String name) {
-        cachedAnalyzer = new ThreadLocal<>();
+            AbstractAnalyzer.Genre genre, String name) {
+        super(matcher, contentType);
         this.names = asList(names);
         this.prefixes = asList(prefixes);
         this.suffixes = asList(suffixes);
         this.magics = asList(magics);
-        if (matcher == null) {
-            this.matchers = Collections.emptyList();
-        } else {
-            this.matchers = Collections.singletonList(matcher);
-        }
-        this.contentType = contentType;
-        this.genre = (genre == null) ? Genre.DATA : genre;
+        this.genre = (genre == null) ? AbstractAnalyzer.Genre.DATA : genre;
         this.name = name;
     }
 
@@ -113,80 +85,11 @@ public class FileAnalyzerFactory {
         return Collections.unmodifiableList(Arrays.asList(a));
     }
 
-    /**
-     * Get the list of file names recognized by this analyzer (names must
-     * match exactly, ignoring case).
-     *
-     * @return list of file names
-     */
-    final List<String> getFileNames() {
-        return names;
-    }
-
-    /**
-     * Get the list of file prefixes recognized by this analyzer.
-     * @return list of prefixes
-     */
-    final List<String> getPrefixes() {
-        return prefixes;
-    }
-
-    /**
-     * Get the list of file extensions recognized by this analyzer.
-     * @return list of suffixes
-     */
-    final List<String> getSuffixes() {
-        return suffixes;
-    }
-
-    /**
-     * Get the list of magic strings recognized by this analyzer. If a file
-     * starts with one of these strings, an analyzer created by this factory
-     * should be used to analyze it.
-     *
-     * <p><b>Note:</b> Currently this assumes that the file is encoded with
-     * UTF-8 unless a BOM is detected.
-     *
-     * @return list of magic strings
-     */
-    final List<String> getMagicStrings() {
-        return magics;
-    }
-
-    /**
-     * Get matchers that map file contents to analyzer factories
-     * programmatically.
-     *
-     * @return list of matchers
-     */
-    final List<Matcher> getMatchers() {
-        return matchers;
-    }
-
-    /**
-     * Get the content type (MIME type) for analyzers returned by this factory.
-     * @return content type (could be {@code null} if it is unknown)
-     */
-    final String getContentType() {
-        return contentType;
-    }
-
-    /**
-     * The genre this analyzer factory belongs to.
-     * @return a genre
-     */
-    public final Genre getGenre() {
-        return genre;
-    }
-
-    /**
-     * The user friendly name of this analyzer
-     * @return a genre
-     */
-    public final String getName() {
+    @Override
+    public String getName() {
         return name;
     }
-    
+
     /**
      * Get an analyzer. If the same thread calls this method multiple times on
      * the same factory object, the exact same analyzer object will be returned
@@ -196,8 +99,9 @@ public class FileAnalyzerFactory {
      * @return a {@code FileAnalyzer} instance
      * @see #newAnalyzer()
      */
-    public final FileAnalyzer getAnalyzer() {
-        FileAnalyzer fa = cachedAnalyzer.get();
+    @Override
+    public final AbstractAnalyzer getAnalyzer() {
+        AbstractAnalyzer fa = cachedAnalyzer.get();
         if (fa == null) {
             fa = newAnalyzer();
             cachedAnalyzer.set(fa);
@@ -206,10 +110,19 @@ public class FileAnalyzerFactory {
     }
 
     /**
+     * Free thread-local data.
+     */
+    @Override
+    public void returnAnalyzer() {
+        cachedAnalyzer.remove();
+    }
+
+    /**
      * Create a new analyzer.
      * @return an analyzer
      */
-    protected FileAnalyzer newAnalyzer() {
+    @Override
+    protected AbstractAnalyzer newAnalyzer() {
         return new FileAnalyzer(this);
     }
 
@@ -248,7 +161,7 @@ public class FileAnalyzerFactory {
          * if they don't match any factory known by this matcher
          * @throws java.io.IOException in case of any read error
          */
-        FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+        AnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException;
 
         /**
@@ -256,6 +169,6 @@ public class FileAnalyzerFactory {
          * {@link #isMagic(byte[], java.io.InputStream)} matches a file.
          * @return a defined instance
          */
-        FileAnalyzerFactory forFactory();
+        AnalyzerFactory forFactory();
     }
 }

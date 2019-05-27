@@ -40,6 +40,7 @@ setup(
     description='Tools for managing OpenGrok instance',
     long_description=readme(),
     test_suite='setup.my_test_suite',
+    python_requires='>=3.4, <4',
     install_requires=[
         'jsonschema==2.6.0',
         'pyyaml',

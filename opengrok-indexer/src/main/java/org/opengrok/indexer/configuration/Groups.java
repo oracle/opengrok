@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -416,7 +416,7 @@ public final class Groups {
         });
     }
 
-    private static final void usage(PrintStream out) {
+    private static void usage(PrintStream out) {
         out.println("Usage:");
         out.println("Groups.java" + " [OPTIONS]");
         out.println();

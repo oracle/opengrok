@@ -48,7 +48,7 @@ public class SystemController {
     @Consumes(MediaType.TEXT_PLAIN)
     public void refresh(final String project) {
         env.maybeRefreshIndexSearchers(Collections.singleton(project));
-        suggester.refresh(project);
+        suggester.rebuild(project);
     }
 
     @PUT

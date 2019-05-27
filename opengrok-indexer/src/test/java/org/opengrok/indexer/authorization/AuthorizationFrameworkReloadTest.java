@@ -22,14 +22,16 @@
  */
 package org.opengrok.indexer.authorization;
 
-import java.io.File;
-import java.net.URL;
-import javax.servlet.http.HttpSession;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import javax.servlet.http.HttpSession;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -38,20 +40,18 @@ import org.opengrok.indexer.web.Statistics;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.
- * 
+ *
  * @author Vladimir Kotal
  */
 public class AuthorizationFrameworkReloadTest {
-    
+
     private final File pluginDirectory;
-    
     volatile boolean runThread;
-    
-    public AuthorizationFrameworkReloadTest() {
-        URL resource = AuthorizationFrameworkReloadTest.class.getResource("/authorization/plugins/testplugins.jar");
-        pluginDirectory = new File(resource.getFile()).getParentFile();
+
+    public AuthorizationFrameworkReloadTest() throws URISyntaxException {
+        pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
     }
-    
+
     /**
      * After {@code reload()} the session attributes should be invalidated.
      * It is assumed that invalidation of HttpSession objects means that all
@@ -64,18 +64,18 @@ public class AuthorizationFrameworkReloadTest {
         framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
         framework.reload();
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
-        
+
         // Ensure the framework was setup correctly.
         assertNotNull(framework.getPluginDirectory());
         assertEquals(pluginDirectory, framework.getPluginDirectory());
-        
+
         // Create pre-requisite objects - mainly the HTTP session with attribute.
         Project p = new Project("project" + Math.random());
         HttpSession session = req.getSession();
         String attrName = "foo";
         session.setAttribute(attrName, "bar");
         assertNotNull(session.getAttribute(attrName));
-        
+
         // Reload the framework to increment the plugin generation version.
         framework.reload();
         // Let the framework check the request. This should invalidate the session
@@ -86,35 +86,35 @@ public class AuthorizationFrameworkReloadTest {
         // Verify that the session no longer has the attribute.
         assertNull(session.getAttribute(attrName));
     }
-    
+
     /**
      * Sort of a stress test - call isAllowed() and reload() in parallel.
      * This might uncover any snags with locking within AuthorizationFramework.
      */
     @Test
-    public void testReloadCycle() {
+    public void testReloadCycle() throws URISyntaxException {
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
         Long reloads;
         String projectName = "project" + Math.random();
-        
+
         // Create authorization stack for single project.
         AuthorizationStack stack = new AuthorizationStack(AuthControlFlag.REQUIRED,
                 "stack for project " + projectName);
         assertNotNull(stack);
-        stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, 
+        stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED,
                 "opengrok.auth.plugin.FalsePlugin"));
         stack.setForProjects(projectName);
-        AuthorizationFramework framework = 
+        AuthorizationFramework framework =
                 new AuthorizationFramework(pluginDirectory.getPath(), stack);
         framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
         framework.reload();
-        
+
         // Perform simple sanity check before long run is entered. If this fails,
         // it will be waste of time to continue with the test.
         Project p = new Project(projectName);
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         assertFalse(framework.isAllowed(req, p));
-        
+
         // Create a thread that does reload() every now and then.
         runThread = true;
         final int maxReloadSleep = 10;
@@ -131,7 +131,7 @@ public class AuthorizationFrameworkReloadTest {
             }
         });
         t.start();
-        
+
         reloads = stats.getRequest("authorization_stack_reload");
         assertNotNull(reloads);
         // Process number or requests and check that framework decision is consistent.
@@ -144,20 +144,19 @@ public class AuthorizationFrameworkReloadTest {
             } catch (InterruptedException ex) {
             }
         }
-        
+
         try {
             // Terminate the thread.
             runThread = false;
             t.join();
         } catch (InterruptedException ex) {
         }
-        
+
         // Double check that at least one reload() was done.
         reloads = stats.getRequest("authorization_stack_reload") - reloads;
-        System.out.println("number of reloads: " + reloads);
         assertTrue(reloads > 0);
     }
-    
+
     @Test
     public void testSetLoadClasses() {
         AuthorizationFramework framework = new AuthorizationFramework();
@@ -165,7 +164,7 @@ public class AuthorizationFrameworkReloadTest {
         framework.setLoadClasses(false);
         assertFalse(framework.isLoadClassesEnabled());
     }
-    
+
     @Test
     public void testSetLoadJars() {
         AuthorizationFramework framework = new AuthorizationFramework();

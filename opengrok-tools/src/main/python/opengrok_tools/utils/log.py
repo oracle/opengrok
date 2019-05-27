@@ -18,21 +18,22 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 import sys
+import os
 import argparse
+from logging.handlers import RotatingFileHandler
 
 
-def print_exc_exit(e):
+def fatal(msg):
     """
-    Print exception and exit
-    :param e: exception
-    :return: nothing
+    Print message to standard error output and exit
+    :param msg: message
     """
-    print(e, file=sys.stderr)
+    print(msg, file=sys.stderr)
     sys.exit(1)
 
 
@@ -92,7 +93,8 @@ def get_class_basename():
     return __name__.split('.')[0]
 
 
-def get_console_logger(name, level=logging.INFO, format='%(message)s'):
+def get_console_logger(name=__name__, level=logging.INFO,
+                       format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest
     to stdout. For logging.DEBUG level more verbose format is used.
@@ -117,12 +119,44 @@ def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     stdout_handler.setFormatter(formatter)
 
     stderr_handler.addFilter(lambda rec: rec.levelno >= logging.ERROR)
-    stdout_handler.addFilter(lambda rec: rec.levelno <= logging.INFO)
+    stdout_handler.addFilter(lambda rec: rec.levelno < logging.ERROR)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.propagate = False
+    logger.handlers = []
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
+
+    return logger
+
+
+def get_batch_logger(logdir, project_name, loglevel, backupcount,
+                     name=__name__):
+    """
+    Get rotating file logger for storing logs of mirroring of given project.
+    :param logdir: log directory
+    :param project_name: name of the project
+    :param loglevel: logging level
+    :param backupcount count of log files to keep around
+    :param name name of the logger
+    :return logger
+    """
+
+    logger = logging.getLogger(name)
+
+    logfile = os.path.join(logdir, project_name + ".log")
+
+    handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
+                                  backupCount=backupcount)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
+                                  "%(message)s", '%m/%d/%Y %I:%M:%S %p')
+    handler.setFormatter(formatter)
+    handler.doRollover()
+
+    logger.setLevel(loglevel)
+    logger.propagate = False
+    logger.handlers = []
+    logger.addHandler(handler)
 
     return logger

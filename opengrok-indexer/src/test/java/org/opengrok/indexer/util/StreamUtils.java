@@ -19,21 +19,24 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
+import org.opengrok.indexer.analysis.CtagsReader;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.StreamSource;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.indexer.analysis.CtagsReader;
-import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.StreamSource;
 
 /**
  * Represents a container for stream utility methods
@@ -61,9 +64,27 @@ public class StreamUtils {
         return baosExp.toByteArray();
     }
 
-    public static Definitions readTagsFromResource(String tagsResourceName)
+    /**
+     * Read all bytes from the specified reader.
+     * @param in a required instance
+     * @return a defined instance
+     * @throws IOException thrown if I/O error occurs while reading
+     */
+    public static String readToEnd(Reader in) throws IOException {
+
+        StringBuilder result = new StringBuilder();
+        char[] buf = new char[8 * 1024];
+        int charsRead;
+        while ((charsRead = in.read(buf, 0, buf.length)) != -1) {
+            result.append(buf, 0, charsRead);
+        }
+
+        return result.toString();
+    }
+
+    public static Definitions readTagsFromResource(String resourceName)
             throws IOException {
-        return readTagsFromResource(tagsResourceName, null);
+        return readTagsFromResource(resourceName, null);
     }
 
     public static Definitions readTagsFromResource(String tagsResourceName,
@@ -79,13 +100,13 @@ public class StreamUtils {
         assertNotNull(tagsResourceName + " as resource", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            res, "UTF-8"));
+            res, StandardCharsets.UTF_8));
 
         CtagsReader rdr = new CtagsReader();
         rdr.setTabSize(tabSize);
         if (rawResourceName != null) {
             rdr.setSplitterSupplier(() -> {
-                /**
+                /*
                  * This should return truly raw content, as the CtagsReader will
                  * expand tabs according to its setting.
                  */
@@ -109,6 +130,22 @@ public class StreamUtils {
     }
 
     /**
+     * Gets a {@link Reader} from a specified resource name or raises an
+     * assertion error if no defined stream is available.
+     * @param resourceName a required name
+     * @return a defined instance
+     * @throws IOException thrown on I/O error
+     */
+    public static Reader readerFromResource(String resourceName)
+            throws IOException {
+
+        InputStream res = StreamUtils.class.getClassLoader().
+                getResourceAsStream(resourceName);
+        assertNotNull(resourceName + " should be gettable", res);
+        return IOUtils.createBOMStrippedReader(res, "UTF-8");
+    }
+
+    /**
      * Creates a {@code StreamSource} instance that reads data from an
      * embedded resource.
      * @param resourceName a required resource name
@@ -117,7 +154,7 @@ public class StreamUtils {
     public static StreamSource sourceFromEmbedded(String resourceName) {
         return new StreamSource() {
             @Override
-            public InputStream getStream() throws IOException {
+            public InputStream getStream() {
                 InputStream res = StreamUtils.class.getClassLoader().
                     getResourceAsStream(resourceName);
                 assertNotNull("resource " + resourceName, res);

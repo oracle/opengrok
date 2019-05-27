@@ -19,12 +19,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
-
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%><%@page  session="false" errorPage="error.jsp" import="
 java.util.Set,
 
+org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.Util"
 %>
 <%
@@ -86,7 +87,7 @@ include file="projects.jspf"
     <InputEncoding>UTF-8</InputEncoding>
     <Image height="16" width="16" type="image/png"><%= imgurl %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
-    <Url template="<%= url.toString() %>&amp;q={searchTerms}" type="text/html"/>
+    <Url template="<%= url.toString() %>&amp;full={searchTerms}" type="text/html"/>
 </OpenSearchDescription>
 <%
 }

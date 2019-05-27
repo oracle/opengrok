@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -30,14 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.InvalidPathException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -51,7 +49,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(BazaarHistoryParser.class);
 
     private String myDir;
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
+    private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
     private BazaarRepository repository=new BazaarRepository(); //NOPMD
 
     BazaarHistoryParser(BazaarRepository repository) {
@@ -93,7 +91,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -116,7 +113,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                 case 0:
                     // First, go on until revno is found.
                     if (s.startsWith("revno:")) {
-                        String rev[] = s.substring("revno:".length()).trim().split(" ");
+                        String[] rev = s.substring("revno:".length()).trim().split(" ");
                         entry.setRevision(rev[0]);
                         ++state;
                     }
@@ -132,7 +129,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                     // And then, look for timestamp.
                     if (s.startsWith("timestamp:")) {
                         try {
-                            Date date = df.parse(s.substring("timestamp:".length()).trim());
+                            Date date = repository.parse(s.substring("timestamp:".length()).trim());
                             entry.setDate(date);
                         } catch (ParseException e) {
                             //

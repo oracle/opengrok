@@ -29,9 +29,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
@@ -60,7 +60,7 @@ public class ClojureAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
-    private static FileAnalyzer analyzer;
+    private static AbstractAnalyzer analyzer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();

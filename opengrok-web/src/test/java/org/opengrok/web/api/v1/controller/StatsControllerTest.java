@@ -24,9 +24,6 @@ package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -35,6 +32,7 @@ import org.opengrok.indexer.web.Statistics;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -65,7 +63,7 @@ public class StatsControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testGetClean() {
+    public void testGetClean() throws IOException {
         target("stats")
                 .request()
                 .delete();
@@ -74,11 +72,15 @@ public class StatsControllerTest extends JerseyTest {
                 .request()
                 .get(String.class);
 
-        Assert.assertEquals("{}", output);
+        Statistics stats = Statistics.fromJson(output);
+        assertEquals(0, stats.getRequests());
+        Assert.assertEquals(1, stats.getMinutes());
+        Assert.assertEquals(0, stats.getRequestCategories().size());
+        Assert.assertEquals(0, stats.getTiming().size());
     }
 
     @Test
-    public void testGet() throws ParseException {
+    public void testGet() throws IOException {
         target("stats")
                 .request()
                 .delete();
@@ -89,9 +91,7 @@ public class StatsControllerTest extends JerseyTest {
                 .request()
                 .get(String.class);
 
-        JSONParser parser = new JSONParser();
-
-        Statistics stats = Statistics.from((JSONObject) parser.parse(output));
+        Statistics stats = Statistics.fromJson(output);
         assertEquals(1, stats.getRequests());
         Assert.assertEquals(1, stats.getMinutes());
         Assert.assertEquals(0, stats.getRequestCategories().size());

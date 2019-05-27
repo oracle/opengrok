@@ -33,15 +33,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import opengrok.auth.plugin.ldap.LdapServer;
+import opengrok.auth.plugin.util.WebHooks;
 
-public class Configuration {
+public class Configuration implements Serializable {
+
+    private static final long serialVersionUID = -1;
 
     private List<LdapServer> servers = new ArrayList<>();
     private int interval;
     private String searchBase;
+    private WebHooks webHooks;
+    private int searchTimeout;
+    private int connectTimeout;
+    private int countLimit;
 
     public void setServers(List<LdapServer> servers) {
         this.servers = servers;
@@ -51,12 +59,44 @@ public class Configuration {
         return servers;
     }
 
+    public void setWebHooks(WebHooks webHooks) {
+        this.webHooks = webHooks;
+    }
+
+    public WebHooks getWebHooks() {
+        return webHooks;
+    }
+
     public int getInterval() {
         return interval;
     }
 
     public void setInterval(int interval) {
         this.interval = interval;
+    }
+
+    public int getSearchTimeout() {
+        return this.searchTimeout;
+    }
+
+    public void setSearchTimeout(int timeout) {
+        this.searchTimeout = timeout;
+    }
+
+    public int getConnectTimeout() {
+        return this.connectTimeout;
+    }
+
+    public void setConnectTimeout(int timeout) {
+        this.connectTimeout = timeout;
+    }
+
+    public int getCountLimit() {
+        return this.countLimit;
+    }
+
+    public void setCountLimit(int limit) {
+        this.countLimit = limit;
     }
 
     public String getSearchBase() {
@@ -80,7 +120,7 @@ public class Configuration {
     }
 
     /**
-     * Read a configuration from a file in xml format.
+     * Read a configuration from a file in XML format.
      *
      * @param file input file
      * @return the new configuration object
@@ -114,7 +154,7 @@ public class Configuration {
         }
 
         if (!(ret instanceof Configuration)) {
-            throw new IOException("Not a valid config file");
+            throw new IOException("Not a valid configuration file");
         }
 
         return (Configuration) ret;

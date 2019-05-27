@@ -24,7 +24,6 @@
 package org.opengrok.indexer.index;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +51,8 @@ public class IndexVersion {
      */
     public static class IndexVersionException extends Exception {
 
+        private static final long serialVersionUID = -756788782277552544L;
+
         public IndexVersionException(String s) {
             super(s);
         }
@@ -74,7 +75,7 @@ public class IndexVersion {
                 LOGGER.log(Level.FINER,
                         "Checking Lucene index version in project {0}",
                         projectName);
-                checkDir(getDirectory(new File(indexRoot, projectName)));
+                checkDir(new File(indexRoot, projectName));
             }
         } else {
             if (env.isProjectsEnabled()) {
@@ -82,20 +83,14 @@ public class IndexVersion {
                     LOGGER.log(Level.FINER,
                             "Checking Lucene index version in project {0}",
                             projectName);
-                    checkDir(getDirectory(new File(indexRoot, projectName)));
+                    checkDir(new File(indexRoot, projectName));
                 }
             } else {
                 LOGGER.log(Level.FINER, "Checking Lucene index version in {0}",
                         indexRoot);
-                checkDir(getDirectory(indexRoot));
+                checkDir(indexRoot);
             }
         }
-    }
-    
-    private static Directory getDirectory(File indexDir) throws IOException {
-        LockFactory lockfact = NativeFSLockFactory.INSTANCE;
-        FSDirectory indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
-        return indexDirectory;
     }
 
     /**
@@ -105,13 +100,21 @@ public class IndexVersion {
      * @param dir directory with index
      * @thows IOException if the directory cannot be opened
      */
-    private static void checkDir(Directory dir) throws IOException, Exception {
+    private static void checkDir(File dir) throws Exception {
+        LockFactory lockfact = NativeFSLockFactory.INSTANCE;
         int segVersion;
-        try {
-            segVersion = SegmentInfos.readLatestCommit(dir).getIndexCreatedVersionMajor();
-        } catch (IndexNotFoundException e) {
-            return;
+
+        try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockfact)) {
+           SegmentInfos segInfos = null;
+
+            try {
+                segInfos = SegmentInfos.readLatestCommit(indexDirectory);
+                segVersion = segInfos.getIndexCreatedVersionMajor();
+            } catch (IndexNotFoundException e) {
+                return;
+            }
         }
+
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
                 String.format("Directory %s has index of version %d and Lucene has %d",

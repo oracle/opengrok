@@ -530,7 +530,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     }
 
     /** Actual position in doc of a PhrasePosition, relies on that position = tpPos - offset) */
-    private final int tpPos(PhrasePositions pp) {
+    private int tpPos(PhrasePositions pp) {
         return pp.position + pp.offset;
     }
 
@@ -541,7 +541,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         for (PhrasePositions pp : phrasePositions) {
             for (Term t : pp.terms) {
                 Integer cnt0 = tcnt.get(t);
-                Integer cnt = cnt0==null ? new Integer(1) : new Integer(1+cnt0.intValue());
+                Integer cnt = cnt0==null ? Integer.valueOf(1) : Integer.valueOf(1+cnt0.intValue());
                 tcnt.put(t, cnt);
                 if (cnt==2) {
                     tord.put(t,tord.size());

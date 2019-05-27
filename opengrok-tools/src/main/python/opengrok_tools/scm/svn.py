@@ -18,11 +18,11 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -37,8 +37,7 @@ class SubversionRepository(Repository):
             self.command = which("svn")
 
         if not self.command:
-            self.logger.error("Cannot get svn command")
-            raise OSError
+            raise RepositoryException("Cannot get svn command")
 
     def reposync(self):
         svn_command = [self.command]
@@ -70,6 +69,7 @@ class SubversionRepository(Repository):
         cmd = self.getCommand(svn_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
+        self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform update")

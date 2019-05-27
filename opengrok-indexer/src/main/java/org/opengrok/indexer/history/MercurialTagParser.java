@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -60,7 +60,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
                     new InputStreamReader(input))) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    String parts[] = line.split("  *");
+                    String[] parts = line.split("  *");
                     if (parts.length < 2) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to parse tag list: {0}",
@@ -79,7 +79,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
                     if (tag.contentEquals("tip")) {
                         continue;
                     }
-                    String revParts[] = parts[parts.length - 1].split(":");
+                    String[] revParts = parts[parts.length - 1].split(":");
                     if (revParts.length != 2) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to parse tag list: {0}",

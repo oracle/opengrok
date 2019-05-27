@@ -18,14 +18,15 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +57,6 @@ import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -92,15 +93,18 @@ public final class Indexer {
     public static final char PATH_SEPARATOR ='/';
     public static String PATH_SEPARATOR_STRING =Character.toString(PATH_SEPARATOR);
 
+    private static final String HELP_OPT_1 = "--help";
+    private static final String HELP_OPT_2 = "-?";
+    private static final String HELP_OPT_3 = "-h";
+
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
     private static boolean checkIndexVersion = false;
-    private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
-    private static boolean noindex = false;
+    private static boolean bareConfig = false;
     private static boolean awaitProfiler;
 
     private static boolean help;
@@ -113,7 +117,6 @@ public final class Indexer {
     private static final Set<String> repositories = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
-    private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
 
@@ -130,7 +133,7 @@ public final class Indexer {
      * @param argv argument vector
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
         Statistics stats = new Statistics(); //this won't count JVM creation though
         boolean update = true;
 
@@ -138,18 +141,16 @@ public final class Indexer {
         ArrayList<String> subFiles = new ArrayList<>();
         ArrayList<String> subFilesList = new ArrayList<>();
 
-        boolean listFiles = false;
         boolean createDict = false;
 
         try {
             argv = parseOptions(argv);
             if (help) {
-                status = 1;
-                System.err.println(helpUsage);
+                PrintStream helpStream = status != 0 ? System.err : System.out;
+                helpStream.println(helpUsage);
                 if (helpDetailed) {
-                    System.err.println(AnalyzerGuruHelp.getUsage());
-                    System.err.println(
-                        ConfigurationHelp.getSamples());
+                    helpStream.println(AnalyzerGuruHelp.getUsage());
+                    helpStream.println(ConfigurationHelp.getSamples());
                 }
                 System.exit(status);
             }
@@ -251,7 +252,7 @@ public final class Indexer {
             // call above.
             RepositoryFactory.initializeIgnoredNames(env);
 
-            if (noindex) {
+            if (bareConfig) {
                 getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
@@ -306,22 +307,20 @@ public final class Indexer {
                 try {
                     IndexerUtil.enableProjects(webappURI);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp webappURI", e);
-                    System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
+                    LOGGER.log(Level.SEVERE, String.format("Couldn't notify the webapp on %s.", webappURI), e);
+                    System.err.println(String.format("Couldn't notify the webapp on %s: %s.", webappURI, e.getLocalizedMessage()));
                 }
             }
 
             LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
-            
-            // Get history first.
+
+            // Create history cache first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                    defaultProjects,
-                    listFiles, createDict, subFiles, new ArrayList(repositories),
-                    zapCache, listRepos);
-            if (listRepos || !zapCache.isEmpty()) {
-                return;
-            }
+                    createDict, runIndex, subFiles, new ArrayList<>(repositories));
+
+            // prepareIndexer() populated the list of projects so now default projects can be set.
+            env.setDefaultProjectsFromNames(defaultProjects);
 
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
@@ -341,6 +340,7 @@ public final class Indexer {
                 }
             }
 
+            env.getIndexerParallelizer().bounce();
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
             System.exit(1);
@@ -406,7 +406,7 @@ public final class Indexer {
      * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
-        String[] usage = {"--help"};
+        String[] usage = {HELP_OPT_1};
         String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
@@ -414,13 +414,22 @@ public final class Indexer {
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
-            status = 1;
+            status = 1; // with non-zero EXIT STATUS
         }
+
+        /*
+         * Pre-match any of the --help options so that some possible exception-
+         * generating args handlers (e.g. -R) can be short-circuited.
+         */
+        help = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
+                HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
 
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do(cfgFile -> {
                 try {
-                    cfg = Configuration.read(new File((String)cfgFile));
+                    if (!help) {
+                        cfg = Configuration.read(new File((String) cfgFile));
+                    }
                 } catch(IOException e) {
                     die(e.getMessage());
                 }
@@ -434,7 +443,8 @@ public final class Indexer {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
-            parser.on("-?", "-h", "--help", "Display this usage summary.").Do(v -> {
+            parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
+                    "Display this usage summary.").Do(v -> {
                 help = true;
                 helpUsage = parser.getUsage();
             });
@@ -496,12 +506,6 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--deleteHistory", "=/path/to/repository",
-                "Delete the history cache for the given repository and exit.",
-                "Use '*' to delete the cache for all repositories.").Do(repo -> {
-                zapCache.add((String)repo);
-            });
-
             parser.on("--depth", "=number", Integer.class,
                 "Scanning depth for repositories in directory structure relative to",
                 "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth -> {
@@ -557,13 +561,9 @@ public final class Indexer {
                 cfg.setAllowLeadingWildcard((Boolean)v);
             });
 
-            parser.on("--listRepos", "List all repository paths and exit.").Do(v -> {
-                listRepos = true;
-            });
-
             parser.on("-m", "--memory", "=number", Double.class,
                 "Amount of memory that may be used for buffering added documents and",
-                "deletions before they are flushed to the directory (default "+Configuration.defaultRamBufferSize+"MB).",
+                "deletions before they are flushed to the directory (default " + Configuration.defaultRamBufferSize + "MB).",
                 "Please increase JVM heap accordingly, too.").Do(memSize -> {
                 cfg.setRamBufferSize((Double)memSize);
             });
@@ -586,7 +586,8 @@ public final class Indexer {
             );
 
             parser.on("-n", "--noIndex",
-                "Do not generate indexes, but process all other command line options.").Do(v -> {
+                "Do not generate indexes and other data (such as history cache and xref files), " +
+                "but process all other command line options.").Do(v -> {
                 runIndex = false;
             });
 
@@ -765,7 +766,7 @@ public final class Indexer {
 
             parser.on("--updateConfig",
                 "Populate the webapp with bare configuration and exit.").Do(v -> {
-                noindex = true;
+                bareConfig = true;
             });
 
             parser.on("--userPage", "=URL",
@@ -789,6 +790,10 @@ public final class Indexer {
                 verbose = true;
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
+
+            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
+                "Web application should run ctags when necessary. Default is off.").
+                Do(v -> cfg.setWebappCtags((Boolean)v));
 
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
@@ -817,7 +822,7 @@ public final class Indexer {
     private static void checkConfiguration() {
         env = RuntimeEnvironment.getInstance();
 
-        if (noindex && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+        if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
             die("Missing webappURI URL");
         }
 
@@ -887,25 +892,46 @@ public final class Indexer {
         }
     }
 
-    /*
+    // Wrapper for prepareIndexer() that always generates history cache.
+    public void prepareIndexer(RuntimeEnvironment env,
+                               boolean searchRepositories,
+                               boolean addProjects,
+                               boolean createDict,
+                               List<String> subFiles,
+                               List<String> repositories) throws IndexerException, IOException {
+
+        prepareIndexer(env, searchRepositories, addProjects, createDict, true,
+                subFiles, repositories);
+    }
+
+    /**
+     * Generate history cache and/or scan the repositories.
+     *
      * This is the first phase of the indexing where history cache is being
      * generated for repositories (at least for those which support getting
      * history per directory).
      *
-     * PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
+     * PMD wants us to use length() &gt; 0 &amp;&amp; charAt(0) instead of startsWith()
      * for performance. We prefer clarity over performance here, so silence it.
+     *
+     * @param env runtime environment
+     * @param searchRepositories if true, search for repositories
+     * @param addProjects if true, add projects
+     * @param createDict if true, create dictionary
+     * @param createHistoryCache create history cache flag
+     * @param subFiles list of directories
+     * @param repositories list of repositories
+     * @throws IndexerException indexer exception
+     * @throws IOException I/O exception
      */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
             boolean addProjects,
-            Set<String> defaultProjects,
-            boolean listFiles,
             boolean createDict,
+            boolean createHistoryCache,
             List<String> subFiles,
-            List<String> repositories,
-            List<String> zapCache,
-            boolean listRepoPaths) throws IndexerException, IOException {
+            List<String> repositories) throws IndexerException, IOException {
 
         if (env.getDataRootPath() == null) {
             throw new IndexerException("ERROR: Please specify a DATA ROOT path");
@@ -915,17 +941,14 @@ public final class Indexer {
             throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
         }
 
-        if (zapCache.isEmpty() && !env.validateUniversalCtags()) {
+        if (!env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Universal Ctags");
-        }
-        if (zapCache == null) {
-            throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
         // Projects need to be created first since when adding repositories below,
         // some of the project properties might be needed for that.
         if (addProjects) {
-            File files[] = env.getSourceRootFile().listFiles();
+            File[] files = env.getSourceRootFile().listFiles();
             Map<String,Project> projects = env.getProjects();
 
             // Keep a copy of the old project list so that we can preserve
@@ -940,7 +963,7 @@ public final class Indexer {
             // Add a project for each top-level directory in source root.
             for (File file : files) {
                 String name = file.getName();
-                String path = File.separator + name;
+                String path = '/' + name;
                 if (oldProjects.containsKey(name)) {
                     // This is an existing object. Reuse the old project,
                     // possibly with customizations, instead of creating a
@@ -958,92 +981,25 @@ public final class Indexer {
             }
         }
         
-        if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
+        if (searchRepositories) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
-            
-            if (listRepoPaths || !zapCache.isEmpty()) {
-                List<RepositoryInfo> repos = env.getRepositories();
-                String prefix = env.getSourceRootPath();
-                if (listRepoPaths) {
-                    if (repos.isEmpty()) {
-                        System.out.println("No repositories found.");
-                        return;
-                    }
-                    System.out.println("Repositories in " + prefix + ":");
-                    for (RepositoryInfo info : env.getRepositories()) {
-                        String dir = info.getDirectoryName();
-                        System.out.println(String.format("%s (%s)", dir.substring(prefix.length()), info.getType()));
-                    }
-                }
-                if (!zapCache.isEmpty()) {
-                    HashSet<String> toZap = new HashSet<>(zapCache.size() << 1);
-                    boolean all = false;
-                    for (String repo : zapCache) {
-                        if ("*".equals(repo)) {
-                            all = true;
-                            break;
-                        }
-                        if (repo.startsWith(prefix)) {
-                            repo = repo.substring(prefix.length());
-                        }
-                        toZap.add(repo);
-                    }
-                    if (all) {
-                        toZap.clear();
-                        for (RepositoryInfo info : env.getRepositories()) {
-                            toZap.add(info.getDirectoryName()
-                                    .substring(prefix.length()));
-                        }
-                    }
-                    try {
-                        HistoryGuru.getInstance().removeCache(toZap);
-                    } catch (HistoryException e) {
-                        LOGGER.log(Level.WARNING, "Clearing history cache failed: {0}",
-                                e.getLocalizedMessage());
-                    }
-                }
-                return;
-            }
         }
 
-        if (defaultProjects != null && !defaultProjects.isEmpty()) {
-            Set<Project> projects = new TreeSet<>();
-            for (String projectPath : defaultProjects) {
-                if (projectPath.equals("__all__")) {
-                    projects.addAll(env.getProjects().values());
-                    break;
-                }
-                for (Project p : env.getProjectList()) {
-                    if (p.getPath().equals(projectPath)) {
-                        projects.add(p);
-                        break;
-                    }
-                }
-            }
-            if (!projects.isEmpty()) {
-                env.setDefaultProjects(projects);
-            }
-        }
-
-        // Even if history is disabled globally, it can be enabled for some repositories.
-        if (repositories != null && !repositories.isEmpty()) {
-            LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
-                repositories.stream().collect(Collectors.joining(",")));
-            HistoryGuru.getInstance().createCache(repositories);
-            LOGGER.info("Done...");
-          } else {
-              LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-              HistoryGuru.getInstance().createCache();
-              LOGGER.info("Done...");
-          }
-
-        if (listFiles) {
-            for (String file : IndexDatabase.getAllFiles(subFiles)) {
-                LOGGER.fine(file);
+        if (createHistoryCache) {
+            // Even if history is disabled globally, it can be enabled for some repositories.
+            if (repositories != null && !repositories.isEmpty()) {
+                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                        repositories.stream().collect(Collectors.joining(",")));
+                HistoryGuru.getInstance().createCache(repositories);
+                LOGGER.info("Done...");
+            } else {
+                LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                HistoryGuru.getInstance().createCache();
+                LOGGER.info("Done...");
             }
         }
 
@@ -1070,13 +1026,15 @@ public final class Indexer {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
-        IndexerParallelizer parallelizer = new IndexerParallelizer(env);
-
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
+        final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
             if (update) {
-                IndexDatabase.updateAll(parallelizer, progress);
+                latch = IndexDatabase.updateAll(progress);
             } else if (env.isOptimizeDatabase()) {
-                IndexDatabase.optimizeAll(parallelizer);
+                latch = IndexDatabase.optimizeAll();
+            } else {
+                latch = new CountDownLatch(0);
             }
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
@@ -1107,6 +1065,7 @@ public final class Indexer {
                 }
             }
 
+            latch = new CountDownLatch(dbs.size());
             for (final IndexDatabase db : dbs) {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
@@ -1115,7 +1074,7 @@ public final class Indexer {
                     public void run() {
                         try {
                             if (update) {
-                                db.update(parallelizer);
+                                db.update();
                             } else if (optimize) {
                                 db.optimize();
                             }
@@ -1123,35 +1082,21 @@ public final class Indexer {
                             LOGGER.log(Level.SEVERE, "An error occurred while "
                                     + (update ? "updating" : "optimizing")
                                     + " index", e);
+                        } finally {
+                            latch.countDown();
                         }
                     }
                 });
             }
         }
 
-        parallelizer.getFixedExecutor().shutdown();
-        while (!parallelizer.getFixedExecutor().isTerminated()) {
-            try {
-                // Wait forever
-                parallelizer.getFixedExecutor().awaitTermination(999,
-                    TimeUnit.DAYS);
-            } catch (InterruptedException exp) {
-                LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
-            }
-        }
+        // Wait forever for the executors to finish.
         try {
-            // It can happen that history index is not done in prepareIndexer()
-            // but via db.update() above in which case we must make sure the
-            // thread pool for renamed file handling is destroyed.
-            RuntimeEnvironment.destroyRenamedHistoryExecutor();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE,
-                    "destroying of renamed thread pool failed", ex);
-        }
-        try {
-            parallelizer.close();
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "parallelizer.close() failed", ex);
+            LOGGER.info("Waiting for the executors to finish");
+            latch.await(999, TimeUnit.DAYS);
+        } catch (InterruptedException exp) {
+            LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
+                    " for executor to finish", exp);
         }
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }

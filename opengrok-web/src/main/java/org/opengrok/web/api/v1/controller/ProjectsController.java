@@ -22,6 +22,32 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -35,33 +61,6 @@ import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 
 @Path("/projects")
 public class ProjectsController {
@@ -92,10 +91,7 @@ public class ProjectsController {
             // Note that the project is inactive in the UI until it is indexed.
             // See {@code isIndexed()}
             env.getProjects().put(projectName, project);
-
-            Set<Project> projectSet = new TreeSet<>();
-            projectSet.add(project);
-            env.populateGroups(env.getGroups(), projectSet);
+            env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjectList()));
         } else {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
@@ -136,38 +132,58 @@ public class ProjectsController {
         return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}, env.getIgnoredNames()));
     }
 
-    @DELETE
-    @Path("/{project}")
-    public void deleteProject(@PathParam("project") final String projectName)
-            throws IOException, HistoryException {
-
-        Project proj = env.getProjects().get(projectName);
-        if (proj == null) {
+    private Project disableProject(String projectName) {
+        Project project = env.getProjects().get(projectName);
+        if (project == null) {
             throw new IllegalStateException("cannot get project \"" + projectName + "\"");
         }
 
+        // Remove the project from searches so no one can trip over incomplete index data.
+        project.setIndexed(false);
+
+        return project;
+    }
+
+    @DELETE
+    @Path("/{project}")
+    public void deleteProject(@PathParam("project") final String projectName)
+            throws HistoryException {
+
+        Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
 
+        // Delete index data associated with the project.
+        deleteProjectData(projectName);
+
         // Remove the project from its groups.
-        for (Group group : proj.getGroups()) {
-            group.getRepositories().remove(proj);
-            group.getProjects().remove(proj);
+        for (Group group : project.getGroups()) {
+            group.getRepositories().remove(project);
+            group.getProjects().remove(project);
         }
 
         // Now remove the repositories associated with this project.
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(proj);
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos != null) {
             env.getRepositories().removeAll(repos);
         }
-        env.getProjectRepositoriesMap().remove(proj);
+        env.getProjectRepositoriesMap().remove(project);
 
-        env.getProjects().remove(projectName, proj);
+        env.getProjects().remove(projectName, project);
 
         // Prevent the project to be included in new searches.
         env.refreshSearcherManagerMap();
+    }
 
-        // Lastly, remove data associated with the project.
+    @DELETE
+    @Path("/{project}/data")
+    public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
+
+        Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
+
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+
+        // Delete index and xrefs.
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
             java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
             try {
@@ -176,6 +192,23 @@ public class ProjectsController {
                 logger.log(Level.WARNING, "Could not delete {0}", path.toString());
             }
         }
+
+        deleteHistoryCache(projectName);
+
+        // Delete suggester data.
+        suggester.delete(projectName);
+    }
+
+    @DELETE
+    @Path("/{project}/historycache")
+    public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
+
+        Project project = disableProject(projectName);
+        logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
+
+        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+
+        // Delete history cache data.
         HistoryGuru guru = HistoryGuru.getInstance();
         guru.removeCache(repos.stream().
                 map(x -> {
@@ -185,15 +218,13 @@ public class ProjectsController {
                         logger.log(Level.FINER, e.getMessage());
                         return "";
                     } catch (IOException e) {
-                        logger.log(Level.INFO, "cannot remove files for repository {0}", x.getDirectoryName());
+                        logger.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
                         // Empty output should not cause any harm
                         // since {@code getReposFromString()} inside
                         // {@code removeCache()} will return nothing.
                         return "";
                     }
-                }).collect(Collectors.toSet()));
-
-        suggester.delete(projectName);
+                }).filter(x -> !x.isEmpty()).collect(Collectors.toSet()));
     }
 
     @PUT
@@ -219,7 +250,7 @@ public class ProjectsController {
                     }
                 }
             }
-            suggester.refresh(projectName);
+            suggester.rebuild(projectName);
         } else {
             logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
         }
@@ -321,4 +352,10 @@ public class ProjectsController {
         return Collections.emptySet();
     }
 
+    @GET
+    @Path("/{project}/files")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<String> getProjectIndexFiles(@PathParam("project") String projectName) throws IOException {
+        return IndexDatabase.getAllFiles(Collections.singletonList("/" + projectName));
+    }
 }

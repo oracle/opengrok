@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -26,7 +26,7 @@ import json
 import yaml
 import sys
 
-# The following is to make the json parsing work on Python 3.4.
+# The following is to make the JSON parsing work on Python 3.4.
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
@@ -58,14 +58,14 @@ def read_config(logger, inputfile):
 
             try:
                 logger.debug("trying YAML")
-                cfg = yaml.load(data)
+                cfg = yaml.safe_load(data)
             except AttributeError:
                 # Not a valid YAML file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
                 pass
             else:
                 return cfg
-    except IOError:
-        logger.error("cannot open '{}'".format(inputfile))
+    except IOError as e:
+        logger.error("cannot open '{}': {}".format(inputfile, e.strerror))
 
     return cfg

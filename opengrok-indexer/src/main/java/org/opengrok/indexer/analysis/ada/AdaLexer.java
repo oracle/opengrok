@@ -18,54 +18,32 @@
  */
 
  /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.Resettable;
+
 import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.Resettable;
 
 /**
- * Represents an API for object's using {@link AdaLexHelper}
+ * Represents an abstract base class for Ada lexers.
  */
-interface AdaLexer extends JFlexJointLexer {
-}
-
-/**
- * Represents a helper for Ada lexers
- */
-class AdaLexHelper implements Resettable {
-
-    private final AdaLexer lexer;
-
-    private final int SCOMMENT;
-
-    public AdaLexHelper(int sCOMMENT, AdaLexer lexer) {
-        if (lexer == null) {
-            throw new IllegalArgumentException("`lexer' is null");
-        }
-        this.lexer = lexer;
-        this.SCOMMENT = sCOMMENT;
-    }
+abstract class AdaLexer extends JFlexSymbolMatcher
+        implements JFlexJointLexer, Resettable {
 
     /**
-     * Resets the instance to an initial state.
-     */
-    @Override
-    public void reset() {
-        // noop
-    }
-
-    /**
-     * Write {@code value} to output -- if it contains any EOLs then the
-     * {@code startNewLine()} is called in lieu of outputting EOL.
+     * Writes {@code value} to output -- if it contains any EOLs then the
+     * {@link JFlexJointLexer#startNewLine()} is called in lieu of outputting
+     * EOL.
      */
     public void takeLiteral(String value, String className)
             throws IOException {
 
-        lexer.disjointSpan(className);
+        disjointSpan(className);
 
         int off = 0;
         do {
@@ -74,7 +52,7 @@ class AdaLexHelper implements Resettable {
             ni = value.indexOf("\n", off);
             if (ri == -1 && ni == -1) {
                 String sub = value.substring(off);
-                lexer.offer(sub);
+                offer(sub);
                 break;
             }
             if (ri != -1 && ni != -1) {
@@ -93,22 +71,28 @@ class AdaLexHelper implements Resettable {
             }
 
             String sub = value.substring(off, i);
-            lexer.offer(sub);
-            lexer.disjointSpan(null);
-            lexer.startNewLine();
-            lexer.disjointSpan(className);
+            offer(sub);
+            disjointSpan(null);
+            startNewLine();
+            disjointSpan(className);
             off = i + w;
         } while (off < value.length());
 
-        lexer.disjointSpan(null);
+        disjointSpan(null);
     }
 
     /**
-     * Calls {@link AdaLexer#phLOC()} if the yystate is not SCOMMENT.
+     * Calls {@link #phLOC()} if the yystate is not SCOMMENT.
      */
     public void chkLOC() {
-        if (lexer.yystate() != SCOMMENT) {
-            lexer.phLOC();
+        if (yystate() != SCOMMENT()) {
+            phLOC();
         }
     }
+
+    /**
+     * Subclasses must override to get the constant value created by JFlex to
+     * represent SCOMMENT.
+     */
+    abstract int SCOMMENT();
 }
