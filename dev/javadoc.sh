@@ -2,6 +2,14 @@
 
 set -e
 
+if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ||
+    "${TRAVIS_PULL_REQUEST}" == "true" ||
+    "${TRAVIS_BRANCH}" != "master" ]]; then
+	exit 0
+fi
+
+echo -e "Publishing javadoc...\n"
+
 mvn -DskipTests=true site
 
 git config --global user.email "travis@travis-ci.org"
@@ -17,3 +25,5 @@ cp -Rf ${TRAVIS_BUILD_DIR}/target/site/apidocs ./javadoc
 git add -f ./javadoc
 git commit -m "Lastest javadoc auto-pushed to gh-pages"
 git push -fq origin gh-pages
+
+echo -e "Published Javadoc to gh-pages.\n"
