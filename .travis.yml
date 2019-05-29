@@ -80,3 +80,7 @@ jobs:
     if: repo = "oracle/opengrok" AND tag IS present
     script: dev/post-deploy.sh
     install: true
+  - stage: javadoc
+    name: Upload javadocs to Github pages
+    script: dev/javadoc.sh
+    install: true
