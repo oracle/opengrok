@@ -15,7 +15,7 @@ mvn -DskipTests=true site
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "travis-ci"
 git clone --quiet --branch=gh-pages \
-    https://${GH_PAGES_TOKEN}@github.com/opengrok/opengrok gh-pages
+    https://${GH_PAGES_TOKEN}@github.com/oracle/opengrok gh-pages
 
 cd gh-pages
 if [[ -d ./javadoc ]]; then
