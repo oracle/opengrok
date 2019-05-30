@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ||
     "${TRAVIS_PULL_REQUEST}" == "true" ||
