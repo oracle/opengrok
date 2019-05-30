@@ -81,6 +81,9 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
     tmpWar = None
     DEFAULT_CONFIG_FILE = '/var/opengrok/etc/configuration.xml'
     if configFile and configFile != DEFAULT_CONFIG_FILE:
+        # Resolve the path to be absolute so that webapp can find the file.
+        configFile = os.path.abspath(configFile)
+
         with tempfile.NamedTemporaryFile(prefix='OpenGroktmpWar',
                                          suffix='.war',
                                          delete=False) as tmpWar:
