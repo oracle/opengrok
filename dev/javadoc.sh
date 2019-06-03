@@ -4,7 +4,7 @@ set -e
 set -x
 
 if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ||
-    "${TRAVIS_PULL_REQUEST}" == "true" ||
+    "${TRAVIS_PULL_REQUEST}" != "false" ||
     "${TRAVIS_BRANCH}" != "master" ]]; then
 	exit 0
 fi
