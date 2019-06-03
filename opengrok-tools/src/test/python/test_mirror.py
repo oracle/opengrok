@@ -81,6 +81,7 @@ def test_invalid_project_config_hooknames():
         assert not check_project_configuration(config, hookdir=tmpdir)
 
 
+@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
 def test_invalid_project_config_nonexec_hook():
     with tempfile.TemporaryDirectory() as tmpdir:
         with open(os.path.join(tmpdir, "foo.sh"), 'w+') as tmpfile:
