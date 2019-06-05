@@ -3,6 +3,7 @@
 /nbproject/configs/*.properties
 tags
 TAGS
+!opengrok-web/src/main/webapp/WEB-INF/tags
 build
 dist
 coverage
