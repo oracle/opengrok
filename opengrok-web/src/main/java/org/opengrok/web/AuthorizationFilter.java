@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -34,7 +34,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.RestApp;
