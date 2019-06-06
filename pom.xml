@@ -219,6 +219,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
                 <version>${maven-surefire.version}</version>
                 <executions>
