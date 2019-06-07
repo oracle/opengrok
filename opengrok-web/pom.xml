@@ -196,11 +196,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     </argLine>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
