@@ -36,7 +36,8 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <c:set var="isSubrepository" value="${!repositoryInfo.getDirectoryNameRelative().equals(project.getPath())}"/>
 <c:set var="name" value="${project.name}"/>
 <c:set var="defaultLength" value="${Integer.valueOf(10)}"/>
-<c:set var="summary" value="${ObjectUtils.defaultIfNull(repositoryInfo.currentVersion, \"N/A\")}"/>
+<c:set var="NA" value="N/A"/>
+<c:set var="summary" value="${ObjectUtils.defaultIfNull(repositoryInfo.currentVersion, NA)}"/>
 <c:set var="maxLength" value="${Math.max(defaultLength, pageConfig.currentIndexedCollapseThreshold)}"/>
 
 <c:if test="${isSubrepository}">
