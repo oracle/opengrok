@@ -56,8 +56,7 @@ pmd.bat
 .project
 .settings/
 .vscode/
-*/.project
-*/.settings
-*/.classpath
 */bin/
+.classpath
+.checkstyle
 
