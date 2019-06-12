@@ -188,11 +188,11 @@ public class SearchEngine {
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
         IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
         searcher = new IndexSearcher(ireader);
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
+        collector = TopScoreDocCollector.create(hitsPerPage * cachePages, Short.MAX_VALUE);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
         if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits);
+            collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
@@ -222,11 +222,11 @@ public class SearchEngine {
         MultiReader searchables = RuntimeEnvironment.getInstance().
             getMultiReader(projects, searcherList);
         searcher = new IndexSearcher(searchables);
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
+        collector = TopScoreDocCollector.create(hitsPerPage * cachePages, Short.MAX_VALUE);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
         if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits);
+            collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
@@ -465,7 +465,7 @@ public class SearchEngine {
         // TODO check if below fits for if end=old hits.length, or it should include it
         if (end > hits.length && !allCollected) {
             //do the requery, we want more than 5 pages
-            collector = TopScoreDocCollector.create(totalHits);
+            collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
             try {
                 searcher.search(query, collector);
             } catch (Exception e) { // this exception should never be hit, since search() will hit this before

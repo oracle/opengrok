@@ -654,6 +654,11 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
     }
 
     @Override
+    public float getMaxScore(int i) throws IOException {
+        return 0;
+    }
+
+    @Override
     public DocIdSetIterator iterator() {
         return TwoPhaseIterator.asDocIdSetIterator(twoPhaseIterator());
     }
