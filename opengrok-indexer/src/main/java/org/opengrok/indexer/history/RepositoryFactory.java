@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 /**
  * This is a factory class for the different repositories.
@@ -80,7 +81,7 @@ public final class RepositoryFactory {
     }
 
     public static Repository getRepository(File file)
-        throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException{
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
         return getRepository(file, false);
     }
     
@@ -101,15 +102,25 @@ public final class RepositoryFactory {
      * @throws IllegalAccessException in case no permissions to repository file
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
+     * @throws IOException when resolving repository path
+     * @throws ForbiddenSymlinkException when resolving repository path
      */
     public static Repository getRepository(File file, boolean interactive)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
+
+                if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).isEmpty()) {
+                    LOGGER.log(Level.WARNING, "{0} was detected as {1} repository however with directory " +
+                            "matching source root. This is invalid because projects are enabled. Ignoring this " +
+                            "repository.",
+                            new Object[]{file, rep.getType()});
+                    return null;
+                }
                 repo.setDirectoryName(file);
 
                 if (!repo.isWorking()) {
@@ -181,9 +192,11 @@ public final class RepositoryFactory {
      * @throws IllegalAccessException in case no permissions to repository
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
+     * @throws IOException when resolving repository path
+     * @throws ForbiddenSymlinkException when resolving repository path
      */
     public static Repository getRepository(RepositoryInfo info, boolean interactive)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
         return getRepository(new File(info.getDirectoryName()), interactive);
     }
 

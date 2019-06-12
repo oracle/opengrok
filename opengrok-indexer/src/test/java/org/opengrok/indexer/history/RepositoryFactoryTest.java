@@ -23,11 +23,13 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertFalse;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -56,8 +58,9 @@ public class RepositoryFactoryTest {
      * There is no conditonal run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
      */
-    private void testNotWorkingRepository(String repoPath, String propName) 
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    private void testNotWorkingRepository(String repoPath, String propName)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         File root = new File(repository.getSourceRoot(), repoPath);
@@ -69,14 +72,16 @@ public class RepositoryFactoryTest {
     }
     
     @Test
-    public void testNotWorkingMercurialRepository() 
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testNotWorkingMercurialRepository()
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         testNotWorkingRepository("mercurial", MercurialRepository.CMD_PROPERTY_KEY);
     }
     
     @Test
-    public void testNotWorkingBitkeeperRepository() 
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testNotWorkingBitkeeperRepository()
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         testNotWorkingRepository("bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 }
