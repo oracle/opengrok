@@ -27,8 +27,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -53,7 +58,19 @@ public class RepositoryFactoryTest {
             repository = null;
         }
     }
-    
+
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testRepositoryMatchingSourceRoot() throws IllegalAccessException, InvocationTargetException,
+            ForbiddenSymlinkException, InstantiationException, NoSuchMethodException, IOException {
+
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(root.getAbsolutePath());
+        env.setProjectsEnabled(true);
+        assertNull(RepositoryFactory.getRepository(root));
+    }
+
     /*
      * There is no conditional run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
@@ -61,9 +78,11 @@ public class RepositoryFactoryTest {
     private void testNotWorkingRepository(String repoPath, String propName)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         File root = new File(repository.getSourceRoot(), repoPath);
+        env.setSourceRoot(repository.getSourceRoot());
         Repository repo = RepositoryFactory.getRepository(root);
         if (origPropValue != null) {
             System.setProperty(propName, origPropValue);
