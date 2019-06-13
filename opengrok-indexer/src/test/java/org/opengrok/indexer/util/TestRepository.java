@@ -126,8 +126,8 @@ public class TestRepository {
      * @param filename a required instance
      * @param in a required instance
      * @param project an optional project name
-     * @return
-     * @throws IOException
+     * @return file object
+     * @throws IOException I/O exception
      */
     public File addAdhocFile(String filename, InputStream in, String project)
             throws IOException {
