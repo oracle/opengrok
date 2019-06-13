@@ -55,7 +55,7 @@ public class RepositoryFactoryTest {
     }
     
     /*
-     * There is no conditonal run based on whether given repository is installed because
+     * There is no conditional run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
      */
     private void testNotWorkingRepository(String repoPath, String propName)
