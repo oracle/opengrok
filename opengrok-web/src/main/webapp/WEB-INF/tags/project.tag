@@ -29,7 +29,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
 <tr>
     <td colspan="3" class="name repository">
-        <a href="${request.getContextPath}${Prefix.XREF_P.toString()}/${project.name}"
+        <a href="${request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
            title="Xref for project ${Util.htmlize(project.name)}">
             ${Util.htmlize(project.name)}
         </a>
