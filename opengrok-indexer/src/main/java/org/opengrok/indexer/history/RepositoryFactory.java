@@ -114,7 +114,7 @@ public final class RepositoryFactory {
             if (rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
 
-                if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).isEmpty()) {
+                if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).equals(File.separator)) {
                     LOGGER.log(Level.WARNING, "{0} was detected as {1} repository however with directory " +
                             "matching source root. This is invalid because projects are enabled. Ignoring this " +
                             "repository.",
