@@ -272,6 +272,24 @@ public class PerforceRepository extends Repository {
 
     @Override
     String determineCurrentVersion(boolean interactive) throws IOException {
-        return null;
+        File directory = new File(getDirectoryName());
+        List<String> cmd = new ArrayList<>();
+
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("changes");
+        cmd.add("-t");
+        cmd.add("-m");
+        cmd.add("1");
+        cmd.add("...#have");
+
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        if (executor.exec(false) != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        return executor.getOutputString().trim();
     }
 }
