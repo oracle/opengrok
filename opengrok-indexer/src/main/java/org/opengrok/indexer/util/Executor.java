@@ -224,8 +224,8 @@ public class Executor {
             ret = process.waitFor();
             
             LOGGER.log(Level.FINE,
-                "Finished command {0} in directory {1}",
-                new Object[] {cmd_str,dir_str});
+                "Finished command {0} in directory {1} with exit code {2}",
+                new Object[] {cmd_str, dir_str, ret});
 
             // Wait for the stderr read-out thread to finish the processing and
             // only after that read the data.
