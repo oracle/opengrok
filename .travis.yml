@@ -24,7 +24,7 @@ jobs:
   - stage: test
     name: Linux + Oracle JDK 8
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     jdk: oraclejdk8
     install: true
@@ -34,7 +34,7 @@ jobs:
   - stage: test
     name: Linux + Oracle JDK 11
     os: linux
-    dist: trusty
+    dist: xenial 
     sudo: required
     jdk: oraclejdk11
     install: true
@@ -83,7 +83,7 @@ jobs:
   - stage: javadoc
     name: Upload javadocs to Github pages
     os: linux
-    dist: trusty
+    dist: xenial
     jdk: oraclejdk8
     script: dev/javadoc.sh
     install: true
