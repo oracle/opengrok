@@ -22,7 +22,7 @@ addons:
 jobs:
   include:
   - stage: test
-    name: Linux + Oracle JDK 8
+    name: Linux + OpenJDK 8
     os: linux
     dist: xenial
     sudo: required
