@@ -24,9 +24,9 @@ jobs:
   - stage: test
     name: Linux + Oracle JDK 8
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
-    jdk: oraclejdk8
+    jdk: openjdk8
     install: true
     script: dev/main
     before_install: dev/before_install
