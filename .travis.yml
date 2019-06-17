@@ -84,6 +84,6 @@ jobs:
     name: Upload javadocs to Github pages
     os: linux
     dist: xenial
-    jdk: oraclejdk8
+    jdk: openjdk8
     script: dev/javadoc.sh
     install: true
