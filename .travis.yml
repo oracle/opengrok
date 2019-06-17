@@ -34,7 +34,7 @@ jobs:
   - stage: test
     name: Linux + Oracle JDK 11
     os: linux
-    dist: xenial 
+    dist: xenial
     sudo: required
     jdk: oraclejdk11
     install: true
