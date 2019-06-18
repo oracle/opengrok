@@ -1752,6 +1752,11 @@ public final class PageConfig {
         return false;
     }
 
+    /**
+     * @param root root path
+     * @param path path
+     * @return path relative to root
+     */
     public static String getRelativePath(String root, String path) {
         return Paths.get(root).relativize(Paths.get(path)).toString();
     }
