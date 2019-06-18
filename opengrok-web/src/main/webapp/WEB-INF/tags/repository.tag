@@ -42,7 +42,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
 <c:if test="${isSubrepository}">
     <c:set var="name"
-           value="${Paths.get(pageConfig.sourceRootPath).relativize(Paths.get(repositoryInfo.directoryName))}"/>
+           value="${pageConfig.getRelativePath(pageConfig.sourceRootPath, repositoryInfo.directoryName)}"/>
 </c:if>
 
 <c:if test="${isSubrepository && isFirst}">
