@@ -80,9 +80,14 @@ public final class RepositoryFactory {
         return list;
     }
 
+    public static Repository getRepository(File file, String type)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+        return getRepository(file, false, type);
+    }
+
     public static Repository getRepository(File file)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
-        return getRepository(file, false);
+        return getRepository(file, false, null);
     }
     
     /**
@@ -97,6 +102,7 @@ public final class RepositoryFactory {
      *
      * @param file File that might contain a repository
      * @param interactive true if running in interactive mode
+     * @param type type of the repository to search for or {@code null}
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file
@@ -105,12 +111,16 @@ public final class RepositoryFactory {
      * @throws IOException when resolving repository path
      * @throws ForbiddenSymlinkException when resolving repository path
      */
-    public static Repository getRepository(File file, boolean interactive)
+    public static Repository getRepository(File file, boolean interactive, String type)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
+            if (type != null && !type.equals(rep.getType())) {
+                continue;
+            }
+
             if (rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
 
@@ -197,7 +207,7 @@ public final class RepositoryFactory {
      */
     public static Repository getRepository(RepositoryInfo info, boolean interactive)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
-        return getRepository(new File(info.getDirectoryName()), interactive);
+        return getRepository(new File(info.getDirectoryName()), interactive, null);
     }
 
     /**
