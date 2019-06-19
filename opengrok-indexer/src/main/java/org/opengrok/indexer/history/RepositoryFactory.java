@@ -102,7 +102,7 @@ public final class RepositoryFactory {
      *
      * @param file File that might contain a repository
      * @param interactive true if running in interactive mode
-     * @param type type of the repository to search for
+     * @param type type of the repository to search for or {@code null}
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file

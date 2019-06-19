@@ -387,7 +387,7 @@ public final class HistoryGuru {
      * @param files list of files to check if they contain a repository
      * @param ignoredNames what files to ignore
      * @param recursiveSearch whether to use recursive search
-     * @param type type of the repository to search for
+     * @param type type of the repository to search for or {@code null}
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
      * @return collection of added repositories
