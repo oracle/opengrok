@@ -47,7 +47,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <c:if test="${isSubrepository && isFirst}">
     <tr>
         <td class="name repository" colspan="3">
-            <a href="${request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
+            <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
                title="Xref for project ${Util.htmlize(project.name)}">
                     ${Util.htmlize(project.name)}
             </a>
@@ -57,7 +57,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
 <tr>
     <td class="name ${isSubrepository ? "subrepository" : "repository"}">
-        <a href="${request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
+        <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
            title="Xref for project ${Util.htmlize(name)}">
             ${Util.htmlize(name)}
         </a>
