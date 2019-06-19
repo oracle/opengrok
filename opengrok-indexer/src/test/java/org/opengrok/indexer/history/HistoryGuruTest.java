@@ -202,7 +202,7 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // Clone a Mercurial repository underneath a Git repository.
+        // Clone a Mercurial repository underneath a Mercurial repository.
         File hgRoot = new File(repository.getSourceRoot(), "mercurial");
         assertTrue(hgRoot.exists());
         assertTrue(hgRoot.isDirectory());
