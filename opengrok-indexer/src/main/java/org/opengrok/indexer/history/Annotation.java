@@ -27,19 +27,14 @@ package org.opengrok.indexer.history;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Color;
 import org.opengrok.indexer.util.LazilyInstantiate;
+import org.opengrok.indexer.util.RainbowColorGenerator;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -214,9 +209,9 @@ public class Annotation {
      * @see #getRevisions()
      */
     private Map<String, String> generateColors() {
-        Map<String, String> colors = new HashMap<>();
-        boolean even = true;
-        int hue = 60;
+        List<Color> colors = RainbowColorGenerator.getOrderedColors();
+
+        Map<String, String> colorMap = new HashMap<>();
         final List<String> revisions =
                 getRevisions()
                         .stream()
@@ -231,24 +226,18 @@ public class Annotation {
                         .sorted(Comparator.comparingInt(this::getFileVersion).reversed())
                         .collect(Collectors.toList());
 
-        /*
-         * HSL color space let us use the whole color spectrum without any difficult computations.
-         * We use the basic of hsl(60, 90%, 80%) and rotate the HSL circle with step equal 360/revisions_count.
-         *
-         * For two adjacent revisions, we adjust the saturation and lightness a bit so we get a smooth visible
-         * transition.
-         *
-         * The idea of the computation is taken from
-         * https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
-         */
-        for (String revision : revisions) {
-            int adjustment = even ? 0 : 10;
-            colors.put(revision, String.format("hsl(%d, %d%%, %d%%)", hue, 90 - adjustment, 80 - adjustment));
-            hue += 360 / getRevisions().size();
-            hue %= 360;
-            even = !even;
-        }
-        return colors;
+        final int nColors = colors.size();
+        final double colorsPerBucket = (double) nColors / getRevisions().size();
+
+        revisions.forEach(revision -> {
+            final int lineVersion = getRevisions().size() - getFileVersion(revision);
+            final double bucketTotal = colorsPerBucket * lineVersion;
+            final int bucketIndex = (int) Math.max(Math.min(Math.floor(bucketTotal), nColors - 1), 0);
+            Color color = colors.get(bucketIndex);
+            colorMap.put(revision, String.format("rgb(%d, %d, %d)", color.red, color.green, color.blue));
+        });
+
+        return colorMap;
     }
 
     /** Class representing one line in the file. */
