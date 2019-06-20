@@ -51,6 +51,8 @@ jobs:
     before_script: dev/before
   - stage: deploy
     name: Github Release
+    dist: xenial
+    jdk: openjdk8
     if: repo = "oracle/opengrok" AND tag IS present
     before_install: dev/before_install
     install: true
