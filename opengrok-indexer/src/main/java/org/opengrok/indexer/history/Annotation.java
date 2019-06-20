@@ -24,18 +24,26 @@
 
 package org.opengrok.indexer.history;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Color;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.RainbowColorGenerator;
 import org.opengrok.indexer.web.Util;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Class representing file annotation, i.e., revision and author for the last
