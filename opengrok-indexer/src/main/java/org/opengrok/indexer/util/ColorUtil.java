@@ -26,7 +26,7 @@ public class ColorUtil {
     /**
      * Return Color object from string. The following formats are allowed:
      * {@code A1B2C3},
-     * {@code abc123},
+     * {@code abc123}
      *
      * @param str hex string
      * @return Color object
