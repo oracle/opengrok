@@ -327,6 +327,25 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         </pluginManagement>
     </build>
 
+    <profiles>
+        <profile>
+            <id>java9plus-8-release</id>
+            <activation>
+                <jdk>[9,18]</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <reporting>
         <plugins>
             <plugin>
