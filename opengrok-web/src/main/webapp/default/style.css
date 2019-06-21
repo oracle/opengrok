@@ -779,6 +779,10 @@ div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
     text-align: center;
 }
 
+.most_recent_revision {
+    font-weight: bold;
+}
+
 /* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
 div[id^='src'] .n  { /* numbers/label      */ color: #a52a2a;                                           }
 div[id^='src'] .s  { /* strings            */ color: green;                                             }

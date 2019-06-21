@@ -762,10 +762,15 @@ public final class Util {
                 out.write(closeQuotedTag);
             }
             StringBuilder buf = new StringBuilder();
-            htmlize(r, buf);
+            final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
             // print an asterisk for the most recent revision
-            if (annotation.getFileVersion(r) == annotation.getRevisions().size()) {
-                out.write('*');
+            if (most_recent_revision) {
+                buf.append("<span class=\"most_recent_revision\">");
+                buf.append('*');
+            }
+            htmlize(r, buf);
+            if (most_recent_revision) {
+                buf.append("</span>"); // recent revision span
             }
             out.write(buf.toString());
             buf.setLength(0);
