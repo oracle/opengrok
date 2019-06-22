@@ -430,7 +430,7 @@ public final class HistoryGuru {
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
                             repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, null,depth + 1));
+                                    recursiveSearch, type,depth + 1));
                         }
                     }
                 } else {
