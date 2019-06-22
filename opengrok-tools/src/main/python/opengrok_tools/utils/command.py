@@ -62,6 +62,7 @@ class Command:
         self.redirect_stderr = redirect_stderr
         self.limits = resource_limits
         self.doprint = doprint
+        self.err = None
 
         self.logger = logger or logging.getLogger(__name__)
 
@@ -387,7 +388,10 @@ class Command:
         return self.err
 
     def geterroutputstr(self):
-        return "".join(self.err).strip()
+        if self.err:
+            return "".join(self.err).strip()
+        else:
+            return ""
 
     def getstate(self):
         return self.state
