@@ -144,6 +144,7 @@ def main():
     if hook_timeout:
         logger.debug("Global hook timeout = {}".format(hook_timeout))
 
+    logdir = None
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
         logdir = config.get(LOGDIR_PROPERTY)
