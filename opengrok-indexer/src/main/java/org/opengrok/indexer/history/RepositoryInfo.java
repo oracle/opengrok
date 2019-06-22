@@ -60,7 +60,7 @@ public class RepositoryInfo implements Serializable {
     
     private String directoryNameRelative;
     protected Boolean working;
-    protected String type;
+    protected String type;  // type of the repository, should be unique
     protected boolean remote;
     protected String[] datePatterns = new String[0];
     protected String parent;

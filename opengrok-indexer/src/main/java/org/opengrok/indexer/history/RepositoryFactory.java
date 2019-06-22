@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 /**
  * This is a factory class for the different repositories.
@@ -79,9 +80,14 @@ public final class RepositoryFactory {
         return list;
     }
 
+    public static Repository getRepository(File file, String type)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+        return getRepository(file, false, type);
+    }
+
     public static Repository getRepository(File file)
-        throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException{
-        return getRepository(file, false);
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+        return getRepository(file, false, null);
     }
     
     /**
@@ -96,20 +102,35 @@ public final class RepositoryFactory {
      *
      * @param file File that might contain a repository
      * @param interactive true if running in interactive mode
+     * @param type type of the repository to search for or {@code null}
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
+     * @throws IOException when resolving repository path
+     * @throws ForbiddenSymlinkException when resolving repository path
      */
-    public static Repository getRepository(File file, boolean interactive)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public static Repository getRepository(File file, boolean interactive, String type)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
+            if (type != null && !type.equals(rep.getType())) {
+                continue;
+            }
+
             if (rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
+
+                if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).equals(File.separator)) {
+                    LOGGER.log(Level.WARNING, "{0} was detected as {1} repository however with directory " +
+                            "matching source root. This is invalid because projects are enabled. Ignoring this " +
+                            "repository.",
+                            new Object[]{file, rep.getType()});
+                    return null;
+                }
                 repo.setDirectoryName(file);
 
                 if (!repo.isWorking()) {
@@ -181,10 +202,12 @@ public final class RepositoryFactory {
      * @throws IllegalAccessException in case no permissions to repository
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
+     * @throws IOException when resolving repository path
+     * @throws ForbiddenSymlinkException when resolving repository path
      */
     public static Repository getRepository(RepositoryInfo info, boolean interactive)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        return getRepository(new File(info.getDirectoryName()), interactive);
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+        return getRepository(new File(info.getDirectoryName()), interactive, null);
     }
 
     /**

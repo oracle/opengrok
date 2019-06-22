@@ -387,12 +387,13 @@ public final class HistoryGuru {
      * @param files list of files to check if they contain a repository
      * @param ignoredNames what files to ignore
      * @param recursiveSearch whether to use recursive search
+     * @param type type of the repository to search for or {@code null}
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
+            IgnoredNames ignoredNames, boolean recursiveSearch, String type, int depth) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
 
@@ -407,13 +408,16 @@ public final class HistoryGuru {
 
                 Repository repository = null;
                 try {
-                    repository = RepositoryFactory.getRepository(file);
+                    repository = RepositoryFactory.getRepository(file, type);
                 } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', could not instantiate the repository.", e);
                 } catch (IllegalAccessException iae) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', missing access rights.", iae);
+                } catch (ForbiddenSymlinkException e) {
+                    LOGGER.log(Level.WARNING, "Could not create repository for '"
+                            + file + "', path traversal issues.", e);
                 }
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
@@ -426,7 +430,7 @@ public final class HistoryGuru {
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
                             repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, depth + 1));
+                                    recursiveSearch, null,depth + 1));
                         }
                     }
                 } else {
@@ -436,7 +440,6 @@ public final class HistoryGuru {
                     repoList.add(new RepositoryInfo(repository));
                     putRepository(repository);
 
-                    // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
                         File[] subFiles = file.listFiles();
                         if (subFiles == null) {
@@ -444,10 +447,9 @@ public final class HistoryGuru {
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            // Search only one level down - if not: too much
-                            // stat'ing for huge Mercurial repositories
+                            // Search only for one type of repository - the one found here.
                             repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    false, depth + 1));
+                                    false, repository.getType(), depth + 1));
                         }
                     }
                 }
@@ -466,7 +468,7 @@ public final class HistoryGuru {
         addRepositories(File[] files, Collection<RepositoryInfo> repos,
                 IgnoredNames ignoredNames, int depth) {
 
-        return HistoryGuru.this.addRepositories(files, ignoredNames, true, depth);
+        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null, depth);
     }
 
     /**
@@ -480,7 +482,7 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(File[] files,
             IgnoredNames ignoredNames) {
 
-        return HistoryGuru.this.addRepositories(files, ignoredNames, true, 0);
+        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null,0);
     }
 
     /**

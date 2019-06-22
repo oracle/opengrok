@@ -22,11 +22,11 @@ addons:
 jobs:
   include:
   - stage: test
-    name: Linux + Oracle JDK 8
+    name: Linux + OpenJDK 8
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
-    jdk: oraclejdk8
+    jdk: openjdk8
     install: true
     script: dev/main
     before_install: dev/before_install
@@ -34,7 +34,7 @@ jobs:
   - stage: test
     name: Linux + Oracle JDK 11
     os: linux
-    dist: trusty
+    dist: xenial
     sudo: required
     jdk: oraclejdk11
     install: true
@@ -51,6 +51,8 @@ jobs:
     before_script: dev/before
   - stage: deploy
     name: Github Release
+    dist: xenial
+    jdk: openjdk8
     if: repo = "oracle/opengrok" AND tag IS present
     before_install: dev/before_install
     install: true
@@ -79,4 +81,11 @@ jobs:
     name: Post deploy
     if: repo = "oracle/opengrok" AND tag IS present
     script: dev/post-deploy.sh
+    install: true
+  - stage: javadoc
+    name: Upload javadocs to Github pages
+    os: linux
+    dist: xenial
+    jdk: openjdk8
+    script: dev/javadoc.sh
     install: true

@@ -86,7 +86,7 @@ def main():
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,
-                        help='config file in JSON format')
+                        help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
     parser.add_argument('-f', '--driveon', action='store_true', default=False,

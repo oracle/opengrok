@@ -18,18 +18,17 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -43,6 +42,8 @@ import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.Assert.*;
 
 /**
  * Test the functionality provided by the HistoryGuru (with friends)
@@ -170,5 +171,47 @@ public class HistoryGuruTest {
         added = instance.addRepositories(repos, env.getIgnoredNames());
         Assert.assertEquals(1, added.size());
         Assert.assertEquals(numReposOrig, instance.getRepositories().size());
+    }
+
+    @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    public void testAddSubRepositoryNoTypeMatch() {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Clone a Mercurial repository underneath a Git repository.
+        File hgRoot = new File(repository.getSourceRoot(), "mercurial");
+        assertTrue(hgRoot.exists());
+        assertTrue(hgRoot.isDirectory());
+        File gitRoot = new File(repository.getSourceRoot(), "git");
+        assertTrue(gitRoot.exists());
+        assertTrue(gitRoot.isDirectory());
+        MercurialRepositoryTest.runHgCommand(gitRoot,
+                "clone", hgRoot.getAbsolutePath(), "subrepo");
+
+        Collection<RepositoryInfo> addedRepos = instance.
+                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "git").toString()),
+                        env.getIgnoredNames());
+        assertEquals(1, addedRepos.size());
+    }
+
+    @Test
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    public void testAddSubRepository() {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Clone a Mercurial repository underneath a Mercurial repository.
+        File hgRoot = new File(repository.getSourceRoot(), "mercurial");
+        assertTrue(hgRoot.exists());
+        assertTrue(hgRoot.isDirectory());
+        MercurialRepositoryTest.runHgCommand(hgRoot,
+                "clone", hgRoot.getAbsolutePath(), "subrepo");
+
+        Collection<RepositoryInfo> addedRepos = instance.
+                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "mercurial").toString()),
+                        env.getIgnoredNames());
+        assertEquals(2, addedRepos.size());
     }
 }

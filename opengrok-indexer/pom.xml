@@ -28,11 +28,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.2.8</version>
+        <version>1.2.16</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.16</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -112,8 +112,13 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency> <!-- TODO: remove! (moving Messages to web module) -->
@@ -210,6 +215,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.commit.id</includeOnlyProperty>
                     </includeOnlyProperties>
+		    <failOnNoGitDirectory>false</failOnNoGitDirectory>
                 </configuration>
                 <executions>
                     <execution>

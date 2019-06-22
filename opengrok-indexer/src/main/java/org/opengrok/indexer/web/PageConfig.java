@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1749,5 +1750,14 @@ public final class PageConfig {
         // return 200 OK
         response.setHeader(HttpHeaders.ETAG, currentEtag);
         return false;
+    }
+
+    /**
+     * @param root root path
+     * @param path path
+     * @return path relative to root
+     */
+    public static String getRelativePath(String root, String path) {
+        return Paths.get(root).relativize(Paths.get(path)).toString();
     }
 }

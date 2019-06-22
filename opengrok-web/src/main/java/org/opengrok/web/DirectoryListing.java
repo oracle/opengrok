@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -49,7 +49,7 @@ import org.opengrok.indexer.web.Util;
  */
 public class DirectoryListing {
 
-    protected final static String DIRECTORY_SIZE_PLACEHOLDER = "-";
+    protected static final String DIRECTORY_SIZE_PLACEHOLDER = "-";
     private final EftarFileReader desc;
     private final long now;
 
