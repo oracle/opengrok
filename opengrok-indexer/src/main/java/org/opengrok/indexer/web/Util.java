@@ -21,6 +21,7 @@
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
 package org.opengrok.indexer.web;
@@ -743,16 +744,8 @@ public final class Util {
             if (enabled) {
                 out.write(anchorClassStart);
                 out.write("r");
-                if (annotation.getFileVersion(r) != 0) {
-                    /*
-                        version number, 1 is the most recent
-                        generates css classes version_color_n
-                     */
-                    int versionNumber = Math.max(1,
-                            annotation.getFileVersionsCount()
-                            - annotation.getFileVersion(r) + 1);
-                    out.write(" version_color_" + versionNumber);
-                }
+                out.write("\" style=\"background-color: ");
+                out.write(annotation.getColors().getOrDefault(r, "inherit"));
                 out.write("\" href=\"");
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
@@ -769,7 +762,16 @@ public final class Util {
                 out.write(closeQuotedTag);
             }
             StringBuilder buf = new StringBuilder();
+            final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
+            // print an asterisk for the most recent revision
+            if (most_recent_revision) {
+                buf.append("<span class=\"most_recent_revision\">");
+                buf.append('*');
+            }
             htmlize(r, buf);
+            if (most_recent_revision) {
+                buf.append("</span>"); // recent revision span
+            }
             out.write(buf.toString());
             buf.setLength(0);
             if (enabled) {

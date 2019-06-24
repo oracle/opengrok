@@ -18,17 +18,20 @@
  */
 
 /*
- * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -153,4 +156,28 @@ public class AnnotationTest {
         assertEquals("testfile.tst", instance.getFilename());
     }
 
+    @Test
+    public void testColorPalette() {
+        final Annotation annotation = new Annotation("testfile.txt");
+        annotation.addLine("1.0", "Me", true);
+        annotation.addLine("1.1", "Me", true);
+        annotation.addLine("1.2", "Me", true);
+        Assert.assertEquals(3, annotation.getColors().size());
+    }
+
+    @Test
+    public void testSortedColorPalette() {
+        final Annotation annotation = new Annotation("testfile.txt");
+        annotation.addLine("1.0", "Me", true);
+        annotation.addLine("1.1", "Me", true);
+        annotation.addLine("1.2", "Me", true);
+        annotation.addFileVersion("1.0", 3);
+        annotation.addFileVersion("1.2", 2);
+        Assert.assertEquals(3, annotation.getColors().size());
+        // tracked by history entries
+        Assert.assertEquals("rgb(234, 255, 226)", annotation.getColors().get("1.0"));
+        Assert.assertEquals("rgb(213, 220, 233)", annotation.getColors().get("1.2"));
+        // 1.1 us untracked by history entries (no addFileVersion called)
+        Assert.assertEquals("rgb(255, 191, 195)", annotation.getColors().get("1.1"));
+    }
 }
