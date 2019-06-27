@@ -207,6 +207,10 @@ public class ProjectsController {
         logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+        if (repos == null || repos.isEmpty()) {
+            logger.log(Level.INFO, "history cache for project {0} is not present", projectName);
+            return;
+        }
 
         // Delete history cache data.
         HistoryGuru guru = HistoryGuru.getInstance();
