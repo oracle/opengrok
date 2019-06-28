@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.2.21</version>
+    <version>1.2.22</version>
   </parent>
 
   <artifactId>opengrok-dist</artifactId>
@@ -24,20 +24,20 @@
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok</artifactId>
-      <version>1.2.21</version>
+      <version>1.2.22</version>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
-      <version>1.2.21</version>
+      <version>1.2.22</version>
       <type>war</type>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-tools</artifactId>
-      <version>1.2.21</version>
+      <version>1.2.22</version>
       <type>pom</type>
     </dependency>
   </dependencies>

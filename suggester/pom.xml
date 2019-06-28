@@ -5,7 +5,7 @@
     <parent>
         <artifactId>opengrok-top</artifactId>
         <groupId>org.opengrok</groupId>
-        <version>1.2.21</version>
+        <version>1.2.22</version>
     </parent>
 
     <artifactId>suggester</artifactId>

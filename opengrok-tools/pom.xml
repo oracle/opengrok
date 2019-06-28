@@ -29,11 +29,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.2.21</version>
+        <version>1.2.22</version>
     </parent>
 
     <artifactId>opengrok-tools</artifactId>
-    <version>1.2.21</version>
+    <version>1.2.22</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok tools</name>

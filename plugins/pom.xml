@@ -27,11 +27,11 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.2.21</version>
+        <version>1.2.22</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.2.21</version>
+    <version>1.2.22</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>
