@@ -83,6 +83,8 @@ jobs:
     jdk: openjdk8
     install: true
     if: repo = "oracle/opengrok" AND tag IS present
+    services:
+    - docker
     before_script: mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
     script: dev/docker.sh
   - stage: javadoc
