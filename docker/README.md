@@ -18,6 +18,7 @@ If you happen to have one of the following:
   - stable service
   - Source Code Management systems not supported in the image (e.g. Perforce,
     Clearcase, etc.)
+
 then it is advisable to run OpenGrok standalone or construct your own docker
 image based on the official one.
 
