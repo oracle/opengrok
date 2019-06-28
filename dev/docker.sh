@@ -22,7 +22,7 @@ fi
 # Allow Docker builds for release builds only.
 if [[ -z $TRAVIS_TAG ]]; then
 	print "TRAVIS_TAG is empty"
-	exit 1
+	exit 0
 fi
 
 VERSION="$TRAVIS_TAG"
