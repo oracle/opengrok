@@ -19,6 +19,14 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
 	exit 0
 fi
 
+# Allow Docker builds for release builds only.
+if [[ -z $TRAVIS_TAG ]]; then
+	print "TRAVIS_TAG is empty"
+	exit 1
+fi
+
+VERSION="$TRAVIS_TAG"
+
 # Build the image.
 docker build -t opengrok/docker:$VERSION -t opengrok/docker:latest .
 #
