@@ -77,6 +77,14 @@ jobs:
       on:
         condition: "$TRAVIS_TAG =~ ^[0-9\\.]+$"
         all_branches: true
+  - stage: docker
+    name: Docker image build
+    dist: xenial
+    jdk: openjdk8
+    install: true
+    if: repo = "oracle/opengrok" AND tag IS present
+    before_script: mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
+    script: dev/docker.sh
   - stage: post_deploy
     name: Post deploy
     if: repo = "oracle/opengrok" AND tag IS present
