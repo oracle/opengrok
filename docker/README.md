@@ -76,7 +76,8 @@ The first reindex will take some time to finish. Subsequent reindex will be incr
 
 If you want to do your own development, you can build the image yourself:
 
-    docker build -t opengrok-dev .
+    mvn -DskipTests=true clean package && \
+        docker build -t opengrok-dev .
 
 Then run the container:
 

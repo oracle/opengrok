@@ -1,10 +1,12 @@
-FROM maven:latest as builder
+FROM debian:stable-slim as fetcher
 
+# TODO copy just the 'distribution' directory, not all source code
 COPY ./ /opengrok-source
 WORKDIR /opengrok-source
 
-RUN apt-get update && apt-get install -y python3 python3-venv
-RUN mvn -f pom.xml clean package -DskipTests=true
+# update the system
+RUN apt-get update
+
 # find most recent package file
 RUN cp `ls -t distribution/target/*.tar.gz | head -n1 |awk '{printf("%s",$0)}'` /opengrok.tar.gz
 
@@ -12,14 +14,15 @@ FROM tomcat:9-jre8
 LABEL maintainer "opengrok-dev@yahoogroups.com"
 
 # prepare OpenGrok binaries and directories
-COPY --from=builder opengrok.tar.gz /opengrok.tar.gz
+COPY --from=fetcher opengrok.tar.gz /opengrok.tar.gz
 RUN mkdir -p /opengrok /var/opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
     rm -f /opengrok.tar.gz
 
-# install dependencies
-RUN apt-get update && apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip && \
+# install dependencies and Python tools
+RUN apt-get update && apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv && \
     python3 -m pip install /opengrok/tools/opengrok-tools*
+
 # compile and install universal-ctags
 RUN apt-get install -y pkg-config autoconf build-essential && git clone https://github.com/universal-ctags/ctags /root/ctags && \
     cd /root/ctags && ./autogen.sh && ./configure && make && make install && \
@@ -38,7 +41,6 @@ ENV CATALINA_HOME /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
 ENV JRE_HOME /usr
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
-
 
 # custom deployment to / with redirect from /source
 RUN rm -rf /usr/local/tomcat/webapps/* && \
