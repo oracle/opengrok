@@ -15,14 +15,24 @@ set -e
 
 # Travis can only work on master since it needs encrypted variables.
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-	print "Not build docker image for pull requests"
+	echo "Not building docker image for pull requests"
 	exit 0
 fi
 
 # Allow Docker builds for release builds only.
 if [[ -z $TRAVIS_TAG ]]; then
-	print "TRAVIS_TAG is empty"
+	echo "TRAVIS_TAG is empty"
 	exit 0
+fi
+
+if [[ -z $DOCKER_USERNAME ]]; then
+	echo "DOCKER_USERNAME is empty"
+	exit 1
+fi
+
+if [[ -z $DOCKER_PASSWORD ]]; then
+	echo "DOCKER_PASSWORD is empty"
+	exit 1
 fi
 
 VERSION="$TRAVIS_TAG"
