@@ -85,11 +85,6 @@ jobs:
     if: repo = "oracle/opengrok" AND tag IS present
     before_script: mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
     script: dev/docker.sh
-  - stage: post_deploy
-    name: Post deploy
-    if: repo = "oracle/opengrok" AND tag IS present
-    script: dev/post-deploy.sh
-    install: true
   - stage: javadoc
     name: Upload javadocs to Github pages
     os: linux
