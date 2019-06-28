@@ -95,3 +95,4 @@ jobs:
     jdk: openjdk8
     script: dev/javadoc.sh
     install: true
+    if: repo = "oracle/opengrok" AND tag IS NOT present
