@@ -4,8 +4,7 @@
 
 ## OpenGrok from official source
 
-Directly downloaded from official source:
-https://github.com/oracle/opengrok/releases/
+Built from official source: https://github.com/oracle/opengrok/releases/
 
 You can learn more about OpenGrok at http://oracle.github.io/opengrok/
 
@@ -13,7 +12,14 @@ The container is available from DockerHub at https://hub.docker.com/r/opengrok/d
 
 ## When not to use it
 
-This image is simple wrapper around OpenGrok environment. The indexer and the web container are **not** tuned for large workloads. If you happen to have either large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like) or stable service or both, it is advisable to run the service standalone.
+This image is simple wrapper around OpenGrok environment. The indexer and the web container are **not** tuned for large workloads.
+If you happen to have one of the following:
+  - large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like)
+  - stable service
+  - Source Code Management systems not supported in the image (e.g. Perforce,
+    Clearcase, etc.)
+then it is advisable to run OpenGrok standalone or construct your own docker
+image based on the official one.
 
 ## Additional info about the container
 
@@ -26,20 +32,14 @@ synchronize all its repositories (e.g. it will do `git pull` for Git
 repositories).
 
 The indexer/mirroring is set so that it does not log into files.
+Rather, everything goes to standard (error) output. To see how the indexer
+is doing, use the `docker logs` command.
 
 ## How to run
 
 ### From DockerHub
 
     docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok/docker:latest
-
-### Build image locally
-
-    docker build -t opengrok-dev .
-
-Then run the container,
-
-    docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok-dev
 
 The container exports ports 8080 for OpenGrok.
 
@@ -71,6 +71,16 @@ The container has OpenGrok as default web app installed (accessible directly fro
 http://localhost:8080/
 
 The first reindex will take some time to finish. Subsequent reindex will be incremental so will take signigicantly less time.
+
+### Build image locally
+
+If you want to do your own development, you can build the image yourself:
+
+    docker build -t opengrok-dev .
+
+Then run the container:
+
+    docker run -d -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok-dev
 
 ## Inspecting the container
 
