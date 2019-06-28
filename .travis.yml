@@ -85,6 +85,7 @@ jobs:
     if: repo = "oracle/opengrok" AND tag IS present
     services:
     - docker
+    before_install: dev/before_install
     before_script: mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
     script: dev/docker.sh
   - stage: javadoc
