@@ -36,7 +36,7 @@ jobs:
     os: linux
     dist: xenial
     sudo: required
-    jdk: oraclejdk11
+    jdk: openjdk11
     install: true
     script: dev/main
     before_install: dev/before_install
