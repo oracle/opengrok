@@ -23,7 +23,7 @@ If you happen to have one of the following:
 then it is advisable to run OpenGrok standalone or construct your own docker
 image based on the official one.
 
-## Additional info about the container
+## Additional info about the image
 
 * Tomcat 9
 * JRE 8 (Required for Opengrok 1.0+)
@@ -36,6 +36,10 @@ repositories).
 The indexer/mirroring is set so that it does not log into files.
 Rather, everything goes to standard (error) output. To see how the indexer
 is doing, use the `docker logs` command.
+
+### Tags and versioning
+
+Each OpenGrok release triggers creation of new Docker image. The `latest` tag always tracks the latest and there is also versioned image (e.g. `1.2.3`) - if you want to pin against a specific version, use one of these.
 
 ## How to run
 
