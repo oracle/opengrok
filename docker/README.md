@@ -39,7 +39,13 @@ is doing, use the `docker logs` command.
 
 ### Tags and versioning
 
-Each OpenGrok release triggers creation of new Docker image. The `latest` tag always tracks the latest and there is also versioned image (e.g. `1.2.3`) - if you want to pin against a specific version, use one of these.
+Each OpenGrok release triggers creation of new Docker image. 
+
+| Tag      | Note                                                    |
+| -------- |:--------------------------------------------------------|
+| `latest` | tracks the latest version                               |
+| `x.y.z`  | if you want to pin against a specific version           |
+| `x.y`    | stay on micro versions to avoid reindexing from scratch |
 
 ## How to run
 
