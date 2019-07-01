@@ -36,9 +36,24 @@ if [[ -z $DOCKER_PASSWORD ]]; then
 fi
 
 VERSION="$TRAVIS_TAG"
+VERSION_SHORT=$( echo $VERSION | cut -d. -f1,2 )
+
+if [[ -z $VERSION ]]; then
+	echo "empty VERSION"
+	exit 1
+fi
+
+if [[ -z $VERSION_SHORT ]]; then
+	echo "empty VERSION_SHORT"
+	exit 1
+fi
 
 # Build the image.
-docker build -t opengrok/docker:$VERSION -t opengrok/docker:latest .
+docker build \
+    -t opengrok/docker:$VERSION \
+    -t opengrok/docker:$VERSION_SHORT \
+    -t opengrok/docker:latest .
+
 #
 # Run the image in container. This is not strictly needed however
 # serves as additional test in automatic builds.
@@ -52,8 +67,8 @@ if [ -n "$DOCKER_PASSWORD" -a -n "$DOCKER_USERNAME" -a -n "$VERSION" ]; then
 	echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
 	# All the tags need to be pushed individually:
-	echo "Pushing docker image for tag $VERSION"
-	docker push opengrok/docker:$VERSION
-	echo "Pushing docker image for tag latest"
-	docker push opengrok/docker:latest
+	for tag in $VERSION $VERSION_SHORT latest; do
+		echo "Pushing docker image for tag $tag"
+		docker push opengrok/docker:$tag
+	done
 fi
