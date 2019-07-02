@@ -29,6 +29,10 @@ import sys
 from .utils.indexer import FindCtags, Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.parsers import get_javaparser
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 
 """
   opengrok.jar wrapper
@@ -62,10 +66,10 @@ def main():
                       env_vars=args.environment, doprint=True)
     indexer.execute()
     ret = indexer.getretcode()
-    if ret is None or ret != 0:
+    if ret is None or ret != SUCCESS_EXITVAL:
         # The output is already printed thanks to 'doprint' above.
         logger.error("Indexer command failed (return code {})".format(ret))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':

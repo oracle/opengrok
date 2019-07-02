@@ -28,7 +28,10 @@ import sys
 from .utils.java import Java
 from .utils.log import fatal
 from .utils.parsers import get_javaparser
-
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 """
  Wrapper for Java program merging OpenGrok configuration.
 """
@@ -55,10 +58,10 @@ def main():
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
-    if ret is None or ret != 0:
+    if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
     else:
         print(cmd.getoutputstr())
 

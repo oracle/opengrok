@@ -38,6 +38,11 @@ from multiprocessing import Pool, cpu_count
 
 from filelock import Timeout, FileLock
 
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    CONTINUE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 from .utils.log import get_console_logger, get_class_basename, \
     fatal, get_batch_logger
 from .utils.opengrok import get_config_value, list_indexed_projects
@@ -71,7 +76,7 @@ def worker(args):
 
 
 def main():
-    ret = 0
+    ret = SUCCESS_EXITVAL
 
     parser = argparse.ArgumentParser(description='project mirroring',
                                      parents=[get_baseparser(
@@ -177,11 +182,13 @@ def main():
                 except KeyboardInterrupt:
                     sys.exit(1)
                 else:
-                    if any([True for x in project_results if x == 1]):
-                        ret = 1
+                    if any([True for x in project_results if x == FAILURE_EXITVAL]):
+                        ret = FAILURE_EXITVAL
+                    if all([True for x in project_results if x == CONTINUE_EXITVAL]):
+                        ret = CONTINUE_EXITVAL
     except Timeout:
         logger.warning("Already running, exiting.")
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     logging.shutdown()
     sys.exit(ret)

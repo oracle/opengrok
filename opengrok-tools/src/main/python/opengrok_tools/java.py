@@ -28,7 +28,10 @@ import sys
 from .utils.java import Java
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.parsers import get_javaparser
-
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 
 def main():
     parser = argparse.ArgumentParser(description='java wrapper',
@@ -49,10 +52,10 @@ def main():
                 env_vars=args.environment)
     java.execute()
     ret = java.getretcode()
-    if ret is None or ret != 0:
+    if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(java.getoutputstr())
         logger.error("java command failed (return code {})".format(ret))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':

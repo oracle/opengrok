@@ -6,6 +6,7 @@ from . import parsers
 from . import readconfig
 from . import utils
 from . import webutil
+from . import exitvals
 
 __all__ = [
     'opengrok',
@@ -16,4 +17,5 @@ __all__ = [
     'webutil',
     'readconfig',
     'parsers',
+    'exitvals',
 ]

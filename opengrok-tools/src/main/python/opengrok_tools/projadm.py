@@ -43,6 +43,10 @@ from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
 from .utils.parsers import get_baseparser
 from .utils.utils import get_command, is_web_uri
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 
 MAJOR_VERSION = sys.version_info[0]
 if (MAJOR_VERSION < 3):
@@ -62,11 +66,11 @@ def exec_command(doit, logger, cmd, msg):
         logger.info(cmd)
         return
     cmd.execute()
-    if cmd.getstate() is not Command.FINISHED or cmd.getretcode() != 0:
+    if cmd.getstate() is not Command.FINISHED or cmd.getretcode() != SUCCESS_EXITVAL:
         logger.error(msg)
         logger.error("Standard output: {}".format(cmd.getoutput()))
         logger.error("Error output: {}".format(cmd.geterroutput()))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     logger.debug(cmd.geterroutputstr())
 
@@ -99,11 +103,11 @@ def install_config(doit, logger, src, dst):
     except PermissionError:
         logger.error('Failed to copy {} to {} (permissions)'.
                      format(src, dst))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
     except OSError:
         logger.error('Failed to copy {} to {} (I/O)'.
                      format(src, dst))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
@@ -120,12 +124,12 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
     main_config = get_config_file(basedir)
     if not path.isfile(main_config):
         logger.error("file {} does not exist".format(main_config))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     if doit:
         current_config = get_configuration(logger, uri)
         if not current_config:
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
     else:
         current_config = None
 
@@ -260,7 +264,7 @@ def main():
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     # Set the base directory
     if args.base:
@@ -271,7 +275,7 @@ def main():
             logger.error("Not a directory: {}\n"
                          "Set the base directory with the --base option."
                          .format(args.base))
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
 
     # If read-only configuration file is specified, this means read-only
     # configuration will need to be merged with active webapp configuration.
@@ -282,14 +286,14 @@ def main():
             logger.debug("Using {} as read-only config".format(args.roconfig))
         else:
             logger.error("File {} does not exist".format(args.roconfig))
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
 
         configmerge_file = get_command(logger, args.configmerge,
                                        "opengrok-config-merge")
         if configmerge_file is None:
             logger.error("Use the --configmerge option to specify the path to"
                          "the config merge script")
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
 
         configmerge = [configmerge_file]
         if args.loglevel:
@@ -299,12 +303,12 @@ def main():
         if args.jar is None:
             logger.error('jar file needed for config merge tool, '
                          'use --jar to specify one')
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
 
     uri = args.uri
     if not is_web_uri(uri):
         logger.error("Not a URI: {}".format(uri))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
     logger.debug("web application URI = {}".format(uri))
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
@@ -348,7 +352,7 @@ def main():
                                java=args.java)
             else:
                 parser.print_help()
-                sys.exit(1)
+                sys.exit(FAILURE_EXITVAL)
 
             if args.upload:
                 main_config = get_config_file(basedir=args.base)
@@ -359,13 +363,13 @@ def main():
                             config_data = config_file.read().encode("utf-8")
                             if not set_configuration(logger,
                                                      config_data, uri):
-                                sys.exit(1)
+                                sys.exit(FAILURE_EXITVAL)
                 else:
                     logger.error("file {} does not exist".format(main_config))
-                    sys.exit(1)
+                    sys.exit(FAILURE_EXITVAL)
     except Timeout:
         logger.warning("Already running, exiting.")
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':

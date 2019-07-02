@@ -27,7 +27,10 @@ import sys
 from .utils.java import Java
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.parsers import get_javaparser
-
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 """
  Script for manipulating project groups
 """
@@ -51,10 +54,10 @@ def main():
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
-    if ret is None or ret != 0:
+    if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
     else:
         print(cmd.getoutputstr())
 

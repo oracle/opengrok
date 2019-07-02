@@ -22,7 +22,10 @@
 #
 
 from .command import Command
-
+from .exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 
 def run_hook(logger, script, path, env, timeout):
     """
@@ -32,15 +35,15 @@ def run_hook(logger, script, path, env, timeout):
     Return 0 on success, 1 on failure.
     """
 
-    ret = 0
+    ret = SUCCESS_EXITVAL
     logger.debug("Running hook '{}' in directory {}".
                  format(script, path))
     cmd = Command([script], logger=logger, work_dir=path, env_vars=env,
                   timeout=timeout)
     cmd.execute()
-    if cmd.state != "finished" or cmd.getretcode() != 0:
+    if cmd.state != "finished" or cmd.getretcode() != SUCCESS_EXITVAL:
         logger.error("command failed: {} -> {}".format(cmd, cmd.getretcode()))
-        ret = 1
+        ret = FAILURE_EXITVAL
 
     logger.info("command output:\n{}".format(cmd.getoutputstr()))
 

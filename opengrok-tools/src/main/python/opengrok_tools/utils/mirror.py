@@ -27,6 +27,11 @@ import os
 import fnmatch
 import logging
 
+from .exitvals import (
+    FAILURE_EXITVAL,
+    CONTINUE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 from .utils import is_exe, check_create_dir, get_int
 from .opengrok import get_repos, get_repo_type
 from .hook import run_hook
@@ -46,12 +51,6 @@ HOOKDIR_PROPERTY = 'hookdir'
 HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
 PROJECTS_PROPERTY = 'projects'
-
-# This is a special exit code that is recognized by sync.py to terminate
-# the processing of the command sequence.
-CONTINUE_EXITVAL = 2
-SUCCESS_EXITVAL = 0
-FAILURE_EXITVAL = 1
 
 
 def get_repos_for_project(project_name, ignored_repos, uri, source_root,
