@@ -28,6 +28,8 @@ import fnmatch
 import logging
 import urllib
 
+from requests.exceptions import HTTPError
+
 from .exitvals import (
     FAILURE_EXITVAL,
     CONTINUE_EXITVAL,
@@ -204,7 +206,8 @@ def mirror_project(config, project_name, check_changes, uri,
     Mirror the repositories of single project.
     :param config global configuration dictionary
     :param project_name: name of the project
-    :param check_changes:
+    :param check_changes: check for changes in the project or its repositories
+     and terminate if no change is found
     :param uri
     :param source_root
     :return exit code
@@ -264,12 +267,12 @@ def mirror_project(config, project_name, check_changes, uri,
             logger.error('Unable to parse project \'{}\' indexed flag: {}'
                          .format(project_name, e))
             return FAILURE_EXITVAL
-        except Exception as e:
+        except HTTPError as e:
             logger.error('Unable to determine project \'{}\' indexed flag: {}'
                          .format(project_name, e))
             return FAILURE_EXITVAL
 
-        # check if the project has any new changes in the scm
+        # check if the project has any new changes in the SCM
         if not changes_detected:
             for repo in repos:
                 try:
