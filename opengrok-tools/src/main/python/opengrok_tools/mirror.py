@@ -106,26 +106,26 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        fatal(e)
+        return fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if len(args.project) > 0 and args.all:
-        fatal("Cannot use both project list and -a/--all")
+        return fatal("Cannot use both project list and -a/--all")
 
     if not args.all and len(args.project) == 0:
-        fatal("Need at least one project or --all")
+        return fatal("Need at least one project or --all")
 
     if args.config:
         config = read_config(logger, args.config)
         if config is None:
-            fatal("Cannot read config file from {}".format(args.config))
+            return fatal("Cannot read config file from {}".format(args.config))
     else:
         config = {}
 
     uri = args.uri
     if not is_web_uri(uri):
-        fatal("Not a URI: {}".format(uri))
+        return fatal("Not a URI: {}".format(uri))
     logger.debug("web application URI = {}".format(uri))
 
     if not check_configuration(config):
@@ -157,8 +157,8 @@ def main():
     if args.batch:
         logdir = config.get(LOGDIR_PROPERTY)
         if not logdir:
-            fatal("The {} property is required in batch mode".
-                  format(LOGDIR_PROPERTY))
+            return fatal("The {} property is required in batch mode".
+                         format(LOGDIR_PROPERTY))
 
     projects = args.project
     if len(projects) == 1:
