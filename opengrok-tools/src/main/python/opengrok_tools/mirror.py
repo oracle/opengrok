@@ -20,6 +20,7 @@
 
 #
 # Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
 """
@@ -57,11 +58,11 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "0.8"
+__version__ = "0.9"
 
 
 def worker(args):
-    project_name, logdir, loglevel, backupcount, config, incoming, uri, \
+    project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
         source_root, batch = args
 
     if batch:
@@ -71,7 +72,7 @@ def worker(args):
                          get_class_basename())
 
     return mirror_project(config, project_name,
-                          incoming,
+                          check_changes,
                           uri, source_root)
 
 
@@ -94,9 +95,11 @@ def main():
                         help='batch mode - will log into a file')
     parser.add_argument('-B', '--backupcount', default=8,
                         help='how many log files to keep around in batch mode')
-    parser.add_argument('-I', '--incoming', action='store_true',
-                        help='Check for incoming changes, terminate the '
-                             'processing if not found.')
+    parser.add_argument('-I', '--check-changes', action='store_true',
+                        help='Check for changes in the project or its'
+                             ' repositories,'
+                             ' terminate the processing'
+                             ' if no change is found.')
     parser.add_argument('-w', '--workers', default=cpu_count(),
                         help='Number of worker processes')
 
@@ -174,7 +177,7 @@ def main():
                 for x in projects:
                     worker_args.append([x, logdir, args.loglevel,
                                         args.backupcount, config,
-                                        args.incoming,
+                                        args.check_changes,
                                         args.uri, source_root,
                                         args.batch])
                 try:

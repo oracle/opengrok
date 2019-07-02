@@ -26,6 +26,9 @@ import re
 import os
 import fnmatch
 import logging
+import urllib
+
+from requests.exceptions import HTTPError
 
 from .exitvals import (
     FAILURE_EXITVAL,
@@ -33,7 +36,8 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 from .utils import is_exe, check_create_dir, get_int
-from .opengrok import get_repos, get_repo_type
+from .webutil import get
+from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
 
 from ..scm.repofactory import get_repository
@@ -196,13 +200,14 @@ def get_project_properties(project_config, project_name, hookdir):
         use_proxy, ignored_repos
 
 
-def mirror_project(config, project_name, check_incoming, uri,
+def mirror_project(config, project_name, check_changes, uri,
                    source_root):
     """
     Mirror the repositories of single project.
     :param config global configuration dictionary
     :param project_name: name of the project
-    :param check_incoming:
+    :param check_changes: check for changes in the project or its repositories
+     and terminate if no change is found
     :param uri
     :param source_root
     :return exit code
@@ -244,22 +249,44 @@ def mirror_project(config, project_name, check_incoming, uri,
                     format(project_name))
         return CONTINUE_EXITVAL
 
-    # Check if any of the repositories contains incoming changes.
-    if check_incoming:
-        got_incoming = False
-        for repo in repos:
-            try:
-                if repo.incoming():
-                    logger.debug('Repository {} has incoming changes'.
-                                 format(repo))
-                    got_incoming = True
-                    break
-            except RepositoryException:
-                logger.error('Cannot determine incoming changes for '
-                             'repository {}'.format(repo))
-                return FAILURE_EXITVAL
+    # Check if the project or any of its repositories have changed.
+    if check_changes:
+        changes_detected = False
 
-        if not got_incoming:
+        # check if the project is a new project - full index is necessary
+        try:
+            r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
+                                    urllib.parse.quote_plus(project_name),
+                                    'property', 'indexed'))
+            r.raise_for_status()
+            if not bool(r.json()):
+                changes_detected = True
+                logger.debug('Project {} has not been indexed yet'
+                             .format(project_name))
+        except ValueError as e:
+            logger.error('Unable to parse project \'{}\' indexed flag: {}'
+                         .format(project_name, e))
+            return FAILURE_EXITVAL
+        except HTTPError as e:
+            logger.error('Unable to determine project \'{}\' indexed flag: {}'
+                         .format(project_name, e))
+            return FAILURE_EXITVAL
+
+        # check if the project has any new changes in the SCM
+        if not changes_detected:
+            for repo in repos:
+                try:
+                    if repo.incoming():
+                        logger.debug('Repository {} has incoming changes'.
+                                     format(repo))
+                        changes_detected = True
+                        break
+                except RepositoryException:
+                    logger.error('Cannot determine incoming changes for '
+                                 'repository {}'.format(repo))
+                    return FAILURE_EXITVAL
+
+        if not changes_detected:
             logger.info('No incoming changes for repositories in '
                         'project {}'.
                         format(project_name))
