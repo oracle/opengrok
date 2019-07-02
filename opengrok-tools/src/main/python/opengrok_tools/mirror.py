@@ -129,12 +129,12 @@ def main():
     logger.debug("web application URI = {}".format(uri))
 
     if not check_configuration(config):
-        sys.exit(1)
+        return 1
 
     # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
-        sys.exit(1)
+        return 1
 
     logger.debug("Source root = {}".format(source_root))
 
@@ -183,7 +183,7 @@ def main():
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:
-                    sys.exit(FAILURE_EXITVAL)
+                    return FAILURE_EXITVAL
                 else:
                     if any([x == FAILURE_EXITVAL for x in project_results]):
                         ret = FAILURE_EXITVAL
@@ -191,11 +191,11 @@ def main():
                         ret = CONTINUE_EXITVAL
     except Timeout:
         logger.warning("Already running, exiting.")
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
 
     logging.shutdown()
-    sys.exit(ret)
+    return ret
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
