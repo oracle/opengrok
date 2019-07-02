@@ -96,8 +96,10 @@ def main():
     parser.add_argument('-B', '--backupcount', default=8,
                         help='how many log files to keep around in batch mode')
     parser.add_argument('-I', '--check-changes', action='store_true',
-                        help='Check for changes in the project or its repositories, terminate the '
-                             'processing if no change is found.')
+                        help='Check for changes in the project or its'
+                             ' repositories,'
+                             ' terminate the processing'
+                             ' if no change is found.')
     parser.add_argument('-w', '--workers', default=cpu_count(),
                         help='Number of worker processes')
 
