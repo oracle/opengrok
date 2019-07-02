@@ -269,7 +269,7 @@ def mirror_project(config, project_name, check_incoming, uri,
         logger.info("Running pre hook")
         if run_hook(logger, prehook,
                     os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != 0:
+                    hook_timeout) != SUCCESS_EXITVAL:
             logger.error("pre hook failed for project {}".
                          format(project_name))
             return FAILURE_EXITVAL
@@ -281,7 +281,7 @@ def mirror_project(config, project_name, check_incoming, uri,
     for repo in repos:
         logger.info("Synchronizing repository {}".
                     format(repo.path))
-        if repo.sync() != 0:
+        if repo.sync() != SUCCESS_EXITVAL:
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
             ret = FAILURE_EXITVAL
@@ -290,7 +290,7 @@ def mirror_project(config, project_name, check_incoming, uri,
         logger.info("Running post hook")
         if run_hook(logger, posthook,
                     os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != 0:
+                    hook_timeout) != SUCCESS_EXITVAL:
             logger.error("post hook failed for project {}".
                          format(project_name))
             return FAILURE_EXITVAL

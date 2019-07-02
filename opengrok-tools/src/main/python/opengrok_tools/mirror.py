@@ -180,11 +180,11 @@ def main():
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:
-                    sys.exit(1)
+                    sys.exit(FAILURE_EXITVAL)
                 else:
                     if any([True for x in project_results if x == FAILURE_EXITVAL]):
                         ret = FAILURE_EXITVAL
-                    if all([True for x in project_results if x == CONTINUE_EXITVAL]):
+                    if all([x == CONTINUE_EXITVAL for x in project_results]):
                         ret = CONTINUE_EXITVAL
     except Timeout:
         logger.warning("Already running, exiting.")
