@@ -31,6 +31,10 @@ from .utils.indexer import Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import get_configuration
 from .utils.parsers import get_javaparser
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 
 """
  OpenGrok reindexing script for single project. Makes sure it uses
@@ -117,11 +121,11 @@ def main():
     ret = indexer.getretcode()
     os.remove(conf_file)
     os.remove(logprop_file)
-    if ret is None or ret != 0:
+    if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(indexer.getoutputstr())
         logger.error("Indexer command for project {} failed (return code {})".
                      format(args.project, ret))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':

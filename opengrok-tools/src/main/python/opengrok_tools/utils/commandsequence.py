@@ -25,6 +25,10 @@ import logging
 from .command import Command
 from .webutil import put, post, delete
 from .utils import is_web_uri
+from .exitvals import (
+    CONTINUE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 import json
 
 
@@ -141,8 +145,8 @@ class CommandSequence(CommandSequenceBase):
 
                 # If a command exits with non-zero return code,
                 # terminate the sequence of commands.
-                if retcode != 0:
-                    if retcode == 2:
+                if retcode != SUCCESS_EXITVAL:
+                    if retcode == CONTINUE_EXITVAL:
                         if not self.driveon:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break".
@@ -179,10 +183,11 @@ class CommandSequence(CommandSequenceBase):
                               args_subst={self.PROJECT_SUBST: self.name},
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
-                if cmd.getretcode() != 0:
+                if cmd.getretcode() != SUCCESS_EXITVAL:
                     self.logger.info("cleanup command '{}' failed with "
                                      "code {}".
-                                     format(command_args, cmd.getretcode()))
+                                     format(cmd.cmd, cmd.getretcode()))
+                    self.logger.info('output: {}'.format(cmd.getoutputstr()))
 
     def check(self, ignore_errors):
         """
@@ -191,7 +196,7 @@ class CommandSequence(CommandSequenceBase):
         Return 0 on success, 1 if error was detected.
         """
 
-        ret = 0
+        ret = SUCCESS_EXITVAL
         self.logger.debug("Output for project '{}':".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
@@ -204,14 +209,15 @@ class CommandSequence(CommandSequenceBase):
             return
 
         self.logger.debug("retcodes = {}".format(self.retcodes))
-        if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
+        if any(rv != SUCCESS_EXITVAL and rv != CONTINUE_EXITVAL
+               for rv in self.retcodes.values()):
             ret = 1
             self.logger.error("processing of project '{}' failed".
                               format(self))
             indent = "  "
             self.logger.error("{}failed commands:".format(indent))
             failed_cmds = {k: v for k, v in
-                           self.retcodes.items() if v != 0}
+                           self.retcodes.items() if v != SUCCESS_EXITVAL}
             indent = "    "
             for cmd in failed_cmds.keys():
                 self.logger.error("{}'{}': {}".

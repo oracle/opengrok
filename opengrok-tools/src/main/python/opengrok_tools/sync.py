@@ -42,6 +42,9 @@ from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
+from .utils.exitvals import (
+    FAILURE_EXITVAL,
+)
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -102,14 +105,14 @@ def main():
     uri = args.uri
     if not is_web_uri(uri):
         logger.error("Not a URI: {}".format(uri))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
     logger.debug("web application URI = {}".format(uri))
 
     # First read and validate configuration file as it is mandatory argument.
     config = read_config(logger, args.config)
     if config is None:
         logger.error("Cannot read config file from {}".format(args.config))
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     # Changing working directory to root will avoid problems when running
     # programs via sudo/su. Do this only after the config file was read
@@ -119,13 +122,13 @@ def main():
     except OSError:
         logger.error("cannot change working directory to /",
                      exc_info=True)
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     try:
         commands = config["commands"]
     except KeyError:
         logger.error("The config file has to contain key \"commands\"")
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
     directory = args.directory
     if not args.directory and not args.projects and not args.indexed:
@@ -134,7 +137,7 @@ def main():
         if not directory:
             logger.error("Neither -d or -P or -I specified and cannot get "
                          "source root from the webapp")
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
         else:
             logger.info("Assuming directory: {}".format(directory))
 
@@ -166,7 +169,7 @@ def main():
                         dirs_to_process.append(line.strip())
                 else:
                     logger.error("cannot get list of projects")
-                    sys.exit(1)
+                    sys.exit(FAILURE_EXITVAL)
             else:
                 logger.debug("Processing directory {}".format(directory))
                 for entry in os.listdir(directory):
@@ -187,7 +190,7 @@ def main():
                 try:
                     cmds_base_results = pool.map(worker, cmds_base, 1)
                 except KeyboardInterrupt:
-                    sys.exit(1)
+                    sys.exit(FAILURE_EXITVAL)
                 else:
                     for cmds_base in cmds_base_results:
                         logger.debug("Checking results of project {}".
@@ -198,7 +201,7 @@ def main():
                         cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
-        sys.exit(1)
+        sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':

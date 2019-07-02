@@ -26,6 +26,9 @@ import sys
 import os
 import argparse
 from logging.handlers import RotatingFileHandler
+from .exitvals import (
+    FAILURE_EXITVAL,
+)
 
 
 def fatal(msg):
@@ -34,7 +37,7 @@ def fatal(msg):
     :param msg: message
     """
     print(msg, file=sys.stderr)
-    sys.exit(1)
+    sys.exit(FAILURE_EXITVAL)
 
 
 def add_log_level_argument(parser):

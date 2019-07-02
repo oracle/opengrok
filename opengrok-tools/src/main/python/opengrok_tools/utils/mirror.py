@@ -27,6 +27,11 @@ import os
 import fnmatch
 import logging
 
+from .exitvals import (
+    FAILURE_EXITVAL,
+    CONTINUE_EXITVAL,
+    SUCCESS_EXITVAL
+)
 from .utils import is_exe, check_create_dir, get_int
 from .opengrok import get_repos, get_repo_type
 from .hook import run_hook
@@ -46,12 +51,6 @@ HOOKDIR_PROPERTY = 'hookdir'
 HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
 PROJECTS_PROPERTY = 'projects'
-
-# This is a special exit code that is recognized by sync.py to terminate
-# the processing of the command sequence.
-CONTINUE_EXITVAL = 2
-SUCCESS_EXITVAL = 0
-FAILURE_EXITVAL = 1
 
 
 def get_repos_for_project(project_name, ignored_repos, uri, source_root,
@@ -270,7 +269,7 @@ def mirror_project(config, project_name, check_incoming, uri,
         logger.info("Running pre hook")
         if run_hook(logger, prehook,
                     os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != 0:
+                    hook_timeout) != SUCCESS_EXITVAL:
             logger.error("pre hook failed for project {}".
                          format(project_name))
             return FAILURE_EXITVAL
@@ -282,7 +281,7 @@ def mirror_project(config, project_name, check_incoming, uri,
     for repo in repos:
         logger.info("Synchronizing repository {}".
                     format(repo.path))
-        if repo.sync() != 0:
+        if repo.sync() != SUCCESS_EXITVAL:
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
             ret = FAILURE_EXITVAL
@@ -291,7 +290,7 @@ def mirror_project(config, project_name, check_incoming, uri,
         logger.info("Running post hook")
         if run_hook(logger, posthook,
                     os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != 0:
+                    hook_timeout) != SUCCESS_EXITVAL:
             logger.error("post hook failed for project {}".
                          format(project_name))
             return FAILURE_EXITVAL

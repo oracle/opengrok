@@ -27,6 +27,9 @@ from logging import log
 import logging
 import sys
 from urllib.parse import urlparse
+from .exitvals import (
+    FAILURE_EXITVAL,
+)
 
 
 def is_exe(fpath):
@@ -43,7 +46,7 @@ def check_create_dir(logger, path):
             os.makedirs(path)
         except OSError:
             logger.error("cannot create {} directory".format(path))
-            sys.exit(1)
+            sys.exit(FAILURE_EXITVAL)
 
 
 def get_command(logger, path, name, level=logging.ERROR):
