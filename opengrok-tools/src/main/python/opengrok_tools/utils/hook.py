@@ -27,6 +27,7 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 
+
 def run_hook(logger, script, path, env, timeout):
     """
     Change a working directory to specified path, run a command

@@ -30,6 +30,7 @@ from .exitvals import (
     FAILURE_EXITVAL,
 )
 
+
 def fatal(msg):
     """
     Print message to standard error output and exit

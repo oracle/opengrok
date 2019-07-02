@@ -33,6 +33,7 @@ from .utils.exitvals import (
     SUCCESS_EXITVAL
 )
 
+
 def main():
     parser = argparse.ArgumentParser(description='java wrapper',
                                      parents=[get_javaparser()])

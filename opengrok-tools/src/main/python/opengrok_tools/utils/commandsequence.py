@@ -209,7 +209,8 @@ class CommandSequence(CommandSequenceBase):
             return
 
         self.logger.debug("retcodes = {}".format(self.retcodes))
-        if any(rv != SUCCESS_EXITVAL and rv != CONTINUE_EXITVAL for rv in self.retcodes.values()):
+        if any(rv != SUCCESS_EXITVAL and rv != CONTINUE_EXITVAL
+               for rv in self.retcodes.values()):
             ret = 1
             self.logger.error("processing of project '{}' failed".
                               format(self))

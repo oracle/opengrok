@@ -182,7 +182,7 @@ def main():
                 except KeyboardInterrupt:
                     sys.exit(FAILURE_EXITVAL)
                 else:
-                    if any([True for x in project_results if x == FAILURE_EXITVAL]):
+                    if any([x == FAILURE_EXITVAL for x in project_results]):
                         ret = FAILURE_EXITVAL
                     if all([x == CONTINUE_EXITVAL for x in project_results]):
                         ret = CONTINUE_EXITVAL
