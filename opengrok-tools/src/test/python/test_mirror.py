@@ -123,6 +123,17 @@ def test_incoming_retval(monkeypatch):
     the mirror.py return value.
     """
 
+    class MockResponse:
+
+        # mock json() method always returns a specific testing dictionary
+        @staticmethod
+        def json():
+            return {"indexed": "true"}
+
+        @staticmethod
+        def raise_for_status():
+            pass
+
     with tempfile.TemporaryDirectory() as source_root:
         repo_name = "parent_repo"
         repo_path = os.path.join(source_root, repo_name)
@@ -139,6 +150,9 @@ def test_incoming_retval(monkeypatch):
                                    "git", project_name,
                                    None, None, None, None)]
 
+        def mock_get(*args, **kwargs):
+            return MockResponse()
+
         # Clone a Git repository so that it can pull.
         import pygit2
         pygit2.init_repository(repo_path, True)
@@ -153,5 +167,6 @@ def test_incoming_retval(monkeypatch):
                       lambda x, y, z: source_root)
             m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
                       mock_get_repos)
+            m.setattr("opengrok_tools.utils.mirror.get", mock_get)
 
             assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
