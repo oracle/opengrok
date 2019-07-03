@@ -147,9 +147,11 @@ def test_incoming_retval(monkeypatch):
         with monkeypatch.context() as m:
             m.setattr(sys, 'argv', ['prog', "-I", project_name])
 
-            # With mocking done via pytest it is necessary to patch the call-site
-            # rather than the absolute object path.
-            m.setattr("opengrok_tools.mirror.get_config_value", lambda x, y, z: source_root)
-            m.setattr("opengrok_tools.utils.mirror.get_repos_for_project", mock_get_repos)
+            # With mocking done via pytest it is necessary to patch
+            # the call-site rather than the absolute object path.
+            m.setattr("opengrok_tools.mirror.get_config_value",
+                      lambda x, y, z: source_root)
+            m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
+                      mock_get_repos)
 
             assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
