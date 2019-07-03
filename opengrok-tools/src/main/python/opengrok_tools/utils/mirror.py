@@ -339,7 +339,7 @@ def mirror_project(config, project_name, check_changes, uri,
 
     #
     # If one of the repositories fails to sync, the whole project sync
-    # is treated as failed, i.e. the program will return 1.
+    # is treated as failed, i.e. the program will return FAILURE_EXITVAL.
     #
     for repo in repos:
         logger.info("Synchronizing repository {}".
