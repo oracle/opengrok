@@ -229,7 +229,7 @@ def process_changes(repos, project_name, uri):
     """
     :param repos: repository list
     :param project_name: project name
-    :return: exit code or None
+    :return: exit code
     """
     logger = logging.getLogger(__name__)
 
@@ -274,7 +274,7 @@ def process_changes(repos, project_name, uri):
                     format(project_name))
         return CONTINUE_EXITVAL
 
-    return None
+    return SUCCESS_EXITVAL
 
 
 def mirror_project(config, project_name, check_changes, uri,
@@ -330,7 +330,7 @@ def mirror_project(config, project_name, check_changes, uri,
     # Check if the project or any of its repositories have changed.
     if check_changes:
         r = process_changes(repos, project_name, uri)
-        if r is not None:
+        if r != SUCCESS_EXITVAL:
             return r
 
     if not process_hook("pre", prehook, source_root, project_name, proxy,
