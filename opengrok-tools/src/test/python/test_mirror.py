@@ -128,7 +128,7 @@ def test_incoming_retval(monkeypatch):
         # mock json() method always returns a specific testing dictionary
         @staticmethod
         def json():
-            return {"indexed": "true"}
+            return "true"
 
         @staticmethod
         def raise_for_status():
