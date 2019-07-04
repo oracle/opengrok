@@ -37,6 +37,12 @@ The indexer/mirroring is set so that it does not log into files.
 Rather, everything goes to standard (error) output. To see how the indexer
 is doing, use the `docker logs` command.
 
+### Source Code Management systems supported
+
+- Mercurial
+- Git
+- Subversion
+
 ### Tags and versioning
 
 Each OpenGrok release triggers creation of new Docker image. 
