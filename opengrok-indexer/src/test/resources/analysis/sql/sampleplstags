@@ -1,0 +1,94 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+ut_utils	grok.pls	/^create or replace package ut_utils authid definer is$/;"	package	line:1
+gc_version	grok.pls	/^  gc_version                 constant varchar2(50) := 'v3.0.4.1461-develop';$/;"	variable	line:24	package:ut_utils
+gc_run	grok.pls	/^  gc_run                     constant varchar2(12) := 'run';$/;"	variable	line:27	package:ut_utils
+gc_suite	grok.pls	/^  gc_suite                   constant varchar2(12) := 'suite';$/;"	variable	line:28	package:ut_utils
+gc_before_all	grok.pls	/^  gc_before_all              constant varchar2(12) := 'before_all';$/;"	variable	line:29	package:ut_utils
+gc_before_each	grok.pls	/^  gc_before_each             constant varchar2(12) := 'before_each';$/;"	variable	line:30	package:ut_utils
+gc_before_test	grok.pls	/^  gc_before_test             constant varchar2(12) := 'before_test';$/;"	variable	line:31	package:ut_utils
+gc_test	grok.pls	/^  gc_test                    constant varchar2(12) := 'test';$/;"	variable	line:32	package:ut_utils
+gc_test_execute	grok.pls	/^  gc_test_execute            constant varchar2(12) := 'test_execute';$/;"	variable	line:33	package:ut_utils
+gc_after_test	grok.pls	/^  gc_after_test              constant varchar2(10) := 'after_test';$/;"	variable	line:34	package:ut_utils
+gc_after_each	grok.pls	/^  gc_after_each              constant varchar2(12) := 'after_each';$/;"	variable	line:35	package:ut_utils
+gc_after_all	grok.pls	/^  gc_after_all               constant varchar2(12) := 'after_all';$/;"	variable	line:36	package:ut_utils
+tr_disabled	grok.pls	/^  tr_disabled                constant number(1) := 0; -- test\/suite was disabled$/;"	variable	line:39	package:ut_utils
+tr_success	grok.pls	/^  tr_success                 constant number(1) := 1; -- test passed$/;"	variable	line:40	package:ut_utils
+tr_failure	grok.pls	/^  tr_failure                 constant number(1) := 2; -- one or more expectations failed$/;"	variable	line:41	package:ut_utils
+tr_error	grok.pls	/^  tr_error                   constant number(1) := 3; -- exception was raised$/;"	variable	line:42	package:ut_utils
+tr_disabled_char	grok.pls	/^  tr_disabled_char           constant varchar2(8) := 'Disabled'; -- test\/suite was disabled$/;"	variable	line:44	package:ut_utils
+tr_success_char	grok.pls	/^  tr_success_char            constant varchar2(7) := 'Success'; -- test passed$/;"	variable	line:45	package:ut_utils
+tr_failure_char	grok.pls	/^  tr_failure_char            constant varchar2(7) := 'Failure'; -- one or more expectations fail/;"	variable	line:46	package:ut_utils
+tr_error_char	grok.pls	/^  tr_error_char              constant varchar2(5) := 'Error'; -- exception was raised$/;"	variable	line:47	package:ut_utils
+gc_rollback_auto	grok.pls	/^  gc_rollback_auto           constant number(1) := 0; -- rollback after each test and suite$/;"	variable	line:52	package:ut_utils
+gc_rollback_manual	grok.pls	/^  gc_rollback_manual         constant number(1) := 1; -- leave transaction control manual$/;"	variable	line:53	package:ut_utils
+ex_unsupported_rollback_type	grok.pls	/^  ex_unsupported_rollback_type exception;$/;"	variable	line:56	package:ut_utils
+gc_unsupported_rollback_type	grok.pls	/^  gc_unsupported_rollback_type constant pls_integer := -20200;$/;"	variable	line:57	package:ut_utils
+ex_path_list_is_empty	grok.pls	/^  ex_path_list_is_empty exception;$/;"	variable	line:60	package:ut_utils
+gc_path_list_is_empty	grok.pls	/^  gc_path_list_is_empty constant pls_integer := -20201;$/;"	variable	line:61	package:ut_utils
+ex_invalid_path_format	grok.pls	/^  ex_invalid_path_format exception;$/;"	variable	line:64	package:ut_utils
+gc_invalid_path_format	grok.pls	/^  gc_invalid_path_format constant pls_integer := -20202;$/;"	variable	line:65	package:ut_utils
+ex_suite_package_not_found	grok.pls	/^  ex_suite_package_not_found exception;$/;"	variable	line:68	package:ut_utils
+gc_suite_package_not_found	grok.pls	/^  gc_suite_package_not_found constant pls_integer := -20204;$/;"	variable	line:69	package:ut_utils
+ex_invalid_rep_event_time	grok.pls	/^  ex_invalid_rep_event_time exception;$/;"	variable	line:73	package:ut_utils
+gc_invalid_rep_event_time	grok.pls	/^  gc_invalid_rep_event_time constant pls_integer := -20210;$/;"	variable	line:74	package:ut_utils
+ex_invalid_rep_event_name	grok.pls	/^  ex_invalid_rep_event_name exception;$/;"	variable	line:78	package:ut_utils
+gc_invalid_rep_event_name	grok.pls	/^  gc_invalid_rep_event_name constant pls_integer := -20211;$/;"	variable	line:79	package:ut_utils
+ex_some_tests_failed	grok.pls	/^  ex_some_tests_failed exception;$/;"	variable	line:83	package:ut_utils
+gc_some_tests_failed	grok.pls	/^  gc_some_tests_failed constant pls_integer := -20213;$/;"	variable	line:84	package:ut_utils
+ex_invalid_version_no	grok.pls	/^  ex_invalid_version_no exception;$/;"	variable	line:88	package:ut_utils
+gc_invalid_version_no	grok.pls	/^  gc_invalid_version_no constant pls_integer := -20214;$/;"	variable	line:89	package:ut_utils
+gc_max_storage_varchar2_len	grok.pls	/^  gc_max_storage_varchar2_len constant integer := 4000;$/;"	variable	line:92	package:ut_utils
+gc_max_output_string_length	grok.pls	/^  gc_max_output_string_length constant integer := 4000;$/;"	variable	line:93	package:ut_utils
+gc_max_input_string_length	grok.pls	/^  gc_max_input_string_length  constant integer := gc_max_output_string_length - 2; --we need to /;"	variable	line:94	package:ut_utils
+gc_more_data_string	grok.pls	/^  gc_more_data_string         constant varchar2(5) := '[...]';$/;"	variable	line:95	package:ut_utils
+gc_overflow_substr_len	grok.pls	/^  gc_overflow_substr_len      constant integer := gc_max_input_string_length - length(gc_more_da/;"	variable	line:96	package:ut_utils
+gc_number_format	grok.pls	/^  gc_number_format            constant varchar2(100) := 'TM9';$/;"	variable	line:97	package:ut_utils
+gc_date_format	grok.pls	/^  gc_date_format              constant varchar2(100) := 'yyyy-mm-dd"T"hh24:mi:ss';$/;"	variable	line:98	package:ut_utils
+gc_timestamp_format	grok.pls	/^  gc_timestamp_format         constant varchar2(100) := 'yyyy-mm-dd"T"hh24:mi:ssxff';$/;"	variable	line:99	package:ut_utils
+gc_timestamp_tz_format	grok.pls	/^  gc_timestamp_tz_format      constant varchar2(100) := 'yyyy-mm-dd"T"hh24:mi:ssxff tzh:tzm';$/;"	variable	line:100	package:ut_utils
+gc_null_string	grok.pls	/^  gc_null_string              constant varchar2(4) := 'NULL';$/;"	variable	line:101	package:ut_utils
+major	grok.pls	/^    major  natural,$/;"	field	line:104	record:ut_utils.t_version
+minor	grok.pls	/^    minor  natural,$/;"	field	line:105	record:ut_utils.t_version
+bugfix	grok.pls	/^    bugfix natural,$/;"	field	line:106	record:ut_utils.t_version
+build	grok.pls	/^    build  natural$/;"	field	line:107	record:ut_utils.t_version
+ut_suite_builder	grok.pls	/^create or replace package body ut_suite_builder is$/;"	package	line:287
+create_suite	grok.pls	/^  function create_suite(a_object ut_annotated_object) return ut_logical_suite is$/;"	function	line:307	package:ut_suite_builder
+l_is_suite	grok.pls	/^    l_is_suite              boolean := false;$/;"	local	line:308	function:ut_suite_builder.create_suite
+l_is_test	grok.pls	/^    l_is_test               boolean := false;$/;"	local	line:309	function:ut_suite_builder.create_suite
+l_suite_disabled	grok.pls	/^    l_suite_disabled        boolean := false;$/;"	local	line:310	function:ut_suite_builder.create_suite
+l_test_disabled	grok.pls	/^    l_test_disabled         boolean := false;$/;"	local	line:311	function:ut_suite_builder.create_suite
+l_suite_items	grok.pls	/^    l_suite_items           ut_suite_items := ut_suite_items();$/;"	local	line:312	function:ut_suite_builder.create_suite
+l_suite_name	grok.pls	/^    l_suite_name            varchar2(4000);$/;"	local	line:313	function:ut_suite_builder.create_suite
+l_default_setup_proc	grok.pls	/^    l_default_setup_proc    varchar2(250 char);$/;"	local	line:315	function:ut_suite_builder.create_suite
+l_default_teardown_proc	grok.pls	/^    l_default_teardown_proc varchar2(250 char);$/;"	local	line:316	function:ut_suite_builder.create_suite
+l_suite_setup_proc	grok.pls	/^    l_suite_setup_proc      varchar2(250 char);$/;"	local	line:317	function:ut_suite_builder.create_suite
+l_suite_teardown_proc	grok.pls	/^    l_suite_teardown_proc   varchar2(250 char);$/;"	local	line:318	function:ut_suite_builder.create_suite
+l_suite_path	grok.pls	/^    l_suite_path            varchar2(4000 char);$/;"	local	line:319	function:ut_suite_builder.create_suite
+l_proc_name	grok.pls	/^    l_proc_name             varchar2(250 char);$/;"	local	line:321	function:ut_suite_builder.create_suite
+l_suite	grok.pls	/^    l_suite                 ut_logical_suite;$/;"	local	line:323	function:ut_suite_builder.create_suite
+l_test	grok.pls	/^    l_test                  ut_test;$/;"	local	line:324	function:ut_suite_builder.create_suite
+l_suite_rollback	grok.pls	/^    l_suite_rollback        integer;$/;"	local	line:326	function:ut_suite_builder.create_suite
+l_beforetest_procedure	grok.pls	/^    l_beforetest_procedure  varchar2(250 char);$/;"	local	line:328	function:ut_suite_builder.create_suite
+l_aftertest_procedure	grok.pls	/^    l_aftertest_procedure   varchar2(250 char);$/;"	local	line:329	function:ut_suite_builder.create_suite
+l_rollback_type	grok.pls	/^    l_rollback_type         integer;$/;"	local	line:330	function:ut_suite_builder.create_suite
+l_displayname	grok.pls	/^    l_displayname           varchar2(4000);$/;"	local	line:331	function:ut_suite_builder.create_suite
+is_last_annotation_for_proc	grok.pls	/^    function is_last_annotation_for_proc(a_annotations ut_annotations, a_index binary_integer) r/;"	function	line:332	function:ut_suite_builder.create_suite
+build_suites_hierarchy	grok.pls	/^  function build_suites_hierarchy(a_suites_by_path tt_schema_suites) return tt_schema_suites is$/;"	function	line:439	package:ut_suite_builder
+l_result	grok.pls	/^    l_result            tt_schema_suites;$/;"	local	line:440	function:ut_suite_builder.build_suites_hierarchy
+l_suite_path	grok.pls	/^    l_suite_path        varchar2(4000 char);$/;"	local	line:441	function:ut_suite_builder.build_suites_hierarchy
+l_parent_path	grok.pls	/^    l_parent_path       varchar2(4000 char);$/;"	local	line:442	function:ut_suite_builder.build_suites_hierarchy
+l_name	grok.pls	/^    l_name              varchar2(4000 char);$/;"	local	line:443	function:ut_suite_builder.build_suites_hierarchy
+l_suites_by_path	grok.pls	/^    l_suites_by_path    tt_schema_suites;$/;"	local	line:444	function:ut_suite_builder.build_suites_hierarchy
+build_suites	grok.pls	/^  function build_suites(a_annotated_objects sys_refcursor) return t_schema_suites_info is$/;"	function	line:482	package:ut_suite_builder
+l_suite	grok.pls	/^    l_suite             ut_logical_suite;$/;"	local	line:483	function:ut_suite_builder.build_suites
+l_annotated_objects	grok.pls	/^    l_annotated_objects ut_annotated_objects;$/;"	local	line:484	function:ut_suite_builder.build_suites
+l_all_suites	grok.pls	/^    l_all_suites        tt_schema_suites;$/;"	local	line:485	function:ut_suite_builder.build_suites
+l_result	grok.pls	/^    l_result            t_schema_suites_info;$/;"	local	line:486	function:ut_suite_builder.build_suites
+build_schema_suites	grok.pls	/^  function build_schema_suites(a_owner_name varchar2) return t_schema_suites_info is$/;"	function	line:506	package:ut_suite_builder
+l_annotations_cursor	grok.pls	/^    l_annotations_cursor sys_refcursor;$/;"	local	line:507	function:ut_suite_builder.build_schema_suites

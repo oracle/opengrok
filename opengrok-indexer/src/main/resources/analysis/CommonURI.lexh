@@ -1,0 +1,179 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * From RFC-3986. See
+ * org.opengrok.indexer.util.StringUtils URI_CHARS_PAT where a regex
+ * in accordance with the following definition is maintained.
+ *
+ * URI         = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+ */
+BrowseableURI  = {BrowseableURI_scheme} {URI_tail}
+URI_tail       = ":" {URI_hier_part} ("?" {URI_query})? ("#" {URI_fragment})?
+
+/*
+ * hier-part   = "//" authority path-abempty
+ *                / path-absolute
+ *                / path-rootless
+ *                / path-empty ; N.b. not used in OpenGrok
+ */
+URI_hier_part  = ("//" {URI_authority} {URI_path_abempty} |
+    "/" ({URI_path_absolute} | {URI_path_rootless}))
+
+/*
+ * scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+ */
+BrowseableURI_scheme = ([Hh][Tt][Tt][Pp][Ss]? | [Ff][Tt][Pp])
+
+/*
+ * authority     = [ userinfo "@" ] host [ ":" port ]
+ * userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
+ * host          = IP-literal / IPv4address / reg-name
+ * port          = *DIGIT
+ */
+URI_authority    = ({URI_userinfo} "@")? {URI_host} (":" {URI_port})?
+URI_userinfo     = ({URI_unreserved} | {URI_pct_encoded} | {URI_sub_delims} |
+    ":")*
+URI_host         = ({URI_IP_literal} | {URI_IPv4address} | {URI_reg_name})
+URI_port         = {DIGIT}*
+
+/*
+ * IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
+ */
+URI_IP_literal   = "[" ({URI_IPv6address} | {URI_IPvFuture}) "]"
+
+/*
+ * IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+ */
+URI_IPvFuture    = "v" {HEXDIG}+ "." ({URI_unreserved} | {URI_sub_delims} |
+    ":")+
+
+/*
+ * IPv6address   =                            6( h16 ":" ) ls32
+ *               /                       "::" 5( h16 ":" ) ls32
+ *               / [               h16 ] "::" 4( h16 ":" ) ls32
+ *               / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
+ *               / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
+ *               / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
+ *               / [ *4( h16 ":" ) h16 ] "::"              ls32
+ *               / [ *5( h16 ":" ) h16 ] "::"              h16
+ *               / [ *6( h16 ":" ) h16 ] "::"
+ */
+URI_IPv6address = (
+    ( {URI_h16} ":" ){6} {URI_ls32} |
+                                      "::" ({URI_h16} ":"){5} {URI_ls32} |
+                         ({URI_h16})? "::" ({URI_h16} ":"){4} {URI_ls32} |
+    (({URI_h16} ":"){0,1} {URI_h16})? "::" ({URI_h16} ":"){3} {URI_ls32} |
+    (({URI_h16} ":"){0,2} {URI_h16})? "::" ({URI_h16} ":"){2} {URI_ls32} |
+    (({URI_h16} ":"){0,3} {URI_h16})? "::"  {URI_h16} ":"     {URI_ls32} |
+    (({URI_h16} ":"){0,4} {URI_h16})? "::"                    {URI_ls32} |
+    (({URI_h16} ":"){0,5} {URI_h16})? "::"  {URI_h16} |
+    (({URI_h16} ":"){0,6} {URI_h16})? "::"
+    )
+/*
+ * h16           = 1*4HEXDIG
+ * ls32          = ( h16 ":" h16 ) / IPv4address
+ * IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
+ */
+URI_h16          = {HEXDIG}{1,4}
+URI_ls32         = ({URI_h16} ":" {URI_h16} | {URI_IPv4address})
+URI_IPv4address  = ({URI_dec_octet} "." {URI_dec_octet} "." {URI_dec_octet}
+    "." {URI_dec_octet})
+
+/*
+ * dec-octet     = DIGIT                 ; 0-9
+ *               / %x31-39 DIGIT         ; 10-99
+ *               / "1" 2DIGIT            ; 100-199
+ *               / "2" %x30-34 DIGIT     ; 200-249
+ *               / "25" %x30-35          ; 250-255
+ */
+URI_dec_octet    = ({DIGIT}  |     // 0-9
+    [\u{31}-\u{39}] {DIGIT}  |     // 10-99
+    "1" {DIGIT}{DIGIT}  |          // 100-199
+    "2" [\u{30}-\u{34}] {DIGIT}  | // 200-249
+    "25" [\u{30}-\u{35}])          // 250-255
+
+/*
+ * reg-name      = *( unreserved / pct-encoded / sub-delims )
+ */
+URI_reg_name     = ({URI_unreserved} | {URI_pct_encoded} | {URI_sub_delims})*
+
+/*
+ * path          = path-abempty    ; begins with "/" or is empty
+ *               / path-absolute   ; begins with "/" but not "//"
+ *               / path-noscheme   ; begins with a non-colon segment
+ *               / path-rootless   ; begins with a segment
+ *               / path-empty      ; zero characters
+ *
+ * path-abempty  = *( "/" segment )
+ * path-absolute = "/" [ segment-nz *( "/" segment ) ]
+ * path-noscheme = segment-nz-nc *( "/" segment )  ; N.b. not used in OpenGrok
+ * path-rootless = segment-nz *( "/" segment )
+ * path-empty    = 0<pchar>  ; N.b. not used in OpenGrok
+ */
+URI_path_abempty  = ("/" {URI_segment})*
+URI_path_absolute = "/" ({URI_segment_nz} ("/" {URI_segment})*)?
+URI_path_rootless = {URI_segment_nz} ("/" {URI_segment})*
+
+/*
+ * segment       = *pchar
+ * segment-nz    = 1*pchar
+ * segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" )
+ *               ; non-zero-length segment without any colon ":"
+ *               ; N.b. not used in OpenGrok
+ * pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+ */
+URI_segment      = {URI_pchar}*
+URI_segment_nz   = {URI_pchar}+
+URI_pchar        = ({URI_unreserved} | {URI_pct_encoded} | {URI_sub_delims} |
+    [:@])
+
+/*
+ * query         = *( pchar / "/" / "?" )
+ */
+URI_query        = ({URI_pchar} | [/\?])*
+
+/*
+ * fragment      = *( pchar / "/" / "?" )
+ */
+URI_fragment     = ({URI_pchar} | [/\?])*
+
+/*
+ * pct-encoded   = "%" HEXDIG HEXDIG
+ */
+URI_pct_encoded  = "%" {HEXDIG} {HEXDIG}
+
+/*
+ * unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+ * reserved      = gen-delims / sub-delims  ; N.b. not used in OpenGrok
+ * gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+ *               ; N.b. not used in OpenGrok
+ * sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+ *               / "*" / "+" / "," / ";" / "="
+ */
+URI_unreserved   = ({ASCII_ALPHA} | {DIGIT} | [\-\._~])
+URI_sub_delims   = [\!\$&\'\(\)\*\+,;=]
+
+ASCII_ALPHA  = [A-Za-z]
+HEXDIG = [0-9A-Fa-f]
+DIGIT  = [0-9]

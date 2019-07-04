@@ -1,0 +1,457 @@
+HIFORMAT: 1A
+
+# OpenGrok
+
+OpenGrok RESTful API documentation. The following endpoints are accessible under `/api/v1`
+
+Besides `/suggester` and `/search` endpoints, everything is accessible from `localhost` only.
+
+## Configuration [/configuration]
+
+### return XML representation of configuration [GET]
+
++ Response 200 (application/xml)
+  + Body
+
+        ```
+        <?xml version="1.0" encoding="UTF-8"?>
+        <java version="1.8.0_172" class="java.beans.XMLDecoder">
+         <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
+          <void property="allowLeadingWildcard">
+           <boolean>true</boolean>
+          </void>
+         </object>
+        </java>
+        ```
+
+### sets configuration from XML representation [PUT]
+
++ Request (application/xml)
+  + Body
+
+        ```
+        <?xml version="1.0" encoding="UTF-8"?>
+        <java version="1.8.0_172" class="java.beans.XMLDecoder">
+         <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
+          <void property="allowLeadingWildcard">
+           <boolean>true</boolean>
+          </void>
+         </object>
+        </java>
+        ```
+
++ Response 201 (application/json)
+
+## Configuration field [/configuration/{field}{?reindex}]
+
+### returns specific configuration field [GET]
+
++ Response 200 (application/json)
+
+### sets specific configuration field [PUT]
+
++ Parameters
+  + reindex (boolean) - specifies if the underlying data were also reindexed (refreshes some searchers and additional data structures)
+
++ Request (application/text)
+
+        string value of the field to set
+
++ Response 204
+
+## Authorization framework reload [/configuration/authorization/reload]
+
+### reloads authorization framework [POST]
+
++ Request (application/text)
+
++ Response 204
+
+## Messages [/messages{?tag}]
+
+### adds message to a system [POST]
+
+Usable values for `cssClass` are: `info`, `warning`, `error`
+
+The format of `duration` is the same as Java's java.time.Duration class,
+see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
+
++ Request (application/json)
+
+        {
+          "tags": ["main"],
+          "cssClass": "class",
+          "text":"test message",
+          "duration":"PT10M"
+        }
+
++ Response 201
+
+### deletes messages with specified tag [DELETE]
+
++ Parameters
+  + tag (string) - tag
+
++ Response 204
+
+### returns all messages with specified tag [GET]
+
++ Parameters
+  + tag (string) - tag
+
++ Response 200 (application/json)
+
+        [
+          {
+            "expired": false,
+            "created": "2019-01-23 20:39:31 CET",
+            "tags": [
+              "main"
+            ],
+            "expiration": "2019-01-23 20:49:31 CET",
+            "cssClass": "class",
+            "text": "test&nbsp;message"
+          }
+        ]
+
+## Projects [/projects]
+
+For all entry points that modify web application configuration it is worth noting that
+the configuration has to be retrieved and stored on disk (using the configuration specific
+entry points) in order to be persistent (e.g. in case of application server restart or
+web application redeploy).
+
+### returns a list of all projects [GET]
+
++ Response 200 (application/json)
+  + Body
+  
+            ["foo","bar"]
+
+### add project [POST]
+
+This will merely add the project and its repositories to the web application configuration.
+The project will not be searchable (and thus appear in the UI) until it is indexed.
+
++ Request (text/plain)
+  + Body
+  
+            text/plain name of the project
+
++ Response 201
+
+## Project management [/projects/{project}]
+
+### delete project [DELETE]
+
+This will remove the project and its repositories from the web application configuration.
+It will also delete project specific data such as index, cross reference pages, history index
+and suggester data.
+
++ Response 204
+
+## Project data management [/projects/{project}/data]
+
+### delete project index data [DELETE]
+
+This will delete project index data but keep the project in web application configuration so that
+can be indexed from scratch.
+The project data (whatever is the project's directory under source root) will be left intact.
+This will also mark the project as not indexed.
+
++ Response 204
+
+## Project history cache management [/projects/{project}/historycache]
+
+### delete history cache for a project [DELETE]
+
+This will delete history cache for a project.
+
++ Response 204
+
+## Project metadata management [/projects/{project}/indexed]
+
+This entry point is used by the Indexer once it finishes indexing given project.
+
+### marks project as indexed [PUT]
+
++ Response 204
+
+## Project index files [/projects/{project}/files]
+
+### Get a list of files tracked by the index database for given project [GET]
+
++ Response 200 (application/json)
+  + Body
+
+            ["/project/foo.txt","/project/bar.txt"]
+
+## Project metadata [/projects/{project}/property/{field}]
+
+### sets property field for the project [PUT]
+
++ Request
+  + Body
+
+            body – string representation of the value to set
+
++ Response 204
+
+### returns the field value [GET]
+
++ Response 200 (application/json)
+
+## Project repositories [/projects/{project}/repositories]
+
+### returns a list of repositories for the specified project [GET]
+
+Native path separators (of the system running the service)
+will be used for repository paths.
+
++ Response 200 (application/json)
+  + Body
+
+            ["/opengrok-master/testdata/repositories/teamware",
+             "/opengrok-master/testdata/sources/rfe2575",
+             "/opengrok-master/testdata/repositories/rcs_test",
+             "/opengrok-master"]
+
+## Repository type [/projects/{project}/repositories/type]
+
+### returns types of project repositories [GET]
+
++ Response 200 (application/json)
+  + Body
+
+            ["RCS","git","SCCS"]
+
+## Project indexed flag [/projects/indexed]
+
+### returns a list of indexed projects [GET]
+
++ Response 200 (application/json)
+  + Body
+
+            ["sc-2","sc-1"]
+
+## Repository type [/repositories/type{?repository}]
+
+### return type of the repository [GET]
+
+The repository path is relative to source root.
+
+In the response the repository type is separated from the repository path
+with a colon. If the type cannot be determined "N/A" is returned.
+
++ Response 200 (text/plain)
+  + Body
+
+            /opengrok-master:git
+
++ Parameters
+  + repository - repository path with native path separators (of the machine
+  running the service) starting with path separator for which to return type
+
+## Search [/search{?full,def,symbol,path,hist,type,projects,maxresults,start}]
+
+## return search results [GET]
+
++ Parameters
+  + full (optional, string) - full search field value to search for
+  + def (optional, string) - definition field value to search for
+  + symbol (optional, string) - symbol field value to search for
+  + path (optional, string) - file path field value to search for
+  + hist (optional, string) - history field value to search for
+  + type (optional, string) - type of the files to search for
+  + projects (optional, string) - projects to search in
+  + maxresults (optional, string) - maximum number of documents whose hits will be returned
+  + start (optional, string) - start index from which to return results
+
++ Response 200 (application/json)
+  + Body
+  
+            {
+              "time": 13,
+              "resultCount": 35,
+              "startDocument": 0,
+              "endDocument": 0,
+              "results": {
+                "/opengrok/test/org/opensolaris/opengrok/history/hg-export-renamed.txt": [{
+                  "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
+                  "lineNumber": "19"
+                },{
+                  "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
+                  "lineNumber":"29"
+                }]
+              }
+
+## Statistics [/stats]
+
+### returns statistics [GET]
+
++ Response 200 (application/json)
+  + Body
+  
+            {"requests_per_minute_max":2,"timing":{"authorization":9,"authorization_in_stack_default stack_of_OpenGrok":0,
+             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":9,
+             "authorization_positive_of_OpenGrok":9,"root":1109,"*":1109,"authorization_in_stack_default stack_positive_of_OpenGrok":0,
+             "authorization_positive":9},"minutes":1,"timing_min":{"authorization":0,"authorization_in_stack_default stack_of_OpenGrok":0,
+             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":0,
+             "authorization_positive_of_OpenGrok":0,"root":4,"*":4,"authorization_in_stack_default stack_positive_of_OpenGrok":0,
+             "authorization_positive":0},"timing_avg":{"authorization":4.5,"authorization_in_stack_default stack_of_OpenGrok":0.0,
+             "authorization_in_stack_default stack_positive":0.0,"authorization_of_OpenGrok":4.5,
+             "authorization_positive_of_OpenGrok":4.5,"root":554.5,"*":554.5,
+             "authorization_in_stack_default stack_positive_of_OpenGrok":0.0,"authorization_positive":4.5},
+             "request_categories":{"authorization":2,"authorization_in_stack_default stack_of_OpenGrok":2,
+             "authorization_in_stack_default stack_positive":2,"authorization_cache_misses":2,
+             "authorization_of_OpenGrok":2,"authorization_cache_hits":4,
+             "authorization_positive_of_OpenGrok":2,"root":2,"*":2,
+             "authorization_in_stack_default stack_positive_of_OpenGrok":2,
+             "authorization_positive":2},
+             "day_histogram":[0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0],"requests":2,
+             "requests_per_minute_min":1,"requests_per_minute":2,"requests_per_minute_avg":2.0,
+             "month_histogram":[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+             "timing_max":{"authorization":9,"authorization_in_stack_default stack_of_OpenGrok":0,
+             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":9,
+             "authorization_positive_of_OpenGrok":9,"root":1105,"*":1105,
+             "authorization_in_stack_default stack_positive_of_OpenGrok":0,"authorization_positive":9}}
+
+### deletes statistics [DELETE]
+
++ Response 204
+
+## Statistics reload [/stats/reload]
+
+### reloads statistics (useful when configuration path to statistics changed) [PUT]
+
++ Response 204
+
+## Suggester [/suggest{?projects,field,caret,full,defs,refs,path,hist,type}]
+
+### returns suggestions [GET]
+
++ Parameters
+  + projects (string) - list of projects for which to retrieve suggestions
+  + field - field for which to suggest
+  + caret - position of the caret in the input field
+  + full - value of the Full Search input
+  + defs - value of the Definitions input
+  + refs - value of Symbol input
+  + path - value of the File Path input
+  + hist - value of the History input
+  + type - value of the Type input
+
++ Response 200 (application/json)
+  + Body
+  
+            {
+              "time": 60,
+              "suggestions": [{
+                "phrase": "package",
+                "projects": ["kotlin"],
+                "score": 387
+              }],
+              "identifier": "pprttq",
+              "queryText": "pprttq",
+              "partialResult":false
+            }
+
+## Suggester configuration [/suggest/config]
+
+### returns suggester configuration [GET]
+
++ Response 200 (application/json)
+  + Body
+  
+            {"enabled":true,"maxResults":10,"minChars":4,"allowedProjects":null,
+             "maxProjects":2147483647,
+             "allowedFields":["defs","path","hist","refs","type","full"],
+             "allowComplexQueries":true,"allowMostPopular":true,"showScores":false,
+             "showProjects":true,"showTime":false,"rebuildCronConfig":"0 0 * * *",
+             "buildTerminationTime":1800,"timeThreshold":2000}  
+
+## Suggester popularity data initialization with queries [/suggest/init/queries]
+
+### updates popularity data based on the queries [POST]
+
++ Request (application/json)
+  + Body
+
+            ["http://localhost:8080/source/search?project=kotlin&full=text"]
+
++ Response 204
+
+## Suggester popularity data initialization [/suggest/init/raw]
+
+### updates popularity data based on the provided data [POST]
+
++ Request (application/json)
+  + Body
+
+            [{"project":"kotlin","field":"full","token":"args","increment":100}]
+
++ Response 204
+
+## Suggester popularity data [/suggest/popularity/{project}{?field,page,pageSize,all}]
+
+### retrieves popularity data for project [GET]
+
++ Parameters
+  + field - field for which to retrieve data, default: full
+  + page - page of data, default: 0
+  + pageSize - size of the page, default: 100
+  + all - if all data should be retrieved, if true then page and pageSize params are ignored
+
++ Response 200 (application/json)
+  + Body
+  
+            [{"iso":3},{"the":3},{"to":3},{"conform":3},{"-":2},
+             {"sc_window_set":1},{"_lso_outbound":1},{"missing":1}]
+
+## Suggester data rebuild [/suggest/rebuild]
+
+### rebuilds suggester data for all projects [PUT]
+
+This kicks off suggester data rebuild in the background, i.e. the rebuild will very likely complete some time after the API call returned.
+
++ Response 204
+
+## Suggester project data rebuild [/suggest/rebuild/{project}]
+
+### rebuilds suggester data for given project [PUT]
+
+This kicks off suggester data rebuild in the background, i.e. the rebuild will very likely complete some time after the API call returned.
+
++ Parameters
+  + project - project name
+
++ Response 204
+
+## Index searchers refresh [/system/refresh]
+
+### refreshes index searchers for specified project [PUT]
+
++ Request (text/plain)
+  + Body
+  
+            project name to refresh
+
++ Response 204
+
+## Include files reload [/system/includes/reload]
+
+### reloads all include files for web application [PUT]
+
++ Response 204
+
+## Path descriptions [/system/pathdesc]
+
+### updates path descriptions for web application [POST]
+
++ Request (text/plain)
+  + Body
+  
+            /foo    bar
+            /foo/foo    bar bar
+
++ Response 204

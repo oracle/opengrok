@@ -4,7 +4,7 @@ Setting up the sample Razor repository
 Razor is a centralised Source Code Management and Issue Tracking
 System, whose basics are described in more detail in
 RazorRepository.java (which can be found in
-opengrok/src/org/opensolaris/opengrok/history directory).
+opengrok/src/main/java/org/opengrok/history directory).
 
 A normal OpenGrok user would extract a read-only checkout of the files
 and directories from Razor they wished OpenGrok to process using

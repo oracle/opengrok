@@ -1,6 +1,0 @@
-version=3
-
-#opts=downloadurlmangle=s/;jsessionid/ /
-
-http://opengrok.github.com/OpenGrok/files/ opengrok-([\d.]+)-src.tar.gz debian echo "we're here"
-

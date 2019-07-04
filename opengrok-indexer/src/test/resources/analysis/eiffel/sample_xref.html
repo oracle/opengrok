@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<script type="text/javascript">/* <![CDATA[ */
+function get_sym_list(){return [["Class","xc",[["UT_CONFIG_SCANNER",55]]]];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><span class="c">-- All source code and binary programs included in Gobo Eiffel</span>
+<a class="l" name="2" href="#2">2</a><span class="c">-- are distributed under the terms and conditions of the MIT</span>
+<a class="l" name="3" href="#3">3</a><span class="c">-- License:</span>
+<a class="l" name="4" href="#4">4</a><span class="c">--</span>
+<a class="l" name="5" href="#5">5</a><span class="c">--     The MIT License</span>
+<a class="l" name="6" href="#6">6</a><span class="c">--</span>
+<a class="l" name="7" href="#7">7</a><span class="c">--     Copyright (c) &lt;year&gt; &lt;copyright holders&gt;</span>
+<a class="l" name="8" href="#8">8</a><span class="c">--</span>
+<a class="l" name="9" href="#9">9</a><span class="c">--     Permission is hereby granted, free of charge, to any person obtaining</span>
+<a class="hl" name="10" href="#10">10</a><span class="c">--     a copy of this software and associated documentation files (the</span>
+<a class="l" name="11" href="#11">11</a><span class="c">--     &quot;Software&quot;), to deal in the Software without restriction, including</span>
+<a class="l" name="12" href="#12">12</a><span class="c">--     without limitation the rights to use, copy, modify, merge, publish,</span>
+<a class="l" name="13" href="#13">13</a><span class="c">--     distribute, sublicense, and/or sell copies of the Software, and to</span>
+<a class="l" name="14" href="#14">14</a><span class="c">--     permit persons to whom the Software is furnished to do so, subject to</span>
+<a class="l" name="15" href="#15">15</a><span class="c">--     the following conditions:</span>
+<a class="l" name="16" href="#16">16</a><span class="c">--</span>
+<a class="l" name="17" href="#17">17</a><span class="c">--     The above copyright notice and this permission notice shall be included</span>
+<a class="l" name="18" href="#18">18</a><span class="c">--     in all copies or substantial portions of the Software.</span>
+<a class="l" name="19" href="#19">19</a><span class="c">--</span>
+<a class="hl" name="20" href="#20">20</a><span class="c">--     THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span>
+<a class="l" name="21" href="#21">21</a><span class="c">--     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</span>
+<a class="l" name="22" href="#22">22</a><span class="c">--     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.</span>
+<a class="l" name="23" href="#23">23</a><span class="c">--     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY</span>
+<a class="l" name="24" href="#24">24</a><span class="c">--     CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,</span>
+<a class="l" name="25" href="#25">25</a><span class="c">--     TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE</span>
+<a class="l" name="26" href="#26">26</a><span class="c">--     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+<a class="l" name="27" href="#27">27</a><span class="c">--</span>
+<a class="l" name="28" href="#28">28</a><span class="c">-- This license is an OSI Approved License:</span>
+<a class="l" name="29" href="#29">29</a><span class="c">--</span>
+<a class="hl" name="30" href="#30">30</a><span class="c">--     <a href="http://opensource.org/licenses/mit-license.html">http://opensource.org/licenses/mit-license.html</a></span>
+<a class="l" name="31" href="#31">31</a><span class="c">--</span>
+<a class="l" name="32" href="#32">32</a><span class="c">-- and a GPL-Compatible Free Software License:</span>
+<a class="l" name="33" href="#33">33</a><span class="c">--</span>
+<a class="l" name="34" href="#34">34</a><span class="c">--     <a href="http://www.gnu.org/licenses/license-list.html#X11License">http://www.gnu.org/licenses/license-list.html#X11License</a></span>
+<a class="l" name="35" href="#35">35</a><span class="c">--</span>
+<a class="l" name="36" href="#36">36</a><span class="c">-- --</span>
+<a class="l" name="37" href="#37">37</a><span class="c">-- Copyright (c) 1997-2007, Eric Bezault and others</span>
+<a class="l" name="38" href="#38">38</a>
+<a class="l" name="39" href="#39">39</a><b>note</b>
+<a class="hl" name="40" href="#40">40</a>
+<a class="l" name="41" href="#41">41</a>	<a href="/source/s?defs=description" class="intelliWindow-symbol" data-definition-place="undefined-in-file">description</a>:
+<a class="l" name="42" href="#42">42</a>
+<a class="l" name="43" href="#43">43</a>		<span class="s">&quot;Scanners for config files made up of name/value pairs and preprocessor instructions&quot;</span>
+<a class="l" name="44" href="#44">44</a>
+<a class="l" name="45" href="#45">45</a>	<a href="/source/s?defs=copyright" class="intelliWindow-symbol" data-definition-place="undefined-in-file">copyright</a>: <span class="s">&quot;Copyright (c) 2007-2013, Eric Bezault and others&quot;</span>
+<a class="l" name="46" href="#46">46</a>	<a href="/source/s?defs=license" class="intelliWindow-symbol" data-definition-place="undefined-in-file">license</a>: <span class="s">&quot;MIT License&quot;</span>
+<a class="l" name="47" href="#47">47</a>	<a href="/source/s?defs=date" class="intelliWindow-symbol" data-definition-place="undefined-in-file">date</a>: <span class="s">&quot;$Date$&quot;</span>
+<a class="l" name="48" href="#48">48</a>	<a href="/source/s?defs=revision" class="intelliWindow-symbol" data-definition-place="undefined-in-file">revision</a>: <span class="s">&quot;$Revision$&quot;</span>
+<a class="l" name="49" href="#49">49</a>	<a href="/source/s?defs=note0" class="intelliWindow-symbol" data-definition-place="undefined-in-file">note0</a>: <span class="s">&quot;<a href="http://example.com">http://example.com</a>&quot;</span>
+<a class="hl" name="50" href="#50">50</a>	<a href="/source/s?defs=note1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">note1</a>: <span class="s">&quot;[<a href="http://example.com">http://example.com</a>]&quot;</span>
+<a class="l" name="51" href="#51">51</a>	<a href="/source/s?defs=note2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">note2</a>: <span class="s">&quot;{<a href="http://example.com">http://example.com</a>}&quot;</span>
+<a class="l" name="52" href="#52">52</a>	<a href="/source/s?defs=note3" class="intelliWindow-symbol" data-definition-place="undefined-in-file">note3</a>: <span class="s">&quot;xx{<a href="http://example.com">http://example.com</a>}xx&quot;</span>
+<a class="l" name="53" href="#53">53</a>	<a href="/source/s?defs=note4" class="intelliWindow-symbol" data-definition-place="undefined-in-file">note4</a>: <span class="s">&quot;xx[<a href="http://example.com">http://example.com</a>]xx&quot;</span>
+<a class="l" name="54" href="#54">54</a>
+<a class="l" name="55" href="#55">55</a><b>deferred</b> <b>class</b> <a class="xc" name="UT_CONFIG_SCANNER"/><a href="/source/s?refs=UT_CONFIG_SCANNER" class="xc intelliWindow-symbol" data-definition-place="def">UT_CONFIG_SCANNER</a>
+<a class="l" name="56" href="#56">56</a>
+<a class="l" name="57" href="#57">57</a><b>inherit</b>
+<a class="l" name="58" href="#58">58</a>
+<a class="l" name="59" href="#59">59</a>	<a href="/source/s?defs=YY_COMPRESSED_SCANNER_SKELETON" class="intelliWindow-symbol" data-definition-place="undefined-in-file">YY_COMPRESSED_SCANNER_SKELETON</a>
+<a class="hl" name="60" href="#60">60</a>		<b>rename</b>
+<a class="l" name="61" href="#61">61</a>			<a href="/source/s?defs=make" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make</a> <b>as</b> <a class="d" name="make_compressed_scanner_skeleton"/><a href="/source/s?refs=make_compressed_scanner_skeleton" class="d intelliWindow-symbol" data-definition-place="def">make_compressed_scanner_skeleton</a>,
+<a class="l" name="62" href="#62">62</a>			<a href="/source/s?defs=reset" class="intelliWindow-symbol" data-definition-place="undefined-in-file">reset</a> <b>as</b> <a class="d" name="reset_compressed_scanner_skeleton"/><a href="/source/s?refs=reset_compressed_scanner_skeleton" class="d intelliWindow-symbol" data-definition-place="def">reset_compressed_scanner_skeleton</a>
+<a class="l" name="63" href="#63">63</a>		<b>redefine</b>
+<a class="l" name="64" href="#64">64</a>			<a href="/source/s?defs=wrap" class="intelliWindow-symbol" data-definition-place="undefined-in-file">wrap</a>, <a href="/source/s?defs=output" class="intelliWindow-symbol" data-definition-place="undefined-in-file">output</a>
+<a class="l" name="65" href="#65">65</a>		<b>end</b>
+<a class="l" name="66" href="#66">66</a>
+<a class="l" name="67" href="#67">67</a>	<a href="/source/s?defs=UT_CONFIG_TOKENS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">UT_CONFIG_TOKENS</a>
+<a class="l" name="68" href="#68">68</a>		<b>export</b> {<a href="/source/s?defs=NONE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NONE</a>} <b>all</b> <b>end</b>
+<a class="l" name="69" href="#69">69</a>
+<a class="hl" name="70" href="#70">70</a>
+<a class="l" name="71" href="#71">71</a><b>feature</b> <span class="c">-- Status report</span>
+<a class="l" name="72" href="#72">72</a>
+<a class="l" name="73" href="#73">73</a>	<a class="d" name="valid_start_condition"/><a href="/source/s?refs=valid_start_condition" class="d intelliWindow-symbol" data-definition-place="def">valid_start_condition</a> (<a href="/source/s?defs=sc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">sc</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>): <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a>
+<a class="l" name="74" href="#74">74</a>			<span class="c">-- Is `sc&apos; a valid start condition?</span>
+<a class="l" name="75" href="#75">75</a>		<b>do</b>
+<a class="l" name="76" href="#76">76</a>			<b>Result</b> := (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a> &lt;= <a href="/source/s?defs=sc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">sc</a> <b>and</b> <a href="/source/s?defs=sc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">sc</a> &lt;= <a href="/source/s?defs=S_EMPTY_LINE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_EMPTY_LINE</a>)
+<a class="l" name="77" href="#77">77</a>		<b>end</b>
+<a class="l" name="78" href="#78">78</a>
+<a class="l" name="79" href="#79">79</a><b>feature</b> {<a href="/source/s?defs=NONE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NONE</a>} <span class="c">-- Implementation</span>
+<a class="hl" name="80" href="#80">80</a>
+<a class="l" name="81" href="#81">81</a>	<a class="d" name="yy_build_tables"/><a href="/source/s?refs=yy_build_tables" class="d intelliWindow-symbol" data-definition-place="def">yy_build_tables</a>
+<a class="l" name="82" href="#82">82</a>			<span class="c">-- Build scanner tables.</span>
+<a class="l" name="83" href="#83">83</a>		<b>do</b>
+<a class="l" name="84" href="#84">84</a>			<a href="/source/s?defs=yy_nxt" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt</a> := <a href="/source/s?defs=yy_nxt_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template</a>
+<a class="l" name="85" href="#85">85</a>			<a href="/source/s?defs=yy_chk" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk</a> := <a href="/source/s?defs=yy_chk_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template</a>
+<a class="l" name="86" href="#86">86</a>			<a href="/source/s?defs=yy_base" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_base</a> := <a href="/source/s?defs=yy_base_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_base_template</a>
+<a class="l" name="87" href="#87">87</a>			<a href="/source/s?defs=yy_def" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_def</a> := <a href="/source/s?defs=yy_def_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_def_template</a>
+<a class="l" name="88" href="#88">88</a>			<a href="/source/s?defs=yy_ec" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec</a> := <a href="/source/s?defs=yy_ec_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template</a>
+<a class="l" name="89" href="#89">89</a>			<a href="/source/s?defs=yy_meta" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_meta</a> := <a href="/source/s?defs=yy_meta_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_meta_template</a>
+<a class="hl" name="90" href="#90">90</a>			<a href="/source/s?defs=yy_accept" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_accept</a> := <a href="/source/s?defs=yy_accept_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_accept_template</a>
+<a class="l" name="91" href="#91">91</a>		<b>end</b>
+<a class="l" name="92" href="#92">92</a>
+<a class="l" name="93" href="#93">93</a>	<a class="d" name="yy_execute_action"/><a href="/source/s?refs=yy_execute_action" class="d intelliWindow-symbol" data-definition-place="def">yy_execute_action</a> (<a href="/source/s?defs=yy_act" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_act</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>)
+<a class="l" name="94" href="#94">94</a>			<span class="c">-- Execute semantic action.</span>
+<a class="l" name="95" href="#95">95</a>		<b>do</b>
+<a class="l" name="96" href="#96">96</a>			<b>inspect</b> <a href="/source/s?defs=yy_act" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_act</a>
+<a class="l" name="97" href="#97">97</a><b>when</b> <span class="n">1</span>, <span class="n">2</span> <b>then</b>
+<a class="l" name="98" href="#98">98</a><span class="c">--|#line 40 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="99" href="#99">99</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="hl" name="100" href="#100">100</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 40&quot;</span>)
+<a class="l" name="101" href="#101">101</a><b>end</b>
+<a class="l" name="102" href="#102">102</a>
+<a class="l" name="103" href="#103">103</a>						<span class="c">-- Comment.</span>
+<a class="l" name="104" href="#104">104</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_SKIP_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_SKIP_EOL</a>)
+<a class="l" name="105" href="#105">105</a>
+<a class="l" name="106" href="#106">106</a><b>when</b> <span class="n">3</span> <b>then</b>
+<a class="l" name="107" href="#107">107</a><span class="c">--|#line 45 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="108" href="#108">108</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="109" href="#109">109</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 45&quot;</span>)
+<a class="hl" name="110" href="#110">110</a><b>end</b>
+<a class="l" name="111" href="#111">111</a>
+<a class="l" name="112" href="#112">112</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_IFDEF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_IFDEF</a>
+<a class="l" name="113" href="#113">113</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="114" href="#114">114</a>
+<a class="l" name="115" href="#115">115</a><b>when</b> <span class="n">4</span> <b>then</b>
+<a class="l" name="116" href="#116">116</a><span class="c">--|#line 49 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="117" href="#117">117</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="118" href="#118">118</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 49&quot;</span>)
+<a class="l" name="119" href="#119">119</a><b>end</b>
+<a class="hl" name="120" href="#120">120</a>
+<a class="l" name="121" href="#121">121</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_IFNDEF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_IFNDEF</a>
+<a class="l" name="122" href="#122">122</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="123" href="#123">123</a>
+<a class="l" name="124" href="#124">124</a><b>when</b> <span class="n">5</span> <b>then</b>
+<a class="l" name="125" href="#125">125</a><span class="c">--|#line 53 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="126" href="#126">126</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="127" href="#127">127</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 53&quot;</span>)
+<a class="l" name="128" href="#128">128</a><b>end</b>
+<a class="l" name="129" href="#129">129</a>
+<a class="hl" name="130" href="#130">130</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_ELSE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_ELSE</a>
+<a class="l" name="131" href="#131">131</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="132" href="#132">132</a>
+<a class="l" name="133" href="#133">133</a><b>when</b> <span class="n">6</span> <b>then</b>
+<a class="l" name="134" href="#134">134</a><span class="c">--|#line 57 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="135" href="#135">135</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="136" href="#136">136</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 57&quot;</span>)
+<a class="l" name="137" href="#137">137</a><b>end</b>
+<a class="l" name="138" href="#138">138</a>
+<a class="l" name="139" href="#139">139</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_ENDIF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_ENDIF</a>
+<a class="hl" name="140" href="#140">140</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="141" href="#141">141</a>
+<a class="l" name="142" href="#142">142</a><b>when</b> <span class="n">7</span> <b>then</b>
+<a class="l" name="143" href="#143">143</a><span class="c">--|#line 61 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="144" href="#144">144</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="145" href="#145">145</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 61&quot;</span>)
+<a class="l" name="146" href="#146">146</a><b>end</b>
+<a class="l" name="147" href="#147">147</a>
+<a class="l" name="148" href="#148">148</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_INCLUDE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_INCLUDE</a>
+<a class="l" name="149" href="#149">149</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="hl" name="150" href="#150">150</a>
+<a class="l" name="151" href="#151">151</a><b>when</b> <span class="n">8</span> <b>then</b>
+<a class="l" name="152" href="#152">152</a><span class="c">--|#line 65 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="153" href="#153">153</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="154" href="#154">154</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 65&quot;</span>)
+<a class="l" name="155" href="#155">155</a><b>end</b>
+<a class="l" name="156" href="#156">156</a>
+<a class="l" name="157" href="#157">157</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_DEFINE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_DEFINE</a>
+<a class="l" name="158" href="#158">158</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="159" href="#159">159</a>
+<a class="hl" name="160" href="#160">160</a><b>when</b> <span class="n">9</span> <b>then</b>
+<a class="l" name="161" href="#161">161</a><span class="c">--|#line 69 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="162" href="#162">162</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="163" href="#163">163</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 69&quot;</span>)
+<a class="l" name="164" href="#164">164</a><b>end</b>
+<a class="l" name="165" href="#165">165</a>
+<a class="l" name="166" href="#166">166</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_UNDEF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_UNDEF</a>
+<a class="l" name="167" href="#167">167</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>)
+<a class="l" name="168" href="#168">168</a>
+<a class="l" name="169" href="#169">169</a><b>when</b> <span class="n">10</span> <b>then</b>
+<a class="hl" name="170" href="#170">170</a><span class="c">--|#line 73 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="171" href="#171">171</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="172" href="#172">172</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 73&quot;</span>)
+<a class="l" name="173" href="#173">173</a><b>end</b>
+<a class="l" name="174" href="#174">174</a>
+<a class="l" name="175" href="#175">175</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_NAME</a>
+<a class="l" name="176" href="#176">176</a>						<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <a href="/source/s?defs=text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text</a>
+<a class="l" name="177" href="#177">177</a>						<b>check</b> <a href="/source/s?defs=attached" class="intelliWindow-symbol" data-definition-place="undefined-in-file">attached</a> <a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> <b>as</b> <a href="/source/s?defs=l_last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_last_string_value</a> <b>then</b>
+<a class="l" name="178" href="#178">178</a>							<a href="/source/s?defs=STRING_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">STRING_</a>.<a href="/source/s?defs=left_adjust" class="intelliWindow-symbol" data-definition-place="undefined-in-file">left_adjust</a> (<a href="/source/s?defs=l_last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_last_string_value</a>)
+<a class="l" name="179" href="#179">179</a>						<b>end</b>
+<a class="hl" name="180" href="#180">180</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_NAME</a>)
+<a class="l" name="181" href="#181">181</a>
+<a class="l" name="182" href="#182">182</a><b>when</b> <span class="n">11</span> <b>then</b>
+<a class="l" name="183" href="#183">183</a><span class="c">--|#line 81 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="184" href="#184">184</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="185" href="#185">185</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 81&quot;</span>)
+<a class="l" name="186" href="#186">186</a><b>end</b>
+<a class="l" name="187" href="#187">187</a>
+<a class="l" name="188" href="#188">188</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="189" href="#189">189</a>						<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> + <span class="n">1</span>
+<a class="hl" name="190" href="#190">190</a>
+<a class="l" name="191" href="#191">191</a><b>when</b> <span class="n">12</span> <b>then</b>
+<a class="l" name="192" href="#192">192</a><span class="c">--|#line 85 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="193" href="#193">193</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="194" href="#194">194</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 85&quot;</span>)
+<a class="l" name="195" href="#195">195</a><b>end</b>
+<a class="l" name="196" href="#196">196</a>
+<a class="l" name="197" href="#197">197</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_EMPTY_LINE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_EMPTY_LINE</a>)
+<a class="l" name="198" href="#198">198</a>
+<a class="l" name="199" href="#199">199</a><b>when</b> <span class="n">13</span> <b>then</b>
+<a class="hl" name="200" href="#200">200</a><span class="c">--|#line 91 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="201" href="#201">201</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="202" href="#202">202</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 91&quot;</span>)
+<a class="l" name="203" href="#203">203</a><b>end</b>
+<a class="l" name="204" href="#204">204</a>
+<a class="l" name="205" href="#205">205</a>						<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> + <span class="n">1</span>
+<a class="l" name="206" href="#206">206</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="207" href="#207">207</a>
+<a class="l" name="208" href="#208">208</a><b>when</b> <span class="n">14</span> <b>then</b>
+<a class="l" name="209" href="#209">209</a><span class="c">--|#line 95 &quot;ut_config_scanner.l&quot;</span>
+<a class="hl" name="210" href="#210">210</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="211" href="#211">211</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 95&quot;</span>)
+<a class="l" name="212" href="#212">212</a><b>end</b>
+<a class="l" name="213" href="#213">213</a>
+<a class="l" name="214" href="#214">214</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="215" href="#215">215</a>
+<a class="l" name="216" href="#216">216</a><b>when</b> <span class="n">15</span> <b>then</b>
+<a class="l" name="217" href="#217">217</a><span class="c">--|#line 101 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="218" href="#218">218</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="219" href="#219">219</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 101&quot;</span>)
+<a class="hl" name="220" href="#220">220</a><b>end</b>
+<a class="l" name="221" href="#221">221</a><span class="c">-- Separator.</span>
+<a class="l" name="222" href="#222">222</a><b>when</b> <span class="n">16</span> <b>then</b>
+<a class="l" name="223" href="#223">223</a><span class="c">--|#line 102 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="224" href="#224">224</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="225" href="#225">225</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 102&quot;</span>)
+<a class="l" name="226" href="#226">226</a><b>end</b>
+<a class="l" name="227" href="#227">227</a>
+<a class="l" name="228" href="#228">228</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_STRING" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_STRING</a>
+<a class="l" name="229" href="#229">229</a>						<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <a href="/source/s?defs=text_substring" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text_substring</a> (<span class="n">2</span>, <a href="/source/s?defs=text_count" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text_count</a> - <span class="n">1</span>)
+<a class="hl" name="230" href="#230">230</a>
+<a class="l" name="231" href="#231">231</a><b>when</b> <span class="n">17</span> <b>then</b>
+<a class="l" name="232" href="#232">232</a><span class="c">--|#line 106 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="233" href="#233">233</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="234" href="#234">234</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 106&quot;</span>)
+<a class="l" name="235" href="#235">235</a><b>end</b>
+<a class="l" name="236" href="#236">236</a>
+<a class="l" name="237" href="#237">237</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_NAME</a>
+<a class="l" name="238" href="#238">238</a>						<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <a href="/source/s?defs=text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text</a>
+<a class="l" name="239" href="#239">239</a>
+<a class="hl" name="240" href="#240">240</a><b>when</b> <span class="n">18</span> <b>then</b>
+<a class="l" name="241" href="#241">241</a><span class="c">--|#line 110 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="242" href="#242">242</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="243" href="#243">243</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 110&quot;</span>)
+<a class="l" name="244" href="#244">244</a><b>end</b>
+<a class="l" name="245" href="#245">245</a><a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_AND" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_AND</a>
+<a class="l" name="246" href="#246">246</a><b>when</b> <span class="n">19</span> <b>then</b>
+<a class="l" name="247" href="#247">247</a><span class="c">--|#line 111 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="248" href="#248">248</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="249" href="#249">249</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 111&quot;</span>)
+<a class="hl" name="250" href="#250">250</a><b>end</b>
+<a class="l" name="251" href="#251">251</a><a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_OR" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_OR</a>
+<a class="l" name="252" href="#252">252</a><b>when</b> <span class="n">20</span> <b>then</b>
+<a class="l" name="253" href="#253">253</a><span class="c">--|#line 112 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="254" href="#254">254</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="255" href="#255">255</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 112&quot;</span>)
+<a class="l" name="256" href="#256">256</a><b>end</b>
+<a class="l" name="257" href="#257">257</a>
+<a class="l" name="258" href="#258">258</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="259" href="#259">259</a>						<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> + <span class="n">1</span>
+<a class="hl" name="260" href="#260">260</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="261" href="#261">261</a>
+<a class="l" name="262" href="#262">262</a><b>when</b> <span class="n">21</span> <b>then</b>
+<a class="l" name="263" href="#263">263</a><span class="c">--|#line 124 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="264" href="#264">264</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="265" href="#265">265</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 124&quot;</span>)
+<a class="l" name="266" href="#266">266</a><b>end</b>
+<a class="l" name="267" href="#267">267</a><span class="c">-- Separator.</span>
+<a class="l" name="268" href="#268">268</a><b>when</b> <span class="n">22</span> <b>then</b>
+<a class="l" name="269" href="#269">269</a><span class="c">--|#line 125 &quot;ut_config_scanner.l&quot;</span>
+<a class="hl" name="270" href="#270">270</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="271" href="#271">271</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 125&quot;</span>)
+<a class="l" name="272" href="#272">272</a><b>end</b>
+<a class="l" name="273" href="#273">273</a>
+<a class="l" name="274" href="#274">274</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_COLON" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_COLON</a>
+<a class="l" name="275" href="#275">275</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=S_VALUE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_VALUE</a>)
+<a class="l" name="276" href="#276">276</a>
+<a class="l" name="277" href="#277">277</a><b>when</b> <span class="n">23</span> <b>then</b>
+<a class="l" name="278" href="#278">278</a><span class="c">--|#line 132 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="279" href="#279">279</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="hl" name="280" href="#280">280</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 132&quot;</span>)
+<a class="l" name="281" href="#281">281</a><b>end</b>
+<a class="l" name="282" href="#282">282</a><span class="c">-- Separator.</span>
+<a class="l" name="283" href="#283">283</a><b>when</b> <span class="n">24</span> <b>then</b>
+<a class="l" name="284" href="#284">284</a><span class="c">--|#line 133 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="285" href="#285">285</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="286" href="#286">286</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 133&quot;</span>)
+<a class="l" name="287" href="#287">287</a><b>end</b>
+<a class="l" name="288" href="#288">288</a>
+<a class="l" name="289" href="#289">289</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_VALUE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_VALUE</a>
+<a class="hl" name="290" href="#290">290</a>						<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <a href="/source/s?defs=text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text</a>
+<a class="l" name="291" href="#291">291</a>
+<a class="l" name="292" href="#292">292</a><b>when</b> <span class="n">25</span> <b>then</b>
+<a class="l" name="293" href="#293">293</a><span class="c">--|#line 137 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="294" href="#294">294</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="295" href="#295">295</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 137&quot;</span>)
+<a class="l" name="296" href="#296">296</a><b>end</b>
+<a class="l" name="297" href="#297">297</a>
+<a class="l" name="298" href="#298">298</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="299" href="#299">299</a>						<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> + <span class="n">1</span>
+<a class="hl" name="300" href="#300">300</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="301" href="#301">301</a>
+<a class="l" name="302" href="#302">302</a><b>when</b> <span class="n">26</span> <b>then</b>
+<a class="l" name="303" href="#303">303</a><span class="c">--|#line 149 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="304" href="#304">304</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="305" href="#305">305</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 149&quot;</span>)
+<a class="l" name="306" href="#306">306</a><b>end</b>
+<a class="l" name="307" href="#307">307</a>
+<a class="l" name="308" href="#308">308</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="309" href="#309">309</a>						<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> + <span class="n">1</span>
+<a class="hl" name="310" href="#310">310</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="311" href="#311">311</a>
+<a class="l" name="312" href="#312">312</a><b>when</b> <span class="n">27</span> <b>then</b>
+<a class="l" name="313" href="#313">313</a><span class="c">--|#line 160 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="314" href="#314">314</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="315" href="#315">315</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 160&quot;</span>)
+<a class="l" name="316" href="#316">316</a><b>end</b>
+<a class="l" name="317" href="#317">317</a>
+<a class="l" name="318" href="#318">318</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=text_item" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text_item</a> (<span class="n">1</span>).<a href="/source/s?defs=code" class="intelliWindow-symbol" data-definition-place="undefined-in-file">code</a>
+<a class="l" name="319" href="#319">319</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="hl" name="320" href="#320">320</a>
+<a class="l" name="321" href="#321">321</a><b>when</b> <span class="n">28</span> <b>then</b>
+<a class="l" name="322" href="#322">322</a><span class="c">--|#line 0 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="323" href="#323">323</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="324" href="#324">324</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 0&quot;</span>)
+<a class="l" name="325" href="#325">325</a><b>end</b>
+<a class="l" name="326" href="#326">326</a><a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=yyError_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyError_token</a>
+<a class="l" name="327" href="#327">327</a><a href="/source/s?defs=fatal_error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fatal_error</a> (<span class="s">&quot;scanner jammed&quot;</span>)
+<a class="l" name="328" href="#328">328</a>			<b>else</b>
+<a class="l" name="329" href="#329">329</a>				<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=yyError_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyError_token</a>
+<a class="hl" name="330" href="#330">330</a>				<a href="/source/s?defs=fatal_error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fatal_error</a> (<span class="s">&quot;fatal scanner internal error: no action found&quot;</span>)
+<a class="l" name="331" href="#331">331</a>			<b>end</b>
+<a class="l" name="332" href="#332">332</a>			<a href="/source/s?defs=yy_set_beginning_of_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_set_beginning_of_line</a>
+<a class="l" name="333" href="#333">333</a>		<b>end</b>
+<a class="l" name="334" href="#334">334</a>
+<a class="l" name="335" href="#335">335</a>	<a class="d" name="yy_execute_eof_action"/><a href="/source/s?refs=yy_execute_eof_action" class="d intelliWindow-symbol" data-definition-place="def">yy_execute_eof_action</a> (<a href="/source/s?defs=yy_sc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_sc</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>)
+<a class="l" name="336" href="#336">336</a>			<span class="c">-- Execute EOF semantic action.</span>
+<a class="l" name="337" href="#337">337</a>		<b>do</b>
+<a class="l" name="338" href="#338">338</a>			<b>inspect</b> <a href="/source/s?defs=yy_sc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_sc</a>
+<a class="l" name="339" href="#339">339</a><b>when</b> <span class="n">1</span> <b>then</b>
+<a class="hl" name="340" href="#340">340</a><span class="c">--|#line 117 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="341" href="#341">341</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="342" href="#342">342</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 117&quot;</span>)
+<a class="l" name="343" href="#343">343</a><b>end</b>
+<a class="l" name="344" href="#344">344</a>
+<a class="l" name="345" href="#345">345</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="346" href="#346">346</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="347" href="#347">347</a>
+<a class="l" name="348" href="#348">348</a><b>when</b> <span class="n">5</span> <b>then</b>
+<a class="l" name="349" href="#349">349</a><span class="c">--|#line 142 &quot;ut_config_scanner.l&quot;</span>
+<a class="hl" name="350" href="#350">350</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="l" name="351" href="#351">351</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;Executing scanner user-code from file &apos;ut_config_scanner.l&apos; at line 142&quot;</span>)
+<a class="l" name="352" href="#352">352</a><b>end</b>
+<a class="l" name="353" href="#353">353</a>
+<a class="l" name="354" href="#354">354</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="355" href="#355">355</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="356" href="#356">356</a>
+<a class="l" name="357" href="#357">357</a><b>when</b> <span class="n">6</span> <b>then</b>
+<a class="l" name="358" href="#358">358</a><span class="c">--|#line 154 &quot;ut_config_scanner.l&quot;</span>
+<a class="l" name="359" href="#359">359</a><b>debug</b> (<span class="s">&quot;GELEX&quot;</span>)
+<a class="hl" name="360" href="#360">360</a>	<a href="/source/s?defs=std" class="intelliWindow-symbol" data-definition-place="undefined-in-file">std</a>.<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>.<a href="/source/s?defs=put_line" class="intelliWindow-symbol" data-definition-place="undefined-in-file">put_line</a> (<span class="s">&quot;xx[Executing scanner user-code from file</span>
+<a class="l" name="361" href="#361">361</a><span class="s">    &quot;ut_config_scanner.l&quot;]x&quot; at line 154]xx&quot;</span>)
+<a class="l" name="362" href="#362">362</a><b>end</b>
+<a class="l" name="363" href="#363">363</a>
+<a class="l" name="364" href="#364">364</a>						<a href="/source/s?defs=last_token" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_token</a> := <a href="/source/s?defs=P_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">P_EOL</a>
+<a class="l" name="365" href="#365">365</a>						<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="366" href="#366">366</a>
+<a class="l" name="367" href="#367">367</a>			<b>else</b>
+<a class="l" name="368" href="#368">368</a>				<a href="/source/s?defs=terminate" class="intelliWindow-symbol" data-definition-place="undefined-in-file">terminate</a>
+<a class="l" name="369" href="#369">369</a>			<b>end</b>
+<a class="hl" name="370" href="#370">370</a>		<b>end</b>
+<a class="l" name="371" href="#371">371</a>
+<a class="l" name="372" href="#372">372</a><b>feature</b> {<a href="/source/s?defs=NONE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NONE</a>} <span class="c">-- Table templates</span>
+<a class="l" name="373" href="#373">373</a>
+<a class="l" name="374" href="#374">374</a>	<a href="/source/s?defs=yy_nxt_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="375" href="#375">375</a>			<span class="c">-- Template for `yy_nxt&apos;</span>
+<a class="l" name="376" href="#376">376</a>		<b>local</b>
+<a class="l" name="377" href="#377">377</a>			<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="378" href="#378">378</a>		<b>once</b>
+<a class="l" name="379" href="#379">379</a>			<b>create</b> <a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>.<a href="/source/s?defs=make_filled" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make_filled</a> (<span class="n">0</span>, <span class="n">0</span>, <span class="n">220</span>)
+<a class="hl" name="380" href="#380">380</a>			<a href="/source/s?defs=yy_nxt_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="381" href="#381">381</a>			<a href="/source/s?defs=yy_nxt_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="382" href="#382">382</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="383" href="#383">383</a>		<b>end</b>
+<a class="l" name="384" href="#384">384</a>
+<a class="l" name="385" href="#385">385</a>	<a href="/source/s?defs=yy_nxt_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="386" href="#386">386</a>			<span class="c">-- Fill chunk #1 of template for `yy_nxt&apos;.</span>
+<a class="l" name="387" href="#387">387</a>		<b>do</b>
+<a class="l" name="388" href="#388">388</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="389" href="#389">389</a>			    <span class="n">0</span>,   <span class="n">16</span>,   <span class="n">17</span>,   <span class="n">18</span>,   <span class="n">16</span>,   <span class="n">19</span>,   <span class="n">16</span>,   <span class="n">20</span>,   <span class="n">21</span>,   <span class="n">16</span>,
+<a class="hl" name="390" href="#390">390</a>			   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">21</span>,   <span class="n">16</span>,
+<a class="l" name="391" href="#391">391</a>			   <span class="n">16</span>,   <span class="n">22</span>,   <span class="n">23</span>,   <span class="n">24</span>,   <span class="n">16</span>,   <span class="n">25</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">16</span>,   <span class="n">26</span>,
+<a class="l" name="392" href="#392">392</a>			   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">26</span>,   <span class="n">27</span>,   <span class="n">30</span>,
+<a class="l" name="393" href="#393">393</a>			   <span class="n">30</span>,   <span class="n">33</span>,   <span class="n">34</span>,   <span class="n">33</span>,   <span class="n">34</span>,   <span class="n">87</span>,   <span class="n">31</span>,   <span class="n">31</span>,   <span class="n">36</span>,   <span class="n">57</span>,
+<a class="l" name="394" href="#394">394</a>			   <span class="n">58</span>,   <span class="n">37</span>,   <span class="n">59</span>,   <span class="n">38</span>,   <span class="n">40</span>,   <span class="n">60</span>,   <span class="n">86</span>,   <span class="n">67</span>,   <span class="n">85</span>,   <span class="n">84</span>,
+<a class="l" name="395" href="#395">395</a>			   <span class="n">41</span>,   <span class="n">42</span>,   <span class="n">68</span>,   <span class="n">43</span>,   <span class="n">83</span>,   <span class="n">82</span>,   <span class="n">81</span>,   <span class="n">44</span>,   <span class="n">88</span>,   <span class="n">80</span>,
+<a class="l" name="396" href="#396">396</a>			   <span class="n">79</span>,   <span class="n">88</span>,   <span class="n">78</span>,   <span class="n">45</span>,   <span class="n">36</span>,   <span class="n">77</span>,   <span class="n">76</span>,   <span class="n">37</span>,   <span class="n">75</span>,   <span class="n">38</span>,
+<a class="l" name="397" href="#397">397</a>			   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">74</span>,   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">73</span>,   <span class="n">72</span>,   <span class="n">62</span>,   <span class="n">71</span>,
+<a class="l" name="398" href="#398">398</a>			   <span class="n">70</span>,   <span class="n">69</span>,   <span class="n">66</span>,   <span class="n">65</span>,   <span class="n">64</span>,   <span class="n">55</span>,   <span class="n">53</span>,   <span class="n">52</span>,   <span class="n">62</span>,   <span class="n">16</span>,
+<a class="l" name="399" href="#399">399</a>
+<a class="hl" name="400" href="#400">400</a>			   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">16</span>,   <span class="n">28</span>,   <span class="n">28</span>,
+<a class="l" name="401" href="#401">401</a>			   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">28</span>,   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">32</span>,
+<a class="l" name="402" href="#402">402</a>			   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">32</span>,   <span class="n">39</span>,   <span class="n">63</span>,   <span class="n">46</span>,   <span class="n">39</span>,
+<a class="l" name="403" href="#403">403</a>			   <span class="n">39</span>,   <span class="n">39</span>,   <span class="n">39</span>,   <span class="n">39</span>,   <span class="n">47</span>,   <span class="n">47</span>,   <span class="n">61</span>,   <span class="n">56</span>,   <span class="n">47</span>,   <span class="n">47</span>,
+<a class="l" name="404" href="#404">404</a>			   <span class="n">47</span>,   <span class="n">47</span>,   <span class="n">47</span>,   <span class="n">49</span>,   <span class="n">49</span>,   <span class="n">49</span>,   <span class="n">49</span>,   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">51</span>,
+<a class="l" name="405" href="#405">405</a>			   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">51</span>,   <span class="n">54</span>,   <span class="n">54</span>,   <span class="n">39</span>,   <span class="n">54</span>,
+<a class="l" name="406" href="#406">406</a>			   <span class="n">54</span>,   <span class="n">54</span>,   <span class="n">54</span>,   <span class="n">54</span>,   <span class="n">54</span>,   <span class="n">40</span>,   <span class="n">40</span>,   <span class="n">55</span>,   <span class="n">40</span>,   <span class="n">40</span>,
+<a class="l" name="407" href="#407">407</a>			   <span class="n">40</span>,   <span class="n">40</span>,   <span class="n">40</span>,   <span class="n">40</span>,   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">53</span>,   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">45</span>,
+<a class="l" name="408" href="#408">408</a>			   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">52</span>,   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">62</span>,
+<a class="l" name="409" href="#409">409</a>			   <span class="n">62</span>,   <span class="n">62</span>,   <span class="n">50</span>,   <span class="n">48</span>,   <span class="n">46</span>,   <span class="n">39</span>,   <span class="n">88</span>,   <span class="n">35</span>,   <span class="n">35</span>,   <span class="n">29</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="hl" name="410" href="#410">410</a>			<span class="n">1</span>, <span class="n">200</span>, <span class="n">0</span>)
+<a class="l" name="411" href="#411">411</a>		<b>end</b>
+<a class="l" name="412" href="#412">412</a>
+<a class="l" name="413" href="#413">413</a>	<a href="/source/s?defs=yy_nxt_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_nxt_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="414" href="#414">414</a>			<span class="c">-- Fill chunk #2 of template for `yy_nxt&apos;.</span>
+<a class="l" name="415" href="#415">415</a>		<b>do</b>
+<a class="l" name="416" href="#416">416</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="417" href="#417">417</a>			   <span class="n">29</span>,   <span class="n">15</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="418" href="#418">418</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="419" href="#419">419</a>			   <span class="n">88</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="hl" name="420" href="#420">420</a>			<span class="n">1</span>, <span class="n">21</span>, <span class="n">200</span>)
+<a class="l" name="421" href="#421">421</a>		<b>end</b>
+<a class="l" name="422" href="#422">422</a>
+<a class="l" name="423" href="#423">423</a>	<a href="/source/s?defs=yy_chk_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="424" href="#424">424</a>			<span class="c">-- Template for `yy_chk&apos;</span>
+<a class="l" name="425" href="#425">425</a>		<b>local</b>
+<a class="l" name="426" href="#426">426</a>			<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="427" href="#427">427</a>		<b>once</b>
+<a class="l" name="428" href="#428">428</a>			<b>create</b> <a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>.<a href="/source/s?defs=make_filled" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make_filled</a> (<span class="n">0</span>, <span class="n">0</span>, <span class="n">220</span>)
+<a class="l" name="429" href="#429">429</a>			<a href="/source/s?defs=yy_chk_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="hl" name="430" href="#430">430</a>			<a href="/source/s?defs=yy_chk_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="431" href="#431">431</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="432" href="#432">432</a>		<b>end</b>
+<a class="l" name="433" href="#433">433</a>
+<a class="l" name="434" href="#434">434</a>	<a href="/source/s?defs=yy_chk_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="435" href="#435">435</a>			<span class="c">-- Fill chunk #1 of template for `yy_chk&apos;.</span>
+<a class="l" name="436" href="#436">436</a>		<b>do</b>
+<a class="l" name="437" href="#437">437</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="438" href="#438">438</a>			    <span class="n">0</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,
+<a class="l" name="439" href="#439">439</a>			    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,    <span class="n">2</span>,
+<a class="hl" name="440" href="#440">440</a>			    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,
+<a class="l" name="441" href="#441">441</a>			    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">3</span>,    <span class="n">9</span>,
+<a class="l" name="442" href="#442">442</a>			   <span class="n">10</span>,   <span class="n">11</span>,   <span class="n">11</span>,   <span class="n">12</span>,   <span class="n">12</span>,   <span class="n">86</span>,    <span class="n">9</span>,   <span class="n">10</span>,   <span class="n">17</span>,   <span class="n">42</span>,
+<a class="l" name="443" href="#443">443</a>			   <span class="n">42</span>,   <span class="n">17</span>,   <span class="n">43</span>,   <span class="n">17</span>,   <span class="n">19</span>,   <span class="n">43</span>,   <span class="n">82</span>,   <span class="n">59</span>,   <span class="n">81</span>,   <span class="n">78</span>,
+<a class="l" name="444" href="#444">444</a>			   <span class="n">19</span>,   <span class="n">19</span>,   <span class="n">59</span>,   <span class="n">19</span>,   <span class="n">77</span>,   <span class="n">76</span>,   <span class="n">75</span>,   <span class="n">19</span>,   <span class="n">20</span>,   <span class="n">74</span>,
+<a class="l" name="445" href="#445">445</a>			   <span class="n">73</span>,   <span class="n">20</span>,   <span class="n">71</span>,   <span class="n">20</span>,   <span class="n">36</span>,   <span class="n">70</span>,   <span class="n">69</span>,   <span class="n">36</span>,   <span class="n">68</span>,   <span class="n">36</span>,
+<a class="l" name="446" href="#446">446</a>			   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">67</span>,   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">45</span>,   <span class="n">66</span>,   <span class="n">65</span>,   <span class="n">45</span>,   <span class="n">64</span>,
+<a class="l" name="447" href="#447">447</a>			   <span class="n">61</span>,   <span class="n">60</span>,   <span class="n">58</span>,   <span class="n">57</span>,   <span class="n">56</span>,   <span class="n">55</span>,   <span class="n">53</span>,   <span class="n">51</span>,   <span class="n">45</span>,   <span class="n">89</span>,
+<a class="l" name="448" href="#448">448</a>
+<a class="l" name="449" href="#449">449</a>			   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">90</span>,   <span class="n">90</span>,
+<a class="hl" name="450" href="#450">450</a>			   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">91</span>,
+<a class="l" name="451" href="#451">451</a>			   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">92</span>,   <span class="n">47</span>,   <span class="n">46</span>,   <span class="n">92</span>,
+<a class="l" name="452" href="#452">452</a>			   <span class="n">92</span>,   <span class="n">92</span>,   <span class="n">92</span>,   <span class="n">92</span>,   <span class="n">93</span>,   <span class="n">93</span>,   <span class="n">44</span>,   <span class="n">41</span>,   <span class="n">93</span>,   <span class="n">93</span>,
+<a class="l" name="453" href="#453">453</a>			   <span class="n">93</span>,   <span class="n">93</span>,   <span class="n">93</span>,   <span class="n">94</span>,   <span class="n">94</span>,   <span class="n">94</span>,   <span class="n">94</span>,   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">95</span>,
+<a class="l" name="454" href="#454">454</a>			   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">95</span>,   <span class="n">96</span>,   <span class="n">96</span>,   <span class="n">39</span>,   <span class="n">96</span>,
+<a class="l" name="455" href="#455">455</a>			   <span class="n">96</span>,   <span class="n">96</span>,   <span class="n">96</span>,   <span class="n">96</span>,   <span class="n">96</span>,   <span class="n">97</span>,   <span class="n">97</span>,   <span class="n">33</span>,   <span class="n">97</span>,   <span class="n">97</span>,
+<a class="l" name="456" href="#456">456</a>			   <span class="n">97</span>,   <span class="n">97</span>,   <span class="n">97</span>,   <span class="n">97</span>,   <span class="n">98</span>,   <span class="n">98</span>,   <span class="n">30</span>,   <span class="n">98</span>,   <span class="n">98</span>,   <span class="n">98</span>,
+<a class="l" name="457" href="#457">457</a>			   <span class="n">98</span>,   <span class="n">98</span>,   <span class="n">98</span>,   <span class="n">99</span>,   <span class="n">99</span>,   <span class="n">28</span>,   <span class="n">99</span>,   <span class="n">99</span>,   <span class="n">99</span>,   <span class="n">99</span>,
+<a class="l" name="458" href="#458">458</a>			   <span class="n">99</span>,   <span class="n">99</span>,   <span class="n">27</span>,   <span class="n">25</span>,   <span class="n">22</span>,   <span class="n">21</span>,   <span class="n">15</span>,   <span class="n">14</span>,   <span class="n">13</span>,    <span class="n">8</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="l" name="459" href="#459">459</a>			<span class="n">1</span>, <span class="n">200</span>, <span class="n">0</span>)
+<a class="hl" name="460" href="#460">460</a>		<b>end</b>
+<a class="l" name="461" href="#461">461</a>
+<a class="l" name="462" href="#462">462</a>	<a href="/source/s?defs=yy_chk_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_chk_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="463" href="#463">463</a>			<span class="c">-- Fill chunk #2 of template for `yy_chk&apos;.</span>
+<a class="l" name="464" href="#464">464</a>		<b>do</b>
+<a class="l" name="465" href="#465">465</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="466" href="#466">466</a>			    <span class="n">7</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="467" href="#467">467</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="468" href="#468">468</a>			   <span class="n">88</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="l" name="469" href="#469">469</a>			<span class="n">1</span>, <span class="n">21</span>, <span class="n">200</span>)
+<a class="hl" name="470" href="#470">470</a>		<b>end</b>
+<a class="l" name="471" href="#471">471</a>
+<a class="l" name="472" href="#472">472</a>	<a href="/source/s?defs=yy_base_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_base_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="473" href="#473">473</a>			<span class="c">-- Template for `yy_base&apos;</span>
+<a class="l" name="474" href="#474">474</a>		<b>once</b>
+<a class="l" name="475" href="#475">475</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (&lt;&lt;
+<a class="l" name="476" href="#476">476</a>			    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,   <span class="n">19</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,  <span class="n">197</span>,  <span class="n">196</span>,   <span class="n">37</span>,
+<a class="l" name="477" href="#477">477</a>			   <span class="n">38</span>,   <span class="n">39</span>,   <span class="n">41</span>,  <span class="n">195</span>,  <span class="n">194</span>,  <span class="n">196</span>,  <span class="n">201</span>,   <span class="n">46</span>,  <span class="n">201</span>,   <span class="n">49</span>,
+<a class="l" name="478" href="#478">478</a>			   <span class="n">66</span>,  <span class="n">188</span>,  <span class="n">192</span>,  <span class="n">201</span>,    <span class="n">0</span>,  <span class="n">187</span>,    <span class="n">0</span>,  <span class="n">173</span>,  <span class="n">182</span>,  <span class="n">201</span>,
+<a class="l" name="479" href="#479">479</a>			  <span class="n">174</span>,  <span class="n">201</span>,    <span class="n">0</span>,  <span class="n">165</span>,  <span class="n">201</span>,  <span class="n">201</span>,   <span class="n">72</span>,    <span class="n">0</span>,    <span class="n">0</span>,  <span class="n">151</span>,
+<a class="hl" name="480" href="#480">480</a>			    <span class="n">0</span>,  <span class="n">125</span>,   <span class="n">34</span>,   <span class="n">39</span>,  <span class="n">120</span>,   <span class="n">79</span>,  <span class="n">126</span>,  <span class="n">123</span>,  <span class="n">201</span>,    <span class="n">0</span>,
+<a class="l" name="481" href="#481">481</a>			  <span class="n">201</span>,   <span class="n">94</span>,  <span class="n">201</span>,   <span class="n">94</span>,    <span class="n">0</span>,   <span class="n">93</span>,   <span class="n">81</span>,   <span class="n">76</span>,   <span class="n">81</span>,   <span class="n">46</span>,
+<a class="l" name="482" href="#482">482</a>			   <span class="n">81</span>,   <span class="n">79</span>,    <span class="n">0</span>,  <span class="n">201</span>,   <span class="n">75</span>,   <span class="n">75</span>,   <span class="n">72</span>,   <span class="n">70</span>,   <span class="n">67</span>,   <span class="n">61</span>,
+<a class="l" name="483" href="#483">483</a>			   <span class="n">63</span>,   <span class="n">56</span>,  <span class="n">201</span>,   <span class="n">57</span>,   <span class="n">56</span>,   <span class="n">54</span>,   <span class="n">47</span>,   <span class="n">51</span>,   <span class="n">47</span>,  <span class="n">201</span>,
+<a class="l" name="484" href="#484">484</a>			  <span class="n">201</span>,   <span class="n">45</span>,   <span class="n">45</span>,  <span class="n">201</span>,  <span class="n">201</span>,  <span class="n">201</span>,   <span class="n">33</span>,  <span class="n">201</span>,  <span class="n">201</span>,   <span class="n">98</span>,
+<a class="l" name="485" href="#485">485</a>			  <span class="n">107</span>,  <span class="n">116</span>,  <span class="n">124</span>,  <span class="n">133</span>,  <span class="n">137</span>,  <span class="n">146</span>,  <span class="n">155</span>,  <span class="n">164</span>,  <span class="n">173</span>,  <span class="n">182</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;)
+<a class="l" name="486" href="#486">486</a>		<b>end</b>
+<a class="l" name="487" href="#487">487</a>
+<a class="l" name="488" href="#488">488</a>	<a href="/source/s?defs=yy_def_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_def_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="489" href="#489">489</a>			<span class="c">-- Template for `yy_def&apos;</span>
+<a class="hl" name="490" href="#490">490</a>		<b>once</b>
+<a class="l" name="491" href="#491">491</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (&lt;&lt;
+<a class="l" name="492" href="#492">492</a>			    <span class="n">0</span>,   <span class="n">89</span>,   <span class="n">88</span>,   <span class="n">88</span>,    <span class="n">3</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">90</span>,   <span class="n">90</span>,   <span class="n">89</span>,
+<a class="l" name="493" href="#493">493</a>			   <span class="n">89</span>,   <span class="n">91</span>,   <span class="n">91</span>,   <span class="n">89</span>,   <span class="n">89</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">92</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="494" href="#494">494</a>			   <span class="n">92</span>,   <span class="n">20</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">93</span>,   <span class="n">88</span>,   <span class="n">94</span>,   <span class="n">88</span>,   <span class="n">95</span>,   <span class="n">88</span>,
+<a class="l" name="495" href="#495">495</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">96</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">20</span>,   <span class="n">19</span>,   <span class="n">20</span>,   <span class="n">20</span>,
+<a class="l" name="496" href="#496">496</a>			   <span class="n">97</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">98</span>,   <span class="n">88</span>,   <span class="n">93</span>,   <span class="n">88</span>,   <span class="n">94</span>,
+<a class="l" name="497" href="#497">497</a>			   <span class="n">88</span>,   <span class="n">95</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">96</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="498" href="#498">498</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">99</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="l" name="499" href="#499">499</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,
+<a class="hl" name="500" href="#500">500</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,    <span class="n">0</span>,   <span class="n">88</span>,
+<a class="l" name="501" href="#501">501</a>			   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>,   <span class="n">88</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;)
+<a class="l" name="502" href="#502">502</a>		<b>end</b>
+<a class="l" name="503" href="#503">503</a>
+<a class="l" name="504" href="#504">504</a>	<a href="/source/s?defs=yy_ec_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="505" href="#505">505</a>			<span class="c">-- Template for `yy_ec&apos;</span>
+<a class="l" name="506" href="#506">506</a>		<b>local</b>
+<a class="l" name="507" href="#507">507</a>			<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="508" href="#508">508</a>		<b>once</b>
+<a class="l" name="509" href="#509">509</a>			<b>create</b> <a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>.<a href="/source/s?defs=make_filled" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make_filled</a> (<span class="n">0</span>, <span class="n">0</span>, <span class="n">256</span>)
+<a class="hl" name="510" href="#510">510</a>			<a href="/source/s?defs=yy_ec_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="511" href="#511">511</a>			<a href="/source/s?defs=yy_ec_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="512" href="#512">512</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>)
+<a class="l" name="513" href="#513">513</a>		<b>end</b>
+<a class="l" name="514" href="#514">514</a>
+<a class="l" name="515" href="#515">515</a>	<a href="/source/s?defs=yy_ec_template_1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template_1</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="516" href="#516">516</a>			<span class="c">-- Fill chunk #1 of template for `yy_ec&apos;.</span>
+<a class="l" name="517" href="#517">517</a>		<b>do</b>
+<a class="l" name="518" href="#518">518</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="519" href="#519">519</a>			    <span class="n">0</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">2</span>,
+<a class="hl" name="520" href="#520">520</a>			    <span class="n">3</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">2</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="521" href="#521">521</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="522" href="#522">522</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">2</span>,    <span class="n">1</span>,    <span class="n">4</span>,    <span class="n">5</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">6</span>,    <span class="n">1</span>,
+<a class="l" name="523" href="#523">523</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">7</span>,    <span class="n">8</span>,    <span class="n">1</span>,    <span class="n">8</span>,    <span class="n">8</span>,
+<a class="l" name="524" href="#524">524</a>			    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">9</span>,    <span class="n">1</span>,
+<a class="l" name="525" href="#525">525</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">10</span>,   <span class="n">11</span>,   <span class="n">12</span>,
+<a class="l" name="526" href="#526">526</a>			   <span class="n">13</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">14</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">15</span>,    <span class="n">8</span>,   <span class="n">16</span>,    <span class="n">8</span>,
+<a class="l" name="527" href="#527">527</a>			    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">17</span>,    <span class="n">8</span>,   <span class="n">18</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,
+<a class="l" name="528" href="#528">528</a>			    <span class="n">8</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">8</span>,    <span class="n">1</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">10</span>,
+<a class="l" name="529" href="#529">529</a>
+<a class="hl" name="530" href="#530">530</a>			   <span class="n">11</span>,   <span class="n">12</span>,   <span class="n">13</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">14</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">15</span>,    <span class="n">8</span>,
+<a class="l" name="531" href="#531">531</a>			   <span class="n">16</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,   <span class="n">17</span>,    <span class="n">8</span>,   <span class="n">18</span>,    <span class="n">8</span>,    <span class="n">8</span>,
+<a class="l" name="532" href="#532">532</a>			    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">8</span>,    <span class="n">1</span>,   <span class="n">19</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="533" href="#533">533</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="534" href="#534">534</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="535" href="#535">535</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="536" href="#536">536</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="537" href="#537">537</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="538" href="#538">538</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="539" href="#539">539</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="hl" name="540" href="#540">540</a>			<span class="n">1</span>, <span class="n">200</span>, <span class="n">0</span>)
+<a class="l" name="541" href="#541">541</a>		<b>end</b>
+<a class="l" name="542" href="#542">542</a>
+<a class="l" name="543" href="#543">543</a>	<a href="/source/s?defs=yy_ec_template_2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_ec_template_2</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>: <a href="/source/s?defs=ARRAY" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ARRAY</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>])
+<a class="l" name="544" href="#544">544</a>			<span class="c">-- Fill chunk #2 of template for `yy_ec&apos;.</span>
+<a class="l" name="545" href="#545">545</a>		<b>do</b>
+<a class="l" name="546" href="#546">546</a>			<a href="/source/s?defs=yy_array_subcopy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_array_subcopy</a> (<a href="/source/s?defs=an_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">an_array</a>, &lt;&lt;
+<a class="l" name="547" href="#547">547</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="548" href="#548">548</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="549" href="#549">549</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="hl" name="550" href="#550">550</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="551" href="#551">551</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,
+<a class="l" name="552" href="#552">552</a>			    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>,    <span class="n">1</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;,
+<a class="l" name="553" href="#553">553</a>			<span class="n">1</span>, <span class="n">57</span>, <span class="n">200</span>)
+<a class="l" name="554" href="#554">554</a>		<b>end</b>
+<a class="l" name="555" href="#555">555</a>
+<a class="l" name="556" href="#556">556</a>	<a href="/source/s?defs=yy_meta_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_meta_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="557" href="#557">557</a>			<span class="c">-- Template for `yy_meta&apos;</span>
+<a class="l" name="558" href="#558">558</a>		<b>once</b>
+<a class="l" name="559" href="#559">559</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (&lt;&lt;
+<a class="hl" name="560" href="#560">560</a>			    <span class="n">0</span>,    <span class="n">1</span>,    <span class="n">2</span>,    <span class="n">3</span>,    <span class="n">4</span>,    <span class="n">5</span>,    <span class="n">1</span>,    <span class="n">6</span>,    <span class="n">7</span>,    <span class="n">1</span>,
+<a class="l" name="561" href="#561">561</a>			    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">7</span>,    <span class="n">8</span>,    <span class="n">9</span>,    <span class="n">1</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;)
+<a class="l" name="562" href="#562">562</a>		<b>end</b>
+<a class="l" name="563" href="#563">563</a>
+<a class="l" name="564" href="#564">564</a>	<a href="/source/s?defs=yy_accept_template" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_accept_template</a>: <a href="/source/s?defs=SPECIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SPECIAL</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="565" href="#565">565</a>			<span class="c">-- Template for `yy_accept&apos;</span>
+<a class="l" name="566" href="#566">566</a>		<b>once</b>
+<a class="l" name="567" href="#567">567</a>			<b>Result</b> := <a href="/source/s?defs=yy_fixed_array" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_fixed_array</a> (&lt;&lt;
+<a class="l" name="568" href="#568">568</a>			    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,   <span class="n">14</span>,   <span class="n">14</span>,    <span class="n">0</span>,
+<a class="l" name="569" href="#569">569</a>			    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,   <span class="n">29</span>,   <span class="n">27</span>,   <span class="n">12</span>,   <span class="n">11</span>,   <span class="n">27</span>,
+<a class="hl" name="570" href="#570">570</a>			   <span class="n">10</span>,   <span class="n">10</span>,   <span class="n">15</span>,   <span class="n">20</span>,   <span class="n">27</span>,   <span class="n">27</span>,   <span class="n">17</span>,   <span class="n">27</span>,   <span class="n">14</span>,   <span class="n">13</span>,
+<a class="l" name="571" href="#571">571</a>			   <span class="n">21</span>,   <span class="n">22</span>,   <span class="n">24</span>,   <span class="n">23</span>,   <span class="n">25</span>,   <span class="n">26</span>,   <span class="n">12</span>,    <span class="n">0</span>,   <span class="n">10</span>,   <span class="n">10</span>,
+<a class="l" name="572" href="#572">572</a>			    <span class="n">2</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">1</span>,   <span class="n">15</span>,    <span class="n">0</span>,   <span class="n">18</span>,   <span class="n">17</span>,
+<a class="l" name="573" href="#573">573</a>			   <span class="n">19</span>,   <span class="n">14</span>,   <span class="n">13</span>,   <span class="n">21</span>,   <span class="n">24</span>,   <span class="n">23</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,
+<a class="l" name="574" href="#574">574</a>			    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">1</span>,   <span class="n">16</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,
+<a class="l" name="575" href="#575">575</a>			    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">5</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">6</span>,
+<a class="l" name="576" href="#576">576</a>			    <span class="n">3</span>,    <span class="n">0</span>,    <span class="n">0</span>,    <span class="n">9</span>,    <span class="n">8</span>,    <span class="n">4</span>,    <span class="n">0</span>,    <span class="n">7</span>,    <span class="n">0</span>, <a href="/source/s?defs=yy_Dummy" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yy_Dummy</a>&gt;&gt;)
+<a class="l" name="577" href="#577">577</a>		<b>end</b>
+<a class="l" name="578" href="#578">578</a>
+<a class="l" name="579" href="#579">579</a><b>feature</b> {<a href="/source/s?defs=NONE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NONE</a>} <span class="c">-- Constants</span>
+<a class="hl" name="580" href="#580">580</a>
+<a class="l" name="581" href="#581">581</a>	<a href="/source/s?defs=yyJam_base" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyJam_base</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">201</span>
+<a class="l" name="582" href="#582">582</a>			<span class="c">-- Position in `yy_nxt&apos;/`yy_chk&apos; tables</span>
+<a class="l" name="583" href="#583">583</a>			<span class="c">-- where default jam table starts</span>
+<a class="l" name="584" href="#584">584</a>
+<a class="l" name="585" href="#585">585</a>	<a href="/source/s?defs=yyJam_state" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyJam_state</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">88</span>
+<a class="l" name="586" href="#586">586</a>			<span class="c">-- State id corresponding to jam state</span>
+<a class="l" name="587" href="#587">587</a>
+<a class="l" name="588" href="#588">588</a>	<a href="/source/s?defs=yyTemplate_mark" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyTemplate_mark</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">89</span>
+<a class="l" name="589" href="#589">589</a>			<span class="c">-- Mark between normal states and templates</span>
+<a class="hl" name="590" href="#590">590</a>
+<a class="l" name="591" href="#591">591</a>	<a href="/source/s?defs=yyNull_equiv_class" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyNull_equiv_class</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">1</span>
+<a class="l" name="592" href="#592">592</a>			<span class="c">-- Equivalence code for NULL character</span>
+<a class="l" name="593" href="#593">593</a>
+<a class="l" name="594" href="#594">594</a>	<a href="/source/s?defs=yyReject_used" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyReject_used</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a> = <b>false</b>
+<a class="l" name="595" href="#595">595</a>			<span class="c">-- Is `reject&apos; called?</span>
+<a class="l" name="596" href="#596">596</a>
+<a class="l" name="597" href="#597">597</a>	<a href="/source/s?defs=yyVariable_trail_context" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyVariable_trail_context</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a> = <b>false</b>
+<a class="l" name="598" href="#598">598</a>			<span class="c">-- Is there a regular expression with</span>
+<a class="l" name="599" href="#599">599</a>			<span class="c">-- both leading and trailing parts having</span>
+<a class="hl" name="600" href="#600">600</a>			<span class="c">-- variable length?</span>
+<a class="l" name="601" href="#601">601</a>
+<a class="l" name="602" href="#602">602</a>	<a href="/source/s?defs=yyReject_or_variable_trail_context" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyReject_or_variable_trail_context</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a> = <b>false</b>
+<a class="l" name="603" href="#603">603</a>			<span class="c">-- Is `reject&apos; called or is there a</span>
+<a class="l" name="604" href="#604">604</a>			<span class="c">-- regular expression with both leading</span>
+<a class="l" name="605" href="#605">605</a>			<span class="c">-- and trailing parts having variable length?</span>
+<a class="l" name="606" href="#606">606</a>
+<a class="l" name="607" href="#607">607</a>	<a href="/source/s?defs=yyNb_rules" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyNb_rules</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">28</span>
+<a class="l" name="608" href="#608">608</a>			<span class="c">-- Number of rules</span>
+<a class="l" name="609" href="#609">609</a>
+<a class="hl" name="610" href="#610">610</a>	<a href="/source/s?defs=yyEnd_of_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyEnd_of_buffer</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">29</span>
+<a class="l" name="611" href="#611">611</a>			<span class="c">-- End of buffer rule code</span>
+<a class="l" name="612" href="#612">612</a>
+<a class="l" name="613" href="#613">613</a>	<a href="/source/s?defs=yyLine_used" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyLine_used</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a> = <b>false</b>
+<a class="l" name="614" href="#614">614</a>			<span class="c">-- Are line and column numbers used?</span>
+<a class="l" name="615" href="#615">615</a>
+<a class="l" name="616" href="#616">616</a>	<a href="/source/s?defs=yyPosition_used" class="intelliWindow-symbol" data-definition-place="undefined-in-file">yyPosition_used</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a> = <b>false</b>
+<a class="l" name="617" href="#617">617</a>			<span class="c">-- Is `position&apos; used?</span>
+<a class="l" name="618" href="#618">618</a>
+<a class="l" name="619" href="#619">619</a>	<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0b0</span>
+<a class="hl" name="620" href="#620">620</a>	<a href="/source/s?defs=S_PREPROC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_PREPROC</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0B1</span>
+<a class="l" name="621" href="#621">621</a>	<a href="/source/s?defs=S_READLINE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_READLINE</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0x2</span>
+<a class="l" name="622" href="#622">622</a>	<a href="/source/s?defs=S_SKIP_EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_SKIP_EOL</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0X3</span>
+<a class="l" name="623" href="#623">623</a>	<a href="/source/s?defs=S_NAME" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_NAME</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0c4</span>
+<a class="l" name="624" href="#624">624</a>	<a href="/source/s?defs=S_VALUE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_VALUE</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">0C5</span>
+<a class="l" name="625" href="#625">625</a>	<a href="/source/s?defs=S_EMPTY_LINE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">S_EMPTY_LINE</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a> = <span class="n">6</span>
+<a class="l" name="626" href="#626">626</a>			<span class="c">-- Start condition codes</span>
+<a class="l" name="627" href="#627">627</a>
+<a class="l" name="628" href="#628">628</a><b>feature</b> <span class="c">-- User-defined features</span>
+<a class="l" name="629" href="#629">629</a>
+<a class="hl" name="630" href="#630">630</a>
+<a class="l" name="631" href="#631">631</a>
+<a class="l" name="632" href="#632">632</a><b>feature</b> {<a href="/source/s?defs=NONE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NONE</a>} <span class="c">-- Initialization</span>
+<a class="l" name="633" href="#633">633</a>
+<a class="l" name="634" href="#634">634</a>	<a href="/source/s?defs=make" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make</a>
+<a class="l" name="635" href="#635">635</a>			<span class="c">-- Create a new scanner.</span>
+<a class="l" name="636" href="#636">636</a>		<b>do</b>
+<a class="l" name="637" href="#637">637</a>			<a href="/source/s?defs=make_with_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">make_with_buffer</a> (<a href="/source/s?defs=Empty_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Empty_buffer</a>)
+<a class="l" name="638" href="#638">638</a>			<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <span class="s">&quot;&quot;</span>
+<a class="l" name="639" href="#639">639</a>			<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <span class="n">1</span>
+<a class="hl" name="640" href="#640">640</a>		<b>end</b>
+<a class="l" name="641" href="#641">641</a>
+<a class="l" name="642" href="#642">642</a><b>feature</b> <span class="c">-- Initialization</span>
+<a class="l" name="643" href="#643">643</a>
+<a class="l" name="644" href="#644">644</a>	<a href="/source/s?defs=reset" class="intelliWindow-symbol" data-definition-place="undefined-in-file">reset</a>
+<a class="l" name="645" href="#645">645</a>			<span class="c">-- Reset scanner before scanning next input.</span>
+<a class="l" name="646" href="#646">646</a>		<b>do</b>
+<a class="l" name="647" href="#647">647</a>			<a class="d intelliWindow-symbol" href="#reset_compressed_scanner_skeleton" data-definition-place="defined-in-file">reset_compressed_scanner_skeleton</a>
+<a class="l" name="648" href="#648">648</a>			<a href="/source/s?defs=last_string_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">last_string_value</a> := <span class="s">&quot;&quot;</span>
+<a class="l" name="649" href="#649">649</a>			<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <span class="n">1</span>
+<a class="hl" name="650" href="#650">650</a>		<b>end</b>
+<a class="l" name="651" href="#651">651</a>
+<a class="l" name="652" href="#652">652</a><b>feature</b> <span class="c">-- Access</span>
+<a class="l" name="653" href="#653">653</a>
+<a class="l" name="654" href="#654">654</a>	<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a>: <a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>
+<a class="l" name="655" href="#655">655</a>			<span class="c">-- Current line number</span>
+<a class="l" name="656" href="#656">656</a>
+<a class="l" name="657" href="#657">657</a>	<a href="/source/s?defs=include_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack</a>: <a href="/source/s?defs=DS_STACK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DS_STACK</a> [<a href="/source/s?defs=YY_BUFFER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">YY_BUFFER</a>]
+<a class="l" name="658" href="#658">658</a>			<span class="c">-- Input buffers not completely parsed yet</span>
+<a class="l" name="659" href="#659">659</a>		<b>deferred</b>
+<a class="hl" name="660" href="#660">660</a>		<b>ensure</b>
+<a class="l" name="661" href="#661">661</a>			<a href="/source/s?defs=include_stack_not_void" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack_not_void</a>: <b>Result</b> /= <b>Void</b>
+<a class="l" name="662" href="#662">662</a>			<a href="/source/s?defs=no_void_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">no_void_buffer</a>: <b>not</b> <b>Result</b>.<a href="/source/s?defs=has_void" class="intelliWindow-symbol" data-definition-place="undefined-in-file">has_void</a>
+<a class="l" name="663" href="#663">663</a>		<b>end</b>
+<a class="l" name="664" href="#664">664</a>
+<a class="l" name="665" href="#665">665</a>	<a href="/source/s?defs=line_nb_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb_stack</a>: <a href="/source/s?defs=DS_STACK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DS_STACK</a> [<a href="/source/s?defs=INTEGER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTEGER</a>]
+<a class="l" name="666" href="#666">666</a>			<span class="c">-- Line numbers in the corresponding input buffers in `include_stack&apos;</span>
+<a class="l" name="667" href="#667">667</a>		<b>deferred</b>
+<a class="l" name="668" href="#668">668</a>		<b>ensure</b>
+<a class="l" name="669" href="#669">669</a>			<a href="/source/s?defs=line_nb_stack_not_void" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb_stack_not_void</a>: <b>Result</b> /= <b>Void</b>
+<a class="hl" name="670" href="#670">670</a>			<a href="/source/s?defs=same_count" class="intelliWindow-symbol" data-definition-place="undefined-in-file">same_count</a>: <b>Result</b>.<a href="/source/s?defs=count" class="intelliWindow-symbol" data-definition-place="undefined-in-file">count</a> = <a href="/source/s?defs=include_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack</a>.<a href="/source/s?defs=count" class="intelliWindow-symbol" data-definition-place="undefined-in-file">count</a>
+<a class="l" name="671" href="#671">671</a>		<b>end</b>
+<a class="l" name="672" href="#672">672</a>
+<a class="l" name="673" href="#673">673</a><b>feature</b> <span class="c">-- Status report</span>
+<a class="l" name="674" href="#674">674</a>
+<a class="l" name="675" href="#675">675</a>	<a href="/source/s?defs=ignored" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ignored</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a>
+<a class="l" name="676" href="#676">676</a>			<span class="c">-- Is current line ignored?</span>
+<a class="l" name="677" href="#677">677</a>		<b>deferred</b>
+<a class="l" name="678" href="#678">678</a>		<b>end</b>
+<a class="l" name="679" href="#679">679</a>
+<a class="hl" name="680" href="#680">680</a><b>feature</b> <span class="c">-- Element change</span>
+<a class="l" name="681" href="#681">681</a>
+<a class="l" name="682" href="#682">682</a>	<a href="/source/s?defs=wrap" class="intelliWindow-symbol" data-definition-place="undefined-in-file">wrap</a>: <a href="/source/s?defs=BOOLEAN" class="intelliWindow-symbol" data-definition-place="undefined-in-file">BOOLEAN</a>
+<a class="l" name="683" href="#683">683</a>			<span class="c">-- Should current scanner terminate when end of file is reached?</span>
+<a class="l" name="684" href="#684">684</a>			<span class="c">-- True unless an include file was being processed.</span>
+<a class="l" name="685" href="#685">685</a>		<b>local</b>
+<a class="l" name="686" href="#686">686</a>			<a href="/source/s?defs=l_old_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_old_buffer</a>: <a href="/source/s?defs=YY_BUFFER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">YY_BUFFER</a>
+<a class="l" name="687" href="#687">687</a>			<a href="/source/s?defs=a_file" class="intelliWindow-symbol" data-definition-place="undefined-in-file">a_file</a>: <a href="/source/s?defs=KI_CHARACTER_INPUT_STREAM" class="intelliWindow-symbol" data-definition-place="undefined-in-file">KI_CHARACTER_INPUT_STREAM</a>
+<a class="l" name="688" href="#688">688</a>		<b>do</b>
+<a class="l" name="689" href="#689">689</a>			<b>if</b> <b>not</b> <a href="/source/s?defs=include_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack</a>.<a href="/source/s?defs=is_empty" class="intelliWindow-symbol" data-definition-place="undefined-in-file">is_empty</a> <b>then</b>
+<a class="hl" name="690" href="#690">690</a>				<a href="/source/s?defs=l_old_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_old_buffer</a> := <a href="/source/s?defs=input_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">input_buffer</a>
+<a class="l" name="691" href="#691">691</a>				<a href="/source/s?defs=set_input_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_input_buffer</a> (<a href="/source/s?defs=include_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack</a>.<a href="/source/s?defs=item" class="intelliWindow-symbol" data-definition-place="undefined-in-file">item</a>)
+<a class="l" name="692" href="#692">692</a>				<a href="/source/s?defs=line_nb" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb</a> := <a href="/source/s?defs=line_nb_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb_stack</a>.<a href="/source/s?defs=item" class="intelliWindow-symbol" data-definition-place="undefined-in-file">item</a>
+<a class="l" name="693" href="#693">693</a>				<a href="/source/s?defs=line_nb_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line_nb_stack</a>.<a href="/source/s?defs=remove" class="intelliWindow-symbol" data-definition-place="undefined-in-file">remove</a>
+<a class="l" name="694" href="#694">694</a>				<a href="/source/s?defs=include_stack" class="intelliWindow-symbol" data-definition-place="undefined-in-file">include_stack</a>.<a href="/source/s?defs=remove" class="intelliWindow-symbol" data-definition-place="undefined-in-file">remove</a>
+<a class="l" name="695" href="#695">695</a>				<b>if</b> <a href="/source/s?defs=attached" class="intelliWindow-symbol" data-definition-place="undefined-in-file">attached</a> {<a href="/source/s?defs=YY_FILE_BUFFER" class="intelliWindow-symbol" data-definition-place="undefined-in-file">YY_FILE_BUFFER</a>} <a href="/source/s?defs=l_old_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_old_buffer</a> <b>as</b> <a href="/source/s?defs=l_old_file_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_old_file_buffer</a> <b>then</b>
+<a class="l" name="696" href="#696">696</a>					<a href="/source/s?defs=a_file" class="intelliWindow-symbol" data-definition-place="undefined-in-file">a_file</a> := <a href="/source/s?defs=l_old_file_buffer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">l_old_file_buffer</a>.<a href="/source/s?defs=file" class="intelliWindow-symbol" data-definition-place="undefined-in-file">file</a>
+<a class="l" name="697" href="#697">697</a>					<b>if</b> <a href="/source/s?defs=a_file" class="intelliWindow-symbol" data-definition-place="undefined-in-file">a_file</a>.<a href="/source/s?defs=is_closable" class="intelliWindow-symbol" data-definition-place="undefined-in-file">is_closable</a> <b>then</b>
+<a class="l" name="698" href="#698">698</a>						<a href="/source/s?defs=a_file" class="intelliWindow-symbol" data-definition-place="undefined-in-file">a_file</a>.<a href="/source/s?defs=close" class="intelliWindow-symbol" data-definition-place="undefined-in-file">close</a>
+<a class="l" name="699" href="#699">699</a>					<b>end</b>
+<a class="hl" name="700" href="#700">700</a>				<b>end</b>
+<a class="l" name="701" href="#701">701</a>				<a href="/source/s?defs=set_start_condition" class="intelliWindow-symbol" data-definition-place="undefined-in-file">set_start_condition</a> (<a href="/source/s?defs=INITIAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INITIAL</a>)
+<a class="l" name="702" href="#702">702</a>			<b>else</b>
+<a class="l" name="703" href="#703">703</a>				<b>Result</b> := <b>True</b>
+<a class="l" name="704" href="#704">704</a>			<b>end</b>
+<a class="l" name="705" href="#705">705</a>		<b>end</b>
+<a class="l" name="706" href="#706">706</a>
+<a class="l" name="707" href="#707">707</a><b>feature</b> <span class="c">-- Output</span>
+<a class="l" name="708" href="#708">708</a>
+<a class="l" name="709" href="#709">709</a>	<a href="/source/s?defs=output" class="intelliWindow-symbol" data-definition-place="undefined-in-file">output</a> (<a href="/source/s?defs=a_text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">a_text</a>: <b>like</b> <a href="/source/s?defs=text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text</a>)
+<a class="hl" name="710" href="#710">710</a>			<span class="c">-- Silently ignore `a_text&apos;.</span>
+<a class="l" name="711" href="#711">711</a>		<b>do</b>
+<a class="l" name="712" href="#712">712</a>		<b>end</b>
+<a class="l" name="713" href="#713">713</a>
+<a class="l" name="714" href="#714">714</a>	<a href="/source/s?defs=special_chars" class="intelliWindow-symbol" data-definition-place="undefined-in-file">special_chars</a>
+<a class="l" name="715" href="#715">715</a>		<b>do</b>
+<a class="l" name="716" href="#716">716</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := <span class="s">&quot;abc&quot;</span>
+<a class="l" name="717" href="#717">717</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := &apos;<a href="/source/s?defs=abc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">abc</a>&apos; <span class="c">-- not a valid character</span>
+<a class="l" name="718" href="#718">718</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := <span class="s">&quot;%&quot;&quot;</span>
+<a class="l" name="719" href="#719">719</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := <span class="s">&quot;%&apos;&quot;</span>
+<a class="hl" name="720" href="#720">720</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := <span class="s">&apos;%&apos;&apos;</span>
+<a class="l" name="721" href="#721">721</a>			<a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a> := <span class="s">&apos;%&quot;&apos;</span>
+<a class="l" name="722" href="#722">722</a>		<b>end</b>
+<a class="l" name="723" href="#723">723</a><b>end</b>
+<a class="l" name="724" href="#724">724</a></body>
+</html>

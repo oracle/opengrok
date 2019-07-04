@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+   <!-- Remove JFlex generated files from output -->
+  <Match>
+      <Field name="zzEOFDone"/>
+      <Bug code="UrF"/>
+  </Match>
+
+  <Match>
+      <Method name="yylex"/>
+      <Bug code="Bx"/>
+  </Match>
+
+  <Match>
+      <Or>
+         <Method name="zzUnpackAction"/>
+         <Method name="zzUnpackAttribute"/>
+         <Method name="zzUnpackRowMap"/>
+         <Method name="zzUnpackTrans"/>
+      </Or>
+      <Bug code="DLS"/>
+  </Match>
+
+  <Match>
+      <Method name="reInit"/>
+      <Bug code="EI2"/>
+  </Match>
+
+  <Match>
+      <Or>
+          <Field name="yychar"/>
+          <Field name="yycolumn"/>
+          <Field name="yyline"/>
+          <Field name="zzAtBOL"/>
+      </Or>
+      <Bug code="UrF"/>
+  </Match>
+
+  <!-- Some of the lex classes rename yylex() to next() -->
+  <Match>
+    <And>
+      <Or>
+        <Class name="org.opengrok.indexer.search.context.PlainLineTokenizer"/>
+        <Class name="org.opengrok.indexer.analysis.tcl.TclSymbolTokenizer"/>
+      </Or>
+      <Method name="yylex"/>
+    </And>
+    <Bug code="SF"/>
+  </Match>
+
+  <!-- ignore generated analysis classes which don't need to override equals or hashcode -->
+  <Match>
+      <Class name="~org\.opengrok\.analysis.*"/>
+      <Bug code="Eq"/>
+  </Match>
+
+</FindBugsFilter>

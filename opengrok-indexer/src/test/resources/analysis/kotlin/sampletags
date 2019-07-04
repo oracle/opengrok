@@ -1,0 +1,27 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+org.jetbrains.anko	grok.kt	/^package org.jetbrains.anko$/;"	packages	line:19
+android.util.Log	grok.kt	/^import android.util.Log$/;"	imports	line:21
+AnkoLogger	grok.kt	/^interface AnkoLogger {$/;"	interfaces	line:36
+loggerTag:	grok.kt	/^    val loggerTag: String$/;"	constants	line:41
+AnkoLogger	grok.kt	/^fun AnkoLogger(clazz: Class<*>): AnkoLogger = object : AnkoLogger {$/;"	methods	line:45
+AnkoLogger	grok.kt	/^fun AnkoLogger(tag: String): AnkoLogger = object : AnkoLogger {$/;"	methods	line:49
+AnkoLogger	grok.kt	/^fun AnkoLogger.verbose(message: Any?, thr: Throwable? = null) {$/;"	methods	line:69
+AnkoLogger	grok.kt	/^fun AnkoLogger.debug(message: Any?, thr: Throwable? = null) {$/;"	methods	line:86
+AnkoLogger	grok.kt	/^fun AnkoLogger.info(message: Any?, thr: Throwable? = null) {$/;"	methods	line:103
+AnkoLogger	grok.kt	/^fun AnkoLogger.warn(message: Any?, thr: Throwable? = null) {$/;"	methods	line:120
+AnkoLogger	grok.kt	/^fun AnkoLogger.error(message: Any?, thr: Throwable? = null) {$/;"	methods	line:137
+AnkoLogger	grok.kt	/^fun AnkoLogger.wtf(message: Any?, thr: Throwable? = null) {$/;"	methods	line:153
+tag	grok.kt	/^    val tag = loggerTag$/;"	constants	line:172
+tag	grok.kt	/^    val tag = loggerTag$/;"	constants	line:189
+tag	grok.kt	/^    val tag = loggerTag$/;"	constants	line:206
+tag	grok.kt	/^    val tag = loggerTag$/;"	constants	line:223
+tag	grok.kt	/^    val tag = loggerTag$/;"	constants	line:240
+tag	grok.kt	/^    val tag = logger.loggerTag$/;"	constants	line:258
+getTag	grok.kt	/^private fun getTag(clazz: Class<*>): String {$/;"	methods	line:268
+tag	grok.kt	/^    val tag = clazz.simpleName$/;"	constants	line:269

@@ -1,0 +1,16 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+test-mapcar-basics	grok.lsp	/^(define-test test-mapcar-basics$/;"	function	line:15
+test-mapcar-multiple-lists	grok.lsp	/^(define-test test-mapcar-multiple-lists$/;"	function	line:25
+test-transpose-using-mapcar	grok.lsp	/^(define-test test-transpose-using-mapcar$/;"	function	line:33
+test-reduce-basics	grok.lsp	/^(define-test test-reduce-basics$/;"	function	line:51
+test-reduce-right-to-left	grok.lsp	/^(define-test test-reduce-right-to-left$/;"	function	line:59
+test-reduce-with-initial-value	grok.lsp	/^(define-test test-reduce-with-initial-value$/;"	function	line:66
+WRONG-FUNCTION-2	grok.lsp	/^(defun WRONG-FUNCTION-2 (a b) (a))$/;"	function	line:72
+WRONG-FUNCTION-3	grok.lsp	/^(defun WRONG-FUNCTION-3 (a b) (a))$/;"	function	line:73
+test-mapcar-and-reduce	grok.lsp	/^(define-test test-mapcar-and-reduce$/;"	function	line:75

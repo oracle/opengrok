@@ -1,0 +1,55 @@
+koans.23-meta	# 195:(ns koans.23-meta
+:require
+koan-engine.core
+:refer
+:all
+giants		# 198:(def giants
+Giants
+:league
+meditations	# 202:(meditations
+__
+giants
+__
+:division
+Giants
+__
+:prime
+catch
+ClassCastException
+e
+__		# 218:  (= __
+:foo
+:bar
+:a
+:b
+:b
+:c
+__		# 222:  (= __
+:a
+:b
+:foo
+:bar
+:b
+:c
+__		# 226:  (= __
+charAt
+String
+giants		# 229:  (= 8 (let [giants
+Giants
+:world-series-titles
+:world-series-titles
+giants
+__
+:world-series-titles
+giants
+:league		# 237:  (= {:league
+:park
+giants
+__
+__
+__
+giants
+:league
+__
+giants
+:league

@@ -1,0 +1,205 @@
+<%--
+$Id$
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
+--%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="opengrok" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@page import="java.util.Comparator"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="java.util.LinkedList"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.TreeSet"%>
+<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="org.opengrok.indexer.configuration.Project"%>
+<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
+<%@page import="org.opengrok.indexer.web.PageConfig"%>
+<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
+<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    pageContext.setAttribute("pageConfig", cfg);
+    cfg.addScript("repos");
+    String messages;
+
+    printMessages(out, cfg.getMessages());
+
+    Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
+        public int compare(RepositoryInfo r1, RepositoryInfo r2) {
+            return r1.getDirectoryName().compareTo(r2.getDirectoryName());
+        }
+    };
+    
+    ProjectHelper pHelper = cfg.getProjectHelper();
+    if (pHelper.getAllProjects().size() > 0) {
+        Set<Group> groups = pHelper.getGroups();
+        if (groups.size() > 0) {
+            // recursively print all groups
+            %>
+
+            <div class="panel-group projects">
+                <div class="toggle-buttons">
+                    <a href="#" class="accordion_show_all">
+                        <button>Show all</button>
+                    </a>
+                    <a href="#" class="accordion_hide_all">
+                        <button>Hide all</button>
+                    </a>
+                </div>
+            <%
+            LinkedList<Group> stack = new LinkedList<>();
+            for ( Group x : groups ) {
+                if (x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
+                    // the flag here represents the state of the group - open/close
+                    x.setFlag(0);
+                    stack.addLast(x);
+                }
+            }
+
+            while (!stack.isEmpty()) {
+                Group group = stack.element();
+
+                if (group.getFlag() > 0) {
+                    // already processed
+                    stack.pollFirst();
+                    %></div><!-- body -->
+                    </div><!-- panel --><%
+                    continue;
+                }
+
+                stack.element().setFlag(1);
+
+                Set<Group> subgroups = new TreeSet<>(pHelper.getSubgroups(group));
+                for (Iterator<Group> it = subgroups.iterator(); it.hasNext();) {
+                    Group x = it.next();
+                    if (cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
+                        x.setFlag(0);
+                    } else {
+                        it.remove();
+                    }
+                }
+                // add all the subgroups to the beginning respecting the order
+                stack.addAll(0, subgroups);
+
+                %><div class="panel">
+                    <div class="panel-heading-accordion">
+                        
+                        <h4 class="clearfix">
+                            <span class="pull-left">
+                                <span class="name"><%= Util.htmlize(group.getName())%></span>
+                                <%
+                                if (!(messages = MessagesUtils.messagesToJson(group)).isEmpty()) { %>
+                                    <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                <% } %>
+                                <small>
+                                    [<a href="#" class="projects_select_all">select all</a>]
+                                    (<span title="Number of groups directly in this group"><%= pHelper.getSubgroups(group).size() %></span> +
+                                        <span title="Number of projects directly in this group"><%= pHelper.getAllGrouped(group).size() %></span>)
+                                </small>
+                            </span>
+                            <span class="pull-right">
+                                <span class="fold <%= pHelper.hasFavourite(group) ? "fold-up" : "fold-down"%>"></span>
+                            </span>
+                        </h4>
+                    </div>
+                        <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
+                         <% if (pHelper.hasFavourite(group)
+                            || (pHelper.getAllGrouped(group).size() > 0 && pHelper.getAllGrouped(group).size() <= cfg.getGroupsCollapseThreshold())) {
+                        %>data-accordion-visible="true"<% } %>>
+                <%
+                if (pHelper.getAllGrouped(group).size() > 0) {
+                %>
+                    <table>
+                        <opengrok:repositories
+                                pageConfig="${pageConfig}"
+                                repositories="<%= pHelper.getRepositories(group) %>"
+                                />
+
+                        <opengrok:projects
+                                projects="<%= pHelper.getProjects(group) %>"
+                        />
+                    </table><%
+                } else if ( pHelper.getAllGrouped(group).size() <= 0 && !pHelper.hasAllowedSubgroup(group) ) {
+                    %>No projects<%
+                }
+            }
+            %></div><%
+        }
+
+        // print the rest of projects which don't have a group
+        Set<Project> projects = pHelper.getAllUngrouped();
+        if (projects.size() > 0) { %>
+            <div class="panel-group projects">
+                <% if (groups.size() > 0) { %>
+                    <div class="toggle-buttons">
+                        <a href="#" class="accordion_show_all">
+                            <button>Show all</button>
+                        </a>
+                        <a href="#" class="accordion_hide_all">
+                            <button>Hide all</button>
+                        </a>
+                    </div>
+                <% } %>
+                <div class="panel">
+                    <% if (groups.size() > 0) {%>
+                        <div class="panel-heading-accordion">
+                            <h4 class="clearfix">
+                                <span class="pull-left">
+                                    <span class="name">Other</span>
+                                    <%
+                                    if (!(messages = messagesToJson("other")).isEmpty()) { %>
+                                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                    <% } %>
+                                    <small>
+                                        [<a href="#" class="projects_select_all">select all</a>]
+                                        (<span title="Number of projects inside"><%= projects.size() %></span>)
+                                    </small>
+                                </span>
+                                <span class="pull-right">
+                                    <span class="fold <%= pHelper.hasUngroupedFavourite() ? "fold-up" : "fold-down"%>"></span>
+                                </span>
+                            </h4>
+                        </div>
+                    <% } %>
+                    <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                         <% if (pHelper.hasUngroupedFavourite()
+                                || (projects.size() > 0 && projects.size() <= cfg.getGroupsCollapseThreshold())) {
+                        %>data-accordion-visible="true"<% } %>>
+                        <table>
+                            <opengrok:repositories
+                                    pageConfig="${pageConfig}"
+                                    repositories="<%= pHelper.getUngroupedRepositories() %>"
+                            />
+                            <opengrok:projects
+                                    projects="<%= pHelper.getUngroupedProjects() %>"
+                            />
+                        </table>
+                    </div>
+                </div>
+            </div><%
+        }
+    }
+}
+%>
+<br/>
+<br/>

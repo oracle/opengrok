@@ -1,0 +1,197 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+certStoreTypes	grok.psm1	/^$certStoreTypes = @'$/;"	variable	line:25
+pkiInternalsTypes	grok.psm1	/^$pkiInternalsTypes = @'$/;"	variable	line:29
+gpoType	grok.psm1	/^$gpoType = @'$/;"	variable	line:38
+ApplicationPolicies	grok.psm1	/^$ApplicationPolicies = @{$/;"	variable	line:43
+ExtendedKeyUsages	grok.psm1	/^$ExtendedKeyUsages = @{$/;"	variable	line:57
+Get-LabCertificate	grok.psm1	/^function Get-LabCertificate$/;"	function	line:67	signature:()
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ParameterSetName = 'Find')]$/;"	variable	line:72
+SearchString	grok.psm1	/^        [string]$SearchString,$/;"	variable	line:73
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ParameterSetName = 'Find')]$/;"	variable	line:75
+FindType	grok.psm1	/^        [System.Security.Cryptography.X509Certificates.X509FindType]$FindType,$/;"	variable	line:76
+Location	grok.psm1	/^        [System.Security.Cryptography.X509Certificates.CertStoreLocation]$Location,$/;"	variable	line:78
+Store	grok.psm1	/^        [System.Security.Cryptography.X509Certificates.StoreName]$Store,$/;"	variable	line:80
+ServiceName	grok.psm1	/^        [string]$ServiceName,$/;"	variable	line:82
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ParameterSetName = 'All')]$/;"	variable	line:84
+All	grok.psm1	/^        [switch]$All,$/;"	variable	line:85
+IncludeServices	grok.psm1	/^        [switch]$IncludeServices,$/;"	variable	line:88
+Password	grok.psm1	/^        [string]$Password = 'AL',$/;"	variable	line:90
+ComputerName	grok.psm1	/^        [string[]]$ComputerName$/;"	variable	line:93
+variables	grok.psm1	/^    $variables = Get-Variable -Name PSBoundParameters$/;"	variable	line:98
+functions	grok.psm1	/^    $functions = Get-Command -Name Get-Certificate2, Sync-Parameter$/;"	variable	line:99
+x	grok.psm1	/^    $x = $PSBoundParameters$/;"	variable	line:101
+computer	grok.psm1	/^    foreach ($computer in $ComputerName)$/;"	variable	line:103
+ComputerName	grok.psm1	/^        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -S/;"	variable	line:105
+args	grok.psm1	/^            Add-Type -TypeDefinition $args[0]$/;"	variable	line:106
+certStoreTypes	grok.psm1	/^        } -ArgumentList $certStoreTypes -NoDisplay$/;"	variable	line:107
+ComputerName	grok.psm1	/^        Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -Sc/;"	variable	line:109
+variables	grok.psm1	/^			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force$/;"	variable	line:110
+variables	grok.psm1	/^        } -Variable $variables -Function $functions -PassThru$/;"	variable	line:114
+Add-LabCertificate	grok.psm1	/^function Add-LabCertificate$/;"	function	line:122	signature:()
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName /;"	variable	line:127
+Path	grok.psm1	/^        [string]$Path,$/;"	variable	line:128
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName /;"	variable	line:130
+Cert	grok.psm1	/^        [byte[]]$Cert,$/;"	variable	line:131
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]$/;"	variable	line:133
+Store	grok.psm1	/^        [System.Security.Cryptography.X509Certificates.StoreName]$Store,$/;"	variable	line:134
+true	grok.psm1	/^        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]$/;"	variable	line:136
+Location	grok.psm1	/^        [System.Security.Cryptography.X509Certificates.CertStoreLocation]$Location,$/;"	variable	line:137
+true	grok.psm1	/^        [Parameter(ValueFromPipelineByPropertyName = $true)]$/;"	variable	line:139
+ServiceName	grok.psm1	/^        [string]$ServiceName,$/;"	variable	line:140
+true	grok.psm1	/^        [Parameter(ValueFromPipelineByPropertyName = $true)]$/;"	variable	line:142
+CertificateType	grok.psm1	/^        [string]$CertificateType = 'CER',$/;"	variable	line:144
+Password	grok.psm1	/^        [string]$Password = 'AL',$/;"	variable	line:146
+true	grok.psm1	/^        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]$/;"	variable	line:148
+ComputerName	grok.psm1	/^        [string[]]$ComputerName$/;"	variable	line:149
+variables	grok.psm1	/^        $variables = Get-Variable -Name PSBoundParameters$/;"	variable	line:159
+functions	grok.psm1	/^        $functions = Get-Command -Name Add-Certificate2, Sync-Parameter$/;"	variable	line:160
+ComputerName	grok.psm1	/^        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -S/;"	variable	line:162
+args	grok.psm1	/^            Add-Type -TypeDefinition $args[0]$/;"	variable	line:163
+certStoreTypes	grok.psm1	/^        } -ArgumentList $certStoreTypes -NoDisplay$/;"	variable	line:164
+ComputerName	grok.psm1	/^        Invoke-LabCommand -ActivityName 'Storing certificate bytes on target machine' -ComputerN/;"	variable	line:166
+tempFile	grok.psm1	/^            $tempFile = [System.IO.Path]::GetTempFileName()$/;"	variable	line:168
+tempFile	grok.psm1	/^            [System.IO.File]::WriteAllBytes($tempFile, $args[0])$/;"	variable	line:169
+tempFile	grok.psm1	/^            Write-Verbose "Cert is written to '$tempFile'"$/;"	variable	line:170
+Cert	grok.psm1	/^        } -ArgumentList (,$Cert) -Variable $variables$/;"	variable	line:172
+ComputerName	grok.psm1	/^        Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -Scrip/;"	variable	line:174
+variables	grok.psm1	/^			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force$/;"	variable	line:175
+ALBoundParameters.Add	grok.psm1	/^            $ALBoundParameters.Add('Path', $tempFile)$/;"	variable	line:177
+ALBoundParameters.Remove	grok.psm1	/^            $ALBoundParameters.Remove('Cert')$/;"	variable	line:178
+tempFile	grok.psm1	/^            Remove-Item -Path $tempFile$/;"	variable	line:180
+variables	grok.psm1	/^        } -Variable $variables -Function $functions -PassThru$/;"	variable	line:182
+Install-LabCAMachine	grok.psm1	/^function Install-LabCAMachine$/;"	function	line:196	signature:()
+Machine	grok.psm1	/^        [AutomatedLab.Machine]$Machine,$/;"	variable	line:203
+PreDelaySeconds	grok.psm1	/^        [int]$PreDelaySeconds,$/;"	variable	line:205
+PassThru	grok.psm1	/^        [switch]$PassThru$/;"	variable	line:207
+machine.name	grok.psm1	/^    Write-Verbose -Message "Starting installation of machine: $($machine.name)"$/;"	variable	line:213
+role	grok.psm1	/^    $role = $machine.Roles | Where-Object { $_.Name -eq ([AutomatedLab.Roles]::CaRoot) -or $_.Na/;"	variable	line:216
+param	grok.psm1	/^    $param = [ordered]@{ }$/;"	variable	line:218
+machine.IsDomainJoined	grok.psm1	/^    if ($machine.IsDomainJoined)$/;"	variable	line:221
+domain	grok.psm1	/^        $domain = $lab.Domains | Where-Object { $_.Name -eq $machine.DomainName }$/;"	variable	line:223
+param.Add	grok.psm1	/^        $param.Add('UserName', ('{0}\\{1}' -f $domain.Name, $domain.Administrator.UserName))$/;"	variable	line:225
+param.Add	grok.psm1	/^        $param.Add('Password', $domain.Administrator.Password)$/;"	variable	line:226
+rootDc	grok.psm1	/^        $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $machine.DomainName$/;"	variable	line:228
+rootDc	grok.psm1	/^        if ($rootDc) #if there is a root domain controller in the same domain as the machine$/;"	variable	line:229
+rootDomain	grok.psm1	/^            $rootDomain = (Get-Lab).Domains | Where-Object Name -eq $rootDc.DomainName$/;"	variable	line:231
+rootDomainNetBIOSName	grok.psm1	/^            $rootDomainNetBIOSName = ($rootDomain.Name -split '\\.')[0]$/;"	variable	line:232
+rootDomain	grok.psm1	/^            $rootDomain = $lab.GetParentDomain($machine.DomainName)$/;"	variable	line:236
+rootDomainNetBIOSName	grok.psm1	/^            $rootDomainNetBIOSName = ($rootDomain.Name -split '\\.')[0]$/;"	variable	line:237
+rootDc	grok.psm1	/^            $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $rootDomain$/;"	variable	line:238
+param.Add	grok.psm1	/^        $param.Add('ForestAdminUserName', ('{0}\\{1}' -f $rootDomainNetBIOSName, $rootDomain.Adm/;"	variable	line:241
+param.Add	grok.psm1	/^        $param.Add('ForestAdminPassword', $rootDomain.Administrator.Password)$/;"	variable	line:242
+machine.name	grok.psm1	/^        Write-Debug -Message "Machine                   : $($machine.name)"$/;"	variable	line:244
+machine.DomainName	grok.psm1	/^        Write-Debug -Message "Machine Domain            : $($machine.DomainName)"$/;"	variable	line:245
+param.username	grok.psm1	/^        Write-Debug -Message "Username for job          : $($param.username)"$/;"	variable	line:246
+param.Password	grok.psm1	/^        Write-Debug -Message "Password for job          : $($param.Password)"$/;"	variable	line:247
+param.ForestAdminUserName	grok.psm1	/^        Write-Debug -Message "ForestAdmin Username      : $($param.ForestAdminUserName)"$/;"	variable	line:248
+param.ForestAdminPassword	grok.psm1	/^        Write-Debug -Message "ForestAdmin Password      : $($param.ForestAdminPassword)"$/;"	variable	line:249
+param.Add	grok.psm1	/^        $param.Add('UserName', ('{0}\\{1}' -f $machine.Name, $machine.InstallationUser.UserName)/;"	variable	line:253
+param.Add	grok.psm1	/^        $param.Add('Password', $machine.InstallationUser.Password)$/;"	variable	line:254
+param.Add	grok.psm1	/^    $param.Add('ComputerName', $Machine.Name)$/;"	variable	line:256
+caDNSName	grok.psm1	/^    $caDNSName = $Machine.Name$/;"	variable	line:262
+Machine.DomainName	grok.psm1	/^    if ($Machine.DomainName) { $caDNSName += ('.' + $Machine.DomainName) }$/;"	variable	line:263
+Machine.DomainName	grok.psm1	/^    if ($Machine.DomainName)$/;"	variable	line:265
+param.Add	grok.psm1	/^        $param.Add('DomainName', $Machine.DomainName)$/;"	variable	line:267
+param.Add	grok.psm1	/^        $param.Add('DomainName', '')$/;"	variable	line:271
+role.Name	grok.psm1	/^    if ($role.Name -eq 'CaSubordinate')$/;"	variable	line:275
+role.Properties.ContainsKey	grok.psm1	/^        if (!($role.Properties.ContainsKey('ParentCA'))) { $param.Add('ParentCA', '<auto>') }$/;"	variable	line:277
+param.Add	grok.psm1	/^        else { $param.Add('ParentCA', $role.Properties.ParentCA) }$/;"	variable	line:278
+role.Properties.ContainsKey	grok.psm1	/^        if (!($role.Properties.ContainsKey('ParentCALogicalName'))) { $param.Add('ParentCALogica/;"	variable	line:279
+param.Add	grok.psm1	/^        else { $param.Add('ParentCALogicalName', $role.Properties.ParentCALogicalName) }$/;"	variable	line:280
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('CPSURL'))) { $param.Add('CPSURL', 'http:\/\/' + $caDNSNa/;"	variable	line:285
+param.Add	grok.psm1	/^    else { $param.Add('CPSURL', $role.Properties.CPSURL) }$/;"	variable	line:286
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('CPSText'))) { $param.Add('CPSText', 'Certification Pract/;"	variable	line:287
+param.Add	grok.psm1	/^    else { $param.Add('CPSText', $($role.Properties.CPSText)) }$/;"	variable	line:288
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('InstallOCSP'))) { $param.Add('InstallOCSP', '<auto>') }$/;"	variable	line:290
+param.Add	grok.psm1	/^    else { $param.Add('InstallOCSP', ($role.Properties.InstallOCSP -like '*Y*')) }$/;"	variable	line:291
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('OCSPHTTPURL01'))) { $param.Add('OCSPHTTPURL01', '<auto>'/;"	variable	line:292
+param.Add	grok.psm1	/^    else { $param.Add('OCSPHTTPURL01', $role.Properties.OCSPHTTPURL01) }$/;"	variable	line:293
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('OCSPHTTPURL02'))) { $param.Add('OCSPHTTPURL02', '<auto>'/;"	variable	line:294
+param.Add	grok.psm1	/^    else { $param.Add('OCSPHTTPURL02', $role.Properties.OCSPHTTPURL02) }$/;"	variable	line:295
+role.Properties.ContainsKey	grok.psm1	/^    if (!($role.Properties.ContainsKey('DoNotLoadDefaultTemplates'))) { $param.Add('DoNotLoadDef/;"	variable	line:297
+param.Add	grok.psm1	/^    else { $param.Add('DoNotLoadDefaultTemplates', $role.Properties.DoNotLoadDefaultTemplates -l/;"	variable	line:298
+knownParameters	grok.psm1	/^    $knownParameters = @()$/;"	variable	line:302
+knownParameters	grok.psm1	/^    $knownParameters += 'ParentCA (only valid for Subordinate CA. Ignored for Root CAs)'$/;"	variable	line:303
+knownParameters	grok.psm1	/^    $knownParameters += 'ParentCALogicalName (only valid for Subordinate CAs. Ignored for Root C/;"	variable	line:304
+knownParameters	grok.psm1	/^    $knownParameters += 'CACommonName'$/;"	variable	line:305
+knownParameters	grok.psm1	/^    $knownParameters += 'CAType'$/;"	variable	line:306
+knownParameters	grok.psm1	/^    $knownParameters += 'DoNotLoadDefaultTemplates'$/;"	variable	line:308
+knownParameters	grok.psm1	/^    $knownParameters += 'PreDelaySeconds'$/;"	variable	line:309
+unkownParFound	grok.psm1	/^    $unkownParFound = $false$/;"	variable	line:310
+keySet	grok.psm1	/^    foreach ($keySet in $role.Properties.GetEnumerator())$/;"	variable	line:311
+keySet.Key	grok.psm1	/^        if ($keySet.Key -cnotin $knownParameters)$/;"	variable	line:313
+keySet.Key	grok.psm1	/^            Write-Warning -Message "Parameter name '$($keySet.Key)' is unknown\/ignored)"$/;"	variable	line:315
+unkownParFound	grok.psm1	/^            $unkownParFound = $true$/;"	variable	line:316
+unkownParFound	grok.psm1	/^    if ($unkownParFound)$/;"	variable	line:319
+name	grok.psm1	/^        Foreach ($name in ($knownParameters.GetEnumerator()))$/;"	variable	line:322
+name	grok.psm1	/^            Write-Warning -Message "  $($name)"$/;"	variable	line:324
+machine.name	grok.psm1	/^    Write-Debug -Message "Parameters for $($machine.name)"$/;"	variable	line:335
+machine.Roles.Properties.GetEnumerator	grok.psm1	/^    if ($machine.Roles.Properties.GetEnumerator().Count)$/;"	variable	line:337
+r	grok.psm1	/^        foreach ($r in $machine.Roles)$/;"	variable	line:339
+r.Name	grok.psm1	/^            if (([AutomatedLab.Roles]$r.Name -band $roles) -ne 0) #if this is a CA role$/;"	variable	line:341
+key	grok.psm1	/^                foreach ($key in ($r.Properties.GetEnumerator() | Sort-Object -Property Key))$/;"	variable	line:343
+key.Key.PadRight	grok.psm1	/^                    Write-Debug -Message "  $($key.Key.PadRight(27)) $($key.Value)"$/;"	variable	line:345
+role.Properties.ContainsKey	grok.psm1	/^    if ($role.Properties.ContainsKey('CACommonName') -and ($param.CACommonName.Length -gt 37))$/;"	variable	line:359
+param.CACommonName	grok.psm1	/^        Write-Error -Message "CACommonName cannot be longer than 37 characters. Specified value /;"	variable	line:361
+role.Properties.ContainsKey	grok.psm1	/^    if ($role.Properties.ContainsKey('CACommonName') -and ($param.CACommonName.Length -lt 1))$/;"	variable	line:364
+param.CACommonName	grok.psm1	/^        Write-Error -Message "CACommonName cannot be blank. Specified value is: '$($param.CAComm/;"	variable	line:366
+role.Name	grok.psm1	/^    if ($role.Name -eq 'CaRoot')$/;"	variable	line:369
+param.CAType	grok.psm1	/^        if (-not ($param.CAType -in 'EnterpriseRootCA', 'StandAloneRootCA', '<auto>'))$/;"	variable	line:371
+param.CAType	grok.psm1	/^            Write-Error -Message "CAType needs to be 'EnterpriseRootCA' or 'StandAloneRootCA' wh/;"	variable	line:373
+role.Name	grok.psm1	/^    if ($role.Name -eq 'CaSubordinate')$/;"	variable	line:377
+param.CAType	grok.psm1	/^        if (-not ($param.CAType -in 'EnterpriseSubordinateCA', 'StandAloneSubordinateCA', '<auto/;"	variable	line:379
+param.CAType	grok.psm1	/^            Write-Error -Message "CAType needs to be 'EnterpriseSubordinateCA' or 'StandAloneSub/;"	variable	line:381
+availableCombinations	grok.psm1	/^    $availableCombinations = @()$/;"	variable	line:386
+availableCombinations	grok.psm1	/^    $availableCombinations += @{CryptoProviderName='Microsoft Base SMart Card Crypto Provider'; /;"	variable	line:387
+combination	grok.psm1	/^    $combination = $availableCombinations | Where-Object {$_.CryptoProviderName -eq $param.Crypt/;"	variable	line:389
+param.CryptoProviderName	grok.psm1	/^    if (-not ($param.CryptoProviderName -in $combination.CryptoProviderName))$/;"	variable	line:391
+param.CryptoProviderName	grok.psm1	/^        Write-Error -Message "CryptoProviderName '$($param.CryptoProviderName)' is unknown. `nLi/;"	variable	line:393
+param.HashAlgorithmName	grok.psm1	/^    elseif (-not ($param.HashAlgorithmName -in $combination.HashAlgorithmName))$/;"	variable	line:395
+param.HashAlgorithmName	grok.psm1	/^        Write-Error -Message "HashAlgorithmName '$($param.HashAlgorithmName)' is not valid for C/;"	variable	line:397
+param.KeyLength	grok.psm1	/^    elseif (-not ($param.KeyLength -in $combination.KeyLength))$/;"	variable	line:399
+param.KeyLength	grok.psm1	/^        Write-Error -Message "Keylength '$($param.KeyLength)' is not valid for CryptoProviderNam/;"	variable	line:401
+role.Properties.ContainsKey	grok.psm1	/^    if ($role.Properties.ContainsKey('DatabaseDirectory') -and -not ($param.DatabaseDirectory -m/;"	variable	line:406
+param.ValidityPeriodUnits	grok.psm1	/^    if ($param.ValidityPeriodUnits -ne '<auto>')$/;"	variable	line:414
+param.ValidityPeriod	grok.psm1	/^        switch ($param.ValidityPeriod)$/;"	variable	line:416
+validityPeriodUnitsHours	grok.psm1	/^            'Years'  { $validityPeriodUnitsHours = [int]$param.ValidityPeriodUnits * 365 * 24 }$/;"	variable	line:418
+validityPeriodUnitsHours	grok.psm1	/^            'Months' { $validityPeriodUnitsHours = [int]$param.ValidityPeriodUnits * (365\/12) */;"	variable	line:419
+validityPeriodUnitsHours	grok.psm1	/^            'Weeks'  { $validityPeriodUnitsHours = [int]$param.ValidityPeriodUnits * 7 * 24 }$/;"	variable	line:420
+validityPeriodUnitsHours	grok.psm1	/^            'Days'   { $validityPeriodUnitsHours = [int]$param.ValidityPeriodUnits * 24 }$/;"	variable	line:421
+validityPeriodUnitsHours	grok.psm1	/^            'Hours'  { $validityPeriodUnitsHours = [int]$param.ValidityPeriodUnits }$/;"	variable	line:422
+param.CertsValidityPeriodUnits	grok.psm1	/^    if ($param.CertsValidityPeriodUnits -ne '<auto>')$/;"	variable	line:425
+param.CertsValidityPeriod	grok.psm1	/^        switch ($param.CertsValidityPeriod)$/;"	variable	line:427
+certsvalidityPeriodUnitsHours	grok.psm1	/^            'Years'  { $certsvalidityPeriodUnitsHours = [int]$param.CertsValidityPeriodUnits * 3/;"	variable	line:429
+certsvalidityPeriodUnitsHours	grok.psm1	/^            'Months' { $certsvalidityPeriodUnitsHours = [int]$param.CertsValidityPeriodUnits * (/;"	variable	line:430
+certsvalidityPeriodUnitsHours	grok.psm1	/^            'Weeks'  { $certsvalidityPeriodUnitsHours = [int]$param.CertsValidityPeriodUnits * 7/;"	variable	line:431
+certsvalidityPeriodUnitsHours	grok.psm1	/^            'Days'   { $certsvalidityPeriodUnitsHours = [int]$param.CertsValidityPeriodUnits * 2/;"	variable	line:432
+certsvalidityPeriodUnitsHours	grok.psm1	/^            'Hours'  { $certsvalidityPeriodUnitsHours = [int]$param.CertsValidityPeriodUnits }$/;"	variable	line:433
+param.CRLPeriodUnits	grok.psm1	/^    if ($param.CRLPeriodUnits -ne '<auto>')$/;"	variable	line:436
+param.CRLPeriod	grok.psm1	/^        switch ($param.CRLPeriod)$/;"	variable	line:438
+cRLPeriodUnitsHours	grok.psm1	/^            'Years'  { $cRLPeriodUnitsHours = [int]([int]$param.CRLPeriodUnits * 365 * 24) }$/;"	variable	line:440
+cRLPeriodUnitsHours	grok.psm1	/^            'Months' { $cRLPeriodUnitsHours = [int]([int]$param.CRLPeriodUnit * (365\/12) * 24) /;"	variable	line:441
+cRLPeriodUnitsHours	grok.psm1	/^            'Weeks'  { $cRLPeriodUnitsHours = [int]([int]$param.CRLPeriodUnits * 7 * 24) }$/;"	variable	line:442
+cRLPeriodUnitsHours	grok.psm1	/^            'Days'   { $cRLPeriodUnitsHours = [int]([int]$param.CRLPeriodUnits * 24) }$/;"	variable	line:443
+cRLPeriodUnitsHours	grok.psm1	/^            'Hours'  { $cRLPeriodUnitsHours = [int]([int]$param.CRLPeriodUnits) }$/;"	variable	line:444
+param.CRLDeltaPeriodUnits	grok.psm1	/^    if ($param.CRLDeltaPeriodUnits -ne '<auto>')$/;"	variable	line:447
+param.CRLDeltaPeriod	grok.psm1	/^        switch ($param.CRLDeltaPeriod)$/;"	variable	line:449
+cRLDeltaPeriodUnitsHours	grok.psm1	/^            'Years'  { $cRLDeltaPeriodUnitsHours = [int]([int]$param.CRLDeltaPeriodUnits * 365 */;"	variable	line:451
+cRLDeltaPeriodUnitsHours	grok.psm1	/^            'Months' { $cRLDeltaPeriodUnitsHours = [int]([int]$param.CRLDeltaPeriodUnits * (365\//;"	variable	line:452
+cRLDeltaPeriodUnitsHours	grok.psm1	/^            'Weeks'  { $cRLDeltaPeriodUnitsHours = [int]([int]$param.CRLDeltaPeriodUnits * 7 * 2/;"	variable	line:453
+cRLDeltaPeriodUnitsHours	grok.psm1	/^            'Days'   { $cRLDeltaPeriodUnitsHours = [int]([int]$param.CRLDeltaPeriodUnits * 24) }$/;"	variable	line:454
+cRLDeltaPeriodUnitsHours	grok.psm1	/^            'Hours'  { $cRLDeltaPeriodUnitsHours = [int]([int]$param.CRLDeltaPeriodUnits) }$/;"	variable	line:455
+param.CRLOverlapUnits	grok.psm1	/^    if ($param.CRLOverlapUnits -ne '<auto>')$/;"	variable	line:458
+param.CRLOverlapPeriod	grok.psm1	/^        switch ($param.CRLOverlapPeriod)$/;"	variable	line:460
+CRLOverlapUnitsHours	grok.psm1	/^            'Years'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 365 * 24) }$/;"	variable	line:462
+CRLOverlapUnitsHours	grok.psm1	/^            'Months' { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * (365\/12) * 2/;"	variable	line:463
+CRLOverlapUnitsHours	grok.psm1	/^            'Weeks'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 7 * 24) }$/;"	variable	line:464
+CRLOverlapUnitsHours	grok.psm1	/^            'Days'   { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 24) }$/;"	variable	line:465
+{param}	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
+CRLOverlapUnitsHours	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
+false	grok.psm1	/^Write-Debug $false.$true.$param$/;"	variable	line:475
+true	grok.psm1	/^$(Write-Debug $true)$/;"	variable	line:476

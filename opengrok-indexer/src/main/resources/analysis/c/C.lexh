@@ -1,0 +1,99 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ *
+ * Copyright (c) 2018 cppreference.com
+ * http://en.cppreference.com/w/Cppreference:FAQ
+ * "You can use this site in almost any way you like, including mirroring,
+ * copying, translating, etc. All we would ask is to provide link back to
+ * cppreference.com so that people know where to get the most up-to-date
+ * content."
+ */
+
+Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+
+/*
+ * An integer constant is a non-lvalue expression of the form
+ *
+ * decimal-constant integer-suffix(optional)	(1)
+ * octal-constant integer-suffix(optional)	(2)
+ * hex-constant integer-suffix(optional)	(3)
+ * where
+ *
+ * decimal-constant is a non-zero decimal digit (1, 2, 3, 4, 5, 6, 7, 8, 9),
+ * followed by zero or more decimal digits (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+ *
+ * octal-constant is the digit zero (0) followed by zero or more octal digits
+ * (0, 1, 2, 3, 4, 5, 6, 7)
+ *
+ * hex-constant is the character sequence 0x or the character sequence 0X
+ * followed by one or more hexadecimal digits (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a,
+ * A, b, B, c, C, d, D, e, E, f, F)
+ *
+ * integer-suffix, if provided, may contain one or both of the following (if
+ * both are provided, they may appear in any order:
+ *
+ * unsigned-suffix (the character u or the character U)
+ *
+ * long-suffix (the character l or the character L) or the long-long-suffix
+ * (the character sequence ll or the character sequence LL) (since C99)
+ */
+integer_literal = ({decimal_literal} | {octal_literal} | {hex_literal})
+decimal_literal = [1-9] [0-9]* {integer_suffix}?
+octal_literal =   0[0-7]+ {integer_suffix}?
+hex_literal =     0[xX][0-9a-fA-F]+ {integer_suffix}?
+
+integer_suffix = ({unsigned_suffix} | {long_suffix})+
+unsigned_suffix = [uU]
+long_suffix = ([lL] | "ll" | "LL")
+
+/*
+ * A floating constant is a non-lvalue expression having the form:
+ *
+ * significand exponent(optional) suffix(optional)
+ * Where the significand has the form
+ *
+ * whole-number(optional) .(optional) fraction(optional)
+ * The exponent has the form
+ *
+ * e | E exponent-sign(optional) digit-sequence	(1)
+ * p | P exponent-sign(optional) digit-sequence	(2)	(since C99)
+ * 1) The exponent syntax for a decimal floating-point constant
+ * 2) The exponent syntax for hexadecimal floating-point constant
+ *
+ * (The C++ standard had better break-down of "significand" so the following
+ * is taken from it, without support for apostrophe delimiters.)
+ */
+fp_literal = ({fp1} | {fp2} | {fp3} | {fp4} | {fp5} | {fp6}) {fp_suffix}?
+fp1 = {digit_seq} {fp_exp}
+fp2 = {digit_seq} \. {fp_exp}?
+fp3 = (\. {digit_seq} | {digit_seq} \. {digit_seq}) {fp_exp}?
+fp4 = 0[xX] {hex_digit_seq} {fp_exp}
+fp5 = 0[xX] {hex_digit_seq} \. {fp_exp}?
+fp6 = 0[xX] (\. {hex_digit_seq} | {hex_digit_seq} \. {hex_digit_seq}) {fp_exp}?
+
+digit_seq = [0-9]+
+hex_digit_seq = [0-9a-fA-F]+
+fp_exp = [eEpP][\+\-]?{digit_seq}
+fp_suffix = [fFlLdD]	// [dD] is only present for OpenGrok compatibility
+
+Number = [\+\-]? ({integer_literal} | {fp_literal})

@@ -1,0 +1,25 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+Board	grok.rb	/^class Board$/;"	class	line:4
+clr	grok.rb	/^  def clr$/;"	method	line:5	class:Board
+pos	grok.rb	/^  def pos(x,y)$/;"	method	line:8	class:Board
+colorstr	grok.rb	/^  def colorstr(id,s)$/;"	method	line:11	class:Board
+put	grok.rb	/^  def put(x, y, col, str)$/;"	method	line:14	class:Board
+initialize	grok.rb	/^  def initialize(h,w,m)$/;"	method	line:22	class:Board
+reset	grok.rb	/^  def reset$/;"	method	line:27	class:Board
+mark	grok.rb	/^  def mark$/;"	method	line:49	class:Board
+open	grok.rb	/^  def open(x=@cx,y=@cy)$/;"	method	line:57	class:Board
+fetch	grok.rb	/^  def fetch(x,y)$/;"	method	line:78	class:Board
+count	grok.rb	/^  def count(x,y)$/;"	method	line:88	class:Board
+over	grok.rb	/^  def over(win)$/;"	method	line:94	class:Board
+over?	grok.rb	/^  def over?$/;"	method	line:105	class:Board
+quit	grok.rb	/^  def quit$/;"	method	line:116	class:Board
+down	grok.rb	/^  def down$/;"	method	line:127
+up	grok.rb	/^  def up$/;"	method	line:131
+left	grok.rb	/^  def left$/;"	method	line:135
+right	grok.rb	/^  def right$/;"	method	line:139

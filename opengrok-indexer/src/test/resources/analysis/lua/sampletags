@@ -1,0 +1,13 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+[MIME_TYPES.multipart]	grok.lua	/^    [MIME_TYPES.multipart] = function(content_type)$/;"	function	line:250
+[MIME_TYPES.json]	grok.lua	/^    [MIME_TYPES.json] = function()$/;"	function	line:257
+[MIME_TYPES.form_url_encoded]	grok.lua	/^    [MIME_TYPES.form_url_encoded] = function()$/;"	function	line:268
+get_body_info	grok.lua	/^  local function get_body_info()$/;"	function	line:283
+_M.get_body_args	grok.lua	/^  function _M.get_body_args()$/;"	function	line:341
+_M.get_body_info	grok.lua	/^  function _M.get_body_info()$/;"	function	line:347

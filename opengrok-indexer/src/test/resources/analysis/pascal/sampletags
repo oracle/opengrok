@@ -1,0 +1,80 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+SynEditAutoComplete	grok.pas	/^unit SynEditAutoComplete;$/;"	unit	line:42
+interface	grok.pas	/^interface$/;"	Section	line:47
+uses	grok.pas	/^uses$/;"	Section	line:49
+TCustomSynAutoComplete	grok.pas	/^  TCustomSynAutoComplete = class(TComponent)$/;"	Class	line:67
+CompletionListChanged	grok.pas	/^    procedure CompletionListChanged(Sender: TObject);$/;"	procedure	line:78
+DefineProperties	grok.pas	/^    procedure DefineProperties(Filer: TFiler); override;    $/;"	procedure	line:79
+GetCompletions	grok.pas	/^    function GetCompletions: TUnicodeStrings;$/;"	function	line:80
+GetCompletionComments	grok.pas	/^    function GetCompletionComments: TUnicodeStrings;$/;"	function	line:81
+GetCompletionValues	grok.pas	/^    function GetCompletionValues: TUnicodeStrings;$/;"	function	line:82
+GetEditorCount	grok.pas	/^    function GetEditorCount: Integer;$/;"	function	line:83
+GetNthEditor	grok.pas	/^    function GetNthEditor(Index: Integer): TCustomSynEdit;$/;"	function	line:84
+SetAutoCompleteList	grok.pas	/^    procedure SetAutoCompleteList(Value: TUnicodeStrings); virtual;$/;"	procedure	line:85
+SetEditor	grok.pas	/^    procedure SetEditor(Value: TCustomSynEdit);$/;"	procedure	line:86
+SynEditCommandHandler	grok.pas	/^    procedure SynEditCommandHandler(Sender: TObject; AfterProcessing: Boolean;$/;"	procedure	line:87
+Notification	grok.pas	/^    procedure Notification(AComponent: TComponent; Operation: TOperation);$/;"	procedure	line:90
+Create	grok.pas	/^    constructor Create(AOwner: TComponent); override;$/;"	procedure	line:93
+Destroy	grok.pas	/^    destructor Destroy; override;$/;"	procedure	line:94
+AddEditor	grok.pas	/^    function AddEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:96
+RemoveEditor	grok.pas	/^    function RemoveEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:97
+AddCompletion	grok.pas	/^    procedure AddCompletion(const AToken, AValue, AComment: UnicodeString);$/;"	procedure	line:99
+Execute	grok.pas	/^    procedure Execute(AEditor: TCustomSynEdit); virtual;$/;"	procedure	line:100
+ExecuteCompletion	grok.pas	/^    procedure ExecuteCompletion(const AToken: UnicodeString; AEditor: TCustomSynEdit);$/;"	procedure	line:101
+ParseCompletionList	grok.pas	/^    procedure ParseCompletionList; virtual;$/;"	procedure	line:103
+AutoCompleteList	grok.pas	/^    property AutoCompleteList: TUnicodeStrings read FAutoCompleteList$/;"	property	line:105
+CaseSensitive	grok.pas	/^    property CaseSensitive: Boolean read FCaseSensitive write FCaseSensitive;$/;"	property	line:107
+Completions	grok.pas	/^    property Completions: TUnicodeStrings read GetCompletions;$/;"	property	line:108
+CompletionComments	grok.pas	/^    property CompletionComments: TUnicodeStrings read GetCompletionComments;$/;"	property	line:109
+CompletionValues	grok.pas	/^    property CompletionValues: TUnicodeStrings read GetCompletionValues;$/;"	property	line:110
+Editor	grok.pas	/^    property Editor: TCustomSynEdit read FEditor write SetEditor;$/;"	property	line:111
+EditorCount	grok.pas	/^    property EditorCount: Integer read GetEditorCount;$/;"	property	line:112
+EndOfTokenChr	grok.pas	/^    property EndOfTokenChr: UnicodeString read FEOTokenChars write FEOTokenChars;$/;"	property	line:114
+TSynAutoComplete	grok.pas	/^  TSynAutoComplete = class(TCustomSynAutoComplete)$/;"	Class	line:117
+implementation	grok.pas	/^implementation$/;"	Section	line:125
+uses	grok.pas	/^uses$/;"	Section	line:127
+AddCompletion	grok.pas	/^procedure TCustomSynAutoComplete.AddCompletion(const AToken, AValue, AComment: UnicodeString);$/;"	procedure	line:137
+TCustomSynAutoComplete.AddCompletion	grok.pas	/^procedure TCustomSynAutoComplete.AddCompletion(const AToken, AValue, AComment: UnicodeString);$/;"	procedure	line:137
+AddEditor	grok.pas	/^function TCustomSynAutoComplete.AddEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:149
+TCustomSynAutoComplete.AddEditor	grok.pas	/^function TCustomSynAutoComplete.AddEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:149
+CompletionListChanged	grok.pas	/^procedure TCustomSynAutoComplete.CompletionListChanged(Sender: TObject);$/;"	procedure	line:168
+TCustomSynAutoComplete.CompletionListChanged	grok.pas	/^procedure TCustomSynAutoComplete.CompletionListChanged(Sender: TObject);$/;"	procedure	line:168
+TCustomSynAutoComplete.Create	grok.pas	/^constructor TCustomSynAutoComplete.Create(AOwner: TComponent);$/;"	Constructor	line:173
+TCustomSynAutoComplete.Create	grok.pas	/^constructor TCustomSynAutoComplete.Create(AOwner: TComponent);$/;"	procedure	line:173
+TCustomSynAutoComplete.Destroy	grok.pas	/^destructor TCustomSynAutoComplete.Destroy;$/;"	Destructor	line:185
+TCustomSynAutoComplete.Destroy	grok.pas	/^destructor TCustomSynAutoComplete.Destroy;$/;"	procedure	line:185
+DefineProperties	grok.pas	/^procedure TCustomSynAutoComplete.DefineProperties(Filer: TFiler);$/;"	procedure	line:199
+TCustomSynAutoComplete.DefineProperties	grok.pas	/^procedure TCustomSynAutoComplete.DefineProperties(Filer: TFiler);$/;"	procedure	line:199
+Execute	grok.pas	/^procedure TCustomSynAutoComplete.Execute(AEditor: TCustomSynEdit);$/;"	procedure	line:207
+TCustomSynAutoComplete.Execute	grok.pas	/^procedure TCustomSynAutoComplete.Execute(AEditor: TCustomSynEdit);$/;"	procedure	line:207
+ExecuteCompletion	grok.pas	/^procedure TCustomSynAutoComplete.ExecuteCompletion(const AToken: UnicodeString;$/;"	procedure	line:229
+TCustomSynAutoComplete.ExecuteCompletion	grok.pas	/^procedure TCustomSynAutoComplete.ExecuteCompletion(const AToken: UnicodeString;$/;"	procedure	line:229
+GetCompletions	grok.pas	/^function TCustomSynAutoComplete.GetCompletions: TUnicodeStrings;$/;"	function	line:343
+TCustomSynAutoComplete.GetCompletions	grok.pas	/^function TCustomSynAutoComplete.GetCompletions: TUnicodeStrings;$/;"	function	line:343
+GetCompletionComments	grok.pas	/^function TCustomSynAutoComplete.GetCompletionComments: TUnicodeStrings;$/;"	function	line:350
+TCustomSynAutoComplete.GetCompletionComments	grok.pas	/^function TCustomSynAutoComplete.GetCompletionComments: TUnicodeStrings;$/;"	function	line:350
+GetCompletionValues	grok.pas	/^function TCustomSynAutoComplete.GetCompletionValues: TUnicodeStrings;$/;"	function	line:357
+TCustomSynAutoComplete.GetCompletionValues	grok.pas	/^function TCustomSynAutoComplete.GetCompletionValues: TUnicodeStrings;$/;"	function	line:357
+GetEditorCount	grok.pas	/^function TCustomSynAutoComplete.GetEditorCount: Integer;$/;"	function	line:364
+TCustomSynAutoComplete.GetEditorCount	grok.pas	/^function TCustomSynAutoComplete.GetEditorCount: Integer;$/;"	function	line:364
+GetNthEditor	grok.pas	/^function TCustomSynAutoComplete.GetNthEditor(Index: Integer): TCustomSynEdit;$/;"	function	line:369
+TCustomSynAutoComplete.GetNthEditor	grok.pas	/^function TCustomSynAutoComplete.GetNthEditor(Index: Integer): TCustomSynEdit;$/;"	function	line:369
+Notification	grok.pas	/^procedure TCustomSynAutoComplete.Notification(AComponent: TComponent;$/;"	procedure	line:377
+TCustomSynAutoComplete.Notification	grok.pas	/^procedure TCustomSynAutoComplete.Notification(AComponent: TComponent;$/;"	procedure	line:377
+ParseCompletionList	grok.pas	/^procedure TCustomSynAutoComplete.ParseCompletionList;$/;"	procedure	line:390
+TCustomSynAutoComplete.ParseCompletionList	grok.pas	/^procedure TCustomSynAutoComplete.ParseCompletionList;$/;"	procedure	line:390
+SaveEntry	grok.pas	/^  procedure SaveEntry;$/;"	procedure	line:396
+RemoveEditor	grok.pas	/^function TCustomSynAutoComplete.RemoveEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:479
+TCustomSynAutoComplete.RemoveEditor	grok.pas	/^function TCustomSynAutoComplete.RemoveEditor(AEditor: TCustomSynEdit): Boolean;$/;"	function	line:479
+SetAutoCompleteList	grok.pas	/^procedure TCustomSynAutoComplete.SetAutoCompleteList(Value: TUnicodeStrings);$/;"	procedure	line:500
+TCustomSynAutoComplete.SetAutoCompleteList	grok.pas	/^procedure TCustomSynAutoComplete.SetAutoCompleteList(Value: TUnicodeStrings);$/;"	procedure	line:500
+SetEditor	grok.pas	/^procedure TCustomSynAutoComplete.SetEditor(Value: TCustomSynEdit);$/;"	procedure	line:506
+TCustomSynAutoComplete.SetEditor	grok.pas	/^procedure TCustomSynAutoComplete.SetEditor(Value: TCustomSynEdit);$/;"	procedure	line:506
+SynEditCommandHandler	grok.pas	/^procedure TCustomSynAutoComplete.SynEditCommandHandler(Sender: TObject;$/;"	procedure	line:518
+TCustomSynAutoComplete.SynEditCommandHandler	grok.pas	/^procedure TCustomSynAutoComplete.SynEditCommandHandler(Sender: TObject;$/;"	procedure	line:518

@@ -1,0 +1,20 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+fzf	grok.go	/^package fzf$/;"	package	line:23
+Reader	grok.go	/^type Reader struct {$/;"	struct	line:36	package:fzf
+pusher	grok.go	/^	pusher   func([]byte) bool$/;"	member	line:37	struct:fzf.Reader
+eventBox	grok.go	/^	eventBox *util.EventBox$/;"	member	line:38	struct:fzf.Reader
+delimNil	grok.go	/^	delimNil bool$/;"	member	line:39	struct:fzf.Reader
+event	grok.go	/^	event    int32$/;"	member	line:40	struct:fzf.Reader
+NewReader	grok.go	/^func NewReader(pusher func([]byte) bool, eventBox *util.EventBox, delimNil bool) *Reader {$/;"	func	line:44	package:fzf	signature:(pusher func([]byte) bool, eventBox *util.EventBox, delimNil bool)
+startEventPoller	grok.go	/^func (r *Reader) startEventPoller() {$/;"	func	line:48	unknown:fzf.Reader	signature:()
+fin	grok.go	/^func (r *Reader) fin(success bool) {$/;"	func	line:69	unknown:fzf.Reader	signature:(success bool)
+ReadSource	grok.go	/^func (r *Reader) ReadSource() {$/;"	func	line:75	unknown:fzf.Reader	signature:()
+feed	grok.go	/^func (r *Reader) feed(src io.Reader) {$/;"	func	line:92	unknown:fzf.Reader	signature:(src io.Reader)
+readFromStdin	grok.go	/^func (r *Reader) readFromStdin() bool {$/;"	func	line:122	unknown:fzf.Reader	signature:()
+readFromCommand	grok.go	/^func (r *Reader) readFromCommand(shell string, cmd string) bool {$/;"	func	line:127	unknown:fzf.Reader	signature:(shell string, cmd string)

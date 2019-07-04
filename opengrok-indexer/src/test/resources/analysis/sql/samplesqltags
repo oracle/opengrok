@@ -1,0 +1,26 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+@SQLDataFolder	grok.sql	/^DECLARE @SQLDataFolder nvarchar(max) = cast(SERVERPROPERTY('InstanceDefaultDataPath') as nvarcha/;"	variable	line:50
+SET	grok.sql	/^SET @SQL = N'$/;"	variable	line:53
+@retry	grok.sql	/^    DECLARE @retry INT = 10;  $/;"	variable	line:192
+@retry	grok.sql	/^    DECLARE @retry INT = 10;  $/;"	local	line:281
+@retry	grok.sql	/^    DECLARE @retry INT = 10;  $/;"	local	line:342
+@retry	grok.sql	/^    DECLARE @retry INT = 10;  $/;"	local	line:404
+@retry	grok.sql	/^    DECLARE @retry INT = 10;  $/;"	local	line:465
+SET	grok.sql	/^    SET NOCOUNT ON$/;"	local	line:534
+ExpiredSessionCursor	grok.sql	/^        DECLARE ExpiredSessionCursor CURSOR LOCAL FORWARD_ONLY READ_ONLY$/;"	cursor	line:552
+@textptr	grok.sql	/^    DECLARE @textptr AS tTextPtr$/;"	local	line:808
+@textptr	grok.sql	/^    DECLARE @textptr AS tTextPtr$/;"	local	line:875
+@textptr	grok.sql	/^    DECLARE @textptr AS tTextPtr$/;"	local	line:952
+@textptr	grok.sql	/^    DECLARE @textptr AS tTextPtr$/;"	local	line:1032
+SELECT	grok.sql	/^    SELECT @ver = '2'$/;"	local	line:1112
+@now	grok.sql	/^    DECLARE @now AS datetime$/;"	local	line:1184
+@retry	grok.sql	/^DECLARE @retry INT = 10;  $/;"	local	line:1247
+@retry	grok.sql	/^DECLARE @retry INT = 10;  $/;"	local	line:1290
+@retry	grok.sql	/^DECLARE @retry INT = 10;  $/;"	local	line:1328
+@retry	grok.sql	/^DECLARE @retry INT = 10;  $/;"	local	line:1371

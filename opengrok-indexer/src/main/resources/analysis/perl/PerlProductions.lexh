@@ -1,0 +1,569 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * Regex productions shared between PerlXref and PerlSymbolTokenizer
+ */
+
+MaybeWhsp     = {WhspChar}*
+Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+Sigils = ("$" | "@" | "%" | "&" | "*")
+WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#\r\n]]
+
+// Perl special identifiers (four of six from
+// https://perldoc.perl.org/perldata.html#Identifier-parsing):
+//
+// 1. A sigil, followed solely by digits matching \p{POSIX_Digit} , like $0 ,
+// $1 , or $10000 .
+SPIdentifier1 = "$" \d+
+
+// 2(a). A sigil followed by a single character matching the \p{POSIX_Punct}
+// property, like $! or %+ , except the character "{" doesn't work.
+SPIdentifier2Xquo = [\$\%] [[\p{P}--{]]
+
+// 2(b). A sigil followed by a single character matching the \p{POSIX_Punct}
+// property, like $! or %+ , except the characters "{" and "\" don't work.
+SPIdentifier2Quo = [\$\%] [[\p{P}--[{\\]]]
+
+// 3. A sigil, followed by a caret and any one of the characters [][A-Z^_?\\] ,
+// like $^V or $^] .
+SPIdentifier3 = "$^" ( "]" | "[" | [A-Z\^_?\\] )
+
+// 4. Similar to the above, a sigil, followed by bareword text in braces, where
+// the first character is a caret. The next character is any one of the
+// characters [][A-Z^_?\\] , followed by ASCII word characters. An example is
+// ${^GLOBAL_PHASE} . ASCII \w matches the 63 characters: [a-zA-Z0-9_].
+SPIdentifier4 = "${^" ( "]" | "[" | [A-Z\^_?\\] ) [a-zA-Z0-9_]* "}"
+
+// prototype attribute must be recognized explicitly or else "($)" can be
+// mistaken for an SPIdentifier2
+ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhspChar}+ )* ")"
+
+FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch"|
+           "PL"|"PERL"|"PM"|"CONF"|"TXT"|"HTM"|"HTML"|"XML"|"INI"|"DIFF"|"PATCH")
+File = [a-zA-Z]{FNameChar}* "." {FileExt}
+
+Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
+
+PodEND = "=cut"
+
+Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]]
+Quo0xHash =      [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]--\#]
+Quo0xHashxApos = [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]--[\#\']]
+
+MSapos = [ms] {MaybeWhsp} \'
+MShash = [ms]\#
+MSpunc = [ms] {MaybeWhsp} {Quo0xHashxApos}
+MSword = [ms] {WhspChar}+ \w
+QYhash = [qy]\#
+QYpunc = [qy] {MaybeWhsp} {Quo0xHash}
+QYword = [qy] {WhspChar}+ \w
+
+QXRapos  = "q"[xr] {MaybeWhsp} \'
+QQXRhash = "q"[qxr]\#
+QQXRPunc = "q"[qxr] {MaybeWhsp} {Quo0xHash}
+QQXRword = "q"[qxr] {WhspChar}+ \w
+
+QWhash = "qw"\#
+QWpunc = "qw" {MaybeWhsp} {Quo0xHash}
+QWword = "qw" {WhspChar}+ \w
+TRhash = "tr"\#
+TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
+TRword = "tr" {WhspChar}+ \w
+
+HereEOF1 = [\"][^\r\n\"]*[\"]
+HereEOF2 = [\`][^\r\n\`]*[\`]
+HereEOF3 = [\'][^\r\n\']*[\']
+HereEOF4 = [\\]?{Identifier}
+
+//
+// Track some keywords that can be used to identify heuristically a possible
+// beginning of the shortcut syntax, //, for m//. Also include any perlfunc
+// that takes /PATTERN/. Heuristics using punctuation are defined inline later
+// in some rules.
+//
+Mwords_1 = ("eq" | "ne" | "le" | "ge" | "lt" | "gt" | "cmp")
+Mwords_2 = ("if" | "unless" | "or" | "and" | "not")
+Mwords_3 = ("split" | "grep")
+Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
+
+Mpunc1YYIN = [\(\!]
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
+
+//
+// There are two dimensions to quoting: "link"-or-not and "interpolate"-or-not.
+// Unfortunately, we cannot control the %state values, so we have to declare
+// a cross-product of states. (Technically, state values are not guaranteed to
+// be unique by jflex, but states that do not have identical rules will have
+// different values. The four "QUO" below states satisfy this difference
+// criterion; as likewise do the four "HERE" states.)
+//
+// YYINITIAL : nothing yet parsed or just after a non-quoted [;{}]
+// INTRA : saw content from YYINITIAL but not yet other state or [;{}]
+// SCOMMENT : single-line comment
+// POD : Perl Plain-Old-Documentation
+// FMT : an output record format
+// QUO : quote-like that is OK to match paths|files|URLs|e-mails
+// QUOxN : "" but with no interpolation
+// QUOxL : quote-like that is not OK to match paths|files|URLs|e-mails
+//      because a non-traditional character is used as the quote-like delimiter
+// QUOxLxN : "" but with no interpolation
+// QM : a quote-like has ended, and quote modifier chars are awaited
+// HERE : Here-docs
+// HERExN : Here-docs with no interpolation
+// HEREin : Indented Here-docs
+// HEREinxN : Indented Here-docs with no interpolation
+//
+%state INTRA SCOMMENT POD FMT
+%state QUO QUOxN QUOxL QUOxLxN QM
+%state HERE HERExN HEREin HEREinxN
+
+%%
+<HERE, HERExN> {
+    ^ {Identifier} / {MaybeWhsp}{EOL}    {
+        chkLOC();
+        maybeEndHere(yytext());
+    }
+}
+
+<HEREin, HEREinxN> {
+    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}    {
+        chkLOC();
+        maybeEndHere(yytext());
+    }
+}
+
+<YYINITIAL, INTRA>{
+    // Part 1 of syntax that jumps back to YYINITIAL
+    [;\{] |
+    "&&" |
+    "||" |
+    {ProtoAttr}    {
+        chkLOC();
+        yyjump(YYINITIAL);
+        offer(yytext());
+    }
+    // Part 2 of syntax that jumps back to YYINITIAL. Since this does a
+    // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
+    // as it seems the look-ahead would apply to all cases.
+    "}" / {MaybeWhsp} {EOL}    {
+        chkLOC();
+        yyjump(YYINITIAL);
+        offer(yytext());
+    }
+
+ "<<"[~]? {MaybeWhsp} ({HereEOF1}|{HereEOF2}|{HereEOF3}|{HereEOF4})    {
+    chkLOC();
+    hop(yytext());
+ }
+
+ {Identifier}    {
+    chkLOC();
+    maybeIntraState();
+    String id = yytext();
+    if (offerSymbol(id, 0, false) && returnOnSymbol()) {
+        return yystate();
+    }
+ }
+
+ "<" ({File} | {FPath}) ">"    {
+    chkLOC();
+    maybeIntraState();
+    if (takeAllContent()) {
+        offer("<");
+        String path = yytext();
+        path = path.substring(1, path.length() - 1);
+        onFilelikeMatched(path, yychar);
+        offer(">");
+    }
+ }
+
+ {Number}    {
+    chkLOC();
+    maybeIntraState();
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    offer(yytext());
+    onDisjointSpanChanged(null, yychar);
+ }
+
+ [\"\`] { chkLOC(); qop(yytext(), 0, false); }
+ \'     { chkLOC(); qop(yytext(), 0, true); }
+ \#     {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+ }
+
+ // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
+ ^ {QXRapos} |
+ {WxSigils}{QXRapos}   { chkLOC(); qop(yytext(), 2, true); } // qx'' qr''
+ ^ {QQXRhash} |
+ {WxSigils}{QQXRhash}  { chkLOC(); qop(yytext(), 2, false); }
+ ^ {QQXRPunc} |
+ {WxSigils}{QQXRPunc}  { chkLOC(); qop(yytext(), 2, false); }
+ ^ {QQXRword} |
+ {WxSigils}{QQXRword}  { chkLOC(); qop(yytext(), 2, false); }
+
+ // In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
+ // xref just means to cross-reference, which is appropriate for qw//.
+ ^ {QWhash} |
+ {WxSigils}{QWhash}  { chkLOC(); qop(yytext(), 2, false); }
+ ^ {QWpunc} |
+ {WxSigils}{QWpunc}  { chkLOC(); qop(yytext(), 2, false); }
+ ^ {QWword} |
+ {WxSigils}{QWword}  { chkLOC(); qop(yytext(), 2, false); }
+
+ ^ {TRhash} |
+ {WxSigils}{TRhash}  { chkLOC(); qop(yytext(), 2, true); }
+ ^ {TRpunc} |
+ {WxSigils}{TRpunc}  { chkLOC(); qop(yytext(), 2, true); }
+ ^ {TRword} |
+ {WxSigils}{TRword}  { chkLOC(); qop(yytext(), 2, true); }
+
+ // capture hyphen plus [qmsy] to prevent that combination from being mistaken
+ // for q//, m//, s//, y// and variants
+ ^ "-" [qmsy] |
+ {WxSigils} "-" [qmsy]    {
+    chkLOC();
+    maybeIntraState();
+    offer(yytext());
+ }
+ // q//, m//, s//, y// and variants -- all with 1 character names
+ ^ {MSapos} |
+ {WxSigils}{MSapos}  { chkLOC(); qop(yytext(), 1, true); } // m'' s''
+ ^ {MShash} |
+ {WxSigils}{MShash}  { chkLOC(); qop(yytext(), 1, false); }
+ ^ {MSpunc} |
+ {WxSigils}{MSpunc}  { chkLOC(); qop(yytext(), 1, false); }
+ ^ {MSword} |
+ {WxSigils}{MSword}  { chkLOC(); qop(yytext(), 1, false); }
+ ^ {QYhash} |
+ {WxSigils}{QYhash}  { chkLOC(); qop(yytext(), 1, true); }
+ ^ {QYpunc} |
+ {WxSigils}{QYpunc}  { chkLOC(); qop(yytext(), 1, true); }
+ ^ {QYword} |
+ {WxSigils}{QYword}  { chkLOC(); qop(yytext(), 1, true); }
+
+ // seeing POD-end without having seen POD-start is akin to a one-line comment
+ ^ {PodEND} [^\n\r]*    {
+        offer(yytext());
+ }
+
+ // POD start
+ ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
+        yypush(POD);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+ }
+
+ // FORMAT start
+ ^ {MaybeWhsp} "format" ({WhspChar}+ {Identifier})? {MaybeWhsp} "=" /
+     {MaybeWhsp}{EOL}    {
+    chkLOC();
+    yypush(FMT);
+    if (takeAllContent()) {
+        // split off the "  format" as `initial' for keyword processing
+        String capture = yytext();
+        String following = capture.replaceFirst("^\\s+", "").
+            substring("format".length());
+        String initial = capture.substring(0, capture.length() -
+            following.length());
+
+        offerKeyword(initial);
+        offer(following);
+        // start a pseudo-"string"
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+ }
+}
+
+<YYINITIAL> {
+    "/"    {
+        chkLOC();
+        // OK to pass a fake "m/" with doWrite=false
+        qop(false, "m/", 1, false);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+}
+
+<YYINITIAL, INTRA> {
+    // Use some heuristics to identify double-slash syntax for the m//
+    // operator. We can't handle all possible appearances of `//', because the
+    // first slash cannot always be distinguished from division (/) without
+    // true parsing.
+
+    {Mpunc1YYIN} \s* "/"    { chkLOC(); hqopPunc(yytext()); }
+}
+
+<INTRA> {
+    // Continue with more punctuation heuristics
+
+    {Mpunc2IN} \s* "/"      { chkLOC(); hqopPunc(yytext()); }
+}
+
+<YYINITIAL, INTRA> {
+    // Define keyword heuristics
+
+    ^ {Mwords} \s* "/"    {
+        chkLOC();
+        hqopSymbol(yytext());
+    }
+
+    {WxSigils}{Mwords} \s* "/"    {
+        chkLOC();
+        String capture = yytext();
+        if (takeAllContent()) {
+            String boundary = capture.substring(0, 1);
+            offer(boundary);
+        }
+        hqopSymbol(capture.substring(1));
+    }
+}
+
+<YYINITIAL, INTRA> {
+    {Sigils} {MaybeWhsp} {Identifier} {
+        chkLOC();
+        maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        sigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
+    }
+}
+
+<YYINITIAL, INTRA, FMT, QUO, QUOxL, HERE, HEREin> {
+    {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
+        chkLOC();
+        maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        bracedSigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {SPIdentifier1} |
+    {SPIdentifier3} |
+    {SPIdentifier4} {
+        chkLOC();
+        maybeIntraState();
+        specialID(yytext());
+    }
+}
+
+<YYINITIAL, INTRA, FMT, HERE, HEREin> {
+    {SPIdentifier2Xquo}    {
+        chkLOC();
+        maybeIntraState();
+        specialID(yytext());
+    }
+}
+
+<QUO, QUOxL> {
+    {SPIdentifier2Quo}    {
+        chkLOC();
+        maybeIntraState();
+        specialID(yytext());
+    }
+}
+
+<FMT, QUO, QUOxL, HERE, HEREin> {
+    {Sigils} {Identifier} {
+        chkLOC();
+        //we ignore keywords if the identifier starts with a sigil ...
+        sigilID(yytext());
+        if (returnOnSymbol()) {
+            return yystate();
+        }
+    }
+}
+
+<FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
+    \\ \S    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+<QUO, QUOxN, QUOxL, QUOxLxN> {
+    {Quo0} |
+    \w    {
+        chkLOC();
+        String capture = yytext();
+        offer(capture);
+        if (maybeEndQuote(capture)) {
+            yypop();
+            if (areModifiersOK()) {
+                yypush(QM);
+            }
+            onDisjointSpanChanged(null, yychar);
+        }
+    }
+}
+
+<FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<QM> {
+    // m/PATTERN/msixpodualngc and /PATTERN/msixpodualngc
+    // qr/STRING/msixpodualn
+    // s/PATTERN/REPLACEMENT/msixpodualngcer
+    // tr/SEARCHLIST/REPLACEMENTLIST/cdsr
+    // y/SEARCHLIST/REPLACEMENTLIST/cdsr
+    [a-z]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    // anything else ends the quote-modifiers state
+    [^]    {
+        yypop();
+        yypushback(yytext().length());
+    }
+}
+
+<POD> {
+  ^ {PodEND} [^\n\r]*    {
+    yypop();
+    offer(yytext());
+    onDisjointSpanChanged(null, yychar);
+  }
+
+  {WhspChar}*{EOL}    {
+    onEndOfLineMatched(yytext(), yychar);
+  }
+}
+
+<FMT> {
+    // terminate a format
+    ^ "." / {MaybeWhsp} {EOL}    {
+        chkLOC();
+        yypop();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    // "A comment, indicated by putting a '#' in the first column."
+    ^ "#"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    // The other two types of line in a format FORMLIST -- "a 'picture' line
+    // giving the format for one output line" and "an argument line supplying
+    // values to plug into the previous picture line" -- are not handled
+    // in a particular way by this lexer.
+}
+
+<SCOMMENT> {
+  {WhspChar}*{EOL}    {
+    String capture = yytext();
+    yypushback(capture.length());
+    yypop();
+    onDisjointSpanChanged(null, yychar);
+  }
+}
+
+<YYINITIAL, INTRA> {
+    {WhspChar}*{EOL}    {
+        String capture = yytext();
+        if (maybeStartHere()) {
+            yypushback(capture.length());
+        } else {
+            onEndOfLineMatched(yytext(), yychar);
+        }
+    }
+}
+
+<YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
+    HERE, HERExN, HEREin, HEREinxN> {
+
+ // Only one whitespace char at a time or else {WxSigils} can be broken
+ {WhspChar} |
+ [[\s]--[\n\r]]    {
+        offer(yytext());
+ }
+ // Only one char at a time due to restriction on {WhspChar} above.
+ [^\n\r]          {
+        chkLOC();
+        maybeIntraState();
+        offer(yytext());
+ }
+}
+
+// "string links" and "comment links"
+<SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
+    {FPath}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onPathlikeMatched(yytext(), '/', false, yychar);
+        }
+    }
+
+    {File}    {
+        chkLOC();
+        if (takeAllContent()) {
+            String path = yytext();
+            onFilelikeMatched(path, yychar);
+        }
+    }
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
+        if (takeAllContent()) {
+            onEmailAddressMatched(yytext(), yychar);
+        }
+    }
+}
+
+<SCOMMENT, POD, FMT, HERE, HERExN, HEREin, HEREinxN> {
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar, null);
+        }
+        // no skipLink() needed except in QUO* states
+    }
+}
+
+<QUO, QUOxN> {
+    {BrowseableURI}    {
+        chkLOC();
+        String capture = yytext();
+        Pattern collateralCapture = getCollateralCapturePattern();
+        if (takeAllContent()) {
+            onUriMatched(capture, yychar, collateralCapture);
+        } else {
+            skipLink(yytext(), collateralCapture);
+        }
+    }
+}

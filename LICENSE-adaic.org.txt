@@ -1,0 +1,84 @@
+Ada Reference Manual, ISO/IEC 8652:2007(E) Ed. 3
+
+
+ISO/IEC 8652:1995(E)
+with Technical Corrigendum 1
+and Amendment 1
+
+Language and Standard Libraries
+
+
+Copyright © 1992, 1993, 1994, 1995 Intermetrics, Inc.
+Copyright © 2000 The MITRE Corporation, Inc.
+Copyright © 2004, 2005, 2006 AXE Consultants
+Copyright © 2004, 2005, 2006 Ada-Europe
+
+
+Ada Reference Manual - Language and Standard Libraries
+Copyright © 1992, 1993, 1994, 1995, Intermetrics, Inc.
+This copyright is assigned to the U.S. Government. All rights reserved.
+This document may be copied, in whole or in part, in any form or by any means,
+as is or with alterations, provided that (1) alterations are clearly marked as
+alterations and (2) this copyright notice is included unmodified in any copy.
+Compiled copies of standard library units and examples need not contain this
+copyright notice so long as the notice is included in all copies of source code
+and documentation.
+
+
+Technical Corrigendum 1
+Copyright © 2000, The MITRE Corporation. All Rights Reserved.
+This document may be copied, in whole or in part, in any form or by any means,
+as is, or with alterations, provided that (1) alterations are clearly marked as
+alterations and (2) this copyright notice is included unmodified in any copy.
+Any other use or distribution of this document is prohibited without the prior
+express permission of MITRE.
+You use this document on the condition that you indemnify and hold harmless
+MITRE, its Board of Trustees, officers, agents, and employees, from any and all
+liability or damages to yourself or your hardware or software, or third
+parties, including attorneys' fees, court costs, and other related costs and
+expenses, arising out of your use of this document irrespective of the cause
+of said liability.
+MITRE MAKES THIS DOCUMENT AVAILABLE ON AN "AS IS" BASIS AND MAKES NO WARRANTY,
+EXPRESS OR IMPLIED, AS TO THE ACCURACY, CAPABILITY, EFFICIENCY MERCHANTABILITY,
+OR FUNCTIONING OF THIS DOCUMENT. IN NO EVENT WILL MITRE BE LIABLE FOR ANY
+GENERAL, CONSEQUENTIAL, INDIRECT, INCIDENTAL, EXEMPLARY, OR SPECIAL DAMAGES,
+EVEN IF MITRE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+
+Amendment 1
+Copyright © 2004, 2005, 2006, AXE Consultants. All Rights Reserved.
+This document may be copied, in whole or in part, in any form or by any means,
+as is, or with alterations, provided that (1) alterations are clearly marked as
+alterations and (2) this copyright notice is included unmodified in any copy.
+Any other use or distribution of this document is prohibited without the prior
+express permission of AXE.
+You use this document on the condition that you indemnify and hold harmless
+AXE, its board, officers, agents, and employees, from any and all liability or
+damages to yourself or your hardware or software, or third parties, including
+attorneys' fees, court costs, and other related costs and expenses, arising out
+of your use of this document irrespective of the cause of said liability.
+AXE MAKES THIS DOCUMENT AVAILABLE ON AN "AS IS" BASIS AND MAKES NO WARRANTY,
+EXPRESS OR IMPLIED, AS TO THE ACCURACY, CAPABILITY, EFFICIENCY MERCHANTABILITY,
+OR FUNCTIONING OF THIS DOCUMENT. IN NO EVENT WILL AXE BE LIABLE FOR ANY
+GENERAL, CONSEQUENTIAL, INDIRECT, INCIDENTAL, EXEMPLARY, OR SPECIAL DAMAGES,
+EVEN IF AXE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+
+Consolidated Standard
+Copyright © 2004, 2005, 2006, Ada-Europe.
+This document may be copied, in whole or in part, in any form or by any means,
+as is, or with alterations, provided that (1) alterations are clearly marked as
+alterations and (2) this copyright notice is included unmodified in any copy.
+Any other use or distribution of this document is prohibited without the prior
+express permission of Ada-Europe.
+You use this document on the condition that you indemnify and hold harmless
+Ada-Europe and its Board from any and all liability or damages to yourself or
+your hardware or software, or third parties, including attorneys' fees, court
+costs, and other related costs and expenses, arising out of your use of this
+document irrespective of the cause of said liability.
+ADA-EUROPE MAKES THIS DOCUMENT AVAILABLE ON AN "AS IS" BASIS AND MAKES NO
+WARRANTY, EXPRESS OR IMPLIED, AS TO THE ACCURACY, CAPABILITY, EFFICIENCY
+MERCHANTABILITY, OR FUNCTIONING OF THIS DOCUMENT. IN NO EVENT WILL ADA-EUROPE
+BE LIABLE FOR ANY GENERAL, CONSEQUENTIAL, INDIRECT, INCIDENTAL, EXEMPLARY, OR
+SPECIAL DAMAGES, EVEN IF ADA-EUROPE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES.

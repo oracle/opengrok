@@ -1,0 +1,34 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/* TODO: prohibit '$' in identifiers? */
+Identifier = [:jletter:] [:jletterdigit:]*
+
+Number = ({Hexadecimal} | {Binary} | {Decimal} | {Floating})
+Hexadecimal = 0[x][0-9a-fA-F_]*[0-9a-fA-F] [L]?
+Binary = 0[b][01_]*[01] [L]?
+Decimal = {Decimal_digits} [L]?
+Decimal_digits = ([0-9]+ | [0-9][0-9_]*[0-9])
+Floating = ({Decimal_digits}\.{Decimal_digits} |
+    {Decimal_digits}) ([eE][+-]?[0-9_]*[0-9])? [fF]?

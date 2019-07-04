@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <display-name>OpenGrok</display-name>
+    <description>A wicked fast source browser</description>
+    <context-param>
+        <description>Full path to the configuration file where OpenGrok can read its configuration</description>
+        <param-name>CONFIGURATION</param-name>
+        <param-value>/var/opengrok/etc/configuration.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.opengrok.web.WebappListener</listener-class>
+    </listener>
+    <filter>
+        <filter-name>AuthorizationFilter</filter-name>
+        <filter-class>org.opengrok.web.AuthorizationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>StatisticsFilter</filter-name>
+        <filter-class>org.opengrok.web.StatisticsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>StatisticsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>ExpiresHalfHourFilter</filter-name>
+        <filter-class>org.opengrok.web.ResponseHeaderFilter</filter-class>
+        <init-param>
+            <param-name>Cache-Control</param-name>
+            <param-value>max-age=1800</param-value>
+        </init-param>
+    </filter>
+    <filter>
+        <filter-name>ExpiresOneDayFilter</filter-name>
+        <filter-class>org.opengrok.web.ResponseHeaderFilter</filter-class>
+        <init-param>
+            <param-name>Cache-Control</param-name>
+            <param-value>max-age=86400</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ExpiresOneDayFilter</filter-name>
+        <url-pattern>/default/*</url-pattern>
+        <url-pattern>/js/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>ExpiresHalfHourFilter</filter-name>
+        <url-pattern>/history/*</url-pattern>
+        <url-pattern>/raw/*</url-pattern>
+        <url-pattern>/download/*</url-pattern>
+        <url-pattern>/rss/*</url-pattern>
+        <url-pattern>/error</url-pattern>
+        <url-pattern>/enoent</url-pattern>
+        <url-pattern>/eforbidden</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <servlet>
+        <display-name>Source Finder</display-name>
+        <servlet-name>search</servlet-name>
+        <jsp-file>/search.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Source History</display-name>
+        <servlet-name>history</servlet-name>
+        <jsp-file>/history.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Source lister</display-name>
+        <servlet-name>lister</servlet-name>
+        <jsp-file>/list.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Source diffs between revisions</display-name>
+        <servlet-name>diff</servlet-name>
+        <jsp-file>/diff.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Shows more matching lines</display-name>
+        <servlet-name>more</servlet-name>
+        <jsp-file>/more.jsp</jsp-file>
+    </servlet>
+    <servlet>
+        <display-name>Source Changes in RSS format</display-name>
+        <servlet-name>rss</servlet-name>
+        <jsp-file>/rss.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>OpenSearch link for current project</display-name>
+        <servlet-name>opensearch</servlet-name>
+        <jsp-file>/opensearch.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Raw Source lister</display-name>
+        <servlet-name>raw</servlet-name>
+        <jsp-file>/raw.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Download source</display-name>
+        <servlet-name>download</servlet-name>
+        <jsp-file>/raw.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Error Handler</display-name>
+        <servlet-name>error</servlet-name>
+        <jsp-file>/error.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>File not found handler</display-name>
+        <servlet-name>enoent</servlet-name>
+        <jsp-file>/enoent.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <display-name>Forbidden error handler</display-name>
+        <servlet-name>eforbidden</servlet-name>
+        <jsp-file>/eforbidden.jsp</jsp-file>
+        <init-param>
+            <param-name>keepgenerated</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>search</servlet-name>
+        <url-pattern>/search</url-pattern>
+        <!-- SEARCH_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>opensearch</servlet-name>
+        <url-pattern>/opensearch</url-pattern>
+        <!-- SEARCH_O -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>history</servlet-name>
+        <url-pattern>/history/*</url-pattern>
+        <!-- HIST_L -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>lister</servlet-name>
+        <url-pattern>/xref/*</url-pattern>
+        <!-- XREF_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>raw</servlet-name>
+        <url-pattern>/raw/*</url-pattern>
+        <!-- RAW_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>download</servlet-name>
+        <url-pattern>/download/*</url-pattern>
+        <!-- DOWNLOAD_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>search</servlet-name>
+        <url-pattern>/s</url-pattern>
+        <!-- SEARCH_R -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>diff</servlet-name>
+        <url-pattern>/diff/*</url-pattern>
+        <!-- DIFF_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>more</servlet-name>
+        <url-pattern>/more/*</url-pattern>
+        <!-- MORE_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>rss</servlet-name>
+        <url-pattern>/rss/*</url-pattern>
+        <!-- RSS_P -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>error</servlet-name>
+        <url-pattern>/error</url-pattern>
+        <!-- ERROR -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>enoent</servlet-name>
+        <url-pattern>/enoent</url-pattern>
+        <!-- NOT_FOUND -->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>eforbidden</servlet-name>
+        <url-pattern>/eforbidden</url-pattern>
+        <!-- FORBIDDEN -->
+    </servlet-mapping>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/enoent</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error</location>
+    </error-page>
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <trim-directive-whitespaces>true</trim-directive-whitespaces>
+        </jsp-property-group>
+    </jsp-config>
+</web-app>

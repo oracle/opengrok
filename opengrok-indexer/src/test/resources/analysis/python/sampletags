@@ -1,0 +1,61 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+np	grok.py	/^import numpy as np$/;"	namespace	line:27
+pd	grok.py	/^import pandas as pd$/;"	namespace	line:28
+model_path	grok.py	/^model_path = "model\/model.json"$/;"	variable	line:35
+weight_path	grok.py	/^weight_path = "model\/weight.hdf5"$/;"	variable	line:36
+image_path	grok.py	/^image_path = 'sample images\/original images\/21 original.png' # put the path of the image that /;"	variable	line:37
+new_width	grok.py	/^new_width = 0 # adjust the width of the image. the original width is used if new_width = 0.$/;"	variable	line:38
+input_shape	grok.py	/^input_shape = [64, 64, 1]$/;"	variable	line:39
+add_mergin	grok.py	/^def add_mergin(img, mergin):$/;"	function	line:42	signature:(img, mergin)
+pickleload	grok.py	/^def pickleload(path):$/;"	function	line:51	signature:(path)
+json_string	grok.py	/^json_string = open(model_path).read()$/;"	variable	line:58
+model	grok.py	/^model = model_from_json(json_string)$/;"	variable	line:59
+char_list_path	grok.py	/^char_list_path = "data\/char_list.csv"$/;"	variable	line:63
+char_list	grok.py	/^char_list = pd.read_csv(char_list_path, encoding="cp932")$/;"	variable	line:64
+char_list	grok.py	/^char_list = char_list[char_list['frequency']>=10]$/;"	variable	line:67
+char_list	grok.py	/^char_list = char_list['char'].as_matrix()$/;"	variable	line:68
+space	grok.py	/^        space = k$/;"	variable	line:72
+mergin	grok.py	/^mergin = (input_shape[0] - 18) \/\/ 2$/;"	variable	line:77
+img	grok.py	/^img = Image.open(image_path)$/;"	variable	line:78
+orig_width	grok.py	/^orig_width, orig_height = img.size$/;"	variable	line:79
+orig_height	grok.py	/^orig_width, orig_height = img.size$/;"	variable	line:79
+new_height	grok.py	/^new_height = int(img.size[1] * new_width \/ img.size[0])$/;"	variable	line:81
+img	grok.py	/^img = img.resize((new_width, new_height), Image.LANCZOS)$/;"	variable	line:82
+img	grok.py	/^img = np.array(img)$/;"	variable	line:83
+img	grok.py	/^    img = img[:, :, 0]$/;"	variable	line:85
+img_new	grok.py	/^img_new = np.ones([img.shape[0]+2*mergin+18, img.shape[1]+2*mergin+18],$/;"	variable	line:87
+img	grok.py	/^img = (img_new.astype(np.float32)) \/ 255$/;"	variable	line:90
+char_dict_path	grok.py	/^char_dict_path = "data\/char_dict.pkl"$/;"	variable	line:92
+char_dict	grok.py	/^char_dict = pickleload(char_dict_path)$/;"	variable	line:93
+output_dir	grok.py	/^output_dir = "output\/"$/;"	variable	line:97
+num_line	grok.py	/^    num_line = (img.shape[0] - input_shape[0]) \/\/ 18$/;"	variable	line:103
+img_width	grok.py	/^    img_width = img.shape[1]$/;"	variable	line:104
+new_line	grok.py	/^    new_line = np.ones([1, img_width])$/;"	variable	line:105
+img	grok.py	/^    img = np.concatenate([new_line, img], axis=0)$/;"	variable	line:106
+predicts	grok.py	/^    predicts = []$/;"	variable	line:107
+text	grok.py	/^    text = []$/;"	variable	line:108
+w	grok.py	/^        w = 0$/;"	variable	line:110
+penalty	grok.py	/^        penalty = 1$/;"	variable	line:111
+predict_line	grok.py	/^        predict_line = []$/;"	variable	line:112
+text_line	grok.py	/^        text_line = ""$/;"	variable	line:113
+input_img	grok.py	/^            input_img = img[h*18:h*18+ input_shape[0], w:w+input_shape[1]]$/;"	variable	line:115
+input_img	grok.py	/^            input_img = input_img.reshape([1,input_shape[0], input_shape[1], 1])$/;"	variable	line:116
+predict	grok.py	/^            predict = model.predict(input_img)$/;"	variable	line:117
+predict	grok.py	/^            predict = np.argmax(predict[0])$/;"	variable	line:119
+penalty	grok.py	/^            penalty = (predict==space)$/;"	variable	line:120
+char	grok.py	/^            char = char_list[predict]$/;"	variable	line:121
+char_width	grok.py	/^            char_width = char_dict[char].shape[1]$/;"	variable	line:123
+img_aa	grok.py	/^    img_aa = np.ones_like(img, dtype=np.uint8) * 255$/;"	variable	line:130
+w	grok.py	/^        w = 0$/;"	variable	line:133
+char_width	grok.py	/^            char_width = char_dict[char].shape[1]$/;"	variable	line:136
+char_img	grok.py	/^            char_img = 255 - char_dict[char].astype(np.uint8) * 255$/;"	variable	line:137
+img_aa	grok.py	/^    img_aa = Image.fromarray(img_aa)$/;"	variable	line:141
+img_aa	grok.py	/^    img_aa = img_aa.crop([0,slide,new_width, new_height+slide])$/;"	variable	line:142
+save_path	grok.py	/^    save_path = output_dir + os.path.basename(image_path)[:-4] + '_'\\$/;"	variable	line:143
+f	grok.py	/^    f=open(save_path[:-4] + '.txt', 'w')$/;"	variable	line:148

@@ -1,0 +1,39 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+org.apache.spark.broadcast	grok.scala	/^package org.apache.spark.broadcast$/;"	packages	line:18
+adler	grok.scala	/^    val adler = new Adler32()$/;"	constants	line:103
+bytes	grok.scala	/^      val bytes = new Array[Byte](block.remaining())$/;"	constants	line:108
+blockManager	grok.scala	/^    val blockManager = SparkEnv.get.blockManager$/;"	constants	line:125
+blocks	grok.scala	/^    val blocks =$/;"	constants	line:129
+pieceId	grok.scala	/^      val pieceId = BroadcastBlockId(id, "piece" + i)$/;"	constants	line:138
+bytes	grok.scala	/^      val bytes = new ChunkedByteBuffer(block.duplicate())$/;"	constants	line:139
+blocks	grok.scala	/^    val blocks = new Array[BlockData](numBlocks)$/;"	constants	line:151
+bm	grok.scala	/^    val bm = SparkEnv.get.blockManager$/;"	constants	line:152
+pieceId	grok.scala	/^      val pieceId = BroadcastBlockId(id, "piece" + pid)$/;"	constants	line:155
+sum	grok.scala	/^                val sum = calcChecksum(b.chunks(0))$/;"	constants	line:168
+blockManager	grok.scala	/^      val blockManager = SparkEnv.get.blockManager$/;"	constants	line:213
+x	grok.scala	/^            val x = blockResult.data.next().asInstanceOf[T]$/;"	constants	line:217
+startTimeMs	grok.scala	/^          val startTimeMs = System.currentTimeMillis()$/;"	constants	line:225
+blocks	grok.scala	/^          val blocks = readBlocks()$/;"	constants	line:226
+obj	grok.scala	/^            val obj = TorrentBroadcast.unBlockifyObject[T]($/;"	constants	line:230
+storageLevel	grok.scala	/^            val storageLevel = StorageLevel.MEMORY_AND_DISK$/;"	constants	line:234
+blockManager	grok.scala	/^    val blockManager = SparkEnv.get.blockManager$/;"	constants	line:251
+TorrentBroadcast	grok.scala	/^private object TorrentBroadcast extends Logging {$/;"	objects	line:268
+blockifyObject	grok.scala	/^  def blockifyObject[T: ClassTag]($/;"	methods	line:270
+cbbos	grok.scala	/^    val cbbos = new ChunkedByteBufferOutputStream(blockSize, ByteBuffer.allocate)$/;"	constants	line:275
+out	grok.scala	/^    val out = compressionCodec.map(c => c.compressedOutputStream(cbbos)).getOrElse(cbbos)$/;"	constants	line:276
+ser	grok.scala	/^    val ser = serializer.newInstance()$/;"	constants	line:277
+serOut	grok.scala	/^    val serOut = ser.serializeStream(out)$/;"	constants	line:278
+unBlockifyObject	grok.scala	/^  def unBlockifyObject[T: ClassTag]($/;"	methods	line:287
+is	grok.scala	/^    val is = new SequenceInputStream(blocks.iterator.asJavaEnumeration)$/;"	constants	line:292
+in	grok.scala	/^    val in: InputStream = compressionCodec.map(c => c.compressedInputStream(is)).getOrElse(is)$/;"	constants	line:293
+ser	grok.scala	/^    val ser = serializer.newInstance()$/;"	constants	line:294
+serIn	grok.scala	/^    val serIn = ser.deserializeStream(in)$/;"	constants	line:295
+obj	grok.scala	/^    val obj = Utils.tryWithSafeFinally {$/;"	constants	line:296
+unpersist	grok.scala	/^  def unpersist(id: Long, removeFromDriver: Boolean, blocking: Boolean): Unit = {$/;"	methods	line:308
+unary_	grok.scala	/^  def unary_~ = 0$/;"	methods	line:318

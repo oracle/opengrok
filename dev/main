@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#
+# Do not run coverage for forks as most people do not have extra tools enabled
+# for their fork.
+#
+extra_args=""
+if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
+	# Code coverage is published only for JDK 8 because the
+	# coveralls-maven-plugin does not work with JDK 9+
+	# (https://github.com/trautonen/coveralls-maven-plugin/issues/112)
+	if [ "x$TRAVIS_JDK_VERSION" == "xoraclejdk8" ]; then
+		echo "Enabling Coveralls"
+		extra_args="jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report"
+	fi
+
+	#
+	# Sonar seems to only work on master branch commits.
+	#
+	if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+		echo "Enabling Sonar"
+		extra_args="$extra_args sonar:sonar"
+	fi
+fi
+
+ret=0
+mvn -B -V verify $extra_args || ret=1
+node dev/parse.js || ret=1
+exit $ret

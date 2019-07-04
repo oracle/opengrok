@@ -1,0 +1,14 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+UT_CONFIG_SCANNER	grok.e	/^deferred class UT_CONFIG_SCANNER$/;"	class	line:55
+make_compressed_scanner_skeleton	grok.e	/^			make as make_compressed_scanner_skeleton,$/;"	feature	line:61	class:UT_CONFIG_SCANNER
+reset_compressed_scanner_skeleton	grok.e	/^			reset as reset_compressed_scanner_skeleton$/;"	feature	line:62	class:UT_CONFIG_SCANNER
+valid_start_condition	grok.e	/^	valid_start_condition (sc: INTEGER): BOOLEAN$/;"	feature	line:73	class:UT_CONFIG_SCANNER
+yy_build_tables	grok.e	/^	yy_build_tables$/;"	feature	line:81	class:UT_CONFIG_SCANNER
+yy_execute_action	grok.e	/^	yy_execute_action (yy_act: INTEGER)$/;"	feature	line:93	class:UT_CONFIG_SCANNER
+yy_execute_eof_action	grok.e	/^	yy_execute_eof_action (yy_sc: INTEGER)$/;"	feature	line:335	class:UT_CONFIG_SCANNER

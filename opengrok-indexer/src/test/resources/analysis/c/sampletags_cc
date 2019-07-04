@@ -1,0 +1,52 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/1620c633/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+Ancestor	grok.cc	/^Ancestor::Ancestor(Str field, fru_tag_t t, const fru_regdef_t *d)$/;"	function	line:37	class:Ancestor	signature:(Str field,fru_tag_t t,const fru_regdef_t * d)
+~Ancestor	grok.cc	/^Ancestor::~Ancestor()$/;"	function	line:51	class:Ancestor	signature:()
+i	grok.cc	/^		for (int i = 0; i < numInstances && i < 0xFFFFFF; i++) {$/;"	local	line:55	function:Ancestor::~Ancestor	typeref:typename:int
+addInstance	grok.cc	/^Ancestor::addInstance(const char *path, uint32_t offset)$/;"	function	line:84	class:Ancestor	typeref:typename:void	signature:(const char * path,uint32_t offset)
+getFieldName	grok.cc	/^Ancestor::getFieldName(void)$/;"	function	line:100	class:Ancestor	typeref:typename:Str	signature:(void)
+getTag	grok.cc	/^Ancestor::getTag(void)$/;"	function	line:106	class:Ancestor	typeref:typename:fru_tag_t	signature:(void)
+getDef	grok.cc	/^Ancestor::getDef(void)$/;"	function	line:112	class:Ancestor	typeref:typename:const fru_regdef_t *	signature:(void)
+getNumInstances	grok.cc	/^Ancestor::getNumInstances(void)$/;"	function	line:118	class:Ancestor	typeref:typename:int	signature:(void)
+getInstOffset	grok.cc	/^Ancestor::getInstOffset(int num)$/;"	function	line:124	class:Ancestor	typeref:typename:uint32_t	signature:(int num)
+getPath	grok.cc	/^Ancestor::getPath(int num)$/;"	function	line:133	class:Ancestor	typeref:typename:const char *	signature:(int num)
+listTaggedAncestors	grok.cc	/^Ancestor::listTaggedAncestors(char *element)$/;"	function	line:143	class:Ancestor	typeref:typename:Ancestor *	signature:(char * element)
+rc	grok.cc	/^	Ancestor *rc = NULL;$/;"	local	line:145	function:Ancestor::listTaggedAncestors	typeref:typename:Ancestor *
+def	grok.cc	/^	fru_regdef_t *def = NULL;$/;"	local	line:146	function:Ancestor::listTaggedAncestors	typeref:typename:fru_regdef_t *
+i	grok.cc	/^	int i = 0;$/;"	local	line:147	function:Ancestor::listTaggedAncestors	typeref:typename:int
+number	grok.cc	/^	unsigned int number = 0;$/;"	local	line:149	function:Ancestor::listTaggedAncestors	typeref:typename:unsigned int
+data_elems	grok.cc	/^	char **data_elems = fru_reg_list_entries(&number);$/;"	local	line:150	function:Ancestor::listTaggedAncestors	typeref:typename:char **
+ant	grok.cc	/^		Ancestor *ant = createTaggedAncestor(def, element);$/;"	local	line:160	function:Ancestor::listTaggedAncestors	typeref:typename:Ancestor *
+tmp	grok.cc	/^				Ancestor *tmp = rc;$/;"	local	line:165	function:Ancestor::listTaggedAncestors	typeref:typename:Ancestor *
+createTaggedAncestor	grok.cc	/^Ancestor::createTaggedAncestor(const fru_regdef_t *def, Str element)$/;"	function	line:183	class:Ancestor	typeref:typename:Ancestor *	signature:(const fru_regdef_t * def,Str element)
+tag	grok.cc	/^	fru_tag_t tag;$/;"	local	line:189	function:Ancestor::createTaggedAncestor	typeref:typename:fru_tag_t
+rc	grok.cc	/^	Ancestor *rc = new Ancestor(element, tag, def);$/;"	local	line:191	function:Ancestor::createTaggedAncestor	typeref:typename:Ancestor *
+found	grok.cc	/^	int found = 0;$/;"	local	line:198	function:Ancestor::createTaggedAncestor	typeref:typename:int
+offset	grok.cc	/^		uint32_t offset = 0;$/;"	local	line:200	function:Ancestor::createTaggedAncestor	typeref:typename:uint32_t
+i	grok.cc	/^		for (int i = 0; i < def->enumCount; i++) {$/;"	local	line:201	function:Ancestor::createTaggedAncestor	typeref:typename:int
+tmp	grok.cc	/^			const fru_regdef_t *tmp$/;"	local	line:202	function:Ancestor::createTaggedAncestor	typeref:typename:const fru_regdef_t *
+path	grok.cc	/^			Str path = "\/";$/;"	local	line:205	function:Ancestor::createTaggedAncestor	typeref:typename:Str
+f	grok.cc	/^			int f = definitionContains(tmp, def, element,$/;"	local	line:207	function:Ancestor::createTaggedAncestor	typeref:typename:int
+definitionContains	grok.cc	/^Ancestor::definitionContains(const fru_regdef_t *def,$/;"	function	line:223	class:Ancestor	typeref:typename:int	signature:(const fru_regdef_t * def,const fru_regdef_t * parent_def,Str element,uint32_t offset,Ancestor * ant,Str path)
+i	grok.cc	/^			for (int i = 0; i < parent_def->iterationCount; i++) {$/;"	local	line:233	function:Ancestor::definitionContains	typeref:typename:int
+tmp	grok.cc	/^				Str tmp = path;$/;"	local	line:234	function:Ancestor::definitionContains	typeref:typename:Str
+found	grok.cc	/^	int found = 0;$/;"	local	line:247	function:Ancestor::definitionContains	typeref:typename:int
+i	grok.cc	/^		for (int i = 0; i < def->enumCount; i++) {$/;"	local	line:249	function:Ancestor::definitionContains	typeref:typename:int
+tmp	grok.cc	/^			const fru_regdef_t *tmp$/;"	local	line:250	function:Ancestor::definitionContains	typeref:typename:const fru_regdef_t *
+newPath	grok.cc	/^			Str newPath = path;$/;"	local	line:253	function:Ancestor::definitionContains	typeref:typename:Str
+f	grok.cc	/^			int f = definitionContains(tmp, def, element,$/;"	local	line:255	function:Ancestor::definitionContains	typeref:typename:int
+d	grok.cc	/^	int d = 42;$/;"	local	line:262	function:Ancestor::definitionContains	typeref:typename:int
+o	grok.cc	/^	int o = 052;$/;"	local	line:263	function:Ancestor::definitionContains	typeref:typename:int
+x	grok.cc	/^	int x = 0x2a;$/;"	local	line:264	function:Ancestor::definitionContains	typeref:typename:int
+X	grok.cc	/^	int X = 0X2A;$/;"	local	line:265	function:Ancestor::definitionContains	typeref:typename:int
+b	grok.cc	/^	int b = 0b101010; \/\/ C++14$/;"	local	line:266	function:Ancestor::definitionContains	typeref:typename:int
+l1	grok.cc	/^	unsigned long long l1 = 18446744073709550592ull; \/\/ C++11$/;"	local	line:267	function:Ancestor::definitionContains	typeref:typename:unsigned long long
+l2	grok.cc	/^	unsigned long long l2 = 18'446'744'073'709'550'592llu; \/\/ C++14$/;"	local	line:268	function:Ancestor::definitionContains	typeref:typename:unsigned long long
+l3	grok.cc	/^	unsigned long long l3 = 1844'6744'0737'0955'0592uLL; \/\/ C++14$/;"	local	line:269	function:Ancestor::definitionContains	typeref:typename:unsigned long long
+l4	grok.cc	/^	unsigned long long l4 = 184467'440737'0'95505'92LLU; \/\/ C++14$/;"	local	line:270	function:Ancestor::definitionContains	typeref:typename:unsigned long long
+d	grok.cc	/^	double d = 0x1.2p3; \/\/ hex frac 1.2 (dec 1.125) scaled by 2^3, i.e. 9.0$/;"	local	line:271	function:Ancestor::definitionContains	typeref:typename:double

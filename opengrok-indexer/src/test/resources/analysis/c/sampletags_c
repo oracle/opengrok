@@ -1,0 +1,20 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/1620c633/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+hrt2ts	grok.c	/^hrt2ts(hrtime_t hrt, timespec_t *tsp)$/;"	function	line:40	typeref:typename:void	signature:(hrtime_t hrt,timespec_t * tsp)
+sec	grok.c	/^	uint32_t sec, nsec, tmp;$/;"	local	line:42	function:hrt2ts	typeref:typename:uint32_t
+nsec	grok.c	/^	uint32_t sec, nsec, tmp;$/;"	local	line:42	function:hrt2ts	typeref:typename:uint32_t
+tmp	grok.c	/^	uint32_t sec, nsec, tmp;$/;"	local	line:42	function:hrt2ts	typeref:typename:uint32_t
+abstime_to_reltime	grok.c	/^abstime_to_reltime(clockid_t clock_id,$/;"	function	line:70	typeref:typename:void	signature:(clockid_t clock_id,const timespec_t * abstime,timespec_t * reltime)
+now	grok.c	/^	timespec_t now;$/;"	local	line:74	function:abstime_to_reltime	typeref:typename:timespec_t
+dec	grok.c	/^	int dec = 42;$/;"	local	line:105	function:abstime_to_reltime	typeref:typename:int
+o	grok.c	/^	int o = 052;$/;"	local	line:106	function:abstime_to_reltime	typeref:typename:int
+x	grok.c	/^	int x = 0x2a;$/;"	local	line:107	function:abstime_to_reltime	typeref:typename:int
+X	grok.c	/^	int X = 0X2A;$/;"	local	line:108	function:abstime_to_reltime	typeref:typename:int
+ull	grok.c	/^	unsigned long long ull = 12345678901234567890ull;$/;"	local	line:109	function:abstime_to_reltime	typeref:typename:unsigned long long
+u	grok.c	/^	unsigned long u = 12345678901234567890u;$/;"	local	line:110	function:abstime_to_reltime	typeref:typename:unsigned long
+d	grok.c	/^	double d = 0x1.2p3; \/* hex frac 1.2(dec 1.125) scaled by 2^3, i.e. 9.0*\/$/;"	local	line:112	function:abstime_to_reltime	typeref:typename:double

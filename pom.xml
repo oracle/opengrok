@@ -18,25 +18,24 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opensolaris.opengrok</groupId>
-    <artifactId>opengrok</artifactId>
+
+    <groupId>org.opengrok</groupId>
+    <artifactId>opengrok-top</artifactId>
+    <version>1.2.23</version>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+
     <name>OpenGrok</name>
     <url>http://opengrok.github.com/OpenGrok/</url>
-
-    <scm>
-        <connection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</developerConnection>
-        <url>ssh://git@github.com:OpenGrok/OpenGrok.git</url>
-    </scm>
-
+    <organization>
+        <name>Oracle</name>
+        <url>http://www.oracle.com</url>
+    </organization>
     <licenses>
         <license>
             <name>CDDL 1</name>
@@ -45,37 +44,50 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
         </license>
     </licenses>
 
-    <organization>
-        <name>Oracle</name>
-        <url>http://www.oracle.com</url>
-    </organization>
-
     <modules>
-        <module>jrcs</module>
         <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
+        <module>distribution</module>
+        <module>suggester</module>
+        <module>opengrok-tools</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</developerConnection>
+        <url>ssh://git@github.com:OpenGrok/OpenGrok.git</url>
+    </scm>
+
     <properties>
-	<lucene.version>6.6.0</lucene.version>
-	<mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
+        <lucene.version>7.7.0</lucene.version>
+        <mavenjavadocplugin.version>3.0.1</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jersey.version>2.27</jersey.version>
+        <!-- Jackson version needs to match the version of Jackson Jersey depends on otherwise weird things will happen. -->
+        <jackson.version>2.8.10</jackson.version>
+        <junit.version>5.4.2</junit.version>
+        <maven-surefire.version>2.22.2</maven-surefire.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>${junit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.bcel</groupId>
                 <artifactId>bcel</artifactId>
-                <version>6.0</version>
+                <version>6.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
@@ -85,6 +97,26 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analyzers-common</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-highlighter</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-join</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-memory</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queries</artifactId>
                 <version>${lucene.version}</version>
             </dependency>
             <dependency>
@@ -99,13 +131,9 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
-            </dependency>
-            <dependency>
-                    <groupId>com.googlecode.json-simple</groupId>
-                    <artifactId>json-simple</artifactId>
-                    <version>1.1.1</version>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.1.0</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
@@ -115,8 +143,58 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
         </dependencies>
     </dependencyManagement>
 
+    <repositories>
+        <repository>
+            <id>maven.org</id>
+            <name>maven.org</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>apache.snapshots</name>
+            <url>https://repository.apache.org/snapshots/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven.org</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                  <execution>
+                    <id>enforce-maven</id>
+                    <goals>
+                      <goal>enforce</goal>
+                    </goals>
+                    <configuration>
+                      <rules>
+                        <requireMavenVersion>
+                          <version>3.0.5</version>
+                        </requireMavenVersion>
+                      </rules>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -124,34 +202,149 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                     <source>${compileSource}</source>
                     <target>${compileTarget}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <compilerArgs>
+                      <arg>-Xlint:all</arg>
+                      <arg>-Werror</arg>
+                      <!-- meant for autogenerated sources -->
+                      <arg>-Xlint:-auxiliaryclass</arg>
+                      <arg>-Xlint:-fallthrough</arg>
+                    </compilerArgs>
                 </configuration>
                 <version>3.6.1</version>
             </plugin>
             <plugin>
+                <!-- UNIT TEST RUNNER -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                        <forkCount>1</forkCount>
-                        <reuseForks>false</reuseForks>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
-                <version>2.20</version>
+                <version>${maven-surefire.version}</version>
+                <executions>
+                    <execution>
+                        <id>run-unit-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.2</version>
+                <executions>
+                    <!-- Prepare execution with Surefire -->
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <!-- Generate report after tests are run -->
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
-	    <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-		<version>${mavenjavadocplugin.version}</version>
+                <version>${mavenjavadocplugin.version}</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>javadoc</goal>
+                      <goal>test-javadoc</goal>
+                    </goals>
+                    <phase>verify</phase>
+                  </execution>
+                </executions>
+                <configuration>
+                    <verbose>true</verbose>
+                    <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                    <javaApiLinks>
+                        <property>
+                            <name>foo</name>
+                            <value>bar</value>
+                        </property>
+                    </javaApiLinks>
+                    <sourceFileExcludes>
+                        <!-- workarounds for https://github.com/jflex-de/jflex/issues/542 -->
+                        <exclude>**/HistoryLineTokenizer.java</exclude>
+                        <exclude>**/PlainLineTokenizer.java</exclude>
+                        <exclude>**/XrefSourceTransformer.java</exclude>
+                    </sourceFileExcludes>
+                </configuration>
             </plugin>
-           <plugin>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.9</version>
-           </plugin>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.9</version>
+            </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.17</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>checkstyle</id>
+                            <phase>validate</phase>
+                            <configuration>
+                                <configLocation>/dev/checkstyle/style.xml</configLocation>
+                                <encoding>UTF-8</encoding>
+                                <consoleOutput>true</consoleOutput>
+                                <failsOnError>true</failsOnError>
+                                <suppressionsLocation>/dev/checkstyle/suppressions.xml</suppressionsLocation>
+                                <headerLocation>/dev/checkstyle/fileheader.txt</headerLocation>
+                                <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
+                            </configuration>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>java9plus-8-release</id>
+            <activation>
+                <jdk>[9,18]</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <reporting>
         <plugins>
@@ -161,12 +354,12 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                 <version>3.0.4</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
-                    <includeFilterFile>tools/findbugs_filter.xml</includeFilterFile>
+                    <includeFilterFile>dev/findbugs_filter.xml</includeFilterFile>
                     <xmlOutputDirectory>
                         ${project.build.directory}/findbugs-reports
                     </xmlOutputDirectory>
                     <effort>max</effort>
-                    <onlyAnalyze>org.opensolaris.opengrok.*</onlyAnalyze>
+                    <onlyAnalyze>org.opengrok.*</onlyAnalyze>
                 </configuration>
             </plugin>
             <plugin>
@@ -183,7 +376,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                 </reportSets>
                 <configuration>
                     <rulesets>
-                        <ruleset>tools/pmd_ruleset.xml</ruleset>
+                        <ruleset>dev/pmd_ruleset.xml</ruleset>
                     </rulesets>
                     <targetJdk>${compileSource}</targetJdk>
                     <aggregate>true</aggregate>
@@ -216,47 +409,13 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.20</version>
+                <version>${maven-surefire.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>2.5</version>
-                <configuration>
-                    <aggregate>true</aggregate>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
-                <configuration>
-                    <configLocation>checkstyle/style.xml</configLocation>
-                </configuration>
             </plugin>
         </plugins>
     </reporting>
-
-    <repositories>
-        <repository>
-            <id>maven.org</id>
-            <name>maven.org</name>
-            <url>http://repo.maven.apache.org/maven2/</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>apache.snapshots</id>
-            <name>apache.snapshots</name>
-            <url>http://repository.apache.org/snapshots/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>maven.org</id>
-            <url>http://repo.maven.apache.org/maven2/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
 </project>

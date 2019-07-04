@@ -1,0 +1,66 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
+SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
+ComplexVariable = [\$] "{" [^}]+  "}"
+
+Label =  {WhspChar}* ":" {Identifier}
+
+Operator = "-" [a-zA-Z]+
+Break = "break" {WhspChar}+ {Identifier}
+Continue = "continue" {WhspChar}+ {Identifier}
+DataType = "[" [a-zA-Z_] [a-zA-Z0-9_.-]* "[]"? "]"
+
+/* The following should be matched by the 'Number' pattern below.
+ * '\$ [0-9]+' :
+ *     $1 $2 $10 ... (references to a regex match operation)
+ *
+ * '0[xX][0-9a-fA-F]+[lL]?' :
+ *     0xA 0X12A 0x12L ... (hex values with optional 'L'ong data type)
+ *
+ * '(\.[0-9]+|[0-9]+(\.[0-9]*)?)' :
+ *     .45 0.45 12. 34  ... (integers and real numbers)
+ *
+ * '([eE][+-]*[0-9]+)?' :  (optional exponential)
+ *     e+12 in 32.e+12
+ *     E-231 in 123.456E-231
+ *
+ *  '[dDlL]?' : (optional 'double' or 'long' data type designation)
+ *     1.20d 1.23450e1d 1.2345e-1D
+ *
+ *  {MultiplierSuffix} : (optional multiplier suffix)
+ *    kb, Kb, KB (kilobyte, 1024)
+ *    mb, Mb, MB (megabyte, 1024 x 1024)
+ *    gb, Gb, GB (gigabyte, 1024 x 1024 x 1024)
+ *    tb, Tb, TB (terabyte, 1024 x 1024 x 1024 x 1024)
+ *    pb, Pb, PB (petabyte, 1024 x 1024 x 1024 x 1024 x 1024)
+ *
+ *    1kb 1.30Dmb 0x10Gb 1.4e23Tb 0x12Lpb
+ */
+RegExGroup = \$ [0-9]+
+MultiplierSuffix = ([kKmMgGtTp][bB])?
+
+Number = {RegExGroup} | (0[xX][0-9a-fA-F]+[lL]? |
+    (\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE][+-]*[0-9]+)?[dDlL]? ) {MultiplierSuffix}

@@ -1,0 +1,212 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * 8.32.16 Syntax (non-production): Identifier --  a sequence of one or more
+ * alpha_numeric characters of which the first is a letter.
+ */
+Identifier = {letter} {alpha_numeric}*
+
+/*
+ * 8.32.2 Definition: Letter, alpha_betic, numeric, alpha_numeric, printable
+ *
+ * 1 Any of the following fifty-two, each a lower-case or upper-case element of
+ *   the Roman alphabet
+ * 2 If the underlying character set is 8-bit extended ASCII, the characters of
+ *   codes 192 to 255 in that set.
+ * 3 If the underlying character set is Unicode, all characters defined as
+ *   letters in that set.
+ *
+ * alpha_betic character is a letter or an underscore _.
+ * numeric character is one of the ten characters 0-9
+ * alpha_numeric character is alpha_betic or numeric
+ */
+letter = [\p{Letter}] // This suffices to cover 1,2,3 above.
+alpha_betic = ({letter} | [_])
+numeric = [0-9]
+alpha_numeric = ({alpha_betic} | {numeric})
+
+/*
+ * printable character is any of the characters listed as printable in the
+ * definition of the character set (Unicode or extended ASCII). “Printable”
+ * characters exclude such special characters as new line and backspace.
+ *
+ * N.b. for OpenGrok purposes, take "printable" as Wikipedia's definition of
+ * Unicode Graphic Character.
+ *
+ * 8.29.15 Validity: Verbatim String rule
+ *
+ * Regarding α as the (possibly empty) Simple_string appearing in a
+ * Verbatim_string_opener: Every character in α is printable, and not a double
+ * quote.
+ */
+Vstring_alpha = [[\p{Letter}\p{Mark}\p{Number}\p{Punctuation}\p{Symbol}\p{Zs}]--[\"]]
+
+Number = [\+\-]? ({Integer} | {Real})
+/*
+ * Integer = Δ [Integer_base] Digit_sequence
+ * Integer_base = Δ "0" Integer_base_letter
+ * Integer_base_letter = Δ "b" | "c" | "x" | "B" | "C" | "X"
+ * Digit_sequence = Δ Digit+
+ * Digit = Δ "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" |
+ *     "a" | "b" | "c" | "d" | "e" | "f" |
+ *     "A" | "B" | "C" | "D" | "E" | "F" | "_"
+ * "Neither the first nor the last Digit of a Digit_sequence is an underscore"
+ */
+Integer = ({Decimal_integer} | {Hexadecimal} | {Binary} | {Octal})
+Decimal_integer = ({DIGIT}+ | {DIGIT} ("_" | {DIGIT})+ {DIGIT})
+Hexadecimal = 0[xX] ({HEXDIG}+ | {HEXDIG} ("_" | {HEXDIG})+ {HEXDIG})
+Binary = 0[bB] ({BINDIG}+ | {BINDIG} ("_" | {BINDIG})+ {BINDIG})
+Octal = 0[cC] ({OCTDIG}+ | {OCTDIG} ("_" | {OCTDIG})+ {OCTDIG})
+DIGIT = [0-9]
+HEXDIG = [0-9a-fA-F]
+BINDIG = [01]
+OCTDIG = [0-7]
+/*
+ * Real =
+ * • An optional decimal Integer, giving the integral part.
+ * • A required ‘‘.’’ (dot).
+ * • An optional decimal Integer, giving the fractional part.
+ * • An optional exponent, which is the letter e or E followed by an optional
+ *     Sign (+ or –) and a decimal Integer.
+ */
+Real = ({Decimal_integer}? "." {Decimal_integer} |
+    {Decimal_integer} ".") ([eE] [\+\-] {Decimal_integer})?
+
+/*
+ * Character_constant = Δ "'" Character "'"
+ */
+Character_constant = \' ([^\'\n\r] | {Special_character}) \'
+
+Special_character = % ([A-Da-dFfHhLlNnQqRrSsT-Vt-v%\'\"\(\)\<\>] | "/" [0-9]+ "/")
+
+/*
+ * SCOMMENT : single-line comment
+ * STRING : basic manifest string (literal)
+ * VSTRING : verbatim manifest string (literal)
+ */
+%state SCOMMENT STRING VSTRING
+
+%%
+<YYINITIAL> {
+    {Identifier}    {
+        chkLOC();
+        String id = yytext();
+        if (offerSymbol(id, 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Number}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    {Character_constant}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    "--"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+    \" {Vstring_alpha}* [\[\{]    {
+        chkLOC();
+        vop(yytext());
+    }
+}
+
+<SCOMMENT> {
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<STRING> {
+    \"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+    /*
+     * Eiffel defines "Line_wrapping_part" as a sequence of characters
+     * consisting of the following, in order: % (percent character); zero or
+     * more blanks or tabs; New_line; zero or more blanks or tabs; % again. For
+     * OpenGrok purposes, just recognizing LFs in STRING is good enough; though
+     * see also the {Special_character} handling for STRING,VSTRING.
+     */
+}
+
+<VSTRING> {
+    [\]\}] {Vstring_alpha}* \"    {
+        chkLOC();
+        maybeEndVerbatim(yytext());
+    }
+}
+
+<STRING, VSTRING> {
+    {Special_character}    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<YYINITIAL, SCOMMENT, STRING, VSTRING> {
+    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+    \s    { offer(yytext()); }
+    [^]    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+<SCOMMENT, STRING, VSTRING> {
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar);
+        }
+    }
+}

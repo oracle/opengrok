@@ -1,0 +1,24 @@
+#
+# Java logging properties template used by the opengrok-reindex-project script.
+#
+
+handlers= java.util.logging.FileHandler
+
+# Default global logging level.
+.level= FINE
+
+# The '%PROJ%' pattern will be expanded by the the opengrok-reindex-project script 
+# and therefore needs to match the argument to the -p option.
+java.util.logging.FileHandler.pattern = %PROJ%/opengrok%g.%u.log
+
+## Rotation settings
+# 50 MiB
+java.util.logging.FileHandler.limit = 52428800
+# 30 files
+java.util.logging.FileHandler.count = 30
+
+java.util.logging.FileHandler.formatter = org.opengrok.indexer.logger.formatter.SimpleFileLogFormatter
+
+# Limit the message that are printed on the console.
+java.util.logging.ConsoleHandler.level = WARNING
+java.util.logging.ConsoleHandler.formatter = org.opengrok.indexer.logger.formatter.SimpleFileLogFormatter

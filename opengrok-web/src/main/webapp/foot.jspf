@@ -1,0 +1,71 @@
+<%--
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Portions Copyright 2011 Jens Elkner.
+--%><%@page import="
+java.util.Date,
+java.util.EnumSet,
+
+org.opengrok.indexer.Info,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix"
+%>
+<%!
+/* ---------------------- foot.jspf members start --------------------- */
+    private static EnumSet<Prefix> needAddDiv = EnumSet.of(
+        Prefix.HIST_L, Prefix.XREF_P, Prefix.DIFF_P, Prefix.MORE_P,
+        // could NOT find any mapping/reference to those ones:
+        Prefix.HIST_S, Prefix.XREF_S, Prefix.DIFF_S, Prefix.MORE_S);
+/* ---------------------- foot.jspf members end --------------------- */
+%><%
+/* ---------------------- foot.jspf start --------------------- */
+{
+    PageConfig cfg = PageConfig.get(request);
+    Date dateForLastIndexRun = cfg.getEnv().getDateForLastIndexRun();
+    
+        %>
+    <div id="footer">
+<p><a href="http://opengrok.github.com/OpenGrok/"
+ title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)"><span id="fti"></span></a></p>
+<% if(dateForLastIndexRun != null) { %>
+<p>Last Index update <%= dateForLastIndexRun %></p>
+<%}%>
+    <%= cfg.getEnv().getIncludeFiles().getFooterIncludeFileContent(false) %>
+    <%
+    if (needAddDiv.contains(cfg.getPrefix())) {
+        %></div><% // #content
+    }
+    // #footer, #page:
+    %>
+    </div>
+</div>
+<%
+    /**
+     * Print out all collected javascript files (or inline script) by the calls
+     * to {@link PageConfig#addScript} methods.
+     */
+%>
+    <%= PageConfig.get(request).getScripts() %>
+</body>
+</html>
+<%
+}
+/* ---------------------- foot.jspf end --------------------- */
+%>

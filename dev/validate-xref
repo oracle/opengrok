@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# See LICENSE.txt included in this distribution for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at LICENSE.txt.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+
+#
+# Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+#
+
+#
+# A script that scans through the generated xrefs in an OpenGrok data
+# directory and checks if they contain valid XHTML 1.0 data.
+#
+# The script should be run with one argument, which should be the path
+# to the OpenGrok data directory (the parent of the xref directory).
+# If no problems are found, the script will be silent. Otherwise, it
+# will print which files are ill-formed and what the problems are.
+#
+# The script has only been tested on Debian systems with the
+# libxml2-utils and w3c-sgml-lib packages installed.
+#
+
+if [ $# -ne 1 ] || ! [ -d "$1"/xref ] ; then
+    echo "Usage: `basename $0` opengrok-data-dir"
+    exit 1
+fi
+
+dtd=/usr/share/xml/w3c-sgml-lib/schema/dtd/REC-xhtml1-20020801/xhtml1-strict.dtd
+
+if ! [ -f "$dtd" ]; then
+    echo "Cannot find $dtd."
+    echo "Please install w3c-sgml-lib."
+    exit 1
+fi
+
+if ! [ -x "`which xmllint`" ]; then
+    echo "Cannot find the xmllint executable."
+    echo "Please install libxml2-utils."
+    exit 1
+fi
+
+xml_begin() {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title></title></head>
+<body>
+<div><pre>
+EOF
+}
+
+xml_end() {
+    cat <<EOF
+</pre></div>
+</body>
+</html>
+EOF
+}
+
+tmp="`mktemp`"
+
+shopt -s globstar
+
+for i in "$1"/xref/**/*.gz
+do
+    if ! (xml_begin; zcat "$i"; xml_end) \
+            | xmllint --noout --valid --dtdvalid "$dtd" - > "$tmp" 2>&1
+    then
+        echo "*** ILL-FORMED DATA IN $i ***"
+        echo
+        cat "$tmp"
+        echo
+    fi
+done
+
+rm -f "$tmp"

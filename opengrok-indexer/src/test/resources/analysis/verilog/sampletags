@@ -1,0 +1,56 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/6f7654b9/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+SCARV_COP_INSN_ABORT	grok.v	/^localparam SCARV_COP_INSN_ABORT   =  3'b001;$/;"	constant	line:37
+SCARV_COP_INSN_BAD_INS	grok.v	/^localparam SCARV_COP_INSN_BAD_INS =  3'b010;$/;"	constant	line:38
+SCARV_COP_INSN_BAD_LAD	grok.v	/^localparam SCARV_COP_INSN_BAD_LAD =  3'b100;$/;"	constant	line:39
+SCARV_COP_INSN_BAD_SAD	grok.v	/^localparam SCARV_COP_INSN_BAD_SAD =  3'b101;$/;"	constant	line:40
+SCARV_COP_INSN_LD_ERR	grok.v	/^localparam SCARV_COP_INSN_LD_ERR  =  3'b110;$/;"	constant	line:41
+SCARV_COP_INSN_ST_ERR	grok.v	/^localparam SCARV_COP_INSN_ST_ERR  =  3'b111;$/;"	constant	line:42
+SCARV_COP_ICLASS_PACKED_ARITH	grok.v	/^localparam SCARV_COP_ICLASS_PACKED_ARITH = 4'b0001;$/;"	constant	line:45
+SCARV_COP_ICLASS_TWIDDLE	grok.v	/^localparam SCARV_COP_ICLASS_TWIDDLE      = 4'b0010;$/;"	constant	line:46
+SCARV_COP_ICLASS_LOADSTORE	grok.v	/^localparam SCARV_COP_ICLASS_LOADSTORE    = 4'b0011;$/;"	constant	line:47
+SCARV_COP_ICLASS_RANDOM	grok.v	/^localparam SCARV_COP_ICLASS_RANDOM       = 4'b0100;$/;"	constant	line:48
+SCARV_COP_ICLASS_MOVE	grok.v	/^localparam SCARV_COP_ICLASS_MOVE         = 4'b0101;$/;"	constant	line:49
+SCARV_COP_ICLASS_MP	grok.v	/^localparam SCARV_COP_ICLASS_MP           = 4'b0110;$/;"	constant	line:50
+SCARV_COP_ICLASS_BITWISE	grok.v	/^localparam SCARV_COP_ICLASS_BITWISE      = 4'b0111;$/;"	constant	line:51
+SCARV_COP_ICLASS_AES	grok.v	/^localparam SCARV_COP_ICLASS_AES          = 4'b1000;$/;"	constant	line:52
+SCARV_COP_ICLASS_SHA3	grok.v	/^localparam SCARV_COP_ICLASS_SHA3         = 4'b1001;$/;"	constant	line:53
+SCARV_COP_SCLASS_SHA3_XY	grok.v	/^localparam SCARV_COP_SCLASS_SHA3_XY   = 5'b11000;$/;"	constant	line:55
+SCARV_COP_SCLASS_SHA3_X1	grok.v	/^localparam SCARV_COP_SCLASS_SHA3_X1   = 5'b11001;$/;"	constant	line:56
+SCARV_COP_SCLASS_SHA3_X2	grok.v	/^localparam SCARV_COP_SCLASS_SHA3_X2   = 5'b11010;$/;"	constant	line:57
+SCARV_COP_SCLASS_SHA3_X4	grok.v	/^localparam SCARV_COP_SCLASS_SHA3_X4   = 5'b11100;$/;"	constant	line:58
+SCARV_COP_SCLASS_SHA3_YX	grok.v	/^localparam SCARV_COP_SCLASS_SHA3_YX   = 5'b11011;$/;"	constant	line:59
+SCARV_COP_SCLASS_SCATTER_B	grok.v	/^localparam SCARV_COP_SCLASS_SCATTER_B = 5'd0 ;$/;"	constant	line:61
+SCARV_COP_SCLASS_GATHER_B	grok.v	/^localparam SCARV_COP_SCLASS_GATHER_B  = 5'd1 ;$/;"	constant	line:62
+SCARV_COP_SCLASS_SCATTER_H	grok.v	/^localparam SCARV_COP_SCLASS_SCATTER_H = 5'd2 ;$/;"	constant	line:63
+SCARV_COP_SCLASS_GATHER_H	grok.v	/^localparam SCARV_COP_SCLASS_GATHER_H  = 5'd3 ;$/;"	constant	line:64
+SCARV_COP_SCLASS_ST_W	grok.v	/^localparam SCARV_COP_SCLASS_ST_W      = 5'd4 ;$/;"	constant	line:65
+SCARV_COP_SCLASS_LD_W	grok.v	/^localparam SCARV_COP_SCLASS_LD_W      = 5'd5 ;$/;"	constant	line:66
+SCARV_COP_SCLASS_ST_H	grok.v	/^localparam SCARV_COP_SCLASS_ST_H      = 5'd6 ;$/;"	constant	line:67
+SCARV_COP_SCLASS_LH_CR	grok.v	/^localparam SCARV_COP_SCLASS_LH_CR     = 5'd7 ;$/;"	constant	line:68
+SCARV_COP_SCLASS_ST_B	grok.v	/^localparam SCARV_COP_SCLASS_ST_B      = 5'd8 ;$/;"	constant	line:69
+SCARV_COP_SCLASS_LB_CR	grok.v	/^localparam SCARV_COP_SCLASS_LB_CR     = 5'd9 ;$/;"	constant	line:70
+scarv_cop_cprs	grok.v	/^module scarv_cop_cprs ($/;"	module	line:81
+g_clk	grok.v	/^input  wire             g_clk         , \/\/ Global clock$/;"	port	line:83	module:scarv_cop_cprs
+g_clk_req	grok.v	/^output wire             g_clk_req     , \/\/ Clock request$/;"	port	line:84	module:scarv_cop_cprs
+g_resetn	grok.v	/^input  wire             g_resetn      , \/\/ Synchronous active low reset.$/;"	port	line:85	module:scarv_cop_cprs
+crs1_ren	grok.v	/^input  wire             crs1_ren      , \/\/ Port 1 read enable$/;"	port	line:91	module:scarv_cop_cprs
+crs1_addr	grok.v	/^input  wire [ 3:0]      crs1_addr     , \/\/ Port 1 address$/;"	port	line:92	module:scarv_cop_cprs
+crs1_rdata	grok.v	/^output wire [31:0]      crs1_rdata    , \/\/ Port 1 read data$/;"	port	line:93	module:scarv_cop_cprs
+crs2_ren	grok.v	/^input  wire             crs2_ren      , \/\/ Port 2 read enable$/;"	port	line:95	module:scarv_cop_cprs
+crs2_addr	grok.v	/^input  wire [ 3:0]      crs2_addr     , \/\/ Port 2 address$/;"	port	line:96	module:scarv_cop_cprs
+crs2_rdata	grok.v	/^output wire [31:0]      crs2_rdata    , \/\/ Port 2 read data$/;"	port	line:97	module:scarv_cop_cprs
+crs3_ren	grok.v	/^input  wire             crs3_ren      , \/\/ Port 3 read enable$/;"	port	line:99	module:scarv_cop_cprs
+crs3_addr	grok.v	/^input  wire [ 3:0]      crs3_addr     , \/\/ Port 3 address$/;"	port	line:100	module:scarv_cop_cprs
+crs3_rdata	grok.v	/^output wire [31:0]      crs3_rdata    , \/\/ Port 3 read data$/;"	port	line:101	module:scarv_cop_cprs
+crd_wen	grok.v	/^input  wire [ 3:0]      crd_wen       , \/\/ Port 4 write enable$/;"	port	line:103	module:scarv_cop_cprs
+crd_addr	grok.v	/^input  wire [ 3:0]      crd_addr      , \/\/ Port 4 address$/;"	port	line:104	module:scarv_cop_cprs
+crd_wdata	grok.v	/^input  wire [31:0]      crd_wdata       \/\/ Port 4 write data$/;"	port	line:105	module:scarv_cop_cprs
+cprs	grok.v	/^reg [31:0] cprs [15:0];$/;"	register	line:113	module:scarv_cop_cprs
+i	grok.v	/^genvar i;$/;"	register	line:130	module:scarv_cop_cprs
+gen_cprs	grok.v	/^generate for (i = 0; i < 16; i = i + 1) begin : gen_cprs$/;"	block	line:131	module:scarv_cop_cprs
