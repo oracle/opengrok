@@ -33,6 +33,8 @@ The mirroring step works by going through all projects and attempting to
 synchronize all its repositories (e.g. it will do `git pull` for Git
 repositories).
 
+### Indexer logs
+
 The indexer/mirroring is set so that it does not log into files.
 Rather, everything goes to standard (error) output. To see how the indexer
 is doing, use the `docker logs` command.
