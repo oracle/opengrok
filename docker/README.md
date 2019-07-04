@@ -21,6 +21,7 @@ If you happen to have one of the following:
   - Source Code Management systems not supported in the image (e.g. Perforce,
     Clearcase, etc.)
   - need for authentication/authorization
+  
 then it is advisable to run OpenGrok standalone or construct your own Docker
 image based on the official one.
 
