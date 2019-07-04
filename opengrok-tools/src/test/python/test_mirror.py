@@ -27,9 +27,11 @@
 import tempfile
 import os
 import stat
+import pygit2
 import pytest
 import sys
 
+from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
@@ -144,8 +146,6 @@ def test_incoming_retval(monkeypatch):
         os.mkdir(repo_path)
 
         def mock_get_repos(*args, **kwargs):
-            from opengrok_tools.scm.repofactory import get_repository
-
             return [get_repository(cloned_repo_path,
                                    "git", project_name,
                                    None, None, None, None)]
@@ -154,7 +154,6 @@ def test_incoming_retval(monkeypatch):
             return MockResponse()
 
         # Clone a Git repository so that it can pull.
-        import pygit2
         pygit2.init_repository(repo_path, True)
         pygit2.clone_repository(repo_path, cloned_repo_path)
 
