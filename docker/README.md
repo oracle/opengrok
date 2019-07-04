@@ -13,14 +13,15 @@ The container is available from DockerHub at https://hub.docker.com/r/opengrok/d
 
 ## When not to use it
 
-This image is simple wrapper around OpenGrok environment. The indexer and the web container are **not** tuned for large workloads.
+This image is simple wrapper around OpenGrok environment. It is basicallyt a small appliance. The indexer and the web container are **not** tuned for large workloads.
+
 If you happen to have one of the following:
   - large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like)
   - stable service
   - Source Code Management systems not supported in the image (e.g. Perforce,
     Clearcase, etc.)
-
-then it is advisable to run OpenGrok standalone or construct your own docker
+  - need for authentication/authorization
+then it is advisable to run OpenGrok standalone or construct your own Docker
 image based on the official one.
 
 ## Additional info about the image
