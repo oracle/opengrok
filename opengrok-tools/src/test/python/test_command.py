@@ -20,12 +20,13 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
 import tempfile
 import time
+import platform
 
 import pytest
 
@@ -63,6 +64,9 @@ def test_subst_append_exclsubst_nosubst():
     assert cmd.cmd == ['foo', 'bar', '1', '2']
 
 
+# On Windows the return code is actually 1.
+@pytest.mark.skipif(platform.system() == 'Windows',
+                    reason="broken on Windows")
 def test_execute_nonexistent():
     cmd = Command(['/baaah', '/etc/passwd'])
     cmd.execute()

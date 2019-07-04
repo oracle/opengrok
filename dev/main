@@ -23,7 +23,24 @@ if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
 	fi
 fi
 
+if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+	export JAVA_HOME=${JAVA_HOME:-/c/jdk}
+	export PATH=${JAVA_HOME}/bin:${PATH}
+
+	export PATH=${PATH}:/c/ProgramData/chocolatey/lib/universal-ctags/tools
+	export PATH=${PATH}:/c/Program\ Files\ \(x86\)/Subversion/bin
+
+	# needs to be before the default Python 2
+	export PATH=/c/Python38:${PATH}
+
+	extra_args="$extra_args -Dorg.opengrok.indexer.analysis.Ctags=c:\\ProgramData\\chocolatey\\lib\\universal-ctags\\tools\\ctags.exe"
+fi
+
 ret=0
 ./mvnw -B -V verify $extra_args || ret=1
-node dev/parse.js || ret=1
+
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+	node dev/parse.js || ret=1
+fi
+
 exit $ret
