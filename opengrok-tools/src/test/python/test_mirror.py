@@ -27,12 +27,19 @@
 import tempfile
 import os
 import stat
+import pygit2
 import pytest
+import sys
 
+from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY
+import opengrok_tools.mirror
+from opengrok_tools.utils.exitvals import (
+    CONTINUE_EXITVAL,
+)
 
 
 def test_empty_project_configuration():
@@ -109,3 +116,56 @@ def test_valid_config():
     assert check_configuration({PROJECTS_PROPERTY:
                                 {"foo": {PROXY_PROPERTY: True}},
                                 PROXY_PROPERTY: "proxy"})
+
+
+@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+def test_incoming_retval(monkeypatch):
+    """
+    Test that the special CONTINUE_EXITVAL value bubbles all the way up to
+    the mirror.py return value.
+    """
+
+    class MockResponse:
+
+        # mock json() method always returns a specific testing dictionary
+        @staticmethod
+        def json():
+            return "true"
+
+        @staticmethod
+        def raise_for_status():
+            pass
+
+    with tempfile.TemporaryDirectory() as source_root:
+        repo_name = "parent_repo"
+        repo_path = os.path.join(source_root, repo_name)
+        cloned_repo_name = "cloned_repo"
+        cloned_repo_path = os.path.join(source_root, cloned_repo_name)
+        project_name = "foo"    # does not matter for this test
+
+        os.mkdir(repo_path)
+
+        def mock_get_repos(*args, **kwargs):
+            return [get_repository(cloned_repo_path,
+                                   "git", project_name,
+                                   None, None, None, None)]
+
+        def mock_get(*args, **kwargs):
+            return MockResponse()
+
+        # Clone a Git repository so that it can pull.
+        pygit2.init_repository(repo_path, True)
+        pygit2.clone_repository(repo_path, cloned_repo_path)
+
+        with monkeypatch.context() as m:
+            m.setattr(sys, 'argv', ['prog', "-I", project_name])
+
+            # With mocking done via pytest it is necessary to patch
+            # the call-site rather than the absolute object path.
+            m.setattr("opengrok_tools.mirror.get_config_value",
+                      lambda x, y, z: source_root)
+            m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
+                      mock_get_repos)
+            m.setattr("opengrok_tools.utils.mirror.get", mock_get)
+
+            assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL

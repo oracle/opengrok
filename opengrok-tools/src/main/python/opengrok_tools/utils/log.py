@@ -31,13 +31,18 @@ from .exitvals import (
 )
 
 
-def fatal(msg):
+def fatal(msg, exit=True):
     """
     Print message to standard error output and exit
+    unless the exit parameter is False
     :param msg: message
+    :param exit
     """
     print(msg, file=sys.stderr)
-    sys.exit(FAILURE_EXITVAL)
+    if exit:
+        sys.exit(FAILURE_EXITVAL)
+    else:
+        return FAILURE_EXITVAL
 
 
 def add_log_level_argument(parser):

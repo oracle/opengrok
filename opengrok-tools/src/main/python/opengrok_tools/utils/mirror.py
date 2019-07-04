@@ -200,6 +200,83 @@ def get_project_properties(project_config, project_name, hookdir):
         use_proxy, ignored_repos
 
 
+def process_hook(hook_ident, hook, source_root, project_name, proxy,
+                 hook_timeout):
+    """
+    :param hook_ident: ident of the hook to be used in log entries
+    :param hook: hook
+    :param source_root: source root path
+    :param project_name: project name
+    :param proxy: proxy or None
+    :param hook_timeout: hook run timeout
+    :return: False if hook failed, else True
+    """
+    if hook:
+        logger = logging.getLogger(__name__)
+
+        logger.info("Running {} hook".format(hook_ident))
+        if run_hook(logger, hook,
+                    os.path.join(source_root, project_name), proxy,
+                    hook_timeout) != SUCCESS_EXITVAL:
+            logger.error("{} hook failed for project {}".
+                         format(hook_ident, project_name))
+            return False
+
+    return True
+
+
+def process_changes(repos, project_name, uri):
+    """
+    :param repos: repository list
+    :param project_name: project name
+    :return: exit code
+    """
+    logger = logging.getLogger(__name__)
+
+    changes_detected = False
+
+    # check if the project is a new project - full index is necessary
+    try:
+        r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
+                                urllib.parse.quote_plus(project_name),
+                                'property', 'indexed'))
+        r.raise_for_status()
+        if not bool(r.json()):
+            changes_detected = True
+            logger.info('Project {} has not been indexed yet'
+                        .format(project_name))
+    except ValueError as e:
+        logger.error('Unable to parse project \'{}\' indexed flag: {}'
+                     .format(project_name, e))
+        return FAILURE_EXITVAL
+    except HTTPError as e:
+        logger.error('Unable to determine project \'{}\' indexed flag: {}'
+                     .format(project_name, e))
+        return FAILURE_EXITVAL
+
+    # check if the project has any new changes in the SCM
+    if not changes_detected:
+        for repo in repos:
+            try:
+                if repo.incoming():
+                    logger.debug('Repository {} has incoming changes'.
+                                 format(repo))
+                    changes_detected = True
+                    break
+            except RepositoryException:
+                logger.error('Cannot determine incoming changes for '
+                             'repository {}'.format(repo))
+                return FAILURE_EXITVAL
+
+    if not changes_detected:
+        logger.info('No incoming changes for repositories in '
+                    'project {}'.
+                    format(project_name))
+        return CONTINUE_EXITVAL
+
+    return SUCCESS_EXITVAL
+
+
 def mirror_project(config, project_name, check_changes, uri,
                    source_root):
     """
@@ -212,6 +289,8 @@ def mirror_project(config, project_name, check_changes, uri,
     :param source_root
     :return exit code
     """
+
+    ret = SUCCESS_EXITVAL
 
     logger = logging.getLogger(__name__)
 
@@ -235,7 +314,6 @@ def mirror_project(config, project_name, check_changes, uri,
     # Cache the repositories first. This way it will be known that
     # something is not right, avoiding any needless pre-hook run.
     #
-    ret = SUCCESS_EXITVAL
     repos = get_repos_for_project(project_name,
                                   ignored_repos,
                                   uri,
@@ -251,59 +329,17 @@ def mirror_project(config, project_name, check_changes, uri,
 
     # Check if the project or any of its repositories have changed.
     if check_changes:
-        changes_detected = False
+        r = process_changes(repos, project_name, uri)
+        if r != SUCCESS_EXITVAL:
+            return r
 
-        # check if the project is a new project - full index is necessary
-        try:
-            r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
-                                    urllib.parse.quote_plus(project_name),
-                                    'property', 'indexed'))
-            r.raise_for_status()
-            if not bool(r.json()):
-                changes_detected = True
-                logger.debug('Project {} has not been indexed yet'
-                             .format(project_name))
-        except ValueError as e:
-            logger.error('Unable to parse project \'{}\' indexed flag: {}'
-                         .format(project_name, e))
-            return FAILURE_EXITVAL
-        except HTTPError as e:
-            logger.error('Unable to determine project \'{}\' indexed flag: {}'
-                         .format(project_name, e))
-            return FAILURE_EXITVAL
-
-        # check if the project has any new changes in the SCM
-        if not changes_detected:
-            for repo in repos:
-                try:
-                    if repo.incoming():
-                        logger.debug('Repository {} has incoming changes'.
-                                     format(repo))
-                        changes_detected = True
-                        break
-                except RepositoryException:
-                    logger.error('Cannot determine incoming changes for '
-                                 'repository {}'.format(repo))
-                    return FAILURE_EXITVAL
-
-        if not changes_detected:
-            logger.info('No incoming changes for repositories in '
-                        'project {}'.
-                        format(project_name))
-            return CONTINUE_EXITVAL
-
-    if prehook:
-        logger.info("Running pre hook")
-        if run_hook(logger, prehook,
-                    os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != SUCCESS_EXITVAL:
-            logger.error("pre hook failed for project {}".
-                         format(project_name))
-            return FAILURE_EXITVAL
+    if not process_hook("pre", prehook, source_root, project_name, proxy,
+                        hook_timeout):
+        return FAILURE_EXITVAL
 
     #
     # If one of the repositories fails to sync, the whole project sync
-    # is treated as failed, i.e. the program will return 1.
+    # is treated as failed, i.e. the program will return FAILURE_EXITVAL.
     #
     for repo in repos:
         logger.info("Synchronizing repository {}".
@@ -313,14 +349,9 @@ def mirror_project(config, project_name, check_changes, uri,
                          format(repo.path))
             ret = FAILURE_EXITVAL
 
-    if posthook:
-        logger.info("Running post hook")
-        if run_hook(logger, posthook,
-                    os.path.join(source_root, project_name), proxy,
-                    hook_timeout) != SUCCESS_EXITVAL:
-            logger.error("post hook failed for project {}".
-                         format(project_name))
-            return FAILURE_EXITVAL
+    if not process_hook("post", posthook, source_root, project_name, proxy,
+                        hook_timeout):
+        return FAILURE_EXITVAL
 
     return ret
 

@@ -106,35 +106,36 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        fatal(e)
+        return fatal(e, False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if len(args.project) > 0 and args.all:
-        fatal("Cannot use both project list and -a/--all")
+        return fatal("Cannot use both project list and -a/--all", False)
 
     if not args.all and len(args.project) == 0:
-        fatal("Need at least one project or --all")
+        return fatal("Need at least one project or --all", False)
 
     if args.config:
         config = read_config(logger, args.config)
         if config is None:
-            fatal("Cannot read config file from {}".format(args.config))
+            return fatal("Cannot read config file from {}".
+                         format(args.config), False)
     else:
         config = {}
 
     uri = args.uri
     if not is_web_uri(uri):
-        fatal("Not a URI: {}".format(uri))
+        return fatal("Not a URI: {}".format(uri), False)
     logger.debug("web application URI = {}".format(uri))
 
     if not check_configuration(config):
-        sys.exit(1)
+        return 1
 
     # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
-        sys.exit(1)
+        return 1
 
     logger.debug("Source root = {}".format(source_root))
 
@@ -157,8 +158,8 @@ def main():
     if args.batch:
         logdir = config.get(LOGDIR_PROPERTY)
         if not logdir:
-            fatal("The {} property is required in batch mode".
-                  format(LOGDIR_PROPERTY))
+            return fatal("The {} property is required in batch mode".
+                         format(LOGDIR_PROPERTY), False)
 
     projects = args.project
     if len(projects) == 1:
@@ -183,7 +184,7 @@ def main():
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:
-                    sys.exit(FAILURE_EXITVAL)
+                    return FAILURE_EXITVAL
                 else:
                     if any([x == FAILURE_EXITVAL for x in project_results]):
                         ret = FAILURE_EXITVAL
@@ -191,11 +192,11 @@ def main():
                         ret = CONTINUE_EXITVAL
     except Timeout:
         logger.warning("Already running, exiting.")
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
 
     logging.shutdown()
-    sys.exit(ret)
+    return ret
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

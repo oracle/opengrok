@@ -55,6 +55,7 @@ setup(
     ],
     tests_require=[
         'pytest',
+        'pygit2',
     ],
     entry_points={
         'console_scripts': [
