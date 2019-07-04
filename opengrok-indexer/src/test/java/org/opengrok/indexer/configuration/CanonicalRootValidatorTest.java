@@ -26,11 +26,18 @@ package org.opengrok.indexer.configuration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.UnixPresent;
 
 import java.io.File;
 
 public class CanonicalRootValidatorTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Test
     public void testRejectUnseparated() {
@@ -39,6 +46,7 @@ public class CanonicalRootValidatorTest {
     }
 
     @Test
+    @ConditionalRun(UnixPresent.class)
     public void testRejectRoot() {
         assertEquals("should reject root", "test value cannot be the root directory",
                 CanonicalRootValidator.validate("/", "test value"));

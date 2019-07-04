@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -87,7 +87,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy version file and replace the opengrok version in it</id>
+                        <id>copy version file and replace the OpenGrok version in it</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -170,7 +170,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     </execution>
                     <execution>
                         <!-- needed for 'pip install pylint' to work -->
-                        <id>Upgrade pip</id>
+                        <id>Upgrade pip and install/upgrade other packages</id>
                         <configuration>
                             <executable>${python.environment}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>

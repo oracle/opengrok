@@ -49,6 +49,15 @@ jobs:
     script: dev/main
     before_install: dev/before_install
     before_script: dev/before
+  - stage: test
+    name: Windows + Oracle JDK 8
+    # Use shell until Travis supports Java on Windows proper.
+    language: shell
+    os: windows
+    install: true
+    script: dev/main
+    before_install: dev/before_install
+    before_script: dev/before
   - stage: deploy
     name: Github Release
     dist: xenial

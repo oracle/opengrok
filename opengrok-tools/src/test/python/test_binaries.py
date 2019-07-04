@@ -20,14 +20,17 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pytest
+import platform
 
 from opengrok_tools.utils.command import Command
 
 
+@pytest.mark.skipif(platform.system() == 'Windows',
+                    reason="broken on Windows")
 @pytest.mark.parametrize('command', (
         ('opengrok'),
         ('opengrok-indexer'),
@@ -46,8 +49,10 @@ def test_opengrok_binary(command):
     :param command: the command name
     :return:
     """
+    print('DEBUG: {}'.format(command))
     cmd = Command([command, '--help'])
     cmd.execute()
+    print('DEBUG: out = {}'.format(cmd.getoutputstr()))
     assert cmd.getretcode() == 0
     assert cmd.getstate() == Command.FINISHED
     assert len(cmd.getoutputstr()) > 1
