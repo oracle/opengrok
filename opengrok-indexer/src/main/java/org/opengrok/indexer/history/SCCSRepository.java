@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -184,8 +184,8 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return new SCCSHistoryParser(this).parse(file);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(new SCCSHistoryParser(this).parse(file));
     }
 
     @Override
@@ -224,7 +224,7 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

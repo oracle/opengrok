@@ -151,22 +151,30 @@ public final class HistoryGuru {
      * @throws IOException if I/O exception occurs
      */
     public Annotation annotate(File file, String rev) throws IOException {
-        Annotation ret = null;
 
+        Annotation ret = null;
         Repository repo = getRepository(file);
         if (repo != null) {
             ret = repo.annotate(file, rev);
-            History hist = null;
-            try {
-                hist = repo.getHistory(file);
-            } catch (HistoryException ex) {
-                LOGGER.log(Level.FINEST,
-                        "Cannot get messages for tooltip: ", ex);
+            HistoryEnumeration historySequence = null;
+            if (ret != null) {
+                try {
+                    historySequence = repo.getHistory(file);
+                } catch (HistoryException ex) {
+                    LOGGER.log(Level.FINEST, "Cannot get history for " + file, ex);
+                }
             }
-            if (hist != null && ret != null) {
+            if (historySequence != null) {
+                History hist = null;
+                try {
+                    hist = HistoryUtil.union(historySequence);
+                } catch (HistoryException ex) {
+                    LOGGER.log(Level.FINEST, "Error reading entire history for " + file, ex);
+                    throw new IOException(ex); // Wrap the history exception
+                }
                 Set<String> revs = ret.getRevisions();
                 int revsMatched = 0;
-             // !!! cannot do this because of not matching rev ids (keys)
+                // !!! cannot do this because of not matching rev ids (keys)
                 // first is the most recent one, so we need the position of "rev"
                 // until the end of the list
                 //if (hent.indexOf(rev)>0) {
@@ -262,7 +270,7 @@ public final class HistoryGuru {
                     return null;
                 }
             }
-            return repo.getHistory(file);
+            return HistoryUtil.union(repo.getHistory(file));
         }
 
         return null;
@@ -556,12 +564,8 @@ public final class HistoryGuru {
     private void createCacheReal(Collection<Repository> repositories) {
         Statistics elapsed = new Statistics();
         ExecutorService executor = env.getIndexerParallelizer().getHistoryExecutor();
-        // Since we know each repository object from the repositories
-        // collection is unique, we can abuse HashMap to create a list of
-        // repository,revision tuples with repository as key (as the revision
-        // string does not have to be unique - surely it is not unique
-        // for the initial index case).
-        HashMap<Repository, String> repos2process = new HashMap<>();
+
+        List<CreateCacheWork> repos2process = new ArrayList<>();
 
         // Collect the list of <latestRev,repo> pairs first so that we
         // do not have to deal with latch decrementing in the cycle below.
@@ -570,7 +574,7 @@ public final class HistoryGuru {
 
             try {
                 latestRev = historyCache.getLatestCachedRevision(repo);
-                repos2process.put(repo, latestRev);
+                repos2process.add(new CreateCacheWork(repo, latestRev));
             } catch (HistoryException he) {
                 LOGGER.log(Level.WARNING,
                         String.format(
@@ -582,20 +586,22 @@ public final class HistoryGuru {
         LOGGER.log(Level.INFO, "Creating historycache for {0} repositories",
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
-        for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
-            executor.submit(new Runnable() {
+        for (final CreateCacheWork entry : repos2process) {
+            Future<?> submission = executor.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        createCache(entry.getKey(), entry.getValue());
+                        createCache(entry.repo, entry.latestRev);
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING, "createCacheReal() got exception", ex);
+                        LOGGER.log(Level.SEVERE, "Failed historycache for " +
+                                entry.repo.getDirectoryName(), ex);
                     } finally {
                         latch.countDown();
                     }
                 }
             });
+            entry.submission = submission;
         }
 
         /*
@@ -606,8 +612,17 @@ public final class HistoryGuru {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
+            LOGGER.log(Level.SEVERE, "Failed to await latch", ex);
             return;
+        }
+
+        for (CreateCacheWork entry : repos2process) {
+            try {
+                entry.submission.get();
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Failed historycache for " +
+                        entry.repo.getDirectoryName(), ex);
+            }
         }
 
         // The cache has been populated. Now, optimize how it is stored on
@@ -876,7 +891,7 @@ public final class HistoryGuru {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
+            LOGGER.log(Level.SEVERE, "Failed to await latch", ex);
         }
         executor.shutdown();
 
@@ -898,5 +913,16 @@ public final class HistoryGuru {
         String repoDirParent = repoDirectoryFile.getParent();
         repositoryRoots.put(repoDirParent, "");
         repositories.put(repoDirectoryName, repository);
+    }
+
+    private static class CreateCacheWork {
+        final Repository repo;
+        final String latestRev;
+        Future<?> submission;
+
+        CreateCacheWork(Repository repo, String latestRev) {
+            this.repo = repo;
+            this.latestRev = latestRev;
+        }
     }
 }

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -146,17 +147,12 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
     }
 
     History parse(File file, String sinceRevision) throws HistoryException {
-        try {
-            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
-            int status = executor.exec(true, this);
+        Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
+        int status = executor.exec(true, this);
 
-            if (status != 0) {
-                throw new HistoryException("Failed to get history for: \""
-                        + file.getAbsolutePath() + "\" Exit code: " + status);
-            }
-        } catch (IOException e) {
+        if (status != 0) {
             throw new HistoryException("Failed to get history for: \""
-                    + file.getAbsolutePath() + "\"", e);
+                    + file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
         return history;

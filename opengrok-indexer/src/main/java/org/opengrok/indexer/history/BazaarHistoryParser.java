@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -50,8 +50,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(BazaarHistoryParser.class);
 
     private String myDir;
-    private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
-    private BazaarRepository repository = new BazaarRepository(); //NOPMD
+    private final List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
+    private final BazaarRepository repository;
 
     BazaarHistoryParser(BazaarRepository repository) {
         this.repository = repository;
@@ -93,12 +93,11 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        String s;
-
         HistoryEntry entry = null;
         int state = 0;
+
+        String s;
         while ((s = in.readLine()) != null) {
             if ("------------------------------------------------------------".equals(s)) {
                 if (entry != null && state > 2) {
@@ -169,8 +168,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
                         File f = new File(myDir, s);
                         try {
-                            String name = env.getPathRelativeToSourceRoot(f);
-                            entry.addFile(name.intern());
+                            String path = env.getPathRelativeToSourceRoot(f);
+                            entry.addFile(path);
                         } catch (ForbiddenSymlinkException e) {
                             LOGGER.log(Level.FINER, e.getMessage());
                             // ignored

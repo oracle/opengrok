@@ -809,7 +809,8 @@ public final class Indexer {
         // so that options may be overwritten later.
         configure.parse(argv);
 
-        LOGGER.log(Level.INFO, "Indexer options: {0}", Arrays.toString(argv));
+        LOGGER.log(Level.INFO, "Indexer options {0}", Executor.escapeForShell(Arrays.asList(argv),
+                false, PlatformUtils.isWindows()));
 
         if (cfg == null) {
             cfg = new Configuration();

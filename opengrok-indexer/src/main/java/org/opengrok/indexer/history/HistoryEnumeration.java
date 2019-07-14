@@ -18,26 +18,27 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opengrok.indexer.history;
 
+import java.io.Closeable;
+import java.util.Enumeration;
+
 /**
- * Bazaar specific tag class with ability to compare itself with generic
- * HistoryEntry.
- *
- * @author Stanislav Kozina
+ * Represents an API for a sequence of {@link History} instances where the
+ * sequence is {@link Closeable} to release resources.
  */
-public class BazaarTagEntry extends TagEntry {
+public interface HistoryEnumeration extends Enumeration<History>, Closeable {
 
-    public BazaarTagEntry(int revision, String tag) {
-        super(revision, tag);
-    }
-
-    @Override
-    public int compareTo(HistoryEntry that) {
-        assert this.revision != NOREV : "BazaarTagEntry created without tag specified.specified";
-        return Integer.compare(this.revision, Integer.parseInt(that.getRevision()));
-    }
+    /**
+     * Returns the exit value for the subprocess.
+     *
+     * @return the exit value of the subprocess represented by this instance.
+     * By convention, the value {@code 0} indicates normal termination.
+     * @throws IllegalThreadStateException if the subprocess represented by
+     * this instance has not yet terminated
+     */
+    int exitValue();
 }

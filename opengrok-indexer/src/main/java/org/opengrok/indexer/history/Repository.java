@@ -90,7 +90,7 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean fileHasHistory(File file);
 
     /**
-     * Check if the repository supports {@code getHistory()} requests for whole
+     * Check if the repository supports {@link #getHistory(File)} requests for whole
      * directories at once.
      *
      * @return {@code true} if the repository can get history for directories
@@ -101,10 +101,13 @@ public abstract class Repository extends RepositoryInfo {
      * Get the history log for the specified file or directory.
      *
      * @param file the file to get the history for
-     * @return history log for file
+     * @return history log for file or directory as an enumeration ordered from
+     * most recent to earlier between each element and within each element to
+     * allow for efficiency where possible to avoid bringing the entire history
+     * into program memory simultaneously.
      * @throws HistoryException on error accessing the history
      */
-    abstract History getHistory(File file) throws HistoryException;
+    abstract HistoryEnumeration getHistory(File file) throws HistoryException;
 
     public Repository() {
         super();
@@ -114,7 +117,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Gets the instance's repository command, primarily for testing purposes.
-     * @return null if not {@link isWorking}, or otherwise a defined command
+     * @return null if not {@link #isWorking()}, or otherwise a defined command
      */
     public String getRepoCommand() {
         isWorking();
@@ -137,40 +140,37 @@ public abstract class Repository extends RepositoryInfo {
      * @param file the file to get the history for
      * @param sinceRevision the revision right before the first one to return,
      * or {@code null} to return the full history
-     * @return partial history for file
+     * @return partial history log for file or directory as an enumeration
+     * ordered from most recent to earlier between each element and within each
+     * element to allow for efficiency where possible to avoid bringing the
+     * entire history into program memory simultaneously.
      * @throws HistoryException on error accessing the history
      */
-    History getHistory(File file, String sinceRevision)
+    HistoryEnumeration getHistory(File file, String sinceRevision)
             throws HistoryException {
 
         // If we want an incremental history update and get here, warn that
         // it may be slow.
         if (sinceRevision != null) {
+            String repoSimpleName = getClass().getSimpleName();
             LOGGER.log(Level.WARNING,
                     "Incremental history retrieval is not implemented for {0}.",
-                    getClass().getSimpleName());
+                    repoSimpleName);
             LOGGER.log(Level.WARNING,
-                    "Falling back to slower full history retrieval.");
+                    "Falling back to slower full history retrieval for {0}.",
+                    repoSimpleName);
         }
 
-        History history = getHistory(file);
+        return new FilteredHistoryEnumeration(getHistory(file), sinceRevision);
+    }
 
-        if (sinceRevision == null) {
-            return history;
-        }
-
-        List<HistoryEntry> partial = new ArrayList<>();
-        for (HistoryEntry entry : history.getHistoryEntries()) {
-            partial.add(entry);
-            if (sinceRevision.equals(entry.getRevision())) {
-                // Found revision right before the first one to return.
-                break;
-            }
-        }
-
-        removeAndVerifyOldestChangeset(partial, sinceRevision);
-        history.setHistoryEntries(partial);
-        return history;
+    /**
+     * Does nothing, but subclasses can override to remove duplicates that may
+     * exist in a list of history assumed to be sorted with most recent
+     * changeset first.
+     */
+    void deduplicateRevisions(History history) {
+        // nothing
     }
 
     /**
@@ -178,7 +178,7 @@ public abstract class Repository extends RepositoryInfo {
      * changeset first) and verify that it is the changeset we expected to find
      * there.
      *
-     * @param entries a list of {@code HistoryEntry} objects
+     * @param entries a list of {@link HistoryEntry} objects
      * @param revision the revision we expect the oldest entry to have
      * @throws HistoryException if the oldest entry was not the one we expected
      */
@@ -274,12 +274,12 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Assign tags to changesets they represent The complete list of tags must
-     * be pre-built using {@code getTagList()}. Then this function squeeze all
+     * Assign tags to changesets they represent. The complete list of tags must
+     * be pre-built using {@link #buildTagList(File, boolean)}, and then this function squeezes all
      * tags to changesets which actually exist in the history of given file.
-     * Must be implemented repository-specific.
+     * The {@link TagEntry} instances must be implemented repository-specific.
      *
-     * @see getTagList
+     * @see #buildTagList(File, boolean)
      * @param hist History we want to assign tags to.
      */
     void assignTagsInHistory(History hist) {
@@ -296,19 +296,19 @@ public abstract class Repository extends RepositoryInfo {
             // Assign all tags created since the last revision
             // Revision in this HistoryEntry must be already specified!
             // TODO is there better way to do this? We need to "repeat"
-            // last element returned by call to next()
+            //   last element returned by call to next()
             while (lastTagEntry != null || it.hasNext()) {
                 if (lastTagEntry == null) {
                     lastTagEntry = it.next();
                 }
-                if (lastTagEntry.compareTo(ent) >= 0) {
-                    if (ent.getTags() == null) {
-                        ent.setTags(lastTagEntry.getTags());
-                    } else {
-                        ent.setTags(ent.getTags() + TAGS_SEPARATOR + lastTagEntry.getTags());
-                    }
-                } else {
+                if (lastTagEntry.compareTo(ent) < 0) {
                     break;
+                }
+
+                if (ent.getTags() == null) {
+                    ent.setTags(lastTagEntry.getTags());
+                } else {
+                    ent.setTags(ent.getTags() + TAGS_SEPARATOR + lastTagEntry.getTags());
                 }
                 if (it.hasNext()) {
                     lastTagEntry = it.next();
@@ -352,8 +352,8 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Create a history log cache for all files in this repository.
-     * {@code getHistory()} is used to fetch the history for the entire
-     * repository. If {@code hasHistoryForDirectories()} returns {@code false},
+     * {@link #getHistory(File, String)} is used to fetch the history for the entire
+     * repository. If {@link #hasHistoryForDirectories()} returns {@code false},
      * this method is a no-op.
      *
      * @param cache the cache instance in which to store the history log
@@ -382,9 +382,9 @@ public abstract class Repository extends RepositoryInfo {
 
         File directory = new File(getDirectoryName());
 
-        History history;
+        HistoryEnumeration historySequence;
         try {
-            history = getHistory(directory, sinceRevision);
+            historySequence = getHistory(directory, sinceRevision);
         } catch (HistoryException he) {
             if (sinceRevision == null) {
                 // Failed to get full history, so fail.
@@ -397,12 +397,13 @@ public abstract class Repository extends RepositoryInfo {
             LOGGER.log(Level.WARNING,
                     "Failed to get partial history. Attempting to "
                     + "recreate the history cache from scratch.", he);
-            history = null;
+            historySequence = null;
         }
 
-        if (sinceRevision != null && history == null) {
+        if (sinceRevision != null && historySequence == null) {
+            sinceRevision = null;
             // Failed to get partial history, now get full history instead.
-            history = getHistory(directory);
+            historySequence = getHistory(directory);
             // Got full history successfully. Clear the history cache so that
             // we can recreate it from scratch.
             cache.clear(this);
@@ -410,12 +411,24 @@ public abstract class Repository extends RepositoryInfo {
 
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.isTagsEnabled() && this.hasFileBasedTags()) {
+        if (env.isTagsEnabled() && hasFileBasedTags()) {
             this.buildTagList(new File(this.getDirectoryName()), CommandTimeoutType.INDEXER);
         }
 
-        if (history != null) {
-            cache.store(history, this);
+        if (historySequence != null) {
+            cache.store(historySequence, this, sinceRevision == null);
+
+            try {
+                historySequence.close();
+            } catch (IOException e) {
+                throw new HistoryException(String.format("Error closing history of %s",
+                        getDirectoryName()), e);
+            }
+
+            if (historySequence.exitValue() != 0) {
+                throw new HistoryException(String.format("HistoryEnumeration exit value %d for %s",
+                        historySequence.exitValue(), getDirectoryName()));
+            }
         }
     }
 
@@ -511,7 +524,7 @@ public abstract class Repository extends RepositoryInfo {
         return false;
     }
 
-    private DateFormat getDateFormat() {
+    protected DateFormat getDateFormat() {
         return new RepositoryDateFormat();
     }
 
@@ -676,4 +689,5 @@ public abstract class Repository extends RepositoryInfo {
             throw new UnsupportedOperationException("not implemented");
         }
     }
+
 }

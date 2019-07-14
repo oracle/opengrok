@@ -202,7 +202,6 @@ public class GitRepositoryTest {
                 = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
 
-        int i = 0;
         for (String[] test : tests) {
             String file = Paths.get(root.getCanonicalPath(), test[0]).toString();
             String changeset = test[1];
@@ -213,7 +212,6 @@ public class GitRepositoryTest {
             } catch (IOException ex) {
                 Assert.fail(String.format("Looking for original name of %s in %s shouldn't fail", file, changeset));
             }
-            i++;
         }
     }
 
@@ -440,7 +438,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(root);
+        History history = HistoryUtil.union(gitrepo.getHistory(root));
         Assert.assertNotNull(history);
         Assert.assertNotNull(history.getHistoryEntries());
         Assert.assertEquals(8, history.getHistoryEntries().size());
@@ -448,11 +446,11 @@ public class GitRepositoryTest {
         Assert.assertNotNull(history.getRenamedFiles());
         Assert.assertEquals(3, history.getRenamedFiles().size());
 
-        Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved/renamed.c"));
-        Assert.assertFalse(history.isRenamed("non-existent.c"));
-        Assert.assertFalse(history.isRenamed("renamed.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved/renamed2.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved2/renamed2.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved/renamed.c"));
+        Assert.assertFalse(history.isRenamedBySlowLookup("non-existent.c"));
+        Assert.assertFalse(history.isRenamedBySlowLookup("renamed.c"));
 
         Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
         Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
@@ -471,7 +469,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c"));
+        History history = HistoryUtil.union(gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c")));
         Assert.assertNotNull(history);
         Assert.assertNotNull(history.getHistoryEntries());
         Assert.assertEquals(5, history.getHistoryEntries().size());
@@ -479,11 +477,11 @@ public class GitRepositoryTest {
         Assert.assertNotNull(history.getRenamedFiles());
         Assert.assertEquals(3, history.getRenamedFiles().size());
 
-        Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved/renamed.c"));
-        Assert.assertFalse(history.isRenamed("non-existent.c"));
-        Assert.assertFalse(history.isRenamed("renamed.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved/renamed2.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved2/renamed2.c"));
+        Assert.assertTrue(history.isRenamedBySlowLookup("moved/renamed.c"));
+        Assert.assertFalse(history.isRenamedBySlowLookup("non-existent.c"));
+        Assert.assertFalse(history.isRenamedBySlowLookup("renamed.c"));
 
         Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
         Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());

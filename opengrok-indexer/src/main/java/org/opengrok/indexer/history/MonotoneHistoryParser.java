@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -98,10 +98,10 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        String s;
-
         HistoryEntry entry = null;
         int state = 0;
+
+        String s;
         while ((s = in.readLine()) != null) {
             s = s.trim();
             // Later versions of monotone (such as 1.0) output even more dashes so lets require
@@ -164,9 +164,8 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                         for (String f : files) {
                             File file = new File(mydir, f);
                             try {
-                                String path = env.getPathRelativeToSourceRoot(
-                                    file);
-                                entry.addFile(path.intern());
+                                String path = env.getPathRelativeToSourceRoot(file);
+                                entry.addFile(path);
                             } catch (ForbiddenSymlinkException e) {
                                 LOGGER.log(Level.FINER, e.getMessage());
                                 // ignore

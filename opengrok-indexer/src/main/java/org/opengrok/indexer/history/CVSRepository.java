@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -144,7 +144,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    String determineBranch(CommandTimeoutType cmdType) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) {
         String branch = null;
 
         File tagFile = new File(getDirectoryName(), "CVS/Tag");
@@ -250,12 +250,12 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return new CVSHistoryParser().parse(file, this);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(new CVSHistoryParser().parse(file, this));
     }
 
     @Override
-    Annotation annotate(File file, String revision) throws IOException {
+    Annotation annotate(File file, String revision) {
         ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
@@ -284,7 +284,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    String determineParent(CommandTimeoutType cmdType) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) {
         File rootFile = new File(getDirectoryName() + File.separator + "CVS"
                 + File.separator + "Root");
         String parent = null;

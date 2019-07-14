@@ -19,12 +19,11 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import org.junit.Assert;
@@ -154,7 +153,7 @@ public class RepositoryTest {
         }
 
         @Override
-        public History getHistory(File file) throws HistoryException {
+        public HistoryEnumeration getHistory(File file) {
             return null;
         }
 
@@ -170,7 +169,7 @@ public class RepositoryTest {
         }
 
         @Override
-        public Annotation annotate(File file, String revision) throws IOException {
+        public Annotation annotate(File file, String revision) {
             return null;
         }
 
@@ -180,17 +179,17 @@ public class RepositoryTest {
         }
 
         @Override
-        public String determineParent(CommandTimeoutType cmdType) throws IOException {
+        public String determineParent(CommandTimeoutType cmdType) {
             return "";
         }
 
         @Override
-        public String determineBranch(CommandTimeoutType cmdType) throws IOException {
+        public String determineBranch(CommandTimeoutType cmdType) {
             return "";
         }
 
         @Override
-        String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+        String determineCurrentVersion(CommandTimeoutType cmdType) {
             return null;
         }
     }

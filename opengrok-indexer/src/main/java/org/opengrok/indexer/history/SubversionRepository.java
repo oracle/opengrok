@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -71,7 +71,7 @@ public class SubversionRepository extends Repository {
 
     private static final String URLattr = "url";
 
-    protected String reposPath;
+    String reposPath;
 
     public SubversionRepository() {
         type = "Subversion";
@@ -275,13 +275,13 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return getHistory(file, null, 0, CommandTimeoutType.INDEXER);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(getHistory(file, null, 0, CommandTimeoutType.INDEXER));
     }
 
     @Override
-    History getHistory(File file, String sinceRevision) throws HistoryException {
-        return getHistory(file, sinceRevision, 0, CommandTimeoutType.INDEXER);
+    HistoryEnumeration getHistory(File file, String sinceRevision) throws HistoryException {
+        return new SingleHistory(getHistory(file, sinceRevision, 0, CommandTimeoutType.INDEXER));
     }
 
     private History getHistory(File file, String sinceRevision, int numEntries,
@@ -386,7 +386,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineBranch(CommandTimeoutType cmdType) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) {
         String branch = null;
         Document document = getInfoDocument();
 
@@ -403,7 +403,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    public String determineCurrentVersion(CommandTimeoutType cmdType) {
         String curVersion = null;
 
         try {

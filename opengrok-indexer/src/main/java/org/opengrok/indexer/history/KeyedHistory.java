@@ -18,26 +18,19 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opengrok.indexer.history;
 
+import java.util.List;
+
 /**
- * Bazaar specific tag class with ability to compare itself with generic
- * HistoryEntry.
- *
- * @author Stanislav Kozina
+ * Represents an API for a file name and its associated {@link HistoryEntry}
+ * collection.
  */
-public class BazaarTagEntry extends TagEntry {
-
-    public BazaarTagEntry(int revision, String tag) {
-        super(revision, tag);
-    }
-
-    @Override
-    public int compareTo(HistoryEntry that) {
-        assert this.revision != NOREV : "BazaarTagEntry created without tag specified.specified";
-        return Integer.compare(this.revision, Integer.parseInt(that.getRevision()));
-    }
+interface KeyedHistory {
+    String getFile();
+    List<HistoryEntry> getEntries();
+    boolean isForceOverwrite();
 }

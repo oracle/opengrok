@@ -18,26 +18,29 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.history;
+
+package org.opengrok.indexer.util;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * Bazaar specific tag class with ability to compare itself with generic
- * HistoryEntry.
- *
- * @author Stanislav Kozina
+ * Represents an API for parsing objects from a stream.
  */
-public class BazaarTagEntry extends TagEntry {
+public interface ObjectStreamHandler {
 
-    public BazaarTagEntry(int revision, String tag) {
-        super(revision, tag);
-    }
+    /**
+     * Initializes the handler to read from the specified input.
+     */
+    void initializeObjectStream(InputStream in);
 
-    @Override
-    public int compareTo(HistoryEntry that) {
-        assert this.revision != NOREV : "BazaarTagEntry created without tag specified.specified";
-        return Integer.compare(this.revision, Integer.parseInt(that.getRevision()));
-    }
+    /**
+     * Reads an object from the initialized input unless the stream has been
+     * exhausted.
+     * @return a defined instance or {@code null} if the stream has been
+     * exhausted
+     */
+    Object readObject() throws IOException;
 }

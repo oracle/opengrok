@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -111,9 +111,10 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        entries = new ArrayList<HistoryEntry>();
-        String s;
+        entries = new ArrayList<>();
         HistoryEntry entry = null;
+
+        String s;
         while ((s = in.readLine()) != null) {
             if (s.startsWith(MercurialRepository.CHANGESET)) {
                 entry = new HistoryEntry();
@@ -141,7 +142,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         File f = new File(mydir, strings[ii]);
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
-                            entry.addFile(path.intern());
+                            entry.addFile(path);
                         } catch (ForbiddenSymlinkException e) {
                             LOGGER.log(Level.FINER, e.getMessage());
                             // ignore

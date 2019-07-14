@@ -19,11 +19,13 @@
 
 /*
  * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Map;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
@@ -65,14 +67,17 @@ interface HistoryCache {
             throws HistoryException, ForbiddenSymlinkException;
 
     /**
-     * Store the history for a repository.
-     *
-     * @param history The history to store
+     * Stores the history enumeration for a repository, where
+     * {@code historyElements} must be ordered from most recent to earlier
+     * between each element and within each element.
+     * @param historySequence The history series to store
      * @param repository The repository whose history to store
+     * @param forceOverwrite a value indicating whether to overwrite existing
+     * stored history for the files in {@code historySequence}
      * @throws HistoryException if the history cannot be stored
      */
-    void store(History history, Repository repository)
-            throws HistoryException;
+    void store(Enumeration<History> historySequence, Repository repository,
+            boolean forceOverwrite) throws HistoryException;
 
     /**
      * Optimize how the history is stored on disk. This method is typically
@@ -85,6 +90,12 @@ interface HistoryCache {
      * @throws HistoryException if an error happens during optimization
      */
     void optimize() throws HistoryException;
+
+    /**
+     * Closes the history cache, releasing any resources. {@link #initialize()}
+     * must be called before accessing the cache again.
+     */
+    void close() throws HistoryException;
 
     /**
      * Check if the specified directory is present in the cache.

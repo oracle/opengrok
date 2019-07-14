@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -26,10 +26,10 @@ package org.opengrok.indexer.index;
 /**
  * Represents the metadata for a pending file deletion.
  */
-public final class PendingFileDeletion {
+final class PendingFileDeletion {
     private final String absolutePath;
 
-    public PendingFileDeletion(String absolutePath) {
+    PendingFileDeletion(String absolutePath) {
         this.absolutePath = absolutePath;
     }
 
@@ -55,6 +55,9 @@ public final class PendingFileDeletion {
         return this.absolutePath.equals(other.absolutePath);
     }
 
+    /**
+     * Gets the hash code of the absolute path.
+     */
     @Override
     public int hashCode() {
         return this.absolutePath.hashCode();

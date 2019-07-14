@@ -49,6 +49,8 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
     <suppress checks="LineLength" files="CustomSloppyPhraseScorer\.java" />
 
+    <suppress checks="AnonInnerLength" files="Executor\.java" />
+
     <suppress checks="EmptyBlock" files="JFlexNonXref\.java|JavaClassAnalyzer\.java|JFlexXref\.java|Util\.java|
         |ClearCaseRepository\.java" />
 

@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.26</version>
         </dependency>
 
         <dependency>
