@@ -296,7 +296,7 @@ def mirror_project(config, project_name, check_changes, uri,
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
-        ignored_repos = get_project_properties(config, project_config,
+        ignored_repos = get_project_properties(project_config, project_name,
                                                config.get(HOOKDIR_PROPERTY))
 
     proxy = None
