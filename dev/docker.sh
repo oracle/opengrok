@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #
-# Build and push new image to Docker hub.
+# Build and optionally push new image to Docker hub.
 #
-# Uses the following Travis secure variables:
+# When pushing, this script uses the following Travis secure variables:
 #  - DOCKER_USERNAME
 #  - DOCKER_PASSWORD
 #
