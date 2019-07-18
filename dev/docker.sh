@@ -48,13 +48,13 @@ docker ps -a
 
 # Travis can only work on master since it needs encrypted variables.
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-	echo "Not pushing docker image for pull requests"
+	echo "Not pushing Docker image for pull requests"
 	exit 0
 fi
 
 # The push only works on the main repository.
 if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ]]; then
-	echo "Not pushing docker image for non main repository"
+	echo "Not pushing Docker image for non main repository"
 	exit 0
 fi
 
