@@ -82,7 +82,6 @@ jobs:
     dist: xenial
     jdk: openjdk8
     install: true
-    if: repo = "oracle/opengrok" AND tag IS present
     services:
     - docker
     before_install: dev/before_install
