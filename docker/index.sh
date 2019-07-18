@@ -24,7 +24,7 @@ opengrok-indexer \
     -s /opengrok/src \
     -d /opengrok/data \
     --leadingWildCards on \
-    -W /var/opengrok/etc/configuration.xml \
+    -W /opengrok/etc/configuration.xml \
     -U "$URI" \
     $OPS \
     $INDEXER_OPT "$@"
