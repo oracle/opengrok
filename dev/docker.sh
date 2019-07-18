@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #
-# Build and push new image to Docker hub.
+# Build and optionally push new image to Docker hub.
 #
-# Uses the following Travis secure variables:
+# When pushing, this script uses the following Travis secure variables:
 #  - DOCKER_USERNAME
 #  - DOCKER_PASSWORD
 #
@@ -13,30 +13,13 @@
 set -x
 set -e
 
-# Travis can only work on master since it needs encrypted variables.
-if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
-	echo "Not building docker image for pull requests"
-	exit 0
+if [[ -n $TRAVIS_TAG ]]; then
+	VERSION="$TRAVIS_TAG"
+	VERSION_SHORT=$( echo $VERSION | cut -d. -f1,2 )
+else
+	VERSION="latest"
+	VERSION_SHORT="latest"
 fi
-
-# Allow Docker builds for release builds only.
-if [[ -z $TRAVIS_TAG ]]; then
-	echo "TRAVIS_TAG is empty"
-	exit 0
-fi
-
-if [[ -z $DOCKER_USERNAME ]]; then
-	echo "DOCKER_USERNAME is empty"
-	exit 1
-fi
-
-if [[ -z $DOCKER_PASSWORD ]]; then
-	echo "DOCKER_PASSWORD is empty"
-	exit 1
-fi
-
-VERSION="$TRAVIS_TAG"
-VERSION_SHORT=$( echo $VERSION | cut -d. -f1,2 )
 
 if [[ -z $VERSION ]]; then
 	echo "empty VERSION"
@@ -60,6 +43,34 @@ docker build \
 #
 docker run -d opengrok/docker
 docker ps -a
+
+# Travis can only work on master since it needs encrypted variables.
+if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+	echo "Not publishing docker image for pull requests"
+	exit 0
+fi
+
+# The push only works on the main repository.
+if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ]]; then
+	echo "Not publishing docker image for non main repository"
+	exit 0
+fi
+
+# Allow Docker publish for release builds only.
+if [[ -z $TRAVIS_TAG ]]; then
+	echo "TRAVIS_TAG is empty"
+	exit 0
+fi
+
+if [[ -z $DOCKER_USERNAME ]]; then
+	echo "DOCKER_USERNAME is empty"
+	exit 1
+fi
+
+if [[ -z $DOCKER_PASSWORD ]]; then
+	echo "DOCKER_PASSWORD is empty"
+	exit 1
+fi
 
 # Publish the image to Docker hub.
 if [ -n "$DOCKER_PASSWORD" -a -n "$DOCKER_USERNAME" -a -n "$VERSION" ]; then
