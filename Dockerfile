@@ -15,7 +15,7 @@ LABEL maintainer "opengrok-dev@yahoogroups.com"
 
 # prepare OpenGrok binaries and directories
 COPY --from=fetcher opengrok.tar.gz /opengrok.tar.gz
-RUN mkdir -p /opengrok /var/opengrok/etc /opengrok/data /opengrok/src && \
+RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
     rm -f /opengrok.tar.gz
 
@@ -44,7 +44,8 @@ ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-j
 
 # custom deployment to / with redirect from /source
 RUN rm -rf /usr/local/tomcat/webapps/* && \
-    opengrok-deploy /opengrok/lib/source.war /usr/local/tomcat/webapps/ROOT.war && \
+    opengrok-deploy -c /opengrok/etc/configuration.xml \
+        /opengrok/lib/source.war /usr/local/tomcat/webapps/ROOT.war && \
     mkdir "/usr/local/tomcat/webapps/source" && \
     echo '<% response.sendRedirect("/"); %>' > "/usr/local/tomcat/webapps/source/index.jsp"
 
