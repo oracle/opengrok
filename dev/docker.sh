@@ -58,7 +58,7 @@ if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ]]; then
 	exit 0
 fi
 
-# Allow Docker builds for release builds only.
+# Allow Docker push for release builds only.
 if [[ -z $TRAVIS_TAG ]]; then
 	echo "TRAVIS_TAG is empty"
 	exit 0
