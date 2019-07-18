@@ -52,6 +52,12 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
 	exit 0
 fi
 
+# The push only works on the main repository.
+if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ]]; then
+	echo "Not publishing docker image for non main repository"
+	exit 0
+fi
+
 # Allow Docker builds for release builds only.
 if [[ -z $TRAVIS_TAG ]]; then
 	echo "TRAVIS_TAG is empty"
