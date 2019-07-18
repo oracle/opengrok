@@ -72,6 +72,8 @@ class CommandSequenceBase:
 class CommandSequence(CommandSequenceBase):
     PROJECT_SUBST = '%PROJECT%'
 
+    re_program = re.compile('ERROR[:]*\\s+')
+
     def __init__(self, base):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
                          cleanup=base.cleanup, driveon=base.driveon)
@@ -229,9 +231,8 @@ class CommandSequence(CommandSequenceBase):
                     self.logger.error(out)
             self.logger.error("")
 
-        re_program = re.compile('ERROR[:]*\\s+')
         errored_cmds = {k: v for k, v in self.outputs.items()
-                        if re_program.match(str(v))}
+                        if self.re_program.match(str(v))}
         if len(errored_cmds) > 0:
             ret = 1
             self.logger.error("Command output in project '{}'"
