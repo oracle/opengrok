@@ -1,5 +1,5 @@
 
-Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2019 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
