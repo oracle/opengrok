@@ -106,7 +106,7 @@ TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
     -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' \
     https://hub.docker.com/v2/users/login/ | jq -r .token)
 if [[ -z $TOKEN ]]; then
-	echo "Cannot get auth token"
+	echo "Cannot get auth token to publish the README file"
 	exit 1
 fi
 
