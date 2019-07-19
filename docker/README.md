@@ -67,24 +67,15 @@ The container exports ports 8080 for OpenGrok.
 
 The volume mounted to `/opengrok/src` should contain the projects you want to make searchable (in sub directories). You can use common revision control checkouts (git, svn, etc...) and OpenGrok will make history and blame information available.
 
-By default, the index will be rebuild every ten minutes. You can adjust this
-time (in minutes) by passing the `REINDEX` environment variable:
+## Environment Variables
 
-    docker run -d -e REINDEX=30 -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok/docker:latest
+| Docker Environment Var. | Description |
+| ----------------------- | ----------- |
+`REINDEX: <time_in_minutes>`<br/> *Optional* *Default: 10* | Period of automatic mirroring/reindexing. Setting to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec: `docker exec <container> /scripts/index.sh`
+`INDEXER_OPT` | pass extra options to opengrok-indexer. For example, "-i d:vendor" will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
+`NOMIRROR` | To avoid the mirroring step, set the variable to non-empty value.
 
-Setting `REINDEX` to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec:
-
-    docker exec <container> /scripts/index.sh
-
-Setting `INDEXER_OPT` could pass extra options to opengrok-indexer. For example, you can run with:
-
-    docker run -d -e INDEXER_OPT="-i d:vendor" -v <path/to/your/src>:/opengrok/src -p 8080:8080 opengrok/docker:latest
-
-To remove all the `*/vendor/*` files from the index. You can check the indexer options on
-
-https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
-
-To avoid the mirroring step, set the `NOMIRROR` variable to non-empty value.
+To specify environment variable for `docker run`, use the `-e` option, e.g. `-e REINDEX=30`
 
 ## OpenGrok Web-Interface
 
