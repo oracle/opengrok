@@ -85,7 +85,43 @@ http://localhost:8080/
 
 The first reindex will take some time to finish. Subsequent reindex will be incremental so will take signigicantly less time.
 
-### Build image locally
+## Using Docker compose
+
+[Docker-compose](https://docs.docker.com/compose/install/) example:
+
+```yaml
+version: "3"
+
+# More info at https://github.com/oracle/opengrok/docker/
+services:
+  opengrok:
+    container_name: opengrok
+    image: opengrok/docker:latest
+    ports:
+      - "8080:8080/tcp"
+    environment:
+      REINDEX: '60'
+    # Volumes store your data between container upgrades
+    volumes:
+       - '~/opengrok-src/:/opengrok/src/'
+```
+
+Save the file into `docker-compose.yml` and then simply run
+
+    docker-compose up -d
+
+Equivalent `docker run` command would look like this:
+
+```bash
+docker run -d \
+    --name opengrok \
+    -p 8080:8080/tcp \
+    -e REINDEX="60" \
+    -v "~/opengrok-src/:/opengrok/src/" \
+    opengrok/docker:latest
+```
+
+## Build image locally
 
 If you want to do your own development, you can build the image yourself:
 
