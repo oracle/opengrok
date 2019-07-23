@@ -45,8 +45,10 @@ public class HttpBasicAuthHeaderDecoder implements IUserDecoder {
 
     @Override
     public User fromRequest(HttpServletRequest request) {
-        String authHeader = request.getHeader("authorization");
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         if (authHeader == null) {
+            LOGGER.log(Level.FINE, "no {0} header in request {1}",
+                    new Object[]{AUTHORIZATION_HEADER, request});
             return null;
         }
 
