@@ -30,16 +30,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;
-import static opengrok.auth.plugin.decoders.HttpBasicAuthHeaderDecoder.AUTHORIZATION_HEADER;
 
-public class HttpBasicAuthDecoderTest {
+public class UserPrincipalDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
-    HttpBasicAuthHeaderDecoder decoder = new HttpBasicAuthHeaderDecoder();
+    UserPrincipalDecoder decoder = new UserPrincipalDecoder();
 
     @Before
     public void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
-        dummyRequest.setHeader(AUTHORIZATION_HEADER, "Basic Zm9vOmJhcg==");
+        dummyRequest.setHeader("authorization", "Basic Zm9vOmJhcg==");
     }
 
     @Test

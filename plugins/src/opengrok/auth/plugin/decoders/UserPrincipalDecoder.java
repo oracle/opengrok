@@ -26,46 +26,30 @@ package opengrok.auth.plugin.decoders;
 import opengrok.auth.plugin.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Decode HTTP Basic authentication headers to form a User object.
+ * Get authenticated user principal and use it to create User object.
+ * This works e.g. with HTTP Basic authentication headers.
  *
  * @author Vladimir Kotal
  */
-public class HttpBasicAuthHeaderDecoder implements IUserDecoder {
+public class UserPrincipalDecoder implements IUserDecoder {
 
-    private static final Logger LOGGER = Logger.getLogger(MellonHeaderDecoder.class.getName());
-
-    static final String AUTHORIZATION_HEADER = "authorization";
-    static final String BASIC = "Basic";
+    private static final Logger LOGGER = Logger.getLogger(UserPrincipalDecoder.class.getName());
 
     @Override
     public User fromRequest(HttpServletRequest request) {
-        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
-        if (authHeader == null) {
-            LOGGER.log(Level.FINE, "no {0} header in request {1}",
-                    new Object[]{AUTHORIZATION_HEADER, request});
+        if (request.getUserPrincipal() == null) {
             return null;
         }
 
-        if (!authHeader.startsWith(BASIC)) {
-            LOGGER.log(Level.WARNING, "{0} header does not start with {1}: {2}",
-                    new Object[]{AUTHORIZATION_HEADER, BASIC, authHeader});
-            return null;
-        }
-
-        String encodedValue = authHeader.split(" ")[1];
-        Base64.Decoder decoder = Base64.getDecoder();
-        String username = new String(decoder.decode(encodedValue)).split(":")[0];
+        String username = request.getUserPrincipal().getName();
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct User object: header ''{1}'' not found in request headers: {0}",
-                    new Object[]{String.join(",", Collections.list(request.getHeaderNames())),
-                            AUTHORIZATION_HEADER});
+                    "Can not construct User object: cannot get user principal from: {0}",
+                    request);
             return null;
         }
 
