@@ -106,7 +106,6 @@ public class GitRepository extends Repository {
 
         ignoredDirs.add(".git");
         ignoredFiles.add(".git");
-        ignoredFiles.add(".gitignore");
     }
 
     /**
