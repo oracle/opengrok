@@ -188,19 +188,7 @@ public class SearchEngine {
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
         IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
         searcher = new IndexSearcher(ireader);
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
-        searcher.search(query, collector);
-        totalHits = collector.getTotalHits();
-        if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits);
-            searcher.search(query, collector);
-        }
-        hits = collector.topDocs().scoreDocs;
-        for (ScoreDoc hit : hits) {
-            int docId = hit.doc;
-            Document d = searcher.doc(docId);
-            docs.add(d);
-        }
+        searchIndex(searcher, paging);
     }
 
     /**
@@ -222,6 +210,10 @@ public class SearchEngine {
         MultiReader searchables = RuntimeEnvironment.getInstance().
             getMultiReader(projects, searcherList);
         searcher = new IndexSearcher(searchables);
+        searchIndex(searcher, paging);
+    }
+
+    private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
         collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
