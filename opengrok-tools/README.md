@@ -68,6 +68,9 @@ in our provided structure on its own.
 Also you call the opengrok tools scripts by the entry points then (`opengrok-groups`, ...).
 Calling directly the python script `groups.py` would lead to error related to relative imports.
 
+Note that on macOS, you will need to install libgit2 library for the tests
+to pass.
+
 ## Installation
 
 Test installing your package into the local environment

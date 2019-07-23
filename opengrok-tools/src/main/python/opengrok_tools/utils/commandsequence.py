@@ -30,6 +30,7 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 import json
+import re
 
 
 class CommandSequenceBase:
@@ -70,6 +71,8 @@ class CommandSequenceBase:
 
 class CommandSequence(CommandSequenceBase):
     PROJECT_SUBST = '%PROJECT%'
+
+    re_program = re.compile('ERROR[:]*\\s+')
 
     def __init__(self, base):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
@@ -229,7 +232,7 @@ class CommandSequence(CommandSequenceBase):
             self.logger.error("")
 
         errored_cmds = {k: v for k, v in self.outputs.items()
-                        if "error" in str(v).lower()}
+                        if self.re_program.match(str(v))}
         if len(errored_cmds) > 0:
             ret = 1
             self.logger.error("Command output in project '{}'"

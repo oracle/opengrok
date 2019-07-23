@@ -15,7 +15,7 @@ LABEL maintainer "opengrok-dev@yahoogroups.com"
 
 # prepare OpenGrok binaries and directories
 COPY --from=fetcher opengrok.tar.gz /opengrok.tar.gz
-RUN mkdir -p /opengrok /var/opengrok/etc /opengrok/data /opengrok/src && \
+RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
     rm -f /opengrok.tar.gz
 
@@ -35,16 +35,16 @@ ENV DATA_ROOT /opengrok/data
 ENV OPENGROK_WEBAPP_CONTEXT /
 ENV OPENGROK_TOMCAT_BASE /usr/local/tomcat
 ENV CATALINA_HOME /usr/local/tomcat
-ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CATALINA_BASE /usr/local/tomcat
-ENV CATALINA_HOME /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
+ENV PATH $CATALINA_HOME/bin:$PATH
 ENV JRE_HOME /usr
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 
 # custom deployment to / with redirect from /source
 RUN rm -rf /usr/local/tomcat/webapps/* && \
-    opengrok-deploy /opengrok/lib/source.war /usr/local/tomcat/webapps/ROOT.war && \
+    opengrok-deploy -c /opengrok/etc/configuration.xml \
+        /opengrok/lib/source.war /usr/local/tomcat/webapps/ROOT.war && \
     mkdir "/usr/local/tomcat/webapps/source" && \
     echo '<% response.sendRedirect("/"); %>' > "/usr/local/tomcat/webapps/source/index.jsp"
 
