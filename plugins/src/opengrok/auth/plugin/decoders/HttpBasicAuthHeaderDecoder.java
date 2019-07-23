@@ -23,10 +23,10 @@
 
 package opengrok.auth.plugin.decoders;
 
-import com.sun.xml.internal.messaging.saaj.util.Base64;
 import opengrok.auth.plugin.entity.User;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +57,8 @@ public class HttpBasicAuthHeaderDecoder implements IUserDecoder {
         }
 
         String encodedValue = authHeader.split(" ")[1];
-        String username = Base64.base64Decode(encodedValue).split(":")[0];
+        Base64.Decoder decoder = Base64.getDecoder();
+        String username = new String(decoder.decode(encodedValue)).split(":")[0];
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
                     "Can not construct User object: header ''{1}'' not found in request headers: {0}",
