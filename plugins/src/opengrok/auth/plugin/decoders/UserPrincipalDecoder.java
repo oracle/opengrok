@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 /**
  * Get authenticated user principal and use it to create User object.
- * This works e.g. with HTTP Basic authentication headers.
+ * This works e.g. with HTTP Basic authentication headers as per RFC 7617.
  *
  * @author Vladimir Kotal
  */
