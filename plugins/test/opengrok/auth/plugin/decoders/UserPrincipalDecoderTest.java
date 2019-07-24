@@ -38,11 +38,12 @@ public class UserPrincipalDecoderTest {
     @Before
     public void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
-        dummyRequest.setHeader("authorization", "Basic Zm9vOmJhcg==");
     }
 
     @Test
-    public void testAll() {
+    public void testHttpBasicDecoding() {
+        dummyRequest.setHeader("authorization", "Basic Zm9vOmJhcg==");
+
         User result = decoder.fromRequest(dummyRequest);
 
         Assert.assertNotNull(result);
