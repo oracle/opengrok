@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -217,7 +218,24 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
 
     @Override
     public Principal getUserPrincipal() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String authHeader = getHeader("authorization");
+        if (authHeader == null) {
+            return null;
+        }
+
+        if (!authHeader.startsWith("Basic")) {
+            return null;
+        }
+
+        String encodedValue = authHeader.split(" ")[1];
+        Base64.Decoder decoder = Base64.getDecoder();
+        String username = new String(decoder.decode(encodedValue)).split(":")[0];
+        return new Principal() {
+            @Override
+            public String getName() {
+                return username;
+            }
+        };
     }
 
     @Override
