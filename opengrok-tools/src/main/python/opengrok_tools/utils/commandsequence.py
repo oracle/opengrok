@@ -48,6 +48,9 @@ class CommandSequenceBase:
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
+        if cleanup and not isinstance(cleanup, list):
+            raise Exception("cleanup is not a list of commands")
+
         self.cleanup = cleanup
         self.loglevel = loglevel
         self.driveon = driveon
@@ -173,13 +176,17 @@ class CommandSequence(CommandSequenceBase):
 
     def run_cleanup(self):
         """
-        Call cleanup in case the sequence failed or termination was requested.
+        Call cleanup sequence in case the command sequence failed
+        or termination was requested.
         """
-        if self.cleanup:
-            if is_web_uri(self.cleanup.get("command")[0]):
-                self.call_rest_api(self.cleanup)
+        if self.cleanup is None:
+            return
+
+        for cleanup_cmd in self.cleanup:
+            if is_web_uri(cleanup_cmd.get("command")[0]):
+                self.call_rest_api(cleanup_cmd)
             else:
-                command_args = self.cleanup.get("command")
+                command_args = cleanup_cmd.get("command")
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
