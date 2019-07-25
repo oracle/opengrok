@@ -138,6 +138,7 @@ def test_cleanup():
         file_foo = os.path.join(tmpdir, "foo")
         file_bar = os.path.join(tmpdir, "bar")
         cleanup_list = [{"command": ["/usr/bin/touch", file_foo]},
+                        {"command": ["/bin/cat", "/totallynonexistent"]},
                         {"command": ["/usr/bin/touch", file_bar]}]
         # Running 'cat' on non-existing entry causes it to return 1.
         cmd_list = [{"command": ["/bin/cat", "/foobar"]}]
