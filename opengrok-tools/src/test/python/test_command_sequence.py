@@ -141,11 +141,13 @@ def test_cleanup():
                         {"command": ["/bin/cat", "/totallynonexistent"]},
                         {"command": ["/usr/bin/touch", file_bar]}]
         # Running 'cat' on non-existing entry causes it to return 1.
-        cmd_list = [{"command": ["/bin/cat", "/foobar"]}]
+        cmd = ["/bin/cat", "/foobar"]
+        cmd_list = [{"command": cmd}]
         commands = CommandSequence(CommandSequenceBase("test-cleanup-list",
                                                        cmd_list,
                                                        cleanup=cleanup_list))
         assert commands is not None
         commands.run()
+        assert list(commands.retcodes.values()) == [1]
         assert os.path.isfile(file_foo)
         assert os.path.isfile(file_bar)
