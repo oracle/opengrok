@@ -116,3 +116,10 @@ def test_project_subst():
     cmds.run()
 
     assert cmds.outputs['/bin/echo test-subst'] == ['test-subst\n']
+
+
+def test_cleanup():
+    cleanup_list = [{"cleanup": ["/bin/echo", CommandSequence.PROJECT_SUBST]}]
+    cmds = CommandSequence(CommandSequenceBase("test-cleanup-list", None,
+                                               cleanup=cleanup_list))
+    assert cmds is not None
