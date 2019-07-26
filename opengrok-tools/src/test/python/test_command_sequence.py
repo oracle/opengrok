@@ -26,6 +26,7 @@
 import os
 
 import pytest
+import tempfile
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
     CommandSequenceBase
@@ -116,3 +117,37 @@ def test_project_subst():
     cmds.run()
 
     assert cmds.outputs['/bin/echo test-subst'] == ['test-subst\n']
+
+
+def test_cleanup_exception():
+    """
+    If cleanup is not a list, Exception should be thrown when initializing
+    the CommandSequence object.
+    """
+    cleanup = {"cleanup": ["foo", CommandSequence.PROJECT_SUBST]}
+    with pytest.raises(Exception):
+        CommandSequence(CommandSequenceBase("test-cleanup-list", None,
+                                            cleanup=cleanup))
+
+
+@pytest.mark.skipif(not os.path.exists('/usr/bin/touch') or
+                    not os.path.exists('/bin/cat'),
+                    reason="requires Unix")
+def test_cleanup():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file_foo = os.path.join(tmpdir, "foo")
+        file_bar = os.path.join(tmpdir, "bar")
+        cleanup_list = [{"command": ["/usr/bin/touch", file_foo]},
+                        {"command": ["/bin/cat", "/totallynonexistent"]},
+                        {"command": ["/usr/bin/touch", file_bar]}]
+        # Running 'cat' on non-existing entry causes it to return 1.
+        cmd = ["/bin/cat", "/foobar"]
+        cmd_list = [{"command": cmd}]
+        commands = CommandSequence(CommandSequenceBase("test-cleanup-list",
+                                                       cmd_list,
+                                                       cleanup=cleanup_list))
+        assert commands is not None
+        commands.run()
+        assert list(commands.retcodes.values()) == [1]
+        assert os.path.isfile(file_foo)
+        assert os.path.isfile(file_bar)
