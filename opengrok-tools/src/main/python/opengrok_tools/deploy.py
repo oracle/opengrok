@@ -101,9 +101,9 @@ def repack_war(logger, sourceWar, targetWar, defaultConfigFile,
                     try:
                         data = insert_file(data, insert_path)
                     except ET.ParseError as e:
-                        raise ProcessingException("Cannot parse file '{}' " +
-                                                  "as XML".
-                                                  format(insert_path)) from e
+                        raise ProcessingException(
+                            "Cannot parse file '{}' as XML".
+                            format(insert_path)) from e
                     except (PermissionError, IOError) as e:
                         raise ProcessingException("Cannot read file '{}'".
                                                   format(insert_path)) from e
