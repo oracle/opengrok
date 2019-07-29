@@ -84,7 +84,8 @@ def repack_war(logger, source_war, target_war, default_config_file,
     :param insert_path: path to XML file to insert
     """
 
-    with ZipFile(source_war, 'r') as infile, ZipFile(target_war, 'w') as outfile:
+    with ZipFile(source_war, 'r') as infile, \
+            ZipFile(target_war, 'w') as outfile:
         for item in infile.infolist():
             data = infile.read(item.filename)
 
