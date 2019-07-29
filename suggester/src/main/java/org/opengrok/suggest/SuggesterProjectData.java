@@ -24,9 +24,9 @@ package org.opengrok.suggest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.suggest.InputIterator;
@@ -119,7 +119,7 @@ class SuggesterProjectData implements Closeable {
 
     private void initFields(final Set<String> fields) throws IOException {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
-            Collection<String> indexedFields = MultiFields.getIndexedFields(indexReader);
+            Collection<String> indexedFields = FieldInfos.getIndexedFields(indexReader);
             if (fields == null) {
                 this.fields = new HashSet<>(indexedFields);
             } else if (!indexedFields.containsAll(fields)) {

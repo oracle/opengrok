@@ -90,7 +90,7 @@ public class IndexAnalysisSettingsAccessor {
         }
         TopDocs top = searcher.search(q, n);
 
-        int nres = top.totalHits > n ? n : (int)top.totalHits;
+        int nres = top.totalHits.value > n ? n : (int)top.totalHits.value;
         IndexAnalysisSettings[] res = new IndexAnalysisSettings[nres];
 
         for (int i = 0; i < nres; ++i) {

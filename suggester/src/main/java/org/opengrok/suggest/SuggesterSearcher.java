@@ -36,6 +36,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorable;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.popular.PopularityCounter;
@@ -233,7 +235,7 @@ class SuggesterSearcher extends IndexSearcher {
                         final int docBase = context.docBase;
 
                         @Override
-                        public void setScorer(final Scorer scorer) {
+                        public void setScorer(final Scorable scorer) {
                             if (leafReaderContext == context) {
                                 if (scorer instanceof PhraseScorer) {
                                     data.scorer = (PhraseScorer) scorer;
@@ -241,7 +243,7 @@ class SuggesterSearcher extends IndexSearcher {
                                     try {
                                         // it is mentioned in the documentation that #getChildren should not be called
                                         // in #setScorer but no better way was found
-                                        for (Scorer.ChildScorer childScorer : scorer.getChildren()) {
+                                        for (Scorer.ChildScorable childScorer : scorer.getChildren()) {
                                             if (childScorer.child instanceof PhraseScorer) {
                                                 data.scorer = (PhraseScorer) childScorer.child;
                                             }
@@ -263,9 +265,10 @@ class SuggesterSearcher extends IndexSearcher {
                 }
 
                 @Override
-                public boolean needsScores() {
-                    return false;
+                public ScoreMode scoreMode() {
+                    return ScoreMode.COMPLETE_NO_SCORES;
                 }
+
             });
         } catch (IOException e) {
             if (Thread.currentThread().isInterrupted()) {

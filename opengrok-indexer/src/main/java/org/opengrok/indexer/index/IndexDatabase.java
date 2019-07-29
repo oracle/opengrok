@@ -58,18 +58,17 @@ import javax.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
-import org.apache.lucene.codecs.lucene70.Lucene70Codec;
+import org.apache.lucene.codecs.lucene80.Lucene80Codec;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -420,7 +419,7 @@ public class IndexDatabase {
              * compression on the minority of data that is stored, since it
              * should not have a detrimental impact on overall throughput.
              */
-            iwc.setCodec(new Lucene70Codec(
+            iwc.setCodec(new Lucene80Codec(
                 Lucene50StoredFieldsFormat.Mode.BEST_COMPRESSION));
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
@@ -466,8 +465,7 @@ public class IndexDatabase {
                 Terms terms = null;
                 int numDocs = reader.numDocs();
                 if (numDocs > 0) {
-                    Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
-                    terms = uFields.terms(QueryBuilder.U);
+                    terms = MultiTerms.getTerms(reader, QueryBuilder.U);
                 }
 
                 try {
@@ -1364,8 +1362,7 @@ public class IndexDatabase {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
             int numDocs = ireader.numDocs();
             if (numDocs > 0) {
-                Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
-                terms = uFields.terms(QueryBuilder.U);
+                terms = MultiTerms.getTerms(ireader, QueryBuilder.U);
                 iter = terms.iterator(); // init uid iterator
             }
             while (iter != null && iter.term() != null) {
@@ -1459,8 +1456,7 @@ public class IndexDatabase {
             ireader = DirectoryReader.open(indexDirectory);
             int numDocs = ireader.numDocs();
             if (numDocs > 0) {
-                Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
-                terms = uFields.terms(QueryBuilder.DEFS);
+                terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
                 iter = terms.iterator(); // init uid iterator
             }
             while (iter != null && iter.term() != null) {
@@ -1550,7 +1546,7 @@ public class IndexDatabase {
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
             TopDocs top = searcher.search(q, 1);
-            if (top.totalHits == 0) {
+            if (top.totalHits.value == 0) {
                 // No hits, no definitions...
                 return null;
             }
