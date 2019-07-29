@@ -32,6 +32,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
@@ -72,7 +73,7 @@ public class CustomSloppyPhraseScorerTest {
         try (IndexReader ir = DirectoryReader.open(dir)) {
             IndexSearcher is = new IndexSearcher(ir);
 
-            Weight w = query.createWeight(is, false, 1);
+            Weight w = query.createWeight(is, ScoreMode.COMPLETE_NO_SCORES, 1);
 
             LeafReaderContext context = ir.getContext().leaves().get(0);
 
