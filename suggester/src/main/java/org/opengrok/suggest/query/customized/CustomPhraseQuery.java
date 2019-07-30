@@ -22,7 +22,7 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermContext;
+import org.apache.lucene.index.TermStates;
 import org.apache.lucene.index.TermState;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -31,6 +31,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.ArrayUtil;
@@ -231,7 +232,7 @@ public class CustomPhraseQuery extends Query {
     }
 
     @Override
-    public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
+    public Weight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) throws IOException {
         return new CustomPhraseWeight(searcher, this);
     }
 
@@ -239,7 +240,7 @@ public class CustomPhraseQuery extends Query {
 
         private CustomPhraseQuery query;
 
-        private TermContext[] states;
+        private TermStates[] states;
 
         CustomPhraseWeight(IndexSearcher searcher, CustomPhraseQuery query) throws IOException {
             super(query);
@@ -247,14 +248,15 @@ public class CustomPhraseQuery extends Query {
 
             IndexReaderContext context = searcher.getTopReaderContext();
 
-            this.states = new TermContext[query.terms.length];
+            this.states = new TermStates[query.terms.length];
             for(int i = 0; i < query.terms.length; ++i) {
                 Term term = query.terms[i];
-                this.states[i] = TermContext.build(context, term);
+                this.states[i] = TermStates.build(context, term, false);
             }
         }
 
         @Override
+        @Deprecated
         public void extractTerms(Set<Term> set) {
             throw new UnsupportedOperationException();
         }
@@ -283,7 +285,7 @@ public class CustomPhraseQuery extends Query {
 
                 for(int i = 0; i < query.terms.length; ++i) {
                     Term t = query.terms[i];
-                    TermState state = this.states[i].get(context.ord);
+                    TermState state = this.states[i].get(context);
                     if (state == null) {
                         return null;
                     }

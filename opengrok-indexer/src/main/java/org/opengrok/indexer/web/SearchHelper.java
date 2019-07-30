@@ -378,7 +378,7 @@ public class SearchHelper {
         }
         try {
             TopFieldDocs fdocs = searcher.search(query, start + maxItems, sort);
-            totalHits = fdocs.totalHits;
+            totalHits = fdocs.totalHits.value;
             hits = fdocs.scoreDocs;
             // Bug #3900: Check if this is a search for a single term, and that
             // term is a definition. If that's the case, and we only have one match,
@@ -596,7 +596,7 @@ public class SearchHelper {
         query = singleBuilder.setPath(path).build();
 
         TopDocs top = searcher.search(query, 1);
-        if (top.totalHits == 0) {
+        if (top.totalHits.value == 0) {
             return -1;
         }
 
