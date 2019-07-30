@@ -31,18 +31,16 @@ def insert_file(input_xml, insert_xml_file):
     :param insert_xml_file: path to file to insert
     :return: string with resulting XML
     """
+
     # This avoids resulting XML to have namespace prefixes in elements.
     ET.register_namespace('', "http://xmlns.jcp.org/xml/ns/javaee")
 
     root = ET.fromstring(input_xml)
     insert_tree = ET.parse(insert_xml_file)
     insert_root = insert_tree.getroot()
-    index = len(root)
 
     for elem in list(insert_root.findall('.')):
-        for e in list(elem):
-            root.insert(index, e)
-            index = index + 1
+        root.extend(list(elem))
 
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + \
            ET.tostring(root, encoding="unicode")
