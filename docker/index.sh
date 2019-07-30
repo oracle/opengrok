@@ -23,6 +23,7 @@ opengrok-indexer \
     -a /opengrok/lib/opengrok.jar -- \
     -s /opengrok/src \
     -d /opengrok/data \
+	--remote on \
     --leadingWildCards on \
     -W /opengrok/etc/configuration.xml \
     -U "$URI" \
