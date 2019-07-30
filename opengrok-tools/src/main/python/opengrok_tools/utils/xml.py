@@ -44,7 +44,7 @@ def insert_file(input_xml, insert_xml_file):
         insert_tree = ET.parse(insert_xml_file)
     except ET.ParseError as e:
         raise XMLProcessingException("Cannot parse file '{}' as XML".
-                                  format(insert_xml_file)) from e
+                                     format(insert_xml_file)) from e
     except (PermissionError, IOError) as e:
         raise XMLProcessingException("Cannot read file '{}'".
                                      format(insert_xml_file)) from e
