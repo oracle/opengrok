@@ -32,6 +32,7 @@ import xml.etree.ElementTree as ET
 from .utils.log import get_console_logger, get_class_basename, \
     fatal
 from .utils.parsers import get_baseparser
+from .utils.xml import insert_file
 
 WEB_XML = 'WEB-INF/web.xml'
 DEFAULT_CONFIG_FILE = '/var/opengrok/etc/configuration.xml'
@@ -44,30 +45,6 @@ DEFAULT_CONFIG_FILE = '/var/opengrok/etc/configuration.xml'
 
 class ProcessingException(Exception):
     pass
-
-
-def insert_file(input_xml, insert_xml_file):
-    """
-    inserts sub-root elements of XML file under root of input XML
-    :param input_xml: input XML string
-    :param insert_xml_file: path to file to insert
-    :return: string with resulting XML
-    """
-    # This avoids resulting XML to have namespace prefixes in elements.
-    ET.register_namespace('', "http://xmlns.jcp.org/xml/ns/javaee")
-
-    root = ET.fromstring(input_xml)
-    insert_tree = ET.parse(insert_xml_file)
-    insert_root = insert_tree.getroot()
-    index = len(root)
-
-    for elem in list(insert_root.findall('.')):
-        for e in list(elem):
-            root.insert(index, e)
-            index = index + 1
-
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-           ET.tostring(root, encoding="unicode")
 
 
 def repack_war(logger, source_war, target_war, default_config_file,
