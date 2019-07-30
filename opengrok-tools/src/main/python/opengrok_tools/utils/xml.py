@@ -54,5 +54,4 @@ def insert_file(input_xml, insert_xml_file):
     for elem in list(insert_root.findall('.')):
         root.extend(list(elem))
 
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' + \
-           ET.tostring(root, encoding="unicode")
+    return ET.tostring(root, encoding="utf8", method='xml').decode("utf-8")
