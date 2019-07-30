@@ -24,15 +24,23 @@
 #
 
 import os
+import pytest
 
-from opengrok_tools.utils.xml import insert_file
+from opengrok_tools.utils.xml import insert_file, XMLProcessingException
+
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def test_xml_insert():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    with open(os.path.join(dir_path, "web.xml")) as base_xml:
+    with open(os.path.join(DIR_PATH, "web.xml")) as base_xml:
         out = insert_file(base_xml.read(),
-                          os.path.join(dir_path, "insert.xml"))
-        with open(os.path.join(dir_path, "new.xml")) as expected_xml:
+                          os.path.join(DIR_PATH, "insert.xml"))
+        with open(os.path.join(DIR_PATH, "new.xml")) as expected_xml:
             assert out == expected_xml.read()
+
+
+def test_invalid_xml():
+    with open(os.path.join(DIR_PATH, "web.xml")) as base_xml:
+        with pytest.raises(XMLProcessingException):
+            insert_file(base_xml.read(),
+                        os.path.join(DIR_PATH, "invalid.xml"))

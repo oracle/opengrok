@@ -24,6 +24,10 @@
 import xml.etree.ElementTree as ET
 
 
+class XMLProcessingException(Exception):
+    pass
+
+
 def insert_file(input_xml, insert_xml_file):
     """
     inserts sub-root elements of XML file under root of input XML
@@ -36,7 +40,15 @@ def insert_file(input_xml, insert_xml_file):
     ET.register_namespace('', "http://xmlns.jcp.org/xml/ns/javaee")
 
     root = ET.fromstring(input_xml)
-    insert_tree = ET.parse(insert_xml_file)
+    try:
+        insert_tree = ET.parse(insert_xml_file)
+    except ET.ParseError as e:
+        raise XMLProcessingException("Cannot parse file '{}' as XML".
+                                  format(insert_xml_file)) from e
+    except (PermissionError, IOError) as e:
+        raise XMLProcessingException("Cannot read file '{}'".
+                                     format(insert_xml_file)) from e
+
     insert_root = insert_tree.getroot()
 
     for elem in list(insert_root.findall('.')):

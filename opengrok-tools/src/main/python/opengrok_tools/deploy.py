@@ -27,12 +27,11 @@ import os
 import tempfile
 from shutil import copyfile
 from zipfile import ZipFile
-import xml.etree.ElementTree as ET
 
 from .utils.log import get_console_logger, get_class_basename, \
     fatal
 from .utils.parsers import get_baseparser
-from .utils.xml import insert_file
+from .utils.xml import insert_file, XMLProcessingException
 
 WEB_XML = 'WEB-INF/web.xml'
 DEFAULT_CONFIG_FILE = '/var/opengrok/etc/configuration.xml'
@@ -41,10 +40,6 @@ DEFAULT_CONFIG_FILE = '/var/opengrok/etc/configuration.xml'
  deploy war file
 
 """
-
-
-class ProcessingException(Exception):
-    pass
 
 
 def repack_war(logger, source_war, target_war, default_config_file,
@@ -77,15 +72,7 @@ def repack_war(logger, source_war, target_war, default_config_file,
                 if insert_path:
                     logger.debug("Inserting contents of file '{}'".
                                  format(insert_path))
-                    try:
-                        data = insert_file(data, insert_path)
-                    except ET.ParseError as e:
-                        raise ProcessingException(
-                            "Cannot parse file '{}' as XML".
-                            format(insert_path)) from e
-                    except (PermissionError, IOError) as e:
-                        raise ProcessingException("Cannot read file '{}'".
-                                                  format(insert_path)) from e
+                    data = insert_file(data, insert_path)
 
             outfile.writestr(item, data)
 
@@ -162,7 +149,7 @@ def main():
     try:
         deploy_war(logger, args.source_war[0], args.target_war[0], args.config,
                    args.insert)
-    except ProcessingException as e:
+    except XMLProcessingException as e:
         fatal(e)
 
     print("Start your application server (if it is not already running) "
