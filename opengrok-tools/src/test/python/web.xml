@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <display-name>OpenGrok</display-name>
+    <description>A wicked fast source browser</description>
+    <context-param>
+        <description>Full path to the configuration file where OpenGrok can read its configuration</description>
+        <param-name>CONFIGURATION</param-name>
+        <param-value>/var/opengrok/etc/configuration.xml</param-value>
+    </context-param>
+
+
+</web-app>

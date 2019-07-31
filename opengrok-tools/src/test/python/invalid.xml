@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>API endpoints are checked separately by the web app</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>In general everything needs to be authenticated</web-resource-name>
+            <url-pattern>/*</url-pattern> <!-- protect the whole application -->
+        </web-resource-collection>
+
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+
+        <user-data-constraint>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <security-role>
+        <role-name>*</role-name>
+    </security-role>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+
+</web-app>
