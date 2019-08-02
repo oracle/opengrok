@@ -1,0 +1,8 @@
+# dummy Wercker configuration for the 'gh-pages' branch.
+box: ubuntu
+
+build:
+  steps:
+    - script:
+      name: dummy
+      code: echo "dummy"
