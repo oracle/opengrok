@@ -124,7 +124,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency> <!-- TODO: remove! (moving Messages to web module) -->
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -136,7 +136,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.19.0</version>
+            <version>2.28.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
