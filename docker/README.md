@@ -13,7 +13,7 @@ The container is available from DockerHub at https://hub.docker.com/r/opengrok/d
 
 ## When not to use it
 
-This image is simple wrapper around OpenGrok environment. It is basicallyt a small appliance. The indexer and the web container are **not** tuned for large workloads.
+This image is simple wrapper around OpenGrok environment. It is basically a small appliance. The indexer and the web container are **not** tuned for large workloads.
 
 If you happen to have one of the following:
   - large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like)
