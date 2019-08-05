@@ -72,7 +72,7 @@
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.17.4</version>
+            <version>3.17.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>
