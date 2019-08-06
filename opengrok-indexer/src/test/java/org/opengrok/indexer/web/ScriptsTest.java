@@ -23,6 +23,7 @@
 package org.opengrok.indexer.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,6 +33,7 @@ import java.util.Map.Entry;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengrok.indexer.web.Scripts.Script;
+import org.opengrok.indexer.web.Scripts.ScriptType;
 
 /**
  *
@@ -108,10 +110,10 @@ public class ScriptsTest {
 
     @Test
     public void testLookup() {
-        scripts.addScript("", "utils");
-        scripts.addScript("", "jquery");
-        scripts.addScript("", "diff");
-        scripts.addScript("", "jquery-tablesorter");
+        scripts.addScript("", "utils", ScriptType.MINIFIED);
+        scripts.addScript("", "jquery", ScriptType.MINIFIED);
+        scripts.addScript("", "diff", ScriptType.MINIFIED);
+        scripts.addScript("", "jquery-tablesorter", ScriptType.MINIFIED);
 
         assertEquals(4, scripts.size());
 
@@ -143,10 +145,10 @@ public class ScriptsTest {
     @Test
     public void testLookupWithContextPath() {
         String contextPath = "/source";
-        scripts.addScript(contextPath, "utils");
-        scripts.addScript(contextPath, "jquery");
-        scripts.addScript(contextPath, "diff");
-        scripts.addScript(contextPath, "jquery-tablesorter");
+        scripts.addScript(contextPath, "utils", ScriptType.MINIFIED);
+        scripts.addScript(contextPath, "jquery", ScriptType.MINIFIED);
+        scripts.addScript(contextPath, "diff", ScriptType.MINIFIED);
+        scripts.addScript(contextPath, "jquery-tablesorter", ScriptType.MINIFIED);
 
         assertEquals(4, scripts.size());
 
@@ -174,4 +176,17 @@ public class ScriptsTest {
                                     + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
         }
     }
+
+    @Test
+    public void testAddMinified() {
+        scripts.addScript("", "utils", ScriptType.MINIFIED);
+        assertTrue(scripts.iterator().next().scriptData.endsWith("min.js"));
+    }
+
+    @Test
+    public void testAddDebug() {
+        scripts.addScript("", "utils", ScriptType.DEBUG);
+        assertFalse(scripts.iterator().next().scriptData.endsWith("min.js"));
+    }
+
 }

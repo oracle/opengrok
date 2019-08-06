@@ -76,6 +76,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
+import org.opengrok.indexer.web.Scripts.ScriptType;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
@@ -110,6 +111,7 @@ public final class PageConfig {
     protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
+    private static final String DEBUG_PARAM_NAME = "debug";
 
     // TODO if still used, get it from the app context
 
@@ -1401,11 +1403,15 @@ public final class PageConfig {
      * @param name name of the script to search for
      * @return this
      *
-     * @see Scripts#addScript(java.lang.String, java.lang.String)
+     * @see Scripts#addScript(java.lang.String, java.lang.String, ScriptType)
      */
     public PageConfig addScript(String name) {
-        this.scripts.addScript(this.req.getContextPath(), name);
+        this.scripts.addScript(this.req.getContextPath(), name, isDebug() ? ScriptType.DEBUG : ScriptType.MINIFIED);
         return this;
+    }
+
+    private boolean isDebug() {
+        return Boolean.parseBoolean(req.getParameter(DEBUG_PARAM_NAME));
     }
 
     /**
