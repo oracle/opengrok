@@ -296,14 +296,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>8.17</version>
-                        </dependency>
-                    </dependencies>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>checkstyle</id>
@@ -315,7 +308,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                                 <failsOnError>true</failsOnError>
                                 <suppressionsLocation>/dev/checkstyle/suppressions.xml</suppressionsLocation>
                                 <headerLocation>/dev/checkstyle/fileheader.txt</headerLocation>
-                                <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
                             </configuration>
                             <goals>
                                 <goal>check</goal>
