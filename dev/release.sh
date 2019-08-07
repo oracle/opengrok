@@ -36,7 +36,7 @@ if [[ $ver == $VERSION ]]; then
 fi
 
 git pull --ff-only
-mvn versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
+./mvnw versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
 git commit pom.xml '**/pom.xml' -m "$VERSION"
 git push
 git tag "$VERSION"

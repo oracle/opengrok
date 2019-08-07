@@ -11,7 +11,7 @@ fi
 
 echo -e "Publishing javadoc...\n"
 
-mvn -DskipTests=true site
+./mvnw -DskipTests=true site
 
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "travis-ci"

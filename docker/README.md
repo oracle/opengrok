@@ -125,7 +125,7 @@ docker run -d \
 
 If you want to do your own development, you can build the image yourself:
 
-    mvn -DskipTests=true clean package && \
+    ./mvnw -DskipTests=true clean package && \
         docker build -t opengrok-dev .
 
 Then run the container:

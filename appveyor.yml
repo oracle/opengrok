@@ -1,22 +1,15 @@
 version: '{build}'
 skip_tags: true
 environment:
-  MAVEN_VERSION: 3.6.0
   matrix:
     - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
       PYTHON: C:\Python35
 install:
   - ps: |
       Add-Type -AssemblyName System.IO.Compression.FileSystem
-      if (!(Test-Path -Path "C:\maven" )) {
-        Write-Host "Downloading Maven $env:MAVEN_VERSION"
-        (new-object System.Net.WebClient).DownloadFile("https://repo1.maven.org/maven2/org/apache/maven/apache-maven/$env:MAVEN_VERSION/apache-maven-$env:MAVEN_VERSION-bin.zip", 'C:\maven-bin.zip')
-        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
-      }
-  - cmd: SET M2_HOME=C:\maven\apache-maven-%MAVEN_VERSION%
   # Prepend Java entry, remove Ruby entry (C:\Ruby193\bin;) from PATH
-  - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PYTHON%;%PATH:C:\Ruby193\bin;=%;
-  - cmd: mvn --version
+  - cmd: SET PATH=%JAVA_HOME%\bin;%PYTHON%;%PATH:C:\Ruby193\bin;=%;
+  - cmd: mvnw.cmd --version
   - cmd: java -version
   - cmd: python --version
   - cmd: hg --version
@@ -30,7 +23,6 @@ install:
         [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\uctags-bin.zip", "C:\uctags")
       }
 build_script:
-    - mvn -B -V -Dorg.opengrok.indexer.analysis.Ctags=c:\uctags\ctags.exe clean verify
+    - mvnw.cmd -B -V -Dorg.opengrok.indexer.analysis.Ctags=c:\uctags\ctags.exe clean verify
 cache:
-  - C:\maven\ -> appveyor.yml
   - C:\Users\appveyor\.m2\ -> pom.xml
