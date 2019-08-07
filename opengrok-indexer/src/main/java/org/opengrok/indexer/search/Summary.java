@@ -32,51 +32,80 @@ public class Summary {
         private final String text;
 
         /* Constructs a fragment for the given text. */
-        public Fragment(String text) { this.text = text; }
+        public Fragment(String text) {
+            this.text = text;
+        }
 
         /* Returns the text of this fragment. */
-        public String getText() { return text; }
+        public String getText() {
+            return text;
+        }
 
         /* Returns true iff this fragment is to be highlighted. */
-        public boolean isHighlight() { return false; }
+        public boolean isHighlight() {
+            return false;
+        }
 
         /* Returns true iff this fragment is an ellipsis. */
-        public boolean isEllipsis() { return false; }
+        public boolean isEllipsis() {
+            return false;
+        }
 
         /* Returns an HTML representation of this fragment. */
-        public String toString() { return htmlize(text); }
+        @Override
+        public String toString() {
+            return htmlize(text);
+        }
     }
 
     /** A highlighted fragment of text within a summary. */
     public static class Highlight extends Fragment {
         /* Constructs a highlighted fragment for the given text. */
-        public Highlight(String text) { super(text); }
+        public Highlight(String text) {
+            super(text);
+        }
 
         /* Returns true. */
-        public boolean isHighlight() { return true; }
+        @Override
+        public boolean isHighlight() {
+            return true;
+        }
 
         /* Returns an HTML representation of this fragment. */
-        public String toString() { return "<b>" + super.toString() + "</b>"; }
+        @Override
+        public String toString() {
+            return "<b>" + super.toString() + "</b>";
+        }
     }
 
     /** An ellipsis fragment within a summary. */
     public static class Ellipsis extends Fragment {
         /* Constructs an ellipsis fragment for the given text. */
-        public Ellipsis() { super(" ... "); }
+        public Ellipsis() {
+            super(" ... ");
+        }
 
         /* Returns true. */
-        public boolean isEllipsis() { return true; }
+        @Override
+        public boolean isEllipsis() {
+            return true;
+        }
 
         /* Returns an HTML representation of this fragment. */
-        public String toString() { return "<b> ... </b>"; }
+        @Override
+        public String toString() {
+            return "<b> ... </b>";
+        }
     }
 
-    private final List<Fragment> fragments = new ArrayList<Fragment>();
+    private final List<Fragment> fragments = new ArrayList<>();
 
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
 
     /* Adds a fragment to a summary.*/
-    public void add(Fragment fragment) { fragments.add(fragment); }
+    public void add(Fragment fragment) {
+        fragments.add(fragment);
+    }
 
     /**
      * Returns an array of all of this summary's fragments.
@@ -90,10 +119,11 @@ public class Summary {
      * Returns an HTML representation of this fragment.
      * @return string representation
      */
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < fragments.size(); i++) {
-            buffer.append(fragments.get(i));
+        for (Fragment fragment : fragments) {
+            buffer.append(fragment);
         }
         return buffer.toString();
     }

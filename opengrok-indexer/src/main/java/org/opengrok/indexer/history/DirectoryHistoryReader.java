@@ -81,7 +81,7 @@ public class DirectoryHistoryReader {
     HistoryEntry currentEntry; // set in next()
     History history; // set in the constructor
 
-    private static final int MAX_RESULTS=40;
+    private static final int MAX_RESULTS = 40;
 
     /**
      * The main task of this method is to produce list of history entries for
@@ -115,9 +115,7 @@ public class DirectoryHistoryReader {
             try {
                 // Get files under given directory by searching the index.
                 query = qparser.parse(path);
-                TopFieldDocs fdocs;// = searcher.search(query, hitsPerPage * cachePages, sort);
-                // fdocs.totalHits  is total found, we fetch just X
-                fdocs = searcher.search(query, MAX_RESULTS, sort);
+                TopFieldDocs fdocs = searcher.search(query, MAX_RESULTS, sort);
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
                 LOGGER.log(Level.WARNING,

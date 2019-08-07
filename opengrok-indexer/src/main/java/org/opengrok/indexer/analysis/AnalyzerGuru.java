@@ -128,14 +128,13 @@ public class AnalyzerGuru {
 
     /**
      * The maximum number of characters (multi-byte if a BOM is identified) to
-     * read from the input stream to be used for magic string matching
+     * read from the input stream to be used for magic string matching.
      */
     private static final int OPENING_MAX_CHARS = 100;
 
     /**
      * Set to 16K -- though debugging shows it would do with only 8K+3
-     * (standard buffer for Java BufferedInputStream plus 3 bytes for largest
-     * UTF BOM) 
+     * (standard buffer for Java BufferedInputStream plus 3 bytes for largest UTF BOM).
      */
     private static final int MARK_READ_LIMIT = 1024 * 16;
 
@@ -181,7 +180,7 @@ public class AnalyzerGuru {
     private static int customizationHashCode;
 
     /**
-     * Descending string length comparator for magics
+     * Descending string length comparator for magics.
      */
     private static final Comparator<String> descStrlenComparator =
         new Comparator<String>() {
@@ -230,14 +229,14 @@ public class AnalyzerGuru {
 
     /**
      * Maps from {@link FileAnalyzer#getFileTypeName()} to
-     * {@link FileAnalyzerFactory}
+     * {@link FileAnalyzerFactory}.
      */
     private static final Map<String, AnalyzerFactory> FILETYPE_FACTORIES =
             new HashMap<>();
 
     /**
      * Maps from {@link FileAnalyzer#getFileTypeName()} to
-     * {@link FileAnalyzer#getVersionNo()}
+     * {@link FileAnalyzer#getVersionNo()}.
      */
     private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
 
@@ -340,7 +339,7 @@ public class AnalyzerGuru {
         final int ver32 = 20190211_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
-            ver |= (long)customizationHashCode << 32;
+            ver |= (long) customizationHashCode << 32;
         }
         return ver;
     }
@@ -611,7 +610,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Write a browse-able version of the file
+     * Write a browse-able version of the file.
      *
      * @param factory The analyzer factory for this file type
      * @param in The input stream containing the data
@@ -674,7 +673,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get the genre of a file
+     * Get the genre of a file.
      *
      * @param file The file to inspect
      * @return The genre suitable to decide how to display the file
@@ -684,7 +683,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get the genre of a bulk of data
+     * Get the genre of a bulk of data.
      *
      * @param in A stream containing the data
      * @return The genre suitable to decide how to display the file
@@ -695,7 +694,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get the genre for a named class (this is most likely an analyzer)
+     * Get the genre for a named class (this is most likely an analyzer).
      *
      * @param factory the analyzer factory to get the genre for
      * @return The genre of this class (null if not found)
@@ -767,9 +766,9 @@ public class AnalyzerGuru {
         // Build analysis package name list first time only
         if (analysisPkgNames.isEmpty()) {
             Package[] p = Package.getPackages();
-            for(Package pp : p){
+            for (Package pp : p) {
                 String pname = pp.getName();
-                if (pname.indexOf(".analysis.") != -1) {
+                if (pname.contains(".analysis.")) {
                     analysisPkgNames.add(pname);
                 }
             }
@@ -781,11 +780,11 @@ public class AnalyzerGuru {
         // all language parsers: 
         //      <language>Analyzer, <language>AnalyzerFactory
         
-        if (simpleName.indexOf("Analyzer") == -1) {
+        if (!simpleName.contains("Analyzer")) {
             simpleName += "Analyzer";
         }
         
-        if (simpleName.indexOf("Factory") == -1) {
+        if (!simpleName.contains("Factory")) {
             simpleName += "Factory";
         }
 
@@ -906,7 +905,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Finds a suitable analyzer class for the data in this stream
+     * Finds a suitable analyzer class for the data in this stream.
      *
      * @param in The stream containing the data to analyze
      * @return the analyzer factory to use
@@ -919,7 +918,7 @@ public class AnalyzerGuru {
 
     /**
      * Finds a suitable analyzer class for the data in this stream
-     * corresponding to a file of the specified name
+     * corresponding to a file of the specified name.
      *
      * @param in The stream containing the data to analyze
      * @param file The file name to get the analyzer for
@@ -1101,7 +1100,7 @@ public class AnalyzerGuru {
             if (++nRead > OPENING_MAX_CHARS) {
                 break;
             }
-            char c = (char)r;
+            char c = (char) r;
             boolean isWhitespace = Character.isWhitespace(c);
             if (!sawNonWhitespace) {
                 if (isWhitespace) {

@@ -61,7 +61,7 @@ public abstract class TextAnalyzer extends FileAnalyzer {
     }
 
     /**
-     * Write a cross referenced HTML file reads the source from in
+     * Write a cross referenced HTML file reads the source from in.
      * @param args a defined instance
      * @return the instance used to write the cross-referencing
      * @throws IOException if an I/O error occurs

@@ -44,7 +44,7 @@ public class Scripts implements Iterable<Scripts.Script> {
     public abstract static class Script {
 
         /**
-         * Represents the script information, either
+         * Represents the script information. Either
          * <ul>
          * <li>script HTML src attribute for remote scripts</li>
          * <li>inline javascript code for inline scripts</li>

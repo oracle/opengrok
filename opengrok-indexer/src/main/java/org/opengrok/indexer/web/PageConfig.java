@@ -167,7 +167,7 @@ public final class PageConfig {
     }  
     
     /**
-     * Removes an attribute from the current request
+     * Removes an attribute from the current request.
      * @param string the attribute 
      */
     public void removeAttribute(String string) {
@@ -734,7 +734,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the name which should be show as "Crossfile"
+     * Get the name which should be show as "Crossfile".
      *
      * @return the name of the related file or directory.
      */
@@ -1637,14 +1637,14 @@ public final class PageConfig {
             }
             title += "in projects: ";
             String[] projects = req.getParameterValues(QueryBuilder.PROJECT);
-            title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
+            title += String.join(",", projects);
         }
 
         return Util.htmlize(title + " - OpenGrok search results");
     }
 
     /**
-     * Similar as {@link #getSearchTitle()}
+     * Similar as {@link #getSearchTitle()}.
      * @return string used for setting page title of search view
      */
     public String getHistoryTitle() {

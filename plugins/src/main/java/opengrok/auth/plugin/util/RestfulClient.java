@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * simple RESTful client code for PUT requests
+ * Simple RESTful client code for PUT requests.
  */
 public class RestfulClient {
     private static final Logger LOGGER = Logger.getLogger(RestfulClient.class.getName());
@@ -43,7 +43,7 @@ public class RestfulClient {
     }
 
     /**
-     * Perform HTTP PUT request
+     * Perform HTTP PUT request.
      * @param URI URI
      * @param input JSON string contents
      * @return HTTP status or -1

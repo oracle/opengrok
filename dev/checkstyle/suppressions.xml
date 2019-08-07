@@ -40,4 +40,17 @@ Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
         |Context\.java|HistoryContext\.java|Suggester\.java" />
 
     <suppress checks="MethodLength" files="Indexer\.java" />
+
+    <suppress checks="JavadocStyle" files="MellonHeaderDecoder\.java|CustomSloppyPhraseScorer\.java|
+        |PhrasePositions\.java" />
+
+    <suppress checks="LineLength" files="CustomSloppyPhraseScorer\.java" />
+
+    <suppress checks="EmptyBlock" files="JFlexNonXref\.java|JavaClassAnalyzer\.java|JFlexXref\.java|Util\.java|
+        |ClearCaseRepository\.java" />
+
+    <suppress checks="WhitespaceAround" files="CustomPhraseQuery\.java|PhrasePositions\.java|
+        |CustomSloppyPhraseScorer\.java" />
+
+    <suppress checks="WhitespaceAfter" files="CustomSloppyPhraseScorer\.java|CustomPhraseQuery\.java" />
 </suppressions>

@@ -91,7 +91,6 @@ public class Consts {
         kwd.add("command_argument_count");
         kwd.add("common");
         kwd.add("complex");
-        kwd.add("complex");
         kwd.add("conjg");
         kwd.add("continue");
         kwd.add("cos");
@@ -132,7 +131,6 @@ public class Consts {
         kwd.add("erfc");
         kwd.add("etime");
         kwd.add("exit");
-        kwd.add("exit");
         kwd.add("exp");
         kwd.add("exponent");
         kwd.add("external");
@@ -153,7 +151,6 @@ public class Consts {
         kwd.add("fseek");
         kwd.add("fstat");
         kwd.add("ftell");
-        kwd.add("function");
         kwd.add("function");
         kwd.add("gamma");
         kwd.add("ge");
@@ -210,19 +207,14 @@ public class Consts {
         kwd.add("len_trim");
         kwd.add("lgamma");
         kwd.add("lge");
-        kwd.add("lge");
-        kwd.add("lgt");
         kwd.add("lgt");
         kwd.add("link");
         kwd.add("lle");
-        kwd.add("lle");
-        kwd.add("llt");
         kwd.add("llt");
         kwd.add("lnblnk");
         kwd.add("loc");
         kwd.add("log");
         kwd.add("log10");
-        kwd.add("logical");
         kwd.add("logical");
         kwd.add("long");
         kwd.add("lshift");
@@ -276,7 +268,6 @@ public class Consts {
         kwd.add("random_seed");
         kwd.add("range");
         kwd.add("read");
-        kwd.add("real");
         kwd.add("real");
         kwd.add("relop");
         kwd.add("rename");
@@ -338,4 +329,8 @@ public class Consts {
         kwd.add("write");
         kwd.add("xor");
     }
+
+    private Consts() {
+    }
+
 }

@@ -53,10 +53,7 @@ class RegexpMatcher extends LineMatcher {
 
     @Override
     public int match(String line) {
-        return (termRegexp != null && termRegexp.matcher(line).matches() )
-            ? MATCHED 
-            : NOT_MATCHED
-        ;
+        return (termRegexp != null && termRegexp.matcher(line).matches()) ? MATCHED : NOT_MATCHED;
     }
     
 }

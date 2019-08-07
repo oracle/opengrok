@@ -38,14 +38,15 @@ import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * Analyzes [tn]roff files
+ * Analyzes [tn]roff files.
  * Created on September 30, 2005
  *
  * @author Chandan
  */
 public class UuencodeAnalyzer extends TextAnalyzer {
+
     /**
-     * Creates a new instance of UuencodeAnalyzer
+     * Creates a new instance of UuencodeAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected UuencodeAnalyzer(AnalyzerFactory factory) {

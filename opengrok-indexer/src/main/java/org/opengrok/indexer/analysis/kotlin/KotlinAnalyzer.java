@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class KotlinAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of KotlinAnalyzer
+     * Creates a new instance of KotlinAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected KotlinAnalyzer(AnalyzerFactory factory) {

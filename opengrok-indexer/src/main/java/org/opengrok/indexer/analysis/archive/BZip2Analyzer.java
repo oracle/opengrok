@@ -37,8 +37,9 @@ import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
 
 /**
- * Analyzes a BZip2 file Created on September 22, 2005
+ * Analyzes a BZip2 file.
  *
+ * Created on September 22, 2005
  * @author Chandan
  */
 public class BZip2Analyzer extends FileAnalyzer {

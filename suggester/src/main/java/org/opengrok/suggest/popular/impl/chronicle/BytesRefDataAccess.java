@@ -39,10 +39,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAccess<BytesRef> {
 
-    /** Cache field */
+    /** Cache field. */
     private transient HeapBytesStore<byte[]> bs;
 
-    /** State field */
+    /** State field. */
     private transient byte[] array;
 
     public BytesRefDataAccess() {

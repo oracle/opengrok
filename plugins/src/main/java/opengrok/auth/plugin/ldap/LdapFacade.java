@@ -51,17 +51,17 @@ public class LdapFacade extends AbstractLdapProvider {
     private static final Logger LOGGER = Logger.getLogger(LdapFacade.class.getName());
 
     /**
-     * default LDAP filter
+     * Default LDAP filter.
      */
     private static final String LDAP_FILTER = "objectclass=*";
 
     /**
-     * default timeout for retrieving the results
+     * Default timeout for retrieving the results.
      */
     private static final int LDAP_SEARCH_TIMEOUT = 5000; // ms
 
     /**
-     * default limit of result traversal
+     * Default limit of result traversal.
      *
      * @see
      * <a href="https://docs.oracle.com/javase/7/docs/api/javax/naming/directory/SearchControls.html#setCountLimit%28long%29">SearchControls</a>
@@ -85,7 +85,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private int interval = 10 * 1000; // ms
 
     /**
-     * LDAP search base
+     * LDAP search base.
      */
     private String searchBase;
 
@@ -95,7 +95,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private List<LdapServer> servers = new ArrayList<>();
 
     /**
-     * server webHooks
+     * server webHooks.
      */
     private WebHooks webHooks;
 
@@ -153,8 +153,8 @@ public class LdapFacade extends AbstractLdapProvider {
                     }
                 }
             } else {
-                for (int i = 0; i < values.length; i++) {
-                    Attribute attr = attrs.get(values[i]);
+                for (String value : values) {
+                    Attribute attr = attrs.get(value);
 
                     if (attr == null) {
                         continue;
@@ -166,7 +166,7 @@ public class LdapFacade extends AbstractLdapProvider {
 
                     final Set<String> valueSet = map.get(attr.getID());
 
-                    for (NamingEnumeration<?> values = attr.getAll(); values.hasMore();) {
+                    for (NamingEnumeration<?> values = attr.getAll(); values.hasMore(); ) {
                         valueSet.add((String) values.next());
                     }
                 }
@@ -175,7 +175,7 @@ public class LdapFacade extends AbstractLdapProvider {
 
             return map;
         }
-    };
+    }
 
     public LdapFacade(Configuration cfg) {
         setServers(cfg.getServers(), cfg.getConnectTimeout());
@@ -208,8 +208,7 @@ public class LdapFacade extends AbstractLdapProvider {
      */
     @Override
     public void close() {
-        for (int i = 0; i < servers.size(); i++) {
-            LdapServer server = servers.get(i);
+        for (LdapServer server : servers) {
             server.close();
         }
     }
@@ -235,8 +234,7 @@ public class LdapFacade extends AbstractLdapProvider {
 
     public void setInterval(int interval) {
         this.interval = interval;
-        for (int i = 0; i < servers.size(); i++) {
-            LdapServer server = servers.get(i);
+        for (LdapServer server : servers) {
             server.setInterval(interval);
         }
     }
@@ -255,7 +253,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the authorization values {
+     * Lookups the authorization values.
      *
      * @param user user information. If @{code null} then search base will be used.
      * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
@@ -287,7 +285,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the LDAP server for content
+     * Lookups the LDAP server for content.
      *
      * @param <T> return type
      * @param dn search base for the query
@@ -302,7 +300,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the LDAP server for content
+     * Lookups the LDAP server for content.
      *
      * @param <T> return type
      * @param dn search base for the query

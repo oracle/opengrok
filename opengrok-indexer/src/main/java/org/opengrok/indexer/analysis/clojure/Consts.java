@@ -26,9 +26,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing Clojure 1.6 keywords
-  */
+ * Holds static hash set containing Clojure 1.6 keywords.
+ */
 public class Consts {
+
     public static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("nil");
@@ -646,4 +647,8 @@ public class Consts {
         kwd.add("zero?");
         kwd.add("zipmap");
     }
+
+    private Consts() {
+    }
+
 }

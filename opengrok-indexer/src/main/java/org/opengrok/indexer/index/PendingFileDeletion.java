@@ -51,7 +51,7 @@ public final class PendingFileDeletion {
         if (!(o instanceof PendingFileDeletion)) {
             return false;
         }
-        PendingFileDeletion other = (PendingFileDeletion)o;
+        PendingFileDeletion other = (PendingFileDeletion) o;
         return this.absolutePath.equals(other.absolutePath);
     }
 

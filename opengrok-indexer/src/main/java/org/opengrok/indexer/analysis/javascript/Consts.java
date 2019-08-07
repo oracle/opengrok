@@ -27,15 +27,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the JavaScript keywords
+ * Holds static hash set containing the JavaScript keywords.
  * 
- * * ECMA-262 5.1 Edition June 2011
- * 
+ * ECMA-262 5.1 Edition June 2011
  */
-
 //TODO update to latest ecmascript ... (for angular support)
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         //constants
         kwd.add("true");
@@ -52,50 +51,53 @@ public class Consts{
         kwd.add("RegExp");
         kwd.add("String");                
         //keywords
-        kwd.add( "break" );
-        kwd.add( "case" );
-        kwd.add( "catch" );
-        kwd.add( "continue" );
-        kwd.add( "debugger" );
-        kwd.add( "default" );
-        kwd.add( "delete" );
-        kwd.add( "do" );
-        kwd.add( "else" );
-        kwd.add( "finally" );
-        kwd.add( "for" );
-        kwd.add( "function" );        
-        kwd.add( "if" );
-        kwd.add( "in" );
-        kwd.add( "instanceof" );
-        kwd.add( "new" );
-        kwd.add( "return" );
-        kwd.add( "switch" );
+        kwd.add("break");
+        kwd.add("case");
+        kwd.add("catch");
+        kwd.add("continue");
+        kwd.add("debugger");
+        kwd.add("default");
+        kwd.add("delete");
+        kwd.add("do");
+        kwd.add("else");
+        kwd.add("finally");
+        kwd.add("for");
+        kwd.add("function");
+        kwd.add("if");
+        kwd.add("in");
+        kwd.add("instanceof");
+        kwd.add("new");
+        kwd.add("return");
+        kwd.add("switch");
         kwd.add("this");
-        kwd.add( "throw" );
-        kwd.add( "try" );
-        kwd.add( "typeof" );
-        kwd.add( "var" );        
-        kwd.add( "void" );        
-        kwd.add( "while" );
-        kwd.add( "with" );
+        kwd.add("throw");
+        kwd.add("try");
+        kwd.add("typeof");
+        kwd.add("var");
+        kwd.add("void");
+        kwd.add("while");
+        kwd.add("with");
         //future reserved
-        kwd.add( "class" );
-        kwd.add( "const" );
-        kwd.add( "enum" );
-        kwd.add( "export" );
-        kwd.add( "extends" );
-        kwd.add( "import" );
-        kwd.add( "super" );
+        kwd.add("class");
+        kwd.add("const");
+        kwd.add("enum");
+        kwd.add("export");
+        kwd.add("extends");
+        kwd.add("import");
+        kwd.add("super");
         //strict future reserved
-        kwd.add( "implements" );
-        kwd.add( "interface" );
-        kwd.add( "let" );
-        kwd.add( "package" );
-        kwd.add( "private" );
-        kwd.add( "protected" );
-        kwd.add( "public" );
-        kwd.add( "static" );
-        kwd.add( "yield" );
-        
+        kwd.add("implements");
+        kwd.add("interface");
+        kwd.add("let");
+        kwd.add("package");
+        kwd.add("private");
+        kwd.add("protected");
+        kwd.add("public");
+        kwd.add("static");
+        kwd.add("yield");
     }
+
+    private Consts() {
+    }
+
 }

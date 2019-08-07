@@ -102,7 +102,7 @@ public class Consts {
         kwd.add("xor"); // 8.32.13 Definition: Reserved keyword
     }
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private Consts() {
     }
 }

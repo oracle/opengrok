@@ -29,5 +29,7 @@ public class MandocException extends Exception {
 
       private static final long serialVersionUID = -6615441453265859555L;
 
-      public MandocException(String message) { super(message); }
+      public MandocException(String message) {
+            super(message);
+      }
 }

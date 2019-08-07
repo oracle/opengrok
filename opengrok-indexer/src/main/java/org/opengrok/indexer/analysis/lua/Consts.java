@@ -26,35 +26,40 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Lua keywords
-  * @author Evan Kinney
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Holds static hash set containing the Lua keywords.
+ * @author Evan Kinney
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         // Lua 5.3 Reference Manual, Chapter 3.1
         // http://www.lua.org/manual/5.3/manual.html
-        kwd.add( "and" );
-        kwd.add( "break" );
-        kwd.add( "do" );
-        kwd.add( "else" );
-        kwd.add( "elseif" );
-        kwd.add( "end" );
-        kwd.add( "false" );
-        kwd.add( "for" );
-        kwd.add( "function" );
-        kwd.add( "goto" );
-        kwd.add( "if" );
-        kwd.add( "in" );
-        kwd.add( "local" );
-        kwd.add( "nil" );
-        kwd.add( "not" );
-        kwd.add( "or" );
-        kwd.add( "repeat" );
-        kwd.add( "return" );
-        kwd.add( "then" );
-        kwd.add( "true" );
-        kwd.add( "until" );
-        kwd.add( "while" );
+        kwd.add("and");
+        kwd.add("break");
+        kwd.add("do");
+        kwd.add("else");
+        kwd.add("elseif");
+        kwd.add("end");
+        kwd.add("false");
+        kwd.add("for");
+        kwd.add("function");
+        kwd.add("goto");
+        kwd.add("if");
+        kwd.add("in");
+        kwd.add("local");
+        kwd.add("nil");
+        kwd.add("not");
+        kwd.add("or");
+        kwd.add("repeat");
+        kwd.add("return");
+        kwd.add("then");
+        kwd.add("true");
+        kwd.add("until");
+        kwd.add("while");
     }
+
+    private Consts() {
+    }
+
 }

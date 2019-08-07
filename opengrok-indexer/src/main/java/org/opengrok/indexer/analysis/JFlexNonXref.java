@@ -139,7 +139,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     }
 
     /**
-     * Resets the xref tracked state; {@inheritDoc}
+     * Resets the xref tracked state.
      */
     @Override
     public void reset() {
@@ -161,7 +161,9 @@ public abstract class JFlexNonXref extends JFlexStateStacker
      * @return a number greater than or equal to 0
      */
     @Override
-    public int getLOC() { return loc; }
+    public int getLOC() {
+        return loc;
+    }
 
     @Override
     public void setAnnotation(Annotation annotation) {
@@ -169,9 +171,10 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     }
 
     /**
-     * set definitions
+     * Set definitions.
      * @param defs definitions
      */
+    @Override
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
@@ -182,17 +185,19 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     }
 
     /**
-     * set scopes
+     * Set scopes.
      * @param scopesEnabled if they should be enabled or disabled
      */
+    @Override
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
 
     /**
-     * set folding of code
+     * Set folding of code.
      * @param foldingEnabled whether to fold or not
      */
+    @Override
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
@@ -200,7 +205,9 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     /**
      * Sets a value indicating that a physical line-of-code was encountered.
      */
-    protected void phLOC() { didSeePhysicalLOC = true; }
+    protected void phLOC() {
+        didSeePhysicalLOC = true;
+    }
 
     /**
      * Calls {@link #appendLink(java.lang.String, boolean)} with {@code url}

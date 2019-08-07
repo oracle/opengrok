@@ -90,7 +90,7 @@ public class MessagesContainer {
     }
 
     /**
-     * Get the set of messages for the arbitrary tag
+     * Get the set of messages for the arbitrary tag.
      *
      * @param tag the message tag
      * @return set of messages
@@ -198,7 +198,7 @@ public class MessagesContainer {
     }
 
     /**
-     * Set the maximum number of messages in the application
+     * Set the maximum number of messages in the application.
      *
      * @param limit the new limit
      */

@@ -26,12 +26,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the C keywords
+ * Holds static hash set containing the C keywords.
  */
 public class CxxConsts {
 
     public static final Set<String> kwd = new HashSet<>();
-
 
     static {
         // Add all of the C keywords
@@ -65,4 +64,8 @@ public class CxxConsts {
         kwd.add("virtual");
         kwd.add("wchar_t");
     }
+
+    private CxxConsts() {
+    }
+
 }

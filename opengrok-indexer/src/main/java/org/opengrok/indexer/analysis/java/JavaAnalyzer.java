@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of JavaAnalyzer
+     * Creates a new instance of JavaAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected JavaAnalyzer(AnalyzerFactory factory) {

@@ -31,14 +31,15 @@ import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
- * Analyzes Shell scripts/Conf files etc., Created on September 21, 2005
+ * Analyzes Shell scripts/Conf files etc.
  *
+ * Created on September 21, 2005
  * @author Chandan
  */
 public class ShAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of ShAnalyzer
+     * Creates a new instance of ShAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected ShAnalyzer(AnalyzerFactory factory) {

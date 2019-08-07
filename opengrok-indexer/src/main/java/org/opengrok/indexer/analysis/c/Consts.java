@@ -26,12 +26,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the C keywords
+ * Holds static hash set containing the C keywords.
  */
 public class Consts {
 
     public static final Set<String> kwd = new HashSet<>();
-
 
     static {
         // CPP
@@ -89,4 +88,8 @@ public class Consts {
         kwd.add("false");
         kwd.add("redeclared");
     }
+
+    private Consts() {
+    }
+
 }

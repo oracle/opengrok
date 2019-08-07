@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class PerlAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of PerlAnalyzer
+     * Creates a new instance of PerlAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected PerlAnalyzer(AnalyzerFactory factory) {

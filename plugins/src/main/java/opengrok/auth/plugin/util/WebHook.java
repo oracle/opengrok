@@ -42,11 +42,19 @@ public class WebHook implements Serializable {
         this.content = content;
     }
 
-    public void setURI(String URI) { this.URI = URI; }
-    public String getURI() { return URI; }
+    public void setURI(String URI) {
+        this.URI = URI;
+    }
+    public String getURI() {
+        return URI;
+    }
 
-    public void setContent(String content) { this.content = content; }
-    public String getContent() { return content; }
+    public void setContent(String content) {
+        this.content = content;
+    }
+    public String getContent() {
+        return content;
+    }
 
     public Future<String> post() {
         CompletableFuture<String> completableFuture

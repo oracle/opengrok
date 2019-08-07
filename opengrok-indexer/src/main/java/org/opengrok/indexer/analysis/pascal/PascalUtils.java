@@ -31,35 +31,22 @@ import java.util.regex.Pattern;
 public class PascalUtils {
 
     /**
-     * Matches an apostrophe that is not¹ part of a Pascal apostrophe escape
-     * sequence:
-     * <pre>
-     * {@code
-     * \'((?<=^.(?!\'))|(?<=[^\'].(?!\'))|(?<=^(\'\'){1,3}.(?!\'))|(?<=[^\'](\'\'){1,3}.(?!\')))
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches an apostrophe that is not¹ part of a Pascal apostrophe escape sequence.
      * <p>
      * ¹Correctness in a long sequence of apostrophes is limited because Java
      * look-behind is not variable length but instead must have a definite
      * upper bound in the regex definition.
+     * </p>
      */
     public static final Pattern CHARLITERAL_APOS_DELIMITER =
         Pattern.compile("\\'((?<=^.(?!\\'))|(?<=[^\\'].(?!\\'))|(?<=^(\\'\\'){1,3}.(?!\\'))|(?<=[^\\'](\\'\\'){1,3}.(?!\\')))");
 
     /**
-     * Matches the close of an old-style Pascal comment:
-     * <pre>
-     * {@code
-     * \*\)
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches the close of an old-style Pascal comment.
      */
-    public static final Pattern END_OLD_PASCAL_COMMENT = Pattern.compile(
-        "\\*\\)");
+    public static final Pattern END_OLD_PASCAL_COMMENT = Pattern.compile("\\*\\)");
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private PascalUtils() {
     }
 }

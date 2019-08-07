@@ -34,11 +34,11 @@ import org.apache.lucene.document.Document;
 import org.opengrok.indexer.configuration.Project;
 
 /**
- * Created on September 21, 2005
  *
  * @author Chandan
  */
 public abstract class AbstractAnalyzer extends Analyzer {
+
     public static final Reader DUMMY_READER = new StringReader("");
     protected AnalyzerFactory factory;
     // you analyzer HAS to override this to get proper symbols in results
@@ -117,23 +117,23 @@ public abstract class AbstractAnalyzer extends Analyzer {
      */
     public enum Genre {
         /**
-         * xrefed - line numbered context
+         * xrefed - line numbered context.
          */
         PLAIN("p"),
         /**
-         * xrefed - summarizer context
+         * xrefed - summarizer context.
          */
         XREFABLE("x"),
         /**
-         * not xrefed - no context - used by diff/list
+         * not xrefed - no context - used by diff/list.
          */
         IMAGE("i"),
         /**
-         * not xrefed - no context
+         * not xrefed - no context.
          */
         DATA("d"),
         /**
-         * not xrefed - summarizer context from original file
+         * not xrefed - summarizer context from original file.
          */
         HTML("h");
         private final String typeName;

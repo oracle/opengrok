@@ -26,9 +26,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing Lisp keywords
-  */
+ * Holds static hash set containing Lisp keywords.
+ */
 public class Consts {
+
     public static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("and");
@@ -40,7 +41,6 @@ public class Consts {
         kwd.add("defstruct");
         kwd.add("defun");
         kwd.add("defvar");
-        kwd.add("do");
         kwd.add("do");
         kwd.add("do*");
         kwd.add("dolist");
@@ -67,4 +67,8 @@ public class Consts {
         kwd.add("when");
         kwd.add("xor");
     }
+
+    private Consts() {
+    }
+
 }

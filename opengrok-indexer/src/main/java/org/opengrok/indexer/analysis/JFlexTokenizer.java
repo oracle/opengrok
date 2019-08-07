@@ -30,8 +30,9 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 /**
- * Created on August 24, 2009
+ * Tokenizer which uses lex to identify tokens.
  *
+ * Created on August 24, 2009
  * @author Lubos Kosco
  */
 public class JFlexTokenizer extends Tokenizer

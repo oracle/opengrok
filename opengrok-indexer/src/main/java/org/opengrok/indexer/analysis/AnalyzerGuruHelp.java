@@ -33,6 +33,10 @@ import java.util.stream.Collectors;
  * Represents a utility class to show the user details of {@link AnalyzerGuru}.
  */
 public class AnalyzerGuruHelp {
+
+    private AnalyzerGuruHelp() {
+    }
+
     /**
      * Gets a reportable hunk of text that details
      * {@link AnalyzerGuru#getPrefixesMap()},

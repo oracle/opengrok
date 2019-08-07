@@ -26,62 +26,67 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Java keywords
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Holds static hash set containing the Java keywords.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
-        kwd.add( "abstract" );
-        kwd.add( "assert" );
-        kwd.add( "boolean" );
-        kwd.add( "break" );
-        kwd.add( "byte" );
-        kwd.add( "case" );
-        kwd.add( "catch" );
-        kwd.add( "char" );
-        kwd.add( "class" );
-        kwd.add( "const" );
-        kwd.add( "continue" );
-        kwd.add( "default" );
-        kwd.add( "do" );
-        kwd.add( "double" );
-        kwd.add( "else" );
-        kwd.add( "enum" );
-        kwd.add( "extends" );
-        kwd.add( "false" );
-        kwd.add( "final" );
-        kwd.add( "finally" );
-        kwd.add( "float" );
-        kwd.add( "for" );
-        kwd.add( "goto" );
-        kwd.add( "if" );
-        kwd.add( "implements" );
-        kwd.add( "import" );
-        kwd.add( "instanceof" );
-        kwd.add( "int" );
-        kwd.add( "interface" );
-        kwd.add( "long" );
-        kwd.add( "native" );
-        kwd.add( "new" );
-        kwd.add( "package" );
-        kwd.add( "private" );
-        kwd.add( "protected" );
-        kwd.add( "public" );
-        kwd.add( "return" );
-        kwd.add( "short" );
-        kwd.add( "static" );
-        kwd.add( "strictfp" );
-        kwd.add( "super" );
-        kwd.add( "synchronized" );
-        kwd.add( "switch" );
-        kwd.add( "this" );
-        kwd.add( "throw" );
-        kwd.add( "throws" );
-        kwd.add( "true" );
-        kwd.add( "transient" );
-        kwd.add( "try" );
-        kwd.add( "void" );
-        kwd.add( "volatile" );
-        kwd.add( "while" );
+        kwd.add("abstract");
+        kwd.add("assert");
+        kwd.add("boolean");
+        kwd.add("break");
+        kwd.add("byte");
+        kwd.add("case");
+        kwd.add("catch");
+        kwd.add("char");
+        kwd.add("class");
+        kwd.add("const");
+        kwd.add("continue");
+        kwd.add("default");
+        kwd.add("do");
+        kwd.add("double");
+        kwd.add("else");
+        kwd.add("enum");
+        kwd.add("extends");
+        kwd.add("false");
+        kwd.add("final");
+        kwd.add("finally");
+        kwd.add("float");
+        kwd.add("for");
+        kwd.add("goto");
+        kwd.add("if");
+        kwd.add("implements");
+        kwd.add("import");
+        kwd.add("instanceof");
+        kwd.add("int");
+        kwd.add("interface");
+        kwd.add("long");
+        kwd.add("native");
+        kwd.add("new");
+        kwd.add("package");
+        kwd.add("private");
+        kwd.add("protected");
+        kwd.add("public");
+        kwd.add("return");
+        kwd.add("short");
+        kwd.add("static");
+        kwd.add("strictfp");
+        kwd.add("super");
+        kwd.add("synchronized");
+        kwd.add("switch");
+        kwd.add("this");
+        kwd.add("throw");
+        kwd.add("throws");
+        kwd.add("true");
+        kwd.add("transient");
+        kwd.add("try");
+        kwd.add("void");
+        kwd.add("volatile");
+        kwd.add("while");
     }
+
+    private Consts() {
+    }
+
 }

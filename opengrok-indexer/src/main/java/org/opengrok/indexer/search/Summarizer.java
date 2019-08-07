@@ -77,14 +77,12 @@ public class Summarizer {
         Set<String> tokenSet = new TreeSet<>();
         int numTerms = 0;
 
-        /**
-         */
         public void addToken(String token) {
             tokenSet.add(token);
         }
 
         /**
-         * Return how many unique toks we have
+         * Return how many unique tokens we have.
          */
         public int numUniqueTokens() {
             return tokenSet.size();
@@ -113,7 +111,7 @@ public class Summarizer {
         }
 
         /**
-         * Return an Enum for all the fragments
+         * Return an Enum for all the fragments.
          */
         public List<Summary.Fragment> elements() {
             return passages;
@@ -317,7 +315,7 @@ public class Summarizer {
     }
 
     /**
-     * Get the terms from a query and adds them to highlight a stream of tokens
+     * Get the terms from a query and adds them to highlight a stream of tokens.
      *
      * @param query
      */

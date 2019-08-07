@@ -42,7 +42,7 @@ import org.opengrok.indexer.util.Executor;
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
 /**
- * Parse source history for a Perforce Repository
+ * Parse source history for a Perforce Repository.
  *
  * @author Emilio Monti - emilmont@gmail.com
  */
@@ -154,8 +154,10 @@ public class PerforceHistoryParser {
         return parseFileLog(executor.getOutputReader());
     }
 
-    private static final Pattern REVISION_PATTERN = Pattern.compile("#\\d+ change (\\d+) \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
-    private static final Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
+    private static final Pattern REVISION_PATTERN = Pattern.compile(
+            "#\\d+ change (\\d+) \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
+    private static final Pattern CHANGE_PATTERN = Pattern.compile(
+            "Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
 
     /**
      * Parses the history in the given string. The given reader will be closed.

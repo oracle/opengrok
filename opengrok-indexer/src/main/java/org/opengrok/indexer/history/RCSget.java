@@ -35,13 +35,13 @@ import org.suigeneris.jrcs.rcs.parse.ParseException;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
- * Virtualize RCS log as an input stream
+ * Virtualize RCS log as an input stream.
  */
 public class RCSget extends InputStream {
     private InputStream stream;
 
     /**
-     * Pass null in version to get current revision
+     * Pass null in version to get current revision.
      * @param file file contents to get
      * @param version specified revision or @{code null}
      * @throws java.io.IOException if I/O exception occurred
@@ -59,8 +59,8 @@ public class RCSget extends InputStream {
             }
 
             StringBuilder sb = new StringBuilder();
-            for (int ii = 0; ii < lines.length; ++ii) {
-                sb.append((String)lines[ii]);
+            for (Object line : lines) {
+                sb.append((String) line);
                 sb.append("\n");
             }
             stream = new ByteArrayInputStream(sb.toString().getBytes());

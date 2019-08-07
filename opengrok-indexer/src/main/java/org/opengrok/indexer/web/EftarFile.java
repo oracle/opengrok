@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
- * An Extremely Fast Tagged Attribute Read-only File System
+ * An Extremely Fast Tagged Attribute Read-only File System.
  * Created on October 12, 2005
  *
  * A Eftar File has the following format

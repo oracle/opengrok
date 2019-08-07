@@ -34,7 +34,7 @@ import java.io.File;
  */
 public class TandemPath {
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private TandemPath() {
     }
 

@@ -41,8 +41,9 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Analyzes GZip files Created on September 22, 2005
+ * Analyzes GZip files.
  *
+ * Created on September 22, 2005
  * @author Chandan
  */
 public class GZIPAnalyzer extends FileAnalyzer {
