@@ -213,6 +213,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     </execution>
                 </executions>
                 <configuration>
+                    <suffix>.min</suffix>
                     <excludes>
                         <exclude>**/*min.js</exclude>
                         <exclude>**/*min.css</exclude>

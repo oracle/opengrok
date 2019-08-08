@@ -40,7 +40,7 @@ public class Scripts implements Iterable<Scripts.Script> {
 
     private static final String DEBUG_SUFFIX = "-debug";
 
-    enum ScriptType {
+    enum Type {
         MINIFIED, DEBUG
     }
 
@@ -109,14 +109,14 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery", new FileScript("js/jquery-3.4.1.min.js", 10));
         SCRIPTS.put("jquery-ui", new FileScript("js/jquery-ui-1.12.1-custom.min.js", 11));
         SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
-        SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1-min.js", 13));
+        SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1.min.js", 13));
         SCRIPTS.put("tablesorter-parsers" + DEBUG_SUFFIX, new FileScript("js/tablesorter-parsers-0.0.1.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.7.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.31-min.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.31.min.js", 15));
         SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.31.js", 15));
-        SCRIPTS.put("repos", new FileScript("js/repos-0.0.1-min.js", 20));
+        SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.min.js", 20));
         SCRIPTS.put("repos" + DEBUG_SUFFIX, new FileScript("js/repos-0.0.1.js", 20));
-        SCRIPTS.put("diff", new FileScript("js/diff-0.0.3-min.js", 20));
+        SCRIPTS.put("diff", new FileScript("js/diff-0.0.3.min.js", 20));
         SCRIPTS.put("diff" + DEBUG_SUFFIX, new FileScript("js/diff-0.0.3.js", 20));
         SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
     }
@@ -193,9 +193,9 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @param type type of the script to add
      * @return true if script was added; false otherwise
      */
-    public boolean addScript(String contextPath, String scriptName, ScriptType type) {
+    public boolean addScript(String contextPath, String scriptName, Type type) {
         contextPath = contextPath == null || contextPath.isEmpty() ? "/" : contextPath + "/";
-        if (type == ScriptType.DEBUG && SCRIPTS.containsKey(scriptName + DEBUG_SUFFIX)) {
+        if (type == Type.DEBUG && SCRIPTS.containsKey(scriptName + DEBUG_SUFFIX)) {
             addScript(contextPath, scriptName + DEBUG_SUFFIX);
             return true;
         } else if (SCRIPTS.containsKey(scriptName)) {

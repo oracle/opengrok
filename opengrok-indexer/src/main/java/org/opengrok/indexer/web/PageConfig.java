@@ -76,7 +76,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
-import org.opengrok.indexer.web.Scripts.ScriptType;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
@@ -1403,10 +1402,10 @@ public final class PageConfig {
      * @param name name of the script to search for
      * @return this
      *
-     * @see Scripts#addScript(java.lang.String, java.lang.String, ScriptType)
+     * @see Scripts#addScript(String, String, Scripts.Type)
      */
     public PageConfig addScript(String name) {
-        this.scripts.addScript(this.req.getContextPath(), name, isDebug() ? ScriptType.DEBUG : ScriptType.MINIFIED);
+        this.scripts.addScript(this.req.getContextPath(), name, isDebug() ? Scripts.Type.DEBUG : Scripts.Type.MINIFIED);
         return this;
     }
 
