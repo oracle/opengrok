@@ -2,7 +2,7 @@
 
 LOCKFILE=/var/run/opengrok-indexer
 URI="http://localhost:8080"
-# $OPTS an be overwriteb by environment variable
+# $OPS can be overwrite by environment variable
 OPS=${INDEXER_FLAGS:='-H -P -S -G'}
 
 if [ -f "$LOCKFILE" ]; then
