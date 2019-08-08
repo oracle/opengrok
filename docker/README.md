@@ -16,6 +16,7 @@ The container is available from DockerHub at https://hub.docker.com/r/opengrok/d
 This image is simple wrapper around OpenGrok environment. It is basically a small appliance. The indexer and the web container are **not** tuned for large workloads.
 
 If you happen to have one of the following:
+
   - large source data (e.g. [AOSP](https://en.wikipedia.org/wiki/Android_Open_Source_Project) or the like)
   - stable service
   - Source Code Management systems not supported in the image (e.g. Perforce,
@@ -103,7 +104,9 @@ services:
       REINDEX: '60'
     # Volumes store your data between container upgrades
     volumes:
-       - '~/opengrok-src/:/opengrok/src/'
+       - '~/opengrok-src/:/opengrok/src/'  # source code
+       - '~/opengrok-etc/:/opengrok/etc/'  # folder contains configuration.xml
+       - '~/opengrok-data/:opengrok/data'  # index and other things for source code
 ```
 
 Save the file into `docker-compose.yml` and then simply run
@@ -118,6 +121,8 @@ docker run -d \
     -p 8080:8080/tcp \
     -e REINDEX="60" \
     -v "~/opengrok-src/:/opengrok/src/" \
+    -v "~/opengrok-etc/:/opengrok/etc/" \
+    -v "~/opengrok-data/:opengrok/data" \
     opengrok/docker:latest
 ```
 
@@ -136,7 +141,7 @@ Then run the container:
 
 You can get inside a container using the [command below](https://docs.docker.com/engine/reference/commandline/exec/):
 
-```
+```bash
 docker exec -it <container> bash
 ```
 
