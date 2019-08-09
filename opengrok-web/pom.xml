@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -201,6 +201,26 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.5.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jslint</goal>
+                            <goal>compress</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <suffix>.min</suffix>
+                    <excludes>
+                        <exclude>**/*min.js</exclude>
+                        <exclude>**/*min.css</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
@@ -233,5 +253,13 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             </build>
         </profile>
     </profiles>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <name>oss.sonatype.org</name>
+            <id>oss.sonatype.org</id>
+            <url>http://oss.sonatype.org/content/groups/public</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>
