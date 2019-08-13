@@ -43,7 +43,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Wrapper to Java Process API
+ * Wrapper to Java Process API.
  *
  * @author Emilio Monti - emilmont@gmail.com
  */
@@ -101,7 +101,7 @@ public class Executor {
     }
 
     /**
-     * Create a new instance of the Executor with or without timeout,
+     * Create a new instance of the Executor with or without timeout.
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the
      *                         working directory
@@ -125,7 +125,7 @@ public class Executor {
     }
 
     /**
-     * Execute the command and collect the output
+     * Execute the command and collect the output.
      *
      * @param reportExceptions Should exceptions be added to the log or not
      * @return The exit code of the process
@@ -138,7 +138,7 @@ public class Executor {
     }
 
     /**
-     * Execute the command and collect the output
+     * Execute the command and collect the output.
      *
      * @param reportExceptions Should exceptions be added to the log or not
      * @param handler The handler to handle data from standard output
@@ -168,7 +168,7 @@ public class Executor {
 
         String env_str = "";
         if (LOGGER.isLoggable(Level.FINER)) {
-            Map<String,String> env_map = processBuilder.environment();
+            Map<String, String> env_map = processBuilder.environment();
             env_str = " with environment: " + env_map.toString();
         }
         LOGGER.log(Level.FINE,
@@ -192,9 +192,8 @@ public class Executor {
                         if (reportExceptions) {
                             LOGGER.log(Level.SEVERE,
                                     "Error while executing command {0} in directory {1}",
-                                    new Object[] {cmd_str,dir_str});
-                            LOGGER.log(Level.SEVERE,
-                                    "Error during process pipe listening", ex);
+                                    new Object[] {cmd_str, dir_str});
+                            LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
                         }
                     }
                 }
@@ -296,7 +295,7 @@ public class Executor {
     }
 
     /**
-     * Get a reader to read the output from the process
+     * Get a reader to read the output from the process.
      *
      * @return A reader reading the process output
      */
@@ -305,7 +304,7 @@ public class Executor {
     }
 
     /**
-     * Get an input stream read the output from the process
+     * Get an input stream read the output from the process.
      *
      * @return A reader reading the process output
      */
@@ -347,7 +346,7 @@ public class Executor {
 
     /**
      * You should use the StreamHandler interface if you would like to process
-     * the output from a process while it is running
+     * the output from a process while it is running.
      */
     public interface StreamHandler {
 

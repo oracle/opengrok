@@ -37,7 +37,6 @@
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
-
 package org.opengrok.indexer.util;
 
 import java.util.ArrayList;
@@ -58,6 +57,9 @@ public class RainbowColorGenerator {
             fromHex("ffbfc3"),
     };
 
+    private RainbowColorGenerator() {
+    }
+
     /**
      * Get linear sequence for all stop colors.
      *
@@ -70,7 +72,8 @@ public class RainbowColorGenerator {
     }
 
     /**
-     * Generate linear color sequence between given stop colors as {@code anchorColors} and with {@code colorsBetweenAnchors} number of intermediary steps between them.
+     * Generate linear color sequence between given stop colors as {@code anchorColors}
+     * and with {@code colorsBetweenAnchors} number of intermediary steps between them.
      *
      * @param anchorColors         the stop colors
      * @param colorsBetweenAnchors number of steps between each pair of stop colors

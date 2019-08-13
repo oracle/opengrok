@@ -23,11 +23,15 @@
 package org.opengrok.indexer.util;
 
 /**
- * boolean utility functions
+ * Boolean utility functions.
  * 
  * @author Krystof Tulinger
  */
 public class BooleanUtil {
+
+    private BooleanUtil() {
+    }
+
     /**
      * Validate the string if it contains a boolean value.
      *

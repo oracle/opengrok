@@ -39,7 +39,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class AdaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of {@link AdaAnalyzer}
+     * Creates a new instance of {@link AdaAnalyzer}.
      * @param factory defined instance for the analyzer
      */
     protected AdaAnalyzer(AnalyzerFactory factory) {

@@ -47,7 +47,7 @@ import org.apache.lucene.search.Query;
 public class QueryBuilder {
 
     /**
-     * Fields we use in lucene: public ones
+     * Fields we use in lucene: public ones.
      */
     public static final String FULL = "full";
     public static final String DEFS = "defs";
@@ -59,7 +59,7 @@ public class QueryBuilder {
     public static final String NUML = "numl";
     public static final String LOC = "loc";
     /**
-     * Fields we use in lucene: internal ones
+     * Fields we use in lucene: internal ones.
      */
     public static final String U = "u";
     public static final String TAGS = "tags";
@@ -74,7 +74,7 @@ public class QueryBuilder {
 
     public static final List<String> searchFields = Arrays.asList(FULL, DEFS, REFS, PATH, HIST);
 
-    /** Used for paths, so SHA-1 is completely sufficient */
+    /** Used for paths, so SHA-1 is completely sufficient. */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
 
     /**
@@ -215,11 +215,11 @@ public class QueryBuilder {
         byte[] hash = digest.digest(norm2.getBytes(StandardCharsets.UTF_8));
 
         StringBuilder encodedString = new StringBuilder();
-        for (int i = 0; i < hash.length; ++i) {
-            int v0 = (0xF0 & hash[i]) >> 4;
-            int v1 = 0xF & hash[i];
-            char c0 = (char)('g' + v0);
-            char c1 = (char)('g' + v1);
+        for (byte b : hash) {
+            int v0 = (0xF0 & b) >> 4;
+            int v1 = 0xF & b;
+            char c0 = (char) ('g' + v0);
+            char c1 = (char) ('g' + v1);
             encodedString.append(c0);
             encodedString.append(c1);
         }
@@ -317,7 +317,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Used to tell if this search only has the "definitions" field filled in
+     * Used to tell if this search only has the "definitions" field filled in.
      *
      * @return whether above statement is true or false
      */

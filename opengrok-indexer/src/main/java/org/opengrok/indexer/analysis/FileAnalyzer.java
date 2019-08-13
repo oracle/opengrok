@@ -40,7 +40,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * Base class for all different File Analyzers
+ * Base class for all different File Analyzers.
  *
  * An Analyzer for a filetype provides
  * <ol>
@@ -73,7 +73,7 @@ public class FileAnalyzer extends AbstractAnalyzer {
     @Override
     public final long getVersionNo() {
         final int rootVersionNo = 20061115_01; // Edit comment above too!
-        return ((long)rootVersionNo << 32) | getSpecializedVersionNo();
+        return ((long) rootVersionNo << 32) | getSpecializedVersionNo();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class FileAnalyzer extends AbstractAnalyzer {
     }
 
     /**
-     * Creates a new instance of FileAnalyzer
+     * Creates a new instance of FileAnalyzer.
      *
      * @param factory defined instance for the analyzer
      */

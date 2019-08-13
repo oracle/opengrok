@@ -72,7 +72,7 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print list of messages into output
+     * Print list of messages into output.
      *
      * @param out output
      * @param set set of messages
@@ -82,7 +82,7 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print set of messages into output
+     * Print set of messages into output.
      * @param out output
      * @param set set of messages
      * @param limited if the container should be limited
@@ -136,7 +136,7 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print messages for given tags into JSON array
+     * Print messages for given tags into JSON array.
      *
      * @param tags list of tags
      * @return JSON array of the messages (the same as the parameter)
@@ -158,7 +158,7 @@ public final class MessagesUtils {
     }
 
     /**
-     * Print messages for given tags into JSON array
+     * Print messages for given tags into JSON array.
      *
      * @param tags list of tags
      * @return json array of the messages

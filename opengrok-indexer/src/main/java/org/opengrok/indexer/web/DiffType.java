@@ -31,15 +31,15 @@ package org.opengrok.indexer.web;
  */
 public enum DiffType {
 
-    /** side-by-side diff */
+    /** side-by-side diff. */
     SIDEBYSIDE('s', "sdiff"),
-    /** unified diff (i.e. with context lines) */
+    /** unified diff (i.e. with context lines). */
     UNIFIED('u', "udiff"),
-    /** traditional ed diff (no context lines) */
+    /** traditional ed diff (no context lines). */
     TEXT('t', "text"),
-    /** the old version of the file (before changes applied) */
+    /** the old version of the file (before changes applied). */
     OLD('o', "old"),
-    /** the new version of the file (after changes applied) */
+    /** the new version of the file (after changes applied). */
     NEW('n', "new");
     private final char abbrev;
     private final String name;

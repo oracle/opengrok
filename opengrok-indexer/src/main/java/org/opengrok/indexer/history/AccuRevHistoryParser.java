@@ -34,7 +34,7 @@ import java.util.List;
 import org.opengrok.indexer.util.Executor;
 
 /**
- * Parse source history for a AccuRev Repository
+ * Parse source history for a AccuRev Repository.
  *
  * @author Steven Haehn
  */

@@ -66,8 +66,9 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Analyzes Java Class files Created on September 23, 2005
+ * Analyzes Java Class files.
  *
+ * Created on September 23, 2005
  * @author Chandan
  * @author Lubos Kosco , January 2010 , updated bcel, comment on thread safety
  */
@@ -78,7 +79,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
 
     /**
-     * Creates a new instance of JavaClassAnalyzer
+     * Creates a new instance of JavaClassAnalyzer.
      *
      * @param factory The factory that creates JavaClassAnalyzers
      */
@@ -153,14 +154,14 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     }
 
     
-    private static final String AHREF="<a href=\"";
-    private static final String AHREFT_END="\">";
-    private static final String AHREFEND="</a>";
-    private static final String ADEFS="defs=";
-    private static final String APATH="path=";
-    private static final String AIHREF="\" href=\"";
-    private static final String ADHREF="<a class=\"d\" name=\"";
-    private final StringBuffer rstring=new StringBuffer(512);
+    private static final String AHREF = "<a href=\"";
+    private static final String AHREFT_END = "\">";
+    private static final String AHREFEND = "</a>";
+    private static final String ADEFS = "defs=";
+    private static final String APATH = "path=";
+    private static final String AIHREF = "\" href=\"";
+    private static final String ADHREF = "<a class=\"d\" name=\"";
+    private final StringBuffer rstring = new StringBuffer(512);
     protected String linkPath(String path) {
         rstring.setLength(0);
         return rstring.append(AHREF).append(urlPrefix).append(APATH)
@@ -190,19 +191,19 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
 
-private static final String PACKAGE="package ";
-private static final char EOL='\n';
-private static final char TAB='\t';
-private static final char SPACE=' ';
-private static final String EXTENDS=" extends ";
-private static final String IMPLEMENTS=" implements ";
-private static final String THROWS=" throws ";
-private static final String THIS="this";
-private static final String LCBREOL=" {\n";
-private static final String LBRA=" (";
-private static final String COMMA=", ";
-private static final String RBRA=") ";
-private static final String RCBREOL="}\n";
+private static final String PACKAGE = "package ";
+private static final char EOL = '\n';
+private static final char TAB = '\t';
+private static final char SPACE = ' ';
+private static final String EXTENDS = " extends ";
+private static final String IMPLEMENTS = " implements ";
+private static final String THROWS = " throws ";
+private static final String THIS = "this";
+private static final String LCBREOL = " {\n";
+private static final String LBRA = " (";
+private static final String COMMA = ", ";
+private static final String RBRA = ") ";
+private static final String RCBREOL = "}\n";
     
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
     private void getContent(Writer out, Writer fout, JavaClass c,
@@ -276,7 +277,7 @@ private static final String RCBREOL="}\n";
                         }
                     }
                 }
-            } else if   (a.getTag() == org.apache.bcel.Const.ATTR_BOOTSTRAP_METHODS ) {
+            } else if (a.getTag() == org.apache.bcel.Const.ATTR_BOOTSTRAP_METHODS ) {
                 // TODO fill in bootstrap methods, fix the else if
             } else if (a.getTag() == org.apache.bcel.Const.ATTR_SOURCE_FILE) {
                 v[a.getNameIndex()] = 1;
@@ -297,12 +298,12 @@ private static final String RCBREOL="}\n";
                 fout.write(SPACE);
                 out.write(SPACE);
             }
-            fldsig=Utility.signatureToString(fld.getSignature());
+            fldsig = Utility.signatureToString(fld.getSignature());
             out.write(fldsig);
             fout.write(fldsig);
             out.write(SPACE);
             fout.write(SPACE);
-            tdef=tagDef(t = fld.getName());
+            tdef = tagDef(t = fld.getName());
             out.write(tdef);
             fout.write(tdef);
             defs.add(t);
@@ -326,12 +327,12 @@ private static final String RCBREOL="}\n";
                 fout.write(SPACE);
             }
             sig = m.getSignature();
-            msig=Utility.methodSignatureReturnType(sig, false);
+            msig = Utility.methodSignatureReturnType(sig, false);
             out.write(msig);
             fout.write(msig);
             out.write(SPACE);
             fout.write(SPACE);
-            ltdef=tagDef(t = m.getName());
+            ltdef = tagDef(t = m.getName());
             out.write(ltdef);
             fout.write(ltdef);
             defs.add(t);
@@ -409,9 +410,11 @@ private static final String RCBREOL="}\n";
         v[l.getNameIndex()] = 1;
         v[l.getSignatureIndex()] = 1;
         if (!THIS.equals(l.getName())) {
-            out.write(TAB);out.write(TAB);
-            fout.write(TAB);fout.write(TAB);
-            String sig=Utility.signatureToString(l.getSignature());
+            out.write(TAB);
+            out.write(TAB);
+            fout.write(TAB);
+            fout.write(TAB);
+            String sig = Utility.signatureToString(l.getSignature());
             out.write(sig);
             fout.write(sig);
             out.write(SPACE);
@@ -508,7 +511,7 @@ private static final String RCBREOL="}\n";
 //                v[j] = 1;
 //                str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
 //                        constantToString(cp.getConstant(j), cp, v));
-                str="";
+                str = "";
                 break;
 //                CONSTANT_MethodHandle_info {
 //    u1 tag;
@@ -526,7 +529,7 @@ private static final String RCBREOL="}\n";
 //                str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
 //                        constantToString(cp.getConstant(j), cp, v) + ' ' +
 //                        constantToString(cp.getConstant(k), cp, v));
-                str="";
+                str = "";
                 break;            
             case org.apache.bcel.Const.CONSTANT_Package:    
                 i = ((ConstantPackage) c).getNameIndex();

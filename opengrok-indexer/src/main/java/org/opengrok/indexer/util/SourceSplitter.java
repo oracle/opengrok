@@ -218,7 +218,7 @@ public class SourceSplitter {
         int c;
         while ((c = reader.read()) != -1) {
             ++length;
-            bld.append((char)c);
+            bld.append((char) c);
             switch (c) {
                 case '\r':
                     c = reader.read();
@@ -230,7 +230,7 @@ public class SourceSplitter {
                         ++length;
                         switch (c) {
                             case '\n':
-                                bld.append((char)c);
+                                bld.append((char) c);
                                 slist.add(bld.toString());
                                 bld.setLength(0);
                                 break;
@@ -238,7 +238,7 @@ public class SourceSplitter {
                                 slist.add(bld.toString());
                                 bld.setLength(0);
 
-                                bld.append((char)c);
+                                bld.append((char) c);
                                 slist.add(bld.toString());
                                 bld.setLength(0);
                                 break;
@@ -246,7 +246,7 @@ public class SourceSplitter {
                                 slist.add(bld.toString());
                                 bld.setLength(0);
 
-                                bld.append((char)c);
+                                bld.append((char) c);
                                 break;
                         }
                     }

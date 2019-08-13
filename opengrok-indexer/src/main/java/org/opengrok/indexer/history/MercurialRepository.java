@@ -52,12 +52,11 @@ public class MercurialRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
     /**
-     * the property name used to obtain the client command for this repository
+     * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.Mercurial";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.Mercurial";
     /**
-     * the command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "hg";
 
@@ -115,7 +114,7 @@ public class MercurialRepository extends Repository {
     }
 
     /**
-     * Return name of the branch or "default"
+     * Return name of the branch or "default".
      */
     @Override
     String determineBranch(boolean interactive) throws IOException {

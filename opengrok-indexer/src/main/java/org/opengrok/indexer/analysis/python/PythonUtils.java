@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.opengrok.indexer.util.RegexUtils;
 
 /**
- * Represents a container for Python-related utility methods
+ * Represents a container for Python-related utility methods.
  */
 public class PythonUtils {
 

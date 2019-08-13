@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Swift keywords
+ * Holds static hash set containing the Swift keywords.
  */
 public class Consts {
 
@@ -131,4 +131,8 @@ public class Consts {
 
         kwd.add("_"); // 4.0.3 "Keywords ... used in patterns"
     }
+
+    private Consts() {
+    }
+
 }

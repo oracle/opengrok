@@ -62,20 +62,19 @@ public class GitRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.git";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.git";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "git";
 
     /**
-     * git blame command
+     * Git blame command.
      */
     private static final String BLAME = "blame";
 
     /**
-     * arguments to shorten git IDs
+     * Arguments to shorten git IDs.
      */
     private static final int CSET_LEN = 8;
     private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
@@ -88,7 +87,7 @@ public class GitRepository extends Repository {
     private static final String GIT_DATE_OPT = "--date=iso8601-strict";
 
     /**
-     * Minimum git version which supports the date format
+     * Minimum git version which supports the date format.
      *
      * @see #GIT_DATE_OPT
      */

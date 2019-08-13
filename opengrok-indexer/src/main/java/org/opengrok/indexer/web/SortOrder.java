@@ -31,11 +31,11 @@ package org.opengrok.indexer.web;
  */
 public enum SortOrder {
 
-    /** sort by last modification time */
+    /** sort by last modification time. */
     LASTMODIFIED("lastmodtime", "last modified time"),
-    /** sort by relevancy */
+    /** sort by relevancy. */
     RELEVANCY("relevancy", "relevance"),
-    /** sort by path */
+    /** sort by path. */
     BY_PATH("fullpath", "path");
     private final String name;
     private final String desc;

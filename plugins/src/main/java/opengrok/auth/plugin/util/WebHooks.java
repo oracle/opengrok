@@ -35,11 +35,15 @@ public class WebHooks implements Serializable {
         this.fail = fail;
     }
 
-    public WebHook getFail() { return fail; }
+    public WebHook getFail() {
+        return fail;
+    }
 
     public void setRecover(WebHook recover) {
         this.recover = recover;
     }
 
-    public WebHook getRecover() { return recover; }
+    public WebHook getRecover() {
+        return recover;
+    }
 }

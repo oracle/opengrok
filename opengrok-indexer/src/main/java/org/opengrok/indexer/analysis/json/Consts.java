@@ -26,8 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Json (schema) keywords
- *
+ * Holds static hash set containing the Json (schema) keywords.
  */
 public class Consts {
 
@@ -67,4 +66,8 @@ public class Consts {
 */
 
     }
+
+    private Consts() {
+    }
+
 }

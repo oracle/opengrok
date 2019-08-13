@@ -51,30 +51,18 @@ public class PoshUtils {
      * Matches either the end of a PowerShell multiple-line comment or a
      * superfluous right angle bracket (which is not a valid BrowseableURI
      * character) captured in order to be able to detect the end of a
-     * PowerShell multiple-line comment:
-     * <pre>
-     * {@code
-     * \#?>
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * PowerShell multiple-line comment.
      */
     public static final Pattern MAYBE_END_MULTILINE_COMMENT =
         Pattern.compile("\\#?>");
 
     /**
-     * Matches a PowerShell break or continue statement with word label:
-     * <pre>
-     * {@code
-     * (break|continue)(\s+)(\w+)
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches a PowerShell break or continue statement with word label.
      */
     public static final Pattern GOTO_LABEL =
        Pattern.compile("(break|continue)(\\s+)(\\w+)");
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private PoshUtils() {
     }
 }

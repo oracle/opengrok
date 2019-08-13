@@ -38,7 +38,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class GolangAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of GolangAnalyzer
+     * Creates a new instance of GolangAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected GolangAnalyzer(AnalyzerFactory factory) {

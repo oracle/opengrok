@@ -84,7 +84,7 @@ class PendingFileCompleter {
     private final Object INSTANCE_LOCK = new Object();
 
     /**
-     * Descending path segment length comparator
+     * Descending path segment length comparator.
      */
     private static final Comparator<File> DESC_PATHLEN_COMPARATOR =
         (File f1, File f2) -> {
@@ -142,7 +142,7 @@ class PendingFileCompleter {
      * specified element
      */
     public boolean add(PendingFileRenaming e) {
-        synchronized(INSTANCE_LOCK) {
+        synchronized (INSTANCE_LOCK) {
             boolean rc = renames.add(e);
             deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
             return rc;
@@ -418,6 +418,7 @@ class PendingFileCompleter {
     }
 
     /**
+     * Deletes file or directory recursively.
      * <a href="https://stackoverflow.com/questions/779519/delete-directories-recursively-in-java">
      * Q: "Delete directories recursively in Java"
      * </a>,
@@ -456,7 +457,7 @@ class PendingFileCompleter {
      */
     private void tryDeleteParents(List<PendingFileDeletionExec> dels) {
         Set<File> parents = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
-        dels.forEach((del) -> { parents.add(del.absoluteParent); });
+        dels.forEach((del) -> parents.add(del.absoluteParent));
 
         SkeletonDirs skels = new SkeletonDirs();
         for (File dir : parents) {
@@ -530,7 +531,7 @@ class PendingFileCompleter {
     }
 
     /**
-     * Counts segments arising from {@code File.separatorChar} or '\\'
+     * Counts segments arising from {@code File.separatorChar} or '\\'.
      * @param path
      * @return a natural number
      */

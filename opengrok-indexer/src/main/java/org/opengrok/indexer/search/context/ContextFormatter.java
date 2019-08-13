@@ -54,13 +54,7 @@ public class ContextFormatter extends PassageFormatter {
         ContextFormatter.class);
 
     /**
-     * Matches a non-word character:
-     * <pre>
-     * {@code
-     * (?U)\W
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches a non-word character.
      */
     private static final Pattern NONWORD_CHAR = Pattern.compile("(?U)\\W");
 
@@ -78,7 +72,7 @@ public class ContextFormatter extends PassageFormatter {
     private int moreLimit;
 
     /**
-     * Cached splitter, keyed by {@link #originalText}
+     * Cached splitter, keyed by {@link #originalText}.
      */
     private SourceSplitter splitter;
     private String originalText;

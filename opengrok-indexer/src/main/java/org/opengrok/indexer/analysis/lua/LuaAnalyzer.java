@@ -34,11 +34,10 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 /**
  * @author Evan Kinney
  */
-
 public class LuaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of LuaAnalyzer
+     * Creates a new instance of LuaAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected LuaAnalyzer(AnalyzerFactory factory) {

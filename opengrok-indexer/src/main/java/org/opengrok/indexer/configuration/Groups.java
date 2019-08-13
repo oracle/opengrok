@@ -53,6 +53,9 @@ public final class Groups {
         boolean call(Group g);
     }
 
+    private Groups() {
+    }
+
     public static void main(String[] argv) {
         PrintStream out = System.out;
         File outFile = null;

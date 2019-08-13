@@ -44,6 +44,9 @@ public class ConfigMerge {
 
     private static final String name = "ConfigMerge";
 
+    private ConfigMerge() {
+    }
+
     /**
      * Merge base and new configuration.
      * @param cfgBase base configuration

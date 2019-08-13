@@ -29,7 +29,7 @@ import opengrok.auth.plugin.entity.User;
 public abstract class AbstractLdapProvider {
 
     /**
-     * Lookups user's records
+     * Lookups user's records.
      *
      * @param user find LDAP information about this user
      * @return set of attributes for the user or null
@@ -42,7 +42,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Lookups user's records
+     * Lookups user's records.
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter
@@ -56,7 +56,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Lookups user's records
+     * Lookups user's records.
      *
      * @param user find LDAP information about this user
      * @param values match these LDAP value
@@ -70,7 +70,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Lookups user's records
+     * Lookups user's records.
      *
      * @param user find LDAP information about this user
      * @param filter the LDAP filter

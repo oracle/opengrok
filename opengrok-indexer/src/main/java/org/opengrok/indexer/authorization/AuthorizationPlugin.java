@@ -52,7 +52,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
     }
 
     /**
-     * Clone the plugin:
+     * Clones the plugin. Performs:
      * <ul>
      * <li>copy the superclass {@link AuthorizationStack}</li>
      * <li>sets the plugin to {@code null}</li>
@@ -230,7 +230,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
     }
 
     /**
-     * Get the authorization plugin
+     * Get the authorization plugin.
      *
      * @return the underlying plugin
      */
@@ -258,7 +258,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
     }
 
     /**
-     * Clone the plugin:
+     * Clones the plugin. Performs:
      * <ul>
      * <li>copy the superclass {@link AuthorizationStack}</li>
      * <li>sets the plugin to {@code null}</li>

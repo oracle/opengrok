@@ -57,7 +57,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
     private static final List<String> READABLE_SECTIONS;
     static {
-        READABLE_SECTIONS = new ArrayList<String>();
+        READABLE_SECTIONS = new ArrayList<>();
         READABLE_SECTIONS.add(".debug_str");
         READABLE_SECTIONS.add(".comment");
         READABLE_SECTIONS.add(".data");
@@ -67,7 +67,7 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
 
     /**
-     * Creates a new instance of ELFAnalyzer
+     * Creates a new instance of ELFAnalyzer.
      * @param factory The factory that creates ELFAnalyzers
      */
     protected ELFAnalyzer(AnalyzerFactory factory) {
@@ -244,7 +244,11 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         @Override
         public String toString() {
-            return (e_machine.toString() + " " + ei_class.toString() + " " + "\ne_type: " + e_type.toString() + "\ne_machine: " + e_machine.value() + "\ne_version: " + e_version + "\ne_entry: " + e_entry + "\ne_phoff: " + e_phoff + "\ne_shoff: " + e_shoff + "\ne_flags: " + e_flags + "\ne_ehsize: " + e_ehsize + "\ne_phentsize:" + e_phentsize + "\ne_phnum: " + e_phnum + "\ne_shentsize" + e_shentsize + "\ne_shnum: " + e_shnum + "\ne_shstrndx: " + e_shstrndx);
+            return (e_machine.toString() + " " + ei_class.toString() + " " + "\ne_type: " + e_type.toString() +
+                    "\ne_machine: " + e_machine.value() + "\ne_version: " + e_version + "\ne_entry: " + e_entry +
+                    "\ne_phoff: " + e_phoff + "\ne_shoff: " + e_shoff + "\ne_flags: " + e_flags +
+                    "\ne_ehsize: " + e_ehsize + "\ne_phentsize:" + e_phentsize + "\ne_phnum: " + e_phnum +
+                    "\ne_shentsize" + e_shentsize + "\ne_shnum: " + e_shnum + "\ne_shstrndx: " + e_shstrndx);
         }
     }
 
@@ -305,7 +309,10 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         @Override
         public String toString() {
-            return ("\nsh_name : " + sh_name + "\nsh_type : " + sh_type + "\nsh_flags: " + sh_flags + "\nsh_addr: " + sh_addr + "\nsh_offset: " + sh_offset + "\nsh_size: " + sh_size + "\nsh_link: " + sh_link + "\nsh_info: " + sh_info + "\nsh_addralign: " + sh_addralign + "\nsh_entsize: " + sh_entsize);
+            return ("\nsh_name : " + sh_name + "\nsh_type : " + sh_type + "\nsh_flags: " + sh_flags +
+                    "\nsh_addr: " + sh_addr + "\nsh_offset: " + sh_offset + "\nsh_size: " + sh_size +
+                    "\nsh_link: " + sh_link + "\nsh_info: " + sh_info + "\nsh_addralign: " + sh_addralign +
+                    "\nsh_entsize: " + sh_entsize);
         }
     }
 

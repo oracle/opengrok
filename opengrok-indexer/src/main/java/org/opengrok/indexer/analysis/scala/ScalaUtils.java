@@ -32,13 +32,7 @@ public class ScalaUtils {
 
     /**
      * Matches a dollar sign, which is a valid URI character but also the start
-     * of string interpolation:
-     * <pre>
-     * {@code
-     * \$
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * of string interpolation.
      */
     public static final Pattern DOLLAR_SIGN = Pattern.compile("\\$");
 

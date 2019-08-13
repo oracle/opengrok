@@ -43,7 +43,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
- * Parse source history for a Subversion Repository
+ * Parse source history for a Subversion Repository.
  *
  * @author Trond Norbye
  */
@@ -109,7 +109,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 }
             } else if ("msg".equals(qname)) {
                 entry.setMessage(s);
-            } if ("logentry".equals(qname)) {
+            }
+            if ("logentry".equals(qname)) {
                 entries.add(entry);
             }
             sb.setLength(0);

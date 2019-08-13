@@ -24,6 +24,7 @@
 package opengrok.auth.plugin;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -36,7 +37,7 @@ import org.opengrok.indexer.configuration.Project;
 
 /**
  * This class is a full example of a working plugin from HTTP Basic tutorial on
- * https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Authorization#configuration
+ * https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Authorization#configuration .
  *
  * @author Krystof Tulinger
  */
@@ -47,19 +48,19 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
 
     static {
         // all have access to "test-project-11" and some to other "test-project-5" or "test-project-8"
-        USER_PROJECTS.put("007", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-5"})));
-        USER_PROJECTS.put("008", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-8"})));
-        USER_PROJECTS.put("009", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
-        USER_PROJECTS.put("00A", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
-        USER_PROJECTS.put("00B", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
+        USER_PROJECTS.put("007", new TreeSet<>(Arrays.asList("test-project-11", "test-project-5")));
+        USER_PROJECTS.put("008", new TreeSet<>(Arrays.asList("test-project-11", "test-project-8")));
+        USER_PROJECTS.put("009", new TreeSet<>(Collections.singletonList("test-project-11")));
+        USER_PROJECTS.put("00A", new TreeSet<>(Collections.singletonList("test-project-11")));
+        USER_PROJECTS.put("00B", new TreeSet<>(Collections.singletonList("test-project-11")));
     }
 
     static {
-        USER_GROUPS.put("007", new TreeSet<>(Arrays.asList(new String[]{})));
-        USER_GROUPS.put("008", new TreeSet<>(Arrays.asList(new String[]{})));
-        USER_GROUPS.put("009", new TreeSet<>(Arrays.asList(new String[]{})));
-        USER_GROUPS.put("00A", new TreeSet<>(Arrays.asList(new String[]{})));
-        USER_GROUPS.put("00B", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("007", new TreeSet<>());
+        USER_GROUPS.put("008", new TreeSet<>());
+        USER_GROUPS.put("009", new TreeSet<>());
+        USER_GROUPS.put("00A", new TreeSet<>());
+        USER_GROUPS.put("00B", new TreeSet<>());
     }
 
     @Override
@@ -71,11 +72,7 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
     }
 
     private void init(HttpServletRequest request) {
-        Set<String> projects = new TreeSet<>();
-        Set<String> groups = new TreeSet<>();
-        Group g;
-
-        for (String group : Arrays.asList(new String[]{"admins", "users", "plugins", "ghost"})) {
+        for (String group : Arrays.asList("admins", "users", "plugins", "ghost")) {
             if (!request.isUserInRole(group)) {
                 continue;
             }

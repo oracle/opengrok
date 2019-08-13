@@ -35,9 +35,8 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
 
-
 /**
- * An Extremely Fast Tagged Attribute Read-only File Reader
+ * An Extremely Fast Tagged Attribute Read-only File Reader.
  * Created on October 12, 2005
  *
  * @author Chandan
@@ -177,7 +176,7 @@ public class EftarFileReader implements Closeable {
     }
 
     /**
-     * Get description for path
+     * Get description for path.
      * @param path path relative to source root
      * @return path description string
      * @throws IOException I/O

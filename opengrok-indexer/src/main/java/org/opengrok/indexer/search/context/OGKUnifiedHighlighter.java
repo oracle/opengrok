@@ -170,7 +170,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
                     if (!(obj instanceof FormattedLines)) {
                         return obj.toString();
                     }
-                    FormattedLines flines = (FormattedLines)obj;
+                    FormattedLines flines = (FormattedLines) obj;
                     res = res == null ? flines : res.merge(flines);
                 }
             }
@@ -313,7 +313,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             Reader rdr = getReader(in)) {
             int c;
             while ((c = rdr.read()) != -1) {
-                bld.append((char)c);
+                bld.append((char) c);
             }
         }
 

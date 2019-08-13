@@ -28,11 +28,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Golang keywords
+ * Holds static hash set containing the Golang keywords.
  * @author Patrick Lundquist
  */
-
 public class Consts {
+
     public static final Set<String> kwd = new HashSet<>();
     static {
         // Go Programming Language Specification 2015
@@ -107,4 +107,8 @@ public class Consts {
         kwd.add("real"); // Predeclared identifiers: Functions
         kwd.add("recover"); // Predeclared identifiers: Functions
     }
+
+    private Consts() {
+    }
+
 }

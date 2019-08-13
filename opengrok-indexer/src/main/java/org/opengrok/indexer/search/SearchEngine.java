@@ -92,7 +92,7 @@ public class SearchEngine {
     //increase the version - every change of below makes us incompatible with the
     //old index and we need to ask for reindex
     /**
-     * version of Lucene index common for the whole application
+     * Version of Lucene index common for the whole application.
      */
     public static final Version LUCENE_VERSION = Version.LATEST;
     public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major + "_" + LUCENE_VERSION.minor + "_" + LUCENE_VERSION.bugfix;
@@ -117,7 +117,7 @@ public class SearchEngine {
      */
     private String symbol;
     /**
-     * Holds value of property type
+     * Holds value of property type.
      */
     private String type;
     /**
@@ -144,7 +144,7 @@ public class SearchEngine {
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
 
     /**
-     * Creates a new instance of SearchEngine
+     * Creates a new instance of SearchEngine.
      */
     public SearchEngine() {
         docs = new ArrayList<>();
@@ -285,8 +285,8 @@ public class SearchEngine {
     public int search(HttpServletRequest req, String... projectNames) {
         ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
         Set<Project> allProjects = pHelper.getAllProjects();
-        List<Project> filteredProjects = new ArrayList<Project>();
-        for(Project project: allProjects) {
+        List<Project> filteredProjects = new ArrayList<>();
+        for (Project project: allProjects) {
             for (String name : projectNames) {
                 if (project.getName().equalsIgnoreCase(name)) {
                     filteredProjects.add(project);
@@ -479,7 +479,8 @@ public class SearchEngine {
             allCollected = true;
         }
 
-        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever form they need, this way we could get rid of docs
+        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever
+        // form they need, this way we could get rid of docs
         // the only problem is that count of docs is usually smaller than number of results
         for (int ii = start; ii < end; ++ii) {
             boolean alt = (ii % 2 == 0);
@@ -524,7 +525,9 @@ public class SearchEngine {
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
                                 l = r.read(content);
                             }
-                            //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
+                            //TODO FIX below fragmenter according to either summarizer or context
+                            // (to get line numbers, might be hard, since xref writers will need to be fixed too,
+                            // they generate just one line of html code now :( )
                             Summary sum = summarizer.getSummary(new String(content, 0, l));
                             Fragment[] fragments = sum.getFragments();
                             for (Fragment fragment : fragments) {

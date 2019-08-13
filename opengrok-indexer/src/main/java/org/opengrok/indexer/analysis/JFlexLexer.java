@@ -55,15 +55,15 @@ public interface JFlexLexer {
     char yycharat(int pos);
 
     /**
-     * "Closes the input stream [as documented by JFlex]. All subsequent calls
-     * to the scanning method will return the end of file value."
+     * Closes the input stream [as documented by JFlex]. All subsequent calls
+     * to the scanning method will return the end of file value.
      * @throws IOException if an error occurs while closing
      */
     void yyclose() throws IOException;
 
     /**
-     * "Closes the current input stream [as documented by JFlex], and resets
-     * the scanner to read from a new Reader."
+     * Closes the current input stream [as documented by JFlex], and resets
+     * the scanner to read from a new Reader.
      * @param reader the new reader
      */
     void yyreset(Reader reader);
@@ -75,8 +75,7 @@ public interface JFlexLexer {
     int yystate();
 
     /**
-     * "Enters the lexical state {@code lexicalState} [as documented by
-     * JFlex]."
+     * Enters the lexical state {@code lexicalState} [as documented by JFlex].
      * @param lexicalState the new state
      */
     void yybegin(int lexicalState);

@@ -30,8 +30,7 @@ import java.util.Comparator;
  */
 public class PhraseHighlightComparator implements Comparator<PhraseHighlight> {
 
-    public static final PhraseHighlightComparator INSTANCE =
-        new PhraseHighlightComparator();
+    public static final PhraseHighlightComparator INSTANCE = new PhraseHighlightComparator();
 
     /**
      * Compares two {@link PhraseHighlight} instances for order by first
@@ -67,7 +66,7 @@ public class PhraseHighlightComparator implements Comparator<PhraseHighlight> {
         return cmp;
     }
 
-    /** private to enforce singleton */
+    /** Private to enforce singleton. */
     private PhraseHighlightComparator() {
     }
 }

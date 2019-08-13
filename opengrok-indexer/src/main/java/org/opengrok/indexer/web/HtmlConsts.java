@@ -52,6 +52,7 @@ public class HtmlConsts {
 
     public static final String HELLIP = "&hellip;";
 
-    /** private to enforce static */
-    private HtmlConsts() {}
+    /** Private to enforce static. */
+    private HtmlConsts() {
+    }
 }
