@@ -149,7 +149,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            long startTime = System.currentTimeMillis();
+            Instant start = Instant.now();
             logger.log(Level.INFO, "Initializing suggester");
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -158,7 +158,7 @@ public final class Suggester implements Closeable {
                 submitInitIfIndexExists(executor, indexDir);
             }
 
-            shutdownAndAwaitTermination(executor, startTime, "Suggester successfully initialized");
+            shutdownAndAwaitTermination(executor, start, "Suggester successfully initialized");
         }
     }
 
@@ -211,12 +211,12 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService, long startTime, final String logMessageOnSuccess) {
+    private void shutdownAndAwaitTermination(final ExecutorService executorService, Instant start, final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
             logger.log(Level.INFO, logMessageOnSuccess + " (took {0})",
-                    DurationFormatUtils.formatDurationWords(System.currentTimeMillis() - startTime,
+                    DurationFormatUtils.formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
                             true, true));
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
@@ -235,7 +235,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            long startTime = System.currentTimeMillis();
+            Instant start = Instant.now();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -249,7 +249,7 @@ public final class Suggester implements Closeable {
                 }
             }
 
-            shutdownAndAwaitTermination(executor, startTime, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            shutdownAndAwaitTermination(executor, start, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
     }
 
