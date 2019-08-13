@@ -215,9 +215,9 @@ public final class Suggester implements Closeable {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
-            logger.log(Level.INFO, logMessageOnSuccess + " (took {0})",
+            logger.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
                     DurationFormatUtils.formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
-                            true, true));
+                            true, true)});
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
             Thread.currentThread().interrupt();
