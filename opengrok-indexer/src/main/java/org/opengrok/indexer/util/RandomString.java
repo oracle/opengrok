@@ -47,15 +47,15 @@ public final class RandomString {
     }
     
     public static String generateLowerUnique(int length, int index) {
-        return generate(Math.max(0, length+index), "abcdefghijklmnopqrstuvwxyz");
+        return generate(Math.max(0, length + index), "abcdefghijklmnopqrstuvwxyz");
     }
 
     public static String generateUpperUnique(int length, int index) {
-        return generate(Math.max(0, length+index), "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+        return generate(Math.max(0, length + index), "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
     }
 
     public static String generateNumericUnique(int length, int index) {
-        return generate(Math.max(0, length+index), "0123456789");
+        return generate(Math.max(0, length + index), "0123456789");
     }
     
     public static String generate(int length) {
@@ -67,9 +67,9 @@ public final class RandomString {
     }
         
     public static String generate(int length, String charset) {
-        StringBuffer buffer = new StringBuffer(length);
-        for(int i = 0; i < length; i ++) {
-            int index = ((int)(Math.random() * Integer.MAX_VALUE)) % charset.length();
+        StringBuilder buffer = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = ((int) (Math.random() * Integer.MAX_VALUE)) % charset.length();
             buffer.append(charset.charAt(index));
         }
         return buffer.toString();

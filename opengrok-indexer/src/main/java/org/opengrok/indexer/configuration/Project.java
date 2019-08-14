@@ -38,7 +38,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Placeholder for the information that builds up a project
+ * Placeholder for the information that builds up a project.
  */
 public class Project implements Comparable<Project>, Nameable, Serializable {
 
@@ -122,7 +122,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Get a textual name of this project
+     * Get a textual name of this project.
      *
      * @return a textual name of the project
      */
@@ -132,7 +132,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Get the path (relative from source root) where this project is located
+     * Get the path (relative from source root) where this project is located.
      *
      * @return the relative path
      */
@@ -145,7 +145,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Get the project id
+     * Get the project id.
      *
      * @return the id of the project
      */
@@ -222,7 +222,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Set the value of navigateWindowEnabled
+     * Set the value of navigateWindowEnabled.
      *
      * @param navigateWindowEnabled new value of navigateWindowEnabled
      */
@@ -259,7 +259,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Return groups where this project belongs
+     * Return groups where this project belongs.
      *
      * @return set of groups|empty if none
      */
@@ -272,7 +272,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Adds a group where this project belongs
+     * Adds a group where this project belongs.
      *
      * @param group group to add
      */
@@ -325,7 +325,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Get the project for a specific file
+     * Get the project for a specific file.
      *
      * @param path the file to lookup (relative to source root)
      * @return the project that this file belongs to (or null if the file
@@ -359,7 +359,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Get the project for a specific file
+     * Get the project for a specific file.
      *
      * @param file the file to lookup
      * @return the project that this file belongs to (or null if the file
@@ -382,7 +382,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
 
     /**
      * Returns project object by its name, used in webapp to figure out which
-     * project is to be searched
+     * project is to be searched.
      *
      * @param name name of the project
      * @return project that fits the name

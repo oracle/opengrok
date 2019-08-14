@@ -129,7 +129,7 @@ python3 -m pip uninstall opengrok_tools
 
 ```bash
 python setup.py install test
-mvn test
+./mvnw test
 ```
 
 ## Cleanup

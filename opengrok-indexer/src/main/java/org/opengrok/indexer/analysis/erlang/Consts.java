@@ -28,11 +28,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Erlang keywords
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
-    public static final Set<String> modules_kwd = new HashSet<>() ;
+ * Holds static hash set containing the Erlang keywords.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
+    public static final Set<String> modules_kwd = new HashSet<>();
     static {
         kwd.add("after"); // Ref. 9.1 "1.5 Reserved Words"
         kwd.add("and"); // Ref. 9.1 "1.5 Reserved Words"
@@ -80,4 +81,8 @@ public class Consts{
         modules_kwd.add("type"); // Ref. 9.1 "5.2 Module Attributes"
         modules_kwd.add("vsn"); // Ref. 9.1 "5.2 Module Attributes"
     }
+
+    private Consts() {
+    }
+
 }

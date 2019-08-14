@@ -26,24 +26,16 @@ package org.opengrok.indexer.analysis.haskell;
 import java.util.regex.Pattern;
 
 /**
- * Represents a container for Haskell-related utility methods
+ * Represents a container for Haskell-related utility methods.
  */
 public class HaskellUtils {
 
     /**
      * Matches either the end of a Haskell nested comment or a superfluous
      * right curly bracket (which is not a valid BrowseableURI character)
-     * captured in order to be able to detect the end of a Haskell nested
-     * comment:
-     * <pre>
-     * {@code # [ignore the following right brace {]
-     * \-?\}
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * captured in order to be able to detect the end of a Haskell nested comment.
      */
-    public static final Pattern MAYBE_END_NESTED_COMMENT =
-        Pattern.compile("\\-?\\}");
+    public static final Pattern MAYBE_END_NESTED_COMMENT = Pattern.compile("\\-?\\}");
 
     /** Private to enforce static. */
     private HaskellUtils() {

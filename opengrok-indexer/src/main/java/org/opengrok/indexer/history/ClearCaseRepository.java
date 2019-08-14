@@ -51,10 +51,9 @@ public class ClearCaseRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.ClearCase";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.ClearCase";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "cleartool";
 

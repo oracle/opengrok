@@ -28,18 +28,6 @@ public class BooleanUtilTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  /* testedClasses: BooleanUtil */
-  // Test written by Diffblue Cover.
-
-  @Test
-  public void constructorOutputVoid() {
-
-    // Act, creating object to test constructor
-    final BooleanUtil objectUnderTest = new BooleanUtil();
-
-    // Method returns void, testing that no exception is thrown
-  }
-
   // Test written by Diffblue Cover.
   @Test
   public void isBooleanInputNotNullOutputFalse() {

@@ -46,7 +46,7 @@ import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
 import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
 
 /**
- * Initialize webapp context
+ * Initialize webapp context.
  *
  * @author Trond Norbye
  */

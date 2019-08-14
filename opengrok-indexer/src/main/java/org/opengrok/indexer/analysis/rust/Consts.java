@@ -28,62 +28,67 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Rust language keywords
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Holds static hash set containing the Rust language keywords.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
-        kwd.add( "abstract" );
-        kwd.add( "alignof" );
-        kwd.add( "as" );
-        kwd.add( "become" );
-        kwd.add( "box" );
-        kwd.add( "break" );
-        kwd.add( "const" );
-        kwd.add( "continue" );
-        kwd.add( "crate" );
-        kwd.add( "do" );
-        kwd.add( "else" );
-        kwd.add( "enum" );
-        kwd.add( "extern" );
-        kwd.add( "false" );
-        kwd.add( "final" );
-        kwd.add( "fn" );
-        kwd.add( "for" );
-        kwd.add( "if" );
-        kwd.add( "impl" );
-        kwd.add( "in" );
-        kwd.add( "let" );
-        kwd.add( "loop" );
-        kwd.add( "macro" );
-        kwd.add( "match" );
-        kwd.add( "mod" );
-        kwd.add( "move" );
-        kwd.add( "mut" );
-        kwd.add( "offsetof" );
-        kwd.add( "override" );
-        kwd.add( "priv" );
-        kwd.add( "proc" );
-        kwd.add( "pub" );
-        kwd.add( "pure" );
-        kwd.add( "ref" );
-        kwd.add( "return" );
-        kwd.add( "Self" );
-        kwd.add( "self" );
-        kwd.add( "sizeof" );
-        kwd.add( "static" );
-        kwd.add( "struct" );
-        kwd.add( "super" );
-        kwd.add( "trait" );
-        kwd.add( "true" );
-        kwd.add( "type" );
-        kwd.add( "typeof" );
-        kwd.add( "unsafe" );
-        kwd.add( "unsized" );
-        kwd.add( "use" );
-        kwd.add( "virtual" );
-        kwd.add( "where" );
-        kwd.add( "while" );
-        kwd.add( "yield" );
+        kwd.add("abstract");
+        kwd.add("alignof");
+        kwd.add("as");
+        kwd.add("become");
+        kwd.add("box");
+        kwd.add("break");
+        kwd.add("const");
+        kwd.add("continue");
+        kwd.add("crate");
+        kwd.add("do");
+        kwd.add("else");
+        kwd.add("enum");
+        kwd.add("extern");
+        kwd.add("false");
+        kwd.add("final");
+        kwd.add("fn");
+        kwd.add("for");
+        kwd.add("if");
+        kwd.add("impl");
+        kwd.add("in");
+        kwd.add("let");
+        kwd.add("loop");
+        kwd.add("macro");
+        kwd.add("match");
+        kwd.add("mod");
+        kwd.add("move");
+        kwd.add("mut");
+        kwd.add("offsetof");
+        kwd.add("override");
+        kwd.add("priv");
+        kwd.add("proc");
+        kwd.add("pub");
+        kwd.add("pure");
+        kwd.add("ref");
+        kwd.add("return");
+        kwd.add("Self");
+        kwd.add("self");
+        kwd.add("sizeof");
+        kwd.add("static");
+        kwd.add("struct");
+        kwd.add("super");
+        kwd.add("trait");
+        kwd.add("true");
+        kwd.add("type");
+        kwd.add("typeof");
+        kwd.add("unsafe");
+        kwd.add("unsized");
+        kwd.add("use");
+        kwd.add("virtual");
+        kwd.add("where");
+        kwd.add("while");
+        kwd.add("yield");
     }
+
+    private Consts() {
+    }
+
 }

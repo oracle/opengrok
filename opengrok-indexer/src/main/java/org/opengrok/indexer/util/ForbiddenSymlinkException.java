@@ -31,5 +31,7 @@ public class ForbiddenSymlinkException extends Exception {
 
       private static final long serialVersionUID = -5483867987230977680L;
 
-      public ForbiddenSymlinkException(String message) { super(message); }
+      public ForbiddenSymlinkException(String message) {
+            super(message);
+      }
 }

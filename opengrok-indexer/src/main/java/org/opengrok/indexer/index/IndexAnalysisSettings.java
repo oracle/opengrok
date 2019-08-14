@@ -46,23 +46,23 @@ public final class IndexAnalysisSettings implements Serializable {
     private String projectName;
 
     /**
-     * (nullable to allow easing this object into existing OpenGrok indexes
-     * without forcing a re-indexing)
+     * Nullable to allow easing this object into existing OpenGrok indexes
+     * without forcing a re-indexing.
      * @serial
      */
     private Integer tabSize;
 
     /**
-     * (nullable to allow easing this object into existing OpenGrok indexes
-     * without forcing a re-indexing)
+     * Nullable to allow easing this object into existing OpenGrok indexes
+     * without forcing a re-indexing.
      * @serial
      */
     private Long analyzerGuruVersion;
 
     /**
-     * (nullable because otherwise custom de-serialization does not work, as a
+     * Nullable because otherwise custom de-serialization does not work, as a
      * {@code final} initialized value may not actually happen because Java
-     * de-serialization circumvents normal construction.)
+     * de-serialization circumvents normal construction.
      * @serial
      */
     private Map<String, Long> analyzersVersions = new HashMap<>();
@@ -104,7 +104,7 @@ public final class IndexAnalysisSettings implements Serializable {
     }
 
     /**
-     * Gets the version number for the specified file type name if it exists
+     * Gets the version number for the specified file type name if it exists.
      * @param fileTypeName name of the file type
      * @return a defined value or {@code null} if unknown
      */
@@ -157,7 +157,7 @@ public final class IndexAnalysisSettings implements Serializable {
             throws IOException, ClassNotFoundException {
         ObjectInputStream in = new ObjectInputStream(
             new ByteArrayInputStream(bytes));
-        return (IndexAnalysisSettings)in.readObject();
+        return (IndexAnalysisSettings) in.readObject();
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException,

@@ -1846,14 +1846,14 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 });
                 if (config.showTime) {
                     $("<li>", {
-                        class: "ui-state-disabled",
+                        "class": "ui-state-disabled",
                         style: 'padding-left: 5px;',
                         text: time + ' ms'
                     }).appendTo(ul);
                 }
                 if (partialResult) {
                     $("<li>", {
-                        class: "ui-state-disabled",
+                        "class": "ui-state-disabled",
                         style: 'padding-left: 5px;',
                         text: 'Partial result due to timeout'
                     }).appendTo(ul);
@@ -1934,7 +1934,7 @@ function showError(errorText, errorElem) {
     var span = parent.find('#autocomplete-error')[0];
     if (!span) {
         span = $("<span>", {
-            class: "important-note important-note-rounded",
+            "class": "important-note important-note-rounded",
             style: "right: -10px; position: absolute; top: 0px;",
             text: "!",
             id: 'autocomplete-error'
@@ -1966,17 +1966,17 @@ function hideError(errorElem) {
 function getSuggestionListItem(itemData, config) {
     if (itemData.selectable === false) {
         return $("<li>", {
-            class: "ui-state-disabled",
+            "class": "ui-state-disabled",
             text: itemData.phrase
         });
     }
 
     var listItem = $("<li>", {
-        class: "ui-menu-item",
+        "class": "ui-menu-item",
         style: "display: block;"
     });
     var listItemChild = $("<div>", {
-        class: "ui-menu-item-wrapper",
+        "class": "ui-menu-item-wrapper",
         style: "height: 20px; padding: 0;",
         tabindex: "-1"
     });

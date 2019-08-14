@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -39,9 +38,8 @@ import org.suigeneris.jrcs.rcs.parse.ParseException;
 import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.logger.LoggerFactory;
 
-
 /**
- * Virtualise RCS file as a reader, getting a specified version
+ * Virtualise RCS file as a reader, getting a specified version.
  */
 class RCSHistoryParser {
 
@@ -108,10 +106,10 @@ class RCSHistoryParser {
             return;
         }
         traverse(n.getChild(), history);
-        TreeMap<?,?> brt = n.getBranches();
+        TreeMap<?, ?> brt = n.getBranches();
         if (brt != null) {
-            for (Iterator<?> i = brt.values().iterator(); i.hasNext();) {
-                Node b = (Node) i.next();
+            for (Object o : brt.values()) {
+                Node b = (Node) o;
                 traverse(b, history);
             }
         }

@@ -84,7 +84,8 @@ public class DefinitionsTokenStream extends TokenStream {
 
     /**
      * Publishes the next, pending token from
-     * {@link #initialize(org.opengrok.indexer.analysis.Definitions, org.opengrok.indexer.analysis.StreamSource, org.opengrok.indexer.util.ReaderWrapper)},
+     * {@link #initialize(org.opengrok.indexer.analysis.Definitions, org.opengrok.indexer.analysis.StreamSource,
+     * org.opengrok.indexer.util.ReaderWrapper)},
      * if one is available.
      * @return false if no more tokens; otherwise true
      * @throws IOException in case of I/O error

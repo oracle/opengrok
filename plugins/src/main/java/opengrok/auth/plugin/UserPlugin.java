@@ -62,7 +62,7 @@ public class UserPlugin implements IAuthorizationPlugin {
         Class<?> clazz = Class.forName(name);
         Constructor<?> constructor = clazz.getConstructor();
         Object instance = constructor.newInstance();
-        return (IUserDecoder)instance;
+        return (IUserDecoder) instance;
     }
 
     @Override
@@ -77,8 +77,8 @@ public class UserPlugin implements IAuthorizationPlugin {
         LOGGER.log(Level.INFO, "loading decoder: {0}", decoder_name);
         try {
             decoder = getDecoder(decoder_name);
-        } catch (ClassNotFoundException|NoSuchMethodException|IllegalAccessException|
-                InvocationTargetException|InstantiationException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+                InvocationTargetException | InstantiationException e) {
             throw new RuntimeException("cannot load decoder " + decoder_name, e);
         }
     }
@@ -90,7 +90,7 @@ public class UserPlugin implements IAuthorizationPlugin {
     private User getUser(HttpServletRequest request) {
         User user;
 
-        if ((user = (User)request.getAttribute(REQUEST_ATTR))==null) {
+        if ((user = (User) request.getAttribute(REQUEST_ATTR)) == null) {
             user = decoder.fromRequest(request);
             request.setAttribute(REQUEST_ATTR, user);
         }

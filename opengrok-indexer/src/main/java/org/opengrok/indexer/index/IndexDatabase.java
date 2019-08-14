@@ -162,7 +162,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Create a new instance of an Index Database for a given project
+     * Create a new instance of an Index Database for a given project.
      *
      * @param project the project to create the database for
      * @throws java.io.IOException if an error occurs while creating
@@ -190,7 +190,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Update the index database for all of the projects
+     * Update the index database for all of the projects.
      *
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
@@ -236,7 +236,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Update the index database for a number of sub-directories
+     * Update the index database for a number of sub-directories.
      *
      * @param listener where to signal the changes to the database
      * @param paths list of paths to be indexed
@@ -386,7 +386,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Update the content of this index database
+     * Update the content of this index database.
      *
      * @throws IOException if an error occurs
      */
@@ -503,7 +503,7 @@ public class IndexDatabase {
                         removeFile(true);
                         BytesRef next = uidIter.next();
                         if (next == null) {
-                            uidIter=null;
+                            uidIter = null;
                         }
                     }
 
@@ -555,7 +555,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Optimize all index databases
+     * Optimize all index databases.
      *
      * @throws IOException if an error occurs
      */
@@ -594,7 +594,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Optimize the index database
+     * Optimize the index database.
      * @throws IOException I/O exception
      */
     public void optimize() throws IOException {
@@ -680,7 +680,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Queue the removal of xref file for given path
+     * Queue the removal of xref file for given path.
      * @param path path to file under source root
      */
     private void removeXrefFile(String path) {
@@ -723,7 +723,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Add a file to the Lucene index (and generate a xref file)
+     * Add a file to the Lucene index (and generate a xref file).
      *
      * @param file The file to add
      * @param path The path to the file (from source root)
@@ -817,7 +817,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Check if I should accept this file into the index database
+     * Check if I should accept this file into the index database.
      *
      * @param file the file to check
      * @param outLocalRelPath optional output array whose 0-th element is set
@@ -935,7 +935,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Check if I should accept the path containing a symlink
+     * Check if I should accept the path containing a symlink.
      *
      * @param absolute the path with a symlink to check
      * @param canonical the canonical file object
@@ -1207,7 +1207,7 @@ public class IndexDatabase {
                             LOGGER.log(Level.WARNING, "No retry: {0}", x.file);
                             x.exception = e;
                             ret = false;
-                        } catch (RuntimeException|IOException e) {
+                        } catch (RuntimeException | IOException e) {
                             String errmsg = String.format("ERROR addFile(): %s",
                                 x.file);
                             LOGGER.log(Level.WARNING, errmsg, e);
@@ -1225,7 +1225,7 @@ public class IndexDatabase {
                         return ret;
                     }
                 }))).get();
-        } catch (InterruptedException|ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
             String exmsg = String.format(
@@ -1266,7 +1266,7 @@ public class IndexDatabase {
 
     /**
      * Interrupt the index generation (and the index generation will stop as
-     * soon as possible)
+     * soon as possible).
      */
     public void interrupt() {
         synchronized (lock) {
@@ -1292,7 +1292,7 @@ public class IndexDatabase {
 
     /**
      * Remove an object from the lists of objects to receive events when
-     * modifications is done to the index database
+     * modifications is done to the index database.
      *
      * @param listener the object to remove
      */
@@ -1460,12 +1460,13 @@ public class IndexDatabase {
                 iter = terms.iterator(); // init uid iterator
             }
             while (iter != null && iter.term() != null) {
-                //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
                     LOGGER.warning(iter.term().utf8ToString());
                 }
                 BytesRef next = iter.next();
-                if (next==null) {iter=null;}
+                if (next == null) {
+                    iter = null;
+                }
             }
         } finally {
 
@@ -1480,7 +1481,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Get an indexReader for the Index database where a given file
+     * Get an indexReader for the Index database where a given file.
      *
      * @param path the file to get the database for
      * @return The index database where the file should be located or null if it
@@ -1661,7 +1662,7 @@ public class IndexDatabase {
             // rollback() regardless of success.
             hasPendingCommit = false;
             writer.commit();
-        } catch (RuntimeException|IOException e) {
+        } catch (RuntimeException | IOException e) {
             if (hasPendingCommit) {
                 writer.rollback();
             }

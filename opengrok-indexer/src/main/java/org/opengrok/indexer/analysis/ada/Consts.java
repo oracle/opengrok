@@ -26,10 +26,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Represents a container for Ada keywords and other string constants
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Represents a container for Ada keywords and other string constants.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("abort");
         kwd.add("abs");
@@ -128,7 +129,6 @@ public class Consts{
         kwd.add("wide_character"); // A.1 The Package Standard
         kwd.add("wide_string"); // A.1 The Package Standard
         kwd.add("wide_wide_character"); // A.1 The Package Standard
-        kwd.add("wide_wide_character"); // A.1 The Package Standard
         kwd.add("wide_wide_string"); // A.1 The Package Standard
 
         kwd.add("ada");  // A.2 The Package Ada
@@ -142,7 +142,6 @@ public class Consts{
         kwd.add("is_basic"); // A.3.2 Characters.Handling
         kwd.add("is_control"); // A.3.2 Characters.Handling
         kwd.add("is_decimal_digit"); // A.3.2 Characters.Handling
-        kwd.add("is_digit"); // A.3.2 Characters.Handling
         kwd.add("is_digit"); // A.3.2 Characters.Handling
         kwd.add("is_graphic"); // A.3.2 Characters.Handling
         kwd.add("is_hexadecimal_digit"); // A.3.2 Characters.Handling
@@ -507,4 +506,8 @@ public class Consts{
         kwd.add("set_im"); // G.1.1 Complex Types
         kwd.add("set_re"); // G.1.1 Complex Types
     }
+
+    private Consts() {
+    }
+
 }

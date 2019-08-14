@@ -34,7 +34,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class ErlangAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of ErlangAnalyzer
+     * Creates a new instance of ErlangAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected ErlangAnalyzer(AnalyzerFactory factory) {

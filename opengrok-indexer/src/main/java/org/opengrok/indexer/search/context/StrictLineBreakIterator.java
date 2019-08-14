@@ -189,7 +189,7 @@ public class StrictLineBreakIterator extends BreakIterator {
 
     @Override
     public CharacterIterator getText() {
-        return (CharacterIterator)charIt.clone();
+        return (CharacterIterator) charIt.clone();
     }
 
     @Override

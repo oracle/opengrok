@@ -47,7 +47,7 @@ public class BazaarAnnotationParser implements Executor.StreamHandler {
     private final Annotation annotation;
     
     /**
-     * Pattern used to extract author/revision
+     * Pattern used to extract author/revision.
      */
     private static final Pattern BLAME_PATTERN
             = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");

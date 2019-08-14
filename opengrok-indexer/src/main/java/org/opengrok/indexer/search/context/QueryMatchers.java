@@ -42,7 +42,6 @@ import org.apache.lucene.search.WildcardQuery;
  * find terms for MultiTermQuery, RangeQuery and PrefixQuery classes so the
  * caller must pass a rewritten query (see query.rewrite) to obtain a list of
  * expanded terms.
- *
  */
 public final class QueryMatchers {
 
@@ -53,7 +52,7 @@ public final class QueryMatchers {
 
     /**
      * Get the terms from a query and returns a list of DFAs which match a stream
-     * of tokens
+     * of tokens.
      *
      * @param query the query to generate matchers for
      * @param fields a map whose keys tell which fields to create matchers for,

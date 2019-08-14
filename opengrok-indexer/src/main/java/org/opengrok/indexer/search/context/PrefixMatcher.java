@@ -24,7 +24,7 @@
 package org.opengrok.indexer.search.context;
 
 /**
- * Matches a term against a prefix
+ * Matches a term against a prefix.
  */
 public class PrefixMatcher extends LineMatcher {
     private final String prefix;
@@ -34,6 +34,7 @@ public class PrefixMatcher extends LineMatcher {
         this.prefix = normalizeString(prefix);
     }
 
+    @Override
     public int match(String token) {
         String tokenToMatch = normalizeString(token);
         return tokenToMatch.startsWith(prefix) ? MATCHED : NOT_MATCHED;

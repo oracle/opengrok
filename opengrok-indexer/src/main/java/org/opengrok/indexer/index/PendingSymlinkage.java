@@ -59,7 +59,7 @@ public final class PendingSymlinkage {
         if (!(o instanceof PendingSymlinkage)) {
             return false;
         }
-        PendingSymlinkage other = (PendingSymlinkage)o;
+        PendingSymlinkage other = (PendingSymlinkage) o;
         return this.sourcePath.equals(other.sourcePath);
     }
 

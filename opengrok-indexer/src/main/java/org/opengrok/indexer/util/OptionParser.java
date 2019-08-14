@@ -77,14 +77,14 @@ public class OptionParser {
 
     // Used to hold data type converters
     @SuppressWarnings("rawtypes")
-    private static HashMap<Class,DataParser> converters = new HashMap<>();
+    private static HashMap<Class, DataParser> converters = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     static class DataParser {
         Class dataType;
-        Function<String,Object> converter;
+        Function<String, Object> converter;
         
-        DataParser(Class cls, Function<String,Object> converter) {
+        DataParser(Class cls, Function<String, Object> converter) {
             this.dataType = cls;
             this.converter = converter;
         }
@@ -92,11 +92,11 @@ public class OptionParser {
 
     // Supported internal data type converters.
     static {
-        accept(Integer.class,  s -> { return Integer.parseInt(s); });
-        accept(Boolean.class,  s -> { return parseVerity(s); });
-        accept(Float.class,    s -> { return Float.parseFloat(s); });
-        accept(Double.class,   s -> { return Double.parseDouble(s); });
-        accept(String[].class, s -> { return s.split(",");});
+        accept(Integer.class, Integer::parseInt);
+        accept(Boolean.class, OptionParser::parseVerity);
+        accept(Float.class, Float::parseFloat);
+        accept(Double.class, Double::parseDouble);
+        accept(String[].class, s -> s.split(","));
     }
     
     // Option object referenced by its name(s)
@@ -148,7 +148,7 @@ public class OptionParser {
             allowedValues = Arrays.asList(allowed);
         }
         
-        void setValueType(Class<?> type){
+        void setValueType(Class<?> type) {
             valueType = type;
         }
         
@@ -259,7 +259,7 @@ public class OptionParser {
      * option value string and produce the named data type.
      */
     @SuppressWarnings("rawtypes")
-    public static void accept(Class type, Function<String,Object> parser) {
+    public static void accept(Class type, Function<String, Object> parser) {
         converters.put(type, new DataParser(type, parser));
     }
     
@@ -386,7 +386,7 @@ public class OptionParser {
      * @param args arguments
      * @return Option
      */
-    public Option on(Object ... args) {
+    public Option on(Object... args) {
 
         Option opt = new Option();
         
@@ -412,18 +412,18 @@ public class OptionParser {
                     opt.setArgument(argument.substring(1));
                 } else if (argument.startsWith("/")) {
                     // regular expression (sans '/'s)
-                    opt.setPattern(argument.substring(1, argument.length()-1));
+                    opt.setPattern(argument.substring(1, argument.length() - 1));
                 } else {
                     // this is description
                     opt.addDescription(argument);
                 }
             // This is indicator for a addOption of specific allowable option values
             } else if (arg instanceof String[]) {
-                opt.setAllowedValues((String[])arg);
+                opt.setAllowedValues((String[]) arg);
             // This is indicator for option value data type 
             // to which the parser will take and convert.
             } else if (arg instanceof Class) {
-                opt.setValueType((Class<?>)arg);
+                opt.setValueType((Class<?>) arg);
             }
         }
         
@@ -604,7 +604,7 @@ public class OptionParser {
                 if (opt.allowedValues != null) {
                     if (!opt.allowedValues.contains(opt.value)) {
                         throw new ParseException(
-                           "'"+ opt.value + 
+                           "'" + opt.value +
                            "' is unknown value for option " + opt.names + 
                            ". Must be one of " + opt.allowedValues, ii);
                     }
@@ -617,7 +617,7 @@ public class OptionParser {
                     Matcher m = opt.valuePattern.matcher(opt.value);
                     if (!m.matches()) {
                         throw new ParseException(
-                           "Value '"+ opt.value + "' for option " + opt.names+opt.argument +
+                           "Value '" + opt.value + "' for option " + opt.names + opt.argument +
                            "\n does not match pattern " + opt.valuePattern, ii);
                     }
                 
@@ -635,9 +635,8 @@ public class OptionParser {
                         value = data.converter.apply(opt.value);
                         
                     } catch (Exception e) {
-                        System.err.println("** "+e.getMessage());
-                        throw new ParseException(
-                           "Failed to parse ("+opt.value+") as value of " + opt.names, ii);
+                        System.err.println("** " + e.getMessage());
+                        throw new ParseException("Failed to parse (" + opt.value + ") as value of " + opt.names, ii);
                     }
                 }
                 
@@ -692,7 +691,7 @@ public class OptionParser {
     }
     
     /**
-     * Place text in option summary
+     * Place text in option summary.
      * @param text to be inserted into option summary.
      * 
      * Example usage:
@@ -719,7 +718,7 @@ public class OptionParser {
     }
     
     /**
-     * Obtain option summary
+     * Obtain option summary.
      * @param indent a string to be used as the option summary initial indent.
      * @return usage string
      */
@@ -731,9 +730,9 @@ public class OptionParser {
             for (Object o : usageSummary) {
                 // Need to be able to handle separator strings
                 if (o instanceof String) {
-                    out.println((String)o);
+                    out.println((String) o);
                 } else {
-                    out.println(indent + ((Option)o).getUsage());
+                    out.println(indent + ((Option) o).getUsage());
                 }
             }
             if (epilogue != null) {
@@ -745,7 +744,7 @@ public class OptionParser {
     }
     
     /**
-     * Obtain option summary
+     * Obtain option summary.
      * @return option summary
      */
     public String getUsage() {
@@ -760,7 +759,7 @@ public class OptionParser {
     }
 
     /**
-     * Print out option summary on provided output stream
+     * Print out option summary on provided output stream.
      * @param out print stream
      */
     public void help(PrintStream out) {

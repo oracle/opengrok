@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Kotlin keywords
+ * Holds static hash set containing the Kotlin keywords.
  */
 public class Consts {
 
@@ -102,4 +102,8 @@ public class Consts {
         kwd.add("where");
         kwd.add("while");
     }
+
+    private Consts() {
+    }
+
 }

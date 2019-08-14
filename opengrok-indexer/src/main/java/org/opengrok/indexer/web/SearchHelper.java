@@ -86,11 +86,11 @@ public class SearchHelper {
 
     public static final String REQUEST_ATTR = "SearchHelper";
     /**
-     * max number of words to suggest for spellcheck
+     * Max number of words to suggest for spellcheck.
      */
     public int SPELLCHECK_SUGGEST_WORD_COUNT = 5;
     /**
-     * opengrok's data root: used to find the search index file
+     * Opengrok's data root: used to find the search index file.
      */
     public File dataRoot;
     /**
@@ -120,11 +120,11 @@ public class SearchHelper {
      */
     public int maxItems;
     /**
-     * the QueryBuilder used to create the query
+     * The QueryBuilder used to create the query.
      */
     public QueryBuilder builder;
     /**
-     * the order used for ordering query results
+     * The order used for ordering query results.
      */
     public SortOrder order;
     /**
@@ -166,15 +166,15 @@ public class SearchHelper {
      */
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
     /**
-     * close IndexReader associated with searches on destroy()
+     * Close IndexReader associated with searches on destroy().
      */
     private Boolean closeOnDestroy;
     /**
-     * list of docs which result from the executing the query
+     * List of docs which result from the executing the query.
      */
     public ScoreDoc[] hits;
     /**
-     * total number of hits
+     * Total number of hits.
      */
     public long totalHits;
     /**
@@ -188,7 +188,7 @@ public class SearchHelper {
      */
     protected Sort sort;
     /**
-     * the spellchecker object
+     * The spellchecker object.
      */
     protected DirectSpellChecker checker;
     /**
@@ -210,12 +210,12 @@ public class SearchHelper {
     public HistoryContext historyContext;
     
     /**
-     * Default query parse error message prefix
+     * Default query parse error message prefix.
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
 
     /**
-     * Key is Project name or empty string for null Project
+     * Key is Project name or empty string for null Project.
      */
     private Map<String, IndexAnalysisSettings> mappedAnalysisSettings;
 

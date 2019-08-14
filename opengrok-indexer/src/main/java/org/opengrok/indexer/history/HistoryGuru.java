@@ -64,23 +64,23 @@ public final class HistoryGuru {
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryGuru.class);
 
     /**
-     * The one and only instance of the HistoryGuru
+     * The one and only instance of the HistoryGuru.
      */
     private static final HistoryGuru INSTANCE = new HistoryGuru();
 
     /**
-     * The history cache to use
+     * The history cache to use.
      */
     private final HistoryCache historyCache;
 
     /**
-     * map of repositories, with {@code DirectoryName} as key
+     * Map of repositories, with {@code DirectoryName} as key.
      */
     private Map<String, Repository> repositories = new ConcurrentHashMap<>();
 
     /**
-     * set of repository roots (using ConcurrentHashMap but a throwaway value)
-     * with parent of {@code DirectoryName} as key
+     * Set of repository roots (using ConcurrentHashMap but a throwaway value)
+     * with parent of {@code DirectoryName} as key.
      */
     private Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
@@ -111,7 +111,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the one and only instance of the HistoryGuru
+     * Get the one and only instance of the HistoryGuru.
      *
      * @return the one and only HistoryGuru instance
      */
@@ -430,7 +430,7 @@ public final class HistoryGuru {
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
                             repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, type,depth + 1));
+                                    recursiveSearch, type, depth + 1));
                         }
                     }
                 } else {
@@ -482,7 +482,7 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(File[] files,
             IgnoredNames ignoredNames) {
 
-        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null,0);
+        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null, 0);
     }
 
     /**
@@ -754,7 +754,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * Create the history cache for all of the repositories
+     * Create the history cache for all of the repositories.
      */
     public void createCache() {
         if (!useCache()) {
@@ -873,7 +873,7 @@ public final class HistoryGuru {
         // Re-map the repository roots.
         repositoryRoots.clear();
         List<Repository> ccopy = new ArrayList<>(repositories.values());
-        ccopy.forEach((repo) -> { putRepository(repo); });
+        ccopy.forEach(this::putRepository);
     }
 
     /**set
@@ -979,7 +979,7 @@ public final class HistoryGuru {
 
         repositoryRoots.clear();
         repositories.clear();
-        newrepos.forEach((_key, repo) -> { putRepository(repo); });
+        newrepos.forEach((_key, repo) -> putRepository(repo));
 
         elapsed.report(LOGGER, String.format("done invalidating %d repositories", newrepos.size()));
     }

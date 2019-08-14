@@ -43,7 +43,9 @@ public abstract class ZipMatcherBase implements FileAnalyzerFactory.Matcher {
     private static final int XFHSIZ = 4;
 
     @Override
-    public boolean getIsPreciseMagic() { return true; }
+    public boolean getIsPreciseMagic() {
+        return true;
+    }
 
     @Override
     public AnalyzerFactory isMagic(byte[] contents, InputStream in)
@@ -105,7 +107,7 @@ public abstract class ZipMatcherBase implements FileAnalyzerFactory.Matcher {
     }
 
     private int SH(byte[] b, int n) {
-        return CH(b, n) | (CH(b, n+1) << 8);
+        return CH(b, n) | (CH(b, n + 1) << 8);
     }
 
     private int LOCNAM(byte[] b) {

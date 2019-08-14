@@ -29,7 +29,7 @@ package org.opengrok.indexer.configuration;
 public enum LuceneLockName {
     OFF,
     /**
-     * An alias for {@link #SIMPLE}
+     * An alias for {@link #SIMPLE}.
      */
     ON,
     SIMPLE,

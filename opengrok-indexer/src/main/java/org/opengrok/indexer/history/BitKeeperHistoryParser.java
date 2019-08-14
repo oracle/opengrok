@@ -54,11 +54,11 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
      */
     private final SimpleDateFormat dateFormat;
     /**
-     * Store entries processed from executor output
+     * Store entries processed from executor output.
      */
     private final List<HistoryEntry> entries = new ArrayList<>();
     /**
-     * Store renamed files processed from executor output
+     * Store renamed files processed from executor output.
      */
     private final Set<String> renamedFiles = new TreeSet<>();
 

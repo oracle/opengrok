@@ -43,7 +43,7 @@ public class WildCardMatcher extends LineMatcher {
     }
     //TODO below might be buggy, we might need to rewrite this anyways
     // so far keep it for the sake of 4.0 port
-    /**
+    /*
      * Licensed to the Apache Software Foundation (ASF) under one or more
      * contributor license agreements. See the NOTICE file distributed with this
      * work for additional information regarding copyright ownership. The ASF
@@ -59,11 +59,7 @@ public class WildCardMatcher extends LineMatcher {
      * License for the specific language governing permissions and limitations
      * under the License.
      */
-    /**
-     * ******************************************
-     * String equality with support for wildcards
-     * ******************************************
-     */
+
     public static final char WILDCARD_STRING = '*';
     public static final char WILDCARD_CHAR = '?';
 

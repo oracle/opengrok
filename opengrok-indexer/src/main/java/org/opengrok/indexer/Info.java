@@ -53,7 +53,7 @@ public final class Info {
     }
 
     /**
-     * get major version
+     * Get major version.
      *
      * @return major version
      */
@@ -62,7 +62,7 @@ public final class Info {
     }
 
     /**
-     * get full version (product vMajor revMinor)
+     * Get full version (product vMajor revMinor).
      *
      * @return full version
      */
@@ -71,7 +71,7 @@ public final class Info {
     }
 
     /**
-     * get minor version
+     * Get minor version.
      *
      * @return minor version
      */
@@ -81,7 +81,7 @@ public final class Info {
 
 
     /**
-     * get short minor version
+     * Get short minor version.
      *
      * @return short minor version
      */

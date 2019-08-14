@@ -44,7 +44,7 @@ public class LdapServer implements Serializable {
     private static final String LDAP_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.connect.connectTimeout";
     private static final String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
     /**
-     * default connectTimeout for connecting
+     * Default connectTimeout for connecting.
      */
     private static final int LDAP_CONNECT_TIMEOUT = 5000; // ms
 

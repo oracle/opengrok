@@ -50,14 +50,9 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     
     public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
-    /**
-     * configuration names
-     * <ul>
-     * <li><code>objectclass</code> is LDAP object class</li>
-     * <li><code>attributes</code> is comma separated list of LDAP attributes</li>
-     * </ul>
-     */
+    /** Configuration name for LDAP object class. */
     protected static final String OBJECT_CLASS = "objectclass";
+    /** Configuration names for comma separated list of LDAP attributes. */
     protected static final String ATTRIBUTES = "attributes";
     
     private String objectClass;

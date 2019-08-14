@@ -34,7 +34,7 @@ public interface JSONable {
     String EMPTY = "";
 
     /**
-     * convert object to JSON
+     * Convert object to JSON.
      * @return JSON string or empty string on error
      */
     default String toJSON() {

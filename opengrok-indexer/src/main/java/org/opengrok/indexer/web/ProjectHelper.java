@@ -41,7 +41,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.history.RepositoryInfo;
 
 /**
- * Preprocessing of projects, repositories and groups for the UI
+ * Preprocessing of projects, repositories and groups for the UI.
  *
  * @author Krystof Tulinger
  */
@@ -64,23 +64,23 @@ public final class ProjectHelper {
 
     private PageConfig cfg;
     /**
-     * Set of groups
+     * Set of groups.
      */
     private final Set<Group> groups;
     /**
-     * Set of projects (not repositories) without group
+     * Set of projects (not repositories) without group.
      */
     private final Set<Project> ungroupedProjects;
     /**
-     * Set of all repositories without group
+     * Set of all repositories without group.
      */
     private final Set<Project> ungroupedRepositories;
     /**
-     * Set of all projects with group
+     * Set of all projects with group.
      */
     private final Set<Project> allProjects = new TreeSet<>();
     /**
-     * Set of all repositories with group
+     * Set of all repositories with group.
      */
     private final Set<Project> allRepositories = new TreeSet<>();
 
@@ -448,7 +448,7 @@ public final class ProjectHelper {
     }
 
     /**
-     * Checks if the project is a favourite project
+     * Checks if the project is a favourite project.
      *
      * @param project project
      * @return true if it is favourite

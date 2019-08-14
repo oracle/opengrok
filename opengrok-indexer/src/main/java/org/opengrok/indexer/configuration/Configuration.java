@@ -146,12 +146,12 @@ public final class Configuration {
      */
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
-    private Map<String,Project> projects; // project name -> Project
+    private Map<String, Project> projects; // project name -> Project
     private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
     /**
-     * directory with include files for web application (header, footer, etc.)
+     * Directory with include files for web application (header, footer, etc.).
      */
     private String includeRoot;
     private List<RepositoryInfo> repositories;
@@ -327,7 +327,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the scanning depth to a new value
+     * Set the scanning depth to a new value.
      *
      * @param scanningDepth the new value
      * @throws IllegalArgumentException when the scanningDepth is negative
@@ -345,7 +345,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the command timeout to a new value
+     * Set the command timeout to a new value.
      *
      * @param commandTimeout the new value
      * @throws IllegalArgumentException when the timeout is negative
@@ -397,7 +397,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the groups collapse threshold to a new value
+     * Set the groups collapse threshold to a new value.
      *
      * @param groupsCollapseThreshold the new value
      * @throws IllegalArgumentException when the timeout is negative
@@ -411,7 +411,7 @@ public final class Configuration {
     }
 
     /**
-     * Creates a new instance of Configuration
+     * Creates a new instance of Configuration.
      */
     public Configuration() {
         /**
@@ -427,7 +427,7 @@ public final class Configuration {
         setCommandTimeout(600); // 10 minutes
         setInteractiveCommandTimeout(30);
         setCompressXref(true);
-        setContextLimit((short)10);
+        setContextLimit((short) 10);
         //contextSurround is default(short)
         //ctags is default(String)
         setCurrentIndexedCollapseThreshold(27);
@@ -633,7 +633,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the cache pages to a new value
+     * Set the cache pages to a new value.
      *
      * @param cachePages the new value
      * @throws IllegalArgumentException when the cachePages is negative
@@ -651,7 +651,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the hits per page to a new value
+     * Set the hits per page to a new value.
      *
      * @param hitsPerPage the new value
      * @throws IllegalArgumentException when the hitsPerPage is negative
@@ -747,11 +747,11 @@ public final class Configuration {
         this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
-    public Map<String,Project> getProjects() {
+    public Map<String, Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(Map<String,Project> projects) {
+    public void setProjects(Map<String, Project> projects) {
         this.projects = projects;
     }
 
@@ -855,9 +855,9 @@ public final class Configuration {
     }
 
     /**
-     * set size of memory to be used for flushing docs (default 16 MB) (this can
+     * Set size of memory to be used for flushing docs (default 16 MB) (this can
      * improve index speed a LOT) note that this is per thread (lucene uses 8
-     * threads by default in 4.x)
+     * threads by default in 4.x).
      *
      * @param ramBufferSize new size in MB
      */
@@ -932,7 +932,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the bug pattern to a new value
+     * Set the bug pattern to a new value.
      *
      * @param bugPattern the new pattern
      * @throws PatternSyntaxException when the pattern is not a valid regexp or
@@ -963,7 +963,7 @@ public final class Configuration {
     }
 
     /**
-     * Set the review pattern to a new value
+     * Set the review pattern to a new value.
      *
      * @param reviewPattern the new pattern
      * @throws PatternSyntaxException when the pattern is not a valid regexp or
@@ -1215,7 +1215,7 @@ public final class Configuration {
     }
 
     /**
-     * Write the current configuration to a file
+     * Write the current configuration to a file.
      *
      * @param file the file to write the configuration into
      * @throws IOException if an error occurs

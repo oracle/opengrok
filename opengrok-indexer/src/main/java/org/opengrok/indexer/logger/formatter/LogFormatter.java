@@ -64,9 +64,9 @@ public class LogFormatter extends Formatter {
     public String format(LogRecord record) {
         Date dat = new Date(record.getMillis());
         StringBuilder source = new StringBuilder();
-        if(record.getSourceClassName() != null) {
+        if (record.getSourceClassName() != null) {
             source.append(record.getSourceClassName());
-            if(record.getSourceMethodName() != null) {
+            if (record.getSourceMethodName() != null) {
                 source.append(' ').append(record.getSourceMethodName());
             }
         } else {
@@ -74,7 +74,7 @@ public class LogFormatter extends Formatter {
         }
 
         StringBuilder throwable = new StringBuilder();
-        if(record.getThrown() != null) {
+        if (record.getThrown() != null) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             pw.println();
@@ -82,7 +82,6 @@ public class LogFormatter extends Formatter {
             pw.close();
             throwable.append(sw.toString());
         }
-
 
         return String.format(format,
                 dat,                                   //%1
@@ -93,7 +92,7 @@ public class LogFormatter extends Formatter {
                 throwable,                             //%6 (till here the same as JDK7's SimpleFormatter)
                 record.getSourceClassName(),           //%7
                 record.getSourceMethodName(),          //%8
-                className(record.getSourceClassName()),//%9
+                className(record.getSourceClassName()), //%9
                 record.getThreadID(),                  //%10
                 record.getMessage(),                   //%11
                 version

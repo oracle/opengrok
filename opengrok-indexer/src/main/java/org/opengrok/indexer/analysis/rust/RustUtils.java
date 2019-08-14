@@ -28,7 +28,7 @@ package org.opengrok.indexer.analysis.rust;
 public class RustUtils {
 
     /**
-     * private to enforce singleton
+     * Private to enforce singleton.
      */
     private  RustUtils() {
     }

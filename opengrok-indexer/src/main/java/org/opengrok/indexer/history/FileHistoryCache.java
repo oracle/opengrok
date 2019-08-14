@@ -167,7 +167,7 @@ class FileHistoryCache implements HistoryCache {
     static class FilePersistenceDelegate extends PersistenceDelegate {
         @Override
         protected Expression instantiate(Object oldInstance, Encoder out) {
-            File f = (File)oldInstance;
+            File f = (File) oldInstance;
             return new Expression(oldInstance, f.getClass(), "new",
                 new Object[] {f.toString()});
         }
@@ -482,8 +482,7 @@ class FileHistoryCache implements HistoryCache {
                         continue;
                 }
             } catch (IOException ex) {
-               LOGGER.log(Level.WARNING,
-                   "isRenamedFile() got exception " , ex);
+               LOGGER.log(Level.WARNING, "isRenamedFile() got exception", ex);
             }
 
             doFileHistory(map_entry.getKey(), map_entry.getValue(),
@@ -558,7 +557,7 @@ class FileHistoryCache implements HistoryCache {
             // Wait for the executors to finish.
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception ",ex);
+            LOGGER.log(Level.SEVERE, "latch exception", ex);
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
                 renamedFileHistoryCount.intValue());
@@ -658,7 +657,7 @@ class FileHistoryCache implements HistoryCache {
             return false;
         } catch (IOException e) {
             throw new HistoryException("Could not resolve " +
-                    repos.getDirectoryName()+" relative to source root", e);
+                    repos.getDirectoryName() + " relative to source root", e);
         }
         return dir.exists();
     }
@@ -682,7 +681,7 @@ class FileHistoryCache implements HistoryCache {
                     new File(repository.getDirectoryName()));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Could not resolve " +
-                repository.getDirectoryName()+" relative to source root", ex);
+                repository.getDirectoryName() + " relative to source root", ex);
             return null;
         } catch (ForbiddenSymlinkException ex) {
             LOGGER.log(Level.FINER, ex.getMessage());
@@ -715,7 +714,7 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for "+repository.getDirectoryName(),
+            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for " + repository.getDirectoryName(),
                 ex);
         } finally {
            try {

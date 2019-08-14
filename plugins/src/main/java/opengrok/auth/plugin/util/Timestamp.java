@@ -26,12 +26,15 @@ import java.util.Date;
 
 /**
  * Implementation of timestamp decoding as mentinoned in
- * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
- * in chapter 9.5.
+ * <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
+ * in chapter 9.5 .
  *
  * @author Krystof Tulinger
  */
 public class Timestamp {
+
+    private Timestamp() {
+    }
 
     /**
      * Converts OSSO timestamp cookie into java Date.
@@ -45,7 +48,7 @@ public class Timestamp {
     }
 
     /**
-     * Converts Date into OSSO cookie
+     * Converts Date into OSSO cookie.
      *
      * @param date date
      * @return string with the encoded value

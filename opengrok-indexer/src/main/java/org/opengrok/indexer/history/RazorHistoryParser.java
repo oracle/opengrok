@@ -38,7 +38,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.StringUtils;
 
 /**
- * A History Parser for Razor
+ * A History Parser for Razor.
  *
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
@@ -46,10 +46,11 @@ class RazorHistoryParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RazorHistoryParser.class);
 
-    private RazorRepository repository=new RazorRepository();
+    private RazorRepository repository = new RazorRepository();
 
     private static final Pattern ACTION_TYPE_PATTERN =
-            Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(\\S*)\\s+([\\.0-9]+)?\\s+(\\S*)\\s+(\\S*)\\s*$");
+            Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|" +
+                    "REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(\\S*)\\s+([\\.0-9]+)?\\s+(\\S*)\\s+(\\S*)\\s*$");
     private static final Pattern ADDITIONAL_INFO_PATTERN =
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private static final boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
@@ -154,7 +155,8 @@ class RazorHistoryParser {
                         String revision = actionMatcher.group(3);
                         String state = actionMatcher.group(4);
                         String dateTime = actionMatcher.group(5);
-                        parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName + ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
+                        parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName +
+                                ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
                         if (actionType.startsWith("INTRODUCE") ||
                                 actionType.contains("CHECK-IN") ||
                                 "CHECK-POINT".equals(actionType) ||

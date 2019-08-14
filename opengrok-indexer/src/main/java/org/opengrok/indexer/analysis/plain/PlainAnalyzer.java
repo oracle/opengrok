@@ -45,14 +45,15 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 
 /**
- * Analyzer for plain text files Created on September 21, 2005
+ * Analyzer for plain text files.
  *
+ * Created on September 21, 2005
  * @author Chandan
  */
 public class PlainAnalyzer extends TextAnalyzer {
 
     /**
-     * Creates a new instance of PlainAnalyzer
+     * Creates a new instance of PlainAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected PlainAnalyzer(AnalyzerFactory factory) {
