@@ -29,7 +29,7 @@ package org.opengrok.indexer.analysis.lua;
 public class LuaUtils {
 
     /**
-     * private to enforce singleton
+     * Private to enforce singleton.
      */
     private  LuaUtils() {
     }

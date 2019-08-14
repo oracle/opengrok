@@ -289,7 +289,8 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
 
         File suggesterDir = new File(env.getDataRootPath(), IndexDatabase.SUGGESTER_DIR);
-        int rebuildParalleismLevel = (int)(((float)suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent() / 100) * Runtime.getRuntime().availableProcessors());
+        int rebuildParalleismLevel = (int) (((float) suggesterConfig.getRebuildThreadPoolSizeInNcpuPercent() / 100)
+                * Runtime.getRuntime().availableProcessors());
         if (rebuildParalleismLevel == 0) {
             rebuildParalleismLevel = 1;
         }

@@ -51,13 +51,7 @@ import org.opengrok.indexer.web.Util;
 public class JFlexXrefUtils {
 
     /**
-     * Matches an HTML 5 ID or Name:
-     * <pre>
-     * {@code
-     * (?U)^\S+$
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches an HTML 5 ID or Name.
      */
     private static final Pattern HTML5_ID_NAME = Pattern.compile("(?U)^\\S+$");
 
@@ -166,7 +160,7 @@ public class JFlexXrefUtils {
     /**
      * Generate span id for namespace based on line number, name, and signature
      * (more functions with same name and signature can be defined in single
-     * file)
+     * file).
      * @param scope Scope to generate id from
      * @return generated span id
      */
@@ -448,7 +442,7 @@ public class JFlexXrefUtils {
         }
     }
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private JFlexXrefUtils() {
     }
 }

@@ -38,8 +38,9 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Analyzes Zip files Created on September 22, 2005
+ * Analyzes Zip files.
  *
+ * Created on September 22, 2005
  * @author Chandan
  */
 public class ZipAnalyzer extends FileAnalyzer {

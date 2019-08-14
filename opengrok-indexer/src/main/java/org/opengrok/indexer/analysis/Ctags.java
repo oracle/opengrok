@@ -224,8 +224,11 @@ public class Ctags implements Resettable {
         command.add("--langmap=rust:+.rs");
 
         // The following are not supported yet in Universal Ctags b13cb551
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/C,consts,static constants/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
+                "([[:alnum:]_]+)/\\4/C,consts,static constants/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?" +
+                "[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?" +
+                "([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r,traits,traits/");
         command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
     }
@@ -244,7 +247,8 @@ public class Ctags implements Resettable {
         command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
         command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
         command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
-        command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
+        command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*" +
+                "(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
     }
 
     private void addPascalSupport(List<String> command) {
@@ -279,14 +283,22 @@ public class Ctags implements Resettable {
         command.add("--langdef=kotlin");
         command.add("--langmap=kotlin:+.kt");
         command.add("--langmap=kotlin:+.kts");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*data class[[:space:]]+([[:alnum:]_:]+)/\\6/d,data classes/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "data class[[:space:]]+([[:alnum:]_:]+)/\\6/d,data classes/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
         command.add("--regex-kotlin=/^[[:space:]]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/C,constants/");
-        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/v,variables/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
+                "(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
+                "|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/C,constants/");
+        command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
+                "|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/v,variables/");
         command.add("--regex-kotlin=/^[[:space:]]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
         command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/I,imports/");
     }
@@ -324,15 +336,23 @@ public class Ctags implements Resettable {
     private void addScalaSupport(List<String> command) {
         command.add("--langdef=scala"); // below is bug 61 to get full scala support
         command.add("--langmap=scala:+.scala");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
         command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private|protected)[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
-        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private|protected)" +
+                "[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
+        command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
+                "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
         command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
     }
 
@@ -359,7 +379,7 @@ public class Ctags implements Resettable {
         }
 
         CtagsReader rdr = new CtagsReader();
-        rdr.setSplitterSupplier(() -> { return trySplitSource(file); });
+        rdr.setSplitterSupplier(() -> trySplitSource(file));
         rdr.setTabSize(tabSize);
         Definitions ret;
         try {
@@ -388,7 +408,7 @@ public class Ctags implements Resettable {
     }
 
     /**
-     * produce definitions for the text in the buffer String ctags process is
+     * Produce definitions for the text in the buffer String. ctags process is
      * mocked, not real mostly used for junit testing
      *
      * @param bufferTags tags file output
@@ -506,7 +526,7 @@ public class Ctags implements Resettable {
         try {
             StreamSource src = StreamSource.fromFile(new File(filename));
             splitter.reset(src);
-        } catch (NullPointerException|IOException ex) {
+        } catch (NullPointerException | IOException ex) {
             LOGGER.log(Level.WARNING, "Failed to re-read {0}", filename);
             return null;
         }

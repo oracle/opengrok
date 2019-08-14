@@ -36,15 +36,15 @@ public class Filter implements Serializable {
 
     private static final long serialVersionUID = 3L;
 
-    /** The list of exact filenames */
+    /** The list of exact filenames. */
     private final Set<String> filenames;
-    /** The list of filenames with wildcards */
+    /** The list of filenames with wildcards. */
     private final List<Pattern> patterns;
-    /** The list of paths */
+    /** The list of paths. */
     private final List<String> paths;
     /**
      * The full list of all patterns. This list will be saved in the
-     * configuration file (if used)
+     * configuration file (if used).
      */
     private final List<String> items;
 
@@ -59,9 +59,8 @@ public class Filter implements Serializable {
         return items.isEmpty();
     }
 
-
     /**
-     * Get the complete list of items that would be matched by this matcher
+     * Get the complete list of items that would be matched by this matcher.
      * @return a list of all wildcards, exact lists and paths that this filter
      *         contains
      */
@@ -70,7 +69,7 @@ public class Filter implements Serializable {
     }
 
     /**
-     * Specify a new filter to use
+     * Specify a new filter to use.
      * @param item the new filter
      */
     public void setItems(List<String> item) {
@@ -81,7 +80,7 @@ public class Filter implements Serializable {
     }
 
     /**
-     * Add a pattern to the list of patterns
+     * Add a pattern to the list of patterns.
      * @param pattern the pattern to filename
      */
     public void add(String pattern) {
@@ -91,7 +90,7 @@ public class Filter implements Serializable {
     }
 
     /**
-     * Remove all installed patterns from the list of files to filename
+     * Remove all installed patterns from the list of files to filename.
      */
     public void clear() {
         patterns.clear();
@@ -163,7 +162,7 @@ public class Filter implements Serializable {
     }
 
     /**
-     * Add a pattern to the correct list of internal filters to match
+     * Add a pattern to the correct list of internal filters to match.
      *
      * @param pattern the pattern to add
      */

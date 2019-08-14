@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
   </parent>
 
   <artifactId>opengrok-dist</artifactId>
@@ -15,6 +15,10 @@
   <packaging>pom</packaging>
 
   <name>Distribution</name>
+
+  <properties>
+    <project.python.package.version>${project.version}</project.python.package.version>
+  </properties>
 
   <!--
        NOTE: These dependency declarations are required to sort this project
@@ -24,20 +28,20 @@
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.1</version>
       <type>war</type>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-tools</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.1</version>
       <type>pom</type>
     </dependency>
   </dependencies>
@@ -60,31 +64,6 @@
                   <overWriteReleases>false</overWriteReleases>
                   <overWriteSnapshots>false</overWriteSnapshots>
                   <overWriteIfNewer>true</overWriteIfNewer>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.8</version>
-            <executions>
-              <execution>
-                <id>generate-python-package-version</id>
-                <goals>
-                  <goal>regex-property</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <!--
-                      Use property ${project.version} but delete the "-" (dash) from it
-                      and place it into the property ${project.python.package.version}
-                  -->
-                  <name>project.python.package.version</name>
-                  <regex>-rc</regex>
-                  <value>${project.version}</value>
-                  <replacement>rc</replacement>
-                  <failIfNoMatch>false</failIfNoMatch>
                 </configuration>
               </execution>
             </executions>

@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class ScalaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of ScalaAnalyzer
+     * Creates a new instance of ScalaAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected ScalaAnalyzer(AnalyzerFactory factory) {

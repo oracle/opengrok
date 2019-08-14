@@ -27,11 +27,11 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.3.0</version>
+        <version>1.3.1</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>
@@ -80,19 +80,6 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     </dependencies>
 
     <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
-
-        <testResources>
-            <testResource>
-                <targetPath>opengrok/auth/plugin/</targetPath>
-                <directory>test/opengrok/auth/plugin/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
-
         <plugins>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>

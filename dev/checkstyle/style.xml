@@ -12,11 +12,15 @@
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>
     <module name="TreeWalker">
+        <module name="JavadocStyle"/>
         <module name="AvoidStarImport">
             <property name="allowStaticMemberImports" value="true"/>
         </module>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
+        <module name="LineLength">
+            <property name="max" value="150"/>
+        </module>
         <module name="MethodLength">
             <property name="max" value="200"/>
         </module>
@@ -24,10 +28,17 @@
             <property name="max" value="60"/>
         </module>
         <module name="ParameterNumber"/>
+        <module name="EmptyBlock"/>
+        <module name="LeftCurly"/>
         <module name="NeedBraces"/>
+        <module name="RightCurly"/>
         <module name="GenericWhitespace"/>
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
         <module name="SuppressionCommentFilter">
             <property name="offCommentFormat" value="&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;Generated Code&quot;&gt;"/>
             <property name="onCommentFormat" value="&lt;/editor-fold&gt;"/>
@@ -38,6 +49,8 @@
 
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
+
+        <module name="HideUtilityClassConstructor"/>
 
         <module name="ArrayTypeStyle"/>
         <module name="UpperEll"/>

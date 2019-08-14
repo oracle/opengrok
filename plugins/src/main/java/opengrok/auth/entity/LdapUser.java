@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * LDAP user represented as a set of attributes
+ * LDAP user represented as a set of attributes.
  *
  * @author Krystof Tulinger
  */
@@ -53,7 +53,7 @@ public class LdapUser implements Serializable {
     }
 
     /**
-     * set attribute value
+     * Set attribute value.
      *
      * @param key the key
      * @param value set of values

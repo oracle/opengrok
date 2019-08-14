@@ -60,7 +60,7 @@ public final class PendingFileRenaming {
         if (!(o instanceof PendingFileRenaming)) {
             return false;
         }
-        PendingFileRenaming other = (PendingFileRenaming)o;
+        PendingFileRenaming other = (PendingFileRenaming) o;
         return this.absolutePath.equals(other.absolutePath);
     }
 

@@ -27,7 +27,7 @@ package org.opengrok.indexer.search;
 import java.io.File;
 
 /**
- * The hit class represents a single search hit
+ * The hit class represents a single search hit.
  *
  * @author Trond Norbye
  */
@@ -38,7 +38,7 @@ public class Hit implements Comparable<Hit> {
     private String filename;
 
     /**
-     * Holds value of property directory
+     * Holds value of property directory.
      */
     private String directory;
 
@@ -68,14 +68,14 @@ public class Hit implements Comparable<Hit> {
     private String path;
 
     /**
-     * Creates a new instance of Hit
+     * Creates a new instance of Hit.
      */
     public Hit() {
         this(null, null, null, false, false);
     }
 
     /**
-     * Creates a new instance of Hit
+     * Creates a new instance of Hit.
      *
      * @param filename The name of the file this hit represents
      * @param line The line containing the match
@@ -118,7 +118,7 @@ public class Hit implements Comparable<Hit> {
     }
 
     /**
-     * Getter for property directory
+     * Getter for property directory.
      *
      * @return Value of property directory
      */
@@ -172,8 +172,7 @@ public class Hit implements Comparable<Hit> {
     }
 
     /**
-     * Compare this object to another hit (in order to implement the comparable
-     * interface)
+     * Compare this object to another hit (in order to implement the comparable interface).
      *
      * @param o The object to compare this object with
      *

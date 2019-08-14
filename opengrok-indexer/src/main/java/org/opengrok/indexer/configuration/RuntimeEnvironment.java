@@ -85,7 +85,6 @@ public final class RuntimeEnvironment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeEnvironment.class);
 
-    /** {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"} */
     private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
@@ -154,7 +153,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the one and only instance of the RuntimeEnvironment
+     * Get the one and only instance of the RuntimeEnvironment.
      *
      * @return the one and only instance of the RuntimeEnvironment
      */
@@ -169,7 +168,9 @@ public final class RuntimeEnvironment {
     }
 
     private String getCanonicalPath(String s) {
-        if (s == null) { return null; }
+        if (s == null) {
+            return null;
+        }
         try {
             File file = new File(s);
             if (!file.exists()) {
@@ -183,7 +184,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get value of configuration field
+     * Get value of configuration field.
      * @param fieldName name of the field
      * @return object value
      */
@@ -199,7 +200,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get value of configuration field
+     * Get value of configuration field.
      * @param fieldName name of the field
      * @return object value
      * @throws IOException I/O
@@ -216,7 +217,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set configuration value
+     * Set configuration value.
      * @param fieldName name of the field
      * @param value string value
      */
@@ -232,7 +233,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set configuration value
+     * Set configuration value.
      * @param fieldName name of the field
      * @param value value
      */
@@ -248,7 +249,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set configuration value
+     * Set configuration value.
      * @param fieldName name of the field
      * @param value value
      * @throws IOException I/O exception
@@ -263,7 +264,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set configuration value
+     * Set configuration value.
      * @param fieldName name of the field
      * @param value string value
      * @throws IOException I/O exception
@@ -278,7 +279,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getScanningDepth() {
-        return (int)getConfigurationValue("scanningDepth");
+        return (int) getConfigurationValue("scanningDepth");
     }
 
     public void setScanningDepth(int scanningDepth) {
@@ -286,7 +287,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getCommandTimeout() {
-        return (int)getConfigurationValue("commandTimeout");
+        return (int) getConfigurationValue("commandTimeout");
     }
 
     public void setCommandTimeout(int timeout) {
@@ -294,7 +295,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getInteractiveCommandTimeout() {
-        return (int)getConfigurationValue("interactiveCommandTimeout");
+        return (int) getConfigurationValue("interactiveCommandTimeout");
     }
 
     public void setInteractiveCommandTimeout(int timeout) {
@@ -314,20 +315,20 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isLastEditedDisplayMode() {
-        return (boolean)getConfigurationValue("lastEditedDisplayMode");
+        return (boolean) getConfigurationValue("lastEditedDisplayMode");
     }
 
     /**
-     * Get the path to the where the web application includes are stored
+     * Get the path to the where the web application includes are stored.
      *
      * @return the path to the web application include files
      */
     public String getIncludeRootPath() {
-        return (String)getConfigurationValue("includeRoot");
+        return (String) getConfigurationValue("includeRoot");
     }
 
     /**
-     * Set include root path
+     * Set include root path.
      * @param includeRoot path
      */
     public void setIncludeRoot(String includeRoot) {
@@ -335,16 +336,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the path to the where the index database is stored
+     * Get the path to the where the index database is stored.
      *
      * @return the path to the index database
      */
     public String getDataRootPath() {
-        return (String)getConfigurationValue("dataRoot");
+        return (String) getConfigurationValue("dataRoot");
     }
 
     /**
-     * Get a file representing the index database
+     * Get a file representing the index database.
      *
      * @return the index database
      */
@@ -359,7 +360,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set the path to where the index database is stored
+     * Set the path to where the index database is stored.
      *
      * @param dataRoot the index database
      */
@@ -368,16 +369,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the path to where the sources are located
+     * Get the path to where the sources are located.
      *
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return (String)getConfigurationValue("sourceRoot");
+        return (String) getConfigurationValue("sourceRoot");
     }
 
     /**
-     * Get a file representing the directory where the sources are located
+     * Get a file representing the directory where the sources are located.
      *
      * @return A file representing the directory where the sources are located
      */
@@ -392,7 +393,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Specify the source root
+     * Specify the source root.
      *
      * @param sourceRoot the location of the sources
      */
@@ -441,8 +442,8 @@ public final class RuntimeEnvironment {
      * @return a Map with all of the projects
      */
     @SuppressWarnings("unchecked")
-    public Map<String,Project> getProjects() {
-        return (Map<String, Project>)getConfigurationValue("projects");
+    public Map<String, Project> getProjects() {
+        return (Map<String, Project>) getConfigurationValue("projects");
     }
 
     /**
@@ -455,11 +456,11 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set the list of the projects
+     * Set the list of the projects.
      *
      * @param projects the map of projects to use
      */
-    public void setProjects(Map<String,Project> projects) {
+    public void setProjects(Map<String, Project> projects) {
         try {
             configLock.writeLock().lock();
             if (projects != null) {
@@ -481,17 +482,17 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get all of the groups
+     * Get all of the groups.
      *
      * @return a set containing all of the groups (may be null)
      */
     @SuppressWarnings("unchecked")
     public Set<Group> getGroups() {
-        return (Set<Group>)getConfigurationValue("groups");
+        return (Set<Group>) getConfigurationValue("groups");
     }
 
     /**
-     * Set the list of the groups
+     * Set the list of the groups.
      *
      * @param groups the set of groups to use
      */
@@ -530,8 +531,8 @@ public final class RuntimeEnvironment {
     public String getCtags() {
         String value;
         return ctags != null ? ctags :
-                (value = (String)getConfigurationValue("ctags")) != null ? value :
-                System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY,"ctags");
+                (value = (String) getConfigurationValue("ctags")) != null ? value :
+                System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY, "ctags");
     }
 
     /**
@@ -559,7 +560,7 @@ public final class RuntimeEnvironment {
     public String getMandoc() {
         String value;
         return mandoc != null ? mandoc : (value =
-                (String)getConfigurationValue("mandoc")) != null ? value :
+                (String) getConfigurationValue("mandoc")) != null ? value :
             System.getProperty("org.opengrok.indexer.analysis.Mandoc");
     }
 
@@ -578,7 +579,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getCachePages() {
-        return (int)getConfigurationValue("cachePages");
+        return (int) getConfigurationValue("cachePages");
     }
 
     public void setCachePages(int cachePages) {
@@ -586,7 +587,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getHitsPerPage() {
-        return (int)getConfigurationValue("hitsPerPage");
+        return (int) getConfigurationValue("hitsPerPage");
     }
 
     public void setHitsPerPage(int hitsPerPage) {
@@ -612,17 +613,17 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the max time a SCM operation may use to avoid being cached
+     * Get the max time a SCM operation may use to avoid being cached.
      *
      * @return the max time
      */
     public int getHistoryReaderTimeLimit() {
-        return (int)getConfigurationValue("historyCacheTime");
+        return (int) getConfigurationValue("historyCacheTime");
     }
 
     /**
      * Specify the maximum time a SCM operation should take before it will be
-     * cached (in ms)
+     * cached (in ms).
      *
      * @param historyReaderTimeLimit the max time in ms before it is cached
      */
@@ -636,11 +637,11 @@ public final class RuntimeEnvironment {
      * @return true if history cache is enabled
      */
     public boolean useHistoryCache() {
-        return (boolean)getConfigurationValue("historyCache");
+        return (boolean) getConfigurationValue("historyCache");
     }
 
     /**
-     * Specify if we should use history cache or not
+     * Specify if we should use history cache or not.
      *
      * @param useHistoryCache set false if you do not want to use history cache
      */
@@ -649,16 +650,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Should we generate HTML or not during the indexing phase
+     * Should we generate HTML or not during the indexing phase.
      *
      * @return true if HTML should be generated during the indexing phase
      */
     public boolean isGenerateHtml() {
-        return (boolean)getConfigurationValue("generateHtml");
+        return (boolean) getConfigurationValue("generateHtml");
     }
 
     /**
-     * Specify if we should generate HTML or not during the indexing phase
+     * Specify if we should generate HTML or not during the indexing phase.
      *
      * @param generateHtml set this to true to pregenerate HTML
      */
@@ -667,7 +668,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set if we should compress the xref files or not
+     * Set if we should compress the xref files or not.
      *
      * @param compressXref set to true if the generated html files should be
      * compressed
@@ -682,11 +683,11 @@ public final class RuntimeEnvironment {
      * @return {@code true} if the html-files should be compressed.
      */
     public boolean isCompressXref() {
-        return (boolean)getConfigurationValue("compressXref");
+        return (boolean) getConfigurationValue("compressXref");
     }
 
     public boolean isQuickContextScan() {
-        return (boolean)getConfigurationValue("quickContextScan");
+        return (boolean) getConfigurationValue("quickContextScan");
     }
 
     public void setQuickContextScan(boolean quickContextScan) {
@@ -695,7 +696,7 @@ public final class RuntimeEnvironment {
 
     @SuppressWarnings("unchecked")
     public List<RepositoryInfo> getRepositories() {
-        return (List<RepositoryInfo>)getConfigurationValue("repositories");
+        return (List<RepositoryInfo>) getConfigurationValue("repositories");
     }
 
     /**
@@ -792,7 +793,7 @@ public final class RuntimeEnvironment {
      */
     @SuppressWarnings("unchecked")
     public Set<Project> getDefaultProjects() {
-        Set<Project> projects = (Set<Project>)getConfigurationValue("defaultProjects");
+        Set<Project> projects = (Set<Project>) getConfigurationValue("defaultProjects");
         if (projects == null) {
             return null;
         }
@@ -804,7 +805,7 @@ public final class RuntimeEnvironment {
      * @return at what size (in MB) we should flush the buffer
      */
     public double getRamBufferSize() {
-        return (double)getConfigurationValue("ramBufferSize");
+        return (double) getConfigurationValue("ramBufferSize");
     }
 
     /**
@@ -823,11 +824,11 @@ public final class RuntimeEnvironment {
     }
 
     public String getPluginDirectory() {
-        return (String)getConfigurationValue("pluginDirectory");
+        return (String) getConfigurationValue("pluginDirectory");
     }
 
     public boolean isAuthorizationWatchdog() {
-        return (boolean)getConfigurationValue("authorizationWatchdogEnabled");
+        return (boolean) getConfigurationValue("authorizationWatchdogEnabled");
     }
 
     public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
@@ -835,7 +836,7 @@ public final class RuntimeEnvironment {
     }
 
     public AuthorizationStack getPluginStack() {
-        return (AuthorizationStack)getConfigurationValue("pluginStack");
+        return (AuthorizationStack) getConfigurationValue("pluginStack");
     }
 
     public void setPluginStack(AuthorizationStack pluginStack) {
@@ -848,11 +849,11 @@ public final class RuntimeEnvironment {
      * @return true if we can print per project progress %
      */
     public boolean isPrintProgress() {
-        return (boolean)getConfigurationValue("printProgress");
+        return (boolean) getConfigurationValue("printProgress");
     }
 
     /**
-     * Set the printing of progress % flag (user convenience)
+     * Set the printing of progress % flag (user convenience).
      *
      * @param printProgress new value
      */
@@ -877,11 +878,11 @@ public final class RuntimeEnvironment {
      * @return true if a search may start with a wildcard
      */
     public boolean isAllowLeadingWildcard() {
-        return (boolean)getConfigurationValue("allowLeadingWildcard");
+        return (boolean) getConfigurationValue("allowLeadingWildcard");
     }
 
     public IgnoredNames getIgnoredNames() {
-        return (IgnoredNames)getConfigurationValue("ignoredNames");
+        return (IgnoredNames) getConfigurationValue("ignoredNames");
     }
 
     public void setIgnoredNames(IgnoredNames ignoredNames) {
@@ -889,7 +890,7 @@ public final class RuntimeEnvironment {
     }
 
     public Filter getIncludedNames() {
-        return (Filter)getConfigurationValue("includedNames");
+        return (Filter) getConfigurationValue("includedNames");
     }
 
     public void setIncludedNames(Filter includedNames) {
@@ -897,12 +898,12 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the user page for the history listing
+     * Returns the user page for the history listing.
      *
      * @return the URL string fragment preceeding the username
      */
     public String getUserPage() {
-        return (String)getConfigurationValue("userPage");
+        return (String) getConfigurationValue("userPage");
     }
 
     /**
@@ -948,7 +949,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Sets the user page for the history listing
+     * Sets the user page for the history listing.
      *
      * @param userPage the URL fragment preceeding the username from history
      */
@@ -957,16 +958,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the user page suffix for the history listing
+     * Returns the user page suffix for the history listing.
      *
      * @return the URL string fragment following the username
      */
     public String getUserPageSuffix() {
-        return (String)getConfigurationValue("userPageSuffix");
+        return (String) getConfigurationValue("userPageSuffix");
     }
 
     /**
-     * Sets the user page suffix for the history listing
+     * Sets the user page suffix for the history listing.
      *
      * @param userPageSuffix the URL fragment following the username from
      * history
@@ -976,16 +977,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the bug page for the history listing
+     * Returns the bug page for the history listing.
      *
      * @return the URL string fragment preceeding the bug ID
      */
     public String getBugPage() {
-        return (String)getConfigurationValue("bugPage");
+        return (String) getConfigurationValue("bugPage");
     }
 
     /**
-     * Sets the bug page for the history listing
+     * Sets the bug page for the history listing.
      *
      * @param bugPage the URL fragment preceeding the bug ID
      */
@@ -994,16 +995,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the bug regex for the history listing
+     * Returns the bug regex for the history listing.
      *
      * @return the regex that is looked for in history comments
      */
     public String getBugPattern() {
-        return (String)getConfigurationValue("bugPattern");
+        return (String) getConfigurationValue("bugPattern");
     }
 
     /**
-     * Sets the bug regex for the history listing
+     * Sets the bug regex for the history listing.
      *
      * @param bugPattern the regex to search history comments
      * @throws IOException I/O
@@ -1013,16 +1014,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the review(ARC) page for the history listing
+     * Returns the review(ARC) page for the history listing.
      *
      * @return the URL string fragment preceeding the review page ID
      */
     public String getReviewPage() {
-        return (String)getConfigurationValue("reviewPage");
+        return (String) getConfigurationValue("reviewPage");
     }
 
     /**
-     * Sets the review(ARC) page for the history listing
+     * Sets the review(ARC) page for the history listing.
      *
      * @param reviewPage the URL fragment preceeding the review page ID
      */
@@ -1031,16 +1032,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Returns the review(ARC) regex for the history listing
+     * Returns the review(ARC) regex for the history listing.
      *
      * @return the regex that is looked for in history comments
      */
     public String getReviewPattern() {
-        return (String)getConfigurationValue("reviewPattern");
+        return (String) getConfigurationValue("reviewPattern");
     }
 
     /**
-     * Sets the review(ARC) regex for the history listing
+     * Sets the review(ARC) regex for the history listing.
      *
      * @param reviewPattern the regex to search history comments
      * @throws IOException I/O
@@ -1050,7 +1051,7 @@ public final class RuntimeEnvironment {
     }
 
     public String getWebappLAF() {
-        return (String)getConfigurationValue("webappLAF");
+        return (String) getConfigurationValue("webappLAF");
     }
 
     public void setWebappLAF(String laf) {
@@ -1062,11 +1063,11 @@ public final class RuntimeEnvironment {
      * @return the value of {@link Configuration#isWebappCtags()}
      */
     public boolean isWebappCtags() {
-        return (boolean)getConfigurationValue("webappCtags");
+        return (boolean) getConfigurationValue("webappCtags");
     }
 
     public Configuration.RemoteSCM getRemoteScmSupported() {
-        return (Configuration.RemoteSCM)getConfigurationValue("remoteScmSupported");
+        return (Configuration.RemoteSCM) getConfigurationValue("remoteScmSupported");
     }
 
     public void setRemoteScmSupported(Configuration.RemoteSCM supported) {
@@ -1074,7 +1075,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isOptimizeDatabase() {
-        return (boolean)getConfigurationValue("optimizeDatabase");
+        return (boolean) getConfigurationValue("optimizeDatabase");
     }
 
     public void setOptimizeDatabase(boolean optimizeDatabase) {
@@ -1082,11 +1083,11 @@ public final class RuntimeEnvironment {
     }
 
     public LuceneLockName getLuceneLocking() {
-        return (LuceneLockName)getConfigurationValue("luceneLocking");
+        return (LuceneLockName) getConfigurationValue("luceneLocking");
     }
 
     public boolean isIndexVersionedFilesOnly() {
-        return (boolean)getConfigurationValue("indexVersionedFilesOnly");
+        return (boolean) getConfigurationValue("indexVersionedFilesOnly");
     }
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
@@ -1099,7 +1100,7 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getIndexingParallelism() {
-        int parallelism = (int)getConfigurationValue("indexingParallelism");
+        int parallelism = (int) getConfigurationValue("indexingParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
@@ -1110,7 +1111,7 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryParallelism() {
-        int parallelism = (int)getConfigurationValue("historyParallelism");
+        int parallelism = (int) getConfigurationValue("historyParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
@@ -1121,13 +1122,13 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryRenamedParallelism() {
-        int parallelism = (int)getConfigurationValue("historyRenamedParallelism");
+        int parallelism = (int) getConfigurationValue("historyRenamedParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
 
     public boolean isTagsEnabled() {
-        return (boolean)getConfigurationValue("tagsEnabled");
+        return (boolean) getConfigurationValue("tagsEnabled");
     }
 
     public void setTagsEnabled(boolean tagsEnabled) {
@@ -1135,7 +1136,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isScopesEnabled() {
-        return (boolean)getConfigurationValue("scopesEnabled");
+        return (boolean) getConfigurationValue("scopesEnabled");
     }
 
     public void setScopesEnabled(boolean scopesEnabled) {
@@ -1143,7 +1144,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isProjectsEnabled() {
-        return (boolean)getConfigurationValue("projectsEnabled");
+        return (boolean) getConfigurationValue("projectsEnabled");
     }
 
     public void setProjectsEnabled(boolean projectsEnabled) {
@@ -1151,7 +1152,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isFoldingEnabled() {
-        return (boolean)getConfigurationValue("foldingEnabled");
+        return (boolean) getConfigurationValue("foldingEnabled");
     }
 
     public void setFoldingEnabled(boolean foldingEnabled) {
@@ -1163,7 +1164,7 @@ public final class RuntimeEnvironment {
     }
 
     public String getCTagsExtraOptionsFile() {
-        return (String)getConfigurationValue("CTagsExtraOptionsFile");
+        return (String) getConfigurationValue("CTagsExtraOptionsFile");
     }
 
     public void setCTagsExtraOptionsFile(String filename) {
@@ -1172,7 +1173,7 @@ public final class RuntimeEnvironment {
 
     @SuppressWarnings("unchecked")
     public Set<String> getAllowedSymlinks() {
-        return (Set<String>)getConfigurationValue("allowedSymlinks");
+        return (Set<String>) getConfigurationValue("allowedSymlinks");
     }
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
@@ -1184,7 +1185,7 @@ public final class RuntimeEnvironment {
      * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
-        return (boolean)getConfigurationValue("obfuscatingEMailAddresses");
+        return (boolean) getConfigurationValue("obfuscatingEMailAddresses");
     }
 
     /**
@@ -1202,7 +1203,7 @@ public final class RuntimeEnvironment {
      * {@code false} otherwise
      */
     public boolean isChattyStatusPage() {
-        return (boolean)getConfigurationValue("chattyStatusPage");
+        return (boolean) getConfigurationValue("chattyStatusPage");
     }
 
     /**
@@ -1220,11 +1221,11 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isFetchHistoryWhenNotInCache() {
-        return (boolean)getConfigurationValue("fetchHistoryWhenNotInCache");
+        return (boolean) getConfigurationValue("fetchHistoryWhenNotInCache");
     }
 
     public boolean isHistoryCache() {
-        return (boolean)getConfigurationValue("historyCache");
+        return (boolean) getConfigurationValue("historyCache");
     }
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
@@ -1232,7 +1233,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isHandleHistoryOfRenamedFiles() {
-        return (boolean)getConfigurationValue("handleHistoryOfRenamedFiles");
+        return (boolean) getConfigurationValue("handleHistoryOfRenamedFiles");
     }
 
     public void setNavigateWindowEnabled(boolean enable) {
@@ -1240,7 +1241,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isNavigateWindowEnabled() {
-        return (boolean)getConfigurationValue("navigateWindowEnabled");
+        return (boolean) getConfigurationValue("navigateWindowEnabled");
     }
 
     public void setRevisionMessageCollapseThreshold(int threshold) {
@@ -1248,7 +1249,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getRevisionMessageCollapseThreshold() {
-        return (int)getConfigurationValue("revisionMessageCollapseThreshold");
+        return (int) getConfigurationValue("revisionMessageCollapseThreshold");
     }
 
     public void setMaxSearchThreadCount(int count) {
@@ -1256,11 +1257,11 @@ public final class RuntimeEnvironment {
     }
 
     public int getMaxSearchThreadCount() {
-        return (int)getConfigurationValue("maxSearchThreadCount");
+        return (int) getConfigurationValue("maxSearchThreadCount");
     }
 
     public int getCurrentIndexedCollapseThreshold() {
-        return (int)getConfigurationValue("currentIndexedCollapseThreshold");
+        return (int) getConfigurationValue("currentIndexedCollapseThreshold");
     }
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
@@ -1268,7 +1269,7 @@ public final class RuntimeEnvironment {
     }
 
     public int getGroupsCollapseThreshold() {
-        return (int)getConfigurationValue("groupsCollapseThreshold");
+        return (int) getConfigurationValue("groupsCollapseThreshold");
     }
 
     // The URI is not necessary to be present in the configuration
@@ -1283,7 +1284,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isHistoryEnabled() {
-        return (boolean)getConfigurationValue("historyEnabled");
+        return (boolean) getConfigurationValue("historyEnabled");
     }
 
     public void setHistoryEnabled(boolean flag) {
@@ -1291,7 +1292,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean getDisplayRepositories() {
-        return (boolean)getConfigurationValue("displayRepositories");
+        return (boolean) getConfigurationValue("displayRepositories");
     }
 
     public void setDisplayRepositories(boolean flag) {
@@ -1299,7 +1300,7 @@ public final class RuntimeEnvironment {
     }
 
     public boolean getListDirsFirst() {
-        return (boolean)getConfigurationValue("listDirsFirst");
+        return (boolean) getConfigurationValue("listDirsFirst");
     }
 
     public void setListDirsFirst(boolean flag) {
@@ -1311,23 +1312,23 @@ public final class RuntimeEnvironment {
     }
 
     public int getTabSize() {
-        return (int)getConfigurationValue("tabSize");
+        return (int) getConfigurationValue("tabSize");
     }
 
     /**
-     * Gets the total number of context lines per file to show
+     * Gets the total number of context lines per file to show.
      * @return a value greater than zero
      */
     public short getContextLimit() {
-        return (short)getConfigurationValue("contextLimit");
+        return (short) getConfigurationValue("contextLimit");
     }
 
     /**
-     * Gets the number of context lines to show before or after any match:
+     * Gets the number of context lines to show before or after any match.
      * @return a value greater than or equal to zero
      */
     public short getContextSurround() {
-        return (short)getConfigurationValue("contextSurround");
+        return (short) getConfigurationValue("contextSurround");
     }
 
     /**
@@ -1351,7 +1352,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Write the current configuration to a file
+     * Write the current configuration to a file.
      *
      * @param file the file to write the configuration into
      * @throws IOException if an error occurs
@@ -1379,7 +1380,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Write the current configuration to a socket
+     * Write the current configuration to a socket.
      *
      * @param host the host address to receive the configuration
      * @throws IOException if an error occurs
@@ -1572,7 +1573,7 @@ public final class RuntimeEnvironment {
     }
 
     public String getStatisticsFilePath() {
-        return (String)getConfigurationValue("statisticsFilePath");
+        return (String) getConfigurationValue("statisticsFilePath");
     }
 
     public void setStatisticsFilePath(String path) {
@@ -1806,7 +1807,7 @@ public final class RuntimeEnvironment {
     }
 
     public void startExpirationTimer() {
-        messagesContainer.setMessageLimit((int)getConfigurationValue("messageLimit"));
+        messagesContainer.setMessageLimit((int) getConfigurationValue("messageLimit"));
         messagesContainer.startExpirationTimer();
     }
 
@@ -1824,7 +1825,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the set of messages for the arbitrary tag
+     * Get the set of messages for the arbitrary tag.
      *
      * @param tag the message tag
      * @return set of messages
@@ -1886,12 +1887,14 @@ public final class RuntimeEnvironment {
     }
 
     public SuggesterConfig getSuggesterConfig() {
-        return (SuggesterConfig)getConfigurationValue("suggesterConfig");
+        return (SuggesterConfig) getConfigurationValue("suggesterConfig");
     }
 
     public void setSuggesterConfig(SuggesterConfig config) {
         setConfigurationValue("suggesterConfig", config);
     }
 
-    public int getMessageLimit() { return (int)getConfigurationValue("messageLimit"); }
+    public int getMessageLimit() {
+        return (int) getConfigurationValue("messageLimit");
+    }
 }

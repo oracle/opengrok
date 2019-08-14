@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
@@ -43,8 +43,8 @@ org.opengrok.indexer.web.PageConfig"
     PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
-    String dstyle = styleDir + '/' + "style.css";
-    String pstyle = styleDir + '/' + "print.css";
+    String dstyle = styleDir + '/' + "style.min.css";
+    String pstyle = styleDir + '/' + "print.min.css";
 %><!DOCTYPE html>
 <html lang="en"
       class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
@@ -58,13 +58,13 @@ org.opengrok.indexer.web.PageConfig"
     title="Default" href="<%= dstyle %>" />
 <link rel="alternate stylesheet" type="text/css" media="all"
     title="Paper White" href="<%= pstyle %>" />
-<link rel="stylesheet" type="text/css" href="<%=styleDir%>/mandoc.css" media="all" />
-<link rel="stylesheet" type="text/css" href="<%=styleDir%>/print.css" media="print" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/mandoc.min.css" media="all" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/print.min.css" media="print" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.structure.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.theme.min.css" />
-<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />
-<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.min.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.3.min.css" />
 
 <%

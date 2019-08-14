@@ -31,7 +31,7 @@ import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
- * An Analyzer for C++ files
+ * An Analyzer for C++ files.
  *
  * @author Trond Norbye
  */

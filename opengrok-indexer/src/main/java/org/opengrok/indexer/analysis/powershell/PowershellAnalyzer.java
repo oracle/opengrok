@@ -31,8 +31,9 @@ import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
- * Analyzes PowerShell scripts Created on August 18, 2017
+ * Analyzes PowerShell scripts.
  *
+ * Created on August 18, 2017
  * @author Steven Haehn
  */
 public class PowershellAnalyzer extends AbstractSourceCodeAnalyzer {

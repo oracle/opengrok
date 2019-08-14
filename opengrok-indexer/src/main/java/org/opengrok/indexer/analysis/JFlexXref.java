@@ -41,7 +41,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     /**
      * Used to indicate pre-formatted output with
-     * {@link Util#htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * {@link Util#htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}.
      */
     private static final boolean PRE = true;
 
@@ -168,7 +168,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     }
 
     /**
-     * set definitions
+     * Set definitions.
      * @param defs definitions
      */
     @Override
@@ -182,7 +182,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     }
 
     /**
-     * set scopes
+     * Set scopes.
      * @param scopesEnabled if they should be enabled or disabled
      */
     @Override
@@ -191,7 +191,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     }
 
     /**
-     * set folding of code
+     * Set folding of code.
      * @param foldingEnabled whether to fold or not
      */
     @Override

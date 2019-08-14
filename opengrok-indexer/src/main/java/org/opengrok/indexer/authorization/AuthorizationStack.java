@@ -36,7 +36,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Statistics;
 
 /**
- * This is a subclass of {@link AuthorizationEntity} implementing the methods to
+ * Subclass of {@link AuthorizationEntity}. It implements the methods to
  * be able to contain and making decision for:
  * <ul>
  * <li>other stacks</li>
@@ -57,7 +57,7 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Copy constructor from another stack
+     * Copy constructor from another stack.
      * <ul>
      * <li>copy the superclass {@link AuthorizationEntity}</li>
      * <li>perform a deep copy of the contained stack (using
@@ -79,7 +79,7 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Get the value of stack
+     * Get the value of {@code stack}.
      *
      * @return the current stack
      */
@@ -88,7 +88,7 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Set the value of stack
+     * Set the value of {@code stack}.
      *
      * @param s the new stack
      */
@@ -322,7 +322,7 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Clone the stack:
+     * Clones the stack. Performs:
      * <ul>
      * <li>copy the superclass {@link AuthorizationEntity}</li>
      * <li>perform a deep copy of the contained stack</li>

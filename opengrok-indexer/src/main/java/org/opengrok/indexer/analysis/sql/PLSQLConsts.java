@@ -52,15 +52,13 @@ public final class PLSQLConsts {
         // Util class, can not be constructed.
     }
 
-    private static void populateKeywordSet(Set<String> set, String file)
-            throws IOException
-    {
-        String line,lline;
+    private static void populateKeywordSet(Set<String> set, String file) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
             Consts.class.getResourceAsStream(file), StandardCharsets.UTF_8))) {
+            String line;
             while ((line = reader.readLine()) != null) {
-                line=line.trim();
-                lline = line.toLowerCase(Locale.ROOT);
+                line = line.trim();
+                String lline = line.toLowerCase(Locale.ROOT);
                 if (line.charAt(0) != '#') {
                     set.add(line);
                     set.add(lline);

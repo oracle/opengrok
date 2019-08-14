@@ -49,7 +49,7 @@ public class PendingTokenOffsetsComparator implements Comparator<PendingToken> {
         return cmp;
     }
 
-    /** private to enforce singleton */
+    /** Private to enforce singleton. */
     private PendingTokenOffsetsComparator() {
     }
 }

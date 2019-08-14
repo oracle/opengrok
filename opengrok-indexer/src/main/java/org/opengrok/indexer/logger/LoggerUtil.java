@@ -49,6 +49,9 @@ public class LoggerUtil {
 
     private static volatile String loggerFile = null;
 
+    private LoggerUtil() {
+    }
+
     public static Logger getBaseLogger() {
         return Logger.getLogger(BASE_LOGGER);
     }

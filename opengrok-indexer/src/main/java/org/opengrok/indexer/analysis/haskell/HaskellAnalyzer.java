@@ -34,11 +34,10 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 /**
  * @author Harry Pan
  */
-
 public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of HaskellAnalyzer
+     * Creates a new instance of HaskellAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected HaskellAnalyzer(AnalyzerFactory factory) {

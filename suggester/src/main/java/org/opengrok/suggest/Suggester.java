@@ -22,6 +22,7 @@
  */
 package org.opengrok.suggest;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -148,6 +149,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
+            Instant start = Instant.now();
             logger.log(Level.INFO, "Initializing suggester");
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -156,7 +158,7 @@ public final class Suggester implements Closeable {
                 submitInitIfIndexExists(executor, indexDir);
             }
 
-            shutdownAndAwaitTermination(executor, "Suggester successfully initialized");
+            shutdownAndAwaitTermination(executor, start, "Suggester successfully initialized");
         }
     }
 
@@ -209,11 +211,13 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService, final String logMessageOnSuccess) {
+    private void shutdownAndAwaitTermination(final ExecutorService executorService, Instant start, final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
-            logger.log(Level.INFO, logMessageOnSuccess);
+            logger.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
+                    DurationFormatUtils.formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                            true, true)});
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
             Thread.currentThread().interrupt();
@@ -231,6 +235,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
+            Instant start = Instant.now();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -244,7 +249,7 @@ public final class Suggester implements Closeable {
                 }
             }
 
-            shutdownAndAwaitTermination(executor, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            shutdownAndAwaitTermination(executor, start, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
     }
 

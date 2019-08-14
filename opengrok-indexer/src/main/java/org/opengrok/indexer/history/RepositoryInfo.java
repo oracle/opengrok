@@ -122,7 +122,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Set relative path to source root
+     * Set relative path to source root.
      * @param dir directory
      */
     public void setDirectoryNameRelative(String dir) {
@@ -172,7 +172,7 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * Returns true if this repository is usable in this context (for SCM
-     * systems that use external binaries, the binary must be available etc)
+     * systems that use external binaries, the binary must be available etc).
      *
      * @return true if the HistoryGuru may use the repository
      */
@@ -181,7 +181,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Set the property working
+     * Set the property working.
      *
      * @param working is repository working
      */
@@ -200,7 +200,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Set the property remote
+     * Set the property remote.
      *
      * @param remote is remote repository
      */
@@ -209,7 +209,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * get property type
+     * Get property type.
      *
      * @return type
      */
@@ -218,7 +218,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Set property type
+     * Set property type.
      *
      * @param type repository type
      */
@@ -227,7 +227,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * get property parent
+     * Get property parent.
      *
      * @return parent
      */
@@ -236,7 +236,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Set property parent
+     * Set property parent.
      *
      * @param parent parent of the repository
      */

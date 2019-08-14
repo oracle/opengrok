@@ -27,8 +27,7 @@ package org.opengrok.indexer.search.context;
 import java.util.Locale;
 
 /**
- * Base class for matching a line against terms
- *
+ * Base class for matching a line against terms.
  */
 public abstract class LineMatcher {
     public static String tagBegin, tagEnd;

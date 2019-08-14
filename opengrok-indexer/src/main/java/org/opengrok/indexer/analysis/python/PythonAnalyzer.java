@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class PythonAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of PythonAnalyzer
+     * Creates a new instance of PythonAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected PythonAnalyzer(AnalyzerFactory factory) {

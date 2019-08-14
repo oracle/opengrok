@@ -26,9 +26,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing Tcl keywords
-  */
+ * Holds static hash set containing Tcl keywords.
+ */
 public class Consts {
+
     public static final Set<String> kwd = new HashSet<>();
     static {
         // Tcl cmds
@@ -231,4 +232,8 @@ public class Consts {
         kwd.add("winfo");
         kwd.add("wm");
     }
+
+    private Consts() {
+    }
+
 }

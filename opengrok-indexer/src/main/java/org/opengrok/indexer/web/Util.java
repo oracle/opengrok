@@ -77,16 +77,9 @@ public final class Util {
     private static final int BOLD_COUNT_THRESHOLD = 1000;
 
     /**
-     * Matches a character that is not ASCII alpha-numeric or underscore:
-     * <pre>
-     * {@code
-     * [^A-Za-z0-9_]
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches a character that is not ASCII alpha-numeric or underscore.
      */
-    private static final Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
-        "[^A-Za-z0-9_]");
+    private static final Pattern NON_ASCII_ALPHA_NUM = Pattern.compile("[^A-Za-z0-9_]");
 
     private static String OS = null;
 
@@ -557,8 +550,7 @@ public final class Util {
                     if (!res.isEmpty()) {
                         res.removeLast();
                     }
-                } else if (name.equals(".")) {
-                } else {
+                } else if (!name.equals(".")) {
                     res.add(name);
                 }
             } else {
@@ -684,7 +676,7 @@ public final class Util {
     }
 
     /**
-     * Encode URL
+     * Encode URL.
      *
      * @param urlStr string URL
      * @return the encoded URL
@@ -714,15 +706,13 @@ public final class Util {
      */
     public static void readableLine(int num, Writer out, Annotation annotation,
             String userPageLink, String userPageSuffix, String project)
-            throws IOException
-    {
+            throws IOException {
         readableLine(num, out, annotation, userPageLink, userPageSuffix, project, false);
     }
 
-    public static void readableLine(int num, Writer out, Annotation annotation,
-            String userPageLink, String userPageSuffix, String project, boolean skipNewline)
-            throws IOException
-    {
+    public static void readableLine(int num, Writer out, Annotation annotation, String userPageLink,
+            String userPageSuffix, String project, boolean skipNewline)
+            throws IOException {
         // this method should go to JFlexXref
         String snum = String.valueOf(num);
         if (num > 1 && !skipNewline) {
@@ -927,7 +917,7 @@ public final class Util {
     }
 
     /**
-     * wrapper around UTF-8 URL encoding of a string
+     * Wrapper around UTF-8 URL encoding of a string.
      *
      * @param q query to be encoded. If {@code null}, an empty string will be
      * used instead.

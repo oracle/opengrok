@@ -82,8 +82,8 @@ public class User {
     }
 
     /**
-     * Implemented for the forced authentication as described
-     * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm#i1006381">mod_osso documentation</a>
+     * Implemented for the forced authentication as described in
+     * <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm#i1006381">mod_osso documentation</a>.
      *
      * @param forcedAuthDate the date of the forced authentication trigger
      * @param newLoginDate the date of the new login
@@ -130,6 +130,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" + "id=" + id + ", username=" + username + ", cookieTimestamp=" + cookieTimestamp + ", timeouted=" + timeouted + ", attrs=" + attrs + '}';
+        return "User{" + "id=" + id + ", username=" + username + ", cookieTimestamp=" + cookieTimestamp +
+                ", timeouted=" + timeouted + ", attrs=" + attrs + '}';
     }
 }

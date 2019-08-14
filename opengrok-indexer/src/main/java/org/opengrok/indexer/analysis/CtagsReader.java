@@ -41,32 +41,19 @@ public class CtagsReader {
     /**
      * Matches the Unicode word that occurs last in a string, ignoring any
      * trailing whitespace or non-word characters, and makes it accessible as
-     * the first capture, {@code mtch.groups(1)}:
-     * <pre>
-     * {@code
-     * (?U)(\w+)[\W\s]*$
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * the first capture, {@code mtch.groups(1)}.
      */
-    private static final Pattern LAST_UWORD = Pattern.compile(
-        "(?U)(\\w+)[\\W\\s]*$");
+    private static final Pattern LAST_UWORD = Pattern.compile("(?U)(\\w+)[\\W\\s]*$");
 
     /**
-     * Matches a Unicode word character:
-     * <pre>
-     * {@code
-     * (?U)\w
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches a Unicode word character.
      */
     private static final Pattern WORD_CHAR = Pattern.compile("(?U)\\w");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         CtagsReader.class);
 
-    /** A value indicating empty method body in tags, so skip it */
+    /** A value indicating empty method body in tags, so skip it. */
     private static final int MIN_METHOD_LINE_LENGTH = 6;
 
     /**
@@ -148,7 +135,7 @@ public class CtagsReader {
         public static int charCmpEndOffset = 0;
 
         /**
-         * Quickly get if the field name matches allowed/consumed ones
+         * Quickly get if the field name matches allowed/consumed ones.
          * @param fullName the name to look up
          * @return a defined value, or null if unmatched
          */
@@ -233,12 +220,6 @@ public class CtagsReader {
                 if (pos != null) {
                     String val = fld.substring(sep + 1);
                     fields.put(pos, val);
-                } else {
-                    //unknown field name
-                    //don't log on purpose, since we don't consume all possible
-                    // fields, so just ignore this error for now
-//                    LOGGER.log(Level.WARNING, "Unknown field name found: {0}",
-//                        fld.substring(0, sep - 1));
                 }
             } else {
                 //TODO no separator, assume this is the kind
@@ -768,7 +749,7 @@ public class CtagsReader {
             }
         }
 
-        long newCutCacheKey = ((long)lineOffset << 32) | maxLines;
+        long newCutCacheKey = ((long) lineOffset << 32) | maxLines;
         if (cutCacheKey == newCutCacheKey) {
             return cutCacheValue;
         }

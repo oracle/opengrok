@@ -324,7 +324,7 @@ public class Consts {
 //        kwd.add("$width"); // IEEE 1800-2017
     }
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private Consts() {
     }
 }

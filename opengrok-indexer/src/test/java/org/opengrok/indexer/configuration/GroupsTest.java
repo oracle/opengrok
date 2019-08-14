@@ -33,8 +33,6 @@ import org.junit.Test;
 
 public class GroupsTest {
 
-    static Groups instance = new Groups();
-
     Configuration cfg;
 
     @Before
@@ -189,7 +187,7 @@ public class GroupsTest {
         try {
             Method method = Groups.class.getDeclaredMethod(name, params);
             method.setAccessible(true);
-            method.invoke(instance, values);
+            method.invoke(null, values);
         } catch (Exception ex) {
             ex.printStackTrace();
             Assert.fail("invokeMethod should not throw an exception");

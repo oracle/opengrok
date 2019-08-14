@@ -29,13 +29,13 @@ package org.opengrok.indexer.web;
  */
 public class Suggestion {
 
-    /** index name */
+    /** index name. */
     public String name;
-    /** freetext search suggestions */
+    /** freetext search suggestions. */
     public String[] freetext;
-    /** references search suggestions */
+    /** references search suggestions. */
     public String[] refs;
-    /** definitions search suggestions */
+    /** definitions search suggestions. */
     public String[] defs;
 
     /**

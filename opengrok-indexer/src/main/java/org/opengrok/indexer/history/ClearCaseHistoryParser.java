@@ -39,10 +39,10 @@ import org.opengrok.indexer.util.Executor;
 class ClearCaseHistoryParser implements Executor.StreamHandler {
 
     private History history;
-    private ClearCaseRepository repository=new ClearCaseRepository();
+    private ClearCaseRepository repository = new ClearCaseRepository();
 
     History parse(File file, Repository repos) throws HistoryException {
-        repository = (ClearCaseRepository)repos;
+        repository = (ClearCaseRepository) repos;
         try {
             Executor executor = repository.getHistoryLogExecutor(file);
             int status = executor.exec(true, this);

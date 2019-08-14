@@ -37,14 +37,15 @@ import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * Analyzes HTML files Created on September 30, 2005
+ * Analyzes HTML files.
  *
+ * Created on September 30, 2005
  * @author Chandan
  */
 public class XMLAnalyzer extends TextAnalyzer {
 
     /**
-     * Creates a new instance of XMLAnalyzer
+     * Creates a new instance of XMLAnalyzer.
      * @param factory factory to be used
      */
     protected XMLAnalyzer(AnalyzerFactory factory) {

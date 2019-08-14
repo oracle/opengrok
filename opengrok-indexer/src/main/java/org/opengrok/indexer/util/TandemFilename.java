@@ -55,7 +55,7 @@ public class TandemFilename {
      */
     private static final Base64.Encoder encoder = Base64.getUrlEncoder();
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private TandemFilename() {
     }
 

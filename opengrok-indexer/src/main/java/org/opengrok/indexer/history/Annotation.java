@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,21 +73,20 @@ public class Annotation {
      */
     public String getRevision(int line) {
         try {
-            return lines.get(line-1).revision;
+            return lines.get(line - 1).revision;
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
     }
 
     /**
-     * Gets all revisions that are in use, first is the lowest one (sorted using natural order)
+     * Gets all revisions that are in use, first is the lowest one (sorted using natural order).
      *
      * @return list of all revisions the file has
      */
     public Set<String> getRevisions() {
-        Set<String> ret=new HashSet<String>();
-        for (Iterator<Line> it = this.lines.iterator(); it.hasNext();) {
-            Line ln = it.next();
+        Set<String> ret = new HashSet<>();
+        for (Line ln : this.lines) {
             ret.add(ln.revision);
         }
         return ret;
@@ -103,7 +101,7 @@ public class Annotation {
      */
     public String getAuthor(int line) {
         try {
-            return lines.get(line-1).author;
+            return lines.get(line - 1).author;
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
@@ -117,7 +115,7 @@ public class Annotation {
      */
     public boolean isEnabled(int line) {
         try {
-            return lines.get(line-1).enabled;
+            return lines.get(line - 1).enabled;
         } catch (IndexOutOfBoundsException e) {
             return false;
         }
@@ -182,11 +180,7 @@ public class Annotation {
      * @return file version number. 0 if unknown. 1 first version of file, etc.
      */
     public int getFileVersion(String revision) {
-        if( fileVersions.containsKey(revision) ) {
-            return fileVersions.get(revision);
-        } else {
-            return 0;
-        }
+        return fileVersions.getOrDefault(revision, 0);
     }
 
     /**

@@ -45,7 +45,7 @@ import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Util;
 
 /**
- * Generates HTML listing of a Directory
+ * Generates HTML listing of a Directory.
  */
 public class DirectoryListing {
 

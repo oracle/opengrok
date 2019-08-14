@@ -14,7 +14,7 @@ addons:
       name: OpenGrok/OpenGrok
       description: Build submitted via Travis CI
       branch_pattern: coverity_scan
-      build_command: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile
+      build_command: ./mvnw -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile
   sonarcloud:
     organization: opengrok
     token:
@@ -85,7 +85,7 @@ jobs:
     services:
     - docker
     before_install: dev/before_install
-    before_script: mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
+    before_script: ./mvnw -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
     script: dev/docker.sh
   - stage: javadoc
     name: Upload javadocs to Github pages

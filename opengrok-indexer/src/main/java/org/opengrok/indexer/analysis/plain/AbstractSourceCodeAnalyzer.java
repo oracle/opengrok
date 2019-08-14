@@ -44,12 +44,11 @@ import org.opengrok.indexer.analysis.JFlexXref;
  * 
  * Any child is forced to provide necessary xref and symbol tokenizers,
  * if it fails to do so it will automatically behave like PlainAnalyzer.
- * 
  */
 public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
 
     /**
-     * Creates a new instance of abstract analyzer
+     * Creates a new instance of abstract analyzer.
      * @param factory defined instance for the analyzer
      * @param symbolTokenizer defined instance for the analyzer
      */

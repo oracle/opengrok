@@ -84,8 +84,7 @@ public final class IOUtils {
      * @param path directory to delete
      * @throws IOException if any read error
      */
-    public static void removeRecursive(Path path) throws IOException
-    {
+    public static void removeRecursive(Path path) throws IOException {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)

@@ -23,11 +23,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  *  C# keywords
+ * C# keywords.
  * @author Christoph Hofmann
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         // C# Keywords
         kwd.add("abstract");
@@ -147,6 +148,8 @@ public class Consts{
         kwd.add("#pragma warning restore");
         kwd.add("#pragma warning disable");
     }
+
+    private Consts() {
+    }
+
 }
-
-

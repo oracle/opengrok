@@ -22,11 +22,11 @@
  */
 package org.opengrok.web.api.v1.suggester.model;
 
-import org.hibernate.validator.constraints.NotBlank;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.web.api.v1.suggester.provider.filter.AuthorizationFilter;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.QueryParam;
 import java.util.List;

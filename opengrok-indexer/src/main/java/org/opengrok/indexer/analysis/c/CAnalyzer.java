@@ -31,7 +31,7 @@ import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
- * An Analyzer for C/C++/Java type of files
+ * An Analyzer for C/C++/Java type of files.
  *
  * Created on September 21, 2005
  *
@@ -40,7 +40,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class CAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of CAnalyzer
+     * Creates a new instance of CAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected CAnalyzer(AnalyzerFactory factory) {

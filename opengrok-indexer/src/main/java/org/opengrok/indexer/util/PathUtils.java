@@ -222,7 +222,7 @@ public class PathUtils {
                 + "] relative to source root [" + sourceRoot + "]");
     }
 
-    /** private to enforce static */
+    /** Private to enforce static. */
     private PathUtils() {
     }
 }

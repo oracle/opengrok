@@ -40,7 +40,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of RustAnalyzer
+     * Creates a new instance of RustAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected RustAnalyzer(AnalyzerFactory factory) {

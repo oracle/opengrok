@@ -37,7 +37,7 @@ import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
- * Access to a Perforce repository
+ * Access to a Perforce repository.
  *
  * @author Emilio Monti - emilmont@gmail.com
  */
@@ -49,10 +49,9 @@ public class PerforceRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.Perforce";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.Perforce";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "p4";
 
@@ -144,11 +143,10 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
-    private static final PerforceRepository testRepo
-            = new PerforceRepository();
+    private static final PerforceRepository testRepo = new PerforceRepository();
 
     /**
-     * Check if a given file is in the depot
+     * Check if a given file is in the depot.
      *
      * @param file The file to test
      * @param interactive interactive mode flag

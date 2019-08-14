@@ -295,7 +295,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
     }
 
     /**
-     * Unload all plugins in the stack
+     * Unload all plugins in the stack.
      *
      * @param stack the stack
      */

@@ -38,16 +38,15 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Index version checker
+ * Index version checker.
  *
  * @author Vladimir Kotal
  */
 public class IndexVersion {
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(IndexVersion.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexVersion.class);
 
     /**
-     * exception thrown when index version does not match Lucene version
+     * Exception thrown when index version does not match Lucene version.
      */
     public static class IndexVersionException extends Exception {
 
@@ -56,6 +55,9 @@ public class IndexVersion {
         public IndexVersionException(String s) {
             super(s);
         }
+    }
+
+    private IndexVersion() {
     }
     
     /**

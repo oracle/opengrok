@@ -57,15 +57,31 @@ public class WriteXrefArgs {
         this.out = out;
     }
 
-    public Reader getIn() { return in; }
-    public Writer getOut() { return out; }
+    public Reader getIn() {
+        return in;
+    }
+    public Writer getOut() {
+        return out;
+    }
 
-    public Definitions getDefs() { return defs; }
-    public void setDefs(Definitions value) { defs = value; }
+    public Definitions getDefs() {
+        return defs;
+    }
+    public void setDefs(Definitions value) {
+        defs = value;
+    }
 
-    public Annotation getAnnotation() { return annotation; }
-    public void setAnnotation(Annotation value) { annotation = value; }
+    public Annotation getAnnotation() {
+        return annotation;
+    }
+    public void setAnnotation(Annotation value) {
+        annotation = value;
+    }
 
-    public Project getProject() { return project; }
-    public void setProject(Project value) { project = value; }
+    public Project getProject() {
+        return project;
+    }
+    public void setProject(Project value) {
+        project = value;
+    }
 }

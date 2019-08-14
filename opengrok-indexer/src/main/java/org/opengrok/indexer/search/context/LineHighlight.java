@@ -37,9 +37,9 @@ public class LineHighlight {
 
     private final int lineno;
     private List<PhraseHighlight> markups;
-    /** Offset of elided left part */
+    /** Offset of elided left part. */
     private int lelide;
-    /** Offset of elide right part */
+    /** Offset of elide right part. */
     private int relide;
 
     private boolean didLelide;
@@ -53,7 +53,7 @@ public class LineHighlight {
     }
 
     /**
-     * Gets the number of markups
+     * Gets the number of markups.
      * @return zero or greater
      */
     public int countMarkups() {

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * wrapper class for IgnoredFiles and IgnoredDirs
+ * wrapper class for IgnoredFiles and IgnoredDirs.
  *
  * @author Vladimir Kotal
  */

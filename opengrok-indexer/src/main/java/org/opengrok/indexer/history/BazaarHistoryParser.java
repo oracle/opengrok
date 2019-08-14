@@ -50,7 +50,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
     private String myDir;
     private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
-    private BazaarRepository repository=new BazaarRepository(); //NOPMD
+    private BazaarRepository repository = new BazaarRepository(); //NOPMD
 
     BazaarHistoryParser(BazaarRepository repository) {
         this.repository = repository;
