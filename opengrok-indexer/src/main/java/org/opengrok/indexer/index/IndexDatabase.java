@@ -733,6 +733,8 @@ public class IndexDatabase {
      */
     private void addFile(File file, String path, Ctags ctags)
             throws IOException, InterruptedException {
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         AbstractAnalyzer fa = getAnalyzerFor(file, path);
 
         for (IndexChangedListener listener : listeners) {
@@ -740,12 +742,15 @@ public class IndexDatabase {
         }
 
         ctags.setTabSize(project != null ? project.getTabSize() : 0);
+        if (env.getCtagsTimeout() != 0) {
+            ctags.setTimeout(env.getCtagsTimeout());
+        }
         if (ctags.getBinary() != null) {
             fa.setCtags(ctags);
         }
         fa.setProject(Project.getProject(path));
-        fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
-        fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
+        fa.setScopesEnabled(env.isScopesEnabled());
+        fa.setFoldingEnabled(env.isFoldingEnabled());
 
         Document doc = new Document();
         try (Writer xrefOut = newXrefWriter(fa, path)) {
