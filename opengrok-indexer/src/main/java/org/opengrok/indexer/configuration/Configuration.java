@@ -207,6 +207,7 @@ public final class Configuration {
     private int tabSize;
     private int commandTimeout; // in seconds
     private int interactiveCommandTimeout; // in seconds
+    private int ctagsTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -376,6 +377,24 @@ public final class Configuration {
         this.interactiveCommandTimeout = commandTimeout;
     }
 
+    public int getCtagsTimeout() {
+        return ctagsTimeout;
+    }
+
+    /**
+     * Set the ctags timeout to a new value.
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setCtagsTimeout(int timeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "ctagsTimeout", timeout));
+        }
+        this.ctagsTimeout = timeout;
+    }
+
     public String getStatisticsFilePath() {
         return statisticsFilePath;
     }
@@ -411,13 +430,10 @@ public final class Configuration {
     }
 
     /**
-     * Creates a new instance of Configuration.
+     * Creates a new instance of Configuration with default values.
      */
     public Configuration() {
-        /**
-         * This list of calls is sorted alphabetically so please keep it.
-         */
-        // defaults for an opengrok instance configuration
+        // This list of calls is sorted alphabetically so please keep it.
         cmds = new HashMap<>();
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
@@ -430,6 +446,7 @@ public final class Configuration {
         setContextLimit((short) 10);
         //contextSurround is default(short)
         //ctags is default(String)
+        setCtagsTimeout(30);
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
         setDisplayRepositories(true);

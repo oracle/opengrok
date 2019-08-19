@@ -34,9 +34,10 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.SourceSplitter;
@@ -52,13 +53,13 @@ public class Ctags implements Resettable {
 
     private volatile boolean closing;
     private Process ctags;
-    private Thread errThread;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private int tabSize;
+    private int timeout = 0; // in seconds
 
     private boolean junit_testing = false;
 
@@ -92,6 +93,14 @@ public class Ctags implements Resettable {
         this.CTagsExtraOptionsFile = CTagsExtraOptionsFile;
     }
 
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
+    public int getTimeout() {
+        return this.timeout;
+    }
+
     /**
      * Resets the instance for use for another file but without closing any
      * running ctags instance.
@@ -116,7 +125,6 @@ public class Ctags implements Resettable {
     }
 
     private void initialize() throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         ProcessBuilder processBuilder;
         List<String> command = new ArrayList<>();
 
@@ -197,14 +205,14 @@ public class Ctags implements Resettable {
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream(),
             StandardCharsets.UTF_8));
 
-        errThread = new Thread(() -> {
+        Thread errThread = new Thread(() -> {
             try (BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream(),
                     StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     if (s.length() > 0) {
                         LOGGER.log(Level.WARNING, "Error from ctags: {0}",
-                            s);
+                                s);
                     }
                     if (closing) {
                         break;
@@ -369,7 +377,7 @@ public class Ctags implements Resettable {
                 LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
                         exitValue);
                 // Throw the following to indicate non-I/O error for retry.
-                throw new InterruptedException("ctags died");
+                throw new InterruptedException("ctags process died");
             } catch (IllegalThreadStateException exp) {
                 // The ctags process is still running.
             }
@@ -390,7 +398,35 @@ public class Ctags implements Resettable {
             if (Thread.interrupted()) {
                 throw new InterruptedException("flush()");
             }
+
+            int timeout = this.timeout * 1000;
+            Timer timer = null;
+            /*
+             * Setup timer thread to make sure the ctags process completes and the indexer can
+             * make progress instead of hanging the whole operation.
+             */
+            if (timeout != 0) {
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override public void run() {
+                    LOGGER.log(Level.WARNING,
+                            String.format("Terminating ctags process for file '%s' " +
+                                    "due to timeout %d seconds", file, timeout / 1000));
+                    try {
+                        close();
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to terminate overly long ctags command");
+                    }
+                    }
+                }, timeout);
+            }
+
             readTags(rdr);
+
+            if (timer != null) {
+                timer.cancel();
+            }
+
             ret = rdr.getDefinitions();
         } catch (IOException ex) {
             /*
