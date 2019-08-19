@@ -93,8 +93,10 @@ public class GitRepository extends Repository {
      */
     private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
 
+    protected static final String repoType = "git";
+
     public GitRepository() {
-        type = "git";
+        type = repoType;
         /*
          * This should match the 'iso-strict' format used by
          * {@code getHistoryLogExecutor}.

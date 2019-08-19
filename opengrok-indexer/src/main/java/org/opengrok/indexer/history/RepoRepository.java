@@ -55,6 +55,7 @@ public class RepoRepository extends Repository {
         setWorking(Boolean.TRUE);
 
         ignoredDirs.add(".repo");
+        allowedSubRepositoryTypes.add(GitRepository.repoType);
     }
 
     @Override

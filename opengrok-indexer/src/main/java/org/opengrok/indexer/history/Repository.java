@@ -76,6 +76,8 @@ public abstract class Repository extends RepositoryInfo {
 
     protected final List<String> ignoredDirs;
 
+    protected List<String> allowedSubRepositoryTypes = new ArrayList<>();
+
     /**
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.

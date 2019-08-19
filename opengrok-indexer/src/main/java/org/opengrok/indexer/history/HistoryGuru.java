@@ -387,13 +387,13 @@ public final class HistoryGuru {
      * @param files list of files to check if they contain a repository
      * @param ignoredNames what files to ignore
      * @param recursiveSearch whether to use recursive search
-     * @param type type of the repository to search for or {@code null}
+     * @param types types of repositories to search for or {@code null}
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames, boolean recursiveSearch, String type, int depth) {
+            IgnoredNames ignoredNames, boolean recursiveSearch, List<String> types, int depth) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
 
@@ -402,62 +402,73 @@ public final class HistoryGuru {
                 continue;
             }
 
+            if (types == null) {
+                types = new ArrayList<>();
+                types.add(null);
+            }
+
             String path;
-            try {
-                path = file.getCanonicalPath();
-
-                Repository repository = null;
+            for (String type : types) {
                 try {
-                    repository = RepositoryFactory.getRepository(file, type);
-                } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', could not instantiate the repository.", e);
-                } catch (IllegalAccessException iae) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', missing access rights.", iae);
-                } catch (ForbiddenSymlinkException e) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', path traversal issues.", e);
-                }
-                if (repository == null) {
-                    // Not a repository, search its sub-dirs.
-                    if (!ignoredNames.ignore(file)) {
-                        File[] subFiles = file.listFiles();
-                        if (subFiles == null) {
-                            LOGGER.log(Level.WARNING,
-                                    "Failed to get sub directories for ''{0}'', " +
-                                    "check access permissions.",
-                                    file.getAbsolutePath());
-                        } else if (depth <= scanningDepth) {
-                            repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, type, depth + 1));
+                    path = file.getCanonicalPath();
+
+                    Repository repository = null;
+                    try {
+                        repository = RepositoryFactory.getRepository(file, type);
+                    } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                        LOGGER.log(Level.WARNING, "Could not create repository for '"
+                                + file + "', could not instantiate the repository.", e);
+                    } catch (IllegalAccessException iae) {
+                        LOGGER.log(Level.WARNING, "Could not create repository for '"
+                                + file + "', missing access rights.", iae);
+                    } catch (ForbiddenSymlinkException e) {
+                        LOGGER.log(Level.WARNING, "Could not create repository for '"
+                                + file + "', path traversal issues.", e);
+                    }
+                    if (repository == null) {
+                        // Not a repository, search its sub-dirs.
+                        if (!ignoredNames.ignore(file)) {
+                            File[] subFiles = file.listFiles();
+                            if (subFiles == null) {
+                                LOGGER.log(Level.WARNING,
+                                        "Failed to get sub directories for ''{0}'', " +
+                                                "check access permissions.",
+                                        file.getAbsolutePath());
+                            } else if (depth <= scanningDepth) {
+                                repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
+                                        recursiveSearch, types, depth + 1));
+                            }
+                        }
+                    } else {
+                        LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
+                                new Object[]{repository.getClass().getName(), path});
+
+                        repoList.add(new RepositoryInfo(repository));
+                        putRepository(repository);
+
+                        if (recursiveSearch && repository.supportsSubRepositories()) {
+                            File[] subFiles = file.listFiles();
+                            if (subFiles == null) {
+                                LOGGER.log(Level.WARNING,
+                                        "Failed to get sub directories for ''{0}'', check access permissions.",
+                                        file.getAbsolutePath());
+                            } else if (depth <= scanningDepth) {
+                                // Search only for restricted types of repositories - the one found here
+                                // plus allowed sub-repository types.
+                                List<String> allowedTypes = new ArrayList<>();
+                                allowedTypes.add(repository.getType());
+                                allowedTypes.addAll(repository.allowedSubRepositoryTypes);
+                                repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
+                                        false, allowedTypes, depth + 1));
+                            }
                         }
                     }
-                } else {
-                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
-                            new Object[]{repository.getClass().getName(), path});
-
-                    repoList.add(new RepositoryInfo(repository));
-                    putRepository(repository);
-
-                    if (recursiveSearch && repository.supportsSubRepositories()) {
-                        File[] subFiles = file.listFiles();
-                        if (subFiles == null) {
-                            LOGGER.log(Level.WARNING,
-                                    "Failed to get sub directories for ''{0}'', check access permissions.",
-                                    file.getAbsolutePath());
-                        } else if (depth <= scanningDepth) {
-                            // Search only for one type of repository - the one found here.
-                            repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    false, repository.getType(), depth + 1));
-                        }
-                    }
+                } catch (IOException exp) {
+                    LOGGER.log(Level.WARNING,
+                            "Failed to get canonical path for {0}: {1}",
+                            new Object[]{file.getAbsolutePath(), exp.getMessage()});
+                    LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
                 }
-            } catch (IOException exp) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to get canonical path for {0}: {1}",
-                        new Object[]{file.getAbsolutePath(), exp.getMessage()});
-                LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
             }
         }
 
