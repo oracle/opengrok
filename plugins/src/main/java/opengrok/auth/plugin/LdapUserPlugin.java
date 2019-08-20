@@ -87,7 +87,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
         LOGGER.log(Level.FINE, "LdapUser plugin loaded with filter={0}, " +
                         "attributes={1}, useDN={2}",
-                new Object[]{ldapFilter, String.join(", ", attributes), useDN});
+                new Object[]{ldapFilter, attributes, useDN});
     }
     
     /**
@@ -145,7 +145,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                     expandedFilter, attributes.toArray(new String[attributes.size()]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}''",
-                        new Object[]{user, expandedFilter, String.join(", ", attributes)});
+                        new Object[]{user, expandedFilter, attributes});
                 return;
             }
 
