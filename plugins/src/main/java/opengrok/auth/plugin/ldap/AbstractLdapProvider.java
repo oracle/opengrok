@@ -32,16 +32,16 @@ public abstract class AbstractLdapProvider {
      * DN and attributes.
      */
     public static class LdapSearchResult<T> {
-        private String DN;
+        private String dn;
         private T attrs;
 
         LdapSearchResult(String dn, T attrs) {
-            this.DN = dn;
+            this.dn = dn;
             this.attrs = attrs;
         }
 
         public String getDN() {
-            return DN;
+            return dn;
         }
 
         public T getAttrs() {
