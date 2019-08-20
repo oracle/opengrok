@@ -56,7 +56,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * configuration names
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
-     * <li><code>useDN</code> boolean value indicating if User.username should be used as search Distinguished Name</li>
+     * <li><code>useDN</code> boolean value indicating if User.username should be used as search Distinguished Name (optional, default is false)</li>
      * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
      * </ul>
      */
