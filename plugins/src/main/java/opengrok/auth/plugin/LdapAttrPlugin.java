@@ -110,7 +110,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         } else {
             try {
-                String dn = ldapUser.getDN();
+                String dn = ldapUser.getId();
                 if (dn != null) {
                     LOGGER.log(Level.FINEST, "searching with dn={0}", dn);
                     AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;

@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.entity;
 
@@ -34,19 +34,17 @@ import java.util.Set;
  */
 public class LdapUser implements Serializable {
 
-    private String DN;
+    private String id; // user identification - either Distinguished Name or username
     private final Map<String, Set<String>> attributes;
 
-    // Use default serial ID value. If the serialized form of the object
-    // changes, feel free to start from 1L.
-    private static final long serialVersionUID = 1161431688782569843L;
+    private static final long serialVersionUID = 1L;
 
     public LdapUser() {
         this(null,null);
     }
 
     public LdapUser(String dn, Map<String, Set<String>> attrs) {
-        this.DN = dn;
+        this.id = dn;
 
         if (attrs == null) {
             this.attributes = new HashMap<>();
@@ -74,16 +72,16 @@ public class LdapUser implements Serializable {
         return this.attributes;
     }
 
-    public void setDN(String dn) {
-        this.DN = dn;
+    public void setId(String dn) {
+        this.id = dn;
     }
 
-    public String getDN() {
-        return DN;
+    public String getId() {
+        return id;
     }
 
     @Override
     public String toString() {
-        return "LdapUser{DN=" + DN + ",attributes=" + attributes + '}';
+        return "LdapUser{id=" + id + ",attributes=" + attributes + '}';
     }
 }
