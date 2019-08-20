@@ -56,7 +56,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * configuration names
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
-     * <li><code>useDN</code> boolean value indicating if User.username should be used as search DN</li>
+     * <li><code>useDN</code> boolean value indicating if User.username should be used as search Distinguished Name</li>
      * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
      * </ul>
      */
@@ -173,7 +173,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             attrSet.put(attrName, records.get(attrName));
         }
 
-        updateSession(req, new LdapUser(useDN ? user.getUsername() : dn, attrSet));
+        updateSession(req, new LdapUser(useDN ? dn : user.getUsername(), attrSet));
     }
 
     /**
