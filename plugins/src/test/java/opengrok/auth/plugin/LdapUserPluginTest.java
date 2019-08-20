@@ -57,7 +57,7 @@ public class LdapUserPluginTest {
     }
     
     @Test
-    public void loadTestPostitive() {
+    public void loadTestPositive() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
         plugin.load(params);
