@@ -426,6 +426,6 @@ public class LdapFacade extends AbstractLdapProvider {
 
     public String toString() {
         return String.join(",",
-                getServers().stream().map(x -> x.getUrl()).collect(Collectors.toList()));
+                getServers().stream().map(LdapServer::getUrl).collect(Collectors.toList()));
     }
 }
