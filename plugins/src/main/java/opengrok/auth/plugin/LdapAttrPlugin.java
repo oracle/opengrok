@@ -117,6 +117,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
                     if ((res = getLdapProvider().lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
                         LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} (LDAP provider: {2})",
                                 new Object[]{ldapAttr, user, getLdapProvider()});
+                        return;
                     }
 
                     records = res.getAttrs();
