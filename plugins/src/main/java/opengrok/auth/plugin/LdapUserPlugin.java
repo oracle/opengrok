@@ -173,7 +173,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             attrSet.put(attrName, records.get(attrName));
         }
 
-        updateSession(req, new LdapUser(useDN ? dn : user.getUsername(), attrSet));
+        updateSession(req, new LdapUser(useDN ? user.getUsername() : dn, attrSet));
     }
 
     /**
