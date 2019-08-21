@@ -110,7 +110,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
         } else {
             try {
-                String dn = ldapUser.getId();
+                String dn = ldapUser.getDn();
                 if (dn != null) {
                     LOGGER.log(Level.FINEST, "searching with dn={0}", dn);
                     AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
@@ -121,6 +121,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
                     }
 
                     records = res.getAttrs();
+                } else {
+                    LOGGER.log(Level.FINE, "no DN for user {0}", user);
                 }
             } catch (LdapException ex) {
                 throw new AuthorizationException(ex);

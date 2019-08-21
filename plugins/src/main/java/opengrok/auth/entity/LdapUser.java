@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * LDAP user represented as a set of attributes.
+ * LDAP user represented as Distinguished Name and a set of attributes.
  *
  * @author Krystof Tulinger
  */
 public class LdapUser implements Serializable {
 
-    private String id; // user identification - either Distinguished Name or username
+    private String dn; // Distinguished Name
     private final Map<String, Set<String>> attributes;
 
     private static final long serialVersionUID = 1L;
@@ -44,7 +44,7 @@ public class LdapUser implements Serializable {
     }
 
     public LdapUser(String dn, Map<String, Set<String>> attrs) {
-        this.id = dn;
+        this.dn = dn;
 
         if (attrs == null) {
             this.attributes = new HashMap<>();
@@ -72,16 +72,16 @@ public class LdapUser implements Serializable {
         return this.attributes;
     }
 
-    public void setId(String dn) {
-        this.id = dn;
+    public void setDn(String dn) {
+        this.dn = dn;
     }
 
-    public String getId() {
-        return id;
+    public String getDn() {
+        return dn;
     }
 
     @Override
     public String toString() {
-        return "LdapUser{id=" + id + ",attributes=" + attributes + '}';
+        return "LdapUser{dn=" + dn + ",attributes=" + attributes + '}';
     }
 }
