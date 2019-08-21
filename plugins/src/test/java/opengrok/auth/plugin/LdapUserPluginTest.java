@@ -22,18 +22,36 @@
  */
 package opengrok.auth.plugin;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+
+import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.AbstractLdapProvider;
+import opengrok.auth.plugin.ldap.LdapException;
+import opengrok.auth.plugin.ldap.LdapFacade;
+import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Spy;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 /**
  *
  * @author Vladimir Kotal
  */
 public class LdapUserPluginTest {
+    @Spy
     private LdapUserPlugin plugin;
 
     @Before
@@ -73,5 +91,31 @@ public class LdapUserPluginTest {
         User user = new User("foo@bar.cz", "id", null, false);
         String filter = plugin.expandFilter(user);
         Assert.assertEquals("(&(objectclass=person)(mail=foo@bar.cz))", filter);
+    }
+
+    @Test
+    public void testFillSessionWithDnOn() throws LdapException {
+        AbstractLdapProvider mockprovider = mock(LdapFacade.class);
+        Map<String, Set<String>> attrs = new HashMap<>();
+        attrs.put("foo", null);
+        AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> result =
+                new AbstractLdapProvider.LdapSearchResult<>("foo@bar.cz", attrs);
+        assertNotNull(result);
+        when(mockprovider.lookupLdapContent(isNull(), isNull(), any(String[].class))).
+                thenReturn(result);
+
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
+        params.put(LdapUserPlugin.USE_DN, (Object)false);
+        LdapUserPlugin plugin = new LdapUserPlugin();
+        plugin.load(params, mockprovider);
+        assertEquals(mockprovider, plugin.getLdapProvider());
+
+        HttpServletRequest request = new DummyHttpServletRequestLdap();
+        User user = new User("foo@bar.cz", "id", null, false);
+        plugin.fillSession(request, user);
+
+        assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
+        assertEquals(user.getUsername(), ((LdapUser)request.getSession().getAttribute(SESSION_ATTR)).getId());
     }
 }
