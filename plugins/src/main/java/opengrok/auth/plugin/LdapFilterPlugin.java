@@ -85,8 +85,8 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         }
 
         String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
-        LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
-                new Object[]{user, expandedFilter});
+        LOGGER.log(Level.FINER, "expanded filter for user {0} and LDAP user {1} into ''{2}''",
+                new Object[]{user, ldapUser, expandedFilter});
         try {
             if ((getLdapProvider().lookupLdapContent(null, expandedFilter)) == null) {
                 LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
