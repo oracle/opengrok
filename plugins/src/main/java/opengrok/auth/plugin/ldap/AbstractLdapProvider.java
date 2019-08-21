@@ -50,7 +50,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Perform LDAP lookup
+     * Perform LDAP lookup.
      *
      * @param dn LDAP DN
      * @return set of attributes for the user or null
@@ -63,7 +63,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Perform LDAP lookup
+     * Perform LDAP lookup.
      *
      * @param dn LDAP DN
      * @param filter the LDAP filter
@@ -77,7 +77,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Perform LDAP lookup
+     * Perform LDAP lookup.
      *
      * @param dn LDAP DN
      * @param values match these LDAP value
@@ -91,7 +91,7 @@ public abstract class AbstractLdapProvider {
     }
 
     /**
-     * Perform LDAP lookup
+     * Perform LDAP lookup.
      *
      * @param dn LDAP DN
      * @param filter the LDAP filter

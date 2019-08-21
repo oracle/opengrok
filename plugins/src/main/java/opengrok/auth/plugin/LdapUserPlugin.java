@@ -53,7 +53,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
     /**
-     * configuration names
+     * List of configuration names.
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
      * <li><code>useDN</code> boolean value indicating if User.username should be used as search Distinguished Name (optional, default is false)</li>

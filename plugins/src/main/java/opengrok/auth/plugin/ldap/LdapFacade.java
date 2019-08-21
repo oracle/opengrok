@@ -247,7 +247,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Get LDAP attributes
+     * Get LDAP attributes.
      *
      * @param dn LDAP DN attribute. If @{code null} then {@code searchBase} will be used.
      * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
