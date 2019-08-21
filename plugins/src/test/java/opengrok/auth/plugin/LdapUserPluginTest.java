@@ -22,6 +22,7 @@
  */
 package opengrok.auth.plugin;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,6 @@ import javax.servlet.http.HttpServletRequest;
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,12 +94,13 @@ public class LdapUserPluginTest {
     }
 
     @Test
-    public void testFillSessionWithDnOn() throws LdapException {
+    public void testFillSessionWithDnOff() throws LdapException {
         AbstractLdapProvider mockprovider = mock(LdapFacade.class);
         Map<String, Set<String>> attrs = new HashMap<>();
-        attrs.put("foo", null);
+        attrs.put("mail", Collections.singleton("foo@bar.cz"));
+        final String dn = "cn=FOO_BAR,L=EMEA,DC=FOO,DC=COM";
         AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> result =
-                new AbstractLdapProvider.LdapSearchResult<>("foo@bar.cz", attrs);
+                new AbstractLdapProvider.LdapSearchResult<>(dn, attrs);
         assertNotNull(result);
         when(mockprovider.lookupLdapContent(isNull(), isNull(), any(String[].class))).
                 thenReturn(result);
@@ -116,6 +117,6 @@ public class LdapUserPluginTest {
         plugin.fillSession(request, user);
 
         assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
-        assertEquals(user.getUsername(), ((LdapUser)request.getSession().getAttribute(SESSION_ATTR)).getId());
+        assertEquals(dn, ((LdapUser)request.getSession().getAttribute(SESSION_ATTR)).getDn());
     }
 }

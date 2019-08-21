@@ -56,7 +56,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * List of configuration names.
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
-     * <li><code>useDN</code> boolean value indicating if User.username should be used as search Distinguished Name (optional, default is false)</li>
+     * <li><code>useDN</code> boolean value indicating if User.username should be treated as Distinguished Name (optional, default is false)</li>
      * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
      * </ul>
      */
@@ -146,14 +146,17 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
 
         String expandedFilter = null;
-        String dn;
+        String dn = null;
+        if (useDN) {
+            dn = user.getUsername();
+        }
         if (ldapFilter != null) {
             expandedFilter = expandFilter(user);
         }
         try {
             AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
-            if ((res = getLdapProvider().lookupLdapContent(useDN ? user.getUsername() : null,
-                    expandedFilter, attributes.toArray(new String[attributes.size()]))) == null) {
+            if ((res = getLdapProvider().lookupLdapContent(dn, expandedFilter,
+                    attributes.toArray(new String[attributes.size()]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}''",
                         new Object[]{user, expandedFilter, attributes});
@@ -161,7 +164,9 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             }
 
             records = res.getAttrs();
-            dn = res.getDN();
+            if (!useDN) {
+                dn = res.getDN();
+            }
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
         }
@@ -173,7 +178,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
 
         for (String attrName : attributes) {
-            if (!records.containsKey(attrName) || records.get(attrName).isEmpty()) {
+            if (!records.containsKey(attrName) || records.get(attrName) == null || records.get(attrName).isEmpty()) {
                 LOGGER.log(Level.WARNING, "''{0}'' record for user {1} is not present or empty (LDAP provider: {2})",
                         new Object[]{attrName, user, getLdapProvider()});
             }
@@ -184,7 +189,8 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             attrSet.put(attrName, records.get(attrName));
         }
 
-        updateSession(req, new LdapUser(useDN ? user.getUsername() : dn, attrSet));
+        LOGGER.log(Level.FINEST, "DN for user {0}: {1}", new Object[]{user, dn});
+        updateSession(req, new LdapUser(dn, attrSet));
     }
 
     /**
