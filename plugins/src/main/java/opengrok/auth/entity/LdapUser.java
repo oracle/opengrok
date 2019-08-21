@@ -40,7 +40,7 @@ public class LdapUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public LdapUser() {
-        this(null,null);
+        this(null, null);
     }
 
     public LdapUser(String dn, Map<String, Set<String>> attrs) {
