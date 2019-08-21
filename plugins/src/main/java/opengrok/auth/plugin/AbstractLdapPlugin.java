@@ -114,6 +114,11 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     public abstract boolean checkEntity(HttpServletRequest request, Group group);
 
+    // for testing
+    void load(AbstractLdapProvider provider) {
+        ldapProvider = provider;
+    }
+
     /**
      * Loads the configuration into memory.
      */

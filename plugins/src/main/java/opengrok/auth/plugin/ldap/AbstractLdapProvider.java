@@ -35,7 +35,7 @@ public abstract class AbstractLdapProvider {
         private String dn;
         private T attrs;
 
-        LdapSearchResult(String dn, T attrs) {
+        public LdapSearchResult(String dn, T attrs) {
             this.dn = dn;
             this.attrs = attrs;
         }

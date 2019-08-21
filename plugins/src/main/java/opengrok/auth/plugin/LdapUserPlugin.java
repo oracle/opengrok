@@ -68,10 +68,21 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private Boolean useDN;
     private Set<String> attributes;
 
+    // for testing
+    void load(Map<String, Object> parameters, AbstractLdapProvider provider) {
+        super.load(provider);
+
+        init(parameters);
+    }
+
     @Override
     public void load(Map<String, Object> parameters) {
         super.load(parameters);
 
+        init(parameters);
+    }
+
+    private void init(Map<String, Object> parameters) {
         String attributesVal;
         if ((attributesVal = (String) parameters.get(ATTRIBUTES)) == null) {
             throw new NullPointerException("Missing configuration parameter [" + ATTRIBUTES +
@@ -89,7 +100,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                         "attributes={1}, useDN={2}",
                 new Object[]{ldapFilter, attributes, useDN});
     }
-    
+
     /**
      * Check if the session exists and contains all necessary fields required by
      * this plug-in.
