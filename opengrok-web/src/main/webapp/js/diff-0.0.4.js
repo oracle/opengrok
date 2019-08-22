@@ -20,7 +20,7 @@
 /* global textInputHasFocus */
 
 /*
- * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -34,18 +34,19 @@
  */
 (function (window, $window) {
     if (!$window || typeof $window.create !== 'function') {
-        console.log('The diffWindow plugin requires $.window plugin')
+        console.log('The diffWindow plugin requires $.window plugin');
         return;
     }
 
     var diffWindow = function () {
         this.init = function (options, context) {
-            return $.diffWindow = $window.create(options = $.extend({
+            $.diffWindow = $window.create($.extend({
                 title: 'Diff jumper',
                 draggable: false,
                 init: function ($window) {
-                    var $prev, $next
-                    var that = this
+                    var $prev;
+                    var $next;
+                    var that = this;
 
                     // set initial position by the toggle button
                     that.options.$toggleButton.each(function () {
@@ -66,7 +67,7 @@
                                 left: $(this).offset().left + $(this).outerWidth(),
                                 opacity: 0
                             }, that.options.animationDuration, function () {
-                                that.$window.hide()
+                                that.$window.hide();
                                 $(this).data("animation-in-progress", null);
                             });
                             $(this).data("animation-in-progress", "hiding");
@@ -78,17 +79,17 @@
                                 opacity: 1
                             }, that.options.animationDuration, function () {
                                 $(this).data("animation-in-progress", null);
-                            })
+                            });
                             $(this).data("animation-in-progress", "showing");
                         }
-                        return false
+                        return false;
                     });
 
-                    var $controls = $("<div class=\"pull-right\">")
-                            .append($prev = $("<a href='#' class='prev' title='Jump to previous chunk (shortcut b)'><< Previous</a>"))
-                            .append("<span class=\"pull-rigt\"> | </span>")
-                            .append($next = $("<a href='#' class='next' title='Jump to next chunk (shortcut n)'>Next >></a>"))
-                            .append($("<div class=\"clearfix\">"))
+                    var $controls = $('<div class="pull-right">').
+                            append($prev = $('<a href="#" class="prev" title="Jump to previous chunk (shortcut b)"><< Previous</a>')).
+                            append('<span class="pull-rigt"> | </span>').
+                            append($next = $('<a href="#" class="next" title="Jump to next chunk (shortcut n)">Next >></a>')).
+                            append($('<div class="clearfix">'));
 
                     $next.click(function (e) {
                         that.nextHandler.apply(that, [e]);
@@ -105,39 +106,39 @@
                                     that.options.$toggleButton.outerWidth(),
                             opacity: 0
                         }, that.options.animationDuration, function () {
-                            that.$window.hide()
+                            that.$window.hide();
                             that.options.$toggleButton.data("animation-in-progress", null);
                         });
                         that.options.$toggleButton.data("animation-in-progress", "hiding");
                     });
 
-                    return $window
-                            .attr('id', 'diff_win')
-                            .addClass('diff-window')
-                            .addClass('diff_navigation_style')
-                            .css({
+                    return $window.
+                            attr('id', 'diff_win').
+                            addClass('diff-window').
+                            addClass('diff_navigation_style').
+                            css({
                                 top: '150px',
                                 right: '20px',
-                                'min-width': '300px'})
-                            .body()
-                            .append($controls)
-                            .append(this.$summary)
-                            .append(this.$progress)
-                            .window()
+                                'min-width': '300px'}).
+                            body().
+                            append($controls).
+                            append(this.$summary).
+                            append(this.$progress).
+                            window();
                 },
                 load: function ($window) {
-                    var that = this
+                    var that = this;
                     $(document).keypress(function (e) {
                         if (textInputHasFocus()) {
                             return true;
                         }
-                        var key = e.keyCode || e.which
+                        var key = e.keyCode || e.which;
                         switch (key) {
                             case 110: // n
-                                that.nextHandler(e)
+                                that.nextHandler(e);
                                 break;
                             case 98: // b
-                                that.prevHandler(e)
+                                that.prevHandler(e);
                                 break;
                             default:
                         }
@@ -145,7 +146,7 @@
                 },
                 update: function (data) {
                     var index = this.currentIndex < 0 ? 1 : (this.currentIndex + 1);
-                    this.$summary.text(index + "/" + this.$changes.length + " chunks")
+                    this.$summary.text(index + "/" + this.$changes.length + " chunks");
                 }
             }, options || {
                 /*
@@ -172,26 +173,26 @@
                 $progress: $('<div>').css('text-align', 'center'),
                 $summary: $('<div>'),
                 initChanges: function () {
-                    if (this.$changes.length)
+                    if (this.$changes.length) {
                         return;
+                    }
                     // is diff in table (udiff/sdiff) or just html text (new/old diff)?
-                    var isTable = this.options.$parent.find("table").length > 0
+                    var isTable = this.options.$parent.find("table").length > 0;
                     // get all changes
                     this.$changes = isTable ? this.options.$parent.find(this.options.chunkSelector) :
-                            this.options.$parent.find(this.options.addSelector + "," + this.options.delSelector)
+                            this.options.$parent.find(this.options.addSelector + "," + this.options.delSelector);
                     this.$window.update();
                 },
                 progress: function (str) {
-                    var $span = $("<p>" + str + "</p>")
-                            .animate({opacity: "0.2"}, 1000)
+                    var $span = $("<p>" + str + "</p>").animate({opacity: "0.2"}, 1000);
                     $span.hide('fast', function () {
                         $span.remove();
                     });
-                    this.$progress.html($span)
+                    this.$progress.html($span);
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {
-                        this.options.scrollTop($el)
+                        this.options.scrollTop($el);
                     } else {
                         $('html, body').stop().animate({
                             scrollTop: $el.position().top - this.options.$parent.offset().top
@@ -200,39 +201,40 @@
                     return this;
                 },
                 prevHandler: function (e) {
-                    e.preventDefault()
+                    e.preventDefault();
                     this.initChanges();
-                    var $current = $(this.$changes[this.currentIndex - 1])
+                    var $current = $(this.$changes[this.currentIndex - 1]);
 
                     if (!$current.length) {
-                        this.$window.error("No previous chunk!")
-                        return false
+                        this.$window.error("No previous chunk!");
+                        return false;
                     }
 
                     this.currentIndex--;
-                    this.progress("Going to chunk " + (this.currentIndex + 1) + "/" + this.$changes.length)
+                    this.progress("Going to chunk " + (this.currentIndex + 1) + "/" + this.$changes.length);
                     this.scrollTop($current);
                     this.$window.update();
-                    return false
+                    return false;
                 },
                 nextHandler: function (e) {
-                    e.preventDefault()
+                    e.preventDefault();
                     this.initChanges();
-                    var $current = $(this.$changes[this.currentIndex + 1])
+                    var $current = $(this.$changes[this.currentIndex + 1]);
                     if (!$current.length) {
-                        this.$window.error("No next chunk!")
-                        return false
+                        this.$window.error("No next chunk!");
+                        return false;
                     }
                     this.currentIndex++;
-                    this.progress("Going to chunk " + (this.currentIndex + 1) + "/" + this.$changes.length)
+                    this.progress("Going to chunk " + (this.currentIndex + 1) + "/" + this.$changes.length);
                     this.scrollTop($current);
-                    this.$window.update()
-                    return false
-                },
+                    this.$window.update();
+                    return false;
+                }
             }, context || {}));
-        }
+            return $.diffWindow;
+        };
     };
-    $.diffWindow = new ($.extend(diffWindow, $.diffWindow ? $.diffWindow : {}));
+    $.diffWindow = new ($.extend(diffWindow, $.diffWindow ? $.diffWindow : {}))();
 }(window, $.window));
 
 // Code to be called when the DOM for diff.jsp is ready.

@@ -60,11 +60,10 @@
                 var lo = 0,
                         hi = array.length - 1,
                         mid,
-                        element,
                         cmp;
                 while (lo <= hi) {
                     mid = ((lo + hi) >> 1);
-                    cmp = compare(array[mid], key)
+                    cmp = compare(array[mid], key);
                     if (cmp === 0) {
                         return mid;
                     } else if (cmp < 0) {
@@ -78,26 +77,16 @@
             handleScrollEvent: function () {
                 inner.lock = false;
                 
-                var myOffset = inner.$collection.first().offset() ? inner.$collection.first().offset().top : 0
-                var myHeight = inner.$collection.first().height() || 0
-                var parentOffset = inner.options.$parent.offset() ? inner.options.$parent.offset().top : 0
-                var parentHeight = inner.options.$parent.height() || 0
+                var myOffset = inner.$collection.first().offset() ? inner.$collection.first().offset().top : 0;
+                var myHeight = inner.$collection.first().height() || 0;
+                var parentOffset = inner.options.$parent.offset() ? inner.options.$parent.offset().top : 0;
+                var parentHeight = inner.options.$parent.height() || 0;
                 
                 var expectations = {
                     // the first element in viewport
-                    start: Math.floor(
-                            Math.abs(
-                                Math.min(myOffset - parentOffset, 0)
-                                ) / myHeight
-                           ),
+                    start: Math.floor(Math.abs(Math.min(myOffset - parentOffset, 0)) / myHeight),
                     // the last element in viewport
-                    end: Math.ceil(
-                            (Math.abs(
-                                Math.min(myOffset - parentOffset, 0)
-                                ) + parentHeight
-                            ) / myHeight
-                         ),
-                    
+                    end: Math.ceil((Math.abs(Math.min(myOffset - parentOffset, 0)) + parentHeight) / myHeight)
                 };
 
                 var indices = {
@@ -117,13 +106,14 @@
                 indices.start = Math.max(0, indices.start);
                 indices.start = Math.min(inner.$collection.length - 1, indices.start);
 
-                if (indices.end === -1)
+                if (indices.end === -1) {
                     indices.end = inner.$collection.length - 1;
+                }
                 indices.end = Math.min(inner.$collection.length - 1, indices.end);
 
                 /** calling callback for every element in the viewport */
                 for (var i = indices.start; i <= indices.end; i++) {
-                    inner.options.callback.apply(inner.$collection[i])
+                    inner.options.callback.apply(inner.$collection[i]);
                 }
             },
             init: function () {
@@ -145,22 +135,22 @@
                     inner.lock = true;
                     setTimeout(inner.handleScrollEvent, inner.options.interval);
                 };
-                inner.options.$parent
-                        .scroll(scrollHandler)
-                        .resize(scrollHandler)
-                        .scroll() // fire the event if user has not scrolled
+                inner.options.$parent.
+                    scroll(scrollHandler).
+                    resize(scrollHandler).
+                    scroll(); // fire the event if user has not scrolled
                 inner.initialized = true;
             }
         };
 
         this.init = function (options) {
-            inner.options = $.extend({}, inner.defaults, {$parent: $("#content")}, options)
+            inner.options = $.extend({}, inner.defaults, {$parent: $("#content")}, options);
             inner.init();
             return this;
-        }
+        };
     };
 
-    $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
+    $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}))();
 })(window, window.jQuery);
 
 /**
@@ -273,96 +263,98 @@
             },
             options: {},
             bindClickHandler: function() {
-                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click (function (e){
+                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click(function (e) {
                     if(e.shiftKey) {
                         // shift pressed
-                        var val = inner.toInt($(this).attr("name"))
-                        if(!val){
-                            return false
+                        var val = inner.toInt($(this).attr("name"));
+                        if (!val) {
+                            return false;
                         }
 
-                        var l = inner.getLinesParts(window.location.hash)
+                        var l = inner.getLinesParts(window.location.hash);
 
-                        if(l.length == 2) {
-                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(val, l[1])
-                        } else if ( l.length == 1){
-                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(l[0], val)
+                        if (l.length == 2) {
+                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(val, l[1]);
+                        } else if (l.length == 1) {
+                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(l[0], val);
                         }
-                        return false
+                        return false;
                     }
-                    return true
-                })
+                    return true;
+                });
             },
             
             getHashParts: function (hash) {
-                if(!hash || hash == "")
+                if (!hash || hash === "") {
                     return hash;
+                }
                 return (hash = hash.split("#")).length > 1 ? hash[1] : "";
             },
 
             getLinesParts: function ( hashPart ) {
-              hashPart = inner.getHashParts(hashPart)
-              if (!hashPart || hashPart == "")
+              hashPart = inner.getHashParts(hashPart);
+              if (!hashPart || hashPart === "") {
                   return hashPart;
-              var s = hashPart.split("-")
-              if(s.length > 1 && inner.toInt(s[0]) && inner.toInt(s[1]))
-                  return [ inner.toInt(s[0]), inner.toInt(s[1]) ]
-              if(s.length > 0 && inner.toInt(s[0]))
-                  return [ inner.toInt(s[0]) ]
-              return []
+              }
+              var s = hashPart.split("-");
+              if (s.length > 1 && inner.toInt(s[0]) && inner.toInt(s[1])) {
+                  return [inner.toInt(s[0]), inner.toInt(s[1])];
+              }
+              if (s.length > 0 && inner.toInt(s[0])) {
+                  return [inner.toInt(s[0])];
+              }
+              return [];
             },
 
             lines: function (urlPart) {
-                p = inner.getLinesParts(urlPart)
-                if(p.length == 2) {
+                p = inner.getLinesParts(urlPart);
+                if (p.length == 2) {
                     var l = [];
-                    for ( var i = Math.min(p[0],p[1]); i <= Math.max(p[0], p[1]); i ++ )
+                    for (var i = Math.min(p[0],p[1]); i <= Math.max(p[0], p[1]); i++) {
                         l.push(i);
+                    }
                     return l;
                 } else if (p.length == 1){
-                    return [ p[0] ]
+                    return [p[0]];
                 }
                 return [];
             },
-        
 
             reload: function(e){
-                for ( var i = 0; i < inner.highlighted.length; i ++ ) {
+                for (var i = 0; i < inner.highlighted.length; i++) {
                     // remove color
-                    inner.highlighted[i].removeClass(inner.options.highlightedClass)
+                    inner.highlighted[i].removeClass(inner.options.highlightedClass);
                 }
-                inner.highlighted = []
+                inner.highlighted = [];
 
                 var lines = inner.lines(window.location.hash);
 
-                if(lines.length < 1) {
+                if (lines.length < 1) {
                     // not a case of line highlighting
-                    return
+                    return;
                 }
-                for ( var i = 0; i < lines.length; i ++ ) {
+                for (var j = 0; j < lines.length; j++) {
                     // color
                     var slc = inner.format(inner.options.linkSelectorTemplate, { "parent": inner.options.parent,
-                                                                                  "n": lines[i] } );
-                    var el = $(slc).addClass(inner.options.highlightedClass)
-                    inner.highlighted.push(el)
+                                                                                  "n": lines[j] } );
+                    var el = $(slc).addClass(inner.options.highlightedClass);
+                    inner.highlighted.push(el);
                 }
             },
             format: function(format) {
                 var args = Array.prototype.slice.call(arguments, 1);
                 args = args.length > 0 ? typeof args[0] === "object" ? args[0] : args : args;
                 return format.replace(/{([a-zA-Z0-9_-]+)}/g, function(match, number) {
-                  return typeof args[number] != 'undefined'
-                    ? args[number] 
-                    : match
-                  ;
+                  return typeof args[number] != 'undefined' ? args[number] : match;
                 });
             },
             toInt: function (string) {
-                return parseInt(string)
+                return parseInt(string, 10);
             },
             scroll: function (){
-                if(!inner.options.autoScroll)
-                    return
+                if (!inner.options.autoScroll) {
+                    return;
+                }
                 var lines = inner.getLinesParts(window.location.hash);
                 if (lines.length > 0) {
                     var line = lines[0]; // first line
@@ -381,24 +373,24 @@
                         }, inner.options.autoScrollDuration);
                     }
                 }
-            },
-        } // inner
+            }
+        }; // inner
         
         this.init = function (options) {
             if (inner.initialized) {
                 return this;
             }
-            inner.options = $.extend(inner.defaults, options, {})
+            inner.options = $.extend(inner.defaults, options, {});
 
-            $(window).on("hashchange", inner.reload)
-            inner.reload()
-            inner.bindClickHandler()
-            inner.scroll()
-            inner.initialized = true
+            $(window).on("hashchange", inner.reload);
+            inner.reload();
+            inner.bindClickHandler();
+            inner.scroll();
+            inner.initialized = true;
             return this;
-        }
-    }
-    $.hash = new ($.extend(hash, $.hash ? $.hash : {}));
+        };
+    };
+    $.hash = new ($.extend(hash, $.hash ? $.hash : {}))();
 }) (window, window.jQuery);
 
 /**
@@ -406,32 +398,32 @@
  */
 (function (window, document, $) {
     var script = function () {
-        var self = this
         this.scriptsDownloaded = {};
         this.defaults = {
-            contextPath: window.contextPath,
-        }
+            contextPath: window.contextPath
+        };
 
         this.options = $.extend(this.defaults, {});
 
         this.loadScript = function (url) {
             if (!/^[a-z]{3,5}:\/\//.test(url)) { // dummy test for remote prefix
-                url = this.options.contextPath + '/' + url
+                url = this.options.contextPath + '/' + url;
             }
             if (url in this.scriptsDownloaded) {
-                return this.scriptsDownloaded[url]
+                return this.scriptsDownloaded[url];
             }
-            return this.scriptsDownloaded[url] = $.ajax({
+            this.scriptsDownloaded[url] = $.ajax({
                 url: url,
                 dataType: 'script',
                 cache: true,
                 timeout: 10000
             }).fail(function () {
-                console.debug('Failed to download "' + url + '" module')
+                console.debug('Failed to download "' + url + '" module');
             });
-        }
+            return this.scriptsDownloaded[url];
+        };
     };
-    $.script = new ($.extend(script, $.script ? $.script : {}));
+    $.script = new ($.extend(script, $.script ? $.script : {}))();
 })(window, document, jQuery);
 
 /**
@@ -486,20 +478,20 @@
  */
 (function (browserWindow, document, $, $script) {
     var window = function () {
-        var inner = function (options, context) {
+        var Inner = function (options, context) {
             var self = this;
             // private
             this.context = context;
             this.callbacks = {
                 init: [],
                 load: [],
-                update: [],
+                update: []
             };
             this.$window = undefined;
             this.$errors = undefined;
             this.clientX = 0;
             this.clientY = 0;
-            this.pendingUpdates = []
+            this.pendingUpdates = [];
 
             /**
              * Default values for the window options.
@@ -514,20 +506,20 @@
                 load: undefined,
                 init: undefined,
                 handlers: undefined
-            }
+            };
 
             this.options = $.extend({}, this.defaults, options);
 
             this.addCallback = function (name, callback, context) {
                 context = context || this.getSelfContext;
                 if (!this.callbacks || !$.isArray(this.callbacks[name])) {
-                    this.callbacks[name] = []
+                    this.callbacks[name] = [];
                 }
                 this.callbacks[name].push({
                     'callback': callback,
                     'context': context
-                })
-            }
+                });
+            };
 
             this.fire = function (name, args) {
                 if (!this.callbacks || !$.isArray(this.callbacks[name])) {
@@ -537,48 +529,46 @@
                 for (var i = 0; i < this.callbacks[name].length; i++) {
                     this.$window = (this.callbacks[name][i].callback.apply(
                             this.callbacks[name][i].context.call(this),
-                            args || [this.$window])) || this.$window
+                            args || [this.$window])) || this.$window;
                 }
-            }
+            };
 
             this.getContext = function () {
                 return $.extend(this.context, {options: this.options});
-            }
+            };
 
             this.getSelfContext = function () {
                 return this;
-            }
-
-
+            };
 
             // private
             this.cropPosition = function($w, position) {
                 var w = {
                     height: $w.outerHeight(true),
                     width: $w.outerWidth(true)
-                }
+                };
                 var bw = {
                     height: $(browserWindow).outerHeight(true),
                     width: $(browserWindow).outerWidth(true),
                     yOffset: 0,
                     xOffset: 0
-                }
-                position.top -= Math.max(0, position.top + w.height - bw.yOffset - bw.height + 20)
-                position.left -= Math.max(0, position.left + w.width - bw.xOffset - bw.width + 20)
+                };
+                position.top -= Math.max(0, position.top + w.height - bw.yOffset - bw.height + 20);
+                position.left -= Math.max(0, position.left + w.width - bw.xOffset - bw.width + 20);
                 return position;
-            }
+            };
 
             this.determinePosition = function () {
                 var position = {
                     top: this.clientY,
                     left: this.clientX
-                }
-                return this.cropPosition(this.$window, position)
-            }
+                };
+                return this.cropPosition(this.$window, position);
+            };
 
             this.makeMeDraggable = function () {
                 if (!$script || typeof $script.loadScript !== 'function') {
-                    console.log("The window plugin requires $.script plugin when draggable option is 'true'")
+                    console.log("The window plugin requires $.script plugin when draggable option is 'true'");
                     return;
                 }
 
@@ -597,31 +587,29 @@
                         }
                     });
                 });
-            }
+            };
 
             this.addCallback('init', function ($window) {
-                var $top, $close, $controls, $header, $body;
+                var $top, $close, $header, $body;
 
-                $top = $("<div>").addClass('clearfix')
-                        .append($("<div>").addClass("pull-left").append($("<b>").text(this.options.title || "Window")))
-                        .append($("<div>").addClass('pull-right').append($close = $("<a href=\"#\" class=\"minimize\">x</a>")))
+                $top = $("<div>").addClass('clearfix').
+                        append($("<div>").addClass("pull-left").append($("<b>").text(this.options.title || "Window"))).
+                        append($("<div>").addClass('pull-right').append($close = $('<a href="#" class="minimize">x</a>')));
 
-                $header = $("<div>").addClass('window-header')
-                        .append($top);
+                $header = $("<div>").addClass('window-header').append($top);
 
-                $body = $("<div>").addClass("window-body")
-                        .append(self.$errors = $('<div>').css('text-align', 'center'))
+                $body = $("<div>").addClass("window-body").append(self.$errors = $('<div>').css('text-align', 'center'));
 
-                $window = $("<div>")
-                        .addClass('window')
-                        .addClass('diff_navigation_style')
-                        .css('z-index', 15000)
-                        .hide()
-                        .append($header)
-                        .append($body);
+                $window = $("<div>").
+                        addClass('window').
+                        addClass('diff_navigation_style').
+                        css('z-index', 15000).
+                        hide().
+                        append($header).
+                        append($body);
 
                 $close.click(function () {
-                    $window.hide()
+                    $window.hide();
                     return false;
                 });
 
@@ -639,9 +627,9 @@
                 $window.body = function () {
                     $body.window = function () {
                         return $window;
-                    }
+                    };
                     return $body;
-                }
+                };
 
                 /**
                  * Display custom error message in the window
@@ -649,14 +637,14 @@
                  * @returns self
                  */
                 $window.error = function (msg) {
-                    var $span = $("<p class='error'>" + msg + "</p>")
-                            .animate({opacity: "0.2"}, 3000)
+                    var $span = $("<p class='error'>" + msg + "</p>").
+                            animate({opacity: "0.2"}, 3000);
                     $span.hide('slow', function () {
                         $span.remove();
                     });
-                    self.$errors.html($span)
+                    self.$errors.html($span);
                     return this;
-                }
+                };
 
                 /**
                  * Move the window to the position. If no position is given
@@ -666,7 +654,7 @@
                  * @returns self
                  */
                 $window.move = function (position) {
-                    position = position || self.determinePosition()
+                    position = position || self.determinePosition();
                     return this.css(position);
                 };
 
@@ -682,7 +670,7 @@
                 $window.toggle = function() {
                     var action = this.is(':visible') ? this.hide : this.show;
                     return action.apply(this, arguments);
-                }
+                };
 
                 /**
                  * Toggle and move the window to the current mouse position
@@ -691,7 +679,7 @@
                  */
                 $window.toggleAndMove = function () {
                     return $window.toggle().move();
-                }
+                };
 
                 /**
                  * Update the window with given data.
@@ -701,12 +689,12 @@
                  */
                 $window.update = function (data) {
                     if (this.loaded) {
-                        self.fire('update', [data])
+                        self.fire('update', [data]);
                     } else {
-                        self.pendingUpdates.push({data: data})
+                        self.pendingUpdates.push({data: data});
                     }
                     return this;
-                }
+                };
 
                 // insert window into context
                 this.context = $.extend(this.context, {$window: $window});
@@ -720,41 +708,38 @@
             });
 
             this.addCallback('load', function ($window) {
-                var that = this
+                var that = this;
                 $(document).mousemove(function (e) {
                     that.clientX = e.clientX;
                     that.clientY = e.clientY;
-                })
+                });
                 $(document).keyup(function (e) {
                     var key = e.keyCode;
-                    switch (key) {
-                        case 27: // esc
-                            that.$window.hide();
-                            break;
-                        default:
+                    if (key === 27) { // esc
+                        that.$window.hide();
                     }
                     return true;
                 });
-            })
+            });
 
             if (this.options.draggable) {
-                this.addCallback('load', this.makeMeDraggable)
+                this.addCallback('load', this.makeMeDraggable);
             }
 
             this.addCallback('load', function ($window) {
                 this.$window.appendTo(this.options.parent ? $(this.options.parent) : $("body"));
-            })
+            });
 
             if (this.options.init && typeof this.options.init === 'function') {
-                this.addCallback('init', this.options.init, this.getContext)
+                this.addCallback('init', this.options.init, this.getContext);
             }
 
             if (self.options.load && typeof self.options.load === 'function') {
-                this.addCallback('load', this.options.load, this.getContext)
+                this.addCallback('load', this.options.load, this.getContext);
             }
 
             if (self.options.update && typeof self.options.update === 'function') {
-                this.addCallback('update', this.options.update, this.getContext)
+                this.addCallback('update', this.options.update, this.getContext);
             }
 
             $(function () {
@@ -762,12 +747,12 @@
                 self.$window.loaded = true;
 
                 for (var i = 0; i < self.pendingUpdates.length; i++) {
-                    self.fire('update', [self.pendingUpdates[i].data])
+                    self.fire('update', [self.pendingUpdates[i].data]);
                 }
-                self.pendingUpdates = []
-            })
+                self.pendingUpdates = [];
+            });
 
-            this.fire('init')
+            this.fire('init');
 
             return this.$window;
         };
@@ -780,10 +765,10 @@
          * @returns new window object
          */
         this.create = function (options, context) {
-            return new inner(options, context)
-        }
+            return new Inner(options, context);
+        };
     };
-    $.window = new ($.extend(window, $.window ? $.window : {}));
+    $.window = new ($.extend(window, $.window ? $.window : {}))();
 })(window, document, jQuery, jQuery.script);
 
 /**
@@ -793,80 +778,80 @@
  */
 (function (browserWindow, document, $, $window) {
     if (!$window || typeof $window.create !== 'function') {
-        console.log("The intelligenceWindow plugin requires $.window plugin")
+        console.log("The intelligenceWindow plugin requires $.window plugin");
         return;
     }
 
     var intelliWindow = function () {
         this.initialised = false;
         this.init = function (options, context) {
-            return $.intelliWindow = $window.create($.extend({
+            $.intelliWindow = $window.create($.extend({
                 title: 'Intelligence window',
                 selector: 'a.intelliWindow-symbol',
                 google_url: 'https://www.google.com/search?q=',
                 project: undefined,
                 init: function ($window) {
-                    var $highlight, $unhighlight, $unhighlightAll, $prev, $next
+                    var $highlight, $unhighlight, $unhighlightAll, $prev, $next;
 
-                    var $firstList = $("<ul>")
-                            .append($("<li>").append(
-                                    $highlight = $("<a href=\"#\" title=\"Highlight\">" +
-                                            "<span>Highlight</span> <b class=\"symbol-name\"></b></a>")))
-                            .append($("<li>").append(
-                                    $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
-                                            "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
-                            .append($("<li>").append(
-                                    $unhighlightAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
-                                            "<span>Unhighlight all</span></a>")))
+                    var $firstList = $("<ul>").
+                            append($("<li>").append(
+                                    $highlight = $('<a href="#" title="Highlight">' +
+                                            '<span>Highlight</span> <b class="symbol-name"></b></a>'))).
+                            append($("<li>").append(
+                                    $unhighlight = $('<a href="#" title="Unhighlight">' +
+                                            '<span>Unhighlight</span> <b class="symbol-name"></b></a>'))).
+                            append($("<li>").append(
+                                    $unhighlightAll = $('<a href="#" title="Unhighlight all">' +
+                                            '<span>Unhighlight all</span></a>')));
 
-                    this.bindOnClick($highlight, this.highlight)
-                    this.bindOnClick($unhighlight, this.unhighlight)
+                    this.bindOnClick($highlight, this.highlight);
+                    this.bindOnClick($unhighlight, this.unhighlight);
                     this.bindOnClick($unhighlightAll, this.unhighlightAll);
 
-                    var $secondList = $("<ul>")
-                            .append($("<li>").append(
-                                    $("<a class=\"search-defs\" href=\"#\" target=\"_blank\">" +
-                                            "<span>Search for definitions of</span> <b class=\"symbol-name\"></b></a>")))
-                            .append($("<li>").append(
-                                    $("<a class=\"search-refs\" href=\"#\" target=\"_blank\">" +
-                                            "<span>Search for references of</span> <b class=\"symbol-name\"></b></a>")))
-                            .append($("<li>").append(
-                                    $("<a class=\"search-full\" href=\"#\" target=\"_blank\">" +
-                                            "<span>Do a full search with</span> <b class=\"symbol-name\"></b></a>")))
-                            .append($("<li>").append(
-                                    $("<a class=\"search-files\" href=\"#\" target=\"_blank\">" +
-                                            "<span>Search for file names that contain</span> <b class=\"symbol-name\"></b></a>")))
+                    var $secondList = $("<ul>").
+                            append($("<li>").append(
+                                    $('<a class="search-defs" href="#" target="_blank">' +
+                                            '<span>Search for definitions of</span> <b class="symbol-name"></b></a>'))).
+                            append($("<li>").append(
+                                    $('<a class="search-refs" href="#" target="_blank">' +
+                                            '<span>Search for references of</span> <b class="symbol-name"></b></a>'))).
+                            append($("<li>").append(
+                                    $('<a class="search-full" href="#" target="_blank">' +
+                                            '<span>Do a full search with</span> <b class="symbol-name"></b></a>'))).
+                            append($("<li>").append(
+                                    $('<a class="search-files" href="#" target="_blank">' +
+                                            '<span>Search for file names that contain</span> <b class="symbol-name"></b></a>')));
 
-                    var $thirdList = $("<ul>")
-                            .append($("<li>").append(
-                                    $("<a class=\"search-google\" href=\"#\" target=\"_blank\">" +
-                                            "<span>Google</span> <b class=\"symbol-name\"></b></a>")))
+                    var $thirdList = $("<ul>").
+                            append($("<li>").append(
+                                    $('<a class="search-google" href="#" target="_blank">' +
+                                            '<span>Google</span> <b class="symbol-name"></b></a>')));
 
-                    var $controls = $("<div class=\"pull-right\">")
-                            .append($next = $("<a href=\"#\" title=\"next\" class=\"pull-right\">Next >></a>"))
-                            .append("<span class=\"pull-right\"> | </span>")
-                            .append($prev = $("<a href=\"#\" title=\"prev\" class=\"pull-right\"><< Prev </a>"))
-                            .append($("<div class=\"clearfix\">"))
-                            .append(this.$errors = $("<span class=\"clearfix\">"))
+                    var $controls = $('<div class="pull-right">').
+                            append($next = $('<a href="#" title="next" class="pull-right">Next >></a>')).
+                            append('<span class="pull-right"> | </span>').
+                            append($prev = $('<a href="#" title="prev" class="pull-right"><< Prev </a>')).
+                            append($('<div class="clearfix">')).
+                            append(this.$errors = $('<span class="clearfix">'));
 
                     this.bindOnClick($next, this.scrollToNextElement, 1);
                     this.bindOnClick($prev, this.scrollToNextElement, -1);
 
-                    return $window
-                            .attr('id', 'intelli_win')
-                            .addClass('intelli-window')
-                            .body()
-                            .append($controls)
-                            .append($("<h2>").addClass('symbol-name'))
-                            .append($("<span>").addClass('symbol-description'))
-                            .append($("<hr>"))
-                            .append($("<h5>").text("In current file"))
-                            .append($firstList)
-                            .append($("<h5>").text("In project \"" + this.project + "\""))
-                            .append($secondList)
-                            .append($("<h5>").text("On Google"))
-                            .append($thirdList)
-                            .window();
+                    return $window.
+                            attr('id', 'intelli_win').
+                            addClass('intelli-window').
+                            body().
+                            append($controls).
+                            append($("<h2>").addClass('symbol-name')).
+                            append($("<span>").addClass('symbol-description')).
+                            append($("<hr>")).
+                            append($("<h5>").text("In current file")).
+                            append($firstList).
+                            append($("<h5>").text('In project "' + this.project + '"')).
+                            append($secondList).
+                            append($("<h5>").text("On Google")).
+                            append($thirdList).
+                            window();
                 },
                 load: function ($window) {
                     var that = this;
@@ -882,18 +867,18 @@
                                 }
                                 break;
                             case 50: // 2
-                                if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 1);
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                     that.highlight(that.symbol, 1);
                                 }
                                 break;
                             case 51: // 3
-                                if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 2);
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                     that.highlight(that.symbol, 2);
                                 }
                                 break;
                             case 52: // 4
-                                if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 3);
+                                if (that.symbol && that.unhighlight(that.symbol).length === 0) {
+                                     that.highlight(that.symbol, 3);
                                 }
                                 break;
                             case 53: // 5
@@ -914,7 +899,7 @@
                     });
                     this.project = this.options.project || $("input[name='project']").val();
                     this.contextPath = browserWindow.contextPath;
-                },
+                }
             }, options || {}), $.extend({
                 symbol: undefined,
                 project: undefined,
@@ -927,27 +912,27 @@
                 $search_files: undefined,
                 $search_google: undefined,
                 changeSymbol: function ($el) {
-                    this.$current = $el
-                    this.$last_highlighted_current = $el.hasClass("symbol-highlighted") ? $el : this.$last_highlighted_current
-                    this.symbol = $el.text()
-                    this.place = $el.data("definition-place")
-                    this.$window.find('.hidden-on-start').show()
+                    this.$current = $el;
+                    this.$last_highlighted_current = $el.hasClass("symbol-highlighted") ? $el : this.$last_highlighted_current;
+                    this.symbol = $el.text();
+                    this.place = $el.data("definition-place");
+                    this.$window.find('.hidden-on-start').show();
                     this.$window.find(".symbol-name").text(this.symbol);
-                    this.$window.find(".symbol-description").text(this.getSymbolDescription(this.place))
+                    this.$window.find(".symbol-description").text(this.getSymbolDescription(this.place));
                     this.modifyLinks();
                 },
                 modifyLinks: function () {
-                    this.$search_defs = this.$search_defs || this.$window.find('.search-defs')
-                    this.$search_refs = this.$search_refs || this.$window.find('.search-refs')
-                    this.$search_full = this.$search_full || this.$window.find('.search-full')
-                    this.$search_files = this.$search_files || this.$window.find('.search-files')
-                    this.$search_google = this.$search_google || this.$window.find('.search-google')
+                    this.$search_defs = this.$search_defs || this.$window.find('.search-defs');
+                    this.$search_refs = this.$search_refs || this.$window.find('.search-refs');
+                    this.$search_full = this.$search_full || this.$window.find('.search-full');
+                    this.$search_files = this.$search_files || this.$window.find('.search-files');
+                    this.$search_google = this.$search_google || this.$window.find('.search-google');
 
                     this.$search_defs.attr('href', this.getSearchLink('defs'));
                     this.$search_refs.attr('href', this.getSearchLink('refs'));
                     this.$search_full.attr('href', this.getSearchLink('full'));
                     this.$search_files.attr('href', this.getSearchLink('path'));
-                    this.$search_google.attr('href', this.options.google_url + this.symbol)
+                    this.$search_google.attr('href', this.options.google_url + this.symbol);
                 },
                 getSearchLink: function (query) {
                     return this.options.contextPath + '/search?' + query + '=' + this.symbol + '&project=' + this.project;
@@ -974,30 +959,29 @@
                     }
                     return this.getSymbols().filter(function () {
                         return $(this).text() === symbol;
-                    }).addClass('symbol-highlighted').addClass('hightlight-color-' + (color || 1))
+                    }).addClass('symbol-highlighted').addClass('hightlight-color-' + (color || 1));
                 },
                 unhighlight: function (symbol) {
                     if (this.$last_highlighted_current &&
                             this.$last_highlighted_current.text() === symbol &&
                             this.$last_highlighted_current.hasClass('symbol-highlighted')) {
-                        var i = this.getSymbols().index(this.$last_highlighted_current)
+                        var i = this.getSymbols().index(this.$last_highlighted_current);
                         this.$last_highlighted_jump = this.getSymbols().slice(0, i).filter('.symbol-highlighted').last();
                     }
                     return this.getSymbols().filter(".symbol-highlighted").filter(function () {
                         return $(this).text() === symbol;
-                    }).removeClass('symbol-highlighted')
-                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
+                    }).removeClass('symbol-highlighted').
+                            removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 unhighlightAll: function () {
-                    this.$last_highlighted_current = undefined
-                    return this.getSymbols().filter(".symbol-highlighted")
-                            .removeClass("symbol-highlighted")
-                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
+                    this.$last_highlighted_current = undefined;
+                    return this.getSymbols().filter(".symbol-highlighted").
+                            removeClass("symbol-highlighted").
+                            removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {
-
-                        this.options.scrollTop($el)
+                        this.options.scrollTop($el);
                     } else {
                         $('html, body').stop().animate({
                             scrollTop: $el.offset().top - $("#src").offset().top
@@ -1008,19 +992,17 @@
                     var UP = -1;
                     var DOWN = 1;
                     var $highlighted = this.getSymbols().filter(".symbol-highlighted");
-                    var $el = $highlighted.length && this.$last_highlighted_current
-                            ? this.$last_highlighted_current
-                            : this.$current;
+                    var $el = $highlighted.length && this.$last_highlighted_current ? this.$last_highlighted_current : this.$current;
                     var indexOfCurrent = this.getSymbols().index($el);
 
                     switch (direction) {
                         case DOWN:
                             $el = this.getSymbols().slice(indexOfCurrent + 1);
                             if ($highlighted.length) {
-                                $el = $el.filter('.symbol-highlighted')
+                                $el = $el.filter('.symbol-highlighted');
                             }
                             if (!$el.length) {
-                                this.$window.error("This is the last occurence!")
+                                this.$window.error("This is the last occurence!");
                                 return;
                             }
                             $el = $el.first();
@@ -1028,34 +1010,35 @@
                         case UP:
                             $el = this.getSymbols().slice(0, indexOfCurrent);
                             if ($highlighted.length) {
-                                $el = $el.filter('.symbol-highlighted')
+                                $el = $el.filter('.symbol-highlighted');
                             }
                             if (!$el.length) {
-                                this.$window.error("This is the first occurence!")
+                                this.$window.error("This is the first occurence!");
                                 return;
                             }
                             $el = $el.last();
                             break;
                         default:
-                            this.$window.error("Unknown direction")
+                            this.$window.error("Unknown direction");
                             return;
                     }
 
-                    this.scrollTop($el)
-                    this.changeSymbol($el)
+                    this.scrollTop($el);
+                    this.changeSymbol($el);
                 },
                 bindOnClick: function ($el, callback, param) {
-                    var that = this
+                    var that = this;
                     $el.click(function (e) {
-                        e.preventDefault()
-                        callback.call(that, param || that.symbol)
+                        e.preventDefault();
+                        callback.call(that, param || that.symbol);
                         return false;
-                    })
-                },
+                    });
+                }
             }, context || {}));
-        }
-    }
-    $.intelliWindow = new ($.extend(intelliWindow, $.intelliWindow ? $.intelliWindow : {}));
+            return $.intelliWindow;
+        };
+    };
+    $.intelliWindow = new ($.extend(intelliWindow, $.intelliWindow ? $.intelliWindow : {}))();
 })(window, document, jQuery, jQuery.window);
 
 /**
@@ -1065,72 +1048,73 @@
  */
 (function (browserWindow, document, $, $window) {
     if (!$window || typeof $window.create !== 'function') {
-        console.log("The messagesWindow plugin requires $.window plugin")
+        console.log("The messagesWindow plugin requires $.window plugin");
         return;
     }
     
     var messagesWindow = function () {
         this.init = function (options, context) {
-            return $.messagesWindow = $window.create(options = $.extend({
+            $.messagesWindow = $window.create($.extend({
                 title: 'Messages Window',
                 draggable: false,
                 init: function ($window) {
-                    return $window
-                            .attr('id', 'messages_win')
-                            .addClass('messages-window')
-                            .addClass('diff_navigation_style')
-                            .css({top: '150px', right: '20px'})
-                            .body()
-                            .append(this.$messages = $("<div>"))
-                            .window();
+                    return $window.
+                            attr('id', 'messages_win').
+                            addClass('messages-window').
+                            addClass('diff_navigation_style').
+                            css({top: '150px', right: '20px'}).
+                            body().
+                            append(this.$messages = $("<div>")).
+                            window();
                 },
                 load: function ($window) {
                     $window.mouseenter(function () {
-                        $window.show()
+                        $window.show();
                     }).mouseleave(function () {
-                        $window.hide()
-                    })
+                        $window.hide();
+                    });
 
                     // simulate show/toggle and move
                     $.each(['show', 'toggle'], function () {
-                        var old = $window[this]
+                        var old = $window[this];
                         $window[this] = function () {
                             return old.call($window).move();
-                        }
-                    })
+                        };
+                    });
                 },
                 update: function (data) {
-                    this.$messages.empty()
+                    this.$messages.empty();
                     for (var i = 0; i < data.length; i++) {
-                        var tag = data[i]
+                        var tag = data[i];
                         if (!tag || tag.messages.length === 0) {
                             continue;
                         }
-                        this.$messages.append($("<h5>")
-                                .addClass('message-group-caption')
-                                .text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)))
+                        this.$messages.append($("<h5>").
+                                addClass('message-group-caption').
+                                text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)));
                         var $ul = $("<ul>").addClass('message-group limited');
                         for (var j = 0; j < tag.messages.length; j++) {
                             if (!tag.messages[j]) {
                                 continue;
                             }
                             $ul.append(
-                                    $('<li>')
-                                    .addClass('message-group-item')
-                                    .addClass(tag.messages[j].cssClass)
-                                    .attr('title', 'Expires on ' + tag.messages[j].expiration)
-                                    .html(tag.messages[j].created + ': ' + tag.messages[j].text)
-                                    )
+                                $('<li>').
+                                    addClass('message-group-item').
+                                    addClass(tag.messages[j].cssClass).
+                                    attr('title', 'Expires on ' + tag.messages[j].expiration).
+                                    html(tag.messages[j].created + ': ' + tag.messages[j].text)
+                            );
                         }
                         this.$messages.append($ul);
                     }
                 }
             }, options || {}), $.extend({
-                $messages: $(),
+                $messages: $()
             }, context || {}));
-        }
+            return $.messagesWindow;
+        };
     };
-    $.messagesWindow = new ($.extend(messagesWindow, $.messagesWindow ? $.messagesWindow : {}));
+    $.messagesWindow = new ($.extend(messagesWindow, $.messagesWindow ? $.messagesWindow : {}))();
 })(window, document, jQuery, jQuery.window);
 
 /**
@@ -1140,32 +1124,32 @@
  */
 (function (browserWindow, document, $, $window) {
     if (!$window || typeof $window.create !== 'function') {
-        console.log("The scopesWindow plugin requires $.window plugin")
+        console.log("The scopesWindow plugin requires $.window plugin");
         return;
     }
 
     var scopesWindow = function () {
         this.init = function (options, context) {
-            return $.scopesWindow = $window.create($.extend({
+            $.scopesWindow = $window.create($.extend({
                 title: 'Scopes Window',
                 draggable: false,
                 init: function ($window) {
-                    return $window
-                            .attr('id', 'scopes_win')
-                            .addClass('scopes-window')
-                            .addClass('diff_navigation_style')
-                            .css({top: '150px', right: '20px'})
-                            .body()
-                            .append(this.$scopes = $("<div>"))
-                            .window();
+                    return $window.
+                            attr('id', 'scopes_win').
+                            addClass('scopes-window').
+                            addClass('diff_navigation_style').
+                            css({top: '150px', right: '20px'}).
+                            body().
+                            append(this.$scopes = $("<div>")).
+                            window();
                 },
                 load: function ($window) {
-                    $window.hide().css('top', $("#content").offset().top + 10 + 'px')
+                    $window.hide().css('top', $("#content").offset().top + 10 + 'px');
 
                     // override the hide and show to throw an event and run
                     // scope_on_scroll() for update
                     $.each(['hide', 'show'], function () {
-                        var event = this
+                        var event = this;
                         var old = $window[event];
                         $window[event] = function () {
                             var $toReturn = old.call($window).trigger(event);
@@ -1175,31 +1159,32 @@
                             }
                             scope_on_scroll();
                             return $toReturn;
-                        }
+                        };
                     });
                     
                     $('.scopes-toggle').click(function () {
                         $window.toggle();
                         return false;
-                    })
+                    });
                 },
                 update: function (data) {
                     if(!this.$window.is(':visible') && !this.$window.data('shown-once')) {
                         this.$window.show().data('shown-once', true);
                     }
-                    this.$scopes.empty()
-                    this.$scopes.html(this.buildLink(data.id, data.link))
-                    this.$window.trigger('update')
+                    this.$scopes.empty();
+                    this.$scopes.html(this.buildLink(data.id, data.link));
+                    this.$window.trigger('update');
                 }
             }, options || {}), $.extend({
                 $scopes: $(),
                 buildLink: function (href, name) {
-                    return $('<a>').attr('href', '#' + href).attr('title', name).html(name)
+                    return $('<a>').attr('href', '#' + href).attr('title', name).html(name);
                 }
             }, context || {}));
-        }
-    }
-    $.scopesWindow = new ($.extend(scopesWindow, $.scopesWindow ? $.scopesWindow : {}));
+            return $.scopesWindow;
+        };
+    };
+    $.scopesWindow = new ($.extend(scopesWindow, $.scopesWindow ? $.scopesWindow : {}))();
 })(window, document, jQuery, jQuery.window);
 
 /**
@@ -1209,44 +1194,44 @@
  */
 (function (browserWindow, document, $, $window) {
     if (!$window || typeof $window.create !== 'function') {
-        console.log("The navigateWindow plugin requires $.window plugin")
+        console.log("The navigateWindow plugin requires $.window plugin");
         return;
     }
 
     var navigateWindow = function () {
         this.init = function (options, context) {
-            return $.navigateWindow = $window.create($.extend({
+            $.navigateWindow = $window.create($.extend({
                 title: 'Navigate Window',
                 draggable: false,
                 init: function ($window) {
-                    return $window
-                            .attr('id', 'navigate_win')
-                            .addClass('navigate-window')
-                            .addClass('diff_navigation_style')
-                            .addClass('diff_navigation_style')
-                            .css({top: '150px', right: '20px', height: this.defaultHeight + 'px'})
-                            .body()
-                            .append(this.$content)
-                            .window();
+                    return $window.
+                            attr('id', 'navigate_win').
+                            addClass('navigate-window').
+                            addClass('diff_navigation_style').
+                            addClass('diff_navigation_style').
+                            css({top: '150px', right: '20px', height: this.defaultHeight + 'px'}).
+                            body().
+                            append(this.$content).
+                            window();
                 },
                 load: function ($window) {
-                    var that = this
-                    $window.css('top', this.getTopOffset() + 10 + 'px')
+                    var that = this;
+                    $window.css('top', this.getTopOffset() + 10 + 'px');
 
                     if ($.scopesWindow && $.scopesWindow.initialized) {
                         $.scopesWindow.on('show', function () {
                             setTimeout(function () {
-                                that.updatePosition($window)
+                                that.updatePosition($window);
                             }, 100);
                         }).on('hide', function () {
                             that.updatePosition($window);
                         }).on('update', function () {
                             that.updatePosition($window);
-                        })
+                        });
 
                         if ($.scopesWindow.is(':visible')) {
                             setTimeout(function () {
-                                that.updatePosition($window)
+                                that.updatePosition($window);
                             }, 100);
                         }
                     }
@@ -1257,41 +1242,42 @@
 
                     // override and show to throw an event and update position
                     $.each(['show'], function () {
-                        var event = this
+                        var event = this;
                         var old = $window[event];
                         $window[event] = function () {
-                            return that.updatePosition(old.call($window).trigger(event))
-                        }
+                            return that.updatePosition(old.call($window).trigger(event));
+                        };
                     });
 
                     $(browserWindow).resize(function () {
-                        that.updatePosition($window)
-                    })
-                    that.updatePosition($window)
+                        that.updatePosition($window);
+                    });
+                    that.updatePosition($window);
                 },
                 update: function (data) {
                     var $ul;
-                    this.$content.empty()
-                    for (var i = 0; i < data.length; i++)
-                    {
-                        this.$content.append($('<h4>').text(data[i][0]))
-                        if (data[i][2].length === 0)
+                    this.$content.empty();
+                    for (var i = 0; i < data.length; i++) {
+                        this.$content.append($('<h4>').text(data[i][0]));
+                        if (data[i][2].length === 0) {
                             continue;
-                        this.$content.append($ul = $('<ul>'))
-                        for (var j = 0; j < data[i][2].length; j ++)
+                        }
+                        this.$content.append($ul = $('<ul>'));
+                        for (var j = 0; j < data[i][2].length; j++) {
                             $ul.append($('<li>').append(this.buildLink(data[i][2][j][1], data[i][2][j][0], data[i][1])));
+                        }
                     }
-                    this.updatePosition(this.$window)
+                    this.updatePosition(this.$window);
                 }
             }, options || {
             }), $.extend({
                 $content: $('<div>'),
                 defaultHeight: 480,
                 buildLink: function (href, name, c) {
-                    return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow)
+                    return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow);
                 },
                 getTopOffset: function () {
-                    return $("#content").offset().top
+                    return $("#content").offset().top;
                 },
                 updatePosition: function ($w) {
                     if (!$w.is(':visible')) {
@@ -1304,7 +1290,7 @@
                         return $w;
                     }
 
-                    var a = {}
+                    var a = {};
                     a.top = this.getTopOffset() + 10;
                     if ($.scopesWindow &&
                             $.scopesWindow.initialized &&
@@ -1313,22 +1299,25 @@
                     }
                     a.height = Math.min(parseFloat($w.css('max-height')) || this.defaultHeight, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
 
-                    if (a.height == $w.height() && a.top == this.getTopOffset())
+                    if (a.height == $w.height() && a.top == this.getTopOffset()) {
                         return $w;
+                    }
 
-                    if (this.$content.children().length === 0)
+                    if (this.$content.children().length === 0) {
                         // the window is empty
-                        delete a.height
+                        delete a.height;
+                    }
 
-                    return $w.stop().animate(a)
+                    return $w.stop().animate(a);
                 },
                 escapeHtml: function (html) {
                     return html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 }
             }, context || {}));
-        }
-    }
-    $.navigateWindow = new ($.extend(navigateWindow, $.navigateWindow ? $.navigateWindow : {}));
+            return $.navigateWindow;
+        };
+    };
+    $.navigateWindow = new ($.extend(navigateWindow, $.navigateWindow ? $.navigateWindow : {}))();
 })(window, document, jQuery, jQuery.window);
 
 function init_scopes() {
@@ -1346,7 +1335,7 @@ function init_results_autohide() {
         $("#results > h3").hide(); // error
         $("#results > table, #results > ul").hide(); // results + empty
         $("#results > table + p, #results > ul + p").hide(); // results + empty timing
-    })
+    });
 }
 
 function init_searchable_option_list() {
@@ -1384,12 +1373,12 @@ function init_searchable_option_list() {
             onInitialized: function () {
                 if ($.messagesWindow.initialized) {
                     this.$selectionContainer.find("[data-messages]").mouseenter(function () {
-                        var data = $(this).data('messages') || []
-                        $.messagesWindow.update(data)
-                        $.messagesWindow.show()
+                        var data = $(this).data('messages') || [];
+                        $.messagesWindow.update(data);
+                        $.messagesWindow.show();
                     }).mouseleave(function (e) {
-                        $.messagesWindow.hide()
-                    })
+                        $.messagesWindow.hide();
+                    });
                 }
             },
             // override the default onScroll positioning event if necessary
@@ -1404,19 +1393,17 @@ function init_searchable_option_list() {
                     selectionContainerWidth = Math.ceil(selectionContainerWidth * 1.2);
                 } else {
                     // no border radius on top
-                    this.$selectionContainer
-                            .css('border-top-right-radius', 'initial');
+                    this.$selectionContainer.css('border-top-right-radius', 'initial');
 
                     if (this.$actionButtons) {
-                        this.$actionButtons
-                                .css('border-top-right-radius', 'initial');
+                        this.$actionButtons.css('border-top-right-radius', 'initial');
                     }
                 }
 
-                this.$selectionContainer
-                        .css('top', Math.floor(posY))
-                        .css('left', Math.floor(this.$container.offset().left))
-                        .css('width', selectionContainerWidth);
+                this.$selectionContainer.
+                        css('top', Math.floor(posY)).
+                        css('left', Math.floor(this.$container.offset().left)).
+                        css('width', selectionContainerWidth);
             },
             onRendered: init_sol_on_type_combobox
         }
@@ -1432,40 +1419,38 @@ function init_searchable_option_list() {
 
 function init_history_input() {
     $('input[data-revision-path]').click(function () {
-        var $this = $(this)
+        var $this = $(this);
         $("a.more").each(function () {
-            $(this).attr('href', setParameter($(this).attr('href'), 'r1', $this.data('revision-1')))
-            $(this).attr('href', setParameter($(this).attr('href'), 'r2', $this.data('revision-2')))
-        })
+            $(this).attr('href', setParameter($(this).attr('href'), 'r1', $this.data('revision-1')));
+            $(this).attr('href', setParameter($(this).attr('href'), 'r2', $this.data('revision-2')));
+        });
 
         var $revisions = $('input[data-revision-path]'),
                 index = -1;
 
         // change the correct revision on every element
         // (every element keeps a track which revision is selected)
-        $revisions.filter('[data-diff-revision=\'r1\']')
-                .data('revision-2', $this.data('revision-2'))
-        $revisions.filter('[data-diff-revision=\'r2\']')
-                .data('revision-1', $this.data('revision-1'))
+        $revisions.filter("[data-diff-revision='r1']").data('revision-2', $this.data('revision-2'));
+        $revisions.filter("[data-diff-revision='r2']").data('revision-1', $this.data('revision-1'));
 
         // set the correct revision for the form submission
-        $("#input_" + $this.data('diff-revision')).val($this.data('revision-path'))
+        $("#input_" + $this.data('diff-revision')).val($this.data('revision-path'));
 
         // enable all input
-        $revisions.prop('disabled', false),
-                // uncheck all input in my column
-                $revisions.filter('[data-diff-revision=\'' + $this.data('diff-revision') + '\']').prop('checked', false)
+        $revisions.prop('disabled', false);
+        // uncheck all input in my column
+        $revisions.filter("[data-diff-revision='" + $this.data('diff-revision') + "']").prop('checked', false);
         // set me as checked
-        $this.prop('checked', true)
+        $this.prop('checked', true);
 
         // disable from top to r2
-        index = Math.max($revisions.index($('input[data-revision-path][data-diff-revision=\'r2\']:checked')), 0)
-        $revisions.slice(0, index).filter('[data-diff-revision=\'r1\']').prop('disabled', true)
+        index = Math.max($revisions.index($("input[data-revision-path][data-diff-revision='r2']:checked")), 0);
+        $revisions.slice(0, index).filter("[data-diff-revision='r1']").prop('disabled', true);
 
         // disable from bottom to r1
-        index = Math.max($revisions.index($('input[data-revision-path][data-diff-revision=\'r1\']:checked')), index)
-        $revisions.slice(index + 1).filter('[data-diff-revision=\'r2\']').prop('disabled', true)
-    })
+        index = Math.max($revisions.index($("input[data-revision-path][data-diff-revision='r1']:checked")), index);
+        $revisions.slice(index + 1).filter("[data-diff-revision='r2']").prop('disabled', true);
+    });
 }
 
 function init_tablesorter() {
@@ -1495,7 +1480,7 @@ function init_markdown_converter() {
         $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
             $.script.loadScript('js/showdown-1.8.4.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
-                    var $dataMarkdownDownloadEl = $(this)
+                    var $dataMarkdownDownloadEl = $(this);
                     if (converter === null) {
                         converter = new showdown.Converter();
                         converter.setOption('tables', true);
@@ -1509,14 +1494,11 @@ function init_markdown_converter() {
                         url: $(this).data('markdown-download'),
                         dataType: 'text',
                         timeout: 5000,
-                        mimeType: 'text/plain',
+                        mimeType: 'text/plain'
                     }).done(function (payload) {
-                        $dataMarkdownDownloadEl.html(filterXSS(converter.makeHtml(payload)))
-                                .show()
-                        $that.addClass('markdown')
-                                .find('[data-markdown-original]')
-                                .hide()
-                    })
+                        $dataMarkdownDownloadEl.html(filterXSS(converter.makeHtml(payload))).show();
+                        $that.addClass('markdown').find('[data-markdown-original]').hide();
+                    });
                 });
             });
         });
@@ -1540,12 +1522,12 @@ $(document).ready(function () {
      */
     $('#src').each(function () {
         init_scopes();
-    })
+    });
 
     /**
      * Initialize table sorter on every directory listing.
      */
-    init_tablesorter()
+    init_tablesorter();
 
     /**
      * Initialize intelligence window plugin. Presence of #contextpath indicates
@@ -1554,7 +1536,7 @@ $(document).ready(function () {
     $("#contextpath").each(function () {
         $.intelliWindow.init();
         return false;
-    })
+    });
 
     /**
      * Initialize the messages plugin to display
@@ -1567,12 +1549,12 @@ $(document).ready(function () {
      */
     if ($.messagesWindow.initialized) {
         $("[data-messages]").mouseenter(function () {
-            var data = $(this).data('messages') || []
-            $.messagesWindow.update(data)
-            $.messagesWindow.show()
+            var data = $(this).data('messages') || [];
+            $.messagesWindow.update(data);
+            $.messagesWindow.show();
         }).mouseleave(function (e) {
-            $.messagesWindow.hide()
-        })
+            $.messagesWindow.hide();
+        });
     }
 
     /**
@@ -1580,25 +1562,24 @@ $(document).ready(function () {
      * the line number and the following text. It strongly relies on the fact
      * that the line numbers are stored in 'name' attribute on each line link.
      */
-    $.spaces.init()
+    $.spaces.init();
 
     /**
      * Initialize the window hash management. Mainly this allows users to select
      * multiple lines of code and use that url to send it to somebody else.
      */
-    $.hash.init({parent: "pre"})
+    $.hash.init({parent: "pre"});
 
     /**
      * After hitting the search button, the results or projects are temporarily hidden
      * until the new page is loaded. That helps to distinguish if search is being in process.
-     *
      */
-    init_results_autohide()
+    init_results_autohide();
 
     /**
      * Initialize the new project picker
      */
-    init_searchable_option_list()
+    init_searchable_option_list();
 
     /**
      * Initialize the history input picker.
@@ -1608,7 +1589,7 @@ $(document).ready(function () {
      * Also works for paging where it stores the actual selected revision range in the
      * pagination links.
      */
-    init_history_input()
+    init_history_input();
 
     /**
      * Initialize the markdown converter.
@@ -1654,7 +1635,7 @@ function getParameter(p) {
  * @returns string the modified url
  */
 function setParameter(url, p, v) {
-    var base = url.substr(0, url.indexOf('?'))
+    var base = url.substr(0, url.indexOf('?'));
     var params = url.substr(base.length + 1).split("&").map(
             function (x) {
                 return x.split("=");
@@ -1663,11 +1644,11 @@ function setParameter(url, p, v) {
     for (var i in params) {
         if (params[i][0] === p && params[i].length > 1) {
             params[i][1] = encodeURIComponent(v);
-            found = true
+            found = true;
         }
     }
     if (!found) {
-        params.push([p, encodeURIComponent(v)])
+        params.push([p, encodeURIComponent(v)]);
     }
 
     return base + '?' + params.map(function (x) {
@@ -1681,25 +1662,27 @@ function domReadyMast() {
         if (h && h !== "") {
             window.location.hash = h;
         } else {
-            $("#content")
-                    .attr("tabindex", 1)
-                    .focus()
-                    .css('outline', 'none')
+            $("#content").
+                    attr("tabindex", 1).
+                    focus().
+                    css('outline', 'none');
         }
     }
     if (document.annotate) {
         $('a.r').tooltip({
             content: function () {
                 var element = $(this);
-                var title = element.attr("title") || ""
+                var title = element.attr("title") || "";
                 var parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
-                if (parts.length <= 0)
+                if (parts.length <= 0) {
                     return "";
+                }
                 var $el = $("<dl>");
                 for (var i = 0; i < parts.length; i++) {
                     var definitions = parts[i].split(":");
-                    if (definitions.length < 2)
+                    if (definitions.length < 2) {
                         continue;
+                    }
                     $("<dt>").text(definitions.shift().trim()).appendTo($el);
                     var $dd = $("<dd>");
                     $.each(definitions.join(":").split("<br/>"), function (i, el) {
@@ -1709,11 +1692,11 @@ function domReadyMast() {
                     $dd.appendTo($el);
                 }
                 return $el;
-            },
-        })
+            }
+        });
 
         $("#toggle-annotate-by-javascript").css('display', 'inline');
-        $("#toggle-annotate").hide()
+        $("#toggle-annotate").hide();
     }
 }
 
@@ -1779,7 +1762,7 @@ function initMinisearchAutocomplete(config) {
             full: input.val(),
             path: pathElem.is(':checked') ? pathElem.val() : '',
             caret: caretPos
-        }
+        };
     }, 'search');
 }
 
@@ -1823,7 +1806,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                     input.autocomplete("close");
                     response(undefined); // to remove loading indicator
 
-                    showError(xhr.responseJSON.message, errorElem)
+                    showError(xhr.responseJSON.message, errorElem);
                 },
                 statusCode: {
                     404: function() {
@@ -1865,7 +1848,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 event.preventDefault();
                 return;
             }
-            if (event.originalEvent.originalEvent.type.indexOf('key') == 0) { // replace value only on key events
+            if (event.originalEvent.originalEvent.type.indexOf('key') === 0) { // replace value only on key events
                 replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
             }
 
@@ -1916,7 +1899,7 @@ function getAutocompleteMenuData(input, field) {
         hist: $('#hist').val(),
         type: $('#type').val(),
         caret: caretPos
-    }
+    };
 }
 
 function replaceValueWithSuggestion(input, queryText, identifier, suggestion) {
@@ -2052,14 +2035,14 @@ function toggle_annotations() {
  */
 function pageReadyList() {
     document.highlight_count = 0;
-    $.navigateWindow.init()
+    $.navigateWindow.init();
     if (typeof get_sym_list === 'function') {
-        $.navigateWindow.update(get_sym_list())
+        $.navigateWindow.update(get_sym_list());
     }
     $('#navigate').click(function () {
-        $.navigateWindow.toggle()
+        $.navigateWindow.toggle();
         return false;
-    })
+    });
 }
 
 /**
@@ -2067,44 +2050,25 @@ function pageReadyList() {
  */
 function lntoggle() {
     $(document.body).toggleClass("lines-hidden");
-    $('.fold-space, .fold-icon, .unfold-icon').toggle()
+    $('.fold-space, .fold-icon, .unfold-icon').toggle();
 }
 
 function lnshow() {
     $(document.body).removeClass("lines-hidden");
-    $('.fold-space, .fold-icon, .unfold-icon').show()
+    $('.fold-space, .fold-icon, .unfold-icon').show();
 }
 
 /* ------ Highlighting ------ */
-/**
- * An expensive Highlighter:
- * Note: It will replace link's href contents as well, be careful.
- */
-/* Not used.
-function HighlightKeywordsFullText(keywords) {
-    var el = $("body");
-    $(keywords).each(
-        function() {
-            var pattern = new RegExp("("+this+")", ["gi"]);
-            var rs = "<span style='background-color:#FFFF00;font-weight:bold;'"
-                + ">$1</span>";
-            el.html(el.html().replace(pattern, rs));
-        }
-    );
-    // HighlightKeywordsFullText(["nfstcpsock"]);
-}
-*/
 
 /**
  *  Highlight keywords by changing the style of matching tags.
  */
-function HighlightKeyword(keyword) {
+function highlightKeyword(keyword) {
     var high_colors = [ "#ffff66", "#ffcccc", "#ccccff", "#99ff99", "#cc66ff" ];
     var pattern = "a:contains('" + keyword + "')";
     $(pattern).css({
         'text-decoration' : 'underline',
-        'background-color' : high_colors[document.highlight_count
-            % high_colors.length],
+        'background-color' : high_colors[document.highlight_count % high_colors.length],
         'font-weight' : 'bold'
     });
     document.highlight_count++;
@@ -2117,21 +2081,21 @@ function HighlightKeyword(keyword) {
  */
 function add_highlight() {
     var tbox = document.getElementById('input_highlight');
-    HighlightKeyword(tbox.value);
+    highlightKeyword(tbox.value);
 }
 
 function toggle_filelist() {
-    var $a = $('div.filelist')
-    var $b = $('div.filelist-hidden')
-    $a.toggle().toggleClass('filelist').toggleClass('filelist-hidden')
-    $b.toggle().toggleClass('filelist').toggleClass('filelist-hidden')
+    var $a = $('div.filelist');
+    var $b = $('div.filelist-hidden');
+    $a.toggle().toggleClass('filelist').toggleClass('filelist-hidden');
+    $b.toggle().toggleClass('filelist').toggleClass('filelist-hidden');
 }
 
 function toggle_revtags() {
-    var $a = $('tr.revtags, span.revtags')
-    var $b = $('tr.revtags-hidden, span.revtags-hidden')
-    $a.toggle().toggleClass('revtags').toggleClass('revtags-hidden')
-    $b.toggle().toggleClass('revtags').toggleClass('revtags-hidden')
+    var $a = $('tr.revtags, span.revtags');
+    var $b = $('tr.revtags-hidden, span.revtags-hidden');
+    $a.toggle().toggleClass('revtags').toggleClass('revtags-hidden');
+    $b.toggle().toggleClass('revtags').toggleClass('revtags-hidden');
 }
 
 /**
@@ -2176,7 +2140,7 @@ function selectAllProjects() {
     if ($("#project").data(SearchableOptionList.prototype.DATA_KEY)) {
         $("#project").searchableOptionList().selectAll();
     } else {
-        $("#project option").prop('selected', true)
+        $("#project option").prop('selected', true);
     }
 }
 
@@ -2186,7 +2150,7 @@ function invertAllProjects() {
     } else {
         $("#project option").each(function () {
             $(this).prop('selected', !$(this).prop('selected'));
-        })
+        });
     }
 }
 
@@ -2194,7 +2158,7 @@ function deselectAllProjects() {
     if ($("#project").data(SearchableOptionList.prototype.DATA_KEY)) {
         $("#project").searchableOptionList().deselectAll();
     } else {
-        $("#project option").prop('selected', false)
+        $("#project option").prop('selected', false);
     }
 }
 
@@ -2219,11 +2183,11 @@ function getSelectedProjectNames() {
  * Fold or unfold a function definition.
  */
 function fold(id) {
-    $('#' + id + '_fold_icon')
-            .children()
-            .first()
-            .toggleClass('unfold-icon')
-            .toggleClass('fold-icon')
+    $('#' + id + '_fold_icon').
+            children().
+            first().
+            toggleClass('unfold-icon').
+            toggleClass('fold-icon');
     $('#' + id + '_fold').toggle('fold');
 }
 
@@ -2238,27 +2202,27 @@ function scope_on_scroll() {
         return;
     }
     if (scope_timeout !== null) {
-        clearTimeout(scope_timeout)
-        scope_timeout = null
+        clearTimeout(scope_timeout);
+        scope_timeout = null;
     }
     scope_timeout = setTimeout(function () {
         var y = $('#whole_header').outerHeight() + 2;
         var c = document.elementFromPoint(15, y + 1);
 
         if ($(c).is('.l, .hl')) {
-            var $par = $(c).closest('.scope-body, .scope-head')
+            var $par = $(c).closest('.scope-body, .scope-head');
 
             if (!$par.length) {
                 return;
             }
 
             var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
-            var $sig = $head.children().first()
+            var $sig = $head.children().first();
             if ($.scopesWindow.initialized) {
                 $.scopesWindow.update({
                     'id': $head.attr('id'),
-                    'link': $sig.html(),
-                })
+                    'link': $sig.html()
+                });
             }
         }
         scope_timeout = null;
@@ -2292,21 +2256,21 @@ function preprocess_searched_projects(form) {
      * would appear in the url) and add a hidden checkbox with searchall name.
      */
     var allProjectsSearch = $.makeArray($sel.find('.sol-checkbox[name=project]')).every(function (checkbox) {
-        return $(checkbox).is(':checked')
+        return $(checkbox).is(':checked');
     });
 
     if (allProjectsSearch && $('#search_all_projects').length === 0) {
         $sel.find('.sol-checkbox').prop('checked', false);
-        var $input = $('<input>')
-        var $all = $input
-            .attr({
+        var $input = $('<input>');
+        var $all = $input.
+            attr({
                 id: 'search_all_projects',
                 type: 'checkbox',
                 value: true,
-                name: 'searchall',
-            })
-            .prop('checked', true)
-            .css('display', 'none')
+                name: 'searchall'
+            }).
+            prop('checked', true).
+            css('display', 'none');
         $all.appendTo($(form));
         return;
     }
@@ -2325,18 +2289,18 @@ function preprocess_searched_projects(form) {
             return;
         }
 
-        var checkboxs = $el.find('.sol-option .sol-checkbox')
+        var checkboxs = $el.find('.sol-option .sol-checkbox');
         for (var i = 0; i < checkboxs.length; i++) {
-            var checkbox = $(checkboxs[i])
+            var checkbox = $(checkboxs[i]);
             if (!checkbox.is(":checked")) {
                 return;
             }
         }
 
         $el.find('.sol-checkbox[name=group]').prop('checked', true);
-        for (var i = 0; i < checkboxs.length; i++) {
-            var checkbox = $(checkboxs[i])
-            checkbox.prop('checked', false)
+        for (var j = 0; j < checkboxs.length; j++) {
+            var cb = $(checkboxs[j]);
+            cb.prop('checked', false);
         }
     });
 }
@@ -2423,7 +2387,7 @@ function getCookie(cname) {
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
         }
-        if (c.indexOf(name) == 0) {
+        if (c.indexOf(name) === 0) {
             return c.substring(name.length, c.length);
         }
     }
