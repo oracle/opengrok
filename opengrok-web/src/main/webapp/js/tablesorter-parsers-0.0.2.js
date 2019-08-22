@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 $.tablesorter.addParser({
     id: 'dates',
@@ -28,8 +28,9 @@ $.tablesorter.addParser({
     },
     format: function (s) {
         var date = s.match(/^(\d{2})\-(\w{3})\-(\d{4})$/);
-        if (!date)
+        if (!date) {
             return new Date().getTime();
+        }
         var d = date[1];
         var m = date[2];
         var y = date[3];
@@ -70,7 +71,7 @@ $.tablesorter.addParser({
             return 0;
         }
 
-        var num = parts[1].replace(/[, ]/g, "")
+        var num = parts[1].replace(/[, ]/g, "");
         var unit = parts[2];
 
         // convert to bytes
