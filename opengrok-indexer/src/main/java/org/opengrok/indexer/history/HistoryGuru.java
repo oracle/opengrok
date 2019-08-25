@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -387,13 +387,15 @@ public final class HistoryGuru {
      * @param files list of files to check if they contain a repository
      * @param ignoredNames what files to ignore
      * @param recursiveSearch whether to use recursive search
-     * @param type type of the repository to search for or {@code null}
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
+     * @param isNested a value indicating if a parent {@link Repository} was
+     * already found above the {@code files}
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames, boolean recursiveSearch, String type, int depth) {
+            IgnoredNames ignoredNames, boolean recursiveSearch, int depth,
+            boolean isNested) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
 
@@ -408,7 +410,7 @@ public final class HistoryGuru {
 
                 Repository repository = null;
                 try {
-                    repository = RepositoryFactory.getRepository(file, type);
+                    repository = RepositoryFactory.getRepository(file, false, isNested);
                 } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', could not instantiate the repository.", e);
@@ -429,8 +431,8 @@ public final class HistoryGuru {
                                     "check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, type, depth + 1));
+                            repoList.addAll(addRepositories(subFiles, ignoredNames,
+                                    recursiveSearch, depth + 1, isNested));
                         }
                     }
                 } else {
@@ -447,9 +449,10 @@ public final class HistoryGuru {
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            // Search only for one type of repository - the one found here.
-                            repoList.addAll(HistoryGuru.this.addRepositories(subFiles, ignoredNames,
-                                    false, repository.getType(), depth + 1));
+                            // Search only one level down - if not: too much
+                            // stat'ing for huge Mercurial repositories
+                            repoList.addAll(addRepositories(subFiles, ignoredNames,
+                                    false, depth + 1, true));
                         }
                     }
                 }
@@ -464,13 +467,6 @@ public final class HistoryGuru {
         return repoList;
     }
 
-    private Collection<RepositoryInfo>
-        addRepositories(File[] files, Collection<RepositoryInfo> repos,
-                IgnoredNames ignoredNames, int depth) {
-
-        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null, depth);
-    }
-
     /**
      * Recursively search for repositories in given directories, add those found
      * to the internally used repository map.
@@ -482,7 +478,7 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(File[] files,
             IgnoredNames ignoredNames) {
 
-        return HistoryGuru.this.addRepositories(files, ignoredNames, true, null, 0);
+        return addRepositories(files, ignoredNames, true, 0, false);
     }
 
     /**
@@ -496,7 +492,7 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(Collection<String> repos,
             IgnoredNames ignoredNames) {
 
-        return HistoryGuru.this.addRepositories(repos.stream().
+        return addRepositories(repos.stream().
                 map(r -> new File(r)).
                 collect(Collectors.toList()).toArray(new File[0]), ignoredNames);
     }

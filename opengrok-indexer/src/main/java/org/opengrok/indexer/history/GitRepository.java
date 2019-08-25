@@ -536,6 +536,15 @@ public class GitRepository extends Repository {
         return true;
     }
 
+    /**
+     * Gets a value indicating the instance is nestable.
+     * @return {@code true}
+     */
+    @Override
+    boolean isNestable() {
+        return true;
+    }
+
     @Override
     public boolean isWorking() {
         if (working == null) {

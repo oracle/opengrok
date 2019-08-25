@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -81,18 +81,24 @@ public final class RepositoryFactory {
         return list;
     }
 
-    public static Repository getRepository(File file, String type)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
-            IOException, ForbiddenSymlinkException {
-        return getRepository(file, false, type);
-    }
-
+    /**
+     * Calls {@link #getRepository(File, boolean)} with {@code file} and {@code false}.
+     */
     public static Repository getRepository(File file)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        return getRepository(file, false, null);
+        return getRepository(file, false);
     }
-    
+
+    /**
+     * Calls {@link #getRepository(File, boolean, boolean)} with {@code file}, {@code interactive}, and {@code false}.
+     */
+    public static Repository getRepository(File file, boolean interactive)
+            throws IllegalAccessException, InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
+            NoSuchMethodException, IOException {
+        return getRepository(file, interactive, false);
+    }
+
     /**
      * Returns a repository for the given file, or null if no repository was
      * found.
@@ -104,8 +110,8 @@ public final class RepositoryFactory {
      * use interactive command timeout (as specified in {@code Configuration}).
      *
      * @param file File that might contain a repository
-     * @param interactive true if running in interactive mode
-     * @param type type of the repository to search for or {@code null}
+     * @param interactive a value indicating if running in interactive mode
+     * @param isNested a value indicating if a nestable {@link Repository} is required
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file
@@ -114,18 +120,14 @@ public final class RepositoryFactory {
      * @throws IOException when resolving repository path
      * @throws ForbiddenSymlinkException when resolving repository path
      */
-    public static Repository getRepository(File file, boolean interactive, String type)
+    public static Repository getRepository(File file, boolean interactive, boolean isNested)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
-            if (type != null && !type.equals(rep.getType())) {
-                continue;
-            }
-
-            if (rep.isRepositoryFor(file, interactive)) {
+            if ((!isNested || rep.isNestable()) && rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
 
                 if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).equals(File.separator)) {
@@ -212,7 +214,7 @@ public final class RepositoryFactory {
     public static Repository getRepository(RepositoryInfo info, boolean interactive)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        return getRepository(new File(info.getDirectoryName()), interactive, null);
+        return getRepository(new File(info.getDirectoryName()), interactive);
     }
 
     /**

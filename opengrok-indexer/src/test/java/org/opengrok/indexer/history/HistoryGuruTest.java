@@ -19,8 +19,13 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +47,6 @@ import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
-
-import static org.junit.Assert.*;
 
 /**
  * Test the functionality provided by the HistoryGuru (with friends)
@@ -174,21 +177,21 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @ConditionalRun(RepositoryInstalled.CvsInstalled.class)
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    public void testAddSubRepositoryNoTypeMatch() {
+    public void testAddSubRepositoryNotNestable() {
         HistoryGuru instance = HistoryGuru.getInstance();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // Clone a Mercurial repository underneath a Git repository.
-        File hgRoot = new File(repository.getSourceRoot(), "mercurial");
-        assertTrue(hgRoot.exists());
-        assertTrue(hgRoot.isDirectory());
+        // Check out CVS underneath a Git repository.
+        File cvsRoot = new File(repository.getSourceRoot(), "cvs_test");
+        assertTrue(cvsRoot.exists());
+        assertTrue(cvsRoot.isDirectory());
         File gitRoot = new File(repository.getSourceRoot(), "git");
         assertTrue(gitRoot.exists());
         assertTrue(gitRoot.isDirectory());
-        MercurialRepositoryTest.runHgCommand(gitRoot,
-                "clone", hgRoot.getAbsolutePath(), "subrepo");
+        CVSRepositoryTest.runCvsCommand(gitRoot, "-d",
+                cvsRoot.toPath().resolve("cvsroot").toFile().getAbsolutePath(), "checkout", "cvsrepo");
 
         Collection<RepositoryInfo> addedRepos = instance.
                 addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "git").toString()),
