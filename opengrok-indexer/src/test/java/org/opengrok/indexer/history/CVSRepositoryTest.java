@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -102,7 +102,7 @@ public class CVSRepositoryTest {
      * @param reposRoot directory of the repository root
      * @param args arguments to use for the command
      */
-    private static void runCvsCommand(File reposRoot, String ... args) {
+    public static void runCvsCommand(File reposRoot, String ... args) {
         List<String> cmdargs = new ArrayList<>();
         CVSRepository repo = new CVSRepository();
         cmdargs.add(repo.getRepoCommand());

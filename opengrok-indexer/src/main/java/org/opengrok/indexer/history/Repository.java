@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -503,6 +503,14 @@ public abstract class Repository extends RepositoryInfo {
      */
     @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
     boolean supportsSubRepositories() {
+        return false;
+    }
+
+    /**
+     * Subclasses can override to get a value indicating that a repository implementation is nestable.
+     * @return {@code false}
+     */
+    boolean isNestable() {
         return false;
     }
 

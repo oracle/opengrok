@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -491,6 +491,15 @@ public class MercurialRepository extends Repository {
         return !(val == null
                 ? Boolean.getBoolean(NOFOREST_PROPERTY_KEY)
                 : Boolean.parseBoolean(val));
+    }
+
+    /**
+     * Gets a value indicating the instance is nestable.
+     * @return {@code true}
+     */
+    @Override
+    boolean isNestable() {
+        return true;
     }
 
     @Override
