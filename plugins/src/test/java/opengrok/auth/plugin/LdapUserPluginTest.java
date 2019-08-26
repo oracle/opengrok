@@ -113,10 +113,31 @@ public class LdapUserPluginTest {
         assertEquals(mockprovider, plugin.getLdapProvider());
 
         HttpServletRequest request = new DummyHttpServletRequestLdap();
-        User user = new User("foo@bar.cz", "id", null, false);
+        User user = new User("foo@bar.cz", "id");
         plugin.fillSession(request, user);
 
         assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
         assertEquals(dn, ((LdapUser)request.getSession().getAttribute(SESSION_ATTR)).getDn());
+    }
+
+    @Test
+    public void testInstance() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
+        params.put(LdapUserPlugin.INSTANCE, (Object)"42");
+        plugin.load(params);
+
+        HttpServletRequest request = new DummyHttpServletRequestLdap();
+        LdapUser ldapUser = new LdapUser();
+        plugin.updateSession(request, ldapUser);
+        assertEquals(request.getSession().getAttribute(SESSION_ATTR + "42"), ldapUser);
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void testInvalidInstance() {
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapUserPlugin.ATTRIBUTES, (Object)"mail");
+        params.put(LdapUserPlugin.INSTANCE, (Object)"foobar");
+        plugin.load(params);
     }
 }

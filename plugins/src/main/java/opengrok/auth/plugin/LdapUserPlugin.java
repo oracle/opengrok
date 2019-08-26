@@ -58,15 +58,18 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
      * <li><code>useDN</code> boolean value indicating if User.username should be treated as Distinguished Name (optional, default is false)</li>
      * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
+     * <li><code>instance</code> integer that can be used to identify instance of this plugin by other LDAP plugins (optional, default empty)</li>
      * </ul>
      */
     protected static final String LDAP_FILTER = "filter";
     protected static final String ATTRIBUTES = "attributes";
     protected static final String USE_DN = "useDN";
+    protected static final String INSTANCE = "instance";
 
     private String ldapFilter;
     private Boolean useDN;
     private Set<String> attributes;
+    private Integer instance;
 
     // for testing
     void load(Map<String, Object> parameters, AbstractLdapProvider provider) {
@@ -96,9 +99,11 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             useDN = false;
         }
 
+        instance = Integer.parseInt((String) parameters.get(INSTANCE));
+
         LOGGER.log(Level.FINE, "LdapUser plugin loaded with filter={0}, " +
-                        "attributes={1}, useDN={2}",
-                new Object[]{ldapFilter, attributes, useDN});
+                        "attributes={1}, useDN={2}, instance={3}",
+                new Object[]{ldapFilter, attributes, useDN, instance});
     }
 
     /**
@@ -111,7 +116,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     @Override
     protected boolean sessionExists(HttpServletRequest req) {
         return super.sessionExists(req)
-                && req.getSession().getAttribute(SESSION_ATTR) != null;
+                && req.getSession().getAttribute(getSessionAttr()) != null;
     }
 
     /**
@@ -200,16 +205,20 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * @param user the new value for user
      */
     protected void updateSession(HttpServletRequest req, LdapUser user) {
-        req.getSession().setAttribute(SESSION_ATTR, user);
+        req.getSession().setAttribute(getSessionAttr(), user);
+    }
+
+    private String getSessionAttr() {
+        return (SESSION_ATTR + (instance != null ? instance.toString() : ""));
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return request.getSession().getAttribute(SESSION_ATTR) != null;
+        return request.getSession().getAttribute(getSessionAttr()) != null;
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return request.getSession().getAttribute(SESSION_ATTR) != null;
+        return request.getSession().getAttribute(getSessionAttr()) != null;
     }
 }

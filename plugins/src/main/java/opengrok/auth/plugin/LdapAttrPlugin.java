@@ -43,6 +43,9 @@ import org.opengrok.indexer.configuration.Project;
 /**
  * Authorization plug-in to check user's LDAP attribute against whitelist.
  *
+ * This plugin heavily relies on the presence of the {@code LdapUserPlugin} in the stack above it,
+ * since it is using the Distinguished Name of the {@code LdapUser} to perform the LDAP lookup.
+ *
  * @author Krystof Tulinger
  */
 public class LdapAttrPlugin extends AbstractLdapPlugin {
@@ -51,12 +54,23 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     protected static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
     protected static final String FILE_PARAM = "file";
+    private static final String INSTANCE = "instance";
 
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-attr-plugin-allowed";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
+    /**
+     * List of configuration names.
+     * <ul>
+     * <li><code>attribute</code> is LDAP attribute to check (mandatory)</li>
+     * <li><code>file</code> whitelist file (mandatory)</li>
+     * <li><code>instance</code> is number of <code>LdapUserInstance</code> plugin to use (optional)</li>
+     * </ul>
+     */
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
+    private String filePath;
+    private Integer ldapUserInstance;
 
     public LdapAttrPlugin() {
         sessionAllowed += "-" + nextId++;
@@ -65,7 +79,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     @Override
     public void load(Map<String, Object> parameters) {
         super.load(parameters);
-        String filePath;
 
         if ((ldapAttr = (String) parameters.get(ATTR_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + ATTR_PARAM + "] in the setup");
@@ -75,17 +88,29 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             throw new NullPointerException("Missing param [" + FILE_PARAM + "] in the setup");
         }
 
+        String instance = (String) parameters.get(INSTANCE);
+        if (instance != null) {
+            ldapUserInstance = Integer.parseInt(instance);
+        }
+
         try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
             stream.forEach(whitelist::add);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Unable to read the file \"%s\"", filePath), e);
         }
+
+        LOGGER.log(Level.FINE, "LdapAttrPlugin plugin loaded with attr={0}, whitelist={1}, instance={2}",
+                new Object[]{ldapAttr, filePath, ldapUserInstance});
     }
 
     @Override
     protected boolean sessionExists(HttpServletRequest req) {
         return super.sessionExists(req)
                 && req.getSession().getAttribute(sessionAllowed) != null;
+    }
+
+    private String getSessionAttr() {
+        return (LdapUserPlugin.SESSION_ATTR + (ldapUserInstance != null ? ldapUserInstance.toString() : ""));
     }
 
     @SuppressWarnings("unchecked")
@@ -98,7 +123,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
         updateSession(req, sessionAllowed);
 
-        if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
+        if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttr())) == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }

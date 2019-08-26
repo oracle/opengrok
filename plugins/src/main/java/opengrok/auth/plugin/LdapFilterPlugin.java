@@ -49,9 +49,18 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     protected static final String FILTER_PARAM = "filter";
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-filter-plugin-allowed";
+    private static final String INSTANCE = "instance";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
+    /**
+     * List of configuration names.
+     * <ul>
+     * <li><code>filter</code> is LDAP filter used for searching (mandatory)</li>
+     * <li><code>instance</code> is number of <code>LdapUserInstance</code> plugin to use (optional)</li>
+     * </ul>
+     */
     private String ldapFilter;
+    private Integer ldapUserInstance;
 
     public LdapFilterPlugin() {
         sessionAllowed += "-" + nextId++;
@@ -64,7 +73,14 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         if ((ldapFilter = (String) parameters.get(FILTER_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILTER_PARAM + "] in the setup");
         }
-        LOGGER.log(Level.FINE, "LdapFilter plugin loaded");
+
+        String instance = (String) parameters.get(INSTANCE);
+        if (instance != null) {
+            ldapUserInstance = Integer.parseInt(instance);
+        }
+
+        LOGGER.log(Level.FINE, "LdapFilter plugin loaded with filter={0}, instance={1}",
+                new Object[]{ldapFilter, ldapUserInstance});
     }
 
     @Override
@@ -73,13 +89,17 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
                 && req.getSession().getAttribute(sessionAllowed) != null;
     }
 
+    private String getSessionAttr() {
+        return (LdapUserPlugin.SESSION_ATTR + (ldapUserInstance != null ? ldapUserInstance.toString() : ""));
+    }
+
     @Override
     public void fillSession(HttpServletRequest req, User user) {
         LdapUser ldapUser;
 
         updateSession(req, false);
 
-        if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
+        if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttr())) == null) {
             LOGGER.log(Level.FINER, "failed to get LDAP attribute " + LdapUserPlugin.SESSION_ATTR);
             return;
         }
