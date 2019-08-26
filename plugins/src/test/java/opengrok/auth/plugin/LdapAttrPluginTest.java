@@ -84,11 +84,13 @@ public class LdapAttrPluginTest {
     private void prepareRequest(String username, String mail, String... ous) {
         dummyRequest = new DummyHttpServletRequestLdap();
         dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR,
-                new User(username, "123", null, false));
+                new User(username, "123"));
+
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList(mail)));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("123")));
         ldapUser.setAttribute("ou", new TreeSet<>(Arrays.asList(ous)));
+
         dummyRequest.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR, ldapUser);
         plugin.setSessionEstablished(dummyRequest, true);
         plugin.setSessionUsername(dummyRequest, username);
