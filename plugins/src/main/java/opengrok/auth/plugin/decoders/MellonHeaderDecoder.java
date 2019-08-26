@@ -42,17 +42,21 @@ import java.util.logging.Logger;
  * containing the e-mail address and the {@code mod_headers} Apache module is set to
  * pass the value of this variable in HTTP header called {@code MELLON_email}, i.e.:
  * {@code RequestHeader set email "%{MELLON_email}e" env=MELLON_email}
+ *
+ * The e-mail value is then stored as the {@code id} property of the {@code User} object.
  */
 public class MellonHeaderDecoder implements IUserDecoder {
 
     private static final Logger LOGGER = Logger.getLogger(MellonHeaderDecoder.class.getName());
 
     static final String MELLON_EMAIL_HEADER = "MELLON_email";
+    static final String MELLON_USERNAME_HEADER = "MELLON_username";
 
     @Override
     public User fromRequest(HttpServletRequest request) {
-        String username = request.getHeader(MELLON_EMAIL_HEADER);
-        if (username == null || username.isEmpty()) {
+        // e-mail is mandatory.
+        String id = request.getHeader(MELLON_EMAIL_HEADER);
+        if (id == null || id.isEmpty()) {
             LOGGER.log(Level.WARNING,
                     "Can not construct User object: header ''{1}'' not found in request headers: {0}",
                     new Object[]{String.join(",", Collections.list(request.getHeaderNames())),
@@ -60,6 +64,9 @@ public class MellonHeaderDecoder implements IUserDecoder {
             return null;
         }
 
-        return new User(username);
+        // username is optional.
+        String username = request.getHeader(MELLON_USERNAME_HEADER);
+
+        return new User(username, id);
     }
 }
