@@ -44,8 +44,12 @@ public class FilterUtil {
      * @return replaced result
      */
     public static String expandUserFilter(User user, String filter) {
-        filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
-        filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+        if (user.getUsername() != null) {
+            filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
+        }
+        if (user.getId() != null) {
+            filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+        }
 
         return filter;
     }
