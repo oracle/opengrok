@@ -38,6 +38,23 @@ public class User {
         this.username = username;
     }
 
+    /**
+     * Construct User object.
+     * @param username username
+     * @param id user ID
+     */
+    public User(String username, String id) {
+        this.id = id;
+        this.username = username;
+    }
+
+    /**
+     * Construct User object.
+     * @param username username
+     * @param id user ID
+     * @param cookieTimestamp cookie time stamp
+     * @param timeouted is the user timed out
+     */
     public User(String username, String id, Date cookieTimestamp, boolean timeouted) {
         this.id = id;
         this.username = username;
