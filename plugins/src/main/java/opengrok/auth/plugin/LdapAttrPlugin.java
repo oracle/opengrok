@@ -116,12 +116,12 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     @SuppressWarnings("unchecked")
     @Override
     public void fillSession(HttpServletRequest req, User user) {
-        boolean sessionAllowed = false;
+        Boolean sessionAllowed;
         LdapUser ldapUser;
         Map<String, Set<String>> records = null;
         Set<String> attributeValues;
 
-        updateSession(req, sessionAllowed);
+        updateSession(req, false);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttr())) == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
