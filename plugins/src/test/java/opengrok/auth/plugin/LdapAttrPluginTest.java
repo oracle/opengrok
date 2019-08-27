@@ -109,7 +109,7 @@ public class LdapAttrPluginTest {
     }
 
     /**
-     * Test of isAllowed method, of class LdapFilter.
+     * Test of {@code isAllowed} method.
      */
     @Test
     public void testIsAllowed() {
