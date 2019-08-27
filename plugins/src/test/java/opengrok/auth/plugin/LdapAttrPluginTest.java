@@ -37,6 +37,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.FakeLdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -73,11 +74,10 @@ public class LdapAttrPluginTest {
         plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
         
-        parameters.put(AbstractLdapPlugin.FAKE_PARAM, true);
         parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
         parameters.put(LdapAttrPlugin.ATTR_PARAM, "mail");
 
-        plugin.load(parameters);
+        plugin.load(parameters, new FakeLdapFacade());
     }
 
     @SuppressWarnings("unchecked")

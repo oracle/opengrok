@@ -76,10 +76,21 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         sessionAllowed += "-" + nextId++;
     }
 
+    // for testing
+    void load(Map<String, Object> parameters, AbstractLdapProvider provider) {
+        super.load(provider);
+
+        init(parameters);
+    }
+
     @Override
     public void load(Map<String, Object> parameters) {
         super.load(parameters);
 
+        init(parameters);
+    }
+
+    void init(Map<String, Object> parameters) {
         if ((ldapAttr = (String) parameters.get(ATTR_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + ATTR_PARAM + "] in the setup");
         }
