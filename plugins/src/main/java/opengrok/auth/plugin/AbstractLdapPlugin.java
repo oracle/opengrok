@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
-import opengrok.auth.plugin.ldap.FakeLdapFacade;
 import opengrok.auth.plugin.ldap.LdapFacade;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
 import org.opengrok.indexer.configuration.Group;
@@ -60,7 +59,6 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
     public static long nextId = 1;
 
     protected static final String CONFIGURATION_PARAM = "configuration";
-    protected static final String FAKE_PARAM = "fake";
 
     private static final String SESSION_PREFIX = "opengrok-abstract-ldap-plugin-";
     protected String SESSION_USERNAME = SESSION_PREFIX + "username";
@@ -124,15 +122,8 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     @Override
     public void load(Map<String, Object> parameters) {
-        Boolean fake;
         String configurationPath;
 
-        if ((fake = (Boolean) parameters.get(FAKE_PARAM)) != null
-                && fake) {
-            ldapProvider = new FakeLdapFacade();
-            return;
-        }
-        
         if ((configurationPath = (String) parameters.get(CONFIGURATION_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + CONFIGURATION_PARAM + "]");
         }
