@@ -358,7 +358,7 @@ public class JFlexXrefUtils {
      * fails
      */
     public static void writeSymbolTable(Writer out, Definitions defs)
-            throws IOException {
+            throws IOException { 
         if (defs == null) {
             // No definitions, no symbol table to write
             return;
