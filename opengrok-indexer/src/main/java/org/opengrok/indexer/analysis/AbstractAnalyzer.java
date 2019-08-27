@@ -170,5 +170,5 @@ public abstract class AbstractAnalyzer extends Analyzer {
             }
             return null;
         }
-    }   
+    }
 }
