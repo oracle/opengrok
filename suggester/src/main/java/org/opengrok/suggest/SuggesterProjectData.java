@@ -268,9 +268,9 @@ class SuggesterProjectData implements Closeable {
     }
 
     private void store(final WFSTCompletionLookup WFST, final String field) throws IOException {
-        FileOutputStream fos = new FileOutputStream(getWFSTFile(field));
-
-        WFST.store(fos);
+        try (FileOutputStream fos = new FileOutputStream(getWFSTFile(field))) {
+            WFST.store(fos);
+        }
     }
 
     private void createSuggesterDir() throws IOException {

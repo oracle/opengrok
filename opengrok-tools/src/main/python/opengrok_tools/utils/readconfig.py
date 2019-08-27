@@ -52,7 +52,6 @@ def read_config(logger, inputfile):
             except JSONDecodeError:
                 # Not a valid JSON file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
-                pass
             else:
                 return cfg
 
@@ -62,7 +61,6 @@ def read_config(logger, inputfile):
             except AttributeError:
                 # Not a valid YAML file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
-                pass
             else:
                 return cfg
     except IOError as e:

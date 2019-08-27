@@ -30,7 +30,6 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,7 +119,6 @@ public class ELFAnalyzer extends FileAnalyzer {
             return null;
         }
 
-        HashMap<String, Integer> sectionMap = new HashMap<String, Integer>();
         ELFSection[] sections = new ELFSection[eh.e_shnum];
         int[] readables = new int[eh.e_shnum];
 
@@ -130,9 +128,6 @@ public class ELFAnalyzer extends FileAnalyzer {
 
             sections[i] = new ELFSection(fmap);
             String sectionName = getName(stringSection.sh_offset, sections[i].sh_name, fmap);
-            if (sectionName != null) {
-                sectionMap.put(sectionName, sections[i].sh_offset);
-            }
 
             if (sections[i].sh_type == ELFSection.SHT_STRTAB) {
                 readables[ri++] = i;

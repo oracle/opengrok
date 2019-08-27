@@ -91,7 +91,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     @SuppressWarnings("unchecked")
     @Override
     public void fillSession(HttpServletRequest req, User user) {
-        Boolean sessionAllowed = false;
+        boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
         Set<String> attributeValues;

@@ -296,8 +296,8 @@ public final class Results {
             boolean isDefSearch = fargs.shelp.builder.isDefSearch();
             // SRCROOT is read with UTF-8 as a default.
             File sourceFile = new File(fargs.shelp.sourceRoot, rpath);
-            try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
-                    sourceFile), StandardCharsets.UTF_8.name())) {
+            try (FileInputStream fis = new FileInputStream(sourceFile);
+                 Reader r = IOUtils.createBOMStrippedReader(fis, StandardCharsets.UTF_8.name())) {
                 fargs.shelp.sourceContext.getContext(r, fargs.out,
                     fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
                     isDefSearch, null, scopes);

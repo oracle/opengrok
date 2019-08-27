@@ -159,8 +159,7 @@ public class RepositoryInfo implements Serializable {
             }
         } catch (IOException e) {
             path = originalPath;
-            LOGGER.log(Level.SEVERE, String.format(
-                "Failed to get canonical path for {0}", path), e);
+            LOGGER.log(Level.SEVERE, String.format("Failed to get canonical path for %s", path), e);
         }
 
         if (path.startsWith(rootPath)) {
