@@ -445,7 +445,7 @@ public class OptionParser {
         // to have a value, null is returned. If the option
         // does not require a value, an empty string is returned.
         String value = arg;
-        Boolean isOption = value.startsWith("-");
+        boolean isOption = value.startsWith("-");
         
         if (mandatory) {
             if (isOption ) {

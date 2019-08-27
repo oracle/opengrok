@@ -1323,7 +1323,7 @@
                     return $w.stop().animate(a)
                 },
                 escapeHtml: function (html) {
-                    return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+                    return html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 }
             }, context || {}));
         }

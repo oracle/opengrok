@@ -169,7 +169,7 @@ public final class IOUtils {
             @Override
             public boolean accept(File dir, String name) {
                 if (suffix != null && !suffix.isEmpty()) {
-                    return suffix != null && !suffix.isEmpty() && name.endsWith(suffix);
+                    return name.endsWith(suffix);
                 } else {
                     return true;
                 }
