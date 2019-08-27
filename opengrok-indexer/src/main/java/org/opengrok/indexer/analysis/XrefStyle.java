@@ -71,7 +71,7 @@ public class XrefStyle {
         new XrefStyle("method", "xmt", "Method"),
         new XrefStyle("subroutine", "xsr", "Subroutine"),
         new XrefStyle("label", "xlbl", "Label"),
-        new XrefStyle("procedure", "xf", "Procedure"),
+        new XrefStyle("procedure", "xf", "Procedure")
     };
 
     /**

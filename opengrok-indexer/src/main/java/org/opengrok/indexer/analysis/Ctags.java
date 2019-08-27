@@ -148,7 +148,7 @@ public class Ctags implements Resettable {
         command.add("--langmap=sql:+.pks"); // RFE #19208 ?
         command.add("--langmap=sql:+.pkb"); // # 1763
         command.add("--langmap=sql:+.pck"); // # 1763
-        command.add("--langmap=sql:+.pkg"); // #
+        command.add("--langmap=sql:+.pkg"); // # 2833
 
         command.add("--langmap=javascript:+.ts");
 
