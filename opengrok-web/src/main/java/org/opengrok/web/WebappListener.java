@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -41,9 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
-import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
 
 /**
  * Initialize webapp context.
@@ -89,24 +86,12 @@ public final class WebappListener
             LOGGER.warning("Didn't find Universal Ctags for --webappCtags");
         }
 
-        try {
-            loadStatistics();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        }
-
         String pluginDirectory = env.getPluginDirectory();
         if (pluginDirectory != null && env.isAuthorizationWatchdog()) {
             env.watchDog.start(new File(pluginDirectory));
         }
 
         env.startExpirationTimer();
-
-        try {
-            loadStatistics();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        }
     }
 
     /**
@@ -122,11 +107,6 @@ public final class WebappListener
             env.shutdownRevisionExecutor();
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "Could not shutdown revision executor", e);
-        }
-        try {
-            saveStatistics();
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
 
         // need to explicitly close the suggester service because it might have scheduled rebuild which could prevent
