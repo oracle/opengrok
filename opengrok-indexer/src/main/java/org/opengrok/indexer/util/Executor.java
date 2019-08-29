@@ -253,9 +253,7 @@ public class Executor {
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
-                if (process != null) {
-                    process.destroy();
-                }
+                process.destroy();
             }
         }
 
