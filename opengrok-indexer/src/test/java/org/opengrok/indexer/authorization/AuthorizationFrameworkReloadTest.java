@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -33,10 +33,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import javax.servlet.http.HttpSession;
 import org.junit.Test;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
-import org.opengrok.indexer.web.Statistics;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.
@@ -63,7 +62,6 @@ public class AuthorizationFrameworkReloadTest {
         AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath());
         framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
         framework.reload();
-        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
 
         // Ensure the framework was setup correctly.
         assertNotNull(framework.getPluginDirectory());
@@ -82,7 +80,6 @@ public class AuthorizationFrameworkReloadTest {
         // since the version was incremented. In this test we are not interested
         // in the actual result.
         framework.isAllowed(req, p);
-        assertNull(stats.getRequest("authorization_cache_hits"));
         // Verify that the session no longer has the attribute.
         assertNull(session.getAttribute(attrName));
     }
@@ -93,8 +90,6 @@ public class AuthorizationFrameworkReloadTest {
      */
     @Test
     public void testReloadCycle() throws URISyntaxException {
-        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
-        Long reloads;
         String projectName = "project" + Math.random();
 
         // Create authorization stack for single project.
@@ -132,8 +127,6 @@ public class AuthorizationFrameworkReloadTest {
         });
         t.start();
 
-        reloads = stats.getRequest("authorization_stack_reload");
-        assertNotNull(reloads);
         // Process number or requests and check that framework decision is consistent.
         for (int i = 0; i < 1000; i++) {
             req = new DummyHttpServletRequest();
@@ -153,7 +146,7 @@ public class AuthorizationFrameworkReloadTest {
         }
 
         // Double check that at least one reload() was done.
-        reloads = stats.getRequest("authorization_stack_reload") - reloads;
+        long reloads = Metrics.getInstance().counter("authorization_stack_reload").getCount();
         assertTrue(reloads > 0);
     }
 

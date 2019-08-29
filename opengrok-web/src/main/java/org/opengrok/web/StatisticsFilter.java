@@ -18,12 +18,13 @@
  */
 
  /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.time.Duration;
+import java.time.Instant;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -31,17 +32,23 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.opengrok.indexer.logger.LoggerFactory;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
-import org.opengrok.indexer.web.Statistics;
 
 public class StatisticsFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsFilter.class);
-    private static final String TIME_ATTRIBUTE = "statistics_time_start";
+    static final String REQUESTS_METRIC = "requests";
+
+    private final Meter requests = Metrics.getInstance().meter(REQUESTS_METRIC);
+
+    private final Timer genericTimer = Metrics.getInstance().timer("*");
+    private final Timer emptySearch = Metrics.getInstance().timer("empty_search");
+    private final Timer successfulSearch = Metrics.getInstance().timer("successful_search");
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -51,56 +58,55 @@ public class StatisticsFilter implements Filter {
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc)
             throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
-        HttpServletResponse httpRes = (HttpServletResponse) sr1;
+
+        Instant start = Instant.now();
 
         PageConfig config = PageConfig.get(httpReq);
-        config.setRequestAttribute(TIME_ATTRIBUTE, System.currentTimeMillis());
 
         fc.doFilter(sr, sr1);
 
-        if (httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("/")
-                || httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("")) {
-            collectStats(httpReq, "root");
+        Duration duration = Duration.between(start, Instant.now());
+
+        String category;
+        if (isRoot(httpReq)) {
+            category = "root";
         } else if (config.getPrefix() != Prefix.UNKNOWN) {
-            String prefix = config.getPrefix().toString().substring(1);
-            collectStats(httpReq, prefix);
+            category = config.getPrefix().toString().substring(1);
+        } else {
+            return;
         }
-    }
 
-    protected void collectStats(HttpServletRequest req, String category) {
-        Object o;
-        long processTime;
-        PageConfig config = PageConfig.get(req);
-        Statistics stats = config.getEnv().getStatistics();
-
-        /**
+        /*
          * Add the request to the statistics. Be aware of the colliding call in
          * {@code AuthorizationFilter#doFilter}.
          */
-        stats.addRequest();
+        requests.mark();
+        genericTimer.update(duration);
 
-        if ((o = config.getRequestAttribute(TIME_ATTRIBUTE)) != null) {
-            processTime = System.currentTimeMillis() - (long) o;
+        Metrics.getInstance().timer(category).update(duration);
 
-            stats.addRequestTime("*", processTime); // add to all
-            stats.addRequestTime(category, processTime); // add this category
+        /* supplementary categories */
+        if (config.getProject() != null) {
+            Metrics.getInstance()
+                    .timer("viewing_of_" + config.getProject().getName())
+                    .update(duration);
+        }
 
-            /* supplementary categories */
-            if (config.getProject() != null) {
-                stats.addRequestTime("viewing_of_" + config.getProject().getName(), processTime);
-            }
-
-            SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
-            if (helper != null) {
-                if (helper.hits == null || helper.hits.length == 0) {
-                    // empty search
-                    stats.addRequestTime("empty_search", processTime);
-                } else {
-                    // successful search
-                    stats.addRequestTime("successful_search", processTime);
-                }
+        SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
+        if (helper != null) {
+            if (helper.hits == null || helper.hits.length == 0) {
+                // empty search
+                emptySearch.update(duration);
+            } else {
+                // successful search
+                successfulSearch.update(duration);
             }
         }
+    }
+
+    private boolean isRoot(final HttpServletRequest httpReq) {
+        return httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("/")
+                || httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("");
     }
 
     @Override

@@ -23,6 +23,8 @@
  */
 package org.opengrok.indexer.authorization;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -31,6 +33,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
@@ -39,7 +45,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.framework.PluginFramework;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Laundromat;
-import org.opengrok.indexer.web.Statistics;
 
 /**
  * Placeholder for performing authorization checks.
@@ -49,6 +54,15 @@ import org.opengrok.indexer.web.Statistics;
 public final class AuthorizationFramework extends PluginFramework<IAuthorizationPlugin> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
+
+    private final Counter authStackReloadCounter = Metrics.getInstance().counter("authorization_stack_reload");
+    private final Counter authCacheHits = Metrics.getInstance().counter("authorization_cache_hits");
+    private final Counter authCacheMisses = Metrics.getInstance().counter("authorization_cache_misses");
+    private final Counter authSessionsInvalidated = Metrics.getInstance().counter("authorization_sessions_invalidated");
+
+    private final Timer authTimer = Metrics.getInstance().timer("authorization");
+    private final Timer authPositiveTimer = Metrics.getInstance().timer("authorization_positive");
+    private final Timer authNegativeTimer = Metrics.getInstance().timer("authorization_negative");
 
     /**
      * Stack of available plugins/stacks in the order of the execution.
@@ -377,12 +391,10 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             lock.writeLock().unlock();
         }
 
-        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
-        stats.addRequest("authorization_stack_reload");
+        authStackReloadCounter.inc();
 
         // clean the old stack
         removeAll(oldStack);
-        oldStack = null;
         loadingStack = null;
     }
 
@@ -490,8 +502,6 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             return false;
         }
 
-        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
-
         Boolean val;
         Map<String, Boolean> m = (Map<String, Boolean>) request.getAttribute(cache);
 
@@ -499,14 +509,14 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             m = new TreeMap<>();
         } else if ((val = m.get(entity.getName())) != null) {
             // cache hit
-            stats.addRequest("authorization_cache_hits");
+            authCacheHits.inc();
             return val;
         }
 
-        stats.addRequest("authorization_cache_misses");
+        authCacheMisses.inc();
 
-        long time = 0;
-        boolean overallDecision = false;
+        Duration duration;
+        boolean overallDecision;
 
         lock.readLock().lock();
         try {
@@ -514,31 +524,28 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             HttpSession session;
             if (((session = request.getSession(false)) != null) && isSessionInvalid(session)) {
                 session.invalidate();
-                stats.addRequest("authorization_sessions_invalidated");
+                authSessionsInvalidated.inc();
             }
             request.getSession().setAttribute(SESSION_VERSION, getPluginVersion());
 
-            time = System.currentTimeMillis();
-
+            Instant start = Instant.now();
             overallDecision = performCheck(entity, pluginPredicate, skippingPredicate);
+            Instant end = Instant.now();
+            duration = Duration.between(start, end);
         } finally {
             lock.readLock().unlock();
         }
 
-        if (time > 0) {
-            time = System.currentTimeMillis() - time;
-
-            stats.addRequestTime("authorization", time);
-            stats.addRequestTime(
-                    String.format("authorization_%s", overallDecision ? "positive" : "negative"),
-                    time);
-            stats.addRequestTime(
-                    String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
-                    time);
-            stats.addRequestTime(
-                    String.format("authorization_of_%s", entity.getName()),
-                    time);
+        authTimer.update(duration);
+        if (overallDecision) {
+            authPositiveTimer.update(duration);
+        } else {
+            authNegativeTimer.update(duration);
         }
+        Metrics.getInstance().timer(String.format("authorization_of_%s", entity.getName())).update(duration);
+        Metrics.getInstance()
+                .timer(String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()))
+                .update(duration);
 
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);

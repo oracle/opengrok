@@ -15,6 +15,12 @@
     <listener>
         <listener-class>org.opengrok.web.WebappListener</listener-class>
     </listener>
+    <listener>
+        <listener-class>org.opengrok.web.MetricsServletContextListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.opengrok.web.HealthCheckServletContextListener</listener-class>
+    </listener>
     <filter>
         <filter-name>AuthorizationFilter</filter-name>
         <filter-class>org.opengrok.web.AuthorizationFilter</filter-class>
@@ -232,6 +238,14 @@
         <servlet-name>eforbidden</servlet-name>
         <url-pattern>/eforbidden</url-pattern>
         <!-- FORBIDDEN -->
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>metrics</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.AdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>metrics</servlet-name>
+        <url-pattern>/metrics/*</url-pattern>
     </servlet-mapping>
     <error-page>
         <error-code>404</error-code>

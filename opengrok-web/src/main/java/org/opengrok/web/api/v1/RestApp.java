@@ -18,11 +18,13 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1;
 
+import com.codahale.metrics.jersey2.InstrumentedResourceMethodApplicationListener;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
 
 import javax.ws.rs.ApplicationPath;
@@ -34,6 +36,7 @@ public class RestApp extends ResourceConfig {
     
     public RestApp() {
         register(new SuggesterAppBinder());
+        register(new InstrumentedResourceMethodApplicationListener(Metrics.getInstance()));
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");
         packages(true, "org.opengrok.web.api.v1");
     }

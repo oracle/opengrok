@@ -158,6 +158,16 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             <artifactId>modelmapper</artifactId>
             <version>2.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jersey2</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-servlets</artifactId>
+            <version>4.1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
