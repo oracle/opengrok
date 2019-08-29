@@ -40,7 +40,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
- * Represents a wrapper to run mandoc binary to format manual page content
+ * Represents a wrapper to run mandoc binary to format manual page content.
  */
 public class MandocRunner {
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -57,7 +57,9 @@ public class MandocRunner {
      * operating system name". Default is {@code "GENERIC SYSTEM"}.
      * @return a defined value or {@code null}
      */
-    public String getOSOverride() { return osOverride; }
+    public String getOSOverride() {
+        return osOverride;
+    }
 
     /**
      * Sets the value used for mandoc's setting to "Override the default
@@ -186,7 +188,7 @@ public class MandocRunner {
     }
 
     /**
-     * Kills the mandoc process if it is running
+     * Kills the mandoc process if it is running.
      */
     public void destroy() {
         // terminate straightaway any existing run

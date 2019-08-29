@@ -31,6 +31,9 @@ public class LoggerFactory {
 
     private static LoggerFactoryBridge loggerFactoryBridge = new PackageBasedLoggerFactoryBridge();
 
+    private LoggerFactory() {
+    }
+
     /**
      * Returns {@link Logger} for given class.
      * @param clazz class

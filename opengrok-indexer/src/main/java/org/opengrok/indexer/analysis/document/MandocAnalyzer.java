@@ -38,12 +38,12 @@ import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * Analyzes mandoc files
+ * Analyzes mandoc files.
  */
 public class MandocAnalyzer extends TextAnalyzer {
 
     /**
-     * Creates a new instance of MandocAnalyzer
+     * Creates a new instance of MandocAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected MandocAnalyzer(AnalyzerFactory factory) {

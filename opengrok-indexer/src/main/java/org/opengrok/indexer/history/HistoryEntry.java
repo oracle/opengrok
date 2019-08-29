@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Collect all information of a given revision
+ * Collect all information of a given revision.
  *
  * @author Trond Norbye
  */
@@ -52,14 +52,14 @@ public class HistoryEntry {
     private boolean active;
     private SortedSet<String> files;
 
-    /** Creates a new instance of HistoryEntry */
+    /** Creates a new instance of HistoryEntry. */
     public HistoryEntry() {
         message = new StringBuffer();
         files = new TreeSet<>();
     }
     
     /**
-     * Copy constructor
+     * Copy constructor.
      * @param that HistoryEntry object
      */
     public HistoryEntry(HistoryEntry that) {

@@ -110,6 +110,7 @@ public final class PageConfig {
     protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
+    private static final String DEBUG_PARAM_NAME = "debug";
 
     // TODO if still used, get it from the app context
 
@@ -167,7 +168,7 @@ public final class PageConfig {
     }  
     
     /**
-     * Removes an attribute from the current request
+     * Removes an attribute from the current request.
      * @param string the attribute 
      */
     public void removeAttribute(String string) {
@@ -734,7 +735,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the name which should be show as "Crossfile"
+     * Get the name which should be show as "Crossfile".
      *
      * @return the name of the related file or directory.
      */
@@ -1401,11 +1402,15 @@ public final class PageConfig {
      * @param name name of the script to search for
      * @return this
      *
-     * @see Scripts#addScript(java.lang.String, java.lang.String)
+     * @see Scripts#addScript(String, String, Scripts.Type)
      */
     public PageConfig addScript(String name) {
-        this.scripts.addScript(this.req.getContextPath(), name);
+        this.scripts.addScript(this.req.getContextPath(), name, isDebug() ? Scripts.Type.DEBUG : Scripts.Type.MINIFIED);
         return this;
+    }
+
+    private boolean isDebug() {
+        return Boolean.parseBoolean(req.getParameter(DEBUG_PARAM_NAME));
     }
 
     /**
@@ -1637,14 +1642,14 @@ public final class PageConfig {
             }
             title += "in projects: ";
             String[] projects = req.getParameterValues(QueryBuilder.PROJECT);
-            title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
+            title += String.join(",", projects);
         }
 
         return Util.htmlize(title + " - OpenGrok search results");
     }
 
     /**
-     * Similar as {@link #getSearchTitle()}
+     * Similar as {@link #getSearchTitle()}.
      * @return string used for setting page title of search view
      */
     public String getHistoryTitle() {

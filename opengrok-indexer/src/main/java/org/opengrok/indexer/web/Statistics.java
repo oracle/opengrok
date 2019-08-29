@@ -119,7 +119,7 @@ public class Statistics {
     }
 
     /**
-     * Adds a request into the category
+     * Adds a request into the category.
      *
      * @param category category
      */
@@ -134,7 +134,7 @@ public class Statistics {
     }
     
     /**
-     * Get value of given counter
+     * Get value of given counter.
      * @param category category
      * @return Long value
      */
@@ -300,7 +300,7 @@ public class Statistics {
     }
 
     /**
-     * Convert this {@code Statistics} object into JSON
+     * Convert this {@code Statistics} object into JSON.
      *
      * @return the JSON string
      * @throws JsonProcessingException JSON processing exception
@@ -335,9 +335,8 @@ public class Statistics {
     @SuppressWarnings("unchecked")
     public static String toJson(Statistics stats) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        String jsonStr = mapper.writeValueAsString(stats);
 
-        return jsonStr;
+        return mapper.writeValueAsString(stats);
     }
 
     @Override
@@ -353,7 +352,7 @@ public class Statistics {
                 + "\nrequestsPerMinuteMin = " + getRequestsPerMinuteMin()
                 + "\nrequestsPerMinuteMax = " + getRequestsPerMinuteMax()
                 + "\nrequestsPerMinuteAvg = " + getRequestsPerMinuteAvg()
-                + "\ndayHistogram = " + LongStream.of(getDayHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "))
-                + "\nmonthHistogram = " + LongStream.of(getMonthHistogram()).mapToObj(a -> Long.toString(a)).map(a -> a.toString()).collect(Collectors.joining(", "));
+                + "\ndayHistogram = " + LongStream.of(getDayHistogram()).mapToObj(Long::toString).collect(Collectors.joining(", "))
+                + "\nmonthHistogram = " + LongStream.of(getMonthHistogram()).mapToObj(Long::toString).collect(Collectors.joining(", "));
     }
 }

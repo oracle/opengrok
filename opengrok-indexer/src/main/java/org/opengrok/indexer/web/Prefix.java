@@ -33,48 +33,47 @@ import java.util.TreeMap;
  * @version $Revision$
  */
 public enum Prefix {
-    /** unknown prefix */
+    /** Unknown prefix. */
     UNKNOWN(""),
-    /** a cross reference */
+    /** A cross reference. */
     XREF_P("/xref"),
-    /** a show cross reference, i.e. add Line and Navigation toggle button in
-     * the menu bar */
+    /** A show cross reference, i.e. add Line and Navigation toggle button in the menu bar. */
     XREF_S("/xr"),
     /** show more lines. If a search result set for a file matches more lines
      * than a given limit (default: 10), only the first <i>limit</i> lines gets
      * shown as an "[all ...]" link, which can be used to show all matching
      * lines. The servlet path of this link starts with this prefix. */
     MORE_P("/more"),
-    /** reserved (not used) */
+    /** Reserved (not used). */
     MORE_S("/mo"),
-    /** diff to previous version (link prefix) */
+    /** Diff to previous version (link prefix). */
     DIFF_P("/diff"),
-    /** reserved (not used) */
+    /** Reserved (not used). */
     DIFF_S("/di"),
-    /** reserved (not used) */
+    /** Reserved (not used). */
     HIST_P("/hist"),
-    /** reserved (not used) */
+    /** Reserved (not used). */
     HIST_S("/hi"),
-    /** show the history for a file (link prefix) */
+    /** Show the history for a file (link prefix). */
     HIST_L("/history"),
-    /** RSS XML Feed of latest changes (link prefix) */
+    /** RSS XML Feed of latest changes (link prefix). */
     RSS_P("/rss"),
-    /** Download file (link prefix) */
+    /** Download file (link prefix). */
     DOWNLOAD_P("/download"),
-    /** Raw file display (link prefix) */
+    /** Raw file display (link prefix). */
     RAW_P("/raw"),
-    /** full blown search from main page or top bar (link prefix) */
+    /** Full blown search from main page or top bar (link prefix). */
     SEARCH_P("/search"),
-    /** search from cross reference, can lead to direct match (which opens
-     * directly) or to a matches Summary page */
+    /** Search from cross reference, can lead to direct match (which opens
+     * directly) or to a matches Summary page. */
     SEARCH_R("/s"),
-    /** opensearch description page */
+    /** opensearch description page. */
     SEARCH_O("/opensearch"),
-    /** related source file or directory not found/unavailable/ignored */
+    /** Related source file or directory not found/unavailable/ignored. */
     NOT_FOUND("/enoent"),
-    /** misc error occurred */
-    ERROR("/error")
-    ;
+    /** Misc error occurred. */
+    ERROR("/error");
+
     private final String prefix;
     Prefix(String prefix) {
         this.prefix = prefix;
@@ -106,9 +105,7 @@ public enum Prefix {
      * @see #toString()
      */
     public static Prefix get(String servletPath) {
-        if (servletPath == null || servletPath.length() < 3
-            || servletPath.charAt(0) != '/')
-        {
+        if (servletPath == null || servletPath.length() < 3 || servletPath.charAt(0) != '/') {
             return UNKNOWN;
         }
         int idx = servletPath.indexOf('/', 1);

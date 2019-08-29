@@ -23,6 +23,7 @@
 package org.opengrok.indexer.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -108,10 +109,10 @@ public class ScriptsTest {
 
     @Test
     public void testLookup() {
-        scripts.addScript("", "utils");
-        scripts.addScript("", "jquery");
-        scripts.addScript("", "diff");
-        scripts.addScript("", "jquery-tablesorter");
+        scripts.addScript("", "utils", Scripts.Type.MINIFIED);
+        scripts.addScript("", "jquery", Scripts.Type.MINIFIED);
+        scripts.addScript("", "diff", Scripts.Type.MINIFIED);
+        scripts.addScript("", "jquery-tablesorter", Scripts.Type.MINIFIED);
 
         assertEquals(4, scripts.size());
 
@@ -143,10 +144,10 @@ public class ScriptsTest {
     @Test
     public void testLookupWithContextPath() {
         String contextPath = "/source";
-        scripts.addScript(contextPath, "utils");
-        scripts.addScript(contextPath, "jquery");
-        scripts.addScript(contextPath, "diff");
-        scripts.addScript(contextPath, "jquery-tablesorter");
+        scripts.addScript(contextPath, "utils", Scripts.Type.MINIFIED);
+        scripts.addScript(contextPath, "jquery", Scripts.Type.MINIFIED);
+        scripts.addScript(contextPath, "diff", Scripts.Type.MINIFIED);
+        scripts.addScript(contextPath, "jquery-tablesorter", Scripts.Type.MINIFIED);
 
         assertEquals(4, scripts.size());
 
@@ -174,4 +175,17 @@ public class ScriptsTest {
                                     + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
         }
     }
+
+    @Test
+    public void testAddMinified() {
+        scripts.addScript("", "utils", Scripts.Type.MINIFIED);
+        assertTrue(scripts.iterator().next().scriptData.endsWith("min.js"));
+    }
+
+    @Test
+    public void testAddDebug() {
+        scripts.addScript("", "utils", Scripts.Type.DEBUG);
+        assertFalse(scripts.iterator().next().scriptData.endsWith("min.js"));
+    }
+
 }

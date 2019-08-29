@@ -102,7 +102,7 @@ public class PhraseHighlight {
         return PhraseHighlight.create(mergeStart, mergeEnd);
     }
 
-    /** private to enforce static create() methods */
+    /** Private to enforce static create() methods. */
     private PhraseHighlight(int start, int end) {
         this.lineStart = start;
         this.lineEnd = end;

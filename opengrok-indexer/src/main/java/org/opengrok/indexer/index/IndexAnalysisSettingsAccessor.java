@@ -46,12 +46,9 @@ import org.opengrok.indexer.search.QueryBuilder;
 public class IndexAnalysisSettingsAccessor {
 
     /**
-     * {@code "uthuslvotkgltggqqjmurqojpjpjjkutkujktnkk"}, the
-     * {@link QueryBuilder}-normalized value for UUID
-     * 58859C75-F941-42E5-8D1A-FAF71DDEBBA7
+     * The {@link QueryBuilder}-normalized value for UUID 58859C75-F941-42E5-8D1A-FAF71DDEBBA7.
      */
-    static final String INDEX_ANALYSIS_SETTINGS_OBJUID =
-        "uthuslvotkgltggqqjmurqojpjpjjkutkujktnkk";
+    static final String INDEX_ANALYSIS_SETTINGS_OBJUID = "uthuslvotkgltggqqjmurqojpjpjjkutkujktnkk";
 
     private static final int INDEX_ANALYSIS_SETTINGS_OBJVER = 2;
 
@@ -90,7 +87,7 @@ public class IndexAnalysisSettingsAccessor {
         }
         TopDocs top = searcher.search(q, n);
 
-        int nres = top.totalHits.value > n ? n : (int)top.totalHits.value;
+        int nres = top.totalHits.value > n ? n : (int) top.totalHits.value;
         IndexAnalysisSettings[] res = new IndexAnalysisSettings[nres];
 
         for (int i = 0; i < nres; ++i) {

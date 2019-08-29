@@ -49,7 +49,7 @@ public class BazaarRepository extends Repository {
     public static final String CMD_PROPERTY_KEY
             = "org.opengrok.indexer.history.Bazaar";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "bzr";
 

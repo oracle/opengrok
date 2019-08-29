@@ -23,10 +23,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Perl keywords
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Holds static hash set containing the Perl keywords.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         //Keywords
         kwd.add("abstract"); //As of PHP5
@@ -112,4 +113,8 @@ public class Consts{
         //Misc
         kwd.add("__halt_compiler");
     }
+
+    private Consts() {
+    }
+
 }

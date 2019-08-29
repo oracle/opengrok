@@ -27,10 +27,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a container for Ruby keywords and other string constants
+ * Represents a container for Ruby keywords and other string constants.
  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("false");
         kwd.add("FALSE");
@@ -338,7 +339,6 @@ public class Consts{
         kwd.add("lchown"); // core-2.4.2/File
         kwd.add("link"); // core-2.4.2/File
         kwd.add("lstat"); // core-2.4.2/File
-        kwd.add("lstat"); // core-2.4.2/File
         kwd.add("mkfifo"); // core-2.4.2/File
         kwd.add("mtime"); // core-2.4.2/File
         kwd.add("owned?"); // core-2.4.2/File
@@ -418,4 +418,8 @@ public class Consts{
         kwd.add("times"); // core-2.4.2/Integer
         kwd.add("to_int"); // core-2.4.2/Integer
     }
+
+    private Consts() {
+    }
+
 }

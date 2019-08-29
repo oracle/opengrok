@@ -56,7 +56,7 @@ public interface Xrefer extends Resettable {
     void setAnnotation(Annotation annotation);
 
     /**
-     * set definitions
+     * Set definitions.
      * @param defs definitions
      */
     void setDefs(Definitions defs);
@@ -64,13 +64,13 @@ public interface Xrefer extends Resettable {
     void setProject(Project project);
 
     /**
-     * set folding of code
+     * Set folding of code.
      * @param foldingEnabled whether to fold or not
      */
     void setFoldingEnabled(boolean foldingEnabled);
 
     /**
-     * set scopes
+     * Set scopes.
      * @param scopesEnabled if they should be enabled or disabled
      */
     void setScopesEnabled(boolean scopesEnabled);

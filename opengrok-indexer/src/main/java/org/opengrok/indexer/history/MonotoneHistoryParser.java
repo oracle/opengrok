@@ -42,7 +42,7 @@ import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 /**
- * Class used to parse the history log from Monotone
+ * Class used to parse the history log from Monotone.
  *
  * @author Trond Norbye
  */
@@ -50,7 +50,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonotoneHistoryParser.class);
 
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
+    private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
     private final MonotoneRepository repository;
     private final String mydir;
 
@@ -155,8 +155,8 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                     }
                     break;
                 case 4:
-                    if (s.startsWith("Modified ") || s.startsWith("Added ") || s.startsWith("Deleted ")) { //NOPMD
-                        /* swallow */
+                    if (s.startsWith("Modified ") || s.startsWith("Added ") || s.startsWith("Deleted ")) {
+                        continue;
                     } else if (s.equalsIgnoreCase("ChangeLog:")) {
                         state = 5;
                     } else {

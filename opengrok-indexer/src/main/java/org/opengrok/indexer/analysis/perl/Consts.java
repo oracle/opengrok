@@ -27,10 +27,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Perl keywords
-  */
-public class Consts{
-    public static final Set<String> kwd = new HashSet<>() ;
+ * Holds static hash set containing the Perl keywords.
+ */
+public class Consts {
+
+    public static final Set<String> kwd = new HashSet<>();
     static {
         // Note that keywords with 1 letter will be ignored for historical
         // reasons, as the {Identifier} used to require 2 characters in
@@ -335,6 +336,9 @@ public class Consts{
         kwd.add("x");
         kwd.add("xor");
         kwd.add("y");
+    }
+
+    private Consts() {
     }
 
 }

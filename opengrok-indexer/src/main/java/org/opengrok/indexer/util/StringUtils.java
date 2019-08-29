@@ -35,14 +35,7 @@ import java.util.regex.Pattern;
 public final class StringUtils {
 
     /**
-     * Matches a standard end-of-line indicator, identical to Common.lexh's
-     * {EOL}
-     * <pre>
-     * {@code
-     * \r?\n|\r
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches a standard end-of-line indicator, identical to Common.lexh's {EOL}.
      */
     public static final Pattern STANDARD_EOL = Pattern.compile("\\r?\\n|\\r");
 
@@ -57,43 +50,22 @@ public final class StringUtils {
         Pattern.compile("\\'" + RegexUtils.getNotFollowingEscapePattern());
 
     /**
-     * Matches the close of a C comment:
-     * <pre>
-     * {@code
-     * \*\/
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches the close of a C comment.
      */
-    public static final Pattern END_C_COMMENT =
-        Pattern.compile("\\*\\/");
+    public static final Pattern END_C_COMMENT = Pattern.compile("\\*\\/");
 
     /**
-     * Matches the same possible character as CommonPath.lexh's {FNameChar}:
-     * <pre>
-     * {@code
-     * [a-zA-Z0-9_\-\.]
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches the same possible character as CommonPath.lexh's {FNameChar}.
      */
-    private static final String FNAME_CHARS_PAT =
-        "[a-zA-Z0-9_\\-\\.]";
+    private static final String FNAME_CHARS_PAT = "[a-zA-Z0-9_\\-\\.]";
 
     private static final Pattern FNAME_CHARS_STARTSMATCH =
         Pattern.compile("^" + FNAME_CHARS_PAT);
 
     /**
-     * Matches one of the same possible characters as CommonPath.lexh's {FPath}:
-     * <pre>
-     * {@code
-     * [a-zA-Z0-9_\-\./]
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * Matches one of the same possible characters as CommonPath.lexh's {FPath}.
      */
-    private static final String FPATH_CHAR_PAT =
-        "[a-zA-Z0-9_\\-\\./]";
+    private static final String FPATH_CHAR_PAT = "[a-zA-Z0-9_\\-\\./]";
 
     private static final Pattern FPATH_CHAR_STARTSMATCH =
         Pattern.compile("^" + FPATH_CHAR_PAT);
@@ -116,7 +88,7 @@ public final class StringUtils {
     private static final Pattern URI_CHARS_STARTSMATCH =
         Pattern.compile("^" + URI_CHARS_PAT);
 
-    /** Private to enforce singleton */
+    /** Private to enforce singleton. */
     private StringUtils() {
     }
 
@@ -138,7 +110,7 @@ public final class StringUtils {
     static final Pattern javaClassPattern =
         Pattern.compile("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
     /**
-     * Returns true if the string is possibly a full java class name
+     * Returns true if the string is possibly a full java class name.
      *
      * @param s the string to be checked
      * @return true if string could be a java class name

@@ -100,7 +100,7 @@ public class PathTokenizer extends Tokenizer {
              * mappings, and 1:M character mappings, whereas the Character case
              * mapping methods cannot." See below.
              */
-            buf[i++] = (char)c;
+            buf[i++] = (char) c;
             c = input.read();
             charsRead++;
         } while (c != delimiter && c != cdot && !Character.isWhitespace(c) && c != -1);

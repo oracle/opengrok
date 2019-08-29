@@ -72,9 +72,9 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
     // http://creativecommons.org/licenses/publicdomain .
     private static class TrueMatcherHolder {
         /**
-         * "The prologue, which consists of the Dd, Dt, and Os macros in that
-         * order, is required for every document."
-         * </p>
+         * The prologue, which consists of the Dd, Dt, and Os macros in that
+         * order, is required for every document.
+         *
          * As {@link TroffXref} does not present mdoc(5) documents well, even
          * if no mandoc binary is configured, then we want a
          * {@link MandocAnalyzer} that presents a plain-text cross-referencing.

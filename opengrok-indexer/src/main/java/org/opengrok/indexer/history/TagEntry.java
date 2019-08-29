@@ -35,25 +35,20 @@ public abstract class TagEntry implements Comparable<TagEntry> {
 
     protected int revision;
     /**
-     * If repo uses linear revision numbering
+     * If repo uses linear revision numbering.
      */
     protected Date date;
     /**
-     * If repo does not use linear numbering
+     * If repo does not use linear numbering.
      */
     protected String tags;
     /**
-     * Tag of the revision
+     * Tag of the revision.
      */
-
     protected static final int NOREV = -1;
 
     /**
-     * Revision number not present
-     */
-
-    /**
-     * Revision number not present
+     * Revision number not present.
      *
      * @param revision revision number
      * @param tags string representing tags

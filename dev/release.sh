@@ -15,6 +15,11 @@ fi
 
 VERSION=$1
 
+if ! echo "$VERSION" | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+$' >/dev/null; then
+	echo "version needs to be in the form of <num>.<num>.<num>"
+	exit 1
+fi
+
 if [[ ! -d $PWD/opengrok-indexer ]]; then
 	echo "This needs to be run from top-level directory of the repository"
 	exit 1
@@ -31,7 +36,7 @@ if [[ $ver == $VERSION ]]; then
 fi
 
 git pull --ff-only
-mvn versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
+./mvnw versions:set -DgenerateBackupPoms=false "-DnewVersion=$VERSION"
 git commit pom.xml '**/pom.xml' -m "$VERSION"
 git push
 git tag "$VERSION"

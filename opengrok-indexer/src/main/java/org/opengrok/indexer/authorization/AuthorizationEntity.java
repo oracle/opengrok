@@ -134,7 +134,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Copy constructor for the entity:
+     * Copy constructor for the entity.
      * <ul>
      * <li>copy flag</li>
      * <li>copy name</li>
@@ -221,7 +221,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     public abstract String hierarchyToString(String prefix, String colorElement);
 
     /**
-     * Get the value of flag
+     * Get the value of {@code flag}.
      *
      * @return the value of flag
      */
@@ -230,7 +230,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of flag
+     * Set the value of {@code flag}.
      *
      * @param flag new value of flag
      */
@@ -239,7 +239,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of flag
+     * Set the value of {@code flag}.
      *
      * @param flag new value of flag
      */
@@ -248,7 +248,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of name
+     * Get the value of {@code name}.
      *
      * @return the value of name
      */
@@ -258,7 +258,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of name
+     * Set the value of {@code name}.
      *
      * @param name new value of name
      */
@@ -268,7 +268,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of setup
+     * Get the value of {@code setup}.
      *
      * @return the value of setup
      */
@@ -277,7 +277,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of setup
+     * Set the value of {@code setup}.
      *
      * @param setup new value of setup
      */
@@ -286,7 +286,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of current setup
+     * Get the value of current setup.
      *
      * @return the value of current setup
      */
@@ -295,7 +295,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of current setup
+     * Set the value of current setup.
      *
      * @param currentSetup new value of current setup
      */
@@ -304,7 +304,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of forProjects
+     * Get the value of {@code forProjects}.
      *
      * @return the value of forProjects
      */
@@ -313,7 +313,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of forProjects
+     * Get the value of {@code forProjects}.
      *
      * @return the value of forProjects
      */
@@ -322,7 +322,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forProjects
+     * Set the value of {@code forProjects}.
      *
      * @param forProjects new value of forProjects
      */
@@ -331,7 +331,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forProjects
+     * Set the value of {@code forProjects}.
      *
      * @param project add this project into the set
      */
@@ -340,7 +340,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forProjects
+     * Set the value of {@code forProjects}.
      *
      * @param projects add all projects in this array into the set
      *
@@ -353,7 +353,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of forGroups
+     * Get the value of {@code forGroups}.
      *
      * @return the value of forGroups
      */
@@ -362,7 +362,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Get the value of forGroups
+     * Get the value of {@code forGroups}.
      *
      * @return the value of forGroups
      */
@@ -371,7 +371,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forGroups
+     * Set the value of {@code forGroups}.
      *
      * @param forGroups new value of forGroups
      */
@@ -380,7 +380,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forGroups
+     * Set the value of {@code forGroups}.
      *
      * @param group add this group into the set
      */
@@ -389,7 +389,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
-     * Set the value of forGroups
+     * Set the value of {@code forGroups}.
      *
      * @param groups add all groups in this array into the set
      *

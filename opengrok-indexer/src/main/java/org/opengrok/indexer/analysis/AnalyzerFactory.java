@@ -146,7 +146,7 @@ public abstract class AnalyzerFactory {
     }
 
     /**
-     * The user friendly name of this analyzer
+     * The user friendly name of this analyzer.
      *
      * @return a genre
      */

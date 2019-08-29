@@ -37,10 +37,12 @@
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
-
 package org.opengrok.indexer.util;
 
 public class ColorUtil {
+
+    private ColorUtil() {
+    }
 
     /**
      * Return Color object from string. The following formats are allowed:

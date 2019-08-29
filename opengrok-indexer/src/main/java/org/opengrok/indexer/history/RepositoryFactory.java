@@ -59,7 +59,8 @@ public final class RepositoryFactory {
         new RCSRepository(),
         new CVSRepository(),
         new RepoRepository(),
-        new SSCMRepository(),};
+        new SSCMRepository()
+    };
 
     private RepositoryFactory() {
         // Factory class, should not be constructed
@@ -81,12 +82,14 @@ public final class RepositoryFactory {
     }
 
     public static Repository getRepository(File file, String type)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         return getRepository(file, false, type);
     }
 
     public static Repository getRepository(File file)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         return getRepository(file, false, null);
     }
     
@@ -112,7 +115,8 @@ public final class RepositoryFactory {
      * @throws ForbiddenSymlinkException when resolving repository path
      */
     public static Repository getRepository(File file, boolean interactive, String type)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
@@ -206,7 +210,8 @@ public final class RepositoryFactory {
      * @throws ForbiddenSymlinkException when resolving repository path
      */
     public static Repository getRepository(RepositoryInfo info, boolean interactive)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException, ForbiddenSymlinkException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+            IOException, ForbiddenSymlinkException {
         return getRepository(new File(info.getDirectoryName()), interactive, null);
     }
 

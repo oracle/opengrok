@@ -233,7 +233,7 @@ public class Group implements Comparable<Group>, Nameable {
     }
 
     /**
-     * Test group for a match
+     * Test group for a match.
      *
      * @param p project
      * @return true if project's description matches the group pattern
@@ -282,7 +282,7 @@ public class Group implements Comparable<Group>, Nameable {
     }
 
     /**
-     * Returns group object by its name
+     * Returns group object by its name.
      *
      * @param name name of a group
      * @return group that fits the name

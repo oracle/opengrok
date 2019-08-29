@@ -50,10 +50,9 @@ public class CVSRepository extends RCSRepository {
     /**
      * The property name used to obtain the client command for repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.cvs";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.cvs";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "cvs";
 

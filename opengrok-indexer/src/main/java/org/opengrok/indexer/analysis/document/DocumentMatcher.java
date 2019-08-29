@@ -32,8 +32,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory.Matcher;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
- * Represents an implementation of {@link Matcher} that detects a troff-
- * or mandoc-like document
+ * Represents an implementation of {@link Matcher} that detects a troff- or mandoc-like document.
  */
 public class DocumentMatcher implements Matcher {
 

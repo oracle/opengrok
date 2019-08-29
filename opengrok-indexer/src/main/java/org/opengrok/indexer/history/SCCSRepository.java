@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +54,7 @@ public class SCCSRepository extends Repository {
     public static final String CMD_PROPERTY_KEY
             = "org.opengrok.indexer.history.SCCS";
     /**
-     * The command to use to access the repository if none was given explicitly
+     * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "sccs";
 
@@ -89,9 +88,7 @@ public class SCCSRepository extends Repository {
         return false;
     }
 
-    private Map<String,String> getAuthors(File file) throws IOException {
-        Map<String, String> authors = new HashMap<>();
-
+    private Map<String, String> getAuthors(File file) throws IOException {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
@@ -119,7 +116,7 @@ public class SCCSRepository extends Repository {
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        Map<String,String> authors = getAuthors(file);
+        Map<String, String> authors = getAuthors(file);
 
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);

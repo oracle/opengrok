@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class PhpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of PhpAnalyzer
+     * Creates a new instance of PhpAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected PhpAnalyzer(AnalyzerFactory factory) {

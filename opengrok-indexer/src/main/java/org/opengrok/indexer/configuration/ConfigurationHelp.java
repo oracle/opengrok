@@ -47,6 +47,10 @@ import org.opengrok.indexer.index.IgnoredNames;
  * {@link Configuration}.
  */
 public class ConfigurationHelp {
+
+    private ConfigurationHelp() {
+    }
+
     /**
      * Gets sample content for a configuration XML file.
      * @return a defined instance
@@ -82,8 +86,7 @@ public class ConfigurationHelp {
 
             try {
                 mthd.invoke(conf, sampleValue);
-            } catch (IllegalAccessException|IllegalArgumentException|
-                InvocationTargetException ex) {
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 throw new RuntimeException("error setting sample value for " +
                     mthd);
             }
@@ -136,16 +139,16 @@ public class ConfigurationHelp {
         } else if (paramType == String.class) {
             return "user-specified-value";
         } else if (paramType == int.class) {
-            return 1 + (int)defaultValue;
+            return 1 + (int) defaultValue;
         } else if (paramType == short.class) {
-            return (short)(1 + (short)defaultValue);
+            return (short) (1 + (short) defaultValue);
         } else if (paramType == boolean.class) {
             if (defaultValue == null) {
                 return null;
             }
-            return !(boolean)defaultValue;
+            return !(boolean) defaultValue;
         } else if (paramType == double.class) {
-            return 1 + (double)defaultValue;
+            return 1 + (double) defaultValue;
         } else if (paramType == List.class) {
             return getSampleListValue(genType);
         } else if (paramType == Map.class) {
@@ -188,16 +191,12 @@ public class ConfigurationHelp {
         if (!(genType instanceof ParameterizedType)) {
             return null;
         }
-        ParameterizedType genParamType = (ParameterizedType)genType;
+        ParameterizedType genParamType = (ParameterizedType) genType;
         Type actType = genParamType.getActualTypeArguments()[0];
         Object res = null;
 
-        if (actType == RepositoryInfo.class) {
-            // ignore
-        }
-        else {
-            throw new UnsupportedOperationException("Not supported yet for " +
-                actType);
+        if (actType != RepositoryInfo.class) {
+            throw new UnsupportedOperationException("Not supported yet for " + actType);
         }
         return res;
     }
@@ -206,7 +205,7 @@ public class ConfigurationHelp {
         if (!(genType instanceof ParameterizedType)) {
             return null;
         }
-        ParameterizedType genParamType = (ParameterizedType)genType;
+        ParameterizedType genParamType = (ParameterizedType) genType;
         Type[] actualTypeArguments = genParamType.getActualTypeArguments();
         Type actType0 = actualTypeArguments[0];
         Type actType1 = actualTypeArguments[1];
@@ -237,7 +236,7 @@ public class ConfigurationHelp {
         if (!(genType instanceof ParameterizedType)) {
             return null;
         }
-        ParameterizedType genParamType = (ParameterizedType)genType;
+        ParameterizedType genParamType = (ParameterizedType) genType;
         Type actType = genParamType.getActualTypeArguments()[0];
         Object res = null;
 
@@ -276,19 +275,18 @@ public class ConfigurationHelp {
         Method getter;
         try {
             getter = klass.getDeclaredMethod(gname);
-        } catch (NoSuchMethodException|SecurityException ex) {
+        } catch (NoSuchMethodException | SecurityException ex) {
             gname = setter.getName().replaceFirst("^set", "is");
             try {
                 getter = klass.getDeclaredMethod(gname);
-            } catch (NoSuchMethodException|SecurityException ex2) {
+            } catch (NoSuchMethodException | SecurityException ex2) {
                 return null;
             }
         }
 
         try {
             return getter.invoke(cinst);
-        } catch (IllegalAccessException|IllegalArgumentException|
-            InvocationTargetException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             return null;
         }
     }

@@ -57,7 +57,9 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
     private static final String TIME_PATTERN = "\\d{1,2}/\\d{1,2}/\\d{4} \\d{1,2}:\\d{2} [AP]M";
     private static final String COMMENT_START_PATTERN = "Comments - ";
     // ^([a-z][a-z ]+)(?:\[(.*?)\])?\s+(\w+)\s+(\d+)\s+(\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2} [AP]M)$\s*(?:Comments - )?
-    private static final Pattern HISTORY_PATTERN = Pattern.compile("^(" + ACTION_PATTERN + ")(?:\\[(.*?)\\])?\\s+(" + USER_PATTERN + ")\\s+(" + VERSION_PATTERN + ")\\s+(" + TIME_PATTERN + ")$\\s*(?:" + COMMENT_START_PATTERN + ")?",
+    private static final Pattern HISTORY_PATTERN = Pattern.compile("^(" + ACTION_PATTERN +
+                    ")(?:\\[(.*?)\\])?\\s+(" + USER_PATTERN + ")\\s+(" + VERSION_PATTERN + ")\\s+(" + TIME_PATTERN +
+                    ")$\\s*(?:" + COMMENT_START_PATTERN + ")?",
             Pattern.MULTILINE);
 
     private static final String NEWLINE = System.getProperty("line.separator");

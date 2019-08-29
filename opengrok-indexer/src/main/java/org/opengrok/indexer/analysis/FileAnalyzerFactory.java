@@ -42,7 +42,7 @@ public class FileAnalyzerFactory extends AnalyzerFactory {
      * Create an instance of {@code FileAnalyzerFactory}.
      */
     FileAnalyzerFactory() {
-        this(null, null, null, null, null, null, null,null);
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -135,7 +135,9 @@ public class FileAnalyzerFactory extends AnalyzerFactory {
          * Get a value indicating if the magic is byte-precise.
          * @return true if precise
          */
-        default boolean getIsPreciseMagic() { return false; }
+        default boolean getIsPreciseMagic() {
+            return false;
+        }
 
         /**
          * Gets a default, reportable description of the matcher.

@@ -28,11 +28,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Haskell keywords
+ * Holds static hash set containing the Haskell keywords.
  * @author Harry Pan
  */
-
 public class Consts {
+
     public static final Set<String> kwd = new HashSet<>();
     static {
         // Haskell 2010 Language Report, Chapter 2.4
@@ -61,4 +61,8 @@ public class Consts {
 
         kwd.add("_"); // 2.4 Identifiers and Operators
     }
+
+    private Consts() {
+    }
+
 }

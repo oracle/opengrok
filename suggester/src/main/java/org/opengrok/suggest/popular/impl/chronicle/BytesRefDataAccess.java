@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.popular.impl.chronicle;
 
@@ -39,10 +39,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAccess<BytesRef> {
 
-    /** Cache field */
+    /** Cache field. */
     private transient HeapBytesStore<byte[]> bs;
 
-    /** State field */
+    /** State field. */
     private transient byte[] array;
 
     public BytesRefDataAccess() {
@@ -50,9 +50,8 @@ public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAc
     }
 
     private void initTransients() {
-        bs = HeapBytesStore.uninitialized();
+        bs = null;
     }
-
 
     @Override
     public RandomDataInput bytes() {
@@ -95,14 +94,14 @@ public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAc
             array = new byte[instance.length];
             System.arraycopy(instance.bytes, instance.offset, array, 0, instance.length);
         }
-        bs.init(array);
+        bs = HeapBytesStore.wrap(array);
         return this;
     }
 
     @Override
     public void uninit() {
         array = null;
-        bs.uninit();
+        bs = null;
     }
 
     @Override

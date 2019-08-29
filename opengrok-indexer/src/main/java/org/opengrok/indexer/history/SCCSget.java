@@ -28,17 +28,16 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import org.opengrok.indexer.util.Executor;
 
-
 public final class SCCSget {
 
     public static InputStream getRevision(String command, File file, String revision) throws IOException {
         InputStream ret = null;
-        ArrayList<String> argv = new ArrayList<String>();
+        ArrayList<String> argv = new ArrayList<>();
         argv.add(command);
         argv.add("get");
         argv.add("-p");
         if (revision != null) {
-            argv.add("-r"+revision);
+            argv.add("-r" + revision);
         }
         argv.add(file.getCanonicalPath());
 

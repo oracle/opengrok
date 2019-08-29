@@ -125,7 +125,8 @@ public class Context {
      * @param morePrefix optional link to more... page
      * @param limit a value indicating if the number of matching lines should be
      * limited. N.b. unlike
-     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opengrok.indexer.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.indexer.analysis.Scopes)},
+     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String,
+     * org.opengrok.indexer.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.indexer.analysis.Scopes)},
      * the {@code limit} argument will not be interpreted w.r.t.
      * {@link RuntimeEnvironment#isQuickContextScan()}.
      * @param tabSize optional positive tab size that must accord with the value
@@ -155,7 +156,7 @@ public class Context {
             if (tagsField != null) {
                 tags = Definitions.deserialize(tagsField.binaryValue().bytes);
             }
-        } catch (ClassNotFoundException|IOException e) {
+        } catch (ClassNotFoundException | IOException e) {
             LOGGER.log(Level.WARNING, "ERROR Definitions.deserialize(...)", e);
             return false;
         }
@@ -168,7 +169,7 @@ public class Context {
             } else {
                 scopes = new Scopes();
             }
-        } catch (ClassNotFoundException|IOException e) {
+        } catch (ClassNotFoundException | IOException e) {
             LOGGER.log(Level.WARNING, "ERROR Scopes.deserialize(...)", e);
             return false;
         }
@@ -247,7 +248,7 @@ public class Context {
             sb.append(field).append("=").append(Util.URIEncode(queryText))
                 .append('&');
         }
-        sb.setLength(sb.length()-1);
+        sb.setLength(sb.length() - 1);
         queryAsURI = sb.toString();
     }
 

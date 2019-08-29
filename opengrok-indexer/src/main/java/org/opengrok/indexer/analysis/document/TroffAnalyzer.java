@@ -38,14 +38,15 @@ import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * Analyzes [tn]roff files Created on September 30, 2005
+ * Analyzes [tn]roff files.
  *
+ * Created on September 30, 2005
  * @author Chandan
  */
 public class TroffAnalyzer extends TextAnalyzer {
 
     /**
-     * Creates a new instance of TroffAnalyzer
+     * Creates a new instance of TroffAnalyzer.
      * @param factory defined instance for the analyzer
      */
     protected TroffAnalyzer(AnalyzerFactory factory) {
