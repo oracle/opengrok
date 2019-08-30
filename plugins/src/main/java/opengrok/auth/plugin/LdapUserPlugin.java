@@ -99,7 +99,10 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             useDN = false;
         }
 
-        instance = Integer.parseInt((String) parameters.get(INSTANCE));
+        String instance_param = (String) parameters.get(INSTANCE);
+        if (instance_param != null) {
+            instance = Integer.parseInt(instance_param);
+        }
 
         LOGGER.log(Level.FINE, "LdapUser plugin loaded with filter={0}, " +
                         "attributes={1}, useDN={2}, instance={3}",
