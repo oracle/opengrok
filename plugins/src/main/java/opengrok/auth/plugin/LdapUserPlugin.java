@@ -161,7 +161,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         try {
             AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
             if ((res = getLdapProvider().lookupLdapContent(dn, expandedFilter,
-                    attributes.toArray(new String[attributes.size()]))) == null) {
+                    attributes.toArray(new String[0]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}''",
                         new Object[]{user, expandedFilter, attributes});
