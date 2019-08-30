@@ -52,11 +52,11 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapAttrPlugin.class.getName());
 
-    protected static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
-    protected static final String FILE_PARAM = "file";
-    private static final String INSTANCE = "instance";
+    static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
+    static final String FILE_PARAM = "file";
+    static final String INSTANCE_PARAM = "instance";
 
-    private static final String SESSION_ALLOWED_PREFIX = "opengrok-attr-plugin-allowed";
+    static final String SESSION_ALLOWED_PREFIX = "opengrok-ldap-attr-plugin-allowed";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
     /**
@@ -99,7 +99,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             throw new NullPointerException("Missing param [" + FILE_PARAM + "] in the setup");
         }
 
-        String instance = (String) parameters.get(INSTANCE);
+        String instance = (String) parameters.get(INSTANCE_PARAM);
         if (instance != null) {
             ldapUserInstance = Integer.parseInt(instance);
         }
@@ -120,8 +120,12 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
                 && req.getSession().getAttribute(sessionAllowed) != null;
     }
 
-    private String getSessionAttr() {
+    private String getSessionAttrName() {
         return (LdapUserPlugin.SESSION_ATTR + (ldapUserInstance != null ? ldapUserInstance.toString() : ""));
+    }
+
+    String getSessionAllowedAttrName() {
+        return sessionAllowed;
     }
 
     @SuppressWarnings("unchecked")
@@ -134,7 +138,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
         updateSession(req, false);
 
-        if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttr())) == null) {
+        if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttrName())) == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }

@@ -30,14 +30,19 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.FakeLdapFacade;
+import opengrok.auth.plugin.ldap.LdapException;
+import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -46,6 +51,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class LdapAttrPluginTest {
 
@@ -143,5 +153,52 @@ public class LdapAttrPluginTest {
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
+    }
+
+    /**
+     * Test the interaction between {@code LdapUserPlugin} and {@code LdapAttrPlugin}, namely:
+     * <ul>
+     *     <li>use of DN from the <code>LdapUser</code> object cached in the session by <code>LdapUserPlugin</code></li>
+     *     <li>configuration of the cached session attribute name</li>
+     * </ul>
+     */
+    @Test
+    public void testAttrLookup() throws LdapException {
+        String attr_to_get = "mail";
+        String instance_num = "42";
+        String mail_attr_value = "james@bond.com";
+
+        // Create mock LDAP provider, simulating the work of LdapUserPlugin.
+        AbstractLdapProvider mockprovider = mock(LdapFacade.class);
+        Map<String, Set<String>> attrs = new HashMap<>();
+        attrs.put(attr_to_get, Collections.singleton(mail_attr_value));
+        final String dn = "cn=FOO_BAR,L=EMEA,DC=FOO,DC=COM";
+        AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> result =
+                new AbstractLdapProvider.LdapSearchResult<>(dn, attrs);
+        assertNotNull(result);
+        // TODO use Mockito Argument captor ?
+        when(mockprovider.lookupLdapContent(anyString(), any(String[].class))).
+                thenReturn(result);
+
+        // Load the LdapAttrPlugin using the mock LDAP provider.
+        LdapAttrPlugin plugin = new LdapAttrPlugin();
+        Map<String, Object> parameters = new TreeMap<>();
+        parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
+        parameters.put(LdapAttrPlugin.ATTR_PARAM, attr_to_get);
+        parameters.put(LdapAttrPlugin.INSTANCE_PARAM, instance_num);
+        plugin.load(parameters, mockprovider);
+
+        // TODO prepareRequest() ?
+        LdapUser ldapUser = new LdapUser(dn, null);
+        HttpServletRequest request = new DummyHttpServletRequestLdap();
+        request.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR + instance_num, ldapUser);
+
+        // Here it comes all together.
+        User user = new User("foo@bar.cz", "id");
+        plugin.fillSession(request, user);
+
+        // See if LdapAttrPlugin set its own session attribute based on the mocked query.
+        assertTrue((Boolean)request.getSession().getAttribute(plugin.getSessionAllowedAttrName()));
+        assertTrue(ldapUser.getAttribute(attr_to_get).contains(mail_attr_value));
     }
 }

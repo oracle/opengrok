@@ -208,7 +208,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         req.getSession().setAttribute(getSessionAttr(), user);
     }
 
-    private String getSessionAttr() {
+    String getSessionAttr() {
         return (SESSION_ATTR + (instance != null ? instance.toString() : ""));
     }
 
