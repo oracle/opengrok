@@ -120,10 +120,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
                 && req.getSession().getAttribute(sessionAllowed) != null;
     }
 
-    private String getSessionAttrName() {
-        return (LdapUserPlugin.SESSION_ATTR + (ldapUserInstance != null ? ldapUserInstance.toString() : ""));
-    }
-
     String getSessionAllowedAttrName() {
         return sessionAllowed;
     }
@@ -137,7 +133,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
         updateSession(req, false);
 
-        if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttrName())) == null) {
+        if ((ldapUser = (LdapUser) req.getSession().
+                getAttribute(LdapUserPlugin.getSessionAttrName(ldapUserInstance))) == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
             return;
         }

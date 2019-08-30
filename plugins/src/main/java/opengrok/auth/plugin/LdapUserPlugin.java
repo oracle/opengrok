@@ -116,7 +116,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     @Override
     protected boolean sessionExists(HttpServletRequest req) {
         return super.sessionExists(req)
-                && req.getSession().getAttribute(getSessionAttr()) != null;
+                && req.getSession().getAttribute(getSessionAttrName()) != null;
     }
 
     /**
@@ -204,21 +204,25 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * @param req the request
      * @param user the new value for user
      */
-    protected void updateSession(HttpServletRequest req, LdapUser user) {
-        req.getSession().setAttribute(getSessionAttr(), user);
+    void updateSession(HttpServletRequest req, LdapUser user) {
+        req.getSession().setAttribute(getSessionAttrName(), user);
     }
 
-    String getSessionAttr() {
+    static String getSessionAttrName(Integer instance) {
         return (SESSION_ATTR + (instance != null ? instance.toString() : ""));
+    }
+
+    private String getSessionAttrName() {
+        return getSessionAttrName(instance);
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return request.getSession().getAttribute(getSessionAttr()) != null;
+        return request.getSession().getAttribute(getSessionAttrName()) != null;
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return request.getSession().getAttribute(getSessionAttr()) != null;
+        return request.getSession().getAttribute(getSessionAttrName()) != null;
     }
 }
