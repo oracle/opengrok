@@ -52,13 +52,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapAttrPlugin.class.getName());
 
-    static final String ATTR_PARAM = "attribute"; // LDAP attribute name to check
-    static final String FILE_PARAM = "file";
-    static final String INSTANCE_PARAM = "instance";
-
-    private static final String SESSION_ALLOWED_PREFIX = "opengrok-ldap-attr-plugin-allowed";
-    private String sessionAllowed = SESSION_ALLOWED_PREFIX;
-
     /**
      * List of configuration names.
      * <ul>
@@ -67,6 +60,13 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
      * <li><code>instance</code> is number of <code>LdapUserInstance</code> plugin to use (optional)</li>
      * </ul>
      */
+    static final String ATTR_PARAM = "attribute";
+    static final String FILE_PARAM = "file";
+    static final String INSTANCE_PARAM = "instance";
+
+    private static final String SESSION_ALLOWED_PREFIX = "opengrok-ldap-attr-plugin-allowed";
+    private String sessionAllowed = SESSION_ALLOWED_PREFIX;
+
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
     private Integer ldapUserInstance;
