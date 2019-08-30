@@ -56,7 +56,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     static final String FILE_PARAM = "file";
     static final String INSTANCE_PARAM = "instance";
 
-    static final String SESSION_ALLOWED_PREFIX = "opengrok-ldap-attr-plugin-allowed";
+    private static final String SESSION_ALLOWED_PREFIX = "opengrok-ldap-attr-plugin-allowed";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
     /**
@@ -69,7 +69,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
      */
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
-    private String filePath;
     private Integer ldapUserInstance;
 
     public LdapAttrPlugin() {
@@ -90,11 +89,12 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         init(parameters);
     }
 
-    void init(Map<String, Object> parameters) {
+    private void init(Map<String, Object> parameters) {
         if ((ldapAttr = (String) parameters.get(ATTR_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + ATTR_PARAM + "] in the setup");
         }
 
+        String filePath;
         if ((filePath = (String) parameters.get(FILE_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILE_PARAM + "] in the setup");
         }
@@ -128,10 +128,9 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         return sessionAllowed;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void fillSession(HttpServletRequest req, User user) {
-        Boolean sessionAllowed;
+        boolean sessionAllowed;
         LdapUser ldapUser;
         Map<String, Set<String>> records = null;
         Set<String> attributeValues;
@@ -147,7 +146,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         // (and if found, cache the result in the LDAP user object).
         attributeValues = ldapUser.getAttribute(ldapAttr);
         if (attributeValues != null) {
-            sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
+            sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
         } else {
             try {
                 String dn = ldapUser.getDn();
@@ -175,7 +174,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             }
 
             ldapUser.setAttribute(ldapAttr, attributeValues);
-            sessionAllowed = attributeValues.stream().anyMatch((t) -> whitelist.contains(t));
+            sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
         }
 
         updateSession(req, sessionAllowed);
@@ -187,7 +186,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
      * @param req the request
      * @param allowed the new value
      */
-    protected void updateSession(HttpServletRequest req, boolean allowed) {
+    private void updateSession(HttpServletRequest req, boolean allowed) {
         req.getSession().setAttribute(sessionAllowed, allowed);
     }
     
