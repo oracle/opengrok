@@ -50,7 +50,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapUserPlugin.class.getName());
     
-    public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
+    static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
     /**
      * List of configuration names.
@@ -61,10 +61,10 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * <li><code>instance</code> integer that can be used to identify instance of this plugin by other LDAP plugins (optional, default empty)</li>
      * </ul>
      */
-    protected static final String LDAP_FILTER = "filter";
-    protected static final String ATTRIBUTES = "attributes";
-    protected static final String USE_DN = "useDN";
-    protected static final String INSTANCE = "instance";
+    static final String LDAP_FILTER = "filter";
+    static final String ATTRIBUTES = "attributes";
+    static final String USE_DN = "useDN";
+    static final String INSTANCE = "instance";
 
     private String ldapFilter;
     private Boolean useDN;
@@ -129,7 +129,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * @param user User object from the request (created by {@code UserPlugin})
      * @return replaced result
      */
-    protected String expandFilter(User user) {
+    String expandFilter(User user) {
         String filter = ldapFilter;
 
         filter = expandUserFilter(user, filter);
