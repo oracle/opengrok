@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -189,7 +189,6 @@ public class PathUtils {
      * source root.
      *
      * @param file A file to resolve
-     * @param stripCount Number of characters past source root to strip
      * @return Path relative to source root
      * @throws IOException if an IO error occurs
      * @throws FileNotFoundException if the file is not relative to source root
@@ -197,7 +196,7 @@ public class PathUtils {
      * an ineligible link
      * @throws InvalidPathException if the path cannot be decoded
      */
-    public static String getPathRelativeToSourceRoot(File file, int stripCount)
+    public static String getPathRelativeToSourceRoot(File file)
             throws IOException, ForbiddenSymlinkException, FileNotFoundException,
             InvalidPathException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -215,7 +214,7 @@ public class PathUtils {
             // elsewhere directly appended to env.getSourceRootPath() and also
             // stored as such.
             maybeRelPath = File.separator + maybeRelPath;
-            return maybeRelPath.substring(stripCount);
+            return maybeRelPath;
         }
 
         throw new FileNotFoundException("Failed to resolve [" + file.getPath()

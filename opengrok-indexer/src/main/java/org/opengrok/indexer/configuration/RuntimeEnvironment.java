@@ -19,7 +19,7 @@
 
  /*
   * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
-  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
   */
 package org.opengrok.indexer.configuration;
 
@@ -424,7 +424,7 @@ public final class RuntimeEnvironment {
      */
     public String getPathRelativeToSourceRoot(File file)
             throws IOException, ForbiddenSymlinkException {
-        return PathUtils.getPathRelativeToSourceRoot(file, 0);
+        return PathUtils.getPathRelativeToSourceRoot(file);
     }
 
     /**
@@ -1457,7 +1457,7 @@ public final class RuntimeEnvironment {
             String repoPath;
             try {
                 repoPath = PathUtils.getPathRelativeToSourceRoot(
-                        new File(r.getDirectoryName()), 0);
+                        new File(r.getDirectoryName()));
             } catch (ForbiddenSymlinkException e) {
                 LOGGER.log(Level.FINER, e.getMessage());
                 continue;
