@@ -123,14 +123,16 @@ public final class RepositoryFactory {
     public static Repository getRepository(File file, boolean interactive, boolean isNested)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        Repository repo = null;
 
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String relFile = env.getPathRelativeToSourceRoot(file);
+
+        Repository repo = null;
         for (Repository rep : repositories) {
             if ((!isNested || rep.isNestable()) && rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
 
-                if (env.isProjectsEnabled() && env.getPathRelativeToSourceRoot(file).equals(File.separator)) {
+                if (env.isProjectsEnabled() && relFile.equals(File.separator)) {
                     LOGGER.log(Level.WARNING, "{0} was detected as {1} repository however with directory " +
                             "matching source root. This is invalid because projects are enabled. Ignoring this " +
                             "repository.",

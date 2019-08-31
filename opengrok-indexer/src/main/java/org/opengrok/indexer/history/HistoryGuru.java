@@ -419,9 +419,11 @@ public final class HistoryGuru {
                 } catch (IllegalAccessException iae) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', missing access rights.", iae);
+                    continue;
                 } catch (ForbiddenSymlinkException e) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', path traversal issues.", e);
+                    LOGGER.log(Level.WARNING, "Could not create repository for ''{0}'': {1}",
+                            new Object[] {file, e.getMessage()});
+                    continue;
                 }
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
