@@ -577,6 +577,11 @@ public final class Indexer {
             parser.on("--mandoc", "=/path/to/mandoc", "Path to mandoc(1) binary.")
                     .Do(mandocPath -> cfg.setMandoc((String) mandocPath));
 
+            parser.on("-N", "--symlink", "=/path/to/symlink",
+                    "Allow this symlink to be followed. Option may be repeated.",
+                    "By default only symlinks directly under source root directory",
+                    "are allowed.").Do(symlink -> allowedSymlinks.add((String) symlink));
+
             parser.on("-n", "--noIndex",
                 "Do not generate indexes and other data (such as history cache and xref files), " +
                 "but process all other command line options.").Do(v -> runIndex = false);
@@ -706,11 +711,6 @@ public final class Indexer {
                 "requested stylesheet. The factory-setting is: \"default\".").
                 Do(stylePath -> cfg.setWebappLAF((String) stylePath)
             );
-
-            parser.on("--symlink", "=/path/to/symlink",
-                "Allow this symlink to be followed. Option may be repeated.",
-                "By default only symlinks directly under source root directory",
-                "are allowed.").Do(symlink -> allowedSymlinks.add((String) symlink));
 
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
