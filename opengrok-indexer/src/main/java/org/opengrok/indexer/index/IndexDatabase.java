@@ -181,16 +181,6 @@ public class IndexDatabase {
     }
 
     /**
-     * Update the index database for all of the projects. Print progress to
-     * standard out.
-     *
-     * @throws IOException if an error occurs
-     */
-    public static void updateAll() throws IOException {
-        updateAll(null);
-    }
-
-    /**
      * Update the index database for all of the projects.
      *
      * @param listener where to signal the changes to the database
@@ -1248,16 +1238,6 @@ public class IndexDatabase {
         }
     }
 
-    /**
-     * Interrupt the index generation (and the index generation will stop as
-     * soon as possible).
-     */
-    public void interrupt() {
-        synchronized (lock) {
-            interrupted = true;
-        }
-    }
-
     private boolean isInterrupted() {
         synchronized (lock) {
             return interrupted;
@@ -1272,26 +1252,6 @@ public class IndexDatabase {
      */
     public void addIndexChangedListener(IndexChangedListener listener) {
         listeners.add(listener);
-    }
-
-    /**
-     * Remove an object from the lists of objects to receive events when
-     * modifications is done to the index database.
-     *
-     * @param listener the object to remove
-     */
-    public void removeIndexChangedListener(IndexChangedListener listener) {
-        listeners.remove(listener);
-    }
-
-    /**
-     * Get all files in all of the index databases.
-     *
-     * @throws IOException if an error occurs
-     * @return set of files
-     */
-    public static Set<String> getAllFiles() throws IOException {
-        return getAllFiles(null);
     }
 
     /**
@@ -1398,10 +1358,6 @@ public class IndexDatabase {
         }
 
         return numDocs;
-    }
-
-    static void listFrequentTokens() throws IOException {
-        listFrequentTokens(null);
     }
 
     static void listFrequentTokens(List<String> subFiles) throws IOException {
@@ -1796,12 +1752,12 @@ public class IndexDatabase {
         return true;
     }
 
-    private class IndexDownArgs {
+    private static class IndexDownArgs {
         int cur_count;
         final List<IndexFileWork> works = new ArrayList<>();
     }
 
-    private class IndexFileWork {
+    private static class IndexFileWork {
         final File file;
         final String path;
         Exception exception;
