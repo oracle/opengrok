@@ -24,7 +24,6 @@
 package org.opengrok.indexer.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -35,7 +34,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -181,44 +179,6 @@ public class PathUtils {
             }
         }
         return false;
-    }
-
-    /**
-     * Returns a path relative to source root. This would just be a simple
-     * substring operation, except we need to support symlinks outside the
-     * source root.
-     *
-     * @param file A file to resolve
-     * @return Path relative to source root
-     * @throws IOException if an IO error occurs
-     * @throws FileNotFoundException if the file is not relative to source root
-     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
-     * an ineligible link
-     * @throws InvalidPathException if the path cannot be decoded
-     */
-    public static String getPathRelativeToSourceRoot(File file)
-            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
-            InvalidPathException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String sourceRoot = env.getSourceRootPath();
-        if (sourceRoot == null) {
-            throw new FileNotFoundException("Source Root Not Found");
-        }
-
-        String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
-                sourceRoot, env.getAllowedSymlinks());
-        File maybeRelFile = new File(maybeRelPath);
-        if (!maybeRelFile.isAbsolute()) {
-            // N.b. OpenGrok has a weird convention that
-            // source-root "relative" paths must start with a '/' as they are
-            // elsewhere directly appended to env.getSourceRootPath() and also
-            // stored as such.
-            maybeRelPath = File.separator + maybeRelPath;
-            return maybeRelPath;
-        }
-
-        throw new FileNotFoundException("Failed to resolve [" + file.getPath()
-                + "] relative to source root [" + sourceRoot + "]");
     }
 
     /** Private to enforce static. */
