@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import javax.naming.directory.SearchControls;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -35,5 +37,18 @@ public class LdapFacadeTest {
         config.setConnectTimeout(timeoutValue);
         LdapFacade facade = new LdapFacade(config);
         assertTrue(facade.getServers().stream().anyMatch(s -> s.getConnectTimeout() == timeoutValue));
+    }
+
+    @Test
+    public void testToString() {
+        Configuration config = new Configuration();
+        config.setServers(Arrays.asList(new LdapServer("http://foo.foo"),
+                new LdapServer("http://bar.bar")));
+        config.setSearchBase("dc=foo,dc=com");
+        int timeoutValue = 42;
+        config.setConnectTimeout(timeoutValue);
+        LdapFacade facade = new LdapFacade(config);
+        assertEquals("{servers=http://foo.foo,http://bar.bar, searchBase=dc=foo,dc=com}",
+                facade.toString());
     }
 }
