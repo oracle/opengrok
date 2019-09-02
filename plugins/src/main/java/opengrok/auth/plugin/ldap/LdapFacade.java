@@ -176,6 +176,8 @@ public class LdapFacade extends AbstractLdapProvider {
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
         setWebHooks(cfg.getWebHooks());
+
+        // Anti-pattern: do some non trivial stuff in the constructor.
         prepareSearchControls(cfg.getSearchTimeout(), cfg.getCountLimit());
         prepareServers();
     }
@@ -425,7 +427,8 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     public String toString() {
-        return String.join(",",
-                getServers().stream().map(LdapServer::getUrl).collect(Collectors.toList()));
+        return "{servers=" + String.join(",",
+                getServers().stream().map(LdapServer::getUrl).collect(Collectors.toList())) +
+                ", searchBase=" + getSearchBase() + "}";
     }
 }
