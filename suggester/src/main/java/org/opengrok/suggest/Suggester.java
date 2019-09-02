@@ -434,7 +434,7 @@ public final class Suggester implements Closeable {
         } catch (Exception e) {
             logger.log(Level.FINE,
                     String.format("Could not update search count map%s",
-                            projectsEnabled ? " for projects: " + projects: ""), e);
+                            projectsEnabled ? " for projects: " + projects : ""), e);
         }
     }
 
