@@ -431,7 +431,7 @@ public final class RuntimeEnvironment {
         }
 
         String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
-                sourceRoot, getAllowedSymlinks());
+                sourceRoot, getAllowedSymlinks(), getCanonicalRoots());
         File maybeRelFile = new File(maybeRelPath);
         if (!maybeRelFile.isAbsolute()) {
             /*
@@ -1207,6 +1207,15 @@ public final class RuntimeEnvironment {
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
         setConfigurationValue("allowedSymlinks", allowedSymlinks);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getCanonicalRoots() {
+        return (Set<String>) getConfigurationValue("canonicalRoots");
+    }
+
+    public void setCanonicalRoots(Set<String> canonicalRoots) {
+        setConfigurationValue("canonicalRoots", canonicalRoots);
     }
 
     /**

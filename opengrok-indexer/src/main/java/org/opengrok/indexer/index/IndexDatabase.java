@@ -1000,7 +1000,21 @@ public class IndexDatabase {
             }
         }
 
-        Set<String> allowedSymlinks = RuntimeEnvironment.getInstance().getAllowedSymlinks();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        Set<String> canonicalRoots = env.getCanonicalRoots();
+        for (String canonicalRoot : canonicalRoots) {
+            if (canonical1.startsWith(canonicalRoot)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Allowed symlink {0} per canonical root {1}",
+                            new Object[] {absolute1, canonical1});
+                }
+                acceptedNonlocalSymlinks.put(canonical1, absolute1);
+                return true;
+            }
+        }
+
+        Set<String> allowedSymlinks = env.getAllowedSymlinks();
         for (String allowedSymlink : allowedSymlinks) {
             String allowedTarget;
             try {

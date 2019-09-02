@@ -18,10 +18,13 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +38,6 @@ import java.util.List;
 import java.util.Set;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -131,7 +132,7 @@ public class PathUtilsTest {
         ForbiddenSymlinkException expex = null;
         try {
             PathUtils.getRelativeToCanonical(sympath.toString(), realDir1Canon,
-                allowedSymLinks);
+                    allowedSymLinks, null);
         } catch (ForbiddenSymlinkException e) {
             expex = e;
         }
@@ -141,7 +142,7 @@ public class PathUtilsTest {
         // Test v. realDir1 canonical with validation and an allowed link
         allowedSymLinks.add(symlink2.getPath());
         rel = PathUtils.getRelativeToCanonical(sympath.toString(),
-            realDir1Canon, allowedSymLinks);
+                realDir1Canon, allowedSymLinks, null);
         assertEquals("because link is OKed", "b/" + SYMLINK2, rel);
     }
 

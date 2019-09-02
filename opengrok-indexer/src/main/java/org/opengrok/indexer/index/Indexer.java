@@ -116,6 +116,7 @@ public final class Indexer {
 
     private static final Set<String> repositories = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
+    private static final HashSet<String> canonicalRoots = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
@@ -204,6 +205,9 @@ public final class Indexer {
 
             allowedSymlinks.addAll(cfg.getAllowedSymlinks());
             cfg.setAllowedSymlinks(allowedSymlinks);
+
+            canonicalRoots.addAll(cfg.getCanonicalRoots());
+            cfg.setCanonicalRoots(canonicalRoots);
 
             // Assemble the unprocessed command line arguments (possibly
             // a list of paths). This will be used to perform more fine
@@ -473,6 +477,22 @@ public final class Indexer {
                 }
             );
 
+            parser.on("-C", "--canonicalRoot", "=/path/",
+                    "Allow symlinks to canonical targets starting with the specified",
+                    "root without otherwise needing to specify -N,--symlink for such",
+                    "symlinks. A canonical root must end with a file separator. For",
+                    "security a canonical root cannot be the root directory.",
+                    "Option may be repeated.").Do(v -> {
+                            String root = (String) v;
+                            if (!root.endsWith("/") && !root.endsWith("\\")) {
+                                die("--canonicalRoot must end with a separator");
+                            }
+                            if (root.equals("/") || root.equals("\\")) {
+                                die("--canonicalRoot cannot be the root directory");
+                            }
+                            canonicalRoots.add(root);
+                    });
+
             parser.on("-c", "--ctags", "=/path/to/ctags",
                 "Path to Universal Ctags",
                 "By default takes the Universal Ctags in PATH.").
@@ -580,11 +600,13 @@ public final class Indexer {
             parser.on("-N", "--symlink", "=/path/to/symlink",
                     "Allow this symlink to be followed. Option may be repeated.",
                     "By default only symlinks directly under source root directory",
-                    "are allowed.").Do(symlink -> allowedSymlinks.add((String) symlink));
+                    "are allowed. See also -C,--canonicalRoot").Do(v ->
+                    allowedSymlinks.add((String) v));
 
             parser.on("-n", "--noIndex",
-                "Do not generate indexes and other data (such as history cache and xref files), " +
-                "but process all other command line options.").Do(v -> runIndex = false);
+                "Do not generate indexes and other data (such as history cache",
+                "and xref files), but process all other command line options.").Do(v ->
+                runIndex = false);
 
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off the optimization of the index database",
@@ -621,8 +643,8 @@ public final class Indexer {
             parser.on("-p", "--defaultProject", "=/path/to/default/project",
                 "This is the path to the project that should be selected",
                 "by default in the web application (when no other project",
-                "set either in cookie or in parameter). May be used multiple",
-                "times for several projects. Use \"__all__\" for all projects.",
+                "set either in cookie or in parameter). Option may be repeated",
+                "to specify several projects. Use \"__all__\" for all projects.",
                 "You should strip off the source root.").Do(v -> {
                 defaultProjects.add((String) v);
             });
@@ -651,10 +673,9 @@ public final class Indexer {
             });
 
             parser.on("--repository", "=repository",
-                    "Generate history for specific repository specified as relative path to source root. ",
-                    "Can be used multiple times. Assumes history is on.").Do(repo -> {
-                repositories.add((String) repo);
-            });
+                    "Generate history for specific repository specified as relative",
+                    "path to source root. Assumes -H,--history is on. Option may be",
+                    "repeated.").Do(v -> repositories.add((String) v));
 
             parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do(v -> {

@@ -44,23 +44,20 @@ public class PathUtils {
         LoggerFactory.getLogger(PathUtils.class);
 
     /**
-     * Calls
-     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
-     * with {@code path}, {@code canonical}, and {@code allowedSymlinks=null}
-     * (to disable validation of links).
+     * Calls {@link #getRelativeToCanonical(String, String, Set, Set)}
+     * with {@code path}, {@code canonical}, {@code allowedSymlinks=null}, and
+     * {@code canonicalRoots=null} (to disable validation of links).
      * @param path a non-canonical (or canonical) path to compare
      * @param canonical a canonical path to compare against
-     * @return a relative path determined as described for
-     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
-     * when {@code allowedSymlinks==null} -- or {@code path} if no canonical
-     * relativity is found.
+     * @return a relative path determined as described -- or {@code path} if no
+     * canonical relativity is found.
      * @throws IOException if an error occurs determining canonical paths
      * for portions of {@code path}
      */
     public static String getRelativeToCanonical(String path, String canonical)
         throws IOException {
         try {
-            return getRelativeToCanonical(path, canonical, null);
+            return getRelativeToCanonical(path, canonical, null, null);
         } catch (ForbiddenSymlinkException e) {
             // should not get here with allowedSymlinks==null
             return path;
@@ -88,8 +85,12 @@ public class PathUtils {
      * @param path a non-canonical (or canonical) path to compare
      * @param canonical a canonical path to compare against
      * @param allowedSymlinks optional set of allowed symbolic links, so that
-     * any links encountered within {@code path} and not covered by the set
-     * will abort the algorithm
+     * any links encountered within {@code path} and not covered by the set (or
+     * whitelisted in a defined {@code canonicalRoots}) will abort the algorithm
+     * @param canonicalRoots optional set of allowed canonicalRoots, so that
+     * any checks done because of a defined {@code allowedSymlinks} will first
+     * check against the whitelist of canonical roots and possibly short-circuit
+     * the explicit validation against {@code allowedSymlinks}.
      * @return a relative path determined as described above -- or {@code path}
      * if no canonical relativity is found
      * @throws IOException if an error occurs determining canonical paths
@@ -99,7 +100,7 @@ public class PathUtils {
      * @throws InvalidPathException if path cannot be decoded
      */
     public static String getRelativeToCanonical(String path, String canonical,
-        Set<String> allowedSymlinks)
+            Set<String> allowedSymlinks, Set<String> canonicalRoots)
             throws IOException, ForbiddenSymlinkException, InvalidPathException {
 
         if (path.equals(canonical)) {
@@ -127,7 +128,8 @@ public class PathUtils {
             if (allowedSymlinks != null) {
                 String iterOriginal = iterPath.getPath();
                 if (Files.isSymbolicLink(Paths.get(iterOriginal)) &&
-                    !isAllowedSymlink(iterCanon, allowedSymlinks)) {
+                        !isWhitelisted(iterCanon, canonicalRoots) &&
+                        !isAllowedSymlink(iterCanon, allowedSymlinks)) {
                     String format = String.format("%1$s is prohibited symlink",
                         iterOriginal);
                     LOGGER.finest(format);
@@ -176,6 +178,17 @@ public class PathUtils {
             }
             if (canonicalFile.equals(canonicalLink)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWhitelisted(String canonical, Set<String> canonicalRoots) {
+        if (canonicalRoots != null) {
+            for (String canonicalRoot : canonicalRoots) {
+                if (canonical.startsWith(canonicalRoot)) {
+                    return true;
+                }
             }
         }
         return false;

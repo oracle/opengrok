@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -201,6 +201,7 @@ public final class Configuration {
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
     private Set<String> allowedSymlinks;
+    private Set<String> canonicalRoots;
     private boolean obfuscatingEMailAddresses;
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;  // repository type -> command
@@ -441,6 +442,7 @@ public final class Configuration {
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
+        setCanonicalRoots(new HashSet<>());
         setCommandTimeout(600); // 10 minutes
         setInteractiveCommandTimeout(30);
         setCompressXref(true);
@@ -1171,6 +1173,14 @@ public final class Configuration {
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
         this.allowedSymlinks = allowedSymlinks;
+    }
+
+    public Set<String> getCanonicalRoots() {
+        return canonicalRoots;
+    }
+
+    public void setCanonicalRoots(Set<String> canonicalRoots) {
+        this.canonicalRoots = canonicalRoots;
     }
 
     public boolean isObfuscatingEMailAddresses() {
