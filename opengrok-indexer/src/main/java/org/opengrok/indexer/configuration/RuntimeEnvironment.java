@@ -302,11 +302,11 @@ public final class RuntimeEnvironment {
         setConfigurationValue("interactiveCommandTimeout", timeout);
     }
 
-    public int getCtagsTimeout() {
-        return (int) getConfigurationValue("ctagsTimeout");
+    public long getCtagsTimeout() {
+        return (long) getConfigurationValue("ctagsTimeout");
     }
 
-    public void setCtagsTimeout(int timeout) {
+    public void setCtagsTimeout(long timeout) {
         setConfigurationValue("ctagsTimeout", timeout);
     }
     

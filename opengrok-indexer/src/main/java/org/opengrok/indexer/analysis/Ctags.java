@@ -32,12 +32,19 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.SourceSplitter;
@@ -59,7 +66,7 @@ public class Ctags implements Resettable {
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private int tabSize;
-    private int timeout = 0; // in seconds
+    private Duration timeout = Duration.ofSeconds(10);
 
     private boolean junit_testing = false;
 
@@ -93,12 +100,12 @@ public class Ctags implements Resettable {
         this.CTagsExtraOptionsFile = CTagsExtraOptionsFile;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setTimeout(long timeout) {
+        this.timeout = Duration.ofSeconds(timeout);
     }
 
-    public int getTimeout() {
-        return this.timeout;
+    public long getTimeout() {
+        return this.timeout.getSeconds();
     }
 
     /**
@@ -363,6 +370,13 @@ public class Ctags implements Resettable {
         command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
     }
 
+    /**
+     * Run ctags on a file.
+     * @param file file path to process
+     * @return Definitions
+     * @throws IOException I/O exception
+     * @throws InterruptedException interrupted command
+     */
     public Definitions doCtags(String file) throws IOException,
             InterruptedException {
         if (file.length() < 1 || "\n".equals(file)) {
@@ -388,7 +402,7 @@ public class Ctags implements Resettable {
         CtagsReader rdr = new CtagsReader();
         rdr.setSplitterSupplier(() -> trySplitSource(file));
         rdr.setTabSize(tabSize);
-        Definitions ret;
+        Definitions ret = null;
         try {
             ctagsIn.write(file + "\n");
             if (Thread.interrupted()) {
@@ -399,35 +413,35 @@ public class Ctags implements Resettable {
                 throw new InterruptedException("flush()");
             }
 
-            int timeout = this.timeout * 1000;
-            Timer timer = null;
             /*
-             * Setup timer thread to make sure the ctags process completes and the indexer can
+             * Run the ctags reader in a time bound thread to make sure
+             * the ctags process completes so that the indexer can
              * make progress instead of hanging the whole operation.
              */
-            if (timeout != 0) {
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override public void run() {
-                    LOGGER.log(Level.WARNING,
-                            String.format("Terminating ctags process for file '%s' " +
-                                    "due to timeout %d seconds", file, timeout / 1000));
-                    try {
-                        close();
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to terminate overly long ctags command");
-                    }
-                    }
-                }, timeout);
+            IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
+            ExecutorService executor = parallelizer.getCtagsWatcherExecutor();
+            Future<Definitions> future = executor.submit(() -> {
+                readTags(rdr);
+                return rdr.getDefinitions();
+            });
+
+            try {
+                ret = future.get(getTimeout(), TimeUnit.SECONDS);
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.WARNING, "execution exception", ex);
+            } catch (TimeoutException ex) {
+                LOGGER.log(Level.WARNING,
+                        String.format("Terminating ctags process for file '%s' " +
+                                "due to timeout %d seconds", file, getTimeout()));
+                try {
+                    close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to terminate overly long ctags command");
+                }
+
+                // Allow for retry in IndexDatabase.
+                throw new InterruptedException("ctags timeout");
             }
-
-            readTags(rdr);
-
-            if (timer != null) {
-                timer.cancel();
-            }
-
-            ret = rdr.getDefinitions();
         } catch (IOException ex) {
             /*
              * In case the ctags process had to be destroyed, possibly pre-empt

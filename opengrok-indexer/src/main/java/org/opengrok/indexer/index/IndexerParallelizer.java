@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.CtagsValidator;
@@ -68,6 +69,9 @@ public class IndexerParallelizer implements AutoCloseable {
     private LazilyInstantiate<ExecutorService> lzHistoryRenamedExecutor;
     private ExecutorService historyRenamedExecutor;
 
+    private LazilyInstantiate<ExecutorService> lzCtagsWatcherExecutor;
+    private ExecutorService ctagsWatcherExecutor;
+
     /**
      * Initializes a new instance using settings from the specified environment
      * instance.
@@ -89,6 +93,7 @@ public class IndexerParallelizer implements AutoCloseable {
         createLazyFixedExecutor();
         createLazyHistoryExecutor();
         createLazyHistoryRenamedExecutor();
+        createLazyCtagsWatcherExecutor();
     }
 
     /**
@@ -133,6 +138,15 @@ public class IndexerParallelizer implements AutoCloseable {
     public ExecutorService getHistoryRenamedExecutor() {
         ExecutorService result = lzHistoryRenamedExecutor.get();
         historyRenamedExecutor = result;
+        return result;
+    }
+
+    /**
+     * @return the Executor used for ctags parallelism
+     */
+    public ExecutorService getCtagsWatcherExecutor() {
+        ExecutorService result = lzCtagsWatcherExecutor.get();
+        ctagsWatcherExecutor = result;
         return result;
     }
 
@@ -195,6 +209,13 @@ public class IndexerParallelizer implements AutoCloseable {
             createLazyHistoryRenamedExecutor();
             formerFixedExecutor.shutdown();
         }
+
+        ExecutorService formerCtagsWatcherExecutor = ctagsWatcherExecutor;
+        if (formerCtagsWatcherExecutor != null) {
+            ctagsWatcherExecutor = null;
+            createLazyCtagsWatcherExecutor();
+            formerCtagsWatcherExecutor.shutdown();
+        }
     }
 
     private void createLazyForkJoinPool() {
@@ -206,6 +227,15 @@ public class IndexerParallelizer implements AutoCloseable {
         lzCtagsPool = LazilyInstantiate.using(() ->
                 new BoundedBlockingObjectPool<>(indexingParallelism,
                         new CtagsValidator(), new CtagsObjectFactory(env)));
+    }
+
+    private void createLazyCtagsWatcherExecutor() {
+        lzCtagsWatcherExecutor = LazilyInstantiate.using(() ->
+                new ScheduledThreadPoolExecutor(1, runnable -> {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("ctags-watcher-" + thread.getId());
+                    return thread;
+                }));
     }
 
     private void createLazyFixedExecutor() {
