@@ -207,7 +207,7 @@ public final class Configuration {
     private int tabSize;
     private int commandTimeout; // in seconds
     private int interactiveCommandTimeout; // in seconds
-    private int ctagsTimeout; // in seconds
+    private long ctagsTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -377,7 +377,7 @@ public final class Configuration {
         this.interactiveCommandTimeout = commandTimeout;
     }
 
-    public int getCtagsTimeout() {
+    public long getCtagsTimeout() {
         return ctagsTimeout;
     }
 
@@ -387,7 +387,7 @@ public final class Configuration {
      * @param timeout the new value
      * @throws IllegalArgumentException when the timeout is negative
      */
-    public void setCtagsTimeout(int timeout) throws IllegalArgumentException {
+    public void setCtagsTimeout(long timeout) throws IllegalArgumentException {
         if (commandTimeout < 0) {
             throw new IllegalArgumentException(
                     String.format(NEGATIVE_NUMBER_ERROR, "ctagsTimeout", timeout));
@@ -446,7 +446,7 @@ public final class Configuration {
         setContextLimit((short) 10);
         //contextSurround is default(short)
         //ctags is default(String)
-        setCtagsTimeout(30);
+        setCtagsTimeout(10);
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
         setDisplayRepositories(true);

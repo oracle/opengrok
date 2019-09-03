@@ -140,6 +140,8 @@ public class ConfigurationHelp {
             return "user-specified-value";
         } else if (paramType == int.class) {
             return 1 + (int) defaultValue;
+        } else if (paramType == long.class) {
+            return 1 + (long) defaultValue;
         } else if (paramType == short.class) {
             return (short) (1 + (short) defaultValue);
         } else if (paramType == boolean.class) {
