@@ -1,6 +1,4 @@
 import os
-import unittest
-
 from setuptools import setup
 
 from src.main.python.opengrok_tools.version import __version__ as version
@@ -11,13 +9,6 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 def readme():
     with open(os.path.join(SCRIPT_DIR, 'README-dist.txt'), 'r') as readme:
         return readme.read()
-
-
-def my_test_suite():
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover(
-        os.path.join(SCRIPT_DIR, 'src', 'test', 'python'), pattern='test_*.py')
-    return test_suite
 
 
 setup(
@@ -39,7 +30,6 @@ setup(
     author_email='opengrok-dev@yahoogroups.com',
     description='Tools for managing OpenGrok instance',
     long_description=readme(),
-    test_suite='setup.my_test_suite',
     python_requires='>=3.4, <4',
     install_requires=[
         'jsonschema==2.6.0',
