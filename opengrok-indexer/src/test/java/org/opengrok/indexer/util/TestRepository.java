@@ -19,10 +19,11 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -41,11 +42,16 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
  */
 public class TestRepository {
 
+    private final RuntimeEnvironment env;
     private File sourceRoot;
     private File dataRoot;
+    private File externalRoot;
+
+    public TestRepository() {
+        env = RuntimeEnvironment.getInstance();
+    }
 
     public void createEmpty() throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         sourceRoot = Files.createTempDirectory("source").toFile();
         dataRoot = Files.createTempDirectory("data").toFile();
         env.setSourceRoot(sourceRoot.getAbsolutePath());
@@ -53,40 +59,37 @@ public class TestRepository {
     }
 
     public void create(InputStream inputBundle) throws IOException {
-        File sourceBundle = null;
-        try {
-            sourceRoot = Files.createTempDirectory("source").toFile();
-            dataRoot = Files.createTempDirectory("data").toFile();
-            sourceBundle = File.createTempFile("srcbundle", ".zip");
+        createEmpty();
+        extractBundle(sourceRoot, inputBundle);
+    }
 
-            if (sourceBundle.exists()) {
-                assertTrue(sourceBundle.delete());
-            }
-
-            assertNotNull(inputBundle);
-            FileOutputStream out = new FileOutputStream(sourceBundle);
-            FileUtilities.copyFile(inputBundle, out);
-            out.close();
-            FileUtilities.extractArchive(sourceBundle, sourceRoot);
-            RuntimeEnvironment.getInstance().setSourceRoot(sourceRoot.getAbsolutePath());
-            RuntimeEnvironment.getInstance().setDataRoot(dataRoot.getAbsolutePath());
-        } finally {
-            if (sourceBundle != null) {
-                sourceBundle.delete();
-            }
-        }
+    public void createExternal(InputStream inputBundle) throws IOException {
+        createEmpty();
+        externalRoot = Files.createTempDirectory("external").toFile();
+        extractBundle(externalRoot, inputBundle);
     }
 
     public void destroy() {
         if (sourceRoot != null) {
             FileUtilities.removeDirs(sourceRoot);
         }
-        purgeData();
-    }
-
-    public void purgeData() {
+        if (externalRoot != null) {
+            FileUtilities.removeDirs(externalRoot);
+        }
         if (dataRoot != null) {
             FileUtilities.removeDirs(dataRoot);
+        }
+    }
+
+    /**
+     * Deletes the directory tree of {@link #getDataRoot()}, and then recreates
+     * the empty directory afterward.
+     */
+    public void purgeData() {
+        if (dataRoot != null) {
+            assertTrue("should delete dataRoot", FileUtilities.removeDirs(dataRoot));
+            assertFalse("dataRoot should not exist", dataRoot.exists());
+            assertTrue("should recreate dataRoot", dataRoot.mkdir());
         }
     }
 
@@ -96,6 +99,10 @@ public class TestRepository {
 
     public String getDataRoot() {
         return dataRoot.getAbsolutePath();
+    }
+
+    public String getExternalRoot() {
+        return externalRoot == null ? null : externalRoot.getAbsolutePath();
     }
 
     private final static String dummyFilename = "dummy.txt";
@@ -144,5 +151,25 @@ public class TestRepository {
             }
         }
         return adhoc;
+    }
+
+    private void extractBundle(File target, InputStream inputBundle) throws IOException {
+        File sourceBundle = null;
+        try {
+            sourceBundle = File.createTempFile("srcbundle", ".zip");
+            if (sourceBundle.exists()) {
+                assertTrue(sourceBundle.delete());
+            }
+
+            assertNotNull("inputBundle should not be null", inputBundle);
+            FileOutputStream out = new FileOutputStream(sourceBundle);
+            FileUtilities.copyFile(inputBundle, out);
+            out.close();
+            FileUtilities.extractArchive(sourceBundle, target);
+        } finally {
+            if (sourceBundle != null) {
+                sourceBundle.delete();
+            }
+        }
     }
 }

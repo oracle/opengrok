@@ -81,7 +81,7 @@ public class FileUtilities {
         }
     }
 
-    public static void removeDirs(File root) {
+    public static boolean removeDirs(File root) {
         for (File f : root.listFiles()) {
             if (f.isDirectory()) {
                 removeDirs(f);
@@ -89,7 +89,7 @@ public class FileUtilities {
                 f.delete();
             }
         }
-        root.delete();
+        return root.delete();
     }
 
     public static void copyFile(InputStream in, OutputStream out) throws IOException {
