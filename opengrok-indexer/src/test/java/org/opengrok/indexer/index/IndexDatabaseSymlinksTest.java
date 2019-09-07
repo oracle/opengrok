@@ -144,6 +144,7 @@ public class IndexDatabaseSymlinksTest {
 
         Path dupeLinkDir = links.resolve("zzz");
         assertTrue(dupeLinkDir + " should exist", dupeLinkDir.toFile().exists());
+        assertTrue(dupeLinkDir + " should be symlink", Files.isSymbolicLink(dupeLinkDir));
     }
 
     @Test
@@ -172,11 +173,12 @@ public class IndexDatabaseSymlinksTest {
 
         Path dupeLinkDir = links.resolve("zzz");
         /*
-         * zzz is an implicitly-allowed symlink because its target, the gz
-         * symlink, is explictly allowed as well as reachable by traversal by
+         * zzz is an implicitly-allowed symlink because its target matches an
+         * already-accepted symlink, gt, and is reachable upon traversal by
          * indexDown() (to affirm that any intermediate symlinks are allowed).
          */
-        assertTrue(dupeLinkDir + " should not exist", dupeLinkDir.toFile().exists());
+        assertTrue(dupeLinkDir + " should exist", dupeLinkDir.toFile().exists());
+        assertTrue(dupeLinkDir + " should be symlink", Files.isSymbolicLink(dupeLinkDir));
     }
 
     private static void runIndexer() throws IndexerException, IOException {

@@ -1032,6 +1032,7 @@ public class IndexDatabase {
              * will allow all others in the set.
              */
             if (canonical1.equals(allowedTarget)) {
+                acceptedNonlocalSymlinks.put(canonical1, absolute1);
                 return true;
             }
         }
