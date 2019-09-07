@@ -39,11 +39,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -124,7 +124,15 @@ public class IndexDatabase {
     private final Object INSTANCE_LOCK = new Object();
 
     /** Key is canonical path; Value is the first accepted, absolute path. */
-    private final Map<String, String> acceptedNonlocalSymlinks = new HashMap<>();
+    private final Map<String, String> acceptedNonlocalSymlinks = new TreeMap<>((o1, o2) -> {
+        // DESC by length.
+        int cmp = Integer.compare(o2.length(), o1.length());
+        if (cmp != 0) {
+            return cmp;
+        }
+        // ASC by String value.
+        return o1.compareTo(o2);
+    });
 
     private Project project;
     private FSDirectory indexDirectory;
@@ -957,44 +965,84 @@ public class IndexDatabase {
                             new Object[] {canonical1, absolute1});
                 }
                 return true;
-            } else {
-                /*
-                 * Do not accept symlinks to local directories, because the
-                 * canonical target will be indexed on its own -- but
-                 * relativize() a path to be returned in ret so that
-                 * a symlink can be replicated in xref/.
-                 */
-                ret.localRelPath = absolute.getParent().relativize(
-                        canonical.toPath()).toString();
-                return false;
             }
+
+            /*
+             * Do not accept symlinks to local directories, because the
+             * canonical target will be indexed on its own -- but relativize()
+             * a path to be returned in ret so that a symlink can be replicated
+             * in xref/.
+             */
+            ret.localRelPath = absolute.getParent().relativize(
+                    canonical.toPath()).toString();
+            return false;
         }
 
+        /*
+         * No need to synchronize access to acceptedNonlocalSymlinks, as
+         * indexDown() runs on one thread.
+         */
+
         String absolute0;
-        // No need to synchronize, as indexDown() runs on one thread.
         if ((absolute0 = acceptedNonlocalSymlinks.get(canonical1)) != null) {
             if (absolute1.equals(absolute0)) {
                 return true;
-            } else if (!isCanonicalDir) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "External file {0} has symlink from {1} after first {2}",
+            }
+            if (!isCanonicalDir) {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,
+                            "External file {0} has symlink from {1} after first {2}",
                             new Object[] {canonical1, absolute1, absolute0});
                 }
                 return true;
-            } else {
-                /*
-                 * Do not accept symlinks to external directories already
-                 * accepted as linked elsewhere, because the canonical target
-                 * will be indexed already -- but relativize() a path to be
-                 * returned in ret so that this second symlink can be redone as
-                 * a local (non-external) symlink in xref/.
-                 */
-                ret.localRelPath = absolute.getParent().relativize(
-                        Paths.get(absolute0)).toString();
+            }
 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "External dir {0} has symlink from {1} after first {2}",
-                            new Object[] {canonical1, absolute1, absolute0});
+            /*
+             * Do not accept symlinks to external directories already accepted
+             * as linked elsewhere, because the canonical target will be
+             * indexed already -- but relativize() a path to be returned in ret
+             * so that this second symlink can be redone as a local
+             * (non-external) symlink in xref/.
+             */
+            ret.localRelPath = absolute.getParent().relativize(
+                    Paths.get(absolute0)).toString();
+
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "External dir {0} has symlink from {1} after first {2}",
+                        new Object[] {canonical1, absolute1, absolute0});
+            }
+            return false;
+        }
+
+        /*
+         * Iterate through acceptedNonlocalSymlinks, which is sorted so that
+         * longer canonical entries come first, to see if the new link is a
+         * child canonically.
+         */
+        for (String canonicalPrev : acceptedNonlocalSymlinks.keySet()) {
+            if (canonical1.startsWith(canonicalPrev + File.separator)) {
+                String absolutePrev = acceptedNonlocalSymlinks.get(canonicalPrev);
+                if (!isCanonicalDir) {
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST,
+                                "External file {0} has symlink from {1} under previous {2}",
+                                new Object[] {canonical1, absolute1, absolutePrev});
+                    }
+                    return true;
+                }
+
+                /*
+                 * See above about redoing a sourceRoot symlink as a local
+                 * (non-external) symlink in xref/.
+                 */
+                Path abs0 = Paths.get(absolutePrev, canonical1.substring(
+                        canonicalPrev.length() + 1));
+                ret.localRelPath = absolute.getParent().relativize(abs0).toString();
+
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,
+                            "External dir {0} has symlink from {1} under previous {2}",
+                            new Object[] {canonical1, absolute1, absolutePrev});
                 }
                 return false;
             }
@@ -1005,8 +1053,8 @@ public class IndexDatabase {
         Set<String> canonicalRoots = env.getCanonicalRoots();
         for (String canonicalRoot : canonicalRoots) {
             if (canonical1.startsWith(canonicalRoot)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Allowed symlink {0} per canonical root {1}",
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "Allowed symlink {0} per canonical root {1}",
                             new Object[] {absolute1, canonical1});
                 }
                 acceptedNonlocalSymlinks.put(canonical1, absolute1);
