@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.index;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -113,9 +114,19 @@ public class IndexDatabaseSymlinksTest {
     }
 
     @Test
-    public void testSymlinksDisallowed() throws IOException, IndexerException {
+    public void testNoAddedSymlinks() throws IOException, IndexerException {
+        File canonicalSourceRoot = new File(repository.getSourceRoot()).getCanonicalFile();
+        Path linksSourceDir = Paths.get(canonicalSourceRoot.getPath(), "links");
+
+        /*
+         * By "no added symlinks", we don't count default-accepted links
+         * immediately under sourceRoot, which we do include here.
+         */
+        env.setAllowedSymlinks(new HashSet<>(Collections.singletonList(
+                linksSourceDir.toString())));
+
         runIndexer();
-        lsdir(env.getDataRootPath());
+        lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
         assertFalse(xref + " should not exist", xref.toFile().exists());
@@ -125,10 +136,15 @@ public class IndexDatabaseSymlinksTest {
     public void testSymlinksWithFullCanonicalRoot() throws IOException, IndexerException {
         File externalRoot = new File(repository.getExternalRoot());
 
+        /*
+         * For this test, don't even bother to include default-accepted links
+         * immediately under sourceRoot, as -C,--canonicalRoot as specified
+         * here encompasses all of external/.
+         */
         env.setCanonicalRoots(new HashSet<>(Collections.singletonList(
                 externalRoot.getCanonicalPath())));
         runIndexer();
-        lsdir(env.getDataRootPath());
+        lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
         assertTrue(xref + " should exist", xref.toFile().exists());
@@ -138,26 +154,40 @@ public class IndexDatabaseSymlinksTest {
 
         Path gitDir = links.resolve("gt");
         assertTrue(gitDir + " should exist", gitDir.toFile().exists());
+        Path subLink = gitDir.resolve("b");
+        File expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
+        assertSymlinkAsExpected("gt/b should == gt/a", expectedCanonical, subLink);
 
         Path mercurialDir = links.resolve("mrcrl");
         assertTrue(mercurialDir + " should exist", mercurialDir.toFile().exists());
+        subLink = mercurialDir.resolve("b");
+        expectedCanonical = mercurialDir.resolve("a").toFile().getCanonicalFile();
+        assertSymlinkAsExpected("mrcrl/b should == mrcrl/a", expectedCanonical, subLink);
 
         Path dupeLinkDir = links.resolve("zzz");
-        assertTrue(dupeLinkDir + " should exist", dupeLinkDir.toFile().exists());
-        assertTrue(dupeLinkDir + " should be symlink", Files.isSymbolicLink(dupeLinkDir));
+        expectedCanonical = gitDir.toFile().getCanonicalFile();
+        assertSymlinkAsExpected("zzz should == gt", expectedCanonical, dupeLinkDir);
+
+        Path dupe2LinkDir = links.resolve("zzz_a");
+        expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
+        assertSymlinkAsExpected("zzz_a should == gt/a", expectedCanonical, dupe2LinkDir);
     }
 
     @Test
-    public void testSymlinksWithOneAllowedSymlink() throws IOException, IndexerException {
+    public void testSymlinksWithOneAddedSymlink() throws IOException, IndexerException {
         File canonicalSourceRoot = new File(repository.getSourceRoot()).getCanonicalFile();
         Path linksSourceDir = Paths.get(canonicalSourceRoot.getPath(), "links");
         Path gitSourceDir = linksSourceDir.resolve("gt");
         assertTrue(gitSourceDir + " should exist", gitSourceDir.toFile().exists());
 
+        /*
+         * By "one added symlink", we don't count default-accepted links
+         * immediately under sourceRoot, which we also include here.
+         */
         env.setAllowedSymlinks(new HashSet<>(Arrays.asList(
                 linksSourceDir.toString(), gitSourceDir.toString())));
         runIndexer();
-        lsdir(env.getDataRootPath());
+        lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
         assertTrue(xref + " should exist", xref.toFile().exists());
@@ -167,6 +197,9 @@ public class IndexDatabaseSymlinksTest {
 
         Path gitDir = links.resolve("gt");
         assertTrue(gitDir + " should exist", gitDir.toFile().exists());
+        Path subLink = gitDir.resolve("b");
+        File expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
+        assertSymlinkAsExpected("gt/b should == gt/a", expectedCanonical, subLink);
 
         Path mercurialDir = links.resolve("mrcrl");
         assertFalse(mercurialDir + " should not exist", mercurialDir.toFile().exists());
@@ -177,8 +210,16 @@ public class IndexDatabaseSymlinksTest {
          * already-accepted symlink, gt, and is reachable upon traversal by
          * indexDown() (to affirm that any intermediate symlinks are allowed).
          */
-        assertTrue(dupeLinkDir + " should exist", dupeLinkDir.toFile().exists());
-        assertTrue(dupeLinkDir + " should be symlink", Files.isSymbolicLink(dupeLinkDir));
+        expectedCanonical = gitDir.toFile().getCanonicalFile();
+        assertSymlinkAsExpected("zzz should == gt", expectedCanonical, dupeLinkDir);
+
+        /*
+         * zzz_a is an implicitly-allowed symlink because its target matches as
+         * a canonical child of an already-accepted symlink, gt.
+         */
+        Path dupe2LinkDir = links.resolve("zzz_a");
+        expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
+        assertSymlinkAsExpected("zzz_a should == gt/a", expectedCanonical, dupe2LinkDir);
     }
 
     private static void runIndexer() throws IndexerException, IOException {
@@ -188,13 +229,22 @@ public class IndexDatabaseSymlinksTest {
         indexer.doIndexerExecution(true, null, null);
     }
 
-    private static void lsdir(String name) {
+    private void assertSymlinkAsExpected(String message, File expectedCanonical, Path symlink)
+            throws IOException {
+        assertTrue(symlink + " should exist", symlink.toFile().exists());
+        assertTrue(symlink + " should be symlink", Files.isSymbolicLink(symlink));
+        File actualCanonical = symlink.toFile().getCanonicalFile();
+        assertTrue(actualCanonical + " should exist", actualCanonical.exists());
+        assertEquals(message, expectedCanonical, actualCanonical);
+    }
+
+    private static void lsDir(String name) throws IOException {
         File file = Paths.get(name).toFile();
         if (!file.exists()) {
             return;
         }
 
-        lsobj(file);
+        lsObj(file);
         if (Files.isSymbolicLink(file.toPath())) {
             return;
         }
@@ -206,17 +256,21 @@ public class IndexDatabaseSymlinksTest {
 
         for (String filename : fileList) {
             Path child = Paths.get(name, filename);
-            lsdir(child.toString());
+            lsDir(child.toString());
         }
     }
 
-    private static void lsobj(File file) {
+    private static void lsObj(File file) throws IOException {
         if (!file.exists()) {
             return;
         }
+
+        Path file1 = file.toPath();
+
         System.out.print(file.getPath());
-        if (Files.isSymbolicLink(file.toPath())) {
-            System.out.print(" ->");
+        if (Files.isSymbolicLink(file1)) {
+            System.out.print(" -> ");
+            System.out.print(Files.readSymbolicLink(file1));
         } else if (file.isDirectory()) {
             System.out.print("/");
         }
