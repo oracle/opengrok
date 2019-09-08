@@ -19,6 +19,7 @@
 
 /*
  * Portions Copyright (c) 2017, Steven Haehn.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -389,11 +390,16 @@ public class OptionParser {
     public Option on(Object... args) {
 
         Option opt = new Option();
-        
+
+        // Once description starts, then no other option settings are eligible.
+        boolean addedDescription = false;
+
         for (Object arg : args) {
             if (arg instanceof String) {
                 String argument = (String) arg;
-                if (argument.startsWith("--")) {
+                if (addedDescription) {
+                    opt.addDescription(argument);
+                } else if (argument.startsWith("--")) {
                     // handle --switch --switch=ARG --switch=[OPT] --switch PLACE
                     String[] parts = argument.split("[ =]");
                     
@@ -416,6 +422,7 @@ public class OptionParser {
                 } else {
                     // this is description
                     opt.addDescription(argument);
+                    addedDescription = true;
                 }
             // This is indicator for a addOption of specific allowable option values
             } else if (arg instanceof String[]) {
