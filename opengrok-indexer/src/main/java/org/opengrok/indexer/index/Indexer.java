@@ -477,27 +477,26 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-C", "--canonicalRoot", "=/path/",
-                    "Allow symlinks to canonical targets starting with the specified",
-                    "root without otherwise needing to specify -N,--symlink for such",
-                    "symlinks. A canonical root must end with a file separator. For",
-                    "security a canonical root cannot be the root directory.",
-                    "Option may be repeated.").Do(v -> {
-                            String root = (String) v;
-                            if (!root.endsWith("/") && !root.endsWith("\\")) {
-                                die("--canonicalRoot must end with a separator");
-                            }
-                            if (root.equals("/") || root.equals("\\")) {
-                                die("--canonicalRoot cannot be the root directory");
-                            }
-                            canonicalRoots.add(root);
-                    });
-
             parser.on("-c", "--ctags", "=/path/to/ctags",
                 "Path to Universal Ctags",
                 "By default takes the Universal Ctags in PATH.").
                 Do(ctagsPath -> cfg.setCtags((String) ctagsPath)
             );
+
+            parser.on("--canonicalRoot", "=/path/",
+                    "Allow symlinks to canonical targets starting with the specified root",
+                    "without otherwise needing to specify -N,--symlink for such symlinks. A",
+                    "canonical root must end with a file separator. For security, a canonical",
+                    "root cannot be the root directory. Option may be repeated.").Do(v -> {
+                String root = (String) v;
+                if (!root.endsWith("/") && !root.endsWith("\\")) {
+                    die("--canonicalRoot must end with a separator");
+                }
+                if (root.equals("/") || root.equals("\\")) {
+                    die("--canonicalRoot cannot be the root directory");
+                }
+                canonicalRoots.add(root);
+            });
 
             parser.on("--checkIndexVersion",
                     "Check if current Lucene version matches index version").Do(v -> {
@@ -598,9 +597,10 @@ public final class Indexer {
                     .Do(mandocPath -> cfg.setMandoc((String) mandocPath));
 
             parser.on("-N", "--symlink", "=/path/to/symlink",
-                    "Allow this symlink to be followed. Option may be repeated.",
-                    "By default only symlinks directly under source root directory",
-                    "are allowed. See also -C,--canonicalRoot").Do(v ->
+                    "Allow the symlink to be followed. Other symlinks targeting the same",
+                    "canonical target or canonical children will be allowed too. Option may",
+                    "be repeated. (By default only symlinks directly under source root",
+                    "directory are allowed. See also --canonicalRoot)").Do(v ->
                     allowedSymlinks.add((String) v));
 
             parser.on("-n", "--noIndex",

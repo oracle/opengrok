@@ -138,8 +138,8 @@ public class IndexDatabaseSymlinksTest {
 
         /*
          * For this test, don't even bother to include default-accepted links
-         * immediately under sourceRoot, as -C,--canonicalRoot as specified
-         * here encompasses all of external/.
+         * immediately under sourceRoot, as --canonicalRoot as specified here
+         * encompasses all of external/.
          */
         env.setCanonicalRoots(new HashSet<>(Collections.singletonList(
                 externalRoot.getCanonicalPath())));
