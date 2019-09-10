@@ -192,7 +192,8 @@ def test_long_output():
         assert cmd.getstate() == Command.FINISHED
         assert cmd.getretcode() == 0
         assert cmd.geterroutput() is None
-        assert len(cmd.getoutputstr()) == num_lines * (line_length + 1)
+        # -1 because getoutputstr() strips the string
+        assert len(cmd.getoutputstr()) == num_lines * (line_length + 1) - 1
 
 
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
