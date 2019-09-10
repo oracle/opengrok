@@ -169,6 +169,32 @@ def test_stderr():
     assert 'root' in "\n".join(cmd.getoutput())
 
 
+# This test needs the "/bin/cat" command, therefore it is Unix only.
+@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+def test_long_output():
+    """
+    Test that output thread in the Command class captures all of the output.
+    (and also it does not hang the command by filling up the pipe)
+    """
+    # in bytes, should be enough to fill a pipe
+    num_lines = 500
+    line_length = 1000
+    with tempfile.NamedTemporaryFile() as file:
+        for _ in range(num_lines):
+            file.write(b'A' * line_length)
+            file.write(b'\n')
+        file.flush()
+        assert os.path.getsize(file.name) == num_lines * (line_length + 1)
+
+        cmd = Command(["/bin/cat", file.name])
+        cmd.execute()
+
+        assert cmd.getstate() == Command.FINISHED
+        assert cmd.getretcode() == 0
+        assert cmd.geterroutput() is None
+        assert len(cmd.getoutputstr()) == num_lines * (line_length + 1)
+
+
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
 def test_resource_limits():
     """
