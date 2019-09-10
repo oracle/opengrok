@@ -105,9 +105,7 @@ def main():
                                     args.project)
 
     # Reindex with the modified logging.properties file and read-only config.
-    command = []
-    command.append('-R')
-    command.append(conf_file)
+    command = ['-R', conf_file]
     command.extend(args.options)
     java_opts = []
     if args.java_opts:
@@ -116,7 +114,7 @@ def main():
                      format(logprop_file))
     indexer = Indexer(command, logger=logger, jar=args.jar,
                       java=args.java, java_opts=java_opts,
-                      env_vars=args.environment)
+                      env_vars=args.environment, doprint=args.doprint)
     indexer.execute()
     ret = indexer.getretcode()
     os.remove(conf_file)
