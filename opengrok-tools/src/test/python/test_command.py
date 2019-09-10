@@ -175,16 +175,19 @@ def test_long_output():
     """
     Test that output thread in the Command class captures all of the output.
     (and also it does not hang the command by filling up the pipe)
+
+    By default stderr is redirected to stdout.
     """
     # in bytes, should be enough to fill a pipe
-    num_lines = 500
+    num_lines = 5000
     line_length = 1000
+    num_bytes = num_lines * (line_length + 1)
     with tempfile.NamedTemporaryFile() as file:
         for _ in range(num_lines):
             file.write(b'A' * line_length)
             file.write(b'\n')
         file.flush()
-        assert os.path.getsize(file.name) == num_lines * (line_length + 1)
+        assert os.path.getsize(file.name) == num_bytes
 
         cmd = Command(["/bin/cat", file.name])
         cmd.execute()
@@ -192,8 +195,7 @@ def test_long_output():
         assert cmd.getstate() == Command.FINISHED
         assert cmd.getretcode() == 0
         assert cmd.geterroutput() is None
-        # -1 because getoutputstr() strips the string
-        assert len(cmd.getoutputstr()) == num_lines * (line_length + 1) - 1
+        assert len("".join(cmd.getoutput())) == num_bytes
 
 
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
