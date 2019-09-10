@@ -71,7 +71,8 @@ public class PathUtils {
      * <p>
      * When {@code allowedSymlinks} is not null, any symbolic links as
      * components of {@code path} (below {@code canonical}) are required to
-     * match an element of {@code allowedSymlinks}.
+     * match an element of {@code allowedSymlinks} or target a canonical child
+     * of an element of {@code allowedSymlinks}.
      * <p>
      * E.g., with {@code path="/var/opengrok/src/proj_a"} and
      * {@code canonical="/private/var/opengrok/src"} where /var is linked to
@@ -176,7 +177,8 @@ public class PathUtils {
                 }
                 continue;
             }
-            if (canonicalFile.equals(canonicalLink)) {
+            if (canonicalFile.equals(canonicalLink) ||
+                    canonicalFile.startsWith(canonicalLink + File.separator)) {
                 return true;
             }
         }
