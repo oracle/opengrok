@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,7 +43,6 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.UnixPresent;
-import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a container for tests of {@link PathUtils}.
@@ -144,6 +142,43 @@ public class PathUtilsTest {
         rel = PathUtils.getRelativeToCanonical(sympath.toString(),
                 realDir1Canon, allowedSymLinks, null);
         assertEquals("because link is OKed", "b/" + SYMLINK2, rel);
+    }
+
+    @Test
+    @ConditionalRun(UnixPresent.class)
+    public void shouldHandleLinksToCanonicalChildrenOfAllowedLinks()
+            throws IOException, ForbiddenSymlinkException {
+        // Create real directories
+        File sourceRoot = createTemporaryDirectory("srcroot");
+        assertTrue(sourceRoot + " should be a dir", sourceRoot.isDirectory());
+
+        File realDir1 = createTemporaryDirectory("realdir1");
+        assertTrue(realDir1 + " should be a dir", realDir1.isDirectory());
+
+        File realDir1b = new File(realDir1, "b");
+        assertTrue(realDir1b + " should be created", realDir1b.mkdir());
+
+        // Create symlink #1 to realdir1/ in source root.
+        final String SYMLINK1 = "symlink1";
+        File symlink1 = new File(sourceRoot, SYMLINK1);
+        Files.createSymbolicLink(symlink1.toPath(), realDir1.toPath());
+        assertTrue(symlink1 + " should exist", symlink1.exists());
+
+        // Create symlink #2 to realdir1/b in source root.
+        final String SYMLINK2 = "symlink2";
+        File symlink2 = new File(realDir1b, SYMLINK2);
+        Files.createSymbolicLink(symlink2.toPath(), realDir1b.toPath());
+        assertTrue(symlink2 + " should exist", symlink2.exists());
+
+        // Test symlink2 v. realDir1 canonical with validation and an allowed symlink1
+        Set<String> allowedSymLinks = new HashSet<>();
+        allowedSymLinks.add(symlink1.getPath());
+
+        String realDir1Canon = realDir1.getCanonicalPath();
+        String rel = PathUtils.getRelativeToCanonical(symlink2.toString(),
+                realDir1Canon, allowedSymLinks, null);
+        assertEquals("symlink2 should be allowed implicitly as a canonical child of symlink1",
+                "b", rel);
     }
 
     @Ignore("macOS has /var symlink, and I also made a second link, `myhome'.")
