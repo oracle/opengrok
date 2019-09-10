@@ -27,7 +27,7 @@
 import tempfile
 import os
 import stat
-import pygit2
+from git import Repo
 import pytest
 import sys
 
@@ -154,8 +154,8 @@ def test_incoming_retval(monkeypatch):
             return MockResponse()
 
         # Clone a Git repository so that it can pull.
-        pygit2.init_repository(repo_path, True)
-        pygit2.clone_repository(repo_path, cloned_repo_path)
+        repo = Repo.init(repo_path)
+        repo.clone(cloned_repo_path)
 
         with monkeypatch.context() as m:
             m.setattr(sys, 'argv', ['prog', "-I", project_name])
