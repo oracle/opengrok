@@ -50,7 +50,7 @@ def main():
     java = Java(args.options, logger=logger, java=args.java,
                 jar=args.jar, java_opts=args.java_opts,
                 classpath=args.classpath, main_class=args.mainclass,
-                env_vars=args.environment)
+                env_vars=args.environment, doprint=args.doprint)
     java.execute()
     ret = java.getretcode()
     if ret is None or ret != SUCCESS_EXITVAL:

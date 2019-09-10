@@ -55,7 +55,7 @@ def main():
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,
                main_class='org.opengrok.indexer.configuration.ConfigMerge',
-               logger=logger)
+               logger=logger, doprint=args.doprint)
     cmd.execute()
     ret = cmd.getretcode()
     if ret is None or ret != SUCCESS_EXITVAL:

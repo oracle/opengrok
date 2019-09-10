@@ -63,7 +63,7 @@ def main():
 
     indexer = Indexer(args.options, logger=logger, java=args.java,
                       jar=args.jar, java_opts=args.java_opts,
-                      env_vars=args.environment, doprint=True)
+                      env_vars=args.environment, doprint=args.doprint)
     indexer.execute()
     ret = indexer.getretcode()
     if ret is None or ret != SUCCESS_EXITVAL:

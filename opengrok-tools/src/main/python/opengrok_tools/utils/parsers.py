@@ -31,6 +31,9 @@ def get_javaparser():
                         help='java options', action='append')
     parser.add_argument('-e', '--environment', action='append',
                         help='Environment variables in the form of name=value')
+    parser.add_argument('--doprint', action='store_true', default=False,
+                        help='Print messages from the application as they '
+                        'are produced.')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-a', '--jar',
