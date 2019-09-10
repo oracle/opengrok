@@ -45,7 +45,7 @@ setup(
     ],
     tests_require=[
         'pytest',
-        'pygit2',
+        'GitPython',
         'pytest-xdist',
     ],
     entry_points={
