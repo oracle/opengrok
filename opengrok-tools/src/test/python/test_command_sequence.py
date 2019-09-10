@@ -24,6 +24,7 @@
 #
 
 import os
+import sys
 
 import pytest
 import tempfile
@@ -130,8 +131,10 @@ def test_cleanup_exception():
                                             cleanup=cleanup))
 
 
+# /bin/cat returns 2 on Solaris
 @pytest.mark.skipif(not os.path.exists('/usr/bin/touch') or
-                    not os.path.exists('/bin/cat'),
+                    not os.path.exists('/bin/cat') or
+                    not sys.platform != "sunos5",
                     reason="requires Unix")
 def test_cleanup():
     with tempfile.TemporaryDirectory() as tmpdir:
