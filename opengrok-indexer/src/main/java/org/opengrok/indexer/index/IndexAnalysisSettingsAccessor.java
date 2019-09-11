@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -50,7 +50,7 @@ public class IndexAnalysisSettingsAccessor {
      */
     static final String INDEX_ANALYSIS_SETTINGS_OBJUID = "uthuslvotkgltggqqjmurqojpjpjjkutkujktnkk";
 
-    private static final int INDEX_ANALYSIS_SETTINGS_OBJVER = 2;
+    private static final int INDEX_ANALYSIS_SETTINGS_OBJVER = 3;
 
     /**
      * Searches for a document with a {@link QueryBuilder#OBJUID} value matching
@@ -60,8 +60,8 @@ public class IndexAnalysisSettingsAccessor {
      * @return a defined instance or {@code null} if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
-    public IndexAnalysisSettings read(IndexReader reader) throws IOException {
-        IndexAnalysisSettings[] res = read(reader, 1);
+    public IndexAnalysisSettings3 read(IndexReader reader) throws IOException {
+        IndexAnalysisSettings3[] res = read(reader, 1);
         return res.length > 0 ? res[0] : null;
     }
 
@@ -74,7 +74,7 @@ public class IndexAnalysisSettingsAccessor {
      * @return a defined instance, which is empty if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
-    public IndexAnalysisSettings[] read(IndexReader reader, int n)
+    public IndexAnalysisSettings3[] read(IndexReader reader, int n)
             throws IOException {
         IndexSearcher searcher = new IndexSearcher(reader);
         Query q;
@@ -88,18 +88,16 @@ public class IndexAnalysisSettingsAccessor {
         TopDocs top = searcher.search(q, n);
 
         int nres = top.totalHits.value > n ? n : (int) top.totalHits.value;
-        IndexAnalysisSettings[] res = new IndexAnalysisSettings[nres];
+        IndexAnalysisSettings3[] res = new IndexAnalysisSettings3[nres];
 
+        IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();
         for (int i = 0; i < nres; ++i) {
             Document doc = searcher.doc(top.scoreDocs[i].doc);
             IndexableField objser = doc.getField(QueryBuilder.OBJSER);
             int objver = readObjectVersion(doc);
-            if (objver != INDEX_ANALYSIS_SETTINGS_OBJVER) {
-                throw new IllegalArgumentException("Unknown version " + objver);
-            }
             try {
-                res[i] = objser == null ? null : IndexAnalysisSettings.deserialize(
-                        objser.binaryValue().bytes);
+                res[i] = objser == null ? null : upgrader.upgrade(
+                        objser.binaryValue().bytes, objver);
             } catch (ClassNotFoundException ex) {
                 // This is not expected, so translate to RuntimeException.
                 throw new RuntimeException(ex);
@@ -117,7 +115,7 @@ public class IndexAnalysisSettingsAccessor {
      * @param settings a defined instance
      * @throws IOException if I/O error occurs while writing Lucene
      */
-    public void write(IndexWriter writer, IndexAnalysisSettings settings)
+    public void write(IndexWriter writer, IndexAnalysisSettings3 settings)
             throws IOException {
         byte[] objser = settings.serialize();
 

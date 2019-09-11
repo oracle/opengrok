@@ -20,19 +20,23 @@
 /*
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,9 +66,10 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuperIndexSearcher;
-import org.opengrok.indexer.index.IndexAnalysisSettings;
+import org.opengrok.indexer.index.IndexAnalysisSettings3;
 import org.opengrok.indexer.index.IndexAnalysisSettingsAccessor;
 import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.index.IndexedSymlink;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.Summarizer;
@@ -190,7 +195,7 @@ public class SearchHelper {
     /**
      * The spellchecker object.
      */
-    protected DirectSpellChecker checker;
+    private DirectSpellChecker checker;
     /**
      * projects to use to setup indexer searchers. Usually setup via
      * {@link #prepareExec(SortedSet)}.
@@ -217,7 +222,13 @@ public class SearchHelper {
     /**
      * Key is Project name or empty string for null Project.
      */
-    private Map<String, IndexAnalysisSettings> mappedAnalysisSettings;
+    private Map<String, IndexAnalysisSettings3> mappedAnalysisSettings;
+
+    /**
+     * Key is Project name or empty string for null Project. Map is ordered by
+     * canonical length (ASC) and then canonical value (ASC).
+     */
+    private Map<String, Map<String, IndexedSymlink>> mappedIndexedSymlinks;
 
     /**
      * User readable description for file types. Only those listed in
@@ -231,7 +242,7 @@ public class SearchHelper {
         return AnalyzerGuru.getfileTypeDescriptions().entrySet();
     }
 
-    File indexDir;
+    private File indexDir;
 
     /**
      * Create the searcher to use w.r.t. currently set parameters and the given
@@ -621,7 +632,7 @@ public class SearchHelper {
      */
     public int getTabSize(Project proj) throws IOException {
         String projectName = proj != null ? proj.getName() : null;
-        IndexAnalysisSettings settings = getSettings(projectName);
+        IndexAnalysisSettings3 settings = getSettings(projectName);
         int tabSize;
         if (settings != null && settings.getTabSize() != null) {
             tabSize = settings.getTabSize();
@@ -632,6 +643,50 @@ public class SearchHelper {
     }
 
     /**
+     * Determines if there is a prime equivalent to {@code relativePath}
+     * according to indexed symlinks and translate (or not) accordingly.
+     * @param project the project name or empty string if projects are not used
+     * @param relativePath an OpenGrok-style (i.e. starting with a file
+     *                     separator) relative path
+     * @return a prime relative path or just {@code relativePath} if no prime
+     * is matched
+     */
+    public String getPrimeRelativePath(String project, String relativePath)
+            throws IOException, ForbiddenSymlinkException {
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String sourceRoot = env.getSourceRootPath();
+        if (sourceRoot == null) {
+            throw new IllegalStateException("sourceRoot is not defined");
+        }
+        File absolute = new File(sourceRoot + relativePath);
+
+        getSettings(project);
+
+        Map<String, IndexedSymlink> indexedSymlinks;
+        if (mappedIndexedSymlinks != null && (indexedSymlinks =
+                mappedIndexedSymlinks.get(project)) != null) {
+
+            String canonical = absolute.getCanonicalFile().getPath();
+            for (IndexedSymlink entry : indexedSymlinks.values()) {
+                if (canonical.equals(entry.getCanonical())) {
+                    if (absolute.getPath().equals(entry.getAbsolute())) {
+                        return relativePath;
+                    }
+                    Path newAbsolute = Paths.get(entry.getAbsolute());
+                    return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
+                } else if (canonical.startsWith(entry.getCanonicalSeparated())) {
+                    Path newAbsolute = Paths.get(entry.getAbsolute(),
+                            canonical.substring(entry.getCanonicalSeparated().length()));
+                    return env.getPathRelativeToSourceRoot(newAbsolute.toFile());
+                }
+            }
+        }
+
+        return relativePath;
+    }
+
+    /**
      * Gets the settings for a specified project, querying the active reader
      * upon the first call after {@link #prepareExec(java.util.SortedSet)}.
      * @param projectName a defined instance or {@code null} if no project is
@@ -639,28 +694,40 @@ public class SearchHelper {
      * @return a defined instance or {@code null} if none is found
      * @throws IOException if an I/O error occurs querying the active reader
      */
-    public IndexAnalysisSettings getSettings(String projectName)
+    private IndexAnalysisSettings3 getSettings(String projectName)
             throws IOException {
         if (mappedAnalysisSettings == null) {
             IndexAnalysisSettingsAccessor dao =
                 new IndexAnalysisSettingsAccessor();
-            IndexAnalysisSettings[] setts = dao.read(reader, Short.MAX_VALUE);
-            mappedAnalysisSettings = map(setts);
+            IndexAnalysisSettings3[] setts = dao.read(reader, Short.MAX_VALUE);
+            map(setts);
         }
 
         String k = projectName != null ? projectName : "";
         return mappedAnalysisSettings.get(k);
     }
 
-    private Map<String, IndexAnalysisSettings> map(
-        IndexAnalysisSettings[] setts) {
+    private void map(IndexAnalysisSettings3[] setts) {
 
-        Map<String, IndexAnalysisSettings> res = new HashMap<>();
-        for (int i = 0; i < setts.length; ++i) {
-            IndexAnalysisSettings settings = setts[i];
+        Map<String, IndexAnalysisSettings3> settingsMap = new HashMap<>();
+        Map<String, Map<String, IndexedSymlink>> symlinksMap = new HashMap<>();
+
+        for (IndexAnalysisSettings3 settings : setts) {
             String k = settings.getProjectName() != null ?
                 settings.getProjectName() : "";
-            res.put(k, settings);
+            settingsMap.put(k, settings);
+            symlinksMap.put(k, mapSymlinks(settings));
+        }
+        mappedAnalysisSettings = settingsMap;
+        mappedIndexedSymlinks = symlinksMap;
+    }
+
+    private Map<String, IndexedSymlink> mapSymlinks(IndexAnalysisSettings3 settings) {
+
+        Map<String, IndexedSymlink> res = new TreeMap<>(
+                Comparator.comparingInt(String::length).thenComparing(o -> o));
+        for (IndexedSymlink entry : settings.getIndexedSymlinks().values()) {
+            res.put(entry.getCanonical(), entry);
         }
         return res;
     }

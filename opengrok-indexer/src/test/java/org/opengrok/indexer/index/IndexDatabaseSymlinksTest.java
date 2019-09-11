@@ -207,7 +207,7 @@ public class IndexDatabaseSymlinksTest {
         Path dupeLinkDir = links.resolve("zzz");
         /*
          * zzz is an implicitly-allowed symlink because its target matches an
-         * already-accepted symlink, gt, and is reachable upon traversal by
+         * already-indexed symlink, gt, and is reachable upon traversal by
          * indexDown() (to affirm that any intermediate symlinks are allowed).
          */
         expectedCanonical = gitDir.toFile().getCanonicalFile();

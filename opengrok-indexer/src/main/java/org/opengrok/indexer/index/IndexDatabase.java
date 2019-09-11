@@ -123,22 +123,19 @@ public class IndexDatabase {
 
     private final Object INSTANCE_LOCK = new Object();
 
-    /** Key is canonical path; Value is the first accepted, absolute path. */
-    private final Map<String, String> acceptedNonlocalSymlinks = new TreeMap<>((o1, o2) -> {
-        // DESC by length.
-        int cmp = Integer.compare(o2.length(), o1.length());
-        if (cmp != 0) {
-            return cmp;
-        }
-        // ASC by String value.
-        return o1.compareTo(o2);
-    });
+    /**
+     * Key is canonical path; Value is the first accepted, absolute path. Map
+     * is ordered by canonical length (ASC) and then canonical value (ASC).
+     * The map is accessed by a single-thread running indexDown().
+     */
+    private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
+            Comparator.comparingInt(String::length).thenComparing(o -> o));
 
     private Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
-    private IndexAnalysisSettings settings;
+    private IndexAnalysisSettings3 settings;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
@@ -406,7 +403,7 @@ public class IndexDatabase {
         settings = null;
         uidIter = null;
         postsIter = null;
-        acceptedNonlocalSymlinks.clear();
+        indexedSymlinks.clear();
 
         IOException finishingException = null;
         try {
@@ -460,7 +457,7 @@ public class IndexDatabase {
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 settings = readAnalysisSettings();
                 if (settings == null) {
-                    settings = new IndexAnalysisSettings();
+                    settings = new IndexAnalysisSettings3();
                 }
                 Terms terms = null;
                 int numDocs = reader.numDocs();
@@ -760,10 +757,6 @@ public class IndexDatabase {
                 new Object[]{path, e.getMessage()});
             cleanupResources(doc);
             throw e;
-        } catch (ForbiddenSymlinkException e) {
-            LOGGER.log(Level.FINER, e.getMessage());
-            cleanupResources(doc);
-            return;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
@@ -859,8 +852,10 @@ public class IndexDatabase {
                 File canonical = file.getCanonicalFile();
                 if (!absolutePath.equals(canonical.getPath()) &&
                         !acceptSymlink(absolute, canonical, ret)) {
-                    LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
-                        new Object[]{absolutePath, canonical});
+                    if (ret.localRelPath == null) {
+                        LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
+                                new Object[] {absolutePath, canonical});
+                    }
                     return false;
                 }
             }
@@ -956,78 +951,89 @@ public class IndexDatabase {
         String absolute1 = absolute.toString();
         String canonical1 = canonical.getPath();
         boolean isCanonicalDir = canonical.isDirectory();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IndexedSymlink indexed1;
+        String absolute0;
 
         if (isLocal(canonical1)) {
             if (!isCanonicalDir) {
-                // Always accept symlinks to local files.
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST, "Local {0} has symlink from {1}",
                             new Object[] {canonical1, absolute1});
                 }
+                /*
+                 * Always index symlinks to local files, but do not add to
+                 * indexedSymlinks for a non-directory.
+                 */
                 return true;
             }
 
             /*
-             * Do not accept symlinks to local directories, because the
+             * Do not index symlinks to local directories, because the
              * canonical target will be indexed on its own -- but relativize()
              * a path to be returned in ret so that a symlink can be replicated
              * in xref/.
              */
             ret.localRelPath = absolute.getParent().relativize(
                     canonical.toPath()).toString();
+
+            // Try to put the prime absolute path into indexedSymlinks.
+            try {
+                String primeRelative = env.getPathRelativeToSourceRoot(canonical);
+                absolute0 = env.getSourceRootPath() + primeRelative;
+            } catch (ForbiddenSymlinkException | IOException e) {
+                /*
+                 * This is not expected, as indexDown() would have operated on
+                 * the file already -- but we are forced to handle.
+                 */
+                LOGGER.log(Level.WARNING, String.format(
+                        "Unexpected error getting relative for %s", canonical), e);
+                absolute0 = absolute1;
+            }
+            indexed1 = new IndexedSymlink(absolute0, canonical1, true);
+            indexedSymlinks.put(canonical1, indexed1);
             return false;
         }
 
-        /*
-         * No need to synchronize access to acceptedNonlocalSymlinks, as
-         * indexDown() runs on one thread.
-         */
-
-        String absolute0;
-        if ((absolute0 = acceptedNonlocalSymlinks.get(canonical1)) != null) {
-            if (absolute1.equals(absolute0)) {
-                return true;
-            }
-            if (!isCanonicalDir) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST,
-                            "External file {0} has symlink from {1} after first {2}",
-                            new Object[] {canonical1, absolute1, absolute0});
-                }
+        IndexedSymlink indexed0;
+        if ((indexed0 = indexedSymlinks.get(canonical1)) != null) {
+            if (absolute1.equals(indexed0.getAbsolute())) {
                 return true;
             }
 
             /*
-             * Do not accept symlinks to external directories already accepted
+             * Do not index symlinks to external directories already indexed
              * as linked elsewhere, because the canonical target will be
              * indexed already -- but relativize() a path to be returned in ret
              * so that this second symlink can be redone as a local
              * (non-external) symlink in xref/.
              */
             ret.localRelPath = absolute.getParent().relativize(
-                    Paths.get(absolute0)).toString();
+                    Paths.get(indexed0.getAbsolute())).toString();
 
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "External dir {0} has symlink from {1} after first {2}",
-                        new Object[] {canonical1, absolute1, absolute0});
+                        new Object[] {canonical1, absolute1, indexed0.getAbsolute()});
             }
             return false;
         }
 
         /*
-         * Iterate through acceptedNonlocalSymlinks, which is sorted so that
-         * longer canonical entries come first, to see if the new link is a
-         * child canonically.
+         * Iterate through indexedSymlinks, which is sorted so that shorter
+         * canonical entries come first, to see if the new link is a child
+         * canonically.
          */
-        for (String canonicalPrev : acceptedNonlocalSymlinks.keySet()) {
-            if (canonical1.startsWith(canonicalPrev + File.separator)) {
-                String absolutePrev = acceptedNonlocalSymlinks.get(canonicalPrev);
+        for (IndexedSymlink a0 : indexedSymlinks.values()) {
+            indexed0 = a0;
+            if (!indexed0.isLocal() && canonical1.startsWith(indexed0.getCanonicalSeparated())) {
+                absolute0 = indexed0.getAbsolute();
                 if (!isCanonicalDir) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
                                 "External file {0} has symlink from {1} under previous {2}",
-                                new Object[] {canonical1, absolute1, absolutePrev});
+                                new Object[] {canonical1, absolute1, absolute0});
                     }
+                    // Do not add to indexedSymlinks for a non-directory.
                     return true;
                 }
 
@@ -1035,20 +1041,18 @@ public class IndexDatabase {
                  * See above about redoing a sourceRoot symlink as a local
                  * (non-external) symlink in xref/.
                  */
-                Path abs0 = Paths.get(absolutePrev, canonical1.substring(
-                        canonicalPrev.length() + 1));
+                Path abs0 = Paths.get(absolute0, canonical1.substring(
+                        indexed0.getCanonicalSeparated().length()));
                 ret.localRelPath = absolute.getParent().relativize(abs0).toString();
 
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST,
                             "External dir {0} has symlink from {1} under previous {2}",
-                            new Object[] {canonical1, absolute1, absolutePrev});
+                            new Object[] {canonical1, absolute1, absolute0});
                 }
                 return false;
             }
         }
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         Set<String> canonicalRoots = env.getCanonicalRoots();
         for (String canonicalRoot : canonicalRoots) {
@@ -1057,7 +1061,10 @@ public class IndexDatabase {
                     LOGGER.log(Level.FINEST, "Allowed symlink {0} per canonical root {1}",
                             new Object[] {absolute1, canonical1});
                 }
-                acceptedNonlocalSymlinks.put(canonical1, absolute1);
+                if (isCanonicalDir) {
+                    indexed1 = new IndexedSymlink(absolute1, canonical1, false);
+                    indexedSymlinks.put(canonical1, indexed1);
+                }
                 return true;
             }
         }
@@ -1080,7 +1087,10 @@ public class IndexDatabase {
              * will allow all others in the set.
              */
             if (canonical1.equals(allowedTarget)) {
-                acceptedNonlocalSymlinks.put(canonical1, absolute1);
+                if (isCanonicalDir) {
+                    indexed1 = new IndexedSymlink(absolute1, canonical1, false);
+                    indexedSymlinks.put(canonical1, indexed1);
+                }
                 return true;
             }
         }
@@ -1098,23 +1108,19 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String srcRoot = env.getSourceRootPath();
 
-        boolean local = false;
-
-        if (path.startsWith(srcRoot)) {
+        if (path.startsWith(srcRoot + File.separator)) {
             if (env.hasProjects()) {
                 String relPath = path.substring(srcRoot.length());
-                if (project.equals(Project.getProject(relPath))) {
-                    // File is under the current project, so it's local.
-                    local = true;
-                }
+                // If file is under the current project, then it's local.
+                return project.equals(Project.getProject(relPath));
             } else {
                 // File is under source root, and we don't have projects, so
                 // consider it local.
-                local = true;
+                return true;
             }
         }
 
-        return local;
+        return false;
     }
 
     /**
@@ -1826,18 +1832,19 @@ public class IndexDatabase {
     }
 
     private void writeAnalysisSettings() throws IOException {
-        settings = new IndexAnalysisSettings();
+        settings = new IndexAnalysisSettings3();
         settings.setProjectName(project != null ? project.getName() : null);
         settings.setTabSize(project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0);
         settings.setAnalyzerGuruVersion(AnalyzerGuru.getVersionNo());
         settings.setAnalyzersVersions(AnalyzerGuru.getAnalyzersVersionNos());
+        settings.setIndexedSymlinks(indexedSymlinks);
 
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         dao.write(writer, settings);
     }
 
-    private IndexAnalysisSettings readAnalysisSettings() throws IOException {
+    private IndexAnalysisSettings3 readAnalysisSettings() throws IOException {
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         return dao.read(reader);
     }
