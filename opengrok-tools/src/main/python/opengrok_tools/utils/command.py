@@ -177,7 +177,12 @@ class Command:
                     self.out.append(line)
 
                     if self.doprint:
-                        print(line.rstrip())
+                        # Even if print() fails the thread has to keep
+                        # running to avoid hangups of the executed command.
+                        try:
+                            print(line.rstrip())
+                        except Exception as print_exc:
+                            self.logger.error(print_exc)
 
             def getoutput(self):
                 return self.out
