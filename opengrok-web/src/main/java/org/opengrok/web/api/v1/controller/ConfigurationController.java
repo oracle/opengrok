@@ -19,10 +19,13 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;
@@ -65,7 +68,7 @@ public class ConfigurationController {
     @Produces(MediaType.APPLICATION_JSON)
     public Object getField(@PathParam("field") final String field) {
         try {
-            return env.getConfigurationValueException(field);
+            return getConfigurationValueException(field);
         } catch (IOException e) {
             throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
         }
@@ -75,7 +78,7 @@ public class ConfigurationController {
     @Path("/{field}")
     public void setField(@PathParam("field") final String field, final String value) {
         try {
-            env.setConfigurationValueException(field, value);
+            setConfigurationValueException(field, value);
         } catch (IOException e) {
             throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
         }
@@ -91,4 +94,37 @@ public class ConfigurationController {
         env.getAuthorizationFramework().reload();
     }
 
+    private Object getConfigurationValueException(String fieldName) throws IOException {
+        final IOException[] capture = new IOException[1];
+        final int EXCEPTION_INDEX = 0;
+        Object result = env.syncReadConfiguration(configuration -> {
+            try {
+                return ClassUtil.getFieldValue(configuration, fieldName);
+            } catch (IOException ex) {
+                capture[EXCEPTION_INDEX] = ex;
+                return null;
+            }
+        });
+        if (capture[EXCEPTION_INDEX] != null) {
+            throw capture[EXCEPTION_INDEX];
+        }
+        return result;
+    }
+
+    private void setConfigurationValueException(String fieldName, String value)
+            throws IOException {
+
+        final IOException[] capture = new IOException[1];
+        final int EXCEPTION_INDEX = 0;
+        env.syncWriteConfiguration((configuration, v) -> {
+            try {
+                ClassUtil.setFieldValue(configuration, fieldName, v);
+            } catch (IOException ex) {
+                capture[EXCEPTION_INDEX] = ex;
+            }
+        }, value);
+        if (capture[EXCEPTION_INDEX] != null) {
+            throw capture[EXCEPTION_INDEX];
+        }
+    }
 }
