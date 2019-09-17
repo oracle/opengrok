@@ -119,9 +119,8 @@ public class Ctags implements Resettable {
 
     /**
      * {@link #reset()}, and close any running ctags instance.
-     * @throws IOException not really thrown -- but logged
      */
-    public void close() throws IOException {
+    public void close() {
         reset();
         IOUtils.close(ctagsIn);
         if (ctags != null) {
@@ -239,10 +238,10 @@ public class Ctags implements Resettable {
 
         // The following are not supported yet in Universal Ctags b13cb551
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
-                "([[:alnum:]_]+)/\\4/C,consts,static constants/");
+                "([[:alnum:]_]+)/\\4/C,consts,staticConstants/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?" +
                 "[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?" +
-                "([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
+                "([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,traitImplementations/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r,traits,traits/");
         command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
     }
@@ -303,7 +302,7 @@ public class Ctags implements Resettable {
                 "(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "data class[[:space:]]+([[:alnum:]_:]+)/\\6/d,data classes/");
+                "data class[[:space:]]+([[:alnum:]_:]+)/\\6/d,dataClasses/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
         command.add("--regex-kotlin=/^[[:space:]]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
@@ -323,12 +322,12 @@ public class Ctags implements Resettable {
 
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
-        command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p,private function/");
+        command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p,privateFunction/");
         command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/m,macro/");
         command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/i,inline/");
-        command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/a,multimethod definition/");
-        command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/b,multimethod instance/");
-        command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/c,definition (once)/");
+        command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/a,multimethodDefinition/");
+        command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/b,multimethodInstance/");
+        command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/c,definitionOnce/");
         command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/s,struct/");
         command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v,intern/");
     }
@@ -355,9 +354,9 @@ public class Ctags implements Resettable {
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
+                "(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,caseClasses/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/");
+                "(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,caseObjects/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
         command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
@@ -433,12 +432,7 @@ public class Ctags implements Resettable {
                 LOGGER.log(Level.WARNING,
                         String.format("Terminating ctags process for file '%s' " +
                                 "due to timeout %d seconds", file, getTimeout()));
-                try {
-                    close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to terminate overly long ctags command");
-                }
-
+                close();
                 // Allow for retry in IndexDatabase.
                 throw new InterruptedException("ctags timeout");
             }
@@ -464,7 +458,7 @@ public class Ctags implements Resettable {
      * @return definitions parsed from buffer
      * @throws java.lang.InterruptedException interrupted
      */
-    public Definitions testCtagsParser(String bufferTags)
+    Definitions testCtagsParser(String bufferTags)
             throws InterruptedException {
 
         // Ensure output is magic-terminated as expected.
@@ -495,7 +489,7 @@ public class Ctags implements Resettable {
             }
 
             @Override
-            public int waitFor() throws InterruptedException {
+            public int waitFor() {
                 return 0;
             }
 
@@ -512,8 +506,7 @@ public class Ctags implements Resettable {
         CtagsReader rdr = new CtagsReader();
         rdr.setTabSize(tabSize);
         readTags(rdr);
-        Definitions ret = rdr.getDefinitions();
-        return ret;
+        return rdr.getDefinitions();
     }
 
     private void readTags(CtagsReader reader) throws InterruptedException {
