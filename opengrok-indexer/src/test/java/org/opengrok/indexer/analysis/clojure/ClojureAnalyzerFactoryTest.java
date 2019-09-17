@@ -92,7 +92,7 @@ public class ClojureAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         ctags.close();
         ctags = null;
     }
@@ -100,7 +100,7 @@ public class ClojureAnalyzerFactoryTest {
     /**
      * Test of writeXref method, of class CAnalyzerFactory.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception throw in case of analyzer or deserialize ctags error
      */
     @Test
     public void testScopeAnalyzer() throws Exception {
@@ -125,7 +125,7 @@ public class ClojureAnalyzerFactoryTest {
         assertTrue(definitions.hasDefinitionAt("power-set", 8, type));
         assertThat(type[0], is("function"));
         assertTrue(definitions.hasDefinitionAt("power-set-private", 14, type));
-        assertThat(type[0], is("private function"));
+        assertThat(type[0], is("privateFunction"));
         assertTrue(definitions.hasDefinitionAt("author", 19, type));
         assertThat(type[0], is("struct"));
         assertTrue(definitions.hasDefinitionAt("author-first-name", 22, type));
