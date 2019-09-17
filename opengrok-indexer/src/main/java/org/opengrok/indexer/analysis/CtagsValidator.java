@@ -23,16 +23,9 @@
 
 package org.opengrok.indexer.analysis;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ObjectValidator;
 
 public final class CtagsValidator implements ObjectValidator<Ctags> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        CtagsValidator.class);
 
     @Override
     public boolean isValid(Ctags ctags) {
@@ -41,12 +34,8 @@ public final class CtagsValidator implements ObjectValidator<Ctags> {
 
     @Override
     public void invalidate(Ctags ctags) {
-        try {
-            if (ctags != null) {
-                ctags.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "Error closing ctags", ex);
+        if (ctags != null) {
+            ctags.close();
         }
     }
 }
