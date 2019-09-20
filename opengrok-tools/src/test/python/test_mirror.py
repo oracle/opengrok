@@ -169,3 +169,7 @@ def test_incoming_retval(monkeypatch):
             m.setattr("opengrok_tools.utils.mirror.get", mock_get)
 
             assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
+
+
+def test_empty_project_config():
+    assert check_project_configuration({'foo': None})
