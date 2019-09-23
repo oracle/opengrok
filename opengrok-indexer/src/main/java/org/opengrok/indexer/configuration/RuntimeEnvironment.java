@@ -134,7 +134,7 @@ public final class RuntimeEnvironment {
 
     // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
-    private final ReentrantReadWriteLock authFrameworkLock;
+    private final ReadWriteLock authFrameworkLock;
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
