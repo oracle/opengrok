@@ -132,7 +132,7 @@ public final class RuntimeEnvironment {
         lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
     }
 
-    /** Instance of authorization framework and its lock.*/
+    // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
     private final ReentrantReadWriteLock authFrameworkLock;
 
