@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,7 +126,7 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
-        authFrameworkLock = new ReentrantReadWriteLock();
+        authFrameworkLock = new ReentrantLock();
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
@@ -134,7 +135,7 @@ public final class RuntimeEnvironment {
 
     // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
-    private final ReadWriteLock authFrameworkLock;
+    private final Lock authFrameworkLock;
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
@@ -1597,13 +1598,13 @@ public final class RuntimeEnvironment {
      */
     public AuthorizationFramework getAuthorizationFramework() {
         try {
-            authFrameworkLock.readLock().lock();
+            authFrameworkLock.lock();
             if (authFramework == null) {
                 authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
             }
             return authFramework;
         } finally {
-            authFrameworkLock.readLock().unlock();
+            authFrameworkLock.unlock();
         }
     }
 
@@ -1615,13 +1616,13 @@ public final class RuntimeEnvironment {
      */
     public void setAuthorizationFramework(AuthorizationFramework fw) {
         try {
-            authFrameworkLock.writeLock().lock();
+            authFrameworkLock.lock();
             if (this.authFramework != null) {
                 this.authFramework.removeAll();
             }
             this.authFramework = fw;
         } finally {
-            authFrameworkLock.writeLock().unlock();
+            authFrameworkLock.unlock();
         }
     }
 
