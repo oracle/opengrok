@@ -125,14 +125,16 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
+        authFrameworkLock = new ReentrantReadWriteLock();
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
         lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
     }
 
-    /** Instance of authorization framework.*/
+    /** Instance of authorization framework and its lock.*/
     private AuthorizationFramework authFramework;
+    private final ReentrantReadWriteLock authFrameworkLock;
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
@@ -1594,10 +1596,15 @@ public final class RuntimeEnvironment {
      * @return the framework
      */
     public synchronized AuthorizationFramework getAuthorizationFramework() {
-        if (authFramework == null) {
-            authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
+        try {
+            authFrameworkLock.readLock().lock();
+            if (authFramework == null) {
+                authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
+            }
+            return authFramework;
+        } finally {
+            authFrameworkLock.readLock().unlock();
         }
-        return authFramework;
     }
 
     /**
@@ -1607,10 +1614,15 @@ public final class RuntimeEnvironment {
      * @param fw the new framework
      */
     public synchronized void setAuthorizationFramework(AuthorizationFramework fw) {
-        if (this.authFramework != null) {
-            this.authFramework.removeAll();
+        try {
+            authFrameworkLock.writeLock().lock();
+            if (this.authFramework != null) {
+                this.authFramework.removeAll();
+            }
+            this.authFramework = fw;
+        } finally {
+            authFrameworkLock.writeLock().unlock();
         }
-        this.authFramework = fw;
     }
 
     /**
