@@ -1595,7 +1595,7 @@ public final class RuntimeEnvironment {
      *
      * @return the framework
      */
-    public synchronized AuthorizationFramework getAuthorizationFramework() {
+    public AuthorizationFramework getAuthorizationFramework() {
         try {
             authFrameworkLock.readLock().lock();
             if (authFramework == null) {
@@ -1613,7 +1613,7 @@ public final class RuntimeEnvironment {
      *
      * @param fw the new framework
      */
-    public synchronized void setAuthorizationFramework(AuthorizationFramework fw) {
+    public void setAuthorizationFramework(AuthorizationFramework fw) {
         try {
             authFrameworkLock.writeLock().lock();
             if (this.authFramework != null) {
