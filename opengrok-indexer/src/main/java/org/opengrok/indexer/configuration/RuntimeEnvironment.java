@@ -126,7 +126,7 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
-        authFrameworkLock = new ReentrantLock();
+        authFrameworkLock = new Object();
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
@@ -135,7 +135,7 @@ public final class RuntimeEnvironment {
 
     // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
-    private final Lock authFrameworkLock;
+    private final Object authFrameworkLock;
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
@@ -1597,14 +1597,11 @@ public final class RuntimeEnvironment {
      * @return the framework
      */
     public AuthorizationFramework getAuthorizationFramework() {
-        try {
-            authFrameworkLock.lock();
+        synchronized (authFrameworkLock) {
             if (authFramework == null) {
                 authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
             }
             return authFramework;
-        } finally {
-            authFrameworkLock.unlock();
         }
     }
 
@@ -1615,14 +1612,11 @@ public final class RuntimeEnvironment {
      * @param fw the new framework
      */
     public void setAuthorizationFramework(AuthorizationFramework fw) {
-        try {
-            authFrameworkLock.lock();
-            if (this.authFramework != null) {
+        synchronized (authFrameworkLock) {
+           if (this.authFramework != null) {
                 this.authFramework.removeAll();
             }
             this.authFramework = fw;
-        } finally {
-            authFrameworkLock.unlock();
         }
     }
 
