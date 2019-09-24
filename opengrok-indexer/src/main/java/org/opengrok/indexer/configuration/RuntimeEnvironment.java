@@ -125,7 +125,6 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
-        authFrameworkLock = new Object();
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
@@ -134,7 +133,7 @@ public final class RuntimeEnvironment {
 
     // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
-    private final Object authFrameworkLock;
+    private final Object authFrameworkLock = new Object();
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
