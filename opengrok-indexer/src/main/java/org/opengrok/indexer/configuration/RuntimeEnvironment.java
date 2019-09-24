@@ -131,8 +131,9 @@ public final class RuntimeEnvironment {
         lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
     }
 
-    /** Instance of authorization framework.*/
+    // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
+    private final Object authFrameworkLock = new Object();
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
@@ -1593,11 +1594,13 @@ public final class RuntimeEnvironment {
      *
      * @return the framework
      */
-    public synchronized AuthorizationFramework getAuthorizationFramework() {
-        if (authFramework == null) {
-            authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
+    public AuthorizationFramework getAuthorizationFramework() {
+        synchronized (authFrameworkLock) {
+            if (authFramework == null) {
+                authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
+            }
+            return authFramework;
         }
-        return authFramework;
     }
 
     /**
@@ -1606,11 +1609,13 @@ public final class RuntimeEnvironment {
      *
      * @param fw the new framework
      */
-    public synchronized void setAuthorizationFramework(AuthorizationFramework fw) {
-        if (this.authFramework != null) {
-            this.authFramework.removeAll();
+    public void setAuthorizationFramework(AuthorizationFramework fw) {
+        synchronized (authFrameworkLock) {
+           if (this.authFramework != null) {
+                this.authFramework.removeAll();
+            }
+            this.authFramework = fw;
         }
-        this.authFramework = fw;
     }
 
     /**
