@@ -383,8 +383,8 @@ def check_project_configuration(multiple_project_config, hookdir=False,
                      format(project_name))
 
         if project_config is None:
-            logger.debug("Project {} has empty configuration".
-                         format(project_name))
+            logger.warning("Project {} has empty configuration".
+                           format(project_name))
             continue
 
         diff = set(project_config.keys()).difference(known_project_tunables)
