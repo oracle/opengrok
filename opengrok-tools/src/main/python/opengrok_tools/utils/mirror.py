@@ -376,7 +376,17 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     if not multiple_project_config:
         return True
 
+    logger.debug("Checking project configuration")
+
     for project_name, project_config in multiple_project_config.items():
+        logger.debug("Checking configuration of project {}".
+                     format(project_name))
+
+        if project_config is None:
+            logger.warning("Project {} has empty configuration".
+                           format(project_name))
+            continue
+
         diff = set(project_config.keys()).difference(known_project_tunables)
         if diff:
             logger.error("unknown project configuration option(s) '{}' "
