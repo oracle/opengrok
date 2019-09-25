@@ -120,20 +120,6 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("sync");
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-    }
-
-    @Override
     boolean fileHasHistory(File file) {
         return true;
     }

@@ -488,32 +488,6 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("config");
-        cmd.add("--list");
-
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-
-        if (executor.getOutputString().contains("remote.origin.url=")) {
-            cmd.clear();
-            cmd.add(RepoCommand);
-            cmd.add("pull");
-            cmd.add("-n");
-            cmd.add("-q");
-            if (executor.exec() != 0) {
-                throw new IOException(executor.getErrorString());
-            }
-        }
-    }
-
-    @Override
     public boolean fileHasHistory(File file) {
         // Todo: is there a cheap test for whether Git has history
         // available for a file?

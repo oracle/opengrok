@@ -300,11 +300,6 @@ public class RazorRepository extends Repository {
         }
     }
 
-    @Override
-    void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     private File pathTranslation(File file, String intermediateElements,
             String filePrefix, String fileSuffix) throws IOException {
 

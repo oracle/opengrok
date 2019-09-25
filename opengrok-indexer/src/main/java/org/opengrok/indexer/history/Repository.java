@@ -415,14 +415,6 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Update the content in this repository by pulling the changes from the
-     * upstream repository..
-     *
-     * @throws IOException if an error occurs.
-     */
-    abstract void update() throws IOException;
-
-    /**
      * Check if this it the right repository type for the given file.
      *
      * @param file File to check if this is a repository for.

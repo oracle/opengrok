@@ -443,31 +443,6 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("showconfig");
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-
-        if (executor.getOutputString().contains("paths.default=")) {
-            cmd.clear();
-            cmd.add(RepoCommand);
-            cmd.add("pull");
-            cmd.add("-u");
-            executor = new Executor(cmd, directory);
-            if (executor.exec() != 0) {
-                throw new IOException(executor.getErrorString());
-            }
-        }
-    }
-
-    @Override
     public boolean fileHasHistory(File file) {
         // Todo: is there a cheap test for whether mercurial has history
         // available for a file?

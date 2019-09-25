@@ -141,11 +141,6 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean fileHasHistory(File file) {
         String parentFile = file.getParent();
         String name = file.getName();

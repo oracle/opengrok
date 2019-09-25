@@ -506,69 +506,6 @@ public final class HistoryGuru {
                 map(ri -> new RepositoryInfo(ri)).collect(Collectors.toSet());
     }
 
-    /**
-     * Update the source contents in all repositories.
-     */
-    public void updateRepositories() {
-        for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
-            Repository repository = entry.getValue();
-
-            String path = entry.getKey();
-            String type = repository.getClass().getSimpleName();
-
-            if (repository.isWorking()) {
-                LOGGER.info(String.format("Update %s repository in %s",
-                        type, path));
-
-                try {
-                    repository.update();
-                } catch (UnsupportedOperationException e) {
-                    LOGGER.warning(String.format("Skipping update of %s repository"
-                            + " in %s: Not implemented", type, path));
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "An error occurred while updating "
-                            + path + " (" + type + ")", e);
-                }
-            } else {
-                LOGGER.warning(String.format("Skipping update of %s repository in "
-                        + "%s: Missing SCM dependencies?", type, path));
-            }
-        }
-    }
-
-    /**
-     * Update the source contents in given repositories.
-     *
-     * @param paths A list of files/directories to update
-     */
-    public void updateRepositories(Collection<String> paths) {
-        List<Repository> repos = getReposFromString(paths);
-
-        for (Repository repository : repos) {
-            String type = repository.getClass().getSimpleName();
-
-            if (repository.isWorking()) {
-                LOGGER.info(String.format("Update %s repository in %s", type,
-                        repository.getDirectoryName()));
-
-                try {
-                    repository.update();
-                } catch (UnsupportedOperationException e) {
-                    LOGGER.warning(String.format("Skipping update of %s repository"
-                            + " in %s: Not implemented", type,
-                            repository.getDirectoryName()));
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "An error occurred while updating "
-                            + repository.getDirectoryName() + " (" + type + ")", e);
-                }
-            } else {
-                LOGGER.warning(String.format("Skipping update of %s repository in"
-                        + " %s: Missing SCM dependencies?", type,
-                        repository.getDirectoryName()));
-            }
-        }
-    }
-
     private void createCache(Repository repository, String sinceRevision) {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();

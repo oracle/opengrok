@@ -157,30 +157,6 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-
-        List<String> cmd = new ArrayList<>();
-        cmd.add(RepoCommand);
-        cmd.add("pull");
-        cmd.add(getQuietOption());
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-
-        cmd.clear();
-        cmd.add(RepoCommand);
-        cmd.add("update");
-        cmd.add(getQuietOption());
-        executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-    }
-
-    @Override
     public boolean fileHasHistory(File file) {
         return true;
     }
