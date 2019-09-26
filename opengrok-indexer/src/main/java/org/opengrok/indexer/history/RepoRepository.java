@@ -26,11 +26,8 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.opengrok.indexer.util.BufferSink;
-import org.opengrok.indexer.util.Executor;
 
 /**
  * Access to a Git repository.
