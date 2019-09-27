@@ -28,7 +28,7 @@ import sys
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
-from .utils.parsers import get_javaparser
+from .utils.parsers import get_java_parser
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -43,7 +43,7 @@ from .utils.exitvals import (
 
 def main():
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper',
-                                     parents=[get_javaparser()])
+                                     parents=[get_java_parser()])
     parser.add_argument('-C', '--no_ctags_check', action='store_true',
                         default=False, help='Suppress checking for ctags')
 

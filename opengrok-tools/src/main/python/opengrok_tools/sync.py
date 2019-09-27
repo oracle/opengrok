@@ -39,7 +39,7 @@ from filelock import Timeout, FileLock
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
-from .utils.parsers import get_baseparser
+from .utils.parsers import get_base_parser
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
 from .utils.exitvals import (
@@ -71,7 +71,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.',
                                      parents=[
-                                         get_baseparser(
+                                         get_base_parser(
                                              tool_version=__version__)
                                      ])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),

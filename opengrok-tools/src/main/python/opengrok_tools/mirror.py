@@ -47,7 +47,7 @@ from .utils.exitvals import (
 from .utils.log import get_console_logger, get_class_basename, \
     fatal, get_batch_logger
 from .utils.opengrok import get_config_value, list_indexed_projects
-from .utils.parsers import get_baseparser
+from .utils.parsers import get_base_parser
 from .utils.readconfig import read_config
 from .utils.utils import get_int, is_web_uri
 from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
@@ -80,7 +80,7 @@ def main():
     ret = SUCCESS_EXITVAL
 
     parser = argparse.ArgumentParser(description='project mirroring',
-                                     parents=[get_baseparser(
+                                     parents=[get_base_parser(
                                          tool_version=__version__)
                                      ])
 

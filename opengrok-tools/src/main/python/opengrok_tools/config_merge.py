@@ -27,7 +27,7 @@ import sys
 
 from .utils.java import Java
 from .utils.log import fatal
-from .utils.parsers import get_javaparser
+from .utils.parsers import get_java_parser
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -40,7 +40,7 @@ from .utils.exitvals import (
 def main():
     parser = argparse.ArgumentParser(description='Java wrapper for project '
                                                  'configuration merging',
-                                     parents=[get_javaparser()])
+                                     parents=[get_java_parser()])
 
     try:
         args = parser.parse_args()

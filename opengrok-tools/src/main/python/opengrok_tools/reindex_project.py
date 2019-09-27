@@ -30,7 +30,7 @@ import tempfile
 from .utils.indexer import Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import get_configuration
-from .utils.parsers import get_javaparser
+from .utils.parsers import get_java_parser
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -75,7 +75,7 @@ def get_config_file(logger, uri):
 def main():
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper '
                                                  'for indexing single project',
-                                     parents=[get_javaparser()])
+                                     parents=[get_java_parser()])
     parser.add_argument('-t', '--template', required=True,
                         help='Logging template file')
     parser.add_argument('-p', '--pattern', required=True,

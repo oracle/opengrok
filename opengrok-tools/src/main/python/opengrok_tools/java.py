@@ -27,7 +27,7 @@ import sys
 
 from .utils.java import Java
 from .utils.log import get_console_logger, get_class_basename, fatal
-from .utils.parsers import get_javaparser
+from .utils.parsers import get_java_parser
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -36,7 +36,7 @@ from .utils.exitvals import (
 
 def main():
     parser = argparse.ArgumentParser(description='java wrapper',
-                                     parents=[get_javaparser()])
+                                     parents=[get_java_parser()])
     parser.add_argument('-m', '--mainclass', required=True,
                         help='Main class')
 
