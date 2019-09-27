@@ -52,6 +52,13 @@ class Command:
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False, work_dir=None, env_vars=None, timeout=None,
                  redirect_stderr=True, resource_limits=None, doprint=False):
+
+        if doprint is None:
+            doprint = False
+
+        if isinstance(doprint, list):
+            doprint = doprint[0]
+
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
