@@ -19,7 +19,7 @@ def str2bool(v):
                                      'representation expected.')
 
 
-def get_baseparser(tool_version=None):
+def get_base_parser(tool_version=None):
     """
     Get the base parser which supports --version option reporting
     the overall version of the tools and the specific version of the
@@ -37,9 +37,9 @@ def get_baseparser(tool_version=None):
     return parser
 
 
-def get_javaparser():
+def get_java_parser():
     parser = argparse.ArgumentParser(add_help=False,
-                                     parents=[get_baseparser()])
+                                     parents=[get_base_parser()])
     parser.add_argument('-j', '--java',
                         help='path to java binary')
     parser.add_argument('-J', '--java_opts',

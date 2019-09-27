@@ -30,7 +30,7 @@ from zipfile import ZipFile
 
 from .utils.log import get_console_logger, get_class_basename, \
     fatal
-from .utils.parsers import get_baseparser
+from .utils.parsers import get_base_parser
 from .utils.xml import insert_file, XMLProcessingException
 
 WEB_XML = 'WEB-INF/web.xml'
@@ -124,7 +124,7 @@ def deploy_war(logger, source_war, target_war, config_file=None,
 
 def main():
     parser = argparse.ArgumentParser(description='Deploy WAR file',
-                                     parents=[get_baseparser()])
+                                     parents=[get_base_parser()])
 
     parser.add_argument('-c', '--config',
                         help='Path to OpenGrok configuration file')
