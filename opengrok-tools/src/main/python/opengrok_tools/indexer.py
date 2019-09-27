@@ -61,9 +61,16 @@ def main():
     if not args.no_ctags_check and not FindCtags(logger):
         logger.warning("Unable to determine Universal CTags command")
 
+    if args.doprint is None:
+        logger.debug("Console logging is enabled by default")
+        doprint = True
+    else:
+        doprint = args.doprint[0]
+        logger.debug("Console logging: {}".format(doprint))
+
     indexer = Indexer(args.options, logger=logger, java=args.java,
                       jar=args.jar, java_opts=args.java_opts,
-                      env_vars=args.environment, doprint=args.doprint)
+                      env_vars=args.environment, doprint=doprint)
     indexer.execute()
     ret = indexer.getretcode()
     if ret is None or ret != SUCCESS_EXITVAL:
