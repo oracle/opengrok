@@ -47,35 +47,36 @@ import static org.junit.Assert.assertNotNull;
 public class FileUtilities {
 
     public static void extractArchive(File sourceBundle, File root) throws IOException {
-        ZipFile zipfile = new ZipFile(sourceBundle);
+        try (ZipFile zipfile = new ZipFile(sourceBundle)) {
+            Enumeration<ZipArchiveEntry> e = zipfile.getEntries();
 
-        Enumeration<ZipArchiveEntry> e = zipfile.getEntries();
-
-        while (e.hasMoreElements()) {
-            ZipArchiveEntry ze = e.nextElement();
-            File file = new File(root, ze.getName());
-            if (ze.isUnixSymlink()) {
-                File target = new File(file.getParent(), zipfile.getUnixSymlink(ze));
-                /*
-                 * A weirdness is that an object may already have been exploded
-                 * before the symlink entry is reached in the ZipFile. So
-                 * unlink any existing entry to avoid an exception on creating
-                 * the symlink.
-                 */
-                if (file.isDirectory()) {
-                    removeDirs(file);
-                } else if (file.exists()) {
-                    file.delete();
-                }
-                Files.createSymbolicLink(file.toPath(), target.toPath());
-            } else if (ze.isDirectory()) {
-                file.mkdirs();
-            } else {
-                try (InputStream in = zipfile.getInputStream(ze); OutputStream out = new FileOutputStream(file)) {
-                    if (in == null) {
-                        throw new IOException("Cannot get InputStream for " + ze);
+            while (e.hasMoreElements()) {
+                ZipArchiveEntry ze = e.nextElement();
+                File file = new File(root, ze.getName());
+                if (ze.isUnixSymlink()) {
+                    File target = new File(file.getParent(), zipfile.getUnixSymlink(ze));
+                    /*
+                     * A weirdness is that an object may already have been
+                     * exploded before the symlink entry is reached in the
+                     * ZipFile. So unlink any existing entry to avoid an
+                     * exception on creating the symlink.
+                     */
+                    if (file.isDirectory()) {
+                        removeDirs(file);
+                    } else if (file.exists()) {
+                        file.delete();
                     }
-                    copyFile(in, out);
+                    Files.createSymbolicLink(file.toPath(), target.toPath());
+                } else if (ze.isDirectory()) {
+                    file.mkdirs();
+                } else {
+                    try (InputStream in = zipfile.getInputStream(ze);
+                         OutputStream out = new FileOutputStream(file)) {
+                        if (in == null) {
+                            throw new IOException("Cannot get InputStream for " + ze);
+                        }
+                        copyFile(in, out);
+                    }
                 }
             }
         }
