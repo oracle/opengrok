@@ -24,7 +24,6 @@ opengrok-indexer \
     -s /opengrok/src \
     -d /opengrok/data \
     --remote on \
-    --leadingWildCards on \
     -W /opengrok/etc/configuration.xml \
     -U "$URI" \
     $OPS \

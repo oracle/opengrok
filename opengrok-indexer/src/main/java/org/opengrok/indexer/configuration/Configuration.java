@@ -435,6 +435,7 @@ public final class Configuration {
     public Configuration() {
         // This list of calls is sorted alphabetically so please keep it.
         cmds = new HashMap<>();
+        setAllowLeadingWildcard(true);
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
