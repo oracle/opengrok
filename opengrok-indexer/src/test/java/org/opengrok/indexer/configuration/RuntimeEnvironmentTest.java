@@ -289,9 +289,9 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testAllowLeadingWildcard() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertFalse(instance.isAllowLeadingWildcard());
-        instance.setAllowLeadingWildcard(true);
         assertTrue(instance.isAllowLeadingWildcard());
+        instance.setAllowLeadingWildcard(false);
+        assertFalse(instance.isAllowLeadingWildcard());
     }
 
     @Test
