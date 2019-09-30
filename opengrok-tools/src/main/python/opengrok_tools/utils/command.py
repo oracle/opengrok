@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -184,10 +184,10 @@ class Command:
                     self.out.append(line)
 
                     if self.doprint:
-                        # Even if print() fails the thread has to keep
+                        # Even if logging below fails, the thread has to keep
                         # running to avoid hangups of the executed command.
                         try:
-                            print(line.rstrip())
+                            self.logger.info(line.rstrip())
                         except Exception as print_exc:
                             self.logger.error(print_exc)
 

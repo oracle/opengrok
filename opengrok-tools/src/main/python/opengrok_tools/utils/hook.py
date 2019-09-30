@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 from .command import Command
@@ -40,12 +40,10 @@ def run_hook(logger, script, path, env, timeout):
     logger.debug("Running hook '{}' in directory {}".
                  format(script, path))
     cmd = Command([script], logger=logger, work_dir=path, env_vars=env,
-                  timeout=timeout)
+                  timeout=timeout, doprint=True)
     cmd.execute()
     if cmd.state != "finished" or cmd.getretcode() != SUCCESS_EXITVAL:
         logger.error("command failed: {} -> {}".format(cmd, cmd.getretcode()))
         ret = FAILURE_EXITVAL
-
-    logger.info("command output:\n{}".format(cmd.getoutputstr()))
 
     return ret
