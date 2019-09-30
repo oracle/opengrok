@@ -606,6 +606,7 @@ public class GitRepository extends Repository {
         argv.add("-n");
         argv.add("1");
         argv.add(tag);
+        argv.add("--");
         
         Executor executor = new Executor(argv, directory, interactive ?
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
