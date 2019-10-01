@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -41,7 +42,7 @@ public class SuggesterConfig {
     public static final boolean ENABLED_DEFAULT = true;
     public static final int MAX_RESULTS_DEFAULT = 10;
     public static final int MIN_CHARS_DEFAULT = 0;
-    public static final int MAX_PROJECTS_DEFAULT = Integer.MAX_VALUE;
+    public static final int MAX_PROJECTS_DEFAULT = Short.MAX_VALUE;
     public static final boolean ALLOW_COMPLEX_QUERIES_DEFAULT = true;
     public static final boolean ALLOW_MOST_POPULAR_DEFAULT = true;
     public static final boolean SHOW_SCORES_DEFAULT = false;
@@ -335,4 +336,33 @@ public class SuggesterConfig {
                 buildTerminationTime, rebuildThreadPoolSizeInNcpuPercent);
     }
 
+    /**
+     * Gets an instance version suitable for helper documentation by shifting
+     * most default properties slightly.
+     */
+    static SuggesterConfig getForHelp() {
+        SuggesterConfig res = new SuggesterConfig();
+        res.setEnabled(!res.isEnabled());
+        res.setMaxResults(1 + res.getMaxResults());
+        res.setMinChars(1 + res.getMinChars());
+        res.setAllowedProjects(new HashSet<>(Arrays.asList("project-1", "project-2")));
+        res.setMaxProjects(1 + res.getMaxProjects());
+        res.setAllowedFields(getAllowedFieldsForHelp(res.getAllowedFields()));
+        res.setAllowComplexQueries(!res.isAllowComplexQueries());
+        res.setAllowMostPopular(!res.isAllowMostPopular());
+        res.setShowScores(!res.isShowScores());
+        res.setShowProjects(!res.isShowProjects());
+        res.setShowTime(!res.isShowTime());
+        res.setTimeThreshold(1 + res.getTimeThreshold());
+        res.setRebuildCronConfig("1 0 * * *");
+        res.setBuildTerminationTime(1 + res.getBuildTerminationTime());
+        res.setRebuildThreadPoolSizeInNcpuPercent(1 + res.getRebuildThreadPoolSizeInNcpuPercent());
+        return res;
+    }
+
+    private static HashSet<String> getAllowedFieldsForHelp(Set<String> allowedFields) {
+        HashSet<String> res = new HashSet<>(allowedFields);
+        res.remove(QueryBuilder.FULL);
+        return res;
+    }
 }

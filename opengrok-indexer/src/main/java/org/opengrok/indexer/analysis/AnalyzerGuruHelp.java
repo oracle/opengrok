@@ -18,10 +18,12 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
+
+import org.opengrok.indexer.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,7 +143,7 @@ public class AnalyzerGuruHelp {
         int llen = 0;
         int i = 0;
         while (i < str.length()) {
-            int wlen = nextTestWhitespaceLength(false, str, i);
+            int wlen = StringUtils.whitespaceOrControlLength(str, i, false);
             if (wlen > 0) {
                 String word = str.substring(i, i + wlen);
                 if (llen < 1) {
@@ -160,7 +162,7 @@ public class AnalyzerGuruHelp {
                 i += wlen;
             }
 
-            int slen = nextTestWhitespaceLength(true, str, i);
+            int slen = StringUtils.whitespaceOrControlLength(str, i, true);
             i += slen;
         }
         if (b.length() > 0) {
@@ -169,20 +171,6 @@ public class AnalyzerGuruHelp {
         }
 
         return res.stream().toArray(String[]::new);
-    }
-
-    private static int nextTestWhitespaceLength(boolean match, String str,
-        int off) {
-        int i = 0;
-        while (off + i < str.length()) {
-            int cp = Character.codePointAt(str, off + i);
-            if ((Character.isWhitespace(cp) || Character.isISOControl(cp)) !=
-                match) {
-                return i;
-            }
-            i += Character.charCount(cp);
-        }
-        return str.length() - off;
     }
 
     private static List<MappedFactory> byKey(

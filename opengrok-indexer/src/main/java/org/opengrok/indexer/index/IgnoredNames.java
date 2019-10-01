@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -34,6 +35,8 @@ import java.util.List;
  */
 public class IgnoredNames implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final String FILE_PREFIX = "f:";
+    private static final String DIR_PREFIX = "d:";
 
     private IgnoredFiles ignoredFiles;
     private IgnoredDirs ignoredDirs;
@@ -58,10 +61,10 @@ public class IgnoredNames implements Serializable {
     }
 
     public void add(String pattern) {
-        if (pattern.startsWith("f:")) {
-            ignoredFiles.add(pattern.substring(2));
-        } else if (pattern.startsWith("d:")) {
-            ignoredDirs.add(pattern.substring(2));
+        if (pattern.startsWith(FILE_PREFIX)) {
+            ignoredFiles.add(pattern.substring(FILE_PREFIX.length()));
+        } else if (pattern.startsWith(DIR_PREFIX)) {
+            ignoredDirs.add(pattern.substring(DIR_PREFIX.length()));
         } else {
             // backward compatibility
             ignoredFiles.add(pattern);
