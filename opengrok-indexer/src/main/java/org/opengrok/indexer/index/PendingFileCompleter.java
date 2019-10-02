@@ -34,6 +34,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -166,12 +168,21 @@ class PendingFileCompleter {
      * @throws java.io.IOException if an I/O error occurs
      */
     public int complete() throws IOException {
+        Instant start = Instant.now();
         int numDeletions = completeDeletions();
-        LOGGER.log(Level.FINE, "deleted {0} file(s)", numDeletions);
+        LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
+                new Object[]{numDeletions, Duration.between(start, Instant.now())});
+
+        start = Instant.now();
         int numRenamings = completeRenamings();
-        LOGGER.log(Level.FINE, "renamed {0} file(s)", numRenamings);
+        LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
+                new Object[]{numRenamings, Duration.between(start, Instant.now())});
+
+        start = Instant.now();
         int numLinkages = completeLinkages();
-        LOGGER.log(Level.FINE, "affirmed links for {0} path(s)", numLinkages);
+        LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
+                new Object[]{numLinkages, Duration.between(start, Instant.now())});
+
         return numDeletions + numRenamings + numLinkages;
     }
 
