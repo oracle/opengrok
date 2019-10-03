@@ -42,11 +42,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.TandemPath;
+
+import static org.opengrok.indexer.util.Progress.printProgress;
 
 /**
  * Represents a tracker of pending file deletions and renamings that can later
@@ -206,9 +209,12 @@ class PendingFileCompleter {
                 f.getAbsolutePath())).collect(
             Collectors.toList());
 
+        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingFileRenamingExec>> bySuccess =
             pendingExecs.parallelStream().collect(
             Collectors.groupingByConcurrent((x) -> {
+                printProgress(LOGGER, "pending renames",
+                        currentCount.incrementAndGet(), numPending);
                 try {
                     doRename(x);
                     return true;
@@ -252,9 +258,12 @@ class PendingFileCompleter {
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
             Collectors.toList());
 
+        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingFileDeletionExec>> bySuccess =
             pendingExecs.parallelStream().collect(
             Collectors.groupingByConcurrent((x) -> {
+                printProgress(LOGGER, "pending deletions",
+                        currentCount.incrementAndGet(), numPending);
                 try {
                     doDelete(x);
                     return true;
@@ -303,9 +312,12 @@ class PendingFileCompleter {
                 new PendingSymlinkageExec(f.getSourcePath(),
                         f.getTargetRelPath())).collect(Collectors.toList());
 
+        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingSymlinkageExec>> bySuccess =
             pendingExecs.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
+                    printProgress(LOGGER, "pending renames",
+                            currentCount.incrementAndGet(), numPending);
                     try {
                         doLink(x);
                         return true;

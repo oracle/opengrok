@@ -103,6 +103,8 @@ import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
 
+import static org.opengrok.indexer.util.Progress.printProgress;
+
 /**
  * This class is used to create / update the index databases. Currently we use
  * one index database per project.
@@ -1026,27 +1028,6 @@ public class IndexDatabase {
         return local;
     }
 
-    private void printProgress(String dir, int currentCount, int totalCount) {
-        if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
-            Level currentLevel;
-            if (currentCount <= 1 || currentCount >= totalCount ||
-                    currentCount % 100 == 0) {
-                currentLevel = Level.INFO;
-            } else if (currentCount % 50 == 0) {
-                currentLevel = Level.FINE;
-            } else if (currentCount % 10 == 0) {
-                currentLevel = Level.FINER;
-            } else {
-                currentLevel = Level.FINEST;
-            }
-            if (LOGGER.isLoggable(currentLevel)) {
-                LOGGER.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                        new Object[]{currentCount, currentCount * 100.0f /
-                                totalCount, dir});
-            }
-        }
-    }
-
     /**
      * Executes the first, serial stage of indexing, recursively.
      * <p>Files at least are counted, and any deleted or updated files (based on
@@ -1226,7 +1207,7 @@ public class IndexDatabase {
                         }
 
                         int ncount = currentCounter.incrementAndGet();
-                        printProgress(dir, ncount, worksCount);
+                        printProgress(LOGGER, dir, ncount, worksCount);
                         return ret;
                     }
                 }))).get();
