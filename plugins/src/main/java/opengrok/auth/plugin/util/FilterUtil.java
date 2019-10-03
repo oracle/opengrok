@@ -43,7 +43,7 @@ public class FilterUtil {
         Set<String> possibleTransforms = new HashSet<>(Arrays.asList(LOWER_CASE, UPPER_CASE));
         for (String transform : transforms.values()) {
             if (!possibleTransforms.contains(transform)) {
-                throw new UnsupportedOperationException("invalid transforms");
+                throw new UnsupportedOperationException(String.format("invalid transform: %s", transform));
             }
         }
     }
