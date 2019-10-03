@@ -31,6 +31,10 @@ public class FilterUtil {
         // utility class
     }
 
+    public static String replace(String filter, String name, String value) {
+        return filter.replaceAll("(?<!\\\\)%" + name + "(?<!\\\\)%", value);
+    }
+
     /**
      * Expand {@code User} object attribute values into the filter.
      *
@@ -45,10 +49,10 @@ public class FilterUtil {
      */
     public static String expandUserFilter(User user, String filter) {
         if (user.getUsername() != null) {
-            filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
+            filter = replace(filter, "username", user.getUsername());
         }
         if (user.getId() != null) {
-            filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+            filter = replace(filter, "guid", user.getId());
         }
 
         return filter;

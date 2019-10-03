@@ -37,6 +37,7 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
 import static opengrok.auth.plugin.util.FilterUtil.expandUserFilter;
+import static opengrok.auth.plugin.util.FilterUtil.replace;
 
 /**
  * Authorization plug-in to check if given user matches configured LDAP filter.
@@ -138,8 +139,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
                 try {
-                    filter = filter.replaceAll(
-                            "(?<!\\\\)%" + entry.getKey() + "(?<!\\\\)%",
+                    filter = replace(filter, entry.getKey(),
                             entry.getValue().iterator().next());
                 } catch (PatternSyntaxException ex) {
                     LOGGER.log(Level.WARNING, "The pattern for expanding is not valid", ex);
