@@ -25,14 +25,56 @@ package opengrok.auth.plugin.util;
 
 import opengrok.auth.plugin.entity.User;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class FilterUtil {
 
     private FilterUtil() {
         // utility class
     }
 
-    public static String replace(String filter, String name, String value) {
+    private static final String LOWER_CASE = "toLowerCase";
+    private static final String UPPER_CASE = "toUpperCase";
+
+    public static void checkTransforms(Map<String, String> transforms) {
+        Set<String> possibleTransforms = new HashSet<>(Arrays.asList(LOWER_CASE, UPPER_CASE));
+        for (String transform : transforms.values()) {
+            if (!possibleTransforms.contains(transform)) {
+                throw new UnsupportedOperationException("invalid transforms");
+            }
+        }
+    }
+
+    static String doTransform(String value, String transform) {
+        switch (transform) {
+            case LOWER_CASE:
+                return value.toLowerCase();
+            case UPPER_CASE:
+                return value.toUpperCase();
+            default:
+                throw new UnsupportedOperationException(String.format("transform '%s' is unsupported", transform));
+        }
+    }
+
+    public static String replace(String filter, String name, String value, Map<String, String> transforms) {
+        if (transforms != null) {
+            String transform;
+            if ((transform = transforms.get(name)) != null) {
+                value = doTransform(value, transform);
+            }
+        }
+
         return filter.replaceAll("(?<!\\\\)%" + name + "(?<!\\\\)%", value);
+    }
+
+    /**
+     * see expandUserFilter
+     */
+    public static String expandUserFilter(User user, String filter) {
+        return expandUserFilter(user, filter, null);
     }
 
     /**
@@ -45,14 +87,16 @@ public class FilterUtil {
      * </ul>
      *
      * @param user User object from the request (created by {@code UserPlugin})
+     * @param filter filter
+     * @param transforms map of transforms
      * @return replaced result
      */
-    public static String expandUserFilter(User user, String filter) {
+    public static String expandUserFilter(User user, String filter, Map<String, String> transforms) {
         if (user.getUsername() != null) {
-            filter = replace(filter, "username", user.getUsername());
+            filter = replace(filter, "username", user.getUsername(), transforms);
         }
         if (user.getId() != null) {
-            filter = replace(filter, "guid", user.getId());
+            filter = replace(filter, "guid", user.getId(), transforms);
         }
 
         return filter;

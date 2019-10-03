@@ -97,4 +97,14 @@ public class LdapFilterPluginTest {
         assertEquals("(objectclass=%%%%)",
                 plugin.expandFilter("(objectclass=\\%%\\%\\%)", ldapUser, user));
     }
+
+    @Test
+    public void testLoadTransforms() {
+        plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testLoadTransformsNegative() {
+        plugin.loadTransforms("foo:toUpperCase,ugly:nice");
+    }
 }

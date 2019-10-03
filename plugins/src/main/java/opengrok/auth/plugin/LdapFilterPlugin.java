@@ -25,6 +25,7 @@ package opengrok.auth.plugin;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.LdapException;
+import opengrok.auth.plugin.util.FilterUtil;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -49,6 +51,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     private static final Logger LOGGER = Logger.getLogger(LdapFilterPlugin.class.getName());
 
     protected static final String FILTER_PARAM = "filter";
+    protected static final String TRANSFORMS_PARAM = "transforms";
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-filter-plugin-allowed";
     private static final String INSTANCE = "instance";
     private String sessionAllowed = SESSION_ALLOWED_PREFIX;
@@ -58,10 +61,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (mandatory)</li>
      * <li><code>instance</code> is number of <code>LdapUserInstance</code> plugin to use (optional)</li>
+     * <li><code>transforms</code> are comma separated string transforms, where each transform is name:value pair,
+     * allowed values: <code>toLowerCase</code>, <code>toUpperCase</code></li>
      * </ul>
      */
     private String ldapFilter;
     private Integer ldapUserInstance;
+    private Map<String, String> transforms;
 
     public LdapFilterPlugin() {
         sessionAllowed += "-" + nextId++;
@@ -80,8 +86,23 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             ldapUserInstance = Integer.parseInt(instance);
         }
 
-        LOGGER.log(Level.FINE, "LdapFilter plugin loaded with filter={0}, instance={1}",
-                new Object[]{ldapFilter, ldapUserInstance});
+        String transformsString = (String) parameters.get(TRANSFORMS_PARAM);
+        if (transformsString != null) {
+            loadTransforms(transformsString);
+        }
+
+        LOGGER.log(Level.FINE, "LdapFilter plugin loaded with filter={0}, instance={1}, transforms={2}",
+                new Object[]{ldapFilter, ldapUserInstance, transforms});
+    }
+
+    void loadTransforms(String transformsString) throws NullPointerException {
+        transforms = new TreeMap<>();
+        String []transformsArray = transformsString.split(",");
+        for (String elem: transformsArray) {
+            String []tran = elem.split(":");
+            transforms.put(tran[0], tran[1]);
+        }
+        FilterUtil.checkTransforms(transforms);
     }
 
     @Override
@@ -134,13 +155,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      */
     String expandFilter(String filter, LdapUser ldapUser, User user) {
 
-        filter = expandUserFilter(user, filter);
+        filter = expandUserFilter(user, filter, transforms);
 
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
                 try {
                     filter = replace(filter, entry.getKey(),
-                            entry.getValue().iterator().next());
+                            entry.getValue().iterator().next(), transforms);
                 } catch (PatternSyntaxException ex) {
                     LOGGER.log(Level.WARNING, "The pattern for expanding is not valid", ex);
                 }
