@@ -70,6 +70,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <jackson.version>2.9.9</jackson.version>
         <junit.version>5.4.2</junit.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
+        <apache-commons-lang3.version>3.9</apache-commons-lang3.version>
     </properties>
 
     <dependencyManagement>

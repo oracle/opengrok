@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.TandemPath;
 
@@ -174,17 +176,23 @@ class PendingFileCompleter {
         Instant start = Instant.now();
         int numDeletions = completeDeletions();
         LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
-                new Object[]{numDeletions, Duration.between(start, Instant.now())});
+                new Object[]{numDeletions, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                        true, true)});
 
         start = Instant.now();
         int numRenamings = completeRenamings();
         LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
-                new Object[]{numRenamings, Duration.between(start, Instant.now())});
+                new Object[]{numRenamings, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                true, true)});
 
         start = Instant.now();
         int numLinkages = completeLinkages();
         LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
-                new Object[]{numLinkages, Duration.between(start, Instant.now())});
+                new Object[]{numLinkages, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                        true, true)});
 
         return numDeletions + numRenamings + numLinkages;
     }
