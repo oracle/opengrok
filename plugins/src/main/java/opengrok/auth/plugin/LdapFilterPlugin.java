@@ -97,9 +97,9 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     void loadTransforms(String transformsString) throws NullPointerException {
         transforms = new TreeMap<>();
-        String transformsArray[] = transformsString.split(",");
+        String[] transformsArray = transformsString.split(",");
         for (String elem: transformsArray) {
-            String tran[] = elem.split(":");
+            String[] tran = elem.split(":");
             transforms.put(tran[0], tran[1]);
         }
         FilterUtil.checkTransforms(transforms);
