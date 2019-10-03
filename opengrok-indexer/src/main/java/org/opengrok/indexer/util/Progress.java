@@ -35,7 +35,7 @@ public class Progress {
     }
 
     /**
-     * report progress of an operation with known count to log
+     * report progress of an operation with known count to log.
      * @param logger Logger instance
      * @param prefix string prefix to identify the operation
      * @param currentCount current count
