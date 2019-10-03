@@ -99,11 +99,10 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.ObjectPool;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
-
-import static org.opengrok.indexer.util.Progress.printProgress;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -1159,6 +1158,7 @@ public class IndexDatabase {
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
                 getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
+        Progress progress = new Progress(LOGGER, dir, worksCount);
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
         try {
@@ -1206,8 +1206,7 @@ public class IndexDatabase {
                             }
                         }
 
-                        int ncount = currentCounter.incrementAndGet();
-                        printProgress(LOGGER, dir, ncount, worksCount);
+                        progress.incrementAndLog();
                         return ret;
                     }
                 }))).get();

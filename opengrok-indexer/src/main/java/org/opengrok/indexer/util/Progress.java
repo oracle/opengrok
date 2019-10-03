@@ -26,23 +26,34 @@ package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Progress {
-    private Progress() {
-        // utility class
+    private Logger logger;
+    private int totalCount;
+    private String prefix;
+
+    private AtomicInteger currentCount = new AtomicInteger();
+
+    /**
+     * @param logger logger instance
+     * @param prefix string prefix to identify the operation
+     * @param totalCount total count
+     */
+    public Progress(Logger logger, String prefix, int totalCount) {
+        this.logger = logger;
+        this.prefix = prefix;
+        this.totalCount = totalCount;
     }
 
     /**
-     * report progress of an operation with known count to log.
-     * @param logger Logger instance
-     * @param prefix string prefix to identify the operation
-     * @param currentCount current count
-     * @param totalCount total count
+     * increment counter and log progress.
      */
-    public static void printProgress(Logger logger, String prefix, int currentCount, int totalCount) {
-        if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
+    public void incrementAndLog() {
+        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            int currentCount = this.currentCount.incrementAndGet();
             Level currentLevel;
             if (currentCount <= 1 || currentCount >= totalCount ||
                     currentCount % 100 == 0) {

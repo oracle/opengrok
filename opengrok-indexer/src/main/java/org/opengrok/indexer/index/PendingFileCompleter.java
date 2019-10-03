@@ -49,9 +49,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.TandemPath;
-
-import static org.opengrok.indexer.util.Progress.printProgress;
 
 /**
  * Represents a tracker of pending file deletions and renamings that can later
@@ -216,13 +215,12 @@ class PendingFileCompleter {
             new PendingFileRenamingExec(f.getTransientPath(),
                 f.getAbsolutePath())).collect(
             Collectors.toList());
+        Progress progress = new Progress(LOGGER, "pending renames", numPending);
 
-        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingFileRenamingExec>> bySuccess =
             pendingExecs.parallelStream().collect(
             Collectors.groupingByConcurrent((x) -> {
-                printProgress(LOGGER, "pending renames",
-                        currentCount.incrementAndGet(), numPending);
+                progress.incrementAndLog();
                 try {
                     doRename(x);
                     return true;
@@ -265,13 +263,12 @@ class PendingFileCompleter {
             parallelStream().map(f ->
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
             Collectors.toList());
+        Progress progress = new Progress(LOGGER, "pending deletions", numPending);
 
-        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingFileDeletionExec>> bySuccess =
             pendingExecs.parallelStream().collect(
             Collectors.groupingByConcurrent((x) -> {
-                printProgress(LOGGER, "pending deletions",
-                        currentCount.incrementAndGet(), numPending);
+                progress.incrementAndLog();
                 try {
                     doDelete(x);
                     return true;
@@ -319,13 +316,12 @@ class PendingFileCompleter {
             linkages.parallelStream().map(f ->
                 new PendingSymlinkageExec(f.getSourcePath(),
                         f.getTargetRelPath())).collect(Collectors.toList());
+        Progress progress = new Progress(LOGGER, "pending renames", numPending);
 
-        AtomicInteger currentCount = new AtomicInteger();
         Map<Boolean, List<PendingSymlinkageExec>> bySuccess =
             pendingExecs.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
-                    printProgress(LOGGER, "pending renames",
-                            currentCount.incrementAndGet(), numPending);
+                    progress.incrementAndLog();
                     try {
                         doLink(x);
                         return true;
