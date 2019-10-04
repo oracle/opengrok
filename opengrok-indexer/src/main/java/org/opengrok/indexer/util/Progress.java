@@ -26,35 +26,60 @@ package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Progress {
+public class Progress implements AutoCloseable {
     private Logger logger;
-    private int totalCount;
+    private long totalCount;
     private String prefix;
 
-    private AtomicInteger currentCount = new AtomicInteger();
+    private AtomicLong currentCount = new AtomicLong();
+    private Thread loggerThread;
+    private AtomicBoolean run = new AtomicBoolean();
+
+    private final Object sync = new Object();
 
     /**
      * @param logger logger instance
      * @param prefix string prefix to identify the operation
      * @param totalCount total count
      */
-    public Progress(Logger logger, String prefix, int totalCount) {
+    public Progress(Logger logger, String prefix, long totalCount) {
         this.logger = logger;
         this.prefix = prefix;
         this.totalCount = totalCount;
+
+        // spawn a logger thread.
+        run.set(true);
+        loggerThread = new Thread(this::logLoop);
+        loggerThread.start();
     }
 
     /**
-     * increment counter and log progress.
+     * Increment counter. The actual logging will be done eventually.
      */
-    public void incrementAndLog() {
-        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-            int currentCount = this.currentCount.incrementAndGet();
+    public void increment() {
+        this.currentCount.incrementAndGet();
+
+        // nag the thread.
+        synchronized (sync) {
+            sync.notify();
+        }
+    }
+
+    private void logLoop() {
+        // Assuming printProgress configuration setting cannot be changed on the fly.
+        if (!RuntimeEnvironment.getInstance().isPrintProgress()) {
+            return;
+        }
+
+        while (true) {
+            long currentCount = this.currentCount.get();
             Level currentLevel;
+
             if (currentCount <= 1 || currentCount >= totalCount ||
                     currentCount % 100 == 0) {
                 currentLevel = Level.INFO;
@@ -65,11 +90,38 @@ public class Progress {
             } else {
                 currentLevel = Level.FINEST;
             }
+
             if (logger.isLoggable(currentLevel)) {
                 logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
                         new Object[]{currentCount, currentCount * 100.0f /
                                 totalCount, prefix});
             }
+
+            // wait for event
+            try {
+                synchronized (sync) {
+                    sync.wait();
+                }
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, "logger thread interrupted");
+            }
+
+            if (!run.get()) {
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            run.set(false);
+            synchronized (sync) {
+                sync.notify();
+            }
+            loggerThread.join(0);
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "logger thread interrupted");
         }
     }
 }

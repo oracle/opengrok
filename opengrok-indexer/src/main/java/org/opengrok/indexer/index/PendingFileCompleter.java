@@ -214,20 +214,21 @@ class PendingFileCompleter {
             new PendingFileRenamingExec(f.getTransientPath(),
                 f.getAbsolutePath())).collect(
             Collectors.toList());
-        Progress progress = new Progress(LOGGER, "pending renames", numPending);
+        Map<Boolean, List<PendingFileRenamingExec>> bySuccess;
 
-        Map<Boolean, List<PendingFileRenamingExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-            Collectors.groupingByConcurrent((x) -> {
-                progress.incrementAndLog();
-                try {
-                    doRename(x);
-                    return true;
-                } catch (IOException e) {
-                    x.exception = e;
-                    return false;
-                }
-            }));
+        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doRename(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         renames.clear();
 
         List<PendingFileRenamingExec> failures = bySuccess.getOrDefault(
@@ -262,20 +263,21 @@ class PendingFileCompleter {
             parallelStream().map(f ->
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
             Collectors.toList());
-        Progress progress = new Progress(LOGGER, "pending deletions", numPending);
+        Map<Boolean, List<PendingFileDeletionExec>> bySuccess;
 
-        Map<Boolean, List<PendingFileDeletionExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-            Collectors.groupingByConcurrent((x) -> {
-                progress.incrementAndLog();
-                try {
-                    doDelete(x);
-                    return true;
-                } catch (IOException e) {
-                    x.exception = e;
-                    return false;
-                }
-            }));
+        try (Progress progress = new Progress(LOGGER, "pending deletions", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doDelete(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         deletions.clear();
 
         List<PendingFileDeletionExec> successes = bySuccess.getOrDefault(
@@ -315,20 +317,21 @@ class PendingFileCompleter {
             linkages.parallelStream().map(f ->
                 new PendingSymlinkageExec(f.getSourcePath(),
                         f.getTargetRelPath())).collect(Collectors.toList());
-        Progress progress = new Progress(LOGGER, "pending renames", numPending);
 
-        Map<Boolean, List<PendingSymlinkageExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-                Collectors.groupingByConcurrent((x) -> {
-                    progress.incrementAndLog();
-                    try {
-                        doLink(x);
-                        return true;
-                    } catch (IOException e) {
-                        x.exception = e;
-                        return false;
-                    }
-                }));
+        Map<Boolean, List<PendingSymlinkageExec>> bySuccess;
+        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doLink(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         linkages.clear();
 
         List<PendingSymlinkageExec> failures = bySuccess.getOrDefault(

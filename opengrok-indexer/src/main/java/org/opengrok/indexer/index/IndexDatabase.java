@@ -1158,10 +1158,9 @@ public class IndexDatabase {
         IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
                 getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
-        Progress progress = new Progress(LOGGER, dir, worksCount);
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
-        try {
+        try (Progress progress = new Progress(LOGGER, dir, worksCount)) {
             bySuccess = parallelizer.getForkJoinPool().submit(() ->
                 args.works.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
@@ -1206,7 +1205,7 @@ public class IndexDatabase {
                             }
                         }
 
-                        progress.incrementAndLog();
+                        progress.increment();
                         return ret;
                     }
                 }))).get();
