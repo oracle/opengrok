@@ -37,7 +37,7 @@ public class Progress implements AutoCloseable {
     private String prefix;
 
     private AtomicLong currentCount = new AtomicLong();
-    private Thread loggerThread;
+    private Thread loggerThread = null;
     private AtomicBoolean run = new AtomicBoolean();
 
     private final Object sync = new Object();
@@ -52,10 +52,14 @@ public class Progress implements AutoCloseable {
         this.prefix = prefix;
         this.totalCount = totalCount;
 
-        // spawn a logger thread.
-        run.set(true);
-        loggerThread = new Thread(this::logLoop);
-        loggerThread.start();
+        // Assuming printProgress configuration setting cannot be changed on the fly.
+        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            // spawn a logger thread.
+            run.set(true);
+            loggerThread = new Thread(this::logLoop,
+                    "progress-thread-" + prefix.replaceAll(" ", "_"));
+            loggerThread.start();
+        }
     }
 
     /**
@@ -64,19 +68,16 @@ public class Progress implements AutoCloseable {
     public void increment() {
         this.currentCount.incrementAndGet();
 
-        // nag the thread.
-        synchronized (sync) {
-            sync.notify();
+        if (loggerThread != null) {
+            // nag the thread.
+            synchronized (sync) {
+                sync.notify();
+            }
         }
     }
 
     private void logLoop() {
-        // Assuming printProgress configuration setting cannot be changed on the fly.
-        if (!RuntimeEnvironment.getInstance().isPrintProgress()) {
-            return;
-        }
-
-        while (true) {
+        while (run.get()) {
             long currentCount = this.currentCount.get();
             Level currentLevel;
 
@@ -97,23 +98,29 @@ public class Progress implements AutoCloseable {
                                 totalCount, prefix});
             }
 
+            if (currentCount >= totalCount) {
+                return;
+            }
+
             // wait for event
             try {
                 synchronized (sync) {
+                    if (!run.get())
+                        return;
                     sync.wait();
                 }
             } catch (InterruptedException e) {
                 logger.log(Level.WARNING, "logger thread interrupted");
-            }
-
-            if (!run.get()) {
-                return;
             }
         }
     }
 
     @Override
     public void close() {
+        if (loggerThread == null) {
+            return;
+        }
+
         try {
             run.set(false);
             synchronized (sync) {
