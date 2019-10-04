@@ -105,8 +105,9 @@ public class Progress implements AutoCloseable {
             // wait for event
             try {
                 synchronized (sync) {
-                    if (!run.get())
+                    if (!run.get()) {
                         return;
+                    }
                     sync.wait();
                 }
             } catch (InterruptedException e) {
