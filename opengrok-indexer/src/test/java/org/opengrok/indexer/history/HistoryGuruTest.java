@@ -97,12 +97,6 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void testUpdateRepositories() {
-        HistoryGuru instance = HistoryGuru.getInstance();
-        instance.updateRepositories();
-    }
-
-    @Test
     public void testGetRevision() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
 

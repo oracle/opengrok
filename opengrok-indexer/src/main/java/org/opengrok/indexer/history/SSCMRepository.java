@@ -334,35 +334,6 @@ public class SSCMRepository extends Repository {
     }
 
     @Override
-    void update() throws IOException {
-        File directory = new File(getDirectoryName());
-        List<String> argv = new ArrayList<>();
-
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(RepoCommand);
-        argv.add("get");
-        argv.add("/");
-        Properties props = getProperties(directory);
-        String branch = props.getProperty(BRANCH_PROPERTY);
-        if (branch != null && !branch.isEmpty()) {
-            argv.add("-b" + branch);
-        }
-        String repo = props.getProperty(REPOSITORY_PROPERTY);
-        if (repo != null && !repo.isEmpty()) {
-            argv.add("-p" + repo);
-        }
-        argv.add("-r");
-        argv.add("-q");
-        argv.add("-tmodify");
-        argv.add("-wreplace");
-
-        Executor executor = new Executor(argv, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
-    }
-
-    @Override
     boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, MYSCMSERVERINFO_FILE);

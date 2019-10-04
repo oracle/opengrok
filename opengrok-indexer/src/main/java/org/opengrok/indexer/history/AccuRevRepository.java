@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -224,20 +223,6 @@ public class AccuRevRepository extends Repository {
         }
 
         return false;
-    }
-
-    @Override
-    public void update() throws IOException {      
-        File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<>();
-        
-        cmd.add(RepoCommand);
-        cmd.add("update");
-
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
     }
 
     @Override

@@ -23,11 +23,9 @@
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -175,44 +173,6 @@ public class ClearCaseRepository extends Repository {
     @Override
     public boolean fileHasAnnotation(File file) {
         return true;
-    }
-
-    @SuppressWarnings("PMD.EmptyWhileStmt")
-    @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-
-        // Check if this is a snapshot view
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        String[] argv = {RepoCommand, "catcs"};
-        Executor executor = new Executor(Arrays.asList(argv), directory);
-        int status = executor.exec();
-        if (status != 0) {
-            LOGGER.log(Level.WARNING, "Failed to determine if {0} is snapshot view",
-                    directory);
-            return;
-        }
-        boolean snapshot = false;
-        String line;
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(executor.getOutputStream()))) {
-            while (!snapshot && (line = in.readLine()) != null) {
-                snapshot = line.startsWith("load");
-            }
-        }
-
-        if (snapshot) {
-            // It is a snapshot view, we need to update it manually
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            argv = new String[]{RepoCommand, "update", "-overwrite", "-f"};
-            executor = new Executor(Arrays.asList(argv), directory);
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(executor.getOutputStream()))) {
-                while ((line = in.readLine()) != null) {
-                    // do nothing
-                }
-            }
-        }
     }
 
     @Override

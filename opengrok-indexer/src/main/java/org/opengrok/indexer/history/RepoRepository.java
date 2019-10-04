@@ -26,11 +26,8 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.opengrok.indexer.util.BufferSink;
-import org.opengrok.indexer.util.Executor;
 
 /**
  * Access to a Git repository.
@@ -61,20 +58,6 @@ public class RepoRepository extends Repository {
     public boolean isWorking() {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         return true;
-    }
-
-    @Override
-    public void update() throws IOException {
-        File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("sync");
-
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
-            throw new IOException(executor.getErrorString());
-        }
     }
 
     @Override

@@ -70,16 +70,6 @@ public class PerforceRepositoryTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
-        if (skip) {
-            return;
-        }
-        PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(new File(root.getAbsolutePath()));
-        instance.update();
-    }
-
-    @Test
     public void testHistoryAndAnnotations() throws Exception {
         if (skip) {
             return;

@@ -123,11 +123,6 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    void update() throws IOException {
-        throw new IOException("Not supported yet.");
-    }
-
-    @Override
     boolean isRepositoryFor(File file, boolean interactive) {
         File rcsDir = new File(file, "RCS");
         if (!rcsDir.isDirectory()) {

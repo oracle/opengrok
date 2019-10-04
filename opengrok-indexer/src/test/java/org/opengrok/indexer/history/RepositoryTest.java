@@ -174,10 +174,6 @@ public class RepositoryTest {
         }
 
         @Override
-        public void update() throws IOException {
-        }
-
-        @Override
         public boolean isRepositoryFor(File file, boolean interactive) {
             return false;
         }

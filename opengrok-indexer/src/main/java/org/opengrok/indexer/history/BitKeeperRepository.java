@@ -437,13 +437,6 @@ public class BitKeeperRepository extends Repository {
         }
     }
 
-    /* Update Stuff */
-
-    @Override
-    public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
