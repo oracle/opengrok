@@ -160,8 +160,6 @@ public class Ctags implements Resettable {
         command.add("--langmap=sql:+.pkb"); // # 1763
         command.add("--langmap=sql:+.pck"); // # 1763
 
-        command.add("--langmap=javascript:+.ts");
-
         //Ideally all below should be in ctags, or in outside config file,
         //we might run out of command line SOON
         //Also note, that below ctags definitions HAVE to be in POSIX

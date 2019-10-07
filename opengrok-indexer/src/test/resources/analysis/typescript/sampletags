@@ -1,0 +1,30 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/f43463a/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+InputOptions	grok.ts	/^export interface InputOptions {$/;"	interface	line:31
+required	grok.ts	/^  required?: boolean$/;"	property	line:33	interface:InputOptions
+ExitCode	grok.ts	/^export enum ExitCode {$/;"	enum	line:39
+Success	grok.ts	/^  Success = 0,$/;"	enumerator	line:43	enum:ExitCode
+Failure	grok.ts	/^  Failure = 1$/;"	enumerator	line:48	enum:ExitCode
+exportVariable	grok.ts	/^export function exportVariable(name: string, val: string): void {$/;"	function	line:60
+setSecret	grok.ts	/^export function setSecret(secret: string): void {$/;"	function	line:69
+addPath	grok.ts	/^export function addPath(inputPath: string): void {$/;"	function	line:77
+getInput	grok.ts	/^export function getInput(name: string, options?: InputOptions): string {$/;"	function	line:89
+val	grok.ts	/^  const val: string =$/;"	constant	line:90	function:getInput
+setOutput	grok.ts	/^export function setOutput(name: string, value: string): void {$/;"	function	line:105
+setFailed	grok.ts	/^export function setFailed(message: string): void {$/;"	function	line:118
+debug	grok.ts	/^export function debug(message: string): void {$/;"	function	line:131
+error	grok.ts	/^export function error(message: string): void {$/;"	function	line:139
+warning	grok.ts	/^export function warning(message: string): void {$/;"	function	line:147
+info	grok.ts	/^export function info(message: string): void {$/;"	function	line:155
+startGroup	grok.ts	/^export function startGroup(name: string): void {$/;"	function	line:166
+endGroup	grok.ts	/^export function endGroup(): void {$/;"	function	line:173
+group	grok.ts	/^export async function group<T>(name: string, fn: () => Promise<T>): Promise<T> {$/;"	function	line:185
+saveState	grok.ts	/^export function saveState(name: string, value: string): void {$/;"	function	line:209
+getState	grok.ts	/^export function getState(name: string): string {$/;"	function	line:219
+foo	grok.ts	/^export function foo(): any {$/;"	function	line:223
