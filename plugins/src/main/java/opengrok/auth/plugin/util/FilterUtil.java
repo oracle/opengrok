@@ -27,6 +27,7 @@ import opengrok.auth.plugin.entity.User;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,9 +52,9 @@ public class FilterUtil {
     static String doTransform(String value, String transform) {
         switch (transform) {
             case LOWER_CASE:
-                return value.toLowerCase();
+                return value.toLowerCase(Locale.ROOT);
             case UPPER_CASE:
-                return value.toUpperCase();
+                return value.toUpperCase(Locale.ROOT);
             default:
                 throw new UnsupportedOperationException(String.format("transform '%s' is unsupported", transform));
         }
