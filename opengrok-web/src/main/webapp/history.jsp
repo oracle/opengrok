@@ -125,7 +125,7 @@ include file="pageheader.jspf"
         </div>
         <div id="Masthead">History log of 
         <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-        (Results <b> <%= start + 1 %> - <%= thispage + start
+        (Results <b> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start
             %></b> of <b><%= totalHits %></b>)
         </div>
 <%
