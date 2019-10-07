@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
@@ -51,6 +52,7 @@ public class Consts {
         kwd.add("RegExp");
         kwd.add("String");                
         //keywords
+        kwd.add("await"); // ECMA-262, 10th edition, June 2019
         kwd.add("break");
         kwd.add("case");
         kwd.add("catch");
