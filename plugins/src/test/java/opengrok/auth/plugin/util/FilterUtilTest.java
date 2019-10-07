@@ -25,6 +25,7 @@ package opengrok.auth.plugin.util;
 
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -36,6 +37,14 @@ public class FilterUtilTest {
     public void testTransforms() {
         assertEquals("FOO", doTransform("foo", "toUpperCase"));
         assertEquals("foo", doTransform("FOO", "toLowerCase"));
+    }
+
+    @Test
+    public void testTransformsUTF() throws UnsupportedEncodingException {
+        assertEquals(new String("ČUČKAŘ".getBytes("UTF-8"), "UTF-8"),
+                doTransform(new String("čučkař".getBytes("UTF-8"), "UTF-8"), "toUpperCase"));
+        assertEquals(new String("čučkař".getBytes("UTF-8"), "UTF-8"),
+                doTransform(new String("ČUČKAŘ".getBytes("UTF-8"), "UTF-8"), "toLowerCase"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
