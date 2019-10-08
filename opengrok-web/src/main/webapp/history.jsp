@@ -31,18 +31,24 @@ Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
+java.util.logging.Level,
+java.util.logging.Logger,
 java.util.Objects,
 java.util.Set,
 java.util.regex.Pattern,
 
+org.opengrok.indexer.configuration.RuntimeEnvironment,
 org.opengrok.indexer.history.History,
 org.opengrok.indexer.history.HistoryEntry,
-org.opengrok.indexer.configuration.RuntimeEnvironment"
+org.opengrok.indexer.logger.LoggerFactory,
+org.opengrok.indexer.util.ForbiddenSymlinkException,
+org.opengrok.indexer.web.SearchHelper"
 %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
-    PageConfig cfg = PageConfig.get(request);
+    final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+    PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
 
     // Need to set the title before including httpheader.jspf
@@ -51,10 +57,30 @@ org.opengrok.indexer.configuration.RuntimeEnvironment"
     String path = cfg.getPath();
 
     if (path.length() > 0) {
-        File f = cfg.getResourceFile();
-        History hist = null;
+        String primePath = path;
+        Project project = cfg.getProject();
+        if (project != null) {
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            /*
+             * N.b. searchHelper.destroy() is called via
+             * WebappListener.requestDestroyed() on presence of the following
+             * REQUEST_ATTR.
+             */
+            request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+            searchHelper.prepareExec(project);
+
+            try {
+                primePath = searchHelper.getPrimeRelativePath(project.getName(), path);
+            } catch (IOException | ForbiddenSymlinkException ex) {
+                LOGGER.log(Level.WARNING, String.format(
+                        "Error getting prime relative for %s", path), ex);
+            }
+        }
+
+        File file = cfg.getResourceFile(primePath);
+        History hist;
         try {
-            hist = HistoryGuru.getInstance().getHistoryUI(f);
+            hist = HistoryGuru.getInstance().getHistoryUI(file);
         } catch (Exception e) {
             // should not happen
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
