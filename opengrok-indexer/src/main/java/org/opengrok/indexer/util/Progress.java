@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 public class Progress implements AutoCloseable {
     private Logger logger;
     private long totalCount;
-    private String prefix;
+    private String suffix;
 
     private AtomicLong currentCount = new AtomicLong();
     private Thread loggerThread = null;
@@ -44,12 +44,12 @@ public class Progress implements AutoCloseable {
 
     /**
      * @param logger logger instance
-     * @param prefix string prefix to identify the operation
+     * @param suffix string suffix to identify the operation
      * @param totalCount total count
      */
-    public Progress(Logger logger, String prefix, long totalCount) {
+    public Progress(Logger logger, String suffix, long totalCount) {
         this.logger = logger;
-        this.prefix = prefix;
+        this.suffix = suffix;
         this.totalCount = totalCount;
 
         // Assuming printProgress configuration setting cannot be changed on the fly.
@@ -57,7 +57,7 @@ public class Progress implements AutoCloseable {
             // spawn a logger thread.
             run.set(true);
             loggerThread = new Thread(this::logLoop,
-                    "progress-thread-" + prefix.replaceAll(" ", "_"));
+                    "progress-thread-" + suffix.replaceAll(" ", "_"));
             loggerThread.start();
         }
     }
@@ -95,7 +95,7 @@ public class Progress implements AutoCloseable {
             if (logger.isLoggable(currentLevel)) {
                 logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
                         new Object[]{currentCount, currentCount * 100.0f /
-                                totalCount, prefix});
+                                totalCount, suffix});
             }
 
             if (currentCount >= totalCount) {
