@@ -40,6 +40,11 @@ public class FilterUtil {
     private static final String LOWER_CASE = "toLowerCase";
     private static final String UPPER_CASE = "toUpperCase";
 
+    /**
+     * Verify the names of the transforms in the map.
+     * @param transforms map of attribute transforms. Valid values: <code>toLowerCase, toUpperCase</code>
+     * @throws UnsupportedOperationException in case of invalid transform name
+     */
     public static void checkTransforms(Map<String, String> transforms) {
         Set<String> possibleTransforms = new HashSet<>(Arrays.asList(LOWER_CASE, UPPER_CASE));
         for (String transform : transforms.values()) {
@@ -60,6 +65,14 @@ public class FilterUtil {
         }
     }
 
+    /**
+     * Expand attributes in filter string.
+     * @param filter input string
+     * @param name attribute name
+     * @param value value to replace
+     * @param transforms map of transformations to be potentially applied on the value
+     * @return new value of the string
+     */
     public static String replace(String filter, String name, String value, Map<String, String> transforms) {
         if (transforms != null) {
             String transform;
@@ -72,6 +85,10 @@ public class FilterUtil {
     }
 
     /**
+     * Replace attribute names with values in filter string.
+     * @param user User object
+     * @param filter filter string
+     * @return filter with the values replaced
      * @see #expandUserFilter(User, String, Map)
      */
     public static String expandUserFilter(User user, String filter) {
