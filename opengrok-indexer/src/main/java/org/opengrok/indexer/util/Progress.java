@@ -76,7 +76,11 @@ public class Progress implements AutoCloseable {
     }
 
     private void logLoop() {
-        while (run) {
+        while (true) {
+            if (!run) {
+                return;
+            }
+
             long currentCount = this.currentCount.get();
             Level currentLevel;
 
