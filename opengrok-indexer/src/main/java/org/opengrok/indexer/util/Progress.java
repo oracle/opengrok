@@ -26,7 +26,6 @@ package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +37,7 @@ public class Progress implements AutoCloseable {
 
     private AtomicLong currentCount = new AtomicLong();
     private Thread loggerThread = null;
-    private AtomicBoolean run = new AtomicBoolean();
+    private volatile boolean run;
 
     private final Object sync = new Object();
 
@@ -55,7 +54,7 @@ public class Progress implements AutoCloseable {
         // Assuming printProgress configuration setting cannot be changed on the fly.
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
             // spawn a logger thread.
-            run.set(true);
+            run = true;
             loggerThread = new Thread(this::logLoop,
                     "progress-thread-" + suffix.replaceAll(" ", "_"));
             loggerThread.start();
@@ -77,7 +76,7 @@ public class Progress implements AutoCloseable {
     }
 
     private void logLoop() {
-        while (run.get()) {
+        while (run) {
             long currentCount = this.currentCount.get();
             Level currentLevel;
 
@@ -105,7 +104,7 @@ public class Progress implements AutoCloseable {
             // wait for event
             try {
                 synchronized (sync) {
-                    if (!run.get()) {
+                    if (!run) {
                         return;
                     }
                     sync.wait();
@@ -123,7 +122,7 @@ public class Progress implements AutoCloseable {
         }
 
         try {
-            run.set(false);
+            run = false;
             synchronized (sync) {
                 sync.notify();
             }
