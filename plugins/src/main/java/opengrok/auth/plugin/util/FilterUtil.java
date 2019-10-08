@@ -72,7 +72,7 @@ public class FilterUtil {
     }
 
     /**
-     * see expandUserFilter.
+     * @see #expandUserFilter(User, String, Map)
      */
     public static String expandUserFilter(User user, String filter) {
         return expandUserFilter(user, filter, null);
