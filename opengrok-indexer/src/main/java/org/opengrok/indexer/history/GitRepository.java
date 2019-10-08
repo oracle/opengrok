@@ -195,9 +195,8 @@ public class GitRepository extends Repository {
              * Be careful, git uses only forward slashes in its command and output (not in file path).
              * Using backslashes together with git show will get empty output and 0 status code.
              */
-            String filename = Paths.get(getDirectoryName()).relativize(Paths.get(fullpath))
-                                   .toString()
-                                   .replace(File.separatorChar, '/');
+            String filename = Paths.get(getCanonicalDirectoryName()).relativize(
+                    Paths.get(fullpath)).toString().replace(File.separatorChar, '/');
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {
                 RepoCommand,
@@ -234,13 +233,9 @@ public class GitRepository extends Repository {
         String fullpath;
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
-        } catch (IOException exp) {
-            LOGGER.log(Level.SEVERE, exp, new Supplier<String>() {
-                @Override
-                public String get() {
-                    return String.format("Failed to get canonical path: %s/%s", parent, basename);
-                }
-            });
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e, () -> String.format(
+                    "Failed to get canonical path: %s/%s", parent, basename));
             return false;
         }
 
@@ -265,7 +260,14 @@ public class GitRepository extends Repository {
             }
 
             if (origpath != null) {
-                final String fullRenamedPath = Paths.get(getDirectoryName(), origpath).toString();
+                String fullRenamedPath;
+                try {
+                    fullRenamedPath = Paths.get(getCanonicalDirectoryName(), origpath).toString();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, e, () -> String.format(
+                            "Failed to get canonical path: .../%s", origpath));
+                    return false;
+                }
                 if (!fullRenamedPath.equals(fullpath)) {
                     result = getHistoryRev(sink, fullRenamedPath, rev);
                 }

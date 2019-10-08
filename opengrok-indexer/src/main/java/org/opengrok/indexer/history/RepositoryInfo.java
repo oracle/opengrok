@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -54,11 +54,9 @@ public class RepositoryInfo implements Serializable {
 
     private static final long serialVersionUID = 3L;
 
-    // dummy to avoid storing absolute path in XML encoded configuration
-    // Do not use this member.
-    private transient String directoryName;
-    
     private String directoryNameRelative;
+    private transient String directoryNameCanonical;
+
     protected Boolean working;
     protected String type;  // type of the repository, should be unique
     protected boolean remote;
@@ -127,6 +125,7 @@ public class RepositoryInfo implements Serializable {
      */
     public void setDirectoryNameRelative(String dir) {
         this.directoryNameRelative = dir;
+        this.directoryNameCanonical = null;
     }
 
     /**
@@ -137,7 +136,18 @@ public class RepositoryInfo implements Serializable {
     public String getDirectoryName() {
         return Paths.get(RuntimeEnvironment.getInstance().getSourceRootPath(),
                 directoryNameRelative).toString();
+    }
 
+    /**
+     * Get the name of the root directory for this repository.
+     *
+     * @return the name of the root directory
+     */
+    public String getCanonicalDirectoryName() throws IOException {
+        if (directoryNameCanonical == null) {
+            directoryNameCanonical = new File(getDirectoryName()).getCanonicalPath();
+        }
+        return directoryNameCanonical;
     }
 
     /**
