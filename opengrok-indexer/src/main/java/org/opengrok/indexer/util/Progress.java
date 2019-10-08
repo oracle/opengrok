@@ -52,7 +52,7 @@ public class Progress implements AutoCloseable {
         this.totalCount = totalCount;
 
         // Assuming printProgress configuration setting cannot be changed on the fly.
-        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+        if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
             // spawn a logger thread.
             run = true;
             loggerThread = new Thread(this::logLoop,
