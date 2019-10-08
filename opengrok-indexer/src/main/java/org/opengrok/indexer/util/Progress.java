@@ -76,6 +76,8 @@ public class Progress implements AutoCloseable {
     }
 
     private void logLoop() {
+        long cachedCount = 0;
+
         while (true) {
             if (!run) {
                 return;
@@ -84,8 +86,12 @@ public class Progress implements AutoCloseable {
             long currentCount = this.currentCount.get();
             Level currentLevel;
 
-            if (currentCount <= 1 || currentCount >= totalCount ||
-                    currentCount % 100 == 0) {
+            // Do not log if there was no progress.
+            if (cachedCount >= currentCount) {
+                continue;
+            }
+
+            if (currentCount <= 1 || currentCount % 100 == 0) {
                 currentLevel = Level.INFO;
             } else if (currentCount % 50 == 0) {
                 currentLevel = Level.FINE;
@@ -101,9 +107,7 @@ public class Progress implements AutoCloseable {
                                 totalCount, suffix});
             }
 
-            if (currentCount >= totalCount) {
-                return;
-            }
+            cachedCount = currentCount;
 
             // wait for event
             try {
