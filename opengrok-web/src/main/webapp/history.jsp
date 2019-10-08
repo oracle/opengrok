@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -31,12 +31,12 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
+java.util.Objects,
 java.util.Set,
 java.util.regex.Pattern,
 
 org.opengrok.indexer.history.History,
 org.opengrok.indexer.history.HistoryEntry,
-org.opengrok.indexer.history.HistoryException,
 org.opengrok.indexer.configuration.RuntimeEnvironment"
 %>
 <%/* ---------------------- history.jsp start --------------------- */
@@ -62,7 +62,7 @@ org.opengrok.indexer.configuration.RuntimeEnvironment"
         }
 
         if (hist == null) {
-            /**
+            /*
              * The history is not available even for a renamed file.
              * Send 404 Not Found.
              */
@@ -80,7 +80,6 @@ include file="httpheader.jspf"
 %>
 <%
 {
-    PageConfig cfg = PageConfig.get(request);
     if ((request.getAttribute("history.jsp-hist")) != null) {
 %>
 <body>
@@ -111,7 +110,7 @@ include file="pageheader.jspf"
     String context = request.getContextPath();
     String path = cfg.getPath();
 
-    History hist = null;
+    History hist;
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
 
         int start = cfg.getSearchStart();
@@ -146,7 +145,7 @@ include file="minisearch.jspf"
     PageConfig cfg = PageConfig.get(request);
     String context = request.getContextPath();
     String path = cfg.getPath();
-    History hist = null;
+    History hist;
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
         RuntimeEnvironment env = cfg.getEnv();
         String uriEncodedName = cfg.getUriEncodedPath();
@@ -249,7 +248,6 @@ document.domReady.push(function() {domReadyHistory();});
             <td><%= rev %></td><%
                 } else {
                     if (entry.isActive()) {
-                        String rp = uriEncodedName;
                         StringBuffer urlBuffer = request.getRequestURL();
                         if (request.getQueryString() != null) {
                             urlBuffer.append('?').append(request.getQueryString());
@@ -258,7 +256,7 @@ document.domReady.push(function() {domReadyHistory();});
             %>
             <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
-                <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
+                <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
             <td><%
                 %><input type="radio"
@@ -363,7 +361,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><div class="filelist-hidden"><br/><%
                     for (String ifile : files) {
                         String jfile = Util.stripPathPrefix(path, ifile);
-                        if (rev == "") {
+                        if (Objects.equals(rev, "")) {
                 %>
 <a class="h" href="<%= context + Prefix.XREF_P + ifile %>"><%= jfile %></a><br/><%
                         } else {
@@ -383,7 +381,7 @@ document.domReady.push(function() {domReadyHistory();});
         <tr>
             <td colspan="5">
 <%
-    String slider = null;
+    String slider;
     if ((slider = (String) request.getAttribute("history.jsp-slider")) != null) {
         // NOTE: shouldn't happen that it doesn't have this attribute
         %><p class="slider"><%= slider %></p><%
