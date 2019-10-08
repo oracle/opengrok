@@ -32,9 +32,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Progress implements AutoCloseable {
-    private Logger logger;
-    private long totalCount;
-    private String suffix;
+    private final Logger logger;
+    private final long totalCount;
+    private final String suffix;
 
     private AtomicLong currentCount = new AtomicLong();
     private Thread loggerThread = null;
