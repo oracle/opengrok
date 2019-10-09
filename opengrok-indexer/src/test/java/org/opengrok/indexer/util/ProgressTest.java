@@ -1,12 +1,17 @@
 package org.opengrok.indexer.util;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -54,16 +59,32 @@ public class ProgressTest {
     public void testThreads() throws InterruptedException {
         final Logger logger = Mockito.mock(Logger.class);
         final int totalCount = Runtime.getRuntime().availableProcessors();
+        List<Future<?>> futures = new ArrayList<>();
 
         Mockito.when(logger.isLoggable(any())).thenReturn(true);
         ExecutorService executor = Executors.newFixedThreadPool(totalCount);
+        System.out.println(String.format("Will run %d threads", totalCount));
         try (final Progress progress = new Progress(logger, "foo", totalCount)) {
+            while (progress.getLoggerThread().getState() != Thread.State.WAITING) {
+                System.out.println("Waiting for the logger thread to reach the initial wait()");
+                TimeUnit.MILLISECONDS.sleep(10);
+            }
+
             for (int i = 0; i < totalCount; i++) {
-                executor.submit(progress::increment);
+                futures.add(executor.submit(progress::increment));
             }
         }
 
-        executor.awaitTermination(10, TimeUnit.SECONDS);
+        System.out.println("Waiting for threads to finish");
+        futures.forEach(future -> {
+            try {
+                future.get();
+            } catch (Exception e) {
+                Assert.fail();
+            }
+        });
+        executor.shutdown();
+        System.out.println("Verifying");
         Mockito.verify(logger, atLeast(1)).log(any(), anyString(), any(Object[].class));
     }
 }
