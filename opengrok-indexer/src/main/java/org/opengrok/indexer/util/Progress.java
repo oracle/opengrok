@@ -61,6 +61,11 @@ public class Progress implements AutoCloseable {
         }
     }
 
+    // for testing
+    Thread getLoggerThread() {
+        return loggerThread;
+    }
+
     /**
      * Increment counter. The actual logging will be done eventually.
      */
@@ -79,17 +84,8 @@ public class Progress implements AutoCloseable {
         long cachedCount = 0;
 
         while (true) {
-            if (!run) {
-                return;
-            }
-
             long currentCount = this.currentCount.get();
             Level currentLevel;
-
-            // Do not log if there was no progress.
-            if (cachedCount >= currentCount) {
-                continue;
-            }
 
             if (currentCount <= 1 || currentCount % 100 == 0) {
                 currentLevel = Level.INFO;
@@ -101,10 +97,15 @@ public class Progress implements AutoCloseable {
                 currentLevel = Level.FINEST;
             }
 
-            if (logger.isLoggable(currentLevel)) {
+            // Do not log if there was no progress.
+            if (logger.isLoggable(currentLevel) && (cachedCount < currentCount)) {
                 logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
                         new Object[]{currentCount, currentCount * 100.0f /
                                 totalCount, suffix});
+            }
+
+            if (!run) {
+                return;
             }
 
             cachedCount = currentCount;
@@ -113,7 +114,8 @@ public class Progress implements AutoCloseable {
             try {
                 synchronized (sync) {
                     if (!run) {
-                        return;
+                        // Loop once more to do the final logging.
+                        continue;
                     }
                     sync.wait();
                 }
