@@ -30,7 +30,7 @@ public class ProgressTest {
             if (first) {
                 while (progress.getLoggerThread().getState() != Thread.State.WAITING) {
                     System.out.println("Waiting for the logger thread to reach the initial wait()");
-                    TimeUnit.SECONDS.sleep(1);
+                    TimeUnit.MILLISECONDS.sleep(10);
                 }
                 first = false;
             }
@@ -38,7 +38,9 @@ public class ProgressTest {
             for (int i = 0; i < totalCount; i++) {
                 progress.increment();
                 // Give the logger thread some time to log.
-                TimeUnit.MILLISECONDS.sleep(10);
+                while (progress.getLoggerThread().getState() != Thread.State.WAITING) {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                }
             }
         }
 
