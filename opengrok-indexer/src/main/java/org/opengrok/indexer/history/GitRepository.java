@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -38,7 +39,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -166,10 +166,11 @@ public class GitRepository extends Repository {
             cmd.add(sinceRevision + "..");
         }
 
-        if (file.getCanonicalPath().length() > getDirectoryName().length() + 1) {
+        String canonicalPath = file.getCanonicalPath();
+        if (canonicalPath.length() > getCanonicalDirectoryName().length() + 1) {
             // this is a file in the repository
             cmd.add("--");
-            cmd.add(file.getCanonicalPath().substring(getDirectoryName().length() + 1));
+            cmd.add(getPathRelativeToCanonicalRepositoryRoot(canonicalPath));
         }
 
         return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
@@ -250,12 +251,9 @@ public class GitRepository extends Repository {
             try {
                 origpath = findOriginalName(fullpath, rev);
             } catch (IOException exp) {
-                LOGGER.log(Level.SEVERE, exp, new Supplier<String>() {
-                    @Override
-                    public String get() {
-                        return String.format("Failed to get original revision: %s/%s (revision %s)", parent, basename, rev);
-                    }
-                });
+                LOGGER.log(Level.SEVERE, exp, () -> String.format(
+                        "Failed to get original revision: %s/%s (revision %s)",
+                        parent, basename, rev));
                 return false;
             }
 
@@ -283,19 +281,22 @@ public class GitRepository extends Repository {
      *
      * @param input a stream with the output from a log or blame command
      * @return a reader that reads the input
-     * @throws IOException if the reader cannot be created
      */
-    static Reader newLogReader(InputStream input) throws IOException {
+    static Reader newLogReader(InputStream input) {
         // Bug #17731: Git always encodes the log output using UTF-8 (unless
         // overridden by i18n.logoutputencoding, but let's assume that hasn't
         // been done for now). Create a reader that uses UTF-8 instead of the
         // platform's default encoding.
-        return new InputStreamReader(input, "UTF-8");
+        return new InputStreamReader(input, StandardCharsets.UTF_8);
     }
 
-    private String getPathRelativeToRepositoryRoot(String fullpath) {
-        String repoPath = getDirectoryName() + File.separator;
-        return fullpath.replace(repoPath, "");
+    private String getPathRelativeToCanonicalRepositoryRoot(String fullpath)
+            throws IOException {
+        String repoPath = getCanonicalDirectoryName() + File.separator;
+        if (fullpath.startsWith(repoPath)) {
+            return fullpath.substring(repoPath.length());
+        }
+        return fullpath;
     }
 
     /**
@@ -306,11 +307,11 @@ public class GitRepository extends Repository {
      * @param changeset changeset
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
-     * @see #getPathRelativeToRepositoryRoot(String)
+     * @see #getPathRelativeToCanonicalRepositoryRoot(String)
      */
-    protected String findOriginalName(String fullpath, String changeset)
+    String findOriginalName(String fullpath, String changeset)
             throws IOException {
-        if (fullpath == null || fullpath.isEmpty() || fullpath.length() < getDirectoryName().length()) {
+        if (fullpath == null || fullpath.isEmpty()) {
             throw new IOException(String.format("Invalid file path string: %s", fullpath));
         }
 
@@ -319,7 +320,7 @@ public class GitRepository extends Repository {
                     fullpath, changeset));
         }
 
-        String fileInRepo = getPathRelativeToRepositoryRoot(fullpath);
+        String fileInRepo = getPathRelativeToCanonicalRepositoryRoot(fullpath);
 
         /*
          * Get the list of file renames for given file to the specified
@@ -447,7 +448,7 @@ public class GitRepository extends Repository {
             }
         }
         cmd.add("--");
-        cmd.add(getPathRelativeToRepositoryRoot(file.getCanonicalPath()));
+        cmd.add(getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath()));
 
         Executor exec = new Executor(cmd, new File(getDirectoryName()),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());

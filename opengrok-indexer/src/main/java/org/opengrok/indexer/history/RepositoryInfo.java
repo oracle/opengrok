@@ -139,11 +139,10 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Get the name of the root directory for this repository.
-     *
-     * @return the name of the root directory
+     * Get the canonical {@link #getDirectoryName()} of the root directory for
+     * this repository.
      */
-    public String getCanonicalDirectoryName() throws IOException {
+    String getCanonicalDirectoryName() throws IOException {
         if (directoryNameCanonical == null) {
             directoryNameCanonical = new File(getDirectoryName()).getCanonicalPath();
         }
