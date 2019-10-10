@@ -57,7 +57,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
 <tr>
     <td class="name ${isSubrepository ? "subrepository" : "repository"}">
-        <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${project.name}"
+        <a href="${pageContext.request.getContextPath()}${Prefix.XREF_P.toString()}/${name}"
            title="Xref for project ${Util.htmlize(name)}">
             ${Util.htmlize(name)}
         </a>
