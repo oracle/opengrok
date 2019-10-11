@@ -49,6 +49,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -58,6 +62,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
+
+import org.apache.lucene.util.NamedThreadFactory;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -255,16 +261,27 @@ public final class PageConfig {
             InputStream[] in = new InputStream[2];
             try {
                 // Get input stream for both older and newer file.
+                ExecutorService executor = Executors.newFixedThreadPool(2,
+                        new NamedThreadFactory("get-revision"));
+                Future<?>[] future = new Future<?>[2];
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
-                    in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
+                    final String revision = data.rev[i];
+                    future[i] = executor.submit(() -> HistoryGuru.getInstance().
+                            getRevision(f.getParent(), f.getName(), revision));
+                }
+
+                for (int i = 0; i < 2; i++) {
+                    in[i] = (InputStream) future[i].get();
                     if (in[i] == null) {
                         data.errorMsg = "Unable to get revision "
                                 + Util.htmlize(data.rev[i]) + " for file: "
                                 + Util.htmlize(getPath());
+                        executor.shutdownNow();
                         return data;
                     }
                 }
+                executor.shutdown();
 
                 /*
                  * If the genre of the older revision cannot be determined,
