@@ -136,7 +136,7 @@ public class Progress implements AutoCloseable {
             synchronized (sync) {
                 sync.notify();
             }
-            loggerThread.join(0);
+            loggerThread.join();
         } catch (InterruptedException e) {
             logger.log(Level.WARNING, "logger thread interrupted");
         }
