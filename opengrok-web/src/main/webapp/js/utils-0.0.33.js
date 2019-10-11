@@ -208,7 +208,7 @@
             }
 
             if (match) {
-                anchorOffset = $(match).offset().top - this.getFixedOffset();
+                anchorOffset = $(match.nextElementSibling).offset().top - this.getFixedOffset();
                 $('html, body').animate({scrollTop: anchorOffset});
 
                 location.hash = href;
