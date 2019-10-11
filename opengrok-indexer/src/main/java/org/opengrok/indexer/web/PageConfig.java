@@ -306,7 +306,7 @@ public final class PageConfig {
                 ArrayList<String> lines = new ArrayList<>();
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
-                    // SRCROOT is read with UTF-8 as a default.
+                    // All files under source root are read with UTF-8 as a default.
                     try (BufferedReader br = new BufferedReader(
                         ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(
                         in[i], StandardCharsets.UTF_8.name()), p))) {
