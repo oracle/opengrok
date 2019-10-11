@@ -87,21 +87,23 @@ public class Progress implements AutoCloseable {
             long currentCount = this.currentCount.get();
             Level currentLevel;
 
-            if (currentCount <= 1 || currentCount % 100 == 0) {
-                currentLevel = Level.INFO;
-            } else if (currentCount % 50 == 0) {
-                currentLevel = Level.FINE;
-            } else if (currentCount % 10 == 0) {
-                currentLevel = Level.FINER;
-            } else {
-                currentLevel = Level.FINEST;
-            }
+            if (cachedCount < currentCount) {
+                if (currentCount <= 1 || currentCount % 100 == 0) {
+                    currentLevel = Level.INFO;
+                } else if (currentCount % 50 == 0) {
+                    currentLevel = Level.FINE;
+                } else if (currentCount % 10 == 0) {
+                    currentLevel = Level.FINER;
+                } else {
+                    currentLevel = Level.FINEST;
+                }
 
-            // Do not log if there was no progress.
-            if (logger.isLoggable(currentLevel) && (cachedCount < currentCount)) {
-                logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                        new Object[]{currentCount, currentCount * 100.0f /
-                                totalCount, suffix});
+                // Do not log if there was no progress.
+                if (logger.isLoggable(currentLevel)) {
+                    logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
+                            new Object[]{currentCount, currentCount * 100.0f /
+                                    totalCount, suffix});
+                }
             }
 
             if (!run) {
