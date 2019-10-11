@@ -112,8 +112,8 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.2.min.js", 13));
         SCRIPTS.put("tablesorter-parsers" + DEBUG_SUFFIX, new FileScript("js/tablesorter-parsers-0.0.2.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.7.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.32.min.js", 15));
-        SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.32.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.33.min.js", 15));
+        SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.33.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.2.min.js", 20));
         SCRIPTS.put("repos" + DEBUG_SUFFIX, new FileScript("js/repos-0.0.2.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.4.min.js", 20));
