@@ -53,6 +53,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -281,7 +282,8 @@ public final class PageConfig {
                         return data;
                     }
                 }
-                executor.shutdown();
+                // The Executor used by given repository will enforce the timeout.
+                executor.awaitTermination(0, TimeUnit.SECONDS);
 
                 /*
                  * If the genre of the older revision cannot be determined,
