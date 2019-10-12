@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -136,9 +136,6 @@ public class Ctags implements Resettable {
 
         command.add(binary);
         command.add("--c-kinds=+l");
-
-        command.add("--langmap=clojure:+.cljs");
-        command.add("--langmap=clojure:+.cljx");
 
         // Workaround for bug #14924: Don't get local variables in Java
         // code since that creates many false positives.
@@ -319,6 +316,8 @@ public class Ctags implements Resettable {
     private void addClojureSupport(List<String> command) {
         command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
         command.add("--langmap=clojure:+.clj");
+        command.add("--langmap=clojure:+.cljs");
+        command.add("--langmap=clojure:+.cljx");
 
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
