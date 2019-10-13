@@ -102,9 +102,11 @@ import java.util.Set;
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+// TypeScript.lexh comes after ECMAScript so that TypeScript macros supersede.
 %include ECMAScript.lexh
 %include TypeScript.lexh
 
 %%
+// TypeScriptProductions.lexh comes first so that its expressions are preferred.
 %include TypeScriptProductions.lexh
 %include ECMAScriptProductions.lexh

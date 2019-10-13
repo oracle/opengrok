@@ -121,9 +121,11 @@ import java.io.IOException;
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
-%include TypeScript.lexh
 %include ECMAScript.lexh
+// TypeScript.lexh comes after ECMAScript so that TypeScript macros supersede.
+%include TypeScript.lexh
 
 %%
+// TypeScriptProductions.lexh comes first so that its expressions are preferred.
 %include TypeScriptProductions.lexh
 %include ECMAScriptProductions.lexh

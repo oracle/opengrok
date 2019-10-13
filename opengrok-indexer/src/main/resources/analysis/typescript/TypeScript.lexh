@@ -35,6 +35,15 @@ HexDigits = ({HexDigit} |
     {HexDigit} {NumericLiteralSeparator} {HexDigit})+
 NumericLiteralSeparator = "_"
 
+/*
+ * TypeScript 3.2 added support for a bigint suffix.
+ */
+DecimalLiteral = ({DecimalIntegerLiteral} "." {ExponentPart}? |
+    {DecimalIntegerLiteral} "." {DecimalDigits} {ExponentPart}? |
+    "." {DecimalDigits} {ExponentPart}? |
+    {DecimalIntegerLiteral} ({ExponentPart} | {BigIntSuffix})?)
+BigIntSuffix = "n"    // version 3.2
+
 File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] | [Tt][Ss][Xx]? |
     [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
     [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
