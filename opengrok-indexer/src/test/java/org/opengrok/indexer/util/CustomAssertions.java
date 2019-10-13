@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -76,7 +76,7 @@ public class CustomAssertions {
 
         List<Integer> diffLines = new ArrayList<>();
 
-        final int SHOW_N_DIFFS = 10;
+        final int SHOW_N_DIFFS = 50;
         int ndiffs = 0;
         int lastDiff = -2;
         for (int i = 0; i < expecteds.length || i < actuals.length; i++) {
@@ -155,7 +155,10 @@ public class CustomAssertions {
             count++;
         }
 
-        assertEquals("wrong number of tokens", expectedTokens.size(), count);
+        if (expectedTokens.size() != count) {
+            printTokens(tokens);
+            assertEquals("wrong number of tokens", expectedTokens.size(), count);
+        }
     }
 
     private static void printDiffs(String expecteds[], String actuals[],

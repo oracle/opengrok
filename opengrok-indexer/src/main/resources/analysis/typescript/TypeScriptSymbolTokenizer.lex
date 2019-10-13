@@ -31,7 +31,6 @@ package org.opengrok.indexer.analysis.typescript;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 import java.io.IOException;
-import java.util.Locale;
 %%
 %public
 %class TypeScriptSymbolTokenizer
@@ -64,7 +63,7 @@ import java.util.Locale;
     @Override
     public boolean offerSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
-        if (ignoreKwd || !Consts.KEYWORDS.contains(value.toLowerCase(Locale.ROOT))) {
+        if (ignoreKwd || !Consts.KEYWORDS.contains(value)) {
             lastSymbol = value;
             onSymbolMatched(value, yychar + captureOffset);
             return true;
@@ -110,16 +109,21 @@ import java.util.Locale;
      * Gets the constant value created by JFlex to represent COMMENT.
      */
     @Override
-    int COMMENT() { return COMMENT; }
+    protected int COMMENT() { return COMMENT; }
 
     /**
      * Gets the constant value created by JFlex to represent SCOMMENT.
      */
     @Override
-    int SCOMMENT() { return SCOMMENT; }
+    protected int SCOMMENT() { return SCOMMENT; }
 %}
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include TypeScript.lexh
+%include ECMAScript.lexh
+
+%%
 %include TypeScriptProductions.lexh
+%include ECMAScriptProductions.lexh

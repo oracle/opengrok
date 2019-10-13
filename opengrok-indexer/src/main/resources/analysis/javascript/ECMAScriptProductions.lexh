@@ -1,0 +1,226 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ */
+
+<YYINITIAL> {
+
+    {Identifier}    {
+        chkLOC();
+        if (offerSymbol(yytext(), 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {NumericLiteral}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+    }
+
+    \"    {
+        chkLOC();
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \'    {
+        chkLOC();
+        yypush(QSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \`    {
+        chkLOC();
+        yypush(TEMPLATE);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "/*"    {
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "//"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    /*
+     * Literal regexps are in conflict with division "/" and are detected
+     * in javascript based on context and when ambiguous, the division has
+     * a higher precedence. We do a best-effort context matching for
+     * preceding "=" (variable), "(" (function call) or ":" (object).
+     */
+    [:=(] {WhspChar}* "/"    {
+        String capture = yytext();
+        yypush(REGEXP);
+        offer(capture.substring(0, capture.length() - 1));
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar + yylength() - 1);
+        offer("/");
+    }
+
+    [\{\}]    {
+        chkLOC();
+        String capture = yytext();
+        if (notInTemplateOrSubstitutionDoesNotEnd(capture)) {
+            offer(capture);
+        }
+    }
+}
+
+<STRING> {
+    \\[\"\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+}
+
+<REGEXP> {
+    \\[/]    {
+        chkLOC();
+        offer(yytext());
+    }
+    \/[gimsuy]*    {
+        chkLOC();
+        offer("/");
+        onDisjointSpanChanged(null, yychar);
+        offer(yytext().substring(1));
+        yypop();
+    }
+}
+
+<QSTRING> {
+    \\[\'\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \'    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+}
+
+<TEMPLATE> {
+    \\[\`\$\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \`    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+
+    "${"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        pushData();
+        substitutionOp();
+        yypush(YYINITIAL);
+    }
+}
+
+<COMMENT> {
+    "*/"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+}
+
+<SCOMMENT> {
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<YYINITIAL, STRING, REGEXP, COMMENT, SCOMMENT, QSTRING, TEMPLATE> {
+    {WhspChar}*{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
+    }
+    [[\s]--[\n]]    {
+        offer(yytext());
+    }
+    [^\n]    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+<STRING, COMMENT, SCOMMENT, QSTRING, TEMPLATE> {
+    {FPath}    {
+        chkLOC();
+        onPathlikeMatched(yytext(), '/', false, yychar);
+    }
+
+    {File}    {
+        chkLOC();
+        onFilelikeMatched(yytext(), yychar);
+    }
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
+        onEmailAddressMatched(yytext(), yychar);
+    }
+}
+
+<STRING, SCOMMENT, TEMPLATE> {
+    {BrowseableURI}    {
+        chkLOC();
+        onUriMatched(yytext(), yychar);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI}    {
+        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        chkLOC();
+        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
+    }
+}

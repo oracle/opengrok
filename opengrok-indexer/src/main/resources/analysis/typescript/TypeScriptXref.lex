@@ -55,7 +55,7 @@ import java.util.Set;
     public boolean offerSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
         Set<String> keywords = ignoreKwd ? null : Consts.KEYWORDS;
-        return onFilteredSymbolMatched(value, yychar, keywords, false);
+        return onFilteredSymbolMatched(value, yychar, keywords, true);
     }
 
     @Override
@@ -90,16 +90,21 @@ import java.util.Set;
      * Gets the constant value created by JFlex to represent COMMENT.
      */
     @Override
-    int COMMENT() { return COMMENT; }
+    protected int COMMENT() { return COMMENT; }
 
     /**
      * Gets the constant value created by JFlex to represent SCOMMENT.
      */
     @Override
-    int SCOMMENT() { return SCOMMENT; }
+    protected int SCOMMENT() { return SCOMMENT; }
 %}
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include ECMAScript.lexh
+%include TypeScript.lexh
+
+%%
 %include TypeScriptProductions.lexh
+%include ECMAScriptProductions.lexh

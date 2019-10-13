@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -28,15 +28,16 @@
 
 package org.opengrok.indexer.analysis.javascript;
 
-import java.io.IOException;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
+import java.io.IOException;
+import java.util.Set;
 %%
 %public
 %class JavaScriptXref
-%extends JFlexSymbolMatcher
+%extends JavaScriptLexer
 %unicode
+%buffer 32766
 %int
 %char
 %init{
@@ -46,178 +47,62 @@ import org.opengrok.indexer.web.HtmlConsts;
 %include CommonXref.lexh
 %{
     @Override
-    public void yypop() throws IOException {
-        onDisjointSpanChanged(null, yychar);
-        super.yypop();
+    public void offer(String value) throws IOException {
+        onNonSymbolMatched(value, yychar);
     }
 
-    protected void chkLOC() {
-        switch (yystate()) {
-            case COMMENT:
-            case SCOMMENT:
-                break;
-            default:
-                phLOC();
-                break;
-        }
+    @Override
+    public boolean offerSymbol(String value, int captureOffset, boolean ignoreKwd)
+            throws IOException {
+        Set<String> keywords = ignoreKwd ? null : Consts.KEYWORDS;
+        return onFilteredSymbolMatched(value, yychar, keywords, true);
     }
+
+    @Override
+    public void skipSymbol() {
+        // noop
+    }
+
+    @Override
+    public void offerKeyword(String value) throws IOException {
+        onKeywordMatched(value, yychar);
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        onEndOfLineMatched("\n", yychar);
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
+        onDisjointSpanChanged(className, yychar);
+    }
+
+    protected boolean takeAllContent() {
+        return true;
+    }
+
+    protected boolean returnOnSymbol() {
+        return false;
+    }
+
+    /**
+     * Gets the constant value created by JFlex to represent COMMENT.
+     */
+    @Override
+    protected int COMMENT() { return COMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    protected int SCOMMENT() { return SCOMMENT; }
 %}
-
-File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
-    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
-    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
-    [Ii][Nn][Ii] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
-
-%state  STRING REGEXP_START REGEXP COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
-%include JavaScript.lexh
+%include ECMAScript.lexh
+
 %%
-<YYINITIAL>{
-
-{Identifier} {
-    chkLOC();
-    String id = yytext();
-    onFilteredSymbolMatched(id, yychar, Consts.kwd);
-}
-
-"<" ({File}|{FPath}) ">" {
-        chkLOC();
-        onNonSymbolMatched("<", yychar);
-        String path = yytext();
-        path = path.substring(1, path.length() - 1);
-        onFilelikeMatched(path, yychar + 1);
-        onNonSymbolMatched(">", yychar + 1 + path.length());
-}
-
- {Number}    {
-    chkLOC();
-    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
-    onNonSymbolMatched(yytext(), yychar);
-    onDisjointSpanChanged(null, yychar);
- }
- \"     {
-    chkLOC();
-    yypush(STRING);
-    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched(yytext(), yychar);
- }
- \'     {
-    chkLOC();
-    yypush(QSTRING);
-    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched(yytext(), yychar);
- }
- "/*"   {
-    yypush(COMMENT);
-    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched(yytext(), yychar);
- }
- "//"   {
-    yypush(SCOMMENT);
-    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched(yytext(), yychar);
- }
- /*
-  * Literal regexps are in conflict with division "/" and are detected
-  * in javascript based on context and when ambiguous, the division has
-  * a higher precedence. We do a best-effort context matching for
-  * preceding "=" (variable), "(" (function call) or ":" (object).
-  */
- [:=(]{WhspChar}*/\/  {
-    yypush(REGEXP_START);
-    onNonSymbolMatched(yytext(), yychar);
- }
-}
-
-<STRING> {
- \\[\"\\] |
- \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
- \"     {
-    chkLOC();
-    onNonSymbolMatched(yytext(), yychar);
-    yypop();
- }
-}
-
-<REGEXP_START> {
-    \/ {
-        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-        onNonSymbolMatched(yytext(), yychar);
-        yybegin(REGEXP);
-    }
-}
-
-<REGEXP> {
-    \\[/]   { onNonSymbolMatched(yytext(), yychar); }
-    \/[gimsuy]* { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
-}
-
-<QSTRING> {
- \\[\'\\] |
- \' {WhspChar}+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
- \'     {
-    chkLOC();
-    onNonSymbolMatched(yytext(), yychar);
-    yypop();
- }
-}
-
-<COMMENT> {
-"*/"    { onNonSymbolMatched(yytext(), yychar); yypop(); }
-}
-
-<SCOMMENT> {
-  {WhspChar}*{EOL}    {
-    yypop();
-    onEndOfLineMatched(yytext(), yychar);
-  }
-}
-
-<YYINITIAL, STRING, REGEXP_START, REGEXP, COMMENT, SCOMMENT, QSTRING> {
-{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
- [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
-}
-
-<STRING, COMMENT, SCOMMENT, QSTRING> {
- {FPath}    {
-    chkLOC();
-    onPathlikeMatched(yytext(), '/', false, yychar);
- }
-
-{File}
-        {
-        chkLOC();
-        String path = yytext();
-        onFilelikeMatched(path, yychar);
- }
-
-{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-        {
-          chkLOC();
-          onEmailAddressMatched(yytext(), yychar);
-        }
-}
-
-<STRING, SCOMMENT> {
-    {BrowseableURI}    {
-        chkLOC();
-        onUriMatched(yytext(), yychar);
-    }
-}
-
-<COMMENT> {
-    {BrowseableURI}    {
-        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
-    }
-}
-
-<QSTRING> {
-    {BrowseableURI}    {
-        chkLOC();
-        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
-    }
-}
+%include ECMAScriptProductions.lexh

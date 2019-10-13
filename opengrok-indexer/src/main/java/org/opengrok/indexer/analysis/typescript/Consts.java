@@ -35,79 +35,20 @@ import java.util.Set;
 public class Consts {
 
     private static final Set<String> kwd = new HashSet<>();
+
     static final Set<String> KEYWORDS = Collections.unmodifiableSet(kwd);
 
     static {
-        // literals
-        kwd.add("true");
-        kwd.add("false");
-        kwd.add("null");
+        kwd.addAll(org.opengrok.indexer.analysis.javascript.Consts.KEYWORDS);
 
         // builtins
-        kwd.add("Array");
         kwd.add("BigInt"); // TypeScript 3.2
-        kwd.add("Boolean");
-        kwd.add("Date");
-        kwd.add("Function");
-        kwd.add("Infinity"); // ECMA version?
-        kwd.add("Math");
-        kwd.add("Number");
-        kwd.add("Object");
-        kwd.add("RegExp");
-        kwd.add("String");
 
         // ECMAScript keywords
-        kwd.add("await"); // ECMA-262, 10th edition, June 2019
-        kwd.add("break");
-        kwd.add("case");
-        kwd.add("catch");
-        kwd.add("class");
-        kwd.add("const");
-        kwd.add("continue");
-        kwd.add("debugger");
-        kwd.add("default");
-        kwd.add("delete");
-        kwd.add("do");
-        kwd.add("else");
-        kwd.add("export");
-        kwd.add("extends");
-        kwd.add("finally");
-        kwd.add("for");
-        kwd.add("function");
-        kwd.add("if");
-        kwd.add("in");
-        kwd.add("instanceof");
-        kwd.add("import");
-        kwd.add("new");
-        kwd.add("return");
-        kwd.add("super");
-        kwd.add("switch");
-        kwd.add("this");
-        kwd.add("throw");
-        kwd.add("try");
-        kwd.add("typeof");
-        kwd.add("var");
-        kwd.add("void");
-        kwd.add("while");
-        kwd.add("with");
-        kwd.add("yield");
-
-        // future reserved
-        kwd.add("enum");
-
-        // strict future reserved
-        kwd.add("implements");
-        kwd.add("interface");
-        kwd.add("let");
-        kwd.add("package");
-        kwd.add("private");
-        kwd.add("protected");
-        kwd.add("public");
-        kwd.add("static");
 
         // TypeScript, Version Unknown
         kwd.add("any");
-        // "await" also in ECMA-262.
+        kwd.add("await");
         kwd.add("boolean");
         kwd.add("number");
         kwd.add("string");
