@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -41,6 +41,7 @@ import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.util.UriUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 import org.opengrok.indexer.web.Util;
 
@@ -80,37 +81,14 @@ public class JFlexXrefUtils {
      * @throws IOException if an error occurs while appending
      */
     public static void appendLink(Writer out, JFlexLexer lexer, String url,
-        boolean doEndingPushback, Pattern collateralCapture)
-            throws IOException {
+            boolean doEndingPushback, Pattern collateralCapture) throws IOException {
 
-        int n = 0;
-        int subn;
-        do {
-            // An ending-pushback could be present before a collateral capture,
-            // so detect both in a loop (on a shrinking `url') until no more
-            // shrinking should occur.
-
-            subn = 0;
-            if (doEndingPushback) {
-                subn = StringUtils.countURIEndingPushback(url);
-            }
-            int ccn = StringUtils.countPushback(url, collateralCapture);
-            if (ccn > subn) {
-                subn = ccn;
-            }
-
-            // Push back if positive, but not if equal to the current length.
-            if (subn > 0 && subn < url.length()) {
-                url = url.substring(0, url.length() - subn);
-                n += subn;
-            } else {
-                subn = 0;
-            }
-        } while (subn != 0);
-        if (n > 0) {
-            lexer.yypushback(n);
+        UriUtils.TrimUriResult result = UriUtils.trimUri(url, doEndingPushback, collateralCapture);
+        if (result.getPushBackCount() > 0) {
+            lexer.yypushback(result.getPushBackCount());
         }
 
+        url = result.getUri();
         out.write("<a href=\"");
         Util.htmlize(url, out);
         out.write("\">");

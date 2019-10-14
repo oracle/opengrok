@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.util.UriUtils;
 
 /**
  * Represents an abstract base class for subclasses of
@@ -245,36 +246,15 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * may have been captured as valid URI characters but in a particular
      * context should mark the start of a pushback
      */
-    protected void onUriMatched(String uri, int start,
-        Pattern collateralCapture) {
-
-        int n = 0;
-        int subn;
-        do {
-            // An ending-pushback could be present before a collateral capture,
-            // so detect both in a loop (on a shrinking `url') until no more
-            // shrinking should occur.
-
-            subn = StringUtils.countURIEndingPushback(uri);
-            int ccn = StringUtils.countPushback(uri, collateralCapture);
-            if (ccn > subn) {
-                subn = ccn;
-            }
-
-            // Push back if positive, but not if equal to the current length.
-            if (subn > 0 && subn < uri.length()) {
-                uri = uri.substring(0, uri.length() - subn);
-                n += subn;
-            } else {
-                subn = 0;
-            }
-        } while (subn != 0);
-        if (n > 0) {
-            yypushback(n);
+    protected void onUriMatched(String uri, int start, Pattern collateralCapture) {
+        UriUtils.TrimUriResult result = UriUtils.trimUri(uri, true, collateralCapture);
+        if (result.getPushBackCount() > 0) {
+            yypushback(result.getPushBackCount());
         }
 
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
+            uri = result.getUri();
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, uri,
                 LinkageType.URI, start, start + uri.length());
             l.linkageMatched(evt);
