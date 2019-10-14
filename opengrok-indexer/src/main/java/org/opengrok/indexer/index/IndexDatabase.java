@@ -99,6 +99,7 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.ObjectPool;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
@@ -1026,27 +1027,6 @@ public class IndexDatabase {
         return local;
     }
 
-    private void printProgress(String dir, int currentCount, int totalCount) {
-        if (totalCount > 0 && RuntimeEnvironment.getInstance().isPrintProgress()) {
-            Level currentLevel;
-            if (currentCount <= 1 || currentCount >= totalCount ||
-                    currentCount % 100 == 0) {
-                currentLevel = Level.INFO;
-            } else if (currentCount % 50 == 0) {
-                currentLevel = Level.FINE;
-            } else if (currentCount % 10 == 0) {
-                currentLevel = Level.FINER;
-            } else {
-                currentLevel = Level.FINEST;
-            }
-            if (LOGGER.isLoggable(currentLevel)) {
-                LOGGER.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                        new Object[]{currentCount, currentCount * 100.0f /
-                                totalCount, dir});
-            }
-        }
-    }
-
     /**
      * Executes the first, serial stage of indexing, recursively.
      * <p>Files at least are counted, and any deleted or updated files (based on
@@ -1180,7 +1160,7 @@ public class IndexDatabase {
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
-        try {
+        try (Progress progress = new Progress(LOGGER, dir, worksCount)) {
             bySuccess = parallelizer.getForkJoinPool().submit(() ->
                 args.works.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
@@ -1225,8 +1205,7 @@ public class IndexDatabase {
                             }
                         }
 
-                        int ncount = currentCounter.incrementAndGet();
-                        printProgress(dir, ncount, worksCount);
+                        progress.increment();
                         return ret;
                     }
                 }))).get();

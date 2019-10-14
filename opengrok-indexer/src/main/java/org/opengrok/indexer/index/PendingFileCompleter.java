@@ -34,6 +34,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +45,10 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Progress;
 import org.opengrok.indexer.util.TandemPath;
 
 /**
@@ -166,12 +171,27 @@ class PendingFileCompleter {
      * @throws java.io.IOException if an I/O error occurs
      */
     public int complete() throws IOException {
+        Instant start = Instant.now();
         int numDeletions = completeDeletions();
-        LOGGER.log(Level.FINE, "deleted {0} file(s)", numDeletions);
+        LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
+                new Object[]{numDeletions, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                        true, true)});
+
+        start = Instant.now();
         int numRenamings = completeRenamings();
-        LOGGER.log(Level.FINE, "renamed {0} file(s)", numRenamings);
+        LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
+                new Object[]{numRenamings, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                true, true)});
+
+        start = Instant.now();
         int numLinkages = completeLinkages();
-        LOGGER.log(Level.FINE, "affirmed links for {0} path(s)", numLinkages);
+        LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
+                new Object[]{numLinkages, DurationFormatUtils.
+                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                        true, true)});
+
         return numDeletions + numRenamings + numLinkages;
     }
 
@@ -194,18 +214,21 @@ class PendingFileCompleter {
             new PendingFileRenamingExec(f.getTransientPath(),
                 f.getAbsolutePath())).collect(
             Collectors.toList());
+        Map<Boolean, List<PendingFileRenamingExec>> bySuccess;
 
-        Map<Boolean, List<PendingFileRenamingExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-            Collectors.groupingByConcurrent((x) -> {
-                try {
-                    doRename(x);
-                    return true;
-                } catch (IOException e) {
-                    x.exception = e;
-                    return false;
-                }
-            }));
+        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doRename(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         renames.clear();
 
         List<PendingFileRenamingExec> failures = bySuccess.getOrDefault(
@@ -240,18 +263,21 @@ class PendingFileCompleter {
             parallelStream().map(f ->
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
             Collectors.toList());
+        Map<Boolean, List<PendingFileDeletionExec>> bySuccess;
 
-        Map<Boolean, List<PendingFileDeletionExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-            Collectors.groupingByConcurrent((x) -> {
-                try {
-                    doDelete(x);
-                    return true;
-                } catch (IOException e) {
-                    x.exception = e;
-                    return false;
-                }
-            }));
+        try (Progress progress = new Progress(LOGGER, "pending deletions", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doDelete(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         deletions.clear();
 
         List<PendingFileDeletionExec> successes = bySuccess.getOrDefault(
@@ -292,17 +318,20 @@ class PendingFileCompleter {
                 new PendingSymlinkageExec(f.getSourcePath(),
                         f.getTargetRelPath())).collect(Collectors.toList());
 
-        Map<Boolean, List<PendingSymlinkageExec>> bySuccess =
-            pendingExecs.parallelStream().collect(
-                Collectors.groupingByConcurrent((x) -> {
-                    try {
-                        doLink(x);
-                        return true;
-                    } catch (IOException e) {
-                        x.exception = e;
-                        return false;
-                    }
-                }));
+        Map<Boolean, List<PendingSymlinkageExec>> bySuccess;
+        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+            bySuccess = pendingExecs.parallelStream().collect(
+                            Collectors.groupingByConcurrent((x) -> {
+                                progress.increment();
+                                try {
+                                    doLink(x);
+                                    return true;
+                                } catch (IOException e) {
+                                    x.exception = e;
+                                    return false;
+                                }
+                            }));
+        }
         linkages.clear();
 
         List<PendingSymlinkageExec> failures = bySuccess.getOrDefault(
