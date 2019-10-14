@@ -54,7 +54,14 @@ public class ProgressTest {
             }
         }
 
+        System.out.println("Waiting for the logger thread to terminate");
+        int i = 0;
+        while (i < 3 && loggerThread.getState() != Thread.State.TERMINATED) {
+            TimeUnit.MILLISECONDS.sleep(10);
+            i++;
+        }
         Assert.assertSame(loggerThread.getState(), Thread.State.TERMINATED);
+
         Mockito.verify(logger, times(totalCount)).log(any(), anyString(), any(Object[].class));
     }
 
