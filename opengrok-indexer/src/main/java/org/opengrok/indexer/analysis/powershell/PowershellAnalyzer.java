@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.powershell;
 
@@ -45,7 +45,16 @@ public class PowershellAnalyzer extends AbstractSourceCodeAnalyzer {
     protected PowershellAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new PoshSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "powershell"} to match the OpenGrok-customized definitions,
+     * despite there being a built-in PowerShell definition.
+     */
+    @Override
+    public String getCtagsLang() {
+        return "powershell";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.tcl;
 
@@ -39,7 +39,15 @@ public class TclAnalyzer extends AbstractSourceCodeAnalyzer {
     protected TclAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new TclSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "Tcl"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "Tcl";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

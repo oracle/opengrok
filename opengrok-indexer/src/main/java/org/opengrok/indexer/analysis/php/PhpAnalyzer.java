@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.php;
 
@@ -43,7 +43,15 @@ public class PhpAnalyzer extends AbstractSourceCodeAnalyzer {
     protected PhpAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new PhpSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "PHP"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "PHP";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

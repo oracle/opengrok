@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.json;
 
@@ -44,7 +44,15 @@ public class JsonAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JsonAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new JsonSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "JSON"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "JSON";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

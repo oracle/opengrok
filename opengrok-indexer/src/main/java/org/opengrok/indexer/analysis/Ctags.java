@@ -242,20 +242,20 @@ public class Ctags implements Resettable {
     }
 
     private void addPowerShellSupport(List<String> command) {
-        command.add("--langdef=Posh");
-        command.add("--langmap=Posh:+.ps1,Posh:+.psm1");
-        command.add("--regex-Posh=/\\$(\\{[^}]+\\})/\\1/v,variable/");
-        command.add("--regex-Posh=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
-        command.add("--regex-Posh=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
+        command.add("--langdef=powershell");
+        command.add("--langmap=powershell:+.ps1,powershell:+.psm1");
+        command.add("--regex-powershell=/\\$(\\{[^}]+\\})/\\1/v,variable/");
+        command.add("--regex-powershell=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
+        command.add("--regex-powershell=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
 
-        command.add("--_fielddef-Posh=signature,signatures");
-        command.add("--fields-Posh=+{signature}");
+        command.add("--_fielddef-powershell=signature,signatures");
+        command.add("--fields-powershell=+{signature}");
         // escaped variable markers
-        command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-        command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
-        command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-        command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
-        command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*" +
+        command.add("--regex-powershell=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+        command.add("--regex-powershell=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
+        command.add("--regex-powershell=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+        command.add("--regex-powershell=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
+        command.add("--regex-powershell=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*" +
                 "(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
     }
 

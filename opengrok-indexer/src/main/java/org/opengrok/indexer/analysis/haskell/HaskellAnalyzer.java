@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.haskell;
@@ -43,7 +43,15 @@ public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
     protected HaskellAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new HaskellSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "haskell"} to match the OpenGrok-customized definitions
+     */
+    @Override
+    public String getCtagsLang() {
+        return "haskell";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

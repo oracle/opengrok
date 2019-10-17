@@ -46,6 +46,14 @@ public class VerilogAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
+     * @return {@code "SystemVerilog"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "SystemVerilog";
+    }
+
+    /**
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.

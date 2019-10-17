@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.lisp;
 
@@ -39,6 +39,14 @@ public class LispAnalyzer extends AbstractSourceCodeAnalyzer {
     protected LispAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new LispSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
+    }
+
+    /**
+     * @return {@code "Lisp"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "Lisp";
     }
 
     /**

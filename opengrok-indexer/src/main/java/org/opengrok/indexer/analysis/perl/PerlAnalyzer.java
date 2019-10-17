@@ -46,6 +46,14 @@ public class PerlAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
+     * @return {@code "Perl"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "Perl";
+    }
+
+    /**
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
