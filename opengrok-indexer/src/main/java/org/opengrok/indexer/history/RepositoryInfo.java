@@ -193,7 +193,7 @@ public class RepositoryInfo implements Serializable {
      *
      * @param working is repository working
      */
-    public void setWorking(Boolean working) {
+    public void setWorking(boolean working) {
         this.working = working;
     }
 

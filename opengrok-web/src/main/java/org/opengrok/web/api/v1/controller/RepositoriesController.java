@@ -24,28 +24,45 @@ package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.util.ClassUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 @Path("/repositories")
 public class RepositoriesController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    @GET
-    @Path("/type")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getType(@QueryParam("repository") final String repositoryPath) {
+    private RepositoryInfo getRepositoryInfo(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
-                return repositoryPath + ":" + ri.getType();
+                return ri;
             }
         }
-        return repositoryPath + ":N/A";
+
+        return null;
     }
 
+    @GET
+    @Path("/property/{field}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object get(@QueryParam("repository") final String repositoryPath, @PathParam("field") final String field)
+            throws IOException {
+
+        RepositoryInfo ri = getRepositoryInfo(repositoryPath);
+        if (ri == null) {
+            throw new WebApplicationException("cannot find repository with path: " + repositoryPath,
+                    Response.Status.NOT_FOUND);
+        }
+
+        return ClassUtil.getFieldValue(ri, field);
+    }
 }
