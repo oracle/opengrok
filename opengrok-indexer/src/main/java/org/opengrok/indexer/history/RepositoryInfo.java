@@ -68,6 +68,92 @@ public class RepositoryInfo implements Serializable {
     private boolean handleRenamedFiles;
     private boolean historyEnabled;
 
+    public static class RepositoryInfoTO implements Serializable {
+        private static final long serialVersionUID = -1;
+
+        // same members as in RepositoryInfo except datePatterns
+        private String directoryNameRelative;
+        private boolean working;
+        private String type;
+        private boolean remote;
+        private String parent;
+        private String branch;
+        private String currentVersion;
+        private boolean handleRenamedFiles;
+        private boolean historyEnabled;
+
+        public String getDirectoryNameRelative() {
+            return directoryNameRelative;
+        }
+
+        public void setDirectoryNameRelative(String directoryNameRelative) {
+            this.directoryNameRelative = directoryNameRelative;
+        }
+
+        public boolean isWorking() {
+            return working;
+        }
+
+        public void setWorking(boolean working) {
+            this.working = working;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public boolean isRemote() {
+            return remote;
+        }
+
+        public void setRemote(boolean remote) {
+            this.remote = remote;
+        }
+
+        public String getParent() {
+            return parent;
+        }
+
+        public void setParent(String parent) {
+            this.parent = parent;
+        }
+
+        public String getBranch() {
+            return branch;
+        }
+
+        public void setBranch(String branch) {
+            this.branch = branch;
+        }
+
+        public String getCurrentVersion() {
+            return currentVersion;
+        }
+
+        public void setCurrentVersion(String currentVersion) {
+            this.currentVersion = currentVersion;
+        }
+
+        public boolean isHandleRenamedFiles() {
+            return handleRenamedFiles;
+        }
+
+        public void setHandleRenamedFiles(boolean handleRenamedFiles) {
+            this.handleRenamedFiles = handleRenamedFiles;
+        }
+
+        public boolean isHistoryEnabled() {
+            return historyEnabled;
+        }
+
+        public void setHistoryEnabled(boolean historyEnabled) {
+            this.historyEnabled = historyEnabled;
+        }
+    }
 
     /**
      * Empty constructor to support serialization.
@@ -85,6 +171,34 @@ public class RepositoryInfo implements Serializable {
         this.parent = orig.parent;
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
+    }
+
+    /**
+     * @return Data Transfer Object for RepositoryInfo
+     */
+    public RepositoryInfoTO getRepositoryInfoData() {
+        return createRepositoryInfoTO();
+    }
+
+    private RepositoryInfoTO createRepositoryInfoTO() {
+        RepositoryInfoTO ri = new RepositoryInfoTO();
+
+        if (this.working == null) {
+            ri.working = false;
+        } else {
+            ri.working = this.working;
+        }
+
+        ri.directoryNameRelative = this.directoryNameRelative;
+        ri.type = this.type;
+        ri.remote = this.remote;
+        ri.parent = this.parent;
+        ri.branch = this.branch;
+        ri.currentVersion = this.currentVersion;
+        ri.handleRenamedFiles = this.handleRenamedFiles;
+        ri.historyEnabled = this.historyEnabled;
+
+        return ri;
     }
 
     /**
@@ -193,7 +307,7 @@ public class RepositoryInfo implements Serializable {
      *
      * @param working is repository working
      */
-    public void setWorking(boolean working) {
+    public void setWorking(Boolean working) {
         this.working = working;
     }
 
