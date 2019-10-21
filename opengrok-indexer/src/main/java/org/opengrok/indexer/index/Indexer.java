@@ -116,6 +116,7 @@ public final class Indexer {
 
     private static final Set<String> repositories = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
+    private static final HashSet<String> canonicalRoots = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
@@ -204,6 +205,9 @@ public final class Indexer {
 
             allowedSymlinks.addAll(cfg.getAllowedSymlinks());
             cfg.setAllowedSymlinks(allowedSymlinks);
+
+            canonicalRoots.addAll(cfg.getCanonicalRoots());
+            cfg.setCanonicalRoots(canonicalRoots);
 
             // Assemble the unprocessed command line arguments (possibly
             // a list of paths). This will be used to perform more fine
@@ -457,7 +461,7 @@ public final class Indexer {
                     "Files with the named prefix/extension should be analyzed",
                     "with the given analyzer, where 'analyzer' may be specified",
                     "using a simple class name (RubyAnalyzer) or language name (C)",
-                    "(Note, analyzer specification is case sensitive)",
+                    "(Note, analyzer specification is case-sensitive)",
                     "  Ex: -A .foo:CAnalyzer",
                     "      will use the C analyzer for all files ending with .FOO",
                     "  Ex: -A bar.:Perl",
@@ -478,6 +482,21 @@ public final class Indexer {
                 "By default takes the Universal Ctags in PATH.").
                 Do(ctagsPath -> cfg.setCtags((String) ctagsPath)
             );
+
+            parser.on("--canonicalRoot", "=/path/",
+                    "Allow symlinks to canonical targets starting with the specified root",
+                    "without otherwise needing to specify -N,--symlink for such symlinks. A",
+                    "canonical root must end with a file separator. For security, a canonical",
+                    "root cannot be the root directory. Option may be repeated.").Do(v -> {
+                String root = (String) v;
+                if (!root.endsWith("/") && !root.endsWith("\\")) {
+                    die("--canonicalRoot must end with a separator");
+                }
+                if (root.equals("/") || root.equals("\\")) {
+                    die("--canonicalRoot cannot be the root directory");
+                }
+                canonicalRoots.add(root);
+            });
 
             parser.on("--checkIndexVersion",
                     "Check if current Lucene version matches index version").Do(v -> {
@@ -509,11 +528,9 @@ public final class Indexer {
             });
 
             parser.on("-e", "--economical",
-                "Economical, consumes less disk space.",
-                "It does not generate hyper text cross reference files offline,",
-                "but will do so on demand, which could be sightly slow.").Do(v -> {
-                cfg.setGenerateHtml(false);
-            });
+                    "To consume less disk space, OpenGrok will not generate and save",
+                    "hypertext cross-reference files but will generate on demand, which could",
+                    "be slightly slow.").Do(v -> cfg.setGenerateHtml(false));
 
             parser.on("-G", "--assignTags",
                 "Assign commit tags to all entries in history for all repositories.").Do(v -> {
@@ -525,17 +542,15 @@ public final class Indexer {
             });
 
             parser.on("-I", "--include", "=pattern",
-                "Only files matching this pattern will be examined.",
-                "(supports wildcards, example: -I *.java -I *.c)").Do(pattern -> {
-                cfg.getIncludedNames().add((String) pattern);
-            });
+                    "Only files matching this pattern will be examined. Pattern supports",
+                    "wildcards (example: -I '*.java' -I '*.c'). Option may be repeated.").Do(
+                            pattern -> cfg.getIncludedNames().add((String) pattern));
 
             parser.on("-i", "--ignore", "=pattern",
-                "Ignore the named files (prefixed with 'f:')",
-                "or directories (prefixed with 'd:').",
-                "Supports wildcards (example: -i *.so -i *.dll)").Do(pattern -> {
-                cfg.getIgnoredNames().add((String) pattern);
-            });
+                    "Ignore matching files (prefixed with 'f:' or no prefix) or directories",
+                    "(prefixed with 'd:'). Pattern supports wildcards (example: -i '*.so'",
+                    "-i d:'test*'). Option may be repeated.").Do(pattern ->
+                    cfg.getIgnoredNames().add((String) pattern));
 
             parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
                 "Set OpenGrok/Lucene locking mode of the Lucene database",
@@ -558,11 +573,11 @@ public final class Indexer {
             });
 
             parser.on("-m", "--memory", "=number", Double.class,
-                "Amount of memory that may be used for buffering added documents and",
-                "deletions before they are flushed to the directory (default " + Configuration.defaultRamBufferSize + "MB).",
-                "Please increase JVM heap accordingly, too.").Do(memSize -> {
-                cfg.setRamBufferSize((Double) memSize);
-            });
+                    "Amount of memory (MB) that may be used for buffering added documents and",
+                    "deletions before they are flushed to the directory (default " +
+                            Configuration.defaultRamBufferSize + ").",
+                    "Please increase JVM heap accordingly too.").Do(memSize ->
+                    cfg.setRamBufferSize((Double) memSize));
 
             parser.on("--man", "Generate OpenGrok XML manual page.").Do(v -> {
                 try {
@@ -577,9 +592,17 @@ public final class Indexer {
             parser.on("--mandoc", "=/path/to/mandoc", "Path to mandoc(1) binary.")
                     .Do(mandocPath -> cfg.setMandoc((String) mandocPath));
 
+            parser.on("-N", "--symlink", "=/path/to/symlink",
+                    "Allow the symlink to be followed. Other symlinks targeting the same",
+                    "canonical target or canonical children will be allowed too. Option may",
+                    "be repeated. (By default only symlinks directly under source root",
+                    "directory are allowed. See also --canonicalRoot)").Do(v ->
+                    allowedSymlinks.add((String) v));
+
             parser.on("-n", "--noIndex",
-                "Do not generate indexes and other data (such as history cache and xref files), " +
-                "but process all other command line options.").Do(v -> runIndex = false);
+                    "Do not generate indexes and other data (such as history cache and xref",
+                    "files), but process all other command line options.").Do(v ->
+                    runIndex = false);
 
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off the optimization of the index database",
@@ -613,43 +636,37 @@ public final class Indexer {
                 cfg.setProjectsEnabled(true);
             });
 
-            parser.on("-p", "--defaultProject", "=/path/to/default/project",
-                "This is the path to the project that should be selected",
-                "by default in the web application (when no other project",
-                "set either in cookie or in parameter). May be used multiple",
-                "times for several projects. Use \"__all__\" for all projects.",
-                "You should strip off the source root.").Do(v -> {
-                defaultProjects.add((String) v);
-            });
+            parser.on("-p", "--defaultProject", "=path/to/default/project",
+                    "Path (relative to the source root) to a project that should be selected",
+                    "by default in the web application (when no other project is set either",
+                    "in a cookie or in parameter). Option may be repeated to specify several",
+                    "projects. Use the special value __all__ to indicate all projects.").Do(v ->
+                    defaultProjects.add((String) v));
 
             parser.on("--profiler", "Pause to await profiler or debugger.").
                 Do(v -> awaitProfiler = true);
 
             parser.on("--progress",
-                "Print per project percentage progress information.",
-                "(I/O extensive, since one read through directory structure is",
-                "made before indexing, needs -v, otherwise it just goes to the log)").
-                Do(v -> cfg.setPrintProgress(true)
-            );
+                    "Print per-project percentage progress information.").Do(v ->
+                    cfg.setPrintProgress(true));
 
             parser.on("-Q", "--quickScan",  "=on|off", ON_OFF, Boolean.class,
-                "Turn on/off quick context scan. By default, only the first",
-                "1024k of a file is scanned, and a '[..all..]' link is inserted",
-                "when the file is bigger. Activating this may slow the server down.",
-                "(Note: this is setting only affects the web application)").Do(v -> {
-                cfg.setQuickContextScan((Boolean) v);
-            });
+                    "Turn on/off quick context scan. By default, only the first 1024KB of a",
+                    "file is scanned, and a link ('[..all..]') is inserted when the file is",
+                    "bigger. Activating this may slow the server down. (Note: this setting",
+                    "only affects the web application.)").Do(v ->
+                    cfg.setQuickContextScan((Boolean) v));
 
             parser.on("-q", "--quiet", "Run as quietly as possible.",
                     "Sets logging level to WARNING.").Do(v -> {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
-            parser.on("--repository", "=repository",
-                    "Generate history for specific repository specified as relative path to source root. ",
-                    "Can be used multiple times. Assumes history is on.").Do(repo -> {
-                repositories.add((String) repo);
-            });
+            parser.on("--repository", "=path/to/repository",
+                    "Path (relative to the source root) to a repository for generating",
+                    "history (if -H,--history is on). By default all discovered repositories",
+                    "are history-eligible; using --repository limits to only those specified.",
+                    "Option may be repeated.").Do(v -> repositories.add((String) v));
 
             parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do(v -> {
@@ -684,7 +701,8 @@ public final class Indexer {
                 "with lots of renamed files.").Do(v -> cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
 
             parser.on("-S", "--search",
-                "Search for \"external\" source repositories and add them.").Do(v -> searchRepositories = true);
+                    "Search for source repositories under -s,--source, and add them.").Do(v ->
+                    searchRepositories = true);
 
             parser.on("-s", "--source", "=/path/to/source/root",
                 "The root directory of the source tree.").
@@ -702,15 +720,9 @@ public final class Indexer {
             );
 
             parser.on("--style", "=path",
-                "Path to the subdirectory in the web-application containing the",
-                "requested stylesheet. The factory-setting is: \"default\".").
-                Do(stylePath -> cfg.setWebappLAF((String) stylePath)
-            );
-
-            parser.on("--symlink", "=/path/to/symlink",
-                "Allow this symlink to be followed. Option may be repeated.",
-                "By default only symlinks directly under source root directory",
-                "are allowed.").Do(symlink -> allowedSymlinks.add((String) symlink));
+                    "Path to the subdirectory in the web application containing the requested",
+                    "stylesheet. The factory-setting is: \"default\".").Do(stylePath ->
+                    cfg.setWebappLAF((String) stylePath));
 
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
@@ -721,7 +733,7 @@ public final class Indexer {
                 "Default tab size to use (number of spaces per tab character).")
                     .Do(tabSize -> cfg.setTabSize((Integer) tabSize));
 
-            parser.on("-U", "--uri", "=protocol://webappURI:port/contextPath",
+            parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
                 "Send the current configuration to the specified webappURI").Do(webAddr -> {
                     webappURI = (String) webAddr;
                     try {
@@ -742,8 +754,8 @@ public final class Indexer {
             parser.on("---unitTest");  // For unit test only, will not appear in help
 
             parser.on("--updateConfig",
-                "Populate the webapp with bare configuration and exit.")
-                    .Do(v -> bareConfig = true);
+                    "Populate the webapp with bare configuration, and exit.").Do(v ->
+                    bareConfig = true);
 
             parser.on("--userPage", "=URL",
                 "Base URL of the user Information provider.",
@@ -754,7 +766,7 @@ public final class Indexer {
                 "URL Suffix for the user Information provider. Default: \"\".")
                     .Do(suffix -> cfg.setUserPageSuffix((String) suffix));
 
-            parser.on("-V", "--version", "Print version and quit.").Do(v -> {
+            parser.on("-V", "--version", "Print version, and quit.").Do(v -> {
                 System.out.println(Info.getFullVersion());
                 System.exit(0);
             });

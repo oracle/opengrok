@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page errorPage="error.jsp" import="
@@ -49,6 +49,7 @@ org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.search.DirectoryExtraReader,
 org.opengrok.indexer.search.FileExtra,
 org.opengrok.indexer.util.FileExtraZipper,
+org.opengrok.indexer.util.ForbiddenSymlinkException,
 org.opengrok.indexer.util.ObjectPool,
 org.opengrok.indexer.util.IOUtils,
 org.opengrok.web.DirectoryListing,
@@ -133,7 +134,14 @@ document.pageReady.push(function() { pageReadyList();});
                 if (searchHelper.searcher != null) {
                     DirectoryExtraReader extraReader =
                         new DirectoryExtraReader();
-                    extras = extraReader.search(searchHelper.searcher, path);
+                    String primePath = path;
+                    try {
+                        primePath = searchHelper.getPrimeRelativePath(project.getName(), path);
+                    } catch (IOException | ForbiddenSymlinkException ex) {
+                        LOGGER.log(Level.WARNING, String.format(
+                                "Error getting prime relative for %s", path), ex);
+                    }
+                    extras = extraReader.search(searchHelper.searcher, primePath);
                 }
             }
 

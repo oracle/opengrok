@@ -68,6 +68,8 @@ public final class HistoryGuru {
      */
     private static final HistoryGuru INSTANCE = new HistoryGuru();
 
+    private final RuntimeEnvironment env;
+
     /**
      * The history cache to use.
      */
@@ -91,10 +93,10 @@ public final class HistoryGuru {
      * control system.
      */
     private HistoryGuru() {
-        HistoryCache cache = null;
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env = RuntimeEnvironment.getInstance();
         scanningDepth = env.getScanningDepth();
 
+        HistoryCache cache = null;
         if (env.useHistoryCache()) {
             cache = new FileHistoryCache();
 
@@ -244,7 +246,7 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repo = getRepository(dir);
 
-        RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
+        RemoteSCM rscm = env.getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
                 || (rscm == RemoteSCM.ON)
                 || (ui || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories()));
@@ -318,9 +320,9 @@ public final class HistoryGuru {
 
         // This should return true for Annotate view.
         return repo.isWorking() && repo.fileHasHistory(file)
-                && ((RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.ON)
-                || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.UIONLY)
-                || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.DIRBASED)
+                && ((env.getRemoteScmSupported() == RemoteSCM.ON)
+                || (env.getRemoteScmSupported() == RemoteSCM.UIONLY)
+                || (env.getRemoteScmSupported() == RemoteSCM.DIRBASED)
                 || !repo.isRemote());
     }
 
@@ -417,9 +419,11 @@ public final class HistoryGuru {
                 } catch (IllegalAccessException iae) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', missing access rights.", iae);
+                    continue;
                 } catch (ForbiddenSymlinkException e) {
-                    LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', path traversal issues.", e);
+                    LOGGER.log(Level.WARNING, "Could not create repository for ''{0}'': {1}",
+                            new Object[] {file, e.getMessage()});
+                    continue;
                 }
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
@@ -541,8 +545,7 @@ public final class HistoryGuru {
 
     private void createCacheReal(Collection<Repository> repositories) {
         Statistics elapsed = new Statistics();
-        ExecutorService executor = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer().getHistoryExecutor();
+        ExecutorService executor = env.getIndexerParallelizer().getHistoryExecutor();
         // Since we know each repository object from the repositories
         // collection is unique, we can abuse HashMap to create a list of
         // repository,revision tuples with repository as key (as the revision
@@ -704,7 +707,7 @@ public final class HistoryGuru {
      */
     private List<Repository> getReposFromString(Collection<String> repositories) {
         ArrayList<Repository> repos = new ArrayList<>();
-        File srcRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
+        File srcRoot = env.getSourceRootFile();
 
         for (String file : repositories) {
             File f = new File(srcRoot, file);

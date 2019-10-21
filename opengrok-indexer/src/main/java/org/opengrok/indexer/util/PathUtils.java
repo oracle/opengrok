@@ -18,13 +18,12 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -35,7 +34,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -46,23 +44,20 @@ public class PathUtils {
         LoggerFactory.getLogger(PathUtils.class);
 
     /**
-     * Calls
-     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
-     * with {@code path}, {@code canonical}, and {@code allowedSymlinks=null}
-     * (to disable validation of links).
+     * Calls {@link #getRelativeToCanonical(String, String, Set, Set)}
+     * with {@code path}, {@code canonical}, {@code allowedSymlinks=null}, and
+     * {@code canonicalRoots=null} (to disable validation of links).
      * @param path a non-canonical (or canonical) path to compare
      * @param canonical a canonical path to compare against
-     * @return a relative path determined as described for
-     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
-     * when {@code allowedSymlinks==null} -- or {@code path} if no canonical
-     * relativity is found.
+     * @return a relative path determined as described -- or {@code path} if no
+     * canonical relativity is found.
      * @throws IOException if an error occurs determining canonical paths
      * for portions of {@code path}
      */
     public static String getRelativeToCanonical(String path, String canonical)
         throws IOException {
         try {
-            return getRelativeToCanonical(path, canonical, null);
+            return getRelativeToCanonical(path, canonical, null, null);
         } catch (ForbiddenSymlinkException e) {
             // should not get here with allowedSymlinks==null
             return path;
@@ -76,7 +71,8 @@ public class PathUtils {
      * <p>
      * When {@code allowedSymlinks} is not null, any symbolic links as
      * components of {@code path} (below {@code canonical}) are required to
-     * match an element of {@code allowedSymlinks}.
+     * match an element of {@code allowedSymlinks} or target a canonical child
+     * of an element of {@code allowedSymlinks}.
      * <p>
      * E.g., with {@code path="/var/opengrok/src/proj_a"} and
      * {@code canonical="/private/var/opengrok/src"} where /var is linked to
@@ -90,8 +86,12 @@ public class PathUtils {
      * @param path a non-canonical (or canonical) path to compare
      * @param canonical a canonical path to compare against
      * @param allowedSymlinks optional set of allowed symbolic links, so that
-     * any links encountered within {@code path} and not covered by the set
-     * will abort the algorithm
+     * any links encountered within {@code path} and not covered by the set (or
+     * whitelisted in a defined {@code canonicalRoots}) will abort the algorithm
+     * @param canonicalRoots optional set of allowed canonicalRoots, so that
+     * any checks done because of a defined {@code allowedSymlinks} will first
+     * check against the whitelist of canonical roots and possibly short-circuit
+     * the explicit validation against {@code allowedSymlinks}.
      * @return a relative path determined as described above -- or {@code path}
      * if no canonical relativity is found
      * @throws IOException if an error occurs determining canonical paths
@@ -101,7 +101,7 @@ public class PathUtils {
      * @throws InvalidPathException if path cannot be decoded
      */
     public static String getRelativeToCanonical(String path, String canonical,
-        Set<String> allowedSymlinks)
+            Set<String> allowedSymlinks, Set<String> canonicalRoots)
             throws IOException, ForbiddenSymlinkException, InvalidPathException {
 
         if (path.equals(canonical)) {
@@ -129,7 +129,8 @@ public class PathUtils {
             if (allowedSymlinks != null) {
                 String iterOriginal = iterPath.getPath();
                 if (Files.isSymbolicLink(Paths.get(iterOriginal)) &&
-                    !isAllowedSymlink(iterCanon, allowedSymlinks)) {
+                        !isWhitelisted(iterCanon, canonicalRoots) &&
+                        !isAllowedSymlink(iterCanon, allowedSymlinks)) {
                     String format = String.format("%1$s is prohibited symlink",
                         iterOriginal);
                     LOGGER.finest(format);
@@ -176,50 +177,23 @@ public class PathUtils {
                 }
                 continue;
             }
-            if (canonicalFile.equals(canonicalLink)) {
+            if (canonicalFile.equals(canonicalLink) ||
+                    canonicalFile.startsWith(canonicalLink + File.separator)) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Returns a path relative to source root. This would just be a simple
-     * substring operation, except we need to support symlinks outside the
-     * source root.
-     *
-     * @param file A file to resolve
-     * @param stripCount Number of characters past source root to strip
-     * @return Path relative to source root
-     * @throws IOException if an IO error occurs
-     * @throws FileNotFoundException if the file is not relative to source root
-     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
-     * an ineligible link
-     * @throws InvalidPathException if the path cannot be decoded
-     */
-    public static String getPathRelativeToSourceRoot(File file, int stripCount)
-            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
-            InvalidPathException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String sourceRoot = env.getSourceRootPath();
-        if (sourceRoot == null) {
-            throw new FileNotFoundException("Source Root Not Found");
+    private static boolean isWhitelisted(String canonical, Set<String> canonicalRoots) {
+        if (canonicalRoots != null) {
+            for (String canonicalRoot : canonicalRoots) {
+                if (canonical.startsWith(canonicalRoot)) {
+                    return true;
+                }
+            }
         }
-
-        String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
-                sourceRoot, env.getAllowedSymlinks());
-        File maybeRelFile = new File(maybeRelPath);
-        if (!maybeRelFile.isAbsolute()) {
-            // N.b. OpenGrok has a weird convention that
-            // source-root "relative" paths must start with a '/' as they are
-            // elsewhere directly appended to env.getSourceRootPath() and also
-            // stored as such.
-            maybeRelPath = File.separator + maybeRelPath;
-            return maybeRelPath.substring(stripCount);
-        }
-
-        throw new FileNotFoundException("Failed to resolve [" + file.getPath()
-                + "] relative to source root [" + sourceRoot + "]");
+        return false;
     }
 
     /** Private to enforce static. */
