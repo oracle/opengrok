@@ -22,23 +22,23 @@
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.indexer.analysis.javascript;
+package org.opengrok.indexer.analysis.typescript;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
-public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "JavaScript";
-    
-    private static final String[] SUFFIXES = {"JS"};
+public class TypeScriptAnalyzerFactory extends FileAnalyzerFactory {
 
-    public JavaScriptAnalyzerFactory() {
+    private static final String name = "TypeScript";
+
+    private static final String[] SUFFIXES = {"TS"};
+
+    public TypeScriptAnalyzerFactory() {
         super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
     }
 
     @Override
     protected AbstractAnalyzer newAnalyzer() {
-        return new JavaScriptAnalyzer(this);
+        return new TypeScriptAnalyzer(this);
     }
 }

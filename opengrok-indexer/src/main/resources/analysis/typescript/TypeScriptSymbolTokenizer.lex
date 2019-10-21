@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -23,19 +23,18 @@
  */
 
 /*
- * Cross reference a JavaScript file
+ * Gets TypeScript symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.indexer.analysis.javascript;
+package org.opengrok.indexer.analysis.typescript;
 
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 import java.io.IOException;
-import java.util.Set;
 %%
 %public
-%class JavaScriptXref
-%extends JavaScriptLexer
+%class TypeScriptSymbolTokenizer
+%extends TypeScriptLexer
 %unicode
 %buffer 32766
 %int
@@ -44,46 +43,66 @@ import java.util.Set;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
-%include CommonXref.lexh
 %{
+    private String lastSymbol;
+
+    /**
+     * Resets the TypeScript tracked state; {@inheritDoc}
+     */
+    @Override
+    public void reset() {
+        super.reset();
+        lastSymbol = null;
+    }
+
     @Override
     public void offer(String value) throws IOException {
-        onNonSymbolMatched(value, yychar);
+        // noop
     }
 
     @Override
     public boolean offerSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
-        Set<String> keywords = ignoreKwd ? null : Consts.KEYWORDS;
-        return onFilteredSymbolMatched(value, yychar, keywords, true);
+        if (ignoreKwd || !Consts.KEYWORDS.contains(value)) {
+            lastSymbol = value;
+            onSymbolMatched(value, yychar + captureOffset);
+            return true;
+        }
+        lastSymbol = null;
+        return false;
     }
 
     @Override
     public void skipSymbol() {
-        // noop
+        lastSymbol = null;
     }
 
     @Override
     public void offerKeyword(String value) throws IOException {
-        onKeywordMatched(value, yychar);
+        lastSymbol = null;
     }
 
     @Override
     public void startNewLine() throws IOException {
-        onEndOfLineMatched("\n", yychar);
+        // noop
     }
 
     @Override
     public void disjointSpan(String className) throws IOException {
-        onDisjointSpanChanged(className, yychar);
+        // noop
+    }
+
+    @Override
+    public void phLOC() {
+        // noop
     }
 
     protected boolean takeAllContent() {
-        return true;
+        return false;
     }
 
     protected boolean returnOnSymbol() {
-        return false;
+        return lastSymbol != null;
     }
 
     /**
@@ -103,6 +122,10 @@ import java.util.Set;
 %include CommonURI.lexh
 %include CommonPath.lexh
 %include ECMAScript.lexh
+// TypeScript.lexh comes after ECMAScript so that TypeScript macros supersede.
+%include TypeScript.lexh
 
 %%
+// TypeScriptProductions.lexh comes first so that its expressions are preferred.
+%include TypeScriptProductions.lexh
 %include ECMAScriptProductions.lexh

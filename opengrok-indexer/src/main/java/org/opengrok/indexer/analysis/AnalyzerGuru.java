@@ -100,6 +100,7 @@ import org.opengrok.indexer.analysis.sql.PLSQLAnalyzerFactory;
 import org.opengrok.indexer.analysis.sql.SQLAnalyzerFactory;
 import org.opengrok.indexer.analysis.swift.SwiftAnalyzerFactory;
 import org.opengrok.indexer.analysis.tcl.TclAnalyzerFactory;
+import org.opengrok.indexer.analysis.typescript.TypeScriptAnalyzerFactory;
 import org.opengrok.indexer.analysis.uue.UuencodeAnalyzerFactory;
 import org.opengrok.indexer.analysis.vb.VBAnalyzerFactory;
 import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
@@ -294,7 +295,8 @@ public class AnalyzerGuru {
                 new AdaAnalyzerFactory(),
                 new RubyAnalyzerFactory(),
                 new EiffelAnalyzerFactory(),
-                new VerilogAnalyzerFactory()
+                new VerilogAnalyzerFactory(),
+                new TypeScriptAnalyzerFactory()
             };
 
             for (AnalyzerFactory analyzer : analyzers) {
@@ -328,7 +330,7 @@ public class AnalyzerGuru {
      * {@link FileAnalyzerFactory} subclasses are revised to target more or
      * different files.
      * @return a value whose lower 32-bits are a static value
-     * 20190211_00
+     * 20191006_00
      * for the current implementation and whose higher-32 bits are non-zero if
      * {@link #addExtension(java.lang.String, AnalyzerFactory)}
      * or
@@ -336,7 +338,7 @@ public class AnalyzerGuru {
      * has been called.
      */
     public static long getVersionNo() {
-        final int ver32 = 20190211_00; // Edit comment above too!
+        final int ver32 = 20191006_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
             ver |= (long) customizationHashCode << 32;

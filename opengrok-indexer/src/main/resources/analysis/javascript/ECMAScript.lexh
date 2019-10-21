@@ -1,0 +1,82 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * U+200C	ZERO WIDTH NON-JOINER
+ * U+200D	ZERO WIDTH JOINER
+ * Do not support \UnicodeEscapeSequence (yet?)
+ */
+Identifier = [\p{XID_Start}_$] [\p{XID_Continue}$\u{200C}\u{200D}]*
+
+NumericLiteral = ({DecimalLiteral} | {BinaryIntegerLiteral} |
+    {OctalIntegerLiteral} | {HexIntegerLiteral})
+
+DecimalLiteral = ({DecimalIntegerLiteral} "." {ExponentPart}? |
+    {DecimalIntegerLiteral} "." {DecimalDigits} {ExponentPart}? |
+    "." {DecimalDigits} {ExponentPart}? |
+    {DecimalIntegerLiteral} {ExponentPart}?)
+/*
+ * OpenGrok relaxes from the strict ECMA definition of
+ *     DecimalIntegerLiteral::
+ *         0
+ *         NonZeroDigit DecimalDigits?
+ * and thus does not bother supporting LegacyOctalIntegerLiteral,
+ * NonOctalDecimalIntegerLiteral, or LegacyOctalLikeDecimalIntegerLiteral.
+ */
+DecimalIntegerLiteral = {DecimalDigits}
+DecimalDigits = {DecimalDigit}+
+DecimalDigit = [0123456789]
+// NonZeroDigit = [123456789]
+ExponentPart = {ExponentIndicator} {SignedInteger}
+ExponentIndicator = [eE]
+SignedInteger = ({DecimalDigits} | "+" {DecimalDigits} | "-" {DecimalDigits})
+
+BinaryIntegerLiteral = "0" [bB] {BinaryDigits}
+BinaryDigits = {BinaryDigit}+
+BinaryDigit = [01]
+
+OctalIntegerLiteral = "0" [oO] {OctalDigits}
+OctalDigits = {OctalDigit}+
+OctalDigit = [01234567]
+
+HexIntegerLiteral = "0" [xX] {HexDigits}
+HexDigits = {HexDigit}+
+HexDigit = [0123456789abcdefABCDEF]
+
+File = [a-zA-Z]{FNameChar}* "." ([Js][Ss] |
+    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
+    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Ii][Nn][Ii] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
+
+/*
+ * STRING: double-quoted literal.
+ * REGEXP: heuristically-detected regular expression bounded by "/" characters.
+ * COMMENT: comment text bounded by "/*" and "*/" and not nestable per ECMA
+ *     documentation.
+ * SCOMMENT: comment text that ends at a line terminator.
+ * QSTRING: single-quoted literal.
+ * TEMPLATE: template literal bounded by "`" characters and supporting
+ *     substitution.
+ */
+%state STRING REGEXP COMMENT SCOMMENT QSTRING TEMPLATE

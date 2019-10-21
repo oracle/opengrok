@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -18,11 +18,15 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
-Identifier = [a-zA-Z_$] [a-zA-Z0-9_$]*
+package org.opengrok.indexer.analysis.typescript;
 
-Number = (0[xX][0-9a-fA-F]+ | 0[bB][01]+ | [0-9]+\.[0-9]+ |
-    [0-9]+) (([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
+import org.opengrok.indexer.analysis.javascript.JavaScriptLexer;
+
+/**
+ * Represents an abstract base class for TypeScript lexers.
+ */
+abstract class TypeScriptLexer extends JavaScriptLexer {
+}

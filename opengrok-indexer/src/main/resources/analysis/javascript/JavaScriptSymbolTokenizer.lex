@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -28,72 +28,100 @@
 
 package org.opengrok.indexer.analysis.javascript;
 
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
+import java.io.IOException;
 %%
 %public
 %class JavaScriptSymbolTokenizer
-%extends JFlexSymbolMatcher
+%extends JavaScriptLexer
 %unicode
 %buffer 32766
+%int
+%char
 %init{
     yyline = 1;
 %init}
-%int
 %include CommonLexer.lexh
-%char
+%{
+    private String lastSymbol;
 
-%state STRING REGEXP_START REGEXP COMMENT SCOMMENT QSTRING
+    /**
+     * Resets the TypeScript tracked state; {@inheritDoc}
+     */
+    @Override
+    public void reset() {
+        super.reset();
+        lastSymbol = null;
+    }
 
-%include JavaScript.lexh
+    @Override
+    public void offer(String value) throws IOException {
+        // noop
+    }
+
+    @Override
+    public boolean offerSymbol(String value, int captureOffset, boolean ignoreKwd)
+            throws IOException {
+        if (ignoreKwd || !Consts.KEYWORDS.contains(value)) {
+            lastSymbol = value;
+            onSymbolMatched(value, yychar + captureOffset);
+            return true;
+        }
+        lastSymbol = null;
+        return false;
+    }
+
+    @Override
+    public void skipSymbol() {
+        lastSymbol = null;
+    }
+
+    @Override
+    public void offerKeyword(String value) throws IOException {
+        lastSymbol = null;
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
+        // noop
+    }
+
+    @Override
+    public void phLOC() {
+        // noop
+    }
+
+    protected boolean takeAllContent() {
+        return false;
+    }
+
+    protected boolean returnOnSymbol() {
+        return lastSymbol != null;
+    }
+
+    /**
+     * Gets the constant value created by JFlex to represent COMMENT.
+     */
+    @Override
+    protected int COMMENT() { return COMMENT; }
+
+    /**
+     * Gets the constant value created by JFlex to represent SCOMMENT.
+     */
+    @Override
+    protected int SCOMMENT() { return SCOMMENT; }
+%}
+
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
+%include ECMAScript.lexh
+
 %%
-
-<YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
-                        onSymbolMatched(id, yychar);
-                        return yystate(); }
-              }
- {Number}    {}
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- /*
-  * Literal regexps are in conflict with division "/" and are detected
-  * in javascript based on context and when ambiguous, the division has
-  * a higher precedence. We do a best-effort context matching for
-  * preceding "=" (variable), "(" (function call) or ":" (object).
-  */
- [:=(][ \t\r\n]*/\/    { yybegin(REGEXP_START); }
- "/*"   { yybegin(COMMENT); }
- "//"   { yybegin(SCOMMENT); }
-}
-
-<STRING> {
- \\[\"\\]    {}
- \"     { yybegin(YYINITIAL); }
-}
-
-<REGEXP_START> {
-    \/  { yybegin(REGEXP); }
-}
-
-<REGEXP> {
-    \\[/]   {}
-    \/[gimsuy]* { yybegin(YYINITIAL); }
-}
-
-<QSTRING> {
- \\[\'\\]    {}
- \'     { yybegin(YYINITIAL); }
-}
-
-<COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
-}
-
-<SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
-}
-
-<YYINITIAL, STRING, REGEXP_START, REGEXP, COMMENT, SCOMMENT, QSTRING> {
-[^]    {}
-}
+%include ECMAScriptProductions.lexh

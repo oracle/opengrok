@@ -21,28 +21,27 @@
  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.analysis.javascript;
+package org.opengrok.indexer.analysis.typescript;
 
-import java.io.Reader;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
+import java.io.Reader;
+
 /**
- *
- * @author Lubos Kosco
- *
+ * Represents an analyzer for the TypeScript language.
  */
-public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
+public class TypeScriptAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of {@link JavaScriptAnalyzer}.
+     * Creates a new instance of {@link TypeScriptAnalyzer}.
      * @param factory defined instance for the analyzer
      */
-    protected JavaScriptAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new JavaScriptSymbolTokenizer(
+    TypeScriptAnalyzer(AnalyzerFactory factory) {
+        super(factory, new JFlexTokenizer(new TypeScriptSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }    
 
@@ -58,12 +57,12 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
-     * Creates a wrapped {@link JavaScriptXref} instance.
+     * Creates a wrapped {@link TypeScriptXref} instance.
      * @param reader the data to produce xref for
      * @return a defined instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new JFlexXref(new JavaScriptXref(reader));
+        return new JFlexXref(new TypeScriptXref(reader));
     }
 }

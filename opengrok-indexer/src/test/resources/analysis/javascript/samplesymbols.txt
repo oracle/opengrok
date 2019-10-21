@@ -105,7 +105,6 @@ domain_label_group
 makeDrawAreaComponent
 data_groups
 makeDrawAreaComponent
-translate
 setup_values		# 115:	setup_values() {
 domain_label_group
 textContent

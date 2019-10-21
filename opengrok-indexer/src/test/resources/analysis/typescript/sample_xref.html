@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<script type="text/javascript">/* <![CDATA[ */
+function get_sym_list(){return [["Interface","xi",[["InputOptions",31]]],["Enum","xe",[["ExitCode",39]]],["Function","xf",[["addPath",77],["debug",131],["endGroup",173],["error",139],["exportVariable",60],["foo",223],["getInput",89],["getState",219],["group",185],["info",155],["saveState",209],["setFailed",118],["setOutput",105],["setSecret",69],["startGroup",166],["warning",147]]]];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><span class="c">/*
+<a class="l" name="2" href="#2">2</a> * Copyright 2019 GitHub
+<a class="l" name="3" href="#3">3</a> *
+<a class="l" name="4" href="#4">4</a> * Permission is hereby granted, free of charge, to any person obtaining a copy
+<a class="l" name="5" href="#5">5</a> * of this software and associated documentation files (the &quot;Software&quot;), to
+<a class="l" name="6" href="#6">6</a> * deal in the Software without restriction, including without limitation the
+<a class="l" name="7" href="#7">7</a> * rights to use, copy, modify, merge, publish, distribute, sublicense, <a href="/source/s?path=and/">and</a>/<a href="/source/s?path=and/or">or</a>
+<a class="l" name="8" href="#8">8</a> * sell copies of the Software, and to permit persons to whom the Software is
+<a class="l" name="9" href="#9">9</a> * furnished to do so, subject to the following conditions:
+<a class="hl" name="10" href="#10">10</a> *
+<a class="l" name="11" href="#11">11</a> * The above copyright notice and this permission notice shall be included in
+<a class="l" name="12" href="#12">12</a> * all copies or substantial portions of the Software.
+<a class="l" name="13" href="#13">13</a> *
+<a class="l" name="14" href="#14">14</a> * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+<a class="l" name="15" href="#15">15</a> * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+<a class="l" name="16" href="#16">16</a> * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+<a class="l" name="17" href="#17">17</a> * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+<a class="l" name="18" href="#18">18</a> * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+<a class="l" name="19" href="#19">19</a> * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+<a class="hl" name="20" href="#20">20</a> * IN THE SOFTWARE.
+<a class="l" name="21" href="#21">21</a> */</span>
+<a class="l" name="22" href="#22">22</a>
+<a class="l" name="23" href="#23">23</a><b>import</b> {<a href="/source/s?defs=issue" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issue</a>, <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>} <b>from</b> <span class="s">&apos;./command&apos;</span>
+<a class="l" name="24" href="#24">24</a>
+<a class="l" name="25" href="#25">25</a><b>import</b> * <b>as</b> <a href="/source/s?defs=os" class="intelliWindow-symbol" data-definition-place="undefined-in-file">os</a> <b>from</b> <span class="s">&apos;os&apos;</span>
+<a class="l" name="26" href="#26">26</a><b>import</b> * <b>as</b> <a href="/source/s?defs=path" class="intelliWindow-symbol" data-definition-place="undefined-in-file">path</a> <b>from</b> <span class="s">&apos;path&apos;</span>
+<a class="l" name="27" href="#27">27</a>
+<a class="l" name="28" href="#28">28</a><span class="c">/**
+<a class="l" name="29" href="#29">29</a> * Interface for getInput options
+<a class="hl" name="30" href="#30">30</a> */</span>
+<a class="l" name="31" href="#31">31</a><b>export</b> <b>interface</b> <a class="xi" name="InputOptions"/><a href="/source/s?refs=InputOptions" class="xi intelliWindow-symbol" data-definition-place="def">InputOptions</a> {
+<a class="l" name="32" href="#32">32</a>  <span class="c">/** Optional. Whether the input is required. If required and not present, will throw. Defaults to false */</span>
+<a class="l" name="33" href="#33">33</a>  <a class="d" name="required"/><a href="/source/s?refs=required" class="d intelliWindow-symbol" data-definition-place="def">required</a>?: <b>boolean</b>
+<a class="l" name="34" href="#34">34</a>}
+<a class="l" name="35" href="#35">35</a>
+<a class="l" name="36" href="#36">36</a><span class="c">/**
+<a class="l" name="37" href="#37">37</a> * The code to exit an action
+<a class="l" name="38" href="#38">38</a> */</span>
+<a class="l" name="39" href="#39">39</a><b>export</b> <b>enum</b> <a class="xe" name="ExitCode"/><a href="/source/s?refs=ExitCode" class="xe intelliWindow-symbol" data-definition-place="def">ExitCode</a> {
+<a class="hl" name="40" href="#40">40</a>  <span class="c">/**
+<a class="l" name="41" href="#41">41</a>   * A code indicating that the action was successful
+<a class="l" name="42" href="#42">42</a>   */</span>
+<a class="l" name="43" href="#43">43</a>  <a class="xer" name="Success"/><a href="/source/s?refs=Success" class="xer intelliWindow-symbol" data-definition-place="def">Success</a> = <span class="n">0</span>,
+<a class="l" name="44" href="#44">44</a>
+<a class="l" name="45" href="#45">45</a>  <span class="c">/**
+<a class="l" name="46" href="#46">46</a>   * A code indicating that the action was a failure
+<a class="l" name="47" href="#47">47</a>   */</span>
+<a class="l" name="48" href="#48">48</a>  <a class="xer" name="Failure"/><a href="/source/s?refs=Failure" class="xer intelliWindow-symbol" data-definition-place="def">Failure</a> = <span class="n">1</span>
+<a class="l" name="49" href="#49">49</a>}
+<a class="hl" name="50" href="#50">50</a>
+<a class="l" name="51" href="#51">51</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="52" href="#52">52</a><span class="c">// Variables</span>
+<a class="l" name="53" href="#53">53</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="54" href="#54">54</a>
+<a class="l" name="55" href="#55">55</a><span class="c">/**
+<a class="l" name="56" href="#56">56</a> * Sets env variable for this action and future actions in the job
+<a class="l" name="57" href="#57">57</a> * @param name the name of the variable to set
+<a class="l" name="58" href="#58">58</a> * @param val the value of the variable
+<a class="l" name="59" href="#59">59</a> */</span>
+<a class="hl" name="60" href="#60">60</a><b>export</b> <b>function</b> <a class="xf" name="exportVariable"/><a href="/source/s?refs=exportVariable" class="xf intelliWindow-symbol" data-definition-place="def">exportVariable</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>, <a class="d intelliWindow-symbol" href="#val" data-definition-place="defined-in-file">val</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="61" href="#61">61</a>  <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=env" class="intelliWindow-symbol" data-definition-place="undefined-in-file">env</a>[<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>] = <a class="d intelliWindow-symbol" href="#val" data-definition-place="defined-in-file">val</a>
+<a class="l" name="62" href="#62">62</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;set-env&apos;</span>, {<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>}, <a class="d intelliWindow-symbol" href="#val" data-definition-place="defined-in-file">val</a>)
+<a class="l" name="63" href="#63">63</a>}
+<a class="l" name="64" href="#64">64</a>
+<a class="l" name="65" href="#65">65</a><span class="c">/**
+<a class="l" name="66" href="#66">66</a> * Registers a secret which will get masked from logs
+<a class="l" name="67" href="#67">67</a> * @param secret value of the secret
+<a class="l" name="68" href="#68">68</a> */</span>
+<a class="l" name="69" href="#69">69</a><b>export</b> <b>function</b> <a class="xf" name="setSecret"/><a href="/source/s?refs=setSecret" class="xf intelliWindow-symbol" data-definition-place="def">setSecret</a>(<a href="/source/s?defs=secret" class="intelliWindow-symbol" data-definition-place="undefined-in-file">secret</a>: <b>string</b>): <b>void</b> {
+<a class="hl" name="70" href="#70">70</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;add-mask&apos;</span>, {}, <a href="/source/s?defs=secret" class="intelliWindow-symbol" data-definition-place="undefined-in-file">secret</a>)
+<a class="l" name="71" href="#71">71</a>}
+<a class="l" name="72" href="#72">72</a>
+<a class="l" name="73" href="#73">73</a><span class="c">/**
+<a class="l" name="74" href="#74">74</a> * Prepends inputPath to the PATH (for this action and future actions)
+<a class="l" name="75" href="#75">75</a> * @param inputPath
+<a class="l" name="76" href="#76">76</a> */</span>
+<a class="l" name="77" href="#77">77</a><b>export</b> <b>function</b> <a class="xf" name="addPath"/><a href="/source/s?refs=addPath" class="xf intelliWindow-symbol" data-definition-place="def">addPath</a>(<a href="/source/s?defs=inputPath" class="intelliWindow-symbol" data-definition-place="undefined-in-file">inputPath</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="78" href="#78">78</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;add-path&apos;</span>, {}, <a href="/source/s?defs=inputPath" class="intelliWindow-symbol" data-definition-place="undefined-in-file">inputPath</a>)
+<a class="l" name="79" href="#79">79</a>  <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=env" class="intelliWindow-symbol" data-definition-place="undefined-in-file">env</a>[<span class="s">&apos;PATH&apos;</span>] = <span class="s">`${</span><a href="/source/s?defs=inputPath" class="intelliWindow-symbol" data-definition-place="undefined-in-file">inputPath</a><span class="s">}${</span><a href="/source/s?defs=path" class="intelliWindow-symbol" data-definition-place="undefined-in-file">path</a>.<a href="/source/s?defs=delimiter" class="intelliWindow-symbol" data-definition-place="undefined-in-file">delimiter</a><span class="s">}${</span><a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=env" class="intelliWindow-symbol" data-definition-place="undefined-in-file">env</a>[<span class="s">&apos;PATH&apos;</span>]<span class="s">}`</span>
+<a class="hl" name="80" href="#80">80</a>}
+<a class="l" name="81" href="#81">81</a>
+<a class="l" name="82" href="#82">82</a><span class="c">/**
+<a class="l" name="83" href="#83">83</a> * Gets the value of an input.  The value is also trimmed.
+<a class="l" name="84" href="#84">84</a> *
+<a class="l" name="85" href="#85">85</a> * @param     name     name of the input to get
+<a class="l" name="86" href="#86">86</a> * @param     options  optional. See InputOptions.
+<a class="l" name="87" href="#87">87</a> * @returns   string
+<a class="l" name="88" href="#88">88</a> */</span>
+<a class="l" name="89" href="#89">89</a><b>export</b> <b>function</b> <a class="xf" name="getInput"/><a href="/source/s?refs=getInput" class="xf intelliWindow-symbol" data-definition-place="def">getInput</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>, <a href="/source/s?defs=options" class="intelliWindow-symbol" data-definition-place="undefined-in-file">options</a>?: <a class="d intelliWindow-symbol" href="#InputOptions" data-definition-place="defined-in-file">InputOptions</a>): <b>string</b> {
+<a class="hl" name="90" href="#90">90</a>  <b>const</b> <a class="d" name="val"/><a href="/source/s?refs=val" class="d intelliWindow-symbol" data-definition-place="def">val</a>: <b>string</b> =
+<a class="l" name="91" href="#91">91</a>    <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=env" class="intelliWindow-symbol" data-definition-place="undefined-in-file">env</a>[<span class="s">`INPUT_${</span><a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>.<a href="/source/s?defs=replace" class="intelliWindow-symbol" data-definition-place="undefined-in-file">replace</a>(<span class="s">/ /</span>g, <span class="s">&apos;_&apos;</span>).<a href="/source/s?defs=toUpperCase" class="intelliWindow-symbol" data-definition-place="undefined-in-file">toUpperCase</a>()<span class="s">}`</span>] || <span class="s">&apos;&apos;</span>
+<a class="l" name="92" href="#92">92</a>  <b>if</b> (<a href="/source/s?defs=options" class="intelliWindow-symbol" data-definition-place="undefined-in-file">options</a> &amp;&amp; <a href="/source/s?defs=options" class="intelliWindow-symbol" data-definition-place="undefined-in-file">options</a>.<a class="d intelliWindow-symbol" href="#required" data-definition-place="defined-in-file">required</a> &amp;&amp; !<a class="d intelliWindow-symbol" href="#val" data-definition-place="defined-in-file">val</a>) {
+<a class="l" name="93" href="#93">93</a>    <b>throw</b> <b>new</b> <a href="/source/s?defs=Error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Error</a>(<span class="s">`Input required and not supplied: ${</span><a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a><span class="s">}`</span>)
+<a class="l" name="94" href="#94">94</a>  }
+<a class="l" name="95" href="#95">95</a>
+<a class="l" name="96" href="#96">96</a>  <b>return</b> <a class="d intelliWindow-symbol" href="#val" data-definition-place="defined-in-file">val</a>.<a href="/source/s?defs=trim" class="intelliWindow-symbol" data-definition-place="undefined-in-file">trim</a>()
+<a class="l" name="97" href="#97">97</a>}
+<a class="l" name="98" href="#98">98</a>
+<a class="l" name="99" href="#99">99</a><span class="c">/**
+<a class="hl" name="100" href="#100">100</a> * Sets the value of an output.
+<a class="l" name="101" href="#101">101</a> *
+<a class="l" name="102" href="#102">102</a> * @param     name     name of the output to set
+<a class="l" name="103" href="#103">103</a> * @param     value    value to store
+<a class="l" name="104" href="#104">104</a> */</span>
+<a class="l" name="105" href="#105">105</a><b>export</b> <b>function</b> <a class="xf" name="setOutput"/><a href="/source/s?refs=setOutput" class="xf intelliWindow-symbol" data-definition-place="def">setOutput</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>, <a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="106" href="#106">106</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;set-output&apos;</span>, {<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>}, <a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a>)
+<a class="l" name="107" href="#107">107</a>}
+<a class="l" name="108" href="#108">108</a>
+<a class="l" name="109" href="#109">109</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="hl" name="110" href="#110">110</a><span class="c">// Results</span>
+<a class="l" name="111" href="#111">111</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="112" href="#112">112</a>
+<a class="l" name="113" href="#113">113</a><span class="c">/**
+<a class="l" name="114" href="#114">114</a> * Sets the action status to failed.
+<a class="l" name="115" href="#115">115</a> * When the action exits it will be with an exit code of 1
+<a class="l" name="116" href="#116">116</a> * @param message add error issue message
+<a class="l" name="117" href="#117">117</a> */</span>
+<a class="l" name="118" href="#118">118</a><b>export</b> <b>function</b> <a class="xf" name="setFailed"/><a href="/source/s?refs=setFailed" class="xf intelliWindow-symbol" data-definition-place="def">setFailed</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="119" href="#119">119</a>  <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=exitCode" class="intelliWindow-symbol" data-definition-place="undefined-in-file">exitCode</a> = <a class="d intelliWindow-symbol" href="#ExitCode" data-definition-place="defined-in-file">ExitCode</a>.<a class="d intelliWindow-symbol" href="#Failure" data-definition-place="defined-in-file">Failure</a>
+<a class="hl" name="120" href="#120">120</a>  <a class="d intelliWindow-symbol" href="#error" data-definition-place="defined-in-file">error</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>)
+<a class="l" name="121" href="#121">121</a>}
+<a class="l" name="122" href="#122">122</a>
+<a class="l" name="123" href="#123">123</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="124" href="#124">124</a><span class="c">// Logging Commands</span>
+<a class="l" name="125" href="#125">125</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="126" href="#126">126</a>
+<a class="l" name="127" href="#127">127</a><span class="c">/**
+<a class="l" name="128" href="#128">128</a> * Writes debug message to user log
+<a class="l" name="129" href="#129">129</a> * @param message debug message
+<a class="hl" name="130" href="#130">130</a> */</span>
+<a class="l" name="131" href="#131">131</a><b>export</b> <b>function</b> <a class="xf" name="debug"/><a href="/source/s?refs=debug" class="xf intelliWindow-symbol" data-definition-place="def">debug</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="132" href="#132">132</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;debug&apos;</span>, {}, <a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>)
+<a class="l" name="133" href="#133">133</a>}
+<a class="l" name="134" href="#134">134</a>
+<a class="l" name="135" href="#135">135</a><span class="c">/**
+<a class="l" name="136" href="#136">136</a> * Adds an error issue
+<a class="l" name="137" href="#137">137</a> * @param message error issue message
+<a class="l" name="138" href="#138">138</a> */</span>
+<a class="l" name="139" href="#139">139</a><b>export</b> <b>function</b> <a class="xf" name="error"/><a href="/source/s?refs=error" class="xf intelliWindow-symbol" data-definition-place="def">error</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>: <b>string</b>): <b>void</b> {
+<a class="hl" name="140" href="#140">140</a>  <a href="/source/s?defs=issue" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issue</a>(<span class="s">&apos;error&apos;</span>, <a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>)
+<a class="l" name="141" href="#141">141</a>}
+<a class="l" name="142" href="#142">142</a>
+<a class="l" name="143" href="#143">143</a><span class="c">/**
+<a class="l" name="144" href="#144">144</a> * Adds an warning issue
+<a class="l" name="145" href="#145">145</a> * @param message warning issue message
+<a class="l" name="146" href="#146">146</a> */</span>
+<a class="l" name="147" href="#147">147</a><b>export</b> <b>function</b> <a class="xf" name="warning"/><a href="/source/s?refs=warning" class="xf intelliWindow-symbol" data-definition-place="def">warning</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="148" href="#148">148</a>  <a href="/source/s?defs=issue" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issue</a>(<span class="s">&apos;warning&apos;</span>, <a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>)
+<a class="l" name="149" href="#149">149</a>}
+<a class="hl" name="150" href="#150">150</a>
+<a class="l" name="151" href="#151">151</a><span class="c">/**
+<a class="l" name="152" href="#152">152</a> * Writes info to log with console.log.
+<a class="l" name="153" href="#153">153</a> * @param message info message
+<a class="l" name="154" href="#154">154</a> */</span>
+<a class="l" name="155" href="#155">155</a><b>export</b> <b>function</b> <a class="xf" name="info"/><a href="/source/s?refs=info" class="xf intelliWindow-symbol" data-definition-place="def">info</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="156" href="#156">156</a>  <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=stdout" class="intelliWindow-symbol" data-definition-place="undefined-in-file">stdout</a>.<a href="/source/s?defs=write" class="intelliWindow-symbol" data-definition-place="undefined-in-file">write</a>(<a href="/source/s?defs=message" class="intelliWindow-symbol" data-definition-place="undefined-in-file">message</a> + <a href="/source/s?defs=os" class="intelliWindow-symbol" data-definition-place="undefined-in-file">os</a>.<a href="/source/s?defs=EOL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">EOL</a>)
+<a class="l" name="157" href="#157">157</a>}
+<a class="l" name="158" href="#158">158</a>
+<a class="l" name="159" href="#159">159</a><span class="c">/**
+<a class="hl" name="160" href="#160">160</a> * Begin an output group.
+<a class="l" name="161" href="#161">161</a> *
+<a class="l" name="162" href="#162">162</a> * Output until the next `groupEnd` will be foldable in this group
+<a class="l" name="163" href="#163">163</a> *
+<a class="l" name="164" href="#164">164</a> * @param name The name of the output group
+<a class="l" name="165" href="#165">165</a> */</span>
+<a class="l" name="166" href="#166">166</a><b>export</b> <b>function</b> <a class="xf" name="startGroup"/><a href="/source/s?refs=startGroup" class="xf intelliWindow-symbol" data-definition-place="def">startGroup</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>): <b>void</b> {
+<a class="l" name="167" href="#167">167</a>  <a href="/source/s?defs=issue" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issue</a>(<span class="s">&apos;group&apos;</span>, <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>)
+<a class="l" name="168" href="#168">168</a>}
+<a class="l" name="169" href="#169">169</a>
+<a class="hl" name="170" href="#170">170</a><span class="c">/**
+<a class="l" name="171" href="#171">171</a> * End an output group.
+<a class="l" name="172" href="#172">172</a> */</span>
+<a class="l" name="173" href="#173">173</a><b>export</b> <b>function</b> <a class="xf" name="endGroup"/><a href="/source/s?refs=endGroup" class="xf intelliWindow-symbol" data-definition-place="def">endGroup</a>(): <b>void</b> {
+<a class="l" name="174" href="#174">174</a>  <a href="/source/s?defs=issue" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issue</a>(<span class="s">&apos;endgroup&apos;</span>)
+<a class="l" name="175" href="#175">175</a>}
+<a class="l" name="176" href="#176">176</a>
+<a class="l" name="177" href="#177">177</a><span class="c">/**
+<a class="l" name="178" href="#178">178</a> * Wrap an asynchronous function call in a group.
+<a class="l" name="179" href="#179">179</a> *
+<a class="hl" name="180" href="#180">180</a> * Returns the same type as the function itself.
+<a class="l" name="181" href="#181">181</a> *
+<a class="l" name="182" href="#182">182</a> * @param name The name of the group
+<a class="l" name="183" href="#183">183</a> * @param fn The function to wrap in the group
+<a class="l" name="184" href="#184">184</a> */</span>
+<a class="l" name="185" href="#185">185</a><b>export</b> <b>async</b> <b>function</b> <a class="xf" name="group"/><a href="/source/s?refs=group" class="xf intelliWindow-symbol" data-definition-place="def">group</a>&lt;<a href="/source/s?defs=T" class="intelliWindow-symbol" data-definition-place="undefined-in-file">T</a>&gt;(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>, <a href="/source/s?defs=fn" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fn</a>: () =&gt; <a href="/source/s?defs=Promise" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Promise</a>&lt;<a href="/source/s?defs=T" class="intelliWindow-symbol" data-definition-place="undefined-in-file">T</a>&gt;): <a href="/source/s?defs=Promise" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Promise</a>&lt;<a href="/source/s?defs=T" class="intelliWindow-symbol" data-definition-place="undefined-in-file">T</a>&gt; {
+<a class="l" name="186" href="#186">186</a>  <a class="d intelliWindow-symbol" href="#startGroup" data-definition-place="defined-in-file">startGroup</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>)
+<a class="l" name="187" href="#187">187</a>
+<a class="l" name="188" href="#188">188</a>  <b>let</b> <a href="/source/s?defs=result" class="intelliWindow-symbol" data-definition-place="undefined-in-file">result</a>: <a href="/source/s?defs=T" class="intelliWindow-symbol" data-definition-place="undefined-in-file">T</a>
+<a class="l" name="189" href="#189">189</a>
+<a class="hl" name="190" href="#190">190</a>  <b>try</b> {
+<a class="l" name="191" href="#191">191</a>    <a href="/source/s?defs=result" class="intelliWindow-symbol" data-definition-place="undefined-in-file">result</a> = <b>await</b> <a href="/source/s?defs=fn" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fn</a>()
+<a class="l" name="192" href="#192">192</a>  } <b>finally</b> {
+<a class="l" name="193" href="#193">193</a>    <a class="d intelliWindow-symbol" href="#endGroup" data-definition-place="defined-in-file">endGroup</a>()
+<a class="l" name="194" href="#194">194</a>  }
+<a class="l" name="195" href="#195">195</a>
+<a class="l" name="196" href="#196">196</a>  <b>return</b> <a href="/source/s?defs=result" class="intelliWindow-symbol" data-definition-place="undefined-in-file">result</a>
+<a class="l" name="197" href="#197">197</a>}
+<a class="l" name="198" href="#198">198</a>
+<a class="l" name="199" href="#199">199</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="hl" name="200" href="#200">200</a><span class="c">// Wrapper action state</span>
+<a class="l" name="201" href="#201">201</a><span class="c">//-----------------------------------------------------------------------</span>
+<a class="l" name="202" href="#202">202</a>
+<a class="l" name="203" href="#203">203</a><span class="c">/**
+<a class="l" name="204" href="#204">204</a> * Saves state for current action, the state can only be retrieved by this action&apos;s post job execution.
+<a class="l" name="205" href="#205">205</a> *
+<a class="l" name="206" href="#206">206</a> * @param     name     name of the state to store
+<a class="l" name="207" href="#207">207</a> * @param     value    value to store
+<a class="l" name="208" href="#208">208</a> */</span>
+<a class="l" name="209" href="#209">209</a><b>export</b> <b>function</b> <a class="xf" name="saveState"/><a href="/source/s?refs=saveState" class="xf intelliWindow-symbol" data-definition-place="def">saveState</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>, <a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a>: <b>string</b>): <b>void</b> {
+<a class="hl" name="210" href="#210">210</a>  <a href="/source/s?defs=issueCommand" class="intelliWindow-symbol" data-definition-place="undefined-in-file">issueCommand</a>(<span class="s">&apos;save-state&apos;</span>, {<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>}, <a href="/source/s?defs=value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value</a>)
+<a class="l" name="211" href="#211">211</a>}
+<a class="l" name="212" href="#212">212</a>
+<a class="l" name="213" href="#213">213</a><span class="c">/**
+<a class="l" name="214" href="#214">214</a> * Gets the value of an state set by this action&apos;s main execution.
+<a class="l" name="215" href="#215">215</a> *
+<a class="l" name="216" href="#216">216</a> * @param     name     name of the state to get
+<a class="l" name="217" href="#217">217</a> * @returns   string
+<a class="l" name="218" href="#218">218</a> */</span>
+<a class="l" name="219" href="#219">219</a><b>export</b> <b>function</b> <a class="xf" name="getState"/><a href="/source/s?refs=getState" class="xf intelliWindow-symbol" data-definition-place="def">getState</a>(<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>: <b>string</b>): <b>string</b> {
+<a class="hl" name="220" href="#220">220</a>  <b>return</b> <a href="/source/s?defs=process" class="intelliWindow-symbol" data-definition-place="undefined-in-file">process</a>.<a href="/source/s?defs=env" class="intelliWindow-symbol" data-definition-place="undefined-in-file">env</a>[<span class="s">`STATE_${</span><a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a><span class="s">}`</span>] || <span class="s">&apos;&apos;</span>
+<a class="l" name="221" href="#221">221</a>}
+<a class="l" name="222" href="#222">222</a>
+<a class="l" name="223" href="#223">223</a><b>export</b> <b>function</b> <a class="xf" name="foo"/><a href="/source/s?refs=foo" class="xf intelliWindow-symbol" data-definition-place="def">foo</a>(): <b>any</b> {
+<a class="l" name="224" href="#224">224</a>  <span class="c">// The following is not valid syntax.</span>
+<a class="l" name="225" href="#225">225</a>  <b>return</b> [<span class="n">100n</span>, <span class="n">1_000</span>, <span class="n">0777</span>, <b>unique symbol</b>]
+<a class="l" name="226" href="#226">226</a>}
+<a class="l" name="227" href="#227">227</a></body>
+</html>

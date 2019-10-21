@@ -1,0 +1,50 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * TypeScript 2.7 added support for numeric separators.
+ */
+DecimalDigits = ({DecimalDigit} |
+    {DecimalDigit} {NumericLiteralSeparator} {DecimalDigit})+
+BinaryDigits = ({BinaryDigit} |
+    {BinaryDigit} {NumericLiteralSeparator} {BinaryDigit})+
+OctalDigits = ({OctalDigit} |
+    {OctalDigit} {NumericLiteralSeparator} {OctalDigit})+
+HexDigits = ({HexDigit} |
+    {HexDigit} {NumericLiteralSeparator} {HexDigit})+
+NumericLiteralSeparator = "_"
+
+/*
+ * TypeScript 3.2 added support for a bigint suffix.
+ */
+DecimalLiteral = ({DecimalIntegerLiteral} "." {ExponentPart}? |
+    {DecimalIntegerLiteral} "." {DecimalDigits} {ExponentPart}? |
+    "." {DecimalDigits} {ExponentPart}? |
+    {DecimalIntegerLiteral} ({ExponentPart} | {BigIntSuffix})?)
+BigIntSuffix = "n"    // version 3.2
+
+File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] | [Tt][Ss][Xx]? |
+    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
+    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Ii][Nn][Ii] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])

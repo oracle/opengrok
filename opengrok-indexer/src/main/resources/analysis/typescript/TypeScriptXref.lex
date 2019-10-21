@@ -23,10 +23,10 @@
  */
 
 /*
- * Cross reference a JavaScript file
+ * Cross reference a TypeScript file
  */
 
-package org.opengrok.indexer.analysis.javascript;
+package org.opengrok.indexer.analysis.typescript;
 
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.util.Set;
 %%
 %public
-%class JavaScriptXref
-%extends JavaScriptLexer
+%class TypeScriptXref
+%extends TypeScriptLexer
 %unicode
 %buffer 32766
 %int
@@ -102,7 +102,11 @@ import java.util.Set;
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+// TypeScript.lexh comes after ECMAScript so that TypeScript macros supersede.
 %include ECMAScript.lexh
+%include TypeScript.lexh
 
 %%
+// TypeScriptProductions.lexh comes first so that its expressions are preferred.
+%include TypeScriptProductions.lexh
 %include ECMAScriptProductions.lexh

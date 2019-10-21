@@ -19,24 +19,26 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the JavaScript keywords.
- * 
- * ECMA-262 5.1 Edition June 2011
+ * Holds JavaScript keywords from ECMA-262 10th Edition, June 2019.
  */
-//TODO update to latest ecmascript ... (for angular support)
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    private static final Set<String> kwd = new HashSet<>();
+
+    public static final Set<String> KEYWORDS = Collections.unmodifiableSet(kwd);
+
     static {
-        //constants
+        // literals
         kwd.add("true");
         kwd.add("false");
         kwd.add("null");
@@ -45,29 +47,37 @@ public class Consts {
         kwd.add("Boolean");
         kwd.add("Date");
         kwd.add("Function");
+        kwd.add("Infinity"); // ECMA-262, 10th edition, June 2019
         kwd.add("Math");
         kwd.add("Number");
         kwd.add("Object");
         kwd.add("RegExp");
         kwd.add("String");                
         //keywords
+        kwd.add("await"); // ECMA-262, 10th edition, June 2019
         kwd.add("break");
         kwd.add("case");
         kwd.add("catch");
+        kwd.add("class");
+        kwd.add("const");
         kwd.add("continue");
         kwd.add("debugger");
         kwd.add("default");
         kwd.add("delete");
         kwd.add("do");
         kwd.add("else");
+        kwd.add("export");
+        kwd.add("extends");
         kwd.add("finally");
         kwd.add("for");
         kwd.add("function");
         kwd.add("if");
         kwd.add("in");
         kwd.add("instanceof");
+        kwd.add("import");
         kwd.add("new");
         kwd.add("return");
+        kwd.add("super");
         kwd.add("switch");
         kwd.add("this");
         kwd.add("throw");
@@ -77,14 +87,9 @@ public class Consts {
         kwd.add("void");
         kwd.add("while");
         kwd.add("with");
+        kwd.add("yield");
         //future reserved
-        kwd.add("class");
-        kwd.add("const");
         kwd.add("enum");
-        kwd.add("export");
-        kwd.add("extends");
-        kwd.add("import");
-        kwd.add("super");
         //strict future reserved
         kwd.add("implements");
         kwd.add("interface");
@@ -94,10 +99,8 @@ public class Consts {
         kwd.add("protected");
         kwd.add("public");
         kwd.add("static");
-        kwd.add("yield");
     }
 
-    private Consts() {
+    protected Consts() {
     }
-
 }
