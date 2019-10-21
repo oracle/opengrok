@@ -41,10 +41,10 @@ public class RepositoriesController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private RepositoryInfo getRepositoryInfo(String repositoryPath) {
+    private RepositoryInfo.RepositoryInfoTO getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
-                return ri;
+                return ri.getRepositoryInfoData();
             }
         }
 
@@ -57,7 +57,7 @@ public class RepositoriesController {
     public Object get(@QueryParam("repository") final String repositoryPath, @PathParam("field") final String field)
             throws IOException {
 
-        RepositoryInfo ri = getRepositoryInfo(repositoryPath);
+        RepositoryInfo.RepositoryInfoTO ri = getRepositoryInfoData(repositoryPath);
         if (ri == null) {
             throw new WebApplicationException("cannot find repository with path: " + repositoryPath,
                     Response.Status.NOT_FOUND);
