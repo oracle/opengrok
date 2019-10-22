@@ -30,6 +30,8 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import net.sf.cglib.beans.BeanGenerator;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -68,93 +70,6 @@ public class RepositoryInfo implements Serializable {
     private boolean handleRenamedFiles;
     private boolean historyEnabled;
 
-    public static class RepositoryInfoTO implements Serializable {
-        private static final long serialVersionUID = -1;
-
-        // same members as in RepositoryInfo except datePatterns
-        private String directoryNameRelative;
-        private boolean working;
-        private String type;
-        private boolean remote;
-        private String parent;
-        private String branch;
-        private String currentVersion;
-        private boolean handleRenamedFiles;
-        private boolean historyEnabled;
-
-        public String getDirectoryNameRelative() {
-            return directoryNameRelative;
-        }
-
-        public void setDirectoryNameRelative(String directoryNameRelative) {
-            this.directoryNameRelative = directoryNameRelative;
-        }
-
-        public boolean isWorking() {
-            return working;
-        }
-
-        public void setWorking(boolean working) {
-            this.working = working;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public boolean isRemote() {
-            return remote;
-        }
-
-        public void setRemote(boolean remote) {
-            this.remote = remote;
-        }
-
-        public String getParent() {
-            return parent;
-        }
-
-        public void setParent(String parent) {
-            this.parent = parent;
-        }
-
-        public String getBranch() {
-            return branch;
-        }
-
-        public void setBranch(String branch) {
-            this.branch = branch;
-        }
-
-        public String getCurrentVersion() {
-            return currentVersion;
-        }
-
-        public void setCurrentVersion(String currentVersion) {
-            this.currentVersion = currentVersion;
-        }
-
-        public boolean isHandleRenamedFiles() {
-            return handleRenamedFiles;
-        }
-
-        public void setHandleRenamedFiles(boolean handleRenamedFiles) {
-            this.handleRenamedFiles = handleRenamedFiles;
-        }
-
-        public boolean isHistoryEnabled() {
-            return historyEnabled;
-        }
-
-        public void setHistoryEnabled(boolean historyEnabled) {
-            this.historyEnabled = historyEnabled;
-        }
-    }
-
     /**
      * Empty constructor to support serialization.
      */
@@ -174,31 +89,42 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * @return Data Transfer Object for RepositoryInfo
+     * @return Data Transfer Object for RepositoryInfo.
+     * It will have the same members as in RepositoryInfo except datePatterns.
      */
-    public RepositoryInfoTO getRepositoryInfoData() {
+    public Object getRepositoryInfoData() {
         return createRepositoryInfoTO();
     }
 
-    private RepositoryInfoTO createRepositoryInfoTO() {
-        RepositoryInfoTO ri = new RepositoryInfoTO();
+    private Object createRepositoryInfoTO() {
+        BeanGenerator beanGenerator = new BeanGenerator();
+        beanGenerator.addProperty("type", String.class);
+        beanGenerator.addProperty("directoryNameRelative", String.class);
+        beanGenerator.addProperty("remote", boolean.class);
+        beanGenerator.addProperty("parent", String.class);
+        beanGenerator.addProperty("branch", String.class);
+        beanGenerator.addProperty("currentVersion", String.class);
+        beanGenerator.addProperty("working", Boolean.class);
+        beanGenerator.addProperty("handleRenamedFiles", boolean.class);
+        beanGenerator.addProperty("historyEnabled", boolean.class);
 
-        if (this.working == null) {
-            ri.working = false;
-        } else {
-            ri.working = this.working;
+        Object myBean = beanGenerator.create();
+        try {
+            ClassUtil.setFieldValue(myBean, "type", this.type);
+            ClassUtil.setFieldValue(myBean, "working",
+                    this.working == null ? false : this.working);
+            ClassUtil.setFieldValue(myBean, "directoryNameRelative", this.directoryNameRelative);
+            ClassUtil.setFieldValue(myBean, "remote", this.remote);
+            ClassUtil.setFieldValue(myBean, "parent", this.parent);
+            ClassUtil.setFieldValue(myBean, "branch", this.branch);
+            ClassUtil.setFieldValue(myBean, "currentVersion", this.currentVersion);
+            ClassUtil.setFieldValue(myBean, "handleRenamedFiles", this.handleRenamedFiles);
+            ClassUtil.setFieldValue(myBean, "historyEnabled", this.historyEnabled);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "cannot generate RepositoryInfo bean", e);
+            return null;
         }
-
-        ri.directoryNameRelative = this.directoryNameRelative;
-        ri.type = this.type;
-        ri.remote = this.remote;
-        ri.parent = this.parent;
-        ri.branch = this.branch;
-        ri.currentVersion = this.currentVersion;
-        ri.handleRenamedFiles = this.handleRenamedFiles;
-        ri.historyEnabled = this.historyEnabled;
-
-        return ri;
+        return myBean;
     }
 
     /**
