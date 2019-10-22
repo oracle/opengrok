@@ -31,10 +31,10 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.cglib.beans.BeanGenerator;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BeanBuilder;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.PathUtils;
 
@@ -97,34 +97,19 @@ public class RepositoryInfo implements Serializable {
     }
 
     private Object createRepositoryInfoTO() {
-        BeanGenerator beanGenerator = new BeanGenerator();
-        beanGenerator.addProperty("type", String.class);
-        beanGenerator.addProperty("directoryNameRelative", String.class);
-        beanGenerator.addProperty("remote", boolean.class);
-        beanGenerator.addProperty("parent", String.class);
-        beanGenerator.addProperty("branch", String.class);
-        beanGenerator.addProperty("currentVersion", String.class);
-        beanGenerator.addProperty("working", Boolean.class);
-        beanGenerator.addProperty("handleRenamedFiles", boolean.class);
-        beanGenerator.addProperty("historyEnabled", boolean.class);
+        BeanBuilder builder = new BeanBuilder();
 
-        Object myBean = beanGenerator.create();
-        try {
-            ClassUtil.setFieldValue(myBean, "type", this.type);
-            ClassUtil.setFieldValue(myBean, "working",
-                    this.working == null ? false : this.working);
-            ClassUtil.setFieldValue(myBean, "directoryNameRelative", this.directoryNameRelative);
-            ClassUtil.setFieldValue(myBean, "remote", this.remote);
-            ClassUtil.setFieldValue(myBean, "parent", this.parent);
-            ClassUtil.setFieldValue(myBean, "branch", this.branch);
-            ClassUtil.setFieldValue(myBean, "currentVersion", this.currentVersion);
-            ClassUtil.setFieldValue(myBean, "handleRenamedFiles", this.handleRenamedFiles);
-            ClassUtil.setFieldValue(myBean, "historyEnabled", this.historyEnabled);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "cannot generate RepositoryInfo bean", e);
-            return null;
-        }
-        return myBean;
+        builder.add("type", String.class, this.type)
+            .add("directoryNameRelative", String.class, this.directoryNameRelative)
+            .add("remote", boolean.class, this.remote)
+            .add("parent", String.class, this.parent)
+            .add("branch", String.class, this.branch)
+            .add("currentVersion", String.class, this.currentVersion)
+            .add("working", Boolean.class, this.working == null ? false : this.working)
+            .add("handleRenamedFiles", boolean.class, this.handleRenamedFiles)
+            .add("historyEnabled", boolean.class, this.historyEnabled);
+
+        return builder.build();
     }
 
     /**
