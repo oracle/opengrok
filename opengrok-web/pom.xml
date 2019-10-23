@@ -148,6 +148,16 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             <artifactId>org.suigeneris.jrcs.diff</artifactId>
             <version>0.4.2</version>
         </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>2.3.0</version>
+        </dependency>
     </dependencies>
 
     <build>
