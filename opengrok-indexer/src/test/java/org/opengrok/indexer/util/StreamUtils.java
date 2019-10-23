@@ -35,6 +35,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -161,6 +163,28 @@ public class StreamUtils {
                 return new BufferedInputStream(res);
             }
         };
+    }
+
+    /**
+     * Parses symbols, one per line (trimmed), from a resource stream, but
+     * recognizing a hash character {@code '#'} as starting a line comment that
+     * is not included in a symbol.
+     * @return a defined instance
+     */
+    public static List<String> readSampleSymbols(InputStream symbolsResource) throws IOException {
+        List<String> result = new ArrayList<>();
+        try (BufferedReader rdr = new BufferedReader(new InputStreamReader(symbolsResource,
+                StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                int hashOffset = line.indexOf('#');
+                if (hashOffset != -1) {
+                    line = line.substring(0, hashOffset);
+                }
+                result.add(line.trim());
+            }
+        }
+        return result;
     }
 
     /** private to enforce static */

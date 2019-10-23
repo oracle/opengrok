@@ -26,13 +26,10 @@ package org.opengrok.indexer.analysis.typescript;
 
 import static org.junit.Assert.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import org.junit.Test;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,19 +51,7 @@ public class TypeScriptSymbolTokenizerTest {
         InputStream symRes = getClass().getClassLoader().getResourceAsStream(symbolsResource);
         assertNotNull(String.format("Unable to find %s as a resource", symbolsResource), symRes);
 
-        List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader wordsReader = new BufferedReader(
-                new InputStreamReader(symRes, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = wordsReader.readLine()) != null) {
-                int hashOffset = line.indexOf('#');
-                if (hashOffset != -1) {
-                    line = line.substring(0, hashOffset);
-                }
-                expectedSymbols.add(line.trim());
-            }
-        }
-
+        List<String> expectedSymbols = readSampleSymbols(symRes);
         assertSymbolStream(TypeScriptSymbolTokenizer.class, tsRes, expectedSymbols);
     }
 }
