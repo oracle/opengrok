@@ -35,6 +35,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.indexer.util.DTOElement;
 import org.opengrok.indexer.util.PathUtils;
 
 /**
@@ -55,18 +56,26 @@ public class RepositoryInfo implements Serializable {
 
     private static final long serialVersionUID = 3L;
 
+    @DTOElement
     private String directoryNameRelative;
     private transient String directoryNameCanonical;
 
+    @DTOElement
     protected Boolean working;
+    @DTOElement
     protected String type;  // type of the repository, should be unique
+    @DTOElement
     protected boolean remote;
     protected String[] datePatterns = new String[0];
+    @DTOElement
     protected String parent;
+    @DTOElement
     protected String branch;
+    @DTOElement
     protected String currentVersion;
-
+    @DTOElement
     private boolean handleRenamedFiles;
+    @DTOElement
     private boolean historyEnabled;
 
     /**
