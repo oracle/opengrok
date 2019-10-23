@@ -22,12 +22,10 @@
  */
 package org.opengrok.web.api.v1.controller;
 
-import net.sf.cglib.beans.BeanGenerator;
-import org.modelmapper.ModelMapper;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.ClassUtil;
-import org.opengrok.indexer.util.DTOElement;
+import org.opengrok.web.util.DTO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -38,31 +36,16 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 @Path("/repositories")
 public class RepositoriesController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private Object createRepositoryInfoTO(RepositoryInfo ri) {
-        // ModelMapper assumes getters/setters so use BeanGenerator to provide them.
-        BeanGenerator beanGenerator = new BeanGenerator();
-        for (Field field : RepositoryInfo.class.getDeclaredFields()) {
-            if (field.isAnnotationPresent(DTOElement.class)) {
-                beanGenerator.addProperty(field.getName(), field.getType());
-            }
-        }
-        Object bean = beanGenerator.create();
-
-        ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(ri, bean.getClass());
-    }
-
     private Object getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
-                return createRepositoryInfoTO(ri);
+                return DTO.createDTO(ri);
             }
         }
 
