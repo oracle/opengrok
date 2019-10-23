@@ -22,9 +22,10 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import net.sf.cglib.beans.BeanGenerator;
+import org.modelmapper.ModelMapper;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.util.BeanBuilder;
 import org.opengrok.indexer.util.ClassUtil;
 
 import javax.ws.rs.GET;
@@ -36,6 +37,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 @Path("/repositories")
 public class RepositoriesController {
@@ -54,20 +56,16 @@ public class RepositoriesController {
     }
 
     private Object createRepositoryInfoTO(RepositoryInfo ri) {
-        BeanBuilder builder = new BeanBuilder();
-        builder.add("type", String.class, ri.getType())
-            .add("directoryNameRelative", String.class, ri.getDirectoryNameRelative())
-            .add("remote", boolean.class, ri.isRemote())
-            .add("parent", String.class, ri.getParent())
-            .add("branch", String.class, ri.getBranch())
-            .add("currentVersion", String.class, ri.getCurrentVersion())
-            .add("working", Boolean.class, ri.isWorking())
-            .add("handleRenamedFiles", boolean.class, ri.isHandleRenamedFiles())
-            .add("historyEnabled", boolean.class, ri.isHistoryEnabled());
+        // ModelMapper assumes getters/setters so use BeanGenerator to provide them.
+        BeanGenerator beanGenerator = new BeanGenerator();
+        for (Field field : RepositoryInfoDTO.class.getDeclaredFields()) {
+            beanGenerator.addProperty(field.getName(), field.getType());
+        }
+        Object bean = beanGenerator.create();
 
-        return builder.build();
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(ri, bean.getClass());
     }
-
 
     private Object getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
