@@ -27,6 +27,7 @@ import org.modelmapper.ModelMapper;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.indexer.util.DTOElement;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -44,22 +45,13 @@ public class RepositoriesController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    static class RepositoryInfoDTO {
-        // Contains all members of RepositoryInfo except datePatterns
-        String directoryNameRelative;
-        Boolean working;
-        String type;
-        boolean remote;
-        String parent;
-        String branch;
-        String currentVersion;
-    }
-
     private Object createRepositoryInfoTO(RepositoryInfo ri) {
         // ModelMapper assumes getters/setters so use BeanGenerator to provide them.
         BeanGenerator beanGenerator = new BeanGenerator();
-        for (Field field : RepositoryInfoDTO.class.getDeclaredFields()) {
-            beanGenerator.addProperty(field.getName(), field.getType());
+        for (Field field : RepositoryInfo.class.getDeclaredFields()) {
+            if (field.isAnnotationPresent(DTOElement.class)) {
+                beanGenerator.addProperty(field.getName(), field.getType());
+            }
         }
         Object bean = beanGenerator.create();
 
