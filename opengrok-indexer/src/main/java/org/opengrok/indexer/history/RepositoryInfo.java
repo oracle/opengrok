@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BeanBuilder;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.PathUtils;
 
@@ -86,30 +85,6 @@ public class RepositoryInfo implements Serializable {
         this.parent = orig.parent;
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
-    }
-
-    /**
-     * @return Data Transfer Object for RepositoryInfo.
-     * It will have the same members as in RepositoryInfo except datePatterns.
-     */
-    public Object getRepositoryInfoData() {
-        return createRepositoryInfoTO();
-    }
-
-    private Object createRepositoryInfoTO() {
-        BeanBuilder builder = new BeanBuilder();
-
-        builder.add("type", String.class, this.type)
-            .add("directoryNameRelative", String.class, this.directoryNameRelative)
-            .add("remote", boolean.class, this.remote)
-            .add("parent", String.class, this.parent)
-            .add("branch", String.class, this.branch)
-            .add("currentVersion", String.class, this.currentVersion)
-            .add("working", Boolean.class, this.working == null ? false : this.working)
-            .add("handleRenamedFiles", boolean.class, this.handleRenamedFiles)
-            .add("historyEnabled", boolean.class, this.historyEnabled);
-
-        return builder.build();
     }
 
     /**

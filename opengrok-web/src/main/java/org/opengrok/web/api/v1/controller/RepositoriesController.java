@@ -24,6 +24,7 @@ package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.util.BeanBuilder;
 import org.opengrok.indexer.util.ClassUtil;
 
 import javax.ws.rs.GET;
@@ -41,10 +42,37 @@ public class RepositoriesController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    static class RepositoryInfoDTO {
+        // Contains all members of RepositoryInfo except datePatterns
+        String directoryNameRelative;
+        Boolean working;
+        String type;
+        boolean remote;
+        String parent;
+        String branch;
+        String currentVersion;
+    }
+
+    private Object createRepositoryInfoTO(RepositoryInfo ri) {
+        BeanBuilder builder = new BeanBuilder();
+        builder.add("type", String.class, ri.getType())
+            .add("directoryNameRelative", String.class, ri.getDirectoryNameRelative())
+            .add("remote", boolean.class, ri.isRemote())
+            .add("parent", String.class, ri.getParent())
+            .add("branch", String.class, ri.getBranch())
+            .add("currentVersion", String.class, ri.getCurrentVersion())
+            .add("working", Boolean.class, ri.isWorking())
+            .add("handleRenamedFiles", boolean.class, ri.isHandleRenamedFiles())
+            .add("historyEnabled", boolean.class, ri.isHistoryEnabled());
+
+        return builder.build();
+    }
+
+
     private Object getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
-                return ri.getRepositoryInfoData();
+                return createRepositoryInfoTO(ri);
             }
         }
 
