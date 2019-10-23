@@ -33,6 +33,12 @@ public class DTO {
         // private to ensure static
     }
 
+    /**
+     * Generate Data Transfer Object from an object. Any field in the input object
+     * that is annotated with <code>DTOElement</code> will be brought along.
+     * @param object object to use as input
+     * @return DTO with values and generated getters/setters from input object
+     */
     public static Object createDTO(Object object) {
         // ModelMapper assumes getters/setters so use BeanGenerator to provide them.
         BeanGenerator beanGenerator = new BeanGenerator();
