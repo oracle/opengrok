@@ -1,9 +1,0 @@
-UI: opengrok-web/**/*
-
-tools: opengrok-tools/**/*
-
-indexer: opengrok-indexer/**/*
-
-docker:
-- docker/*
-- Dockerfile
