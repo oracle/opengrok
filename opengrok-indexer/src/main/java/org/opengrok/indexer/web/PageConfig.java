@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -63,7 +62,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
-import org.apache.lucene.util.NamedThreadFactory;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -153,6 +151,8 @@ public final class PageConfig {
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
+
+    private ExecutorService executor;
 
     /**
      * Sets current request's attribute.
@@ -261,8 +261,7 @@ public final class PageConfig {
             InputStream[] in = new InputStream[2];
             try {
                 // Get input stream for both older and newer file.
-                ExecutorService executor = Executors.newFixedThreadPool(2,
-                        new NamedThreadFactory("get-revision"));
+                ExecutorService executor = this.executor;
                 Future<?>[] future = new Future<?>[2];
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
@@ -1548,6 +1547,7 @@ public final class PageConfig {
     private PageConfig(HttpServletRequest req) {
         this.req = req;
         this.authFramework = RuntimeEnvironment.getInstance().getAuthorizationFramework();
+        this.executor = RuntimeEnvironment.getInstance().getRevisionExecutor();
     }
 
     /**

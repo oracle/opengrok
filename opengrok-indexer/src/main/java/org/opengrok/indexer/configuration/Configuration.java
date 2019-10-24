@@ -265,9 +265,15 @@ public final class Configuration {
 
     /**
      * Upper bound for number of threads used for performing multi-project
-     * searches. This is total for the whole webapp/CLI utility.
+     * searches. This is total for the whole webapp.
      */
     private int MaxSearchThreadCount;
+
+    /**
+     * Upper bound for number of threads used for getting revision contents.
+     * This is total for the whole webapp.
+     */
+    private int MaxRevisionThreadCount;
 
     /**
      * If false, do not display listing or projects/repositories on the index page.
@@ -467,6 +473,7 @@ public final class Configuration {
         //luceneLocking default is OFF
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
+        setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
         setOptimizeDatabase(true);
@@ -1211,7 +1218,15 @@ public final class Configuration {
     public void setMaxSearchThreadCount(int count) {
         this.MaxSearchThreadCount = count;
     }
-    
+
+    public int getMaxRevisionThreadCount() {
+        return MaxRevisionThreadCount;
+    }
+
+    public void setMaxRevisionThreadCount(int count) {
+        this.MaxRevisionThreadCount = count;
+    }
+
     public boolean isProjectsEnabled() {
         return projectsEnabled;
     }

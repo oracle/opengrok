@@ -57,6 +57,7 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.NamedThreadFactory;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -91,6 +92,7 @@ public final class RuntimeEnvironment {
     private final ReentrantReadWriteLock configLock;
     private final LazilyInstantiate<IndexerParallelizer> lzIndexerParallelizer;
     private final LazilyInstantiate<ExecutorService> lzSearchExecutor;
+    private final LazilyInstantiate<ExecutorService> lzRevisionExecutor;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
@@ -129,6 +131,7 @@ public final class RuntimeEnvironment {
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
         lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
+        lzRevisionExecutor = LazilyInstantiate.using(() -> newRevisionExecutor());
     }
 
     // Instance of authorization framework and its lock.
@@ -151,6 +154,15 @@ public final class RuntimeEnvironment {
                     return thread;
                 }
             });
+    }
+
+    public ExecutorService getRevisionExecutor() {
+        return lzRevisionExecutor.get();
+    }
+
+    private ExecutorService newRevisionExecutor() {
+        return Executors.newFixedThreadPool(this.getMaxRevisionThreadCount(),
+                new NamedThreadFactory("get-revision"));
     }
 
     /**
@@ -1267,6 +1279,14 @@ public final class RuntimeEnvironment {
 
     public int getMaxSearchThreadCount() {
         return (int) getConfigurationValue("maxSearchThreadCount");
+    }
+
+    public void setMaxRevisionThreadCount(int count) {
+        setConfigurationValue("maxRevisionThreadCount", count);
+    }
+
+    public int getMaxRevisionThreadCount() {
+        return (int) getConfigurationValue("maxRevisionThreadCount");
     }
 
     public int getCurrentIndexedCollapseThreshold() {
