@@ -271,17 +271,15 @@ public final class PageConfig {
                 }
 
                 for (int i = 0; i < 2; i++) {
+                    // The Executor used by given repository will enforce the timeout.
                     in[i] = (InputStream) future[i].get();
                     if (in[i] == null) {
                         data.errorMsg = "Unable to get revision "
                                 + Util.htmlize(data.rev[i]) + " for file: "
                                 + Util.htmlize(getPath());
-                        executor.shutdownNow();
                         return data;
                     }
                 }
-                // The Executor used by given repository will enforce the timeout.
-                executor.awaitTermination(0, TimeUnit.SECONDS);
 
                 /*
                  * If the genre of the older revision cannot be determined,

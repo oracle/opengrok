@@ -115,6 +115,11 @@ public final class WebappListener
         env.watchDog.stop();
         env.stopExpirationTimer();
         try {
+            env.shutdownRevisionExecutor();
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Could not shutdown revision executor", e);
+        }
+        try {
             saveStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);

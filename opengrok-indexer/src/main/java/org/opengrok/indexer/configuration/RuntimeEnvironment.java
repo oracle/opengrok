@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -163,6 +164,11 @@ public final class RuntimeEnvironment {
     private ExecutorService newRevisionExecutor() {
         return Executors.newFixedThreadPool(this.getMaxRevisionThreadCount(),
                 new NamedThreadFactory("get-revision"));
+    }
+
+    public void shutdownRevisionExecutor() throws InterruptedException {
+        getRevisionExecutor().shutdownNow();
+        getRevisionExecutor().awaitTermination(0, TimeUnit.SECONDS);
     }
 
     /**
