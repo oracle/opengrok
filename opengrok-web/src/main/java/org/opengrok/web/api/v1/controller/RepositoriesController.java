@@ -25,7 +25,7 @@ package org.opengrok.web.api.v1.controller;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.ClassUtil;
-import org.opengrok.web.util.DTO;
+import org.opengrok.web.util.DTOUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -45,7 +45,7 @@ public class RepositoriesController {
     private Object getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repositoryPath)) {
-                return DTO.createDTO(ri);
+                return DTOUtil.createDTO(ri);
             }
         }
 

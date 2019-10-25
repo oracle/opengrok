@@ -28,10 +28,14 @@ import org.opengrok.indexer.util.DTOElement;
 
 import java.lang.reflect.Field;
 
-public class DTO {
-    private DTO() {
+public class DTOUtil {
+    private DTOUtil() {
         // private to ensure static
     }
+
+    // ModelMapper is thread-safe and we only need to convert different object types for now
+    // so it should be safe to reuse its instance.
+    private static final ModelMapper modelMapper = new ModelMapper();
 
     /**
      * Generate Data Transfer Object from an object. Any field in the input object
@@ -49,7 +53,6 @@ public class DTO {
         }
         Object bean = beanGenerator.create();
 
-        ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(object, bean.getClass());
     }
 }
