@@ -46,7 +46,7 @@ public class Filter implements Serializable {
      * The full list of all patterns. This list will be saved in the
      * configuration file (if used).
      */
-    private final List<String> items;
+    private final PatternList items;
 
     public Filter() {
         filenames = new HashSet<>();
@@ -154,7 +154,7 @@ public class Filter implements Serializable {
      * @return true if this pathname matches, false otherwise
      */
     public boolean match(String name) {
-        /**
+        /*
          * Creating File object out of relative path would mean the path would be
          * checked against current working directory which is usually undesired.
          */

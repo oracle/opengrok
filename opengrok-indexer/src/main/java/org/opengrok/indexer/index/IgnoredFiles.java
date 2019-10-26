@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -67,20 +68,12 @@ public final class IgnoredFiles extends Filter {
 
     /**
      * Should the file be ignored or not?
-     * @param file the file to check
-     * @return true if this file should be ignored, false otherwise
+     * @return {@code true} if {@code file} has {@link File#isFile() == true}
+     * and should be ignored per filtering
      */
-    public boolean ignore(File file) {
-        return file.isFile() && match(file);
-    }
-
-    /**
-     * Should the file be ignored or not?
-     * @param name the name of the file to check
-     * @return true if this pathname should be ignored, false otherwise
-     */
-    public boolean ignore(String name) {
-        return match(name);
+    @Override
+    public boolean match(File file) {
+        return file.isFile() && super.match(file);
     }
 
     private void addDefaultPatterns() {

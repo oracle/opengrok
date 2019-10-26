@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -76,9 +77,9 @@ public class IgnoredNames implements Serializable {
      */
     public boolean ignore(File file) {
         if (file.isFile()) {
-            return ignoredFiles.ignore(file);
+            return ignoredFiles.match(file);
         } else {
-            return ignoredDirs.ignore(file);
+            return ignoredDirs.match(file);
         }
     }
 
@@ -89,7 +90,7 @@ public class IgnoredNames implements Serializable {
      * @return true if this pathname should be ignored, false otherwise
      */
     public boolean ignore(String name) {
-        return ignoredFiles.ignore(name) || ignoredDirs.ignore(name);
+        return ignoredFiles.match(name) || ignoredDirs.match(name);
     }
 
     public void clear() {
