@@ -977,6 +977,16 @@ public final class RuntimeEnvironment {
         return cmd;
     }
 
+    public void setRepoCmds(Map<String, String> cmds) {
+        Lock writeLock = configLock.writeLock();
+        writeLock.lock();
+        try {
+            configuration.setCmds(cmds);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
     /**
      * Sets the user page for the history listing.
      *
@@ -1367,6 +1377,15 @@ public final class RuntimeEnvironment {
      */
     public short getContextSurround() {
         return (short) getConfigurationValue("contextSurround");
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getDisabledRepositories() {
+        return (Set<String>) getConfigurationValue("disabledRepositories");
+    }
+
+    public void setDisabledRepositories(Set<String> disabledRepositories) {
+        setConfigurationValue("disabledRepositories", disabledRepositories);
     }
 
     /**
