@@ -27,11 +27,17 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
@@ -62,20 +68,43 @@ public final class RepositoryFactory {
         new SSCMRepository()
     };
 
+    private static final Map<String, Class<? extends Repository>> byName = new HashMap<>();
+
+    static {
+        final String REPOSITORY = "Repository";
+        for (Repository repository : repositories) {
+            Class<? extends Repository> clazz = repository.getClass();
+            String repoName = clazz.getSimpleName();
+            byName.put(repoName, clazz);
+            byName.put(repoName.toLowerCase(Locale.ROOT), clazz);
+            if (repoName.endsWith(REPOSITORY)) {
+                String shortName = repoName.substring(0, repoName.length() - REPOSITORY.length());
+                if (shortName.length() > 0) {
+                    byName.put(shortName, clazz);
+                    byName.put(shortName.toLowerCase(Locale.ROOT), clazz);
+                }
+            }
+        }
+    }
+
+    /** Private to enforce static. */
     private RepositoryFactory() {
-        // Factory class, should not be constructed
     }
 
     /**
      * Get a list of all available repository handlers.
      *
-     * @return a list which contains none-{@code null} values, only.
+     * @return a list that contains non-{@code null} values only
      */
     public static List<Class<? extends Repository>> getRepositoryClasses() {
-        ArrayList<Class<? extends Repository>> list
-                = new ArrayList<>(repositories.length);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        ArrayList<Class<? extends Repository>> list = new ArrayList<>(repositories.length);
         for (int i = repositories.length - 1; i >= 0; i--) {
-            list.add(repositories[i].getClass());
+            Class<? extends Repository> clazz = repositories[i].getClass();
+            if (isEnabled(clazz, env)) {
+                list.add(clazz);
+            }
         }
         
         return list;
@@ -128,15 +157,18 @@ public final class RepositoryFactory {
         String relFile = env.getPathRelativeToSourceRoot(file);
 
         Repository repo = null;
-        for (Repository rep : repositories) {
-            if ((!isNested || rep.isNestable()) && rep.isRepositoryFor(file, interactive)) {
-                repo = rep.getClass().getDeclaredConstructor().newInstance();
+        for (Repository referenceRepo : repositories) {
+            Class<? extends Repository> clazz = referenceRepo.getClass();
+
+            if ((!isNested || referenceRepo.isNestable()) && isEnabled(clazz, env) &&
+                    referenceRepo.isRepositoryFor(file, interactive)) {
+                repo = clazz.getDeclaredConstructor().newInstance();
 
                 if (env.isProjectsEnabled() && relFile.equals(File.separator)) {
                     LOGGER.log(Level.WARNING, "{0} was detected as {1} repository however with directory " +
                             "matching source root. This is invalid because projects are enabled. Ignoring this " +
                             "repository.",
-                            new Object[]{file, rep.getType()});
+                            new Object[]{file, repo.getType()});
                     return null;
                 }
                 repo.setDirectoryName(file);
@@ -220,22 +252,46 @@ public final class RepositoryFactory {
     }
 
     /**
-     * Go through all repository types and add items to lists of ignored
-     * files/directories. This way per-repository ignored entries are set
-     * inside repository classes rather than globally in IgnoredFiles/Dirs.
-     * Should be called after {@code setConfiguration()}.
-     * 
-     * @param env runtime environment
+     * Go through all supported repository types, and add their ignored items to
+     * the environment's lists of ignored files/directories -- but skip any
+     * repository types which are named in
+     * {@link RuntimeEnvironment#getDisabledRepositories()} ()}. This way
+     * per-repository ignored entries are set inside repository classes rather
+     * than globally in IgnoredFiles/Dirs.
+     * <p>
+     * (Should be called after
+     * {@link RuntimeEnvironment#setConfiguration(Configuration)}.)
      */
     public static void initializeIgnoredNames(RuntimeEnvironment env) {
+        IgnoredNames ignoredNames = env.getIgnoredNames();
         for (Repository repo : repositories) {
-            for (String file : repo.getIgnoredFiles()) {
-                env.getIgnoredNames().add("f:" + file);
-            }
-
-            for (String dir : repo.getIgnoredDirs()) {
-                env.getIgnoredNames().add("d:" + dir);
+            if (isEnabled(repo.getClass(), env)) {
+                for (String file : repo.getIgnoredFiles()) {
+                    ignoredNames.add("f:" + file);
+                }
+                for (String dir : repo.getIgnoredDirs()) {
+                    ignoredNames.add("d:" + dir);
+                }
             }
         }
+    }
+
+    /**
+     * Tries to match a supported repositories by name or nickname -- e.g.
+     * {@code "CVSRepository"} or {@code "CVS"} or {@code "cvs"}.
+     * @return a defined, class simple name (e.g. {@code "CVSRepository"} when
+     * {@code "cvs"} is passed); or {@code null} if no match found
+     */
+    public static String matchRepositoryByName(String name) {
+        Class<? extends Repository> clazz = byName.get(name);
+        if (clazz != null) {
+            return clazz.getSimpleName();
+        }
+        return null;
+    }
+
+    private static boolean isEnabled(Class<? extends Repository> clazz, RuntimeEnvironment env) {
+        Set<String> disabledRepos = env.getDisabledRepositories();
+        return disabledRepos == null || !disabledRepos.contains(clazz.getSimpleName());
     }
 }

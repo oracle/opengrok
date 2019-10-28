@@ -121,6 +121,7 @@ public final class Indexer {
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final HashSet<String> canonicalRoots = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
+    private static final HashSet<String> disabledRepositories = new HashSet<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
 
@@ -167,6 +168,9 @@ public final class Indexer {
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
             }
+
+            disabledRepositories.addAll(cfg.getDisabledRepositories());
+            cfg.setDisabledRepositories(disabledRepositories);
 
             env = RuntimeEnvironment.getInstance();
 
@@ -416,8 +420,8 @@ public final class Indexer {
      * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
-        String[] usage = {HELP_OPT_1};
-        String program = "opengrok.jar";
+        final String[] usage = {HELP_OPT_1};
+        final String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
         final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
@@ -465,10 +469,10 @@ public final class Indexer {
 
             parser.on(
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
-                    "Files with the named prefix/extension should be analyzed",
-                    "with the given analyzer, where 'analyzer' may be specified",
-                    "using a simple class name (RubyAnalyzer) or language name (C)",
-                    "(Note, analyzer specification is case-sensitive)",
+                    "Files with the named prefix/extension should be analyzed with the given",
+                    "analyzer, where 'analyzer' may be specified using a simple class name",
+                    "(e.g. RubyAnalyzer) or language name (e.g. C) and is case-sensitive.",
+                    "Option may be repeated.",
                     "  Ex: -A .foo:CAnalyzer",
                     "      will use the C analyzer for all files ending with .FOO",
                     "  Ex: -A bar.:Perl",
@@ -530,6 +534,22 @@ public final class Indexer {
                 "Scanning depth for repositories in directory structure relative to",
                 "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth -> {
                 cfg.setScanningDepth((Integer) depth);
+            });
+
+            parser.on("--disableRepository", "=type_name",
+                    "Disables operation of an OpenGrok-supported repository. Option may be",
+                    "repeated.",
+                    "  Ex: --disableRepository git",
+                    "      will disable the GitRepository",
+                    "  Ex: --disableRepository MercurialRepository").Do(v -> {
+                String repoType = (String) v;
+                String repoSimpleType = RepositoryFactory.matchRepositoryByName(repoType);
+                if (repoSimpleType == null) {
+                    System.err.println(String.format(
+                            "'--disableRepository %s' does not match a type and is ignored", v));
+                } else {
+                    disabledRepositories.add(repoSimpleType);
+                }
             });
 
             parser.on("-e", "--economical",

@@ -19,19 +19,29 @@
 
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import org.junit.AfterClass;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -43,20 +53,35 @@ import org.opengrok.indexer.util.TestRepository;
  * @author Vladimir Kotal
  */
 public class RepositoryFactoryTest {
-    private static TestRepository repository;
-    
+    private static RuntimeEnvironment env;
+    private static TestRepository repository = new TestRepository();
+    private static Set<String> savedDisabledRepositories;
+    private static boolean savedIsProjectsEnabled;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     @BeforeClass
     public static void setUpClass() throws Exception {
-        repository = new TestRepository();
-        repository.create(RepositoryFactory.class.getResourceAsStream("repositories.zip"));
+        env = RuntimeEnvironment.getInstance();
+        repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
+        savedDisabledRepositories = env.getDisabledRepositories();
+        savedIsProjectsEnabled = env.isProjectsEnabled();
     }
     
     @AfterClass
-    public static void tearDown() {
+    public static void tearDownClass() {
         if (repository != null) {
             repository.destroy();
             repository = null;
         }
+    }
+
+    @After
+    public void tearDown() {
+        env.setRepoCmds(Collections.emptyMap());
+        env.setDisabledRepositories(savedDisabledRepositories);
+        env.setProjectsEnabled(savedIsProjectsEnabled);
     }
 
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
@@ -65,10 +90,41 @@ public class RepositoryFactoryTest {
             ForbiddenSymlinkException, InstantiationException, NoSuchMethodException, IOException {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(root.getAbsolutePath());
         env.setProjectsEnabled(true);
-        assertNull(RepositoryFactory.getRepository(root));
+        Repository repo = RepositoryFactory.getRepository(root);
+        assertNull("should not get repo for root if projects enabled", repo);
+    }
+
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testNormallyEnabledMercurialRepository() throws IllegalAccessException,
+            InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
+            NoSuchMethodException, IOException {
+
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        env.setSourceRoot(root.getAbsolutePath());
+        assertNotNull("should get MercurialRepository",
+                RepositoryFactory.getRepository(root));
+    }
+
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testMercurialRepositoryWhenDisabled() throws IllegalAccessException,
+            InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
+            NoSuchMethodException, IOException {
+
+        env.setDisabledRepositories(new HashSet<>(
+                Collections.singletonList("MercurialRepository")));
+
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        env.setSourceRoot(root.getAbsolutePath());
+        assertNull("should not get MercurialRepository if disabled",
+                RepositoryFactory.getRepository(root));
+
+        List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
+        assertFalse("should not contain MercurialRepository",
+                clazzes.contains(MercurialRepository.class));
     }
 
     /*
@@ -79,15 +135,20 @@ public class RepositoryFactoryTest {
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
-        File root = new File(repository.getSourceRoot(), repoPath);
-        env.setSourceRoot(repository.getSourceRoot());
-        Repository repo = RepositoryFactory.getRepository(root);
-        if (origPropValue != null) {
-            System.setProperty(propName, origPropValue);
+        try {
+            File root = new File(repository.getSourceRoot(), repoPath);
+            env.setSourceRoot(repository.getSourceRoot());
+            Repository repo = RepositoryFactory.getRepository(root);
+            assertNotNull("should have defined repo", repo);
+            assertFalse("repo should not be working", repo.isWorking());
+        } finally {
+            if (origPropValue != null) {
+                System.setProperty(propName, origPropValue);
+            } else {
+                System.clearProperty(propName);
+            }
         }
-        assertFalse(repo.isWorking());
     }
     
     @Test

@@ -68,8 +68,10 @@ import org.opengrok.indexer.logger.LoggerFactory;
  * nature of the web application, each thread will use the same instance of the
  * configuration object for each page request. Class and methods should have
  * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
- *
- * This should be as close to POJO (https://en.wikipedia.org/wiki/Plain_old_Java_object) as possible.
+ * <p>
+ * This should be as close to a
+ * <a href="https://en.wikipedia.org/wiki/Plain_old_Java_object">POJO</a> as
+ * possible.
  */
 public final class Configuration {
 
@@ -187,6 +189,7 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
+    private boolean quickContextScan;
 
     private LuceneLockName luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
@@ -295,6 +298,8 @@ public final class Configuration {
     private boolean navigateWindowEnabled;
 
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
+
+    private Set<String> disabledRepositories;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -485,6 +490,7 @@ public final class Configuration {
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
         setPrintProgress(false);
+        setDisabledRepositories(new HashSet<>());
         setProjects(new ConcurrentHashMap<>());
         setQuickContextScan(true);
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
@@ -910,8 +916,6 @@ public final class Configuration {
         return allowLeadingWildcard;
     }
 
-    private boolean quickContextScan;
-
     public boolean isQuickContextScan() {
         return quickContextScan;
     }
@@ -1257,6 +1261,14 @@ public final class Configuration {
             throw new IllegalArgumentException("Cannot set Suggester configuration to null");
         }
         this.suggesterConfig = config;
+    }
+
+    public Set<String> getDisabledRepositories() {
+        return disabledRepositories;
+    }
+
+    public void setDisabledRepositories(Set<String> disabledRepositories) {
+        this.disabledRepositories = disabledRepositories;
     }
 
     /**
