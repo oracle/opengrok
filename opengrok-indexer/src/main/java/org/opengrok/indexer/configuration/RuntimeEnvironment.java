@@ -168,7 +168,7 @@ public final class RuntimeEnvironment {
 
     public void shutdownRevisionExecutor() throws InterruptedException {
         getRevisionExecutor().shutdownNow();
-        getRevisionExecutor().awaitTermination(0, TimeUnit.SECONDS);
+        getRevisionExecutor().awaitTermination(getCommandTimeout(), TimeUnit.SECONDS);
     }
 
     /**
