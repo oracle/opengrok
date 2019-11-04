@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -319,7 +319,7 @@ class PendingFileCompleter {
                         f.getTargetRelPath())).collect(Collectors.toList());
 
         Map<Boolean, List<PendingSymlinkageExec>> bySuccess;
-        try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
+        try (Progress progress = new Progress(LOGGER, "pending linkages", numPending)) {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
                                 progress.increment();
