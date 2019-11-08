@@ -18,18 +18,17 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 from .command import Command
-from .webutil import put, post, delete
 from .utils import is_web_uri
 from .exitvals import (
     CONTINUE_EXITVAL,
     SUCCESS_EXITVAL
 )
-import json
+from .restful import call_rest_api
 import re
 
 
@@ -100,33 +99,6 @@ class CommandSequence(CommandSequenceBase):
 
         return cmd.getretcode()
 
-    def call_rest_api(self, command):
-        """
-        Make RESTful API call. Occurrence of PROJECT_SUBST in the URI will be
-        replaced by project name.
-        """
-        command = command.get("command")
-        uri = command[0].replace(self.PROJECT_SUBST, self.name)
-        verb = command[1]
-        data = command[2]
-
-        headers = None
-        json_data = None
-        if data:
-            headers = {'Content-Type': 'application/json'}
-            json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
-            self.logger.debug("JSON data: {}".format(json_data))
-
-        if verb == 'PUT':
-            put(self.logger, uri, headers=headers, data=json_data)
-        elif verb == 'POST':
-            post(self.logger, uri, headers=headers, data=json_data)
-        elif verb == 'DELETE':
-            delete(self.logger, uri, data)
-        else:
-            self.logger.error('Unknown HTTP verb in command {}'.
-                              format(command))
-
     def run(self):
         """
         Run the sequence of commands and capture their output and return code.
@@ -145,7 +117,7 @@ class CommandSequence(CommandSequenceBase):
 
         for command in self.commands:
             if is_web_uri(command.get("command")[0]):
-                self.call_rest_api(command)
+                call_rest_api(command, self.PROJECT_SUBST, self.name)
             else:
                 retcode = self.run_command(command)
 
@@ -184,7 +156,7 @@ class CommandSequence(CommandSequenceBase):
 
         for cleanup_cmd in self.cleanup:
             if is_web_uri(cleanup_cmd.get("command")[0]):
-                self.call_rest_api(cleanup_cmd)
+                call_rest_api(cleanup_cmd, self.PROJECT_SUBST, self.name)
             else:
                 command_args = cleanup_cmd.get("command")
                 self.logger.debug("Running cleanup command '{}'".
