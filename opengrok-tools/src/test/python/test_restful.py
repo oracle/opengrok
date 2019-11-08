@@ -34,7 +34,7 @@ def test_restful_verbs(monkeypatch):
         def __init__(self):
             self.status_code = okay_status
 
-    def mock_response(command, uri, headers, json_data):
+    def mock_response(command, uri, verb, headers, json_data):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"

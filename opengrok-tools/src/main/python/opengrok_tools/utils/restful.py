@@ -22,11 +22,13 @@
 #
 
 import logging
-from .webutil import put, post, delete
 import json
 
+from .webutil import put, post, delete
+from .patterns import COMMAND_PROPERTY
 
-def do_api_call(command, uri, headers, json_data):
+
+def do_api_call(command, uri, verb, headers, json_data):
     logger = logging.getLogger(__name__)
 
     if verb == 'PUT':
@@ -50,7 +52,7 @@ def call_rest_api(command, pattern, name):
     :param name: command name
     :return return value from given requests method
     """
-    command = command.get("command")
+    command = command.get(COMMAND_PROPERTY)
     uri = command[0].replace(pattern, name)
     verb = command[1]
     data = command[2]
@@ -64,4 +66,4 @@ def call_rest_api(command, pattern, name):
         json_data = json.dumps(data).replace(pattern, name)
         logger.debug("JSON data: {}".format(json_data))
 
-    return do_api_call(command, uri, headers, json_data)
+    return do_api_call(command, uri, verb, headers, json_data)
