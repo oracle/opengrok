@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.configuration;
@@ -41,12 +41,15 @@ import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.util.StringUtils;
 
 /**
  * Represents a utility class to present some user-readable help regarding
  * {@link Configuration}.
  */
 public class ConfigurationHelp {
+
+    private static final String XML_COMMENT_START = "  <!-- ";
 
     private ConfigurationHelp() {
     }
@@ -64,6 +67,8 @@ public class ConfigurationHelp {
         Class klass = conf.getClass();
 
         StringBuilder b = new StringBuilder();
+        LinesBuilder h = new LinesBuilder();
+
         b.append("Configuration examples:\n");
         b.append("\n");
 
@@ -96,12 +101,16 @@ public class ConfigurationHelp {
                 "(?sx)^<\\?xml.*Configuration\\d*\">\\n", "");
             sample = sample.replaceFirst("</object>\\n</java>", "");
 
-            b.append("  <!-- Sample for ");
-            b.append(mthd.getName());
-            b.append(". Default is: ");
-            b.append(defaultValue);
-            b.append(" -->");
-            b.append("\n");
+            h.clear();
+            h.append(XML_COMMENT_START);
+            h.append("Sample for ");
+            h.append(mthd.getName());
+            h.append(". Default is ");
+            h.appendWords(defaultValue);
+            h.appendWords(" -->");
+            h.appendLine();
+
+            b.append(h);
             b.append(sample);
         }
         return b.toString();
@@ -119,10 +128,7 @@ public class ConfigurationHelp {
                 res.add(mth);
             }
         }
-        res.sort((o1, o2) -> {
-            int cmp = o1.getName().compareToIgnoreCase(o2.getName());
-            return cmp;
-        });
+        res.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         return res;
     }
 
@@ -182,7 +188,7 @@ public class ConfigurationHelp {
             }
             return null;
         } else if (paramType == SuggesterConfig.class) {
-            return new SuggesterConfig();
+            return SuggesterConfig.getForHelp();
         } else {
             throw new UnsupportedOperationException("getSampleValue() for " +
                 paramType + ", " + genType);
@@ -195,12 +201,11 @@ public class ConfigurationHelp {
         }
         ParameterizedType genParamType = (ParameterizedType) genType;
         Type actType = genParamType.getActualTypeArguments()[0];
-        Object res = null;
 
         if (actType != RepositoryInfo.class) {
             throw new UnsupportedOperationException("Not supported yet for " + actType);
         }
-        return res;
+        return null;
     }
 
     private static Object getSampleMapValue(Type genType) {
@@ -211,7 +216,7 @@ public class ConfigurationHelp {
         Type[] actualTypeArguments = genParamType.getActualTypeArguments();
         Type actType0 = actualTypeArguments[0];
         Type actType1 = actualTypeArguments[1];
-        Object res = null;
+        Object res;
 
         if (actType0 == String.class) {
             if (actType1 == String.class) {
@@ -240,7 +245,7 @@ public class ConfigurationHelp {
         }
         ParameterizedType genParamType = (ParameterizedType) genType;
         Type actType = genParamType.getActualTypeArguments()[0];
-        Object res = null;
+        Object res;
 
         if (actType == String.class) {
             Set<String> strset = new HashSet<>();
@@ -286,6 +291,19 @@ public class ConfigurationHelp {
             }
         }
 
+        // Return a text override for some objects.
+        switch (gname) {
+            case "getSuggesterConfig":
+                return "as below but with Boolean opposites, non-zeroes decremented by 1, null " +
+                        "for allowed-projects, and also including \"full\" in allowed-fields";
+            case "getPluginStack":
+                return "an empty stack";
+            case "getIncludedNames":
+                return "an empty filter";
+            case "getIgnoredNames":
+                return "OpenGrok's standard set of ignored files and directories";
+        }
+
         try {
             return getter.invoke(cinst);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -300,5 +318,70 @@ public class ConfigurationHelp {
             }
         }
         return false;
+    }
+
+    private static class LinesBuilder {
+        static final int LINE_LENGTH = 80;
+
+        final StringBuilder b = new StringBuilder();
+        int length;
+
+        void clear() {
+            b.setLength(0);
+            length = 0;
+        }
+
+        void append(String value) {
+            b.append(value);
+            length += value.length();
+        }
+
+        void appendWords(Object value) {
+            if (value == null) {
+                appendWords("null");
+            } else {
+                appendWords(value.toString());
+            }
+        }
+
+        void appendWords(String value) {
+            if (length > LINE_LENGTH) {
+                appendLine();
+            }
+
+            int i = 0;
+            while (true) {
+                int spaceLen = StringUtils.whitespaceOrControlLength(value, i, true);
+                int wordLen = StringUtils.whitespaceOrControlLength(value, i + spaceLen, false);
+
+                if (wordLen < 1) {
+                    break;
+                }
+
+                String word = value.substring(i + spaceLen, i + spaceLen + wordLen);
+                if (length + spaceLen + wordLen > LINE_LENGTH) {
+                    appendLine();
+                    for (int j = 0; j < XML_COMMENT_START.length(); ++j) {
+                        append(" ");
+                    }
+                    append(word);
+                } else {
+                    append(value.substring(i, i + spaceLen));
+                    append(word);
+                }
+
+                i += spaceLen + wordLen;
+            }
+        }
+
+        void appendLine() {
+            b.append("\n");
+            length = 0;
+        }
+
+        @Override
+        public String toString() {
+            return b.toString();
+        }
     }
 }

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -298,5 +298,28 @@ public final class StringUtils {
             }
         }
         return 0;
+    }
+
+    /**
+     * Determine the length of the next whitespace- or ISO control
+     * character-related sequence within a string.
+     * @param str a defined instance
+     * @param off the starting offset within {@code str}
+     * @param shouldMatch a value indicating whether to match all contiguous
+     *                    whitespace or ISO control characters ({@code true}) or
+     *                    all contiguous non-whitespace and non-control
+     *                    characters ({@code false}) starting at {@code off}
+     * @return a length greater than or equal to zero
+     */
+    public static int whitespaceOrControlLength(String str, int off, boolean shouldMatch) {
+        int i = 0;
+        while (off + i < str.length()) {
+            int cp = Character.codePointAt(str, off + i);
+            if ((Character.isWhitespace(cp) || Character.isISOControl(cp)) != shouldMatch) {
+                return i;
+            }
+            i += Character.charCount(cp);
+        }
+        return str.length() - off;
     }
 }
