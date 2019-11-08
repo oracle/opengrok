@@ -47,6 +47,14 @@ public class RubyAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
+     * @return {@code "Ruby"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "Ruby";
+    }
+
+    /**
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.

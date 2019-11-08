@@ -44,7 +44,15 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JavaScriptAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new JavaScriptSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
-    }    
+    }
+
+    /**
+     * @return {@code "JavaScript"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "JavaScript";
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

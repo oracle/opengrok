@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -58,6 +58,14 @@ import org.opengrok.indexer.search.QueryBuilder;
 public class FileAnalyzer extends AbstractAnalyzer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAnalyzer.class);
+
+    /**
+     * @return {@code null} as there is no aligned language
+     */
+    @Override
+    public String getCtagsLang() {
+        return null;
+    }
 
     /**
      * Gets a version number to be used to tag processed documents so that

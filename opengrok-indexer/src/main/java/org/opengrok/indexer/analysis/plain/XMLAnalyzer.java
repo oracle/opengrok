@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
 
@@ -50,6 +50,14 @@ public class XMLAnalyzer extends TextAnalyzer {
      */
     protected XMLAnalyzer(AnalyzerFactory factory) {
         super(factory);
+    }
+
+    /**
+     * @return {@code "XML"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "XML";
     }
 
     /**

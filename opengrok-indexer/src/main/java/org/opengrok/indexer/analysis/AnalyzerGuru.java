@@ -240,6 +240,8 @@ public class AnalyzerGuru {
      */
     private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
 
+    private static final LangTreeMap langMap = new LangTreeMap();
+
     /*
      * If you write your own analyzer please register it here. The order is
      * important for any factory that uses a FileAnalyzerFactory.Matcher
@@ -431,8 +433,10 @@ public class AnalyzerGuru {
         AnalyzerFactory oldFactory;
         if (factory == null) {
             oldFactory = pre.remove(prefix);
+            langMap.exclude(prefix);
         } else {
             oldFactory = pre.put(prefix, factory);
+            langMap.add(prefix, factory.getAnalyzer().getCtagsLang());
         }
 
         if (factoriesDifferent(factory, oldFactory)) {
@@ -448,19 +452,37 @@ public class AnalyzerGuru {
      * @param factory a factory which creates the analyzer to use for the given
      * extension (if you pass null as the analyzer, you will disable the
      * analyzer used for that extension)
+     * @throws IllegalArgumentException if {@code extension} contains a period
      */
-    public static void addExtension(String extension,
-            AnalyzerFactory factory) {
+    public static void addExtension(String extension, AnalyzerFactory factory) {
+        if (extension.contains(".")) {
+            throw new IllegalArgumentException("extension contains a '.'");
+        }
+
+        // LangMap fileSpec requires a leading period to indicate an extension.
+        String langMapExtension = "." + extension;
+
         AnalyzerFactory oldFactory;
         if (factory == null) {
             oldFactory = ext.remove(extension);
+            langMap.exclude(langMapExtension);
         } else {
             oldFactory = ext.put(extension, factory);
+            langMap.add(langMapExtension, factory.getAnalyzer().getCtagsLang());
         }
 
         if (factoriesDifferent(factory, oldFactory)) {
             addCustomizationKey("e:" + extension);
         }
+    }
+
+    /**
+     * Gets an unmodifiable view of the language mappings resulting from
+     * {@link #addExtension(String, AnalyzerFactory)} and
+     * {@link #addPrefix(String, AnalyzerFactory)}.
+     */
+    public static LangMap getLangMap() {
+        return langMap.unmodifiable();
     }
 
     /**

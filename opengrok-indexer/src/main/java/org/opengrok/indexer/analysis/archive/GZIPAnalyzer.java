@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.archive;
 
@@ -62,6 +62,14 @@ public class GZIPAnalyzer extends FileAnalyzer {
 
     protected GZIPAnalyzer(AnalyzerFactory factory) {
         super(factory);
+    }
+
+    /**
+     * @return {@code null} as there is no aligned language
+     */
+    @Override
+    public String getCtagsLang() {
+        return null;
     }
 
     /**

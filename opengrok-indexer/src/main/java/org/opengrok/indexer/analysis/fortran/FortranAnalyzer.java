@@ -42,6 +42,14 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
+     * @return {@code "Fortran"}
+     */
+    @Override
+    public String getCtagsLang() {
+        return "Fortran";
+    }
+
+    /**
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -34,7 +34,6 @@ import org.apache.lucene.document.Document;
 import org.opengrok.indexer.configuration.Project;
 
 /**
- *
  * @author Chandan
  */
 public abstract class AbstractAnalyzer extends Analyzer {
@@ -52,16 +51,25 @@ public abstract class AbstractAnalyzer extends Analyzer {
         super(reuseStrategy);
     }
 
+    /**
+     * Subclasses should override to return the case-insensitive name aligning
+     * with either a built-in Universal Ctags language name or an OpenGrok
+     * custom language name.
+     * @return a defined instance or {@code null} if the analyzer has no aligned
+     * Universal Ctags language
+     */
+    public abstract String getCtagsLang();
+
     public abstract long getVersionNo();
 
     /**
      * Subclasses should override to produce a value relevant for the evolution
      * of their analysis in each release.
      *
-     * @return 0
+     * @return 0 since {@link AbstractAnalyzer} is not specialized
      */
     protected int getSpecializedVersionNo() {
-        return 0; // FileAnalyzer is not specialized.
+        return 0;
     }
 
     public void setCtags(Ctags ctags) {

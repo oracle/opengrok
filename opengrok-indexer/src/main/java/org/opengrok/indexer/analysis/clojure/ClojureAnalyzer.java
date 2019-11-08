@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.clojure;
 
@@ -35,6 +35,15 @@ public class ClojureAnalyzer extends AbstractSourceCodeAnalyzer {
     protected ClojureAnalyzer(AnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new ClojureSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
+    }
+
+    /**
+     * @return {@code "clojure"} to match the OpenGrok-customized definitions,
+     * despite there being a built-in Clojure definition
+     */
+    @Override
+    public String getCtagsLang() {
+        return "clojure";
     }
 
     /**

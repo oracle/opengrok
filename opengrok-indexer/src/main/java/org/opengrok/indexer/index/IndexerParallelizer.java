@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -28,6 +28,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.CtagsValidator;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -268,6 +270,7 @@ public class IndexerParallelizer implements AutoCloseable {
                 " searching definitions will not work!");
         } else {
             ctags.setBinary(ctagsBinary);
+            ctags.setLangMap(AnalyzerGuru.getLangMap());
 
             String filename = env.getCTagsExtraOptionsFile();
             if (filename != null) {
