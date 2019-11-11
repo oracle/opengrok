@@ -35,10 +35,13 @@ from .exitvals import (
     CONTINUE_EXITVAL,
     SUCCESS_EXITVAL
 )
-from .utils import is_exe, check_create_dir, get_int
+from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
+from .utils import is_exe, check_create_dir, get_int, is_web_uri
 from .webutil import get
 from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
+from .command import Command
+from .restful import call_rest_api
 
 from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
@@ -55,6 +58,7 @@ HOOKDIR_PROPERTY = 'hookdir'
 HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
 PROJECTS_PROPERTY = 'projects'
+DISABLED_CMD_PROPERTY = 'disabled_command'
 
 
 def get_repos_for_project(project_name, ignored_repos, uri, source_root,
@@ -277,6 +281,41 @@ def process_changes(repos, project_name, uri):
     return SUCCESS_EXITVAL
 
 
+def run_command(cmd, project_name):
+    cmd.execute()
+    if cmd.getretcode() != 0:
+        logger = logging.getLogger(__name__)
+
+        logger.error("Command for disabled project '{}' failed "
+                     "with error code {}: {}".
+                     format(project_name, cmd.getretcode(),
+                            cmd.getoutputstr()))
+
+
+def handle_disabled_project(config, project_name):
+    disabled_command = config.get(DISABLED_CMD_PROPERTY)
+    if disabled_command:
+        logger = logging.getLogger(__name__)
+
+        logger.debug("Calling disabled command: {}".format(disabled_command))
+        command_args = disabled_command.get(COMMAND_PROPERTY)
+        if is_web_uri(command_args[0]):
+            r = call_rest_api(disabled_command, PROJECT_SUBST, project_name)
+            try:
+                r.raise_for_status()
+            except HTTPError:
+                logger.error("API call failed for disabled command of "
+                             "project '{}': {}".
+                             format(project_name, r))
+        else:
+            cmd = Command(command_args,
+                          env_vars=disabled_command.get("env"),
+                          resource_limits=disabled_command.get("limits"),
+                          args_subst={PROJECT_SUBST: project_name},
+                          args_append=[project_name], excl_subst=True)
+            run_command(cmd, project_name)
+
+
 def mirror_project(config, project_name, check_changes, uri,
                    source_root):
     """
@@ -296,7 +335,8 @@ def mirror_project(config, project_name, check_changes, uri,
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
-        ignored_repos = get_project_properties(project_config, project_name,
+        ignored_repos = get_project_properties(project_config,
+                                               project_name,
                                                config.get(HOOKDIR_PROPERTY))
 
     proxy = None
@@ -306,7 +346,8 @@ def mirror_project(config, project_name, check_changes, uri,
     # We want this to be logged to the log file (if any).
     if project_config:
         if project_config.get(DISABLED_PROPERTY):
-            logger.info("Project {} disabled, exiting".
+            handle_disabled_project(config, project_name)
+            logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL
 
@@ -450,7 +491,8 @@ def check_configuration(config):
 
     global_tunables = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
-                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
+                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY,
+                       DISABLED_CMD_PROPERTY]
     diff = set(config.keys()).difference(global_tunables)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
@@ -461,6 +503,10 @@ def check_configuration(config):
     logdir = config.get(LOGDIR_PROPERTY)
     if logdir:
         check_create_dir(logger, logdir)
+
+    disabled_command = config.get(DISABLED_CMD_PROPERTY)
+    if disabled_command:
+        logger.debug("Disabled command: {}".format(disabled_command))
 
     if not check_project_configuration(config.get(PROJECTS_PROPERTY),
                                        config.get(HOOKDIR_PROPERTY),
