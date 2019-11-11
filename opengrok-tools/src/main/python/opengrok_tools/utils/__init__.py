@@ -7,6 +7,7 @@ from . import readconfig
 from . import utils
 from . import webutil
 from . import exitvals
+from . import restful
 
 __all__ = [
     'opengrok',
@@ -18,4 +19,5 @@ __all__ = [
     'readconfig',
     'parsers',
     'exitvals',
+    'restful',
 ]
