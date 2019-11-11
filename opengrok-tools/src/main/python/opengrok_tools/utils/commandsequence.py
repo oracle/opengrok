@@ -29,6 +29,7 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 from .restful import call_rest_api
+from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
 import re
 
 
@@ -72,7 +73,6 @@ class CommandSequenceBase:
 
 
 class CommandSequence(CommandSequenceBase):
-    PROJECT_SUBST = '%PROJECT%'
 
     re_program = re.compile('ERROR[:]*\\s+')
 
@@ -87,11 +87,11 @@ class CommandSequence(CommandSequenceBase):
         """
         Execute a command and return its return code.
         """
-        command_args = command.get("command")
+        command_args = command.get(COMMAND_PROPERTY)
         cmd = Command(command_args,
                       env_vars=command.get("env"),
                       resource_limits=command.get("limits"),
-                      args_subst={self.PROJECT_SUBST: self.name},
+                      args_subst={PROJECT_SUBST: self.name},
                       args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
@@ -116,8 +116,8 @@ class CommandSequence(CommandSequenceBase):
         """
 
         for command in self.commands:
-            if is_web_uri(command.get("command")[0]):
-                call_rest_api(command, self.PROJECT_SUBST, self.name)
+            if is_web_uri(command.get(COMMAND_PROPERTY)[0]):
+                call_rest_api(command, PROJECT_SUBST, self.name)
             else:
                 retcode = self.run_command(command)
 
@@ -155,14 +155,14 @@ class CommandSequence(CommandSequenceBase):
             return
 
         for cleanup_cmd in self.cleanup:
-            if is_web_uri(cleanup_cmd.get("command")[0]):
-                call_rest_api(cleanup_cmd, self.PROJECT_SUBST, self.name)
+            if is_web_uri(cleanup_cmd.get(COMMAND_PROPERTY)[0]):
+                call_rest_api(cleanup_cmd, PROJECT_SUBST, self.name)
             else:
-                command_args = cleanup_cmd.get("command")
+                command_args = cleanup_cmd.get(COMMAND_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
-                              args_subst={self.PROJECT_SUBST: self.name},
+                              args_subst={PROJECT_SUBST: self.name},
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != SUCCESS_EXITVAL:
