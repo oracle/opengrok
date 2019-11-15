@@ -98,7 +98,7 @@ public class PluginClassLoader extends ClassLoader {
                     try (InputStream is = jar.getInputStream(entry)) {
                         byte[] bytes = loadBytes(is);
                         Class c = defineClass(classname, bytes, 0, bytes.length);
-                        LOGGER.log(Level.FINE, "Class \"{0}\" found in file \"{1}\"",
+                        LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
                                 new Object[]{
                                         classname,
                                         f.getAbsolutePath()

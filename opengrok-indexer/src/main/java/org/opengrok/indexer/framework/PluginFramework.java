@@ -358,7 +358,7 @@ public abstract class PluginFramework<PluginType> {
             return;
         }
 
-        LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
+        LOGGER.log(Level.FINEST, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
 
         // trashing out the old instance of the loaded enables us
         // to reload the stack at runtime

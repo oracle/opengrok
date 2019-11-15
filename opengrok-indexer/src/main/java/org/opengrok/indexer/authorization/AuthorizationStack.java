@@ -134,7 +134,7 @@ public class AuthorizationStack extends AuthorizationEntity {
         getCurrentSetup().putAll(parameters);
         getCurrentSetup().putAll(getSetup());
 
-        LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is loading.",
+        LOGGER.log(Level.FINEST, "[{0}] Stack \"{1}\" is loading.",
                 new Object[]{getFlag().toString().toUpperCase(Locale.ROOT),
                 getName()});
 

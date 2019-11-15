@@ -68,13 +68,13 @@ public class IndexVersion {
     public static void check(List<String> subFilesList) throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
-        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
+        LOGGER.log(Level.FINEST, "Checking for Lucene index version mismatch in {0}",
                 indexRoot);
 
         if (!subFilesList.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : subFilesList) {
-                LOGGER.log(Level.FINER,
+                LOGGER.log(Level.FINEST,
                         "Checking Lucene index version in project {0}",
                         projectName);
                 checkDir(new File(indexRoot, projectName));
@@ -82,13 +82,13 @@ public class IndexVersion {
         } else {
             if (env.isProjectsEnabled()) {
                 for (String projectName : env.getProjects().keySet()) {
-                    LOGGER.log(Level.FINER,
+                    LOGGER.log(Level.FINEST,
                             "Checking Lucene index version in project {0}",
                             projectName);
                     checkDir(new File(indexRoot, projectName));
                 }
             } else {
-                LOGGER.log(Level.FINER, "Checking Lucene index version in {0}",
+                LOGGER.log(Level.FINEST, "Checking Lucene index version in {0}",
                         indexRoot);
                 checkDir(indexRoot);
             }

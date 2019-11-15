@@ -608,7 +608,7 @@ public class IndexDatabase {
         try {
             Statistics elapsed = new Statistics();
             String projectDetail = this.project != null ? " for project " + project.getName() : "";
-            LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
+            LOGGER.log(Level.FINER, "Optimizing the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -1702,7 +1702,7 @@ public class IndexDatabase {
             hasPendingCommit = true;
 
             int n = completer.complete();
-            LOGGER.log(Level.FINE, "completed {0} object(s)", n);
+            LOGGER.log(Level.FINEST, "completed {0} object(s)", n);
 
             // Just before commit(), reset the `hasPendingCommit' flag,
             // since after commit() is called, there is no need for

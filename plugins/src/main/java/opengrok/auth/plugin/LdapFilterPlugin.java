@@ -91,7 +91,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             loadTransforms(transformsString);
         }
 
-        LOGGER.log(Level.FINE, "LdapFilter plugin loaded with filter={0}, instance={1}, transforms={2}",
+        LOGGER.log(Level.FINEST, "LdapFilter plugin loaded with filter={0}, instance={1}, transforms={2}",
                 new Object[]{ldapFilter, ldapUserInstance, transforms});
     }
 

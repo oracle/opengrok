@@ -171,7 +171,7 @@ public class Executor {
             Map<String, String> env_map = processBuilder.environment();
             env_str = " with environment: " + env_map.toString();
         }
-        LOGGER.log(Level.FINE,
+        LOGGER.log(Level.FINEST,
                 "Executing command {0} in directory {1}{2}",
                 new Object[] {cmd_str, dir_str, env_str});
 

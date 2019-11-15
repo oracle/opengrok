@@ -1715,7 +1715,7 @@ public final class RuntimeEnvironment {
      */
     public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
         setConfiguration(config, interactive);
-        LOGGER.log(Level.INFO, "Configuration updated");
+        LOGGER.log(Level.FINEST, "Configuration updated");
 
         if (reindex) {
             // We are assuming that each update of configuration means reindex. If dedicated thread is introduced

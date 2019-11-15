@@ -156,7 +156,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh() {
-        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
+        logger.log(Level.FINEST, "Refreshing suggester for new configuration {0}", env.getSuggesterConfig());
         lock.writeLock().lock();
         try {
             // close and init from scratch because many things may have changed in the configuration
@@ -351,7 +351,7 @@ public class SuggesterServiceImpl implements SuggesterService {
             return;
         }
 
-        logger.log(Level.INFO, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
+        logger.log(Level.FINEST, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
 
         future = instance.scheduler.schedule(instance.getRebuildAllProjectsRunnable(), timeToNextRebuild.toMillis(),
                 TimeUnit.MILLISECONDS);

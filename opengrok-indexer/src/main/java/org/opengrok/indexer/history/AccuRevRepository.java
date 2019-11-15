@@ -325,7 +325,7 @@ public class AccuRevRepository extends Repository {
                         // from the path known by Accurev)
  
                         if (Files.isSymbolicLink(given)) {
-                            LOGGER.log(Level.INFO, "{0} is symbolic link.", wsPath);
+                            LOGGER.log(Level.FINE, "{0} is symbolic link.", wsPath);
                             
                             // When we know that the two paths DO NOT point to the
                             // same place (that is, the given path is deeper into

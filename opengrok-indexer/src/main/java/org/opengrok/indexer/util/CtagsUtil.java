@@ -49,7 +49,7 @@ public class CtagsUtil {
             return false;
         }
 
-        LOGGER.log(Level.INFO, "Using ctags: {0}", output.trim());
+        LOGGER.log(Level.FINEST, "Using ctags: {0}", output.trim());
 
         return true;
     }

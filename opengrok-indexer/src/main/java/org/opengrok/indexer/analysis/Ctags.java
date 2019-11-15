@@ -131,7 +131,7 @@ public class Ctags implements Resettable {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
             closing = true;
-            LOGGER.log(Level.FINE, "Destroying ctags command");
+            LOGGER.log(Level.FINEST, "Destroying ctags command");
             ctags.destroyForcibly();
         }
     }
