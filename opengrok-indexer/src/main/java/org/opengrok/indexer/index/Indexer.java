@@ -447,12 +447,16 @@ public final class Indexer {
         // An example of how to add a data type for option parsing
         OptionParser.accept(WebAddress.class, Indexer::parseWebAddress);
 
+        // Limit usage lines to 72 characters for concise formatting.
+
         optParser = OptionParser.Do(parser -> {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
             parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
-                    "Display this usage summary. Repeat for more detailed help.").Do(v -> {
+                    "Display this usage summary.",
+                    "    Repeat once for configuration.xml samples.",
+                    "    Repeat twice for ctags command-line.").Do(v -> {
                         ++help;
                         helpUsage = parser.getUsage();
             });

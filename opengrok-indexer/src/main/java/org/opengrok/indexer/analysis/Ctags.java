@@ -144,8 +144,9 @@ public class Ctags implements Resettable {
     }
 
     private void initialize() {
-        command = new ArrayList<>();
+        env.validateUniversalCtags();
 
+        command = new ArrayList<>();
         command.add(env.getCtags());
         command.add("--c-kinds=+l");
 
@@ -250,7 +251,9 @@ public class Ctags implements Resettable {
     }
 
     private void addRustSupport(List<String> command) {
-        command.add("--langdef=rust");
+        if (!env.getCtagsLanguages().contains("Rust")) { // Built-in would be capitalized.
+            command.add("--langdef=rust"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".RS", "rust"); // Upper-case file spec
 
         // The following are not supported yet in Universal Ctags b13cb551
@@ -264,9 +267,12 @@ public class Ctags implements Resettable {
     }
 
     private void addPowerShellSupport(List<String> command) {
-        command.add("--langdef=powershell");
+        if (!env.getCtagsLanguages().contains("PowerShell")) { // Built-in would be capitalized.
+            command.add("--langdef=powershell"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".PS1", "powershell"); // Upper-case file spec
         defaultLangMap.add(".PSM1", "powershell"); // Upper-case file spec
+
         command.add("--regex-powershell=/\\$(\\{[^}]+\\})/\\1/v,variable/");
         command.add("--regex-powershell=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
         command.add("--regex-powershell=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
@@ -283,8 +289,11 @@ public class Ctags implements Resettable {
     }
 
     private void addPascalSupport(List<String> command) {
-        command.add("--langdef=pascal");
+        if (!env.getCtagsLanguages().contains("Pascal")) { // Built-in would be capitalized.
+            command.add("--langdef=pascal"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".PAS", "pascal"); // Upper-case file spec
+
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i,interface/");
@@ -298,7 +307,9 @@ public class Ctags implements Resettable {
     }
 
     private void addSwiftSupport(List<String> command) {
-        command.add("--langdef=swift");
+        if (!env.getCtagsLanguages().contains("Swift")) { // Built-in would be capitalized.
+            command.add("--langdef=swift"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".SWIFT", "swift"); // Upper-case file spec
         command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n,enum,enums/");
         command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t,typealias,typealiases/");
@@ -311,9 +322,12 @@ public class Ctags implements Resettable {
     }
 
     private void addKotlinSupport(List<String> command) {
-        command.add("--langdef=kotlin");
+        if (!env.getCtagsLanguages().contains("Kotlin")) { // Built-in would be capitalized.
+            command.add("--langdef=kotlin"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".KT", "kotlin"); // Upper-case file spec
         defaultLangMap.add(".KTS", "kotlin"); // Upper-case file spec
+
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
@@ -334,8 +348,13 @@ public class Ctags implements Resettable {
         command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/I,imports/");
     }
 
+    /**
+     * Override Clojure support with patterns from https://gist.github.com/kul/8704283.
+     */
     private void addClojureSupport(List<String> command) {
-        command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
+        if (!env.getCtagsLanguages().contains("Clojure")) { // Built-in would be capitalized.
+            command.add("--langdef=clojure"); // Lower-case if user-defined.
+        }
         defaultLangMap.add(".CLJ", "clojure"); // Upper-case file spec
         defaultLangMap.add(".CLJS", "clojure"); // Upper-case file spec
         defaultLangMap.add(".CLJX", "clojure"); // Upper-case file spec
@@ -353,9 +372,12 @@ public class Ctags implements Resettable {
     }
 
     private void addHaskellSupport(List<String> command) {
-        command.add("--langdef=haskell"); // below was added with #912
+        if (!env.getCtagsLanguages().contains("Haskell")) { // Built-in would be capitalized.
+            command.add("--langdef=haskell"); // below added with #912. Lowercase if user-defined.
+        }
         defaultLangMap.add(".HS", "haskell"); // Upper-case file spec
         defaultLangMap.add(".HSC", "haskell"); // Upper-case file spec
+
         command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
         command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
         command.add("--regex-haskell=/^[[:space:]]*newtype[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
@@ -367,8 +389,11 @@ public class Ctags implements Resettable {
     }
 
     private void addScalaSupport(List<String> command) {
-        command.add("--langdef=scala"); // below is bug 61 to get full scala support
+        if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
+            command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
+        }
         defaultLangMap.add(".SCALA", "scala"); // Upper-case file spec
+
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
