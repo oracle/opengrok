@@ -148,17 +148,17 @@ public class Ctags implements Resettable {
 
         command = new ArrayList<>();
         command.add(env.getCtags());
-        command.add("--c-kinds=+l");
+        command.add("--kinds-c=+l");
 
         // Workaround for bug #14924: Don't get local variables in Java
         // code since that creates many false positives.
         // CtagsTest : bug14924 "too many methods" guards for this
         // universal ctags are however safe, so enabling for them
-        command.add("--java-kinds=+l");
+        command.add("--kinds-java=+l");
 
-        command.add("--sql-kinds=+l");
-        command.add("--Fortran-kinds=+L");
-        command.add("--C++-kinds=+l");
+        command.add("--kinds-sql=+l");
+        command.add("--kinds-Fortran=+L");
+        command.add("--kinds-C++=+l");
         command.add("--file-scope=yes");
         command.add("-u");
         command.add("--filter=yes");
