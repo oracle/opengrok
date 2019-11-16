@@ -34,6 +34,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -61,6 +62,7 @@ public class Ctags implements Resettable {
     private volatile boolean closing;
     private final LangTreeMap defaultLangMap = new LangTreeMap();
     private LangMap langMap;
+    private List<String> command;
     private Process ctags;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
@@ -136,9 +138,17 @@ public class Ctags implements Resettable {
         }
     }
 
-    private void initialize() throws IOException {
-        ProcessBuilder processBuilder;
-        List<String> command = new ArrayList<>();
+    /**
+     * Gets the command-line arguments used to run ctags.
+     * @return a defined (immutable) list
+     */
+    public List<String> getArgv() {
+        initialize();
+        return Collections.unmodifiableList(command);
+    }
+
+    private void initialize() {
+        command = new ArrayList<>();
 
         command.add(binary);
         command.add("--c-kinds=+l");
@@ -201,10 +211,12 @@ public class Ctags implements Resettable {
 
         /* Add extra command line options for ctags. */
         if (CTagsExtraOptionsFile != null) {
-            LOGGER.log(Level.INFO, "Adding extra options to ctags");
+            LOGGER.log(Level.FINER, "Adding extra options to ctags");
             command.add("--options=" + CTagsExtraOptionsFile);
         }
+    }
 
+    private void run() throws IOException {
         StringBuilder sb = new StringBuilder();
         for (String s : command) {
             sb.append(s).append(" ");
@@ -212,7 +224,7 @@ public class Ctags implements Resettable {
         String commandStr = sb.toString();
         LOGGER.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
 
-        processBuilder = new ProcessBuilder(command);
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         ctags = processBuilder.start();
         ctagsIn = new OutputStreamWriter(
@@ -408,6 +420,7 @@ public class Ctags implements Resettable {
             }
         } else {
             initialize();
+            run();
         }
 
         CtagsReader rdr = new CtagsReader();

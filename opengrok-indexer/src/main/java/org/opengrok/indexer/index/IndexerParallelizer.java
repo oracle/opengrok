@@ -27,14 +27,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.logging.Logger;
 
-import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.CtagsValidator;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BoundedBlockingObjectPool;
+import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.ObjectFactory;
 import org.opengrok.indexer.util.ObjectPool;
@@ -49,9 +47,6 @@ import org.opengrok.indexer.util.ObjectPool;
  * latter, and the bulk of work is done in the latter pool.
  */
 public class IndexerParallelizer implements AutoCloseable {
-
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(IndexerParallelizer.class);
 
     private final RuntimeEnvironment env;
     private final int indexingParallelism;
@@ -228,7 +223,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private void createLazyCtagsPool() {
         lzCtagsPool = LazilyInstantiate.using(() ->
                 new BoundedBlockingObjectPool<>(indexingParallelism,
-                        new CtagsValidator(), new CtagsObjectFactory(env)));
+                        new CtagsValidator(), new CtagsObjectFactory()));
     }
 
     private void createLazyCtagsWatcherExecutor() {
@@ -255,41 +250,10 @@ public class IndexerParallelizer implements AutoCloseable {
                 Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
     }
 
-    /**
-     * Creates a new instance, and attempts to configure it from the specified
-     * environment instance.
-     * @return a defined instance, possibly with a {@code null} ctags binary
-     * setting if a value was not available from {@link RuntimeEnvironment}.
-     */
-    private static Ctags getNewCtags(RuntimeEnvironment env) {
-        Ctags ctags = new Ctags();
-
-        String ctagsBinary = env.getCtags();
-        if (ctagsBinary == null) {
-            LOGGER.severe("Unable to run ctags!" +
-                " searching definitions will not work!");
-        } else {
-            ctags.setBinary(ctagsBinary);
-            ctags.setLangMap(AnalyzerGuru.getLangMap());
-
-            String filename = env.getCTagsExtraOptionsFile();
-            if (filename != null) {
-                ctags.setCTagsExtraOptionsFile(filename);
-            }
-        }
-        return ctags;
-    }
-
-    private class CtagsObjectFactory implements ObjectFactory<Ctags> {
-
-        private final RuntimeEnvironment env;
-
-        CtagsObjectFactory(RuntimeEnvironment env) {
-            this.env = env;
-        }
+    private static class CtagsObjectFactory implements ObjectFactory<Ctags> {
 
         public Ctags createNew() {
-            return getNewCtags(env);
+            return CtagsUtil.newInstance(RuntimeEnvironment.getInstance());
         }
     }
 }

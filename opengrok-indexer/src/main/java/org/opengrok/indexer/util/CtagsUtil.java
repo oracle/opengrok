@@ -19,10 +19,14 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.util.logging.Level;
@@ -54,6 +58,31 @@ public class CtagsUtil {
         return true;
     }
 
-    private CtagsUtil() {
+    /**
+     * Creates a new instance, and attempts to configure it from the
+     * environment.
+     * @return a defined instance, possibly with a {@code null} ctags binary
+     * setting if a value was not available from {@link RuntimeEnvironment}.
+     */
+    public static Ctags newInstance(RuntimeEnvironment env) {
+        Ctags ctags = new Ctags();
+
+        String ctagsBinary = env.getCtags();
+        if (ctagsBinary == null) {
+            LOGGER.severe("Unable to run ctags! Searching definitions will not work!");
+        } else {
+            ctags.setBinary(ctagsBinary);
+            ctags.setLangMap(AnalyzerGuru.getLangMap());
+
+            String filename = env.getCTagsExtraOptionsFile();
+            if (filename != null) {
+                ctags.setCTagsExtraOptionsFile(filename);
+            }
         }
+        return ctags;
+    }
+
+    /** Private to enforce static. */
+    private CtagsUtil() {
+    }
 }
