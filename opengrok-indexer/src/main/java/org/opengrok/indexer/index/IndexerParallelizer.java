@@ -250,10 +250,10 @@ public class IndexerParallelizer implements AutoCloseable {
                 Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
     }
 
-    private static class CtagsObjectFactory implements ObjectFactory<Ctags> {
+    private class CtagsObjectFactory implements ObjectFactory<Ctags> {
 
         public Ctags createNew() {
-            return CtagsUtil.newInstance(RuntimeEnvironment.getInstance());
+            return CtagsUtil.newInstance(env);
         }
     }
 }

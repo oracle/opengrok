@@ -33,6 +33,9 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.util.List;
 
+/**
+ * Represents a container for tests of {@link CtagsUtil}.
+ */
 @ConditionalRun(CtagsInstalled.class)
 public class CtagsUtilTest {
 
