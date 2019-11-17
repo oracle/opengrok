@@ -59,6 +59,7 @@ public class Ctags implements Resettable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
 
+    private final RuntimeEnvironment env;
     private volatile boolean closing;
     private final LangTreeMap defaultLangMap = new LangTreeMap();
     private LangMap langMap;
@@ -67,12 +68,15 @@ public class Ctags implements Resettable {
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
-    private String binary;
     private String CTagsExtraOptionsFile = null;
     private int tabSize;
     private Duration timeout = Duration.ofSeconds(10);
 
     private boolean junit_testing = false;
+
+    public Ctags() {
+        env = RuntimeEnvironment.getInstance();
+    }
 
     /**
      * Gets a value indicating if a subprocess of ctags was started and it is
@@ -82,14 +86,6 @@ public class Ctags implements Resettable {
      */
     public boolean isClosed() {
         return ctags != null && !ctags.isAlive();
-    }
-
-    public String getBinary() {
-        return binary;
-    }
-
-    public void setBinary(String binary) {
-        this.binary = binary;
     }
 
     public void setLangMap(LangMap langMap) {
@@ -150,7 +146,7 @@ public class Ctags implements Resettable {
     private void initialize() {
         command = new ArrayList<>();
 
-        command.add(binary);
+        command.add(env.getCtags());
         command.add("--c-kinds=+l");
 
         // Workaround for bug #14924: Don't get local variables in Java
@@ -442,7 +438,7 @@ public class Ctags implements Resettable {
              * the ctags process completes so that the indexer can
              * make progress instead of hanging the whole operation.
              */
-            IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
+            IndexerParallelizer parallelizer = env.getIndexerParallelizer();
             ExecutorService executor = parallelizer.getCtagsWatcherExecutor();
             Future<Definitions> future = executor.submit(() -> {
                 readTags(rdr);

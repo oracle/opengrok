@@ -29,6 +29,8 @@ import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,25 +61,43 @@ public class CtagsUtil {
     }
 
     /**
+     * Gets the base set of languages by executing {@code --list-languages} for
+     * the specified binary.
+     * @return {@code null} on failure to run, or a defined list
+     */
+    public static List<String> getLanguages(String ctagsBinary) {
+        Executor executor = new Executor(new String[]{ctagsBinary, "--list-languages"});
+        int rc = executor.exec(false);
+        String output = executor.getOutputString();
+        if (output == null || rc != 0) {
+            LOGGER.log(Level.WARNING, "Failed to get Ctags languages");
+            return null;
+        }
+
+        output = output.replaceAll("\\s+\\[disabled]", "");
+        String[] split = output.split("(?m)$");
+        List<String> result = new ArrayList<>();
+        for (String lang : split) {
+            lang = lang.trim();
+            if (lang.length() > 0) {
+                result.add(lang);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Creates a new instance, and attempts to configure it from the
      * environment.
-     * @return a defined instance, possibly with a {@code null} ctags binary
-     * setting if a value was not available from {@link RuntimeEnvironment}.
+     * @return a defined instance
      */
     public static Ctags newInstance(RuntimeEnvironment env) {
         Ctags ctags = new Ctags();
+        ctags.setLangMap(AnalyzerGuru.getLangMap());
 
-        String ctagsBinary = env.getCtags();
-        if (ctagsBinary == null) {
-            LOGGER.severe("Unable to run ctags! Searching definitions will not work!");
-        } else {
-            ctags.setBinary(ctagsBinary);
-            ctags.setLangMap(AnalyzerGuru.getLangMap());
-
-            String filename = env.getCTagsExtraOptionsFile();
-            if (filename != null) {
-                ctags.setCTagsExtraOptionsFile(filename);
-            }
+        String filename = env.getCTagsExtraOptionsFile();
+        if (filename != null) {
+            ctags.setCTagsExtraOptionsFile(filename);
         }
         return ctags;
     }
