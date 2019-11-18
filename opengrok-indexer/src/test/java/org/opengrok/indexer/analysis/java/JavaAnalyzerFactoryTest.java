@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.java;
 
@@ -80,7 +80,6 @@ public class JavaAnalyzerFactoryTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
-        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
         repository.create(JavaAnalyzerFactoryTest.class.getResourceAsStream(
@@ -95,15 +94,13 @@ public class JavaAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         ctags.close();
         ctags = null;
     }
 
     /**
      * Test of writeXref method, of class CAnalyzerFactory.
-     *
-     * @throws java.lang.Exception
      */
     @Test
     public void testScopeAnalyzer() throws Exception {

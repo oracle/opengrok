@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
+import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
@@ -64,6 +65,7 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexVersion.IndexVersionException;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.logger.LoggerUtil;
+import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.Statistics;
@@ -107,9 +109,8 @@ public final class Indexer {
     private static boolean bareConfig = false;
     private static boolean awaitProfiler;
 
-    private static boolean help;
+    private static int help;
     private static String helpUsage;
-    private static boolean helpDetailed;
 
     private static String configFilename = null;
     private static int status = 0;
@@ -146,12 +147,15 @@ public final class Indexer {
 
         try {
             argv = parseOptions(argv);
-            if (help) {
+            if (help > 0) {
                 PrintStream helpStream = status != 0 ? System.err : System.out;
                 helpStream.println(helpUsage);
-                if (helpDetailed) {
+                if (help > 1) {
                     helpStream.println(AnalyzerGuruHelp.getUsage());
                     helpStream.println(ConfigurationHelp.getSamples());
+                }
+                if (help > 2) {
+                    helpStream.println(getCtagsCommand());
                 }
                 System.exit(status);
             }
@@ -425,13 +429,13 @@ public final class Indexer {
          * Pre-match any of the --help options so that some possible exception-
          * generating args handlers (e.g. -R) can be short-circuited.
          */
-        help = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
+        boolean preHelp = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
                 HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
 
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do(cfgFile -> {
                 try {
-                    if (!help) {
+                    if (!preHelp) {
                         cfg = Configuration.read(new File((String) cfgFile));
                     }
                 } catch (IOException e) {
@@ -443,18 +447,19 @@ public final class Indexer {
         // An example of how to add a data type for option parsing
         OptionParser.accept(WebAddress.class, Indexer::parseWebAddress);
 
+        // Limit usage lines to 72 characters for concise formatting.
+
         optParser = OptionParser.Do(parser -> {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
             parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
-                    "Display this usage summary.").Do(v -> {
-                help = true;
-                helpUsage = parser.getUsage();
+                    "Display this usage summary.",
+                    "    Repeat once for configuration.xml samples.",
+                    "    Repeat twice for ctags command-line.").Do(v -> {
+                        ++help;
+                        helpUsage = parser.getUsage();
             });
-
-            parser.on("--detailed",
-                "Display additional help with -h,--help.").Do(v -> helpDetailed = true);
 
             parser.on(
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
@@ -1114,6 +1119,36 @@ public final class Indexer {
         if (in.equals("n")) {
             System.exit(1);
         }
+    }
+
+    private static String getCtagsCommand() {
+        StringBuilder result = new StringBuilder();
+        Ctags ctags = CtagsUtil.newInstance(env);
+        List<String> argv = ctags.getArgv();
+        for (int i = 0; i < argv.size(); ++i) {
+            if (i > 0) {
+                result.append("\t");
+            }
+            String arg = argv.get(i);
+            if (arg == null) {
+                result.append("UNDEFINED");
+            } else {
+                result.append(maybeEscapeForSh(arg));
+            }
+            if (i + 1 < argv.size()) {
+                result.append(" \\");
+            }
+            result.append("\n");
+        }
+        return result.toString();
+    }
+
+    private static String maybeEscapeForSh(String value) {
+        if (!value.matches(".*[^-:.+=a-zA-Z0-9_].*")) {
+            return value;
+        }
+        return "$'" + value.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").
+                replace("\r", "\\r").replace("\t", "\\t") + "'";
     }
 
     private Indexer() {
