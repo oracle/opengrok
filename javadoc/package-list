@@ -75,3 +75,4 @@ org.opengrok.web.api.v1.suggester.provider.filter
 org.opengrok.web.api.v1.suggester.provider.service
 org.opengrok.web.api.v1.suggester.provider.service.impl
 org.opengrok.web.api.v1.suggester.query
+org.opengrok.web.util
