@@ -27,8 +27,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.util.List;
@@ -36,7 +34,6 @@ import java.util.List;
 /**
  * Represents a container for tests of {@link CtagsUtil}.
  */
-@ConditionalRun(CtagsInstalled.class)
 public class CtagsUtilTest {
 
     @Test

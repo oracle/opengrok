@@ -19,24 +19,19 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.executables;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeSet;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.opengrok.indexer.authorization.AuthorizationFrameworkReloadTest;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
@@ -51,7 +46,6 @@ import org.opengrok.indexer.search.SearchEngine;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-@ConditionalRun(CtagsInstalled.class)
 public class JarAnalyzerTest {
 
     private static final String TESTPLUGINS_JAR = "testplugins.jar";
@@ -60,9 +54,6 @@ public class JarAnalyzerTest {
     private static TestRepository repository;
     private static File configFile;
     private static boolean originalProjectsEnabled;
-
-    @ClassRule
-    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {

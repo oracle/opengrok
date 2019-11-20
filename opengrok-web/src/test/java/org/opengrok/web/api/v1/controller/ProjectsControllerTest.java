@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -33,7 +34,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -257,7 +257,6 @@ public class ProjectsControllerTest extends JerseyTest {
      * the delete handling performs removal of the index data.
      */
     @Test
-    @ConditionalRun(CtagsInstalled.class)
     public void testDelete() throws Exception {
         String projectsToDelete[] = { "git", "svn" };
 
