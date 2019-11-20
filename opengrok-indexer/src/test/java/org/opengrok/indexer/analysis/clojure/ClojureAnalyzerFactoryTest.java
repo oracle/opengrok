@@ -27,15 +27,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.StreamSource;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
@@ -55,15 +51,11 @@ import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanal
 /**
  * @author Farid Zakaria
  */
-@ConditionalRun(CtagsInstalled.class)
 public class ClojureAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {

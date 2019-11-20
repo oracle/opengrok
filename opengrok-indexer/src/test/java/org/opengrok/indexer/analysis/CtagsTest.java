@@ -29,25 +29,17 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
  * @author Lubos Kosco
  */
-@ConditionalRun(CtagsInstalled.class)
 public class CtagsTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {

@@ -38,7 +38,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -59,7 +58,6 @@ import java.util.TreeSet;
  * Represents a container for additional tests of {@link IndexDatabase} for symlinks.
  */
 @ConditionalRun(UnixPresent.class)
-@ConditionalRun(CtagsInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 public class IndexDatabaseSymlinksTest {
