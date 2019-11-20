@@ -61,7 +61,6 @@ public class Ctags implements Resettable {
 
     private final RuntimeEnvironment env;
     private volatile boolean closing;
-    private final LangTreeMap defaultLangMap = new LangTreeMap();
     private LangMap langMap;
     private List<String> command;
     private Process ctags;
@@ -74,8 +73,13 @@ public class Ctags implements Resettable {
 
     private boolean junit_testing = false;
 
+    /**
+     * Initializes an instance with the current
+     * {@link AnalyzerGuru#getLangMap()}.
+     */
     public Ctags() {
         env = RuntimeEnvironment.getInstance();
+        langMap = AnalyzerGuru.getLangMap();
     }
 
     /**
@@ -166,15 +170,6 @@ public class Ctags implements Resettable {
         command.add("--fields=-anf+iKnS");
         command.add("--excmd=pattern");
 
-        defaultLangMap.clear();
-        defaultLangMap.add(".KSHLIB", "sh"); // RFE #17849. Upper-case file spec
-        defaultLangMap.add(".PLB", "sql"); // RFE #19208. Upper-case file spec
-        defaultLangMap.add(".PLS", "sql"); // RFE #19208. Upper-case file spec
-        defaultLangMap.add(".PLD", "sql"); // RFE #19208. Upper-case file spec
-        defaultLangMap.add(".PKS", "sql"); // RFE #19208 ? Upper-case file spec
-        defaultLangMap.add(".PKB", "sql"); // # 1763. Upper-case file spec
-        defaultLangMap.add(".PCK", "sql"); // # 1763. Upper-case file spec
-
         //Ideally all below should be in ctags, or in outside config file,
         //we might run out of command line SOON
         //Also note, that below ctags definitions HAVE to be in POSIX
@@ -200,10 +195,10 @@ public class Ctags implements Resettable {
 
         //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
-        if (langMap != null) {
-            command.addAll(langMap.mergeSecondary(defaultLangMap).getCtagsArgs());
+        if (langMap == null) {
+            LOGGER.warning("langMap property is null");
         } else {
-            command.addAll(defaultLangMap.getCtagsArgs());
+            command.addAll(langMap.getCtagsArgs());
         }
 
         /* Add extra command line options for ctags. */
@@ -254,7 +249,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Rust")) { // Built-in would be capitalized.
             command.add("--langdef=rust"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".RS", "rust"); // Upper-case file spec
 
         // The following are not supported yet in Universal Ctags b13cb551
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
@@ -270,8 +264,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("PowerShell")) { // Built-in would be capitalized.
             command.add("--langdef=powershell"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".PS1", "powershell"); // Upper-case file spec
-        defaultLangMap.add(".PSM1", "powershell"); // Upper-case file spec
 
         command.add("--regex-powershell=/\\$(\\{[^}]+\\})/\\1/v,variable/");
         command.add("--regex-powershell=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
@@ -292,7 +284,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Pascal")) { // Built-in would be capitalized.
             command.add("--langdef=pascal"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".PAS", "pascal"); // Upper-case file spec
 
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
@@ -310,7 +301,7 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Swift")) { // Built-in would be capitalized.
             command.add("--langdef=swift"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".SWIFT", "swift"); // Upper-case file spec
+
         command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n,enum,enums/");
         command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t,typealias,typealiases/");
         command.add("--regex-swift=/protocol[[:space:]]+([^:\\{]+).*$/\\1/p,protocol,protocols/");
@@ -325,8 +316,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Kotlin")) { // Built-in would be capitalized.
             command.add("--langdef=kotlin"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".KT", "kotlin"); // Upper-case file spec
-        defaultLangMap.add(".KTS", "kotlin"); // Upper-case file spec
 
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
@@ -355,9 +344,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Clojure")) { // Built-in would be capitalized.
             command.add("--langdef=clojure"); // Lower-case if user-defined.
         }
-        defaultLangMap.add(".CLJ", "clojure"); // Upper-case file spec
-        defaultLangMap.add(".CLJS", "clojure"); // Upper-case file spec
-        defaultLangMap.add(".CLJX", "clojure"); // Upper-case file spec
 
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
@@ -375,8 +361,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Haskell")) { // Built-in would be capitalized.
             command.add("--langdef=haskell"); // below added with #912. Lowercase if user-defined.
         }
-        defaultLangMap.add(".HS", "haskell"); // Upper-case file spec
-        defaultLangMap.add(".HSC", "haskell"); // Upper-case file spec
 
         command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
         command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
@@ -392,7 +376,6 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
             command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
         }
-        defaultLangMap.add(".SCALA", "scala"); // Upper-case file spec
 
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
