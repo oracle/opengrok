@@ -148,6 +148,11 @@ public class Ctags implements Resettable {
     }
 
     private void initialize() {
+        /*
+         * Call the following principally to properly initialize when running
+         * JUnit tests. opengrok-indexer and opengrok-web call it too but
+         * validating its return code and logging (and possibly aborting).
+         */
         env.validateUniversalCtags();
 
         command = new ArrayList<>();
