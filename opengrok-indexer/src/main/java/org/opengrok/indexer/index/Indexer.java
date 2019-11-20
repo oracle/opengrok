@@ -1130,11 +1130,7 @@ public final class Indexer {
                 result.append("\t");
             }
             String arg = argv.get(i);
-            if (arg == null) {
-                result.append("UNDEFINED");
-            } else {
-                result.append(maybeEscapeForSh(arg));
-            }
+            result.append(maybeEscapeForSh(arg));
             if (i + 1 < argv.size()) {
                 result.append(" \\");
             }
