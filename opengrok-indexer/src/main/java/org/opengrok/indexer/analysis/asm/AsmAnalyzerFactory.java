@@ -18,38 +18,37 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.indexer.analysis.c;
+package org.opengrok.indexer.analysis.asm;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
-public class CAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "C";
-    
-    private static final String[] SUFFIXES = {
-        "C",
-        "H",
-        "I",
-        "L",
-        "Y",
-        "LEX",
-        "YACC",
-        "D",
-        "XS",                   // Mainly found in perl directories
-        "X",                    // rpcgen input files
-    };
+/**
+ * Represents a factory to create {@link AsmAnalyzer} instances.
+ */
+public class AsmAnalyzerFactory extends FileAnalyzerFactory {
 
-    public CAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+    private static final String NAME = "Asm";
+
+    private static final String[] SUFFIXES = {"ASM", "S"};
+
+    /**
+     * Initializes a factory instance to associate file extensions ".asm" and
+     * ".s" with {@link AsmAnalyzer}.
+     */
+    public AsmAnalyzerFactory() {
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
+    /**
+     * Creates a new {@link AsmAnalyzer} instance.
+     * @return a defined instance
+     */
     @Override
     protected AbstractAnalyzer newAnalyzer() {
-        return new CAnalyzer(this);
+        return new AsmAnalyzer(this);
     }
 }
