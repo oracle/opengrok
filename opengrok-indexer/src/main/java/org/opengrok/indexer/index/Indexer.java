@@ -53,6 +53,7 @@ import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
 import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.configuration.CanonicalRootValidator;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
@@ -494,11 +495,9 @@ public final class Indexer {
                     "canonical root must end with a file separator. For security, a canonical",
                     "root cannot be the root directory. Option may be repeated.").Do(v -> {
                 String root = (String) v;
-                if (!root.endsWith("/") && !root.endsWith("\\")) {
-                    die("--canonicalRoot must end with a separator");
-                }
-                if (root.equals("/") || root.equals("\\")) {
-                    die("--canonicalRoot cannot be the root directory");
+                String problem = CanonicalRootValidator.validate(root, "--canonicalRoot");
+                if (problem != null) {
+                    die(problem);
                 }
                 canonicalRoots.add(root);
             });
