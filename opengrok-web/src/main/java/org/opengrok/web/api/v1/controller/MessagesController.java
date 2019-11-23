@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -54,11 +54,12 @@ public class MessagesController {
     }
 
     @DELETE
-    public void removeMessagesWithTag(@QueryParam("tag") final String tag) {
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void removeMessagesWithTag(@QueryParam("tag") final String tag, final String text) {
         if (tag == null) {
             throw new WebApplicationException("Message tag has to be specified", Response.Status.BAD_REQUEST);
         }
-        env.removeAnyMessage(Collections.singleton(tag));
+        env.removeAnyMessage(Collections.singleton(tag), text);
     }
 
     @GET

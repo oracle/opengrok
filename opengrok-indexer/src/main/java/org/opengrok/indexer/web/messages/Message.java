@@ -112,6 +112,19 @@ public class Message implements Comparable<Message>, JSONable {
         return !tmp.isEmpty();
     }
 
+    /**
+     * @param tags set of tags to check
+     * @param text message text
+     * @return true if a mesage has at least one of the tags and text
+     */
+    public boolean hasTagsAndText(Set<String> tags, String text) {
+        if (text == null || text.isEmpty()) {
+            return hasAny(tags);
+        }
+
+        return hasAny(tags) && getText().equals(text);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

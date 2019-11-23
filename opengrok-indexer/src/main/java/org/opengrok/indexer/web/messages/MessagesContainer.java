@@ -167,6 +167,13 @@ public class MessagesContainer {
         removeAnyMessage(t -> t.getMessage().hasAny(tags));
     }
 
+    public void removeAnyMessage(Set<String> tags, String text) {
+        if (tags == null) {
+            return;
+        }
+        removeAnyMessage(t -> t.getMessage().hasTagsAndText(tags, text));
+    }
+
     /**
      * Remove messages which have expired.
      */

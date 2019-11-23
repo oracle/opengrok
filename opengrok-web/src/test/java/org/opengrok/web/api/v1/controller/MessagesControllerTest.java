@@ -18,12 +18,20 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.spi.TestContainer;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,9 +43,13 @@ import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +82,67 @@ public class MessagesControllerTest extends JerseyTest {
     @Override
     protected Application configure() {
         return new ResourceConfig(MessagesController.class);
+    }
+
+    // Allow entity body for DELETE method on the client side.
+    @Override
+    protected void configureClient(ClientConfig config) {
+        config.property(ClientProperties.SUPPRESS_HTTP_COMPLIANCE_VALIDATION, true);
+    }
+
+    // Allow entity body for DELETE method on the server side.
+    public static class CustomGrizzlyTestContainerFactory implements TestContainerFactory {
+        public CustomGrizzlyTestContainerFactory() {
+        }
+
+        public TestContainer create(URI baseUri, DeploymentContext context) {
+            return new GrizzlyTestContainer(baseUri, context);
+        }
+
+        private class GrizzlyTestContainer implements TestContainer {
+            private URI baseUri;
+            private final HttpServer server;
+
+            private GrizzlyTestContainer(URI baseUri, DeploymentContext context) {
+                this.baseUri = UriBuilder.fromUri(baseUri).path(context.getContextPath()).build(new Object[0]);
+                this.server = GrizzlyHttpServerFactory.createHttpServer(this.baseUri, context.getResourceConfig(), false);
+                this.server.getServerConfiguration().setAllowPayloadForUndefinedHttpMethods(true);
+            }
+
+            public ClientConfig getClientConfig() {
+                return null;
+            }
+
+            public URI getBaseUri() {
+                return this.baseUri;
+            }
+
+            public void start() {
+                if (this.server.isStarted()) {
+                    return;
+                }
+
+                try {
+                    this.server.start();
+                    if (this.baseUri.getPort() == 0) {
+                        this.baseUri = UriBuilder.fromUri(this.baseUri).port(this.server.getListener("grizzly").getPort()).build(new Object[0]);
+                    }
+                } catch (IOException e) {
+                    throw new TestContainerException(e);
+                }
+            }
+
+            public void stop() {
+                if (this.server.isStarted()) {
+                    this.server.shutdownNow();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new CustomGrizzlyTestContainerFactory();
     }
 
     @Before
@@ -135,6 +208,15 @@ public class MessagesControllerTest extends JerseyTest {
                 .delete();
     }
 
+    private void removeMessages(final String tag, final String text) {
+        Entity<String> requestEntity = Entity.entity(text, MediaType.TEXT_PLAIN);
+        target("messages")
+                .queryParam("tag", tag)
+                .request()
+                .build("DELETE", requestEntity).
+                invoke();
+    }
+
     @Test
     public void addAndRemoveTest() {
         addMessage("test", "test");
@@ -145,6 +227,24 @@ public class MessagesControllerTest extends JerseyTest {
         removeMessages("test");
 
         assertTrue(env.getMessages("test").isEmpty());
+    }
+
+    @Test
+    public void addAndRemoveWithTextTest() {
+        final String tag = "foo";
+        final String text = "text";
+
+        addMessage(text, tag);
+        assertEquals(1, env.getMessages(tag).size());
+
+        removeMessages(tag + "bar", text);
+        assertEquals(1, env.getMessages(tag).size());
+
+        removeMessages(tag, text + "bar");
+        assertEquals(1, env.getMessages(tag).size());
+
+        removeMessages(tag, text);
+        assertTrue(env.getMessages(tag).isEmpty());
     }
 
     @Test

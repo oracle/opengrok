@@ -1935,11 +1935,11 @@ public final class RuntimeEnvironment {
 
     /**
      * Remove all messages containing at least one of the tags.
-     *
      * @param tags set of tags
+     * @param text message text (can be null, empty)
      */
-    public void removeAnyMessage(final Set<String> tags) {
-        messagesContainer.removeAnyMessage(tags);
+    public void removeAnyMessage(final Set<String> tags, final String text) {
+        messagesContainer.removeAnyMessage(tags, text);
     }
 
     /**
