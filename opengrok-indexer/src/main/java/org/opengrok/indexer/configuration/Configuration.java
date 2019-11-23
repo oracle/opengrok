@@ -53,6 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
+
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -1358,6 +1360,22 @@ public final class Configuration {
             }
         }
         conf.setGroups(copy);
+
+        /*
+         * Validate any defined canonicalRoot entries, and only include where
+         * validation succeeds.
+         */
+        if (conf.canonicalRoots != null) {
+            conf.canonicalRoots = conf.canonicalRoots.stream().filter(s -> {
+                String problem = CanonicalRootValidator.validate(s, "canonicalRoot element");
+                if (problem == null) {
+                    return true;
+                } else {
+                    LOGGER.warning(problem);
+                    return false;
+                }
+            }).collect(Collectors.toCollection(HashSet::new));
+        }
 
         return conf;
     }
