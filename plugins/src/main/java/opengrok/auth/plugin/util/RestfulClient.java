@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Simple RESTful client code for PUT requests.
+ * Simple RESTful client.
  */
 public class RestfulClient {
     private static final Logger LOGGER = Logger.getLogger(RestfulClient.class.getName());
