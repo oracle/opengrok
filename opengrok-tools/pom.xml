@@ -206,6 +206,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>pip</argument>
                                 <argument>setuptools</argument>
                                 <argument>certifi</argument>
+                                <argument>wheel</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
