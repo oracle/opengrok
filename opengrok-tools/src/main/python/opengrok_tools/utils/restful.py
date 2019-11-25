@@ -60,22 +60,26 @@ def call_rest_api(command, pattern, name):
 
     logger = logging.getLogger(__name__)
 
-    command = command.get(COMMAND_PROPERTY)
-    if pattern and name:
-        uri = command[0].replace(pattern, name)
-    else:
-        uri = command[0]
+    if not isinstance(command, dict) or command.get(COMMAND_PROPERTY) is None:
+        raise Exception("invalid command")
 
-    verb = command[1]
-    data = command[2]
+    command = command[COMMAND_PROPERTY]
 
+    uri, verb, data, *_ = command
+    if verb not in ['PUT', 'POST', 'DELETE']:
+        raise Exception("invalid verb: {}".format(verb))
     try:
         headers = command[3]
+        if headers and not isinstance(headers, dict):
+            raise Exception("headers must be a dictionary")
     except IndexError:
         headers = {}
 
-    if not headers:
+    if headers is None:
         headers = {}
+
+    if pattern and name:
+        uri = uri.replace(pattern, name)
 
     header_names = [x.lower() for x in headers.keys()]
 
