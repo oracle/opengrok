@@ -29,17 +29,16 @@ from .patterns import COMMAND_PROPERTY
 
 
 def do_api_call(command, uri, verb, headers, data):
-    logger = logging.getLogger(__name__)
-
-    if verb == 'PUT':
-        return put(logger, uri, headers=headers, data=data)
-    elif verb == 'POST':
-        return post(logger, uri, headers=headers, data=data)
-    elif verb == 'DELETE':
-        return delete(logger, uri, headers=headers, data=data)
-    else:
-        raise Exception('Unknown HTTP verb in command {}'.
-                        format(command))
+    verbs = {
+        'PUT': put,
+        'POST': post,
+        'DELETE': delete
+    }
+    handler = verbs.get(verb)
+    if handler is not None:
+        logger = logging.getLogger(__name__)
+        return handler(logger, uri, headers=headers, data=data)
+    raise Exception('Unknown HTTP verb in command {}'.format(command))
 
 
 def call_rest_api(command, pattern, name):
