@@ -28,15 +28,15 @@ from .webutil import put, post, delete
 from .patterns import COMMAND_PROPERTY
 
 
-def do_api_call(command, uri, verb, headers, json_data):
+def do_api_call(command, uri, verb, headers, data):
     logger = logging.getLogger(__name__)
 
     if verb == 'PUT':
-        return put(logger, uri, headers=headers, data=json_data)
+        return put(logger, uri, headers=headers, data=data)
     elif verb == 'POST':
-        return post(logger, uri, headers=headers, data=json_data)
+        return post(logger, uri, headers=headers, data=data)
     elif verb == 'DELETE':
-        return delete(logger, uri, headers=headers)
+        return delete(logger, uri, headers=headers, data=data)
     else:
         raise Exception('Unknown HTTP verb in command {}'.
                         format(command))
@@ -47,6 +47,8 @@ def call_rest_api(command, pattern, name):
     Make RESTful API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
 
+    Default content type is application/json.
+
     :param command: command (list of URI, HTTP verb, data payload)
     :param pattern: pattern for command name and/or data substitution
     :param name: command name
@@ -56,14 +58,34 @@ def call_rest_api(command, pattern, name):
     uri = command[0].replace(pattern, name)
     verb = command[1]
     data = command[2]
+    try:
+        headers = command[3]
+    except IndexError:
+        headers = {}
 
     logger = logging.getLogger(__name__)
 
-    headers = None
-    json_data = None
-    if data:
-        headers = {'Content-Type': 'application/json'}
-        json_data = json.dumps(data).replace(pattern, name)
-        logger.debug("JSON data: {}".format(json_data))
+    CONTENT_TYPE = 'Content-Type'
+    APPLICATION_JSON = 'application/json'   # default
 
-    return do_api_call(command, uri, verb, headers, json_data)
+    header_names = [x.lower() for x in headers.keys()]
+
+    if data:
+        if CONTENT_TYPE.lower() not in header_names:
+            logger.debug("Adding header: {} = {}".
+                         format(CONTENT_TYPE, APPLICATION_JSON))
+            headers[CONTENT_TYPE] = APPLICATION_JSON
+
+        for (k, v) in headers.items():
+            if k.lower() == CONTENT_TYPE.lower():
+                if headers[k].lower() == APPLICATION_JSON.lower():
+                    logger.debug("Converting {} to JSON".format(data))
+                    data = json.dumps(data)
+                break
+
+        data = data.replace(pattern, name)
+        logger.debug("entity data: {}".format(data))
+
+    logger.debug("{} API call: {} with data '{}' and headers: {}".
+                 format(verb, uri, data, headers))
+    return do_api_call(command, uri, verb, headers, data)
