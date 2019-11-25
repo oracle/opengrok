@@ -28,6 +28,10 @@ from .webutil import put, post, delete
 from .patterns import COMMAND_PROPERTY
 
 
+CONTENT_TYPE = 'Content-Type'
+APPLICATION_JSON = 'application/json'   # default
+
+
 def do_api_call(command, uri, verb, headers, data):
     verbs = {
         'PUT': put,
@@ -53,19 +57,25 @@ def call_rest_api(command, pattern, name):
     :param name: command name
     :return return value from given requests method
     """
+
+    logger = logging.getLogger(__name__)
+
     command = command.get(COMMAND_PROPERTY)
-    uri = command[0].replace(pattern, name)
+    if pattern and name:
+        uri = command[0].replace(pattern, name)
+    else:
+        uri = command[0]
+
     verb = command[1]
     data = command[2]
+
     try:
         headers = command[3]
     except IndexError:
         headers = {}
 
-    logger = logging.getLogger(__name__)
-
-    CONTENT_TYPE = 'Content-Type'
-    APPLICATION_JSON = 'application/json'   # default
+    if not headers:
+        headers = {}
 
     header_names = [x.lower() for x in headers.keys()]
 
@@ -82,7 +92,8 @@ def call_rest_api(command, pattern, name):
                     data = json.dumps(data)
                 break
 
-        data = data.replace(pattern, name)
+        if pattern and name:
+            data = data.replace(pattern, name)
         logger.debug("entity data: {}".format(data))
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".

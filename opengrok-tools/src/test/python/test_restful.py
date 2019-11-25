@@ -24,7 +24,8 @@
 #
 
 import pytest
-from opengrok_tools.utils.restful import call_rest_api
+from opengrok_tools.utils.restful import call_rest_api,\
+    CONTENT_TYPE, APPLICATION_JSON
 
 
 def test_replacement(monkeypatch):
@@ -64,3 +65,26 @@ def test_unknown_verb():
     value = "BAR"
     with pytest.raises(Exception):
         call_rest_api(command, pattern, value)
+
+
+def test_headers(monkeypatch):
+    """
+    Test HTTP header handling.
+    """
+    for verb in ["PUT", "POST", "DELETE"]:
+        TEXT_PLAIN = {'Content-type': 'text/plain'}
+        for headers in [TEXT_PLAIN, None]:
+            command = {"command": ["http://localhost:8080/source/api/v1/foo",
+                                   verb, "data", headers]}
+
+            def mock_response(command, uri, verb, headers_arg, data):
+                if headers:
+                    assert TEXT_PLAIN.items() <= headers_arg.items()
+                else:
+                    assert {CONTENT_TYPE: APPLICATION_JSON}.items() \
+                        <= headers_arg.items()
+
+            with monkeypatch.context() as m:
+                m.setattr("opengrok_tools.utils.restful.do_api_call",
+                          mock_response)
+                call_rest_api(command, None, None)
