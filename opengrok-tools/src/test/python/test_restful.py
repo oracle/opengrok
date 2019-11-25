@@ -26,6 +26,7 @@
 import pytest
 from opengrok_tools.utils.restful import call_rest_api,\
     CONTENT_TYPE, APPLICATION_JSON
+from opengrok_tools.utils.patterns import COMMAND_PROPERTY
 
 
 def test_replacement(monkeypatch):
@@ -88,3 +89,18 @@ def test_headers(monkeypatch):
                 m.setattr("opengrok_tools.utils.restful.do_api_call",
                           mock_response)
                 call_rest_api(command, None, None)
+
+
+def test_invalid_command_negative():
+    with pytest.raises(Exception):
+        call_rest_api(None, None, None)
+
+    with pytest.raises(Exception):
+        call_rest_api({"foo": "bar"}, None, None)
+
+    with pytest.raises(Exception):
+        call_rest_api(["foo", "bar"], None, None)
+
+    with pytest.raises(Exception):
+        call_rest_api({COMMAND_PROPERTY: ["foo", "PUT", "data", "headers"]},
+                      None, None)
