@@ -35,10 +35,10 @@ def get(logger, uri, params=None, headers=None):
         return None
 
 
-def delete(logger, uri, params=None, headers=None):
+def delete(logger, uri, params=None, headers=None, data=None):
     try:
         proxies = get_proxies(uri)
-        return requests.delete(uri, params=params, proxies=proxies)
+        return requests.delete(uri, data=data, params=params, proxies=proxies)
     except Exception:
         logger.debug(traceback.format_exc())
         return None
