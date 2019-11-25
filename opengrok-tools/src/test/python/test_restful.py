@@ -27,7 +27,10 @@ import pytest
 from opengrok_tools.utils.restful import call_rest_api
 
 
-def test_restful_verbs(monkeypatch):
+def test_replacement(monkeypatch):
+    """
+    Test replacement performed both in the URL and data.
+    """
     okay_status = 200
 
     class MockResponse:
