@@ -43,7 +43,9 @@ def get_java_parser():
     parser.add_argument('-j', '--java',
                         help='path to java binary')
     parser.add_argument('-J', '--java_opts',
-                        help='java options', action='append')
+                        help='java options. Use one for every java option, '
+                             'e.g. -J=-server -J=-Xmx16g',
+                        action='append')
     parser.add_argument('-e', '--environment', action='append',
                         help='Environment variables in the form of name=value')
     parser.add_argument('--doprint', type=str2bool, nargs=1, default=None,
