@@ -376,44 +376,6 @@ public final class Indexer {
     }
 
     /**
-     * Web address consisting of webappURI and port of a web address.
-     */
-    public static class WebAddress {
-        private String host;
-        private int port;
-
-        WebAddress(String host, String port) throws NumberFormatException {
-            this.host = host;
-            this.port = Integer.parseInt(port);
-        }
-        public String getHost() {
-            return host;
-        }
-        public int getPort() {
-            return port;
-        }
-    }
-
-     /**
-      * Parse a web address into its webappURI and port components
-      * This method along with the WebAddress class is used by OptionParser
-      * to validate user entry of a web address.
-      * @param webAddr expected to be in the form webappURI:port
-      * @return WebAddress object
-      * @throws NumberFormatException or IllegalArgumentException
-      */
-    public static WebAddress parseWebAddress(String webAddr) {
-        String[] hp = webAddr.split(":");
-
-        if (hp.length != 2) {
-            throw new IllegalArgumentException("WebAddress syntax error (expecting webappURI:port)");
-        }
-
-        return new WebAddress(hp[0], hp[1]);
-    }
-
-
-    /**
      * Parse OpenGrok Indexer options
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
@@ -452,9 +414,6 @@ public final class Indexer {
                 }
             });
         });
-
-        // An example of how to add a data type for option parsing
-        OptionParser.accept(WebAddress.class, Indexer::parseWebAddress);
 
         // Limit usage lines to 72 characters for concise formatting.
 
