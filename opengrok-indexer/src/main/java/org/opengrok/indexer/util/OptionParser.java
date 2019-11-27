@@ -431,6 +431,11 @@ public class OptionParser {
             // to which the parser will take and convert.
             } else if (arg instanceof Class) {
                 opt.setValueType((Class<?>) arg);
+            } else if (arg == null) {
+                throw new IllegalArgumentException("arg is null");
+            } else {
+                throw new IllegalArgumentException("Invalid arg: " +
+                        arg.getClass().getSimpleName() + " " + arg);
             }
         }
         
