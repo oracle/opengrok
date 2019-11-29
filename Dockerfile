@@ -26,7 +26,7 @@ COPY opengrok-indexer/jflex-code-end.txt /mvn/opengrok-indexer/jflex-code-end.tx
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies
-RUN mvn package -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip
+RUN mvn -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
 
 # build the project
 COPY ./ /opengrok-source
