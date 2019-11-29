@@ -9,6 +9,7 @@ org.opengrok.indexer
 org.opengrok.indexer.analysis
 org.opengrok.indexer.analysis.ada
 org.opengrok.indexer.analysis.archive
+org.opengrok.indexer.analysis.asm
 org.opengrok.indexer.analysis.c
 org.opengrok.indexer.analysis.clojure
 org.opengrok.indexer.analysis.csharp
