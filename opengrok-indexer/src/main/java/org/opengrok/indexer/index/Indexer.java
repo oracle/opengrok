@@ -155,9 +155,11 @@ public final class Indexer {
                 helpStream.println(helpUsage);
                 if (help > 1) {
                     helpStream.println(AnalyzerGuruHelp.getUsage());
-                    helpStream.println(ConfigurationHelp.getSamples());
+                    helpStream.print(ConfigurationHelp.getSamples());
                 }
                 if (help > 2) {
+                    helpStream.println("Ctags command-line:");
+                    helpStream.println();
                     helpStream.println(getCtagsCommand());
                 }
                 System.exit(status);
@@ -423,7 +425,7 @@ public final class Indexer {
 
             parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
                     "Display this usage summary.",
-                    "    Repeat once for configuration.xml samples.",
+                    "    Repeat once for AnalyzerGuru details and configuration.xml samples.",
                     "    Repeat twice for ctags command-line.").Do(v -> {
                         ++help;
                         helpUsage = parser.getUsage();
@@ -649,12 +651,6 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
-            parser.on("--repository", "=path/to/repository",
-                    "Path (relative to the source root) to a repository for generating",
-                    "history (if -H,--history is on). By default all discovered repositories",
-                    "are history-eligible; using --repository limits to only those specified.",
-                    "Option may be repeated.").Do(v -> repositories.add((String) v));
-
             parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do(v -> {
                 // Already handled above. This populates usage.
@@ -686,6 +682,12 @@ public final class Indexer {
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
                 "with lots of renamed files.").Do(v -> cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
+
+            parser.on("--repository", "=path/to/repository",
+                    "Path (relative to the source root) to a repository for generating",
+                    "history (if -H,--history is on). By default all discovered repositories",
+                    "are history-eligible; using --repository limits to only those specified.",
+                    "Option may be repeated.").Do(v -> repositories.add((String) v));
 
             parser.on("-S", "--search",
                     "Search for source repositories under -s,--source, and add them.").Do(v ->
@@ -763,14 +765,14 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 
-            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
-                "Web application should run ctags when necessary. Default is off.").
-                Do(v -> cfg.setWebappCtags((Boolean) v));
-
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
                 "(so that the web application can use the same configuration)")
                     .Do(configFile -> configFilename = (String) configFile);
+
+            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
+                    "Web application should run ctags when necessary. Default is off.").
+                    Do(v -> cfg.setWebappCtags((Boolean) v));
         });
 
         // Need to read the configuration file first
