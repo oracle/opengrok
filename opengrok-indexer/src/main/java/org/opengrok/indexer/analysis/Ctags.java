@@ -47,7 +47,9 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.SourceSplitter;
 
 /**
@@ -214,11 +216,7 @@ public class Ctags implements Resettable {
     }
 
     private void run() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for (String s : command) {
-            sb.append(s).append(" ");
-        }
-        String commandStr = sb.toString();
+        String commandStr = Executor.escapeForShell(command, false, PlatformUtils.isWindows());
         LOGGER.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);

@@ -69,6 +69,7 @@ import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.OptionParser;
+import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.Statistics;
 
 /**
@@ -1121,29 +1122,8 @@ public final class Indexer {
     }
 
     private static String getCtagsCommand() {
-        StringBuilder result = new StringBuilder();
         Ctags ctags = CtagsUtil.newInstance(env);
-        List<String> argv = ctags.getArgv();
-        for (int i = 0; i < argv.size(); ++i) {
-            if (i > 0) {
-                result.append("\t");
-            }
-            String arg = argv.get(i);
-            result.append(maybeEscapeForSh(arg));
-            if (i + 1 < argv.size()) {
-                result.append(" \\");
-            }
-            result.append("\n");
-        }
-        return result.toString();
-    }
-
-    private static String maybeEscapeForSh(String value) {
-        if (!value.matches(".*[^-:.+=a-zA-Z0-9_].*")) {
-            return value;
-        }
-        return "$'" + value.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").
-                replace("\r", "\\r").replace("\t", "\\t") + "'";
+        return Executor.escapeForShell(ctags.getArgv(), true, PlatformUtils.isWindows());
     }
 
     private Indexer() {

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -33,6 +34,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.web.Util;
 
 import static org.junit.Assert.*;
@@ -168,7 +170,7 @@ public class BazaarHistoryParserTest {
             "/directory/filename2.ext2",
             "/otherdir/file.extension"
         };
-        if (Util.isWindows()) {
+        if (PlatformUtils.isWindows()) {
             files = new String[] {
                     "\\\\filename.ext",
                     "\\\\directory",

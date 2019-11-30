@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web;
@@ -40,6 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opengrok.indexer.util.PlatformUtils;
 
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.*;
@@ -157,7 +158,7 @@ public class UtilTest {
 
     @Test
     public void fixPathIfWindows() {
-        if (Util.isWindows()) {
+        if (PlatformUtils.isWindows()) {
             assertEquals("/var/opengrok",
                     Util.fixPathIfWindows("\\var\\opengrok"));
         }
