@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
@@ -66,6 +66,7 @@ import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.PlatformUtils;
 
 /**
  * Class for useful functions.
@@ -80,8 +81,6 @@ public final class Util {
      * Matches a character that is not ASCII alpha-numeric or underscore.
      */
     private static final Pattern NON_ASCII_ALPHA_NUM = Pattern.compile("[^A-Za-z0-9_]");
-
-    private static String OS = null;
 
     private static final String anchorLinkStart = "<a href=\"";
     private static final String anchorClassStart = "<a class=\"";
@@ -832,45 +831,12 @@ public final class Util {
     }
 
     public static String fixPathIfWindows(String path) {
-        if (Util.isWindows()) {
+        if (PlatformUtils.isWindows()) {
             // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
             // and also so the path appears as correctly formed URI in the search results.
             return path.replace(File.separatorChar, PATH_SEPARATOR);
         }
         return path;
-    }
-
-    /**
-     * Determine the operation system name.
-     *
-     * @return the name in lowercase, {@code null} if unknown
-     */
-    public static String getOsName() {
-        if (OS == null) {
-            OS = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        }
-        return OS;
-    }
-
-    /**
-     * Determine if the current platform is Windows.
-     *
-     * @return true if windows, false when not windows or we can not determine
-     */
-    public static boolean isWindows() {
-        String osname = getOsName();
-        return osname != null ? osname.startsWith("windows") : false;
-    }
-
-    /**
-     * Determine if the current platform is Unix.
-     *
-     * @return true if unix, false when not unix or we can not determine
-     */
-    public static boolean isUnix() {
-        String osname = getOsName();
-        return osname != null ? (osname.startsWith("linux") || osname.startsWith("solaris") ||
-                osname.contains("bsd") || osname.startsWith("mac")) : false;
     }
 
     /**

@@ -19,20 +19,22 @@
 
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -40,28 +42,9 @@ import static org.junit.Assert.*;
  */
 public class ExecutorTest {
 
-    public ExecutorTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     @Test
-    public void testString() throws IOException {
-        List<String> cmdList = new ArrayList<String>();
+    public void testString() {
+        List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList);
@@ -73,7 +56,7 @@ public class ExecutorTest {
 
     @Test
     public void testReader() throws IOException {
-        List<String> cmdList = new ArrayList<String>();
+        List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList);
@@ -88,7 +71,7 @@ public class ExecutorTest {
 
     @Test
     public void testStream() throws IOException {
-        List<String> cmdList = new ArrayList<String>();
+        List<String> cmdList = new ArrayList<>();
         cmdList.add("echo");
         cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList, new File("."));
@@ -101,5 +84,38 @@ public class ExecutorTest {
         in = new BufferedReader(instance.getErrorReader());
         assertNull(in.readLine());
         in.close();
+    }
+
+    @Test
+    public void testEscapeForBourneSingleLine() {
+        List<String> argv = Arrays.asList("/usr/bin/foo", "--value=\n\r\f\u0011\t\\'");
+        String s = Executor.escapeForShell(argv, false, false);
+        assertEquals("/usr/bin/foo --value=$'\\n\\r\\f\\v\\t\\\\\\''", s);
+    }
+
+    @Test
+    public void testEscapeForBourneMultiLine() {
+        List<String> argv = Arrays.asList("/usr/bin/foo", "--value", "\n\r\f\u0011\t\\'");
+        String s = Executor.escapeForShell(argv, true, false);
+        assertEquals("/usr/bin/foo \\" + System.lineSeparator() +
+                "\t--value \\" + System.lineSeparator() +
+                "\t$'\\n\\r\\f\\v\\t\\\\\\''", s);
+    }
+
+    @Test
+    public void testEscapeForWindowsSingleLine() {
+        List<String> argv = Arrays.asList("C:\\foo", "--value=\n\r\f\u0011\t`\"$a", "/");
+        String s = Executor.escapeForShell(argv, false, true);
+        assertEquals("C:\\foo --value=\"`n`r`f`v`t```\"`$a\" /", s);
+    }
+
+    @Test
+    public void testEscapeForWindowsMultiLine() {
+        List<String> argv = Arrays.asList("C:\\foo", "--value", "\n\r\f\u0011\t`\"$a", "/");
+        String s = Executor.escapeForShell(argv, true, true);
+        assertEquals("C:\\foo `" + System.lineSeparator() +
+                "\t--value `" + System.lineSeparator() +
+                "\t\"`n`r`f`v`t```\"`$a\" `" + System.lineSeparator() +
+                "\t/", s);
     }
 }
