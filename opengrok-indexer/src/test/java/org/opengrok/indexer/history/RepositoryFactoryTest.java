@@ -53,9 +53,10 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class RepositoryFactoryTest {
     private static RuntimeEnvironment env;
-    private static TestRepository repository = new TestRepository();
+    private static TestRepository repository;
     private static Set<String> savedDisabledRepositories;
     private static boolean savedIsProjectsEnabled;
 
@@ -65,6 +66,7 @@ public class RepositoryFactoryTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+        repository = new TestRepository();
         repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
         savedDisabledRepositories = env.getDisabledRepositories();
         savedIsProjectsEnabled = env.isProjectsEnabled();

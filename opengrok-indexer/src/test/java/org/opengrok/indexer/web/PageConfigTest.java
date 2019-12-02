@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -60,7 +61,9 @@ import org.opengrok.indexer.util.TestRepository;
 /**
  * Unit tests for the {@code PageConfig} class.
  */
+@net.jcip.annotations.NotThreadSafe
 public class PageConfigTest {
+    private static RuntimeEnvironment env;
     private static TestRepository repository = new TestRepository();
 
     @Rule
@@ -68,14 +71,15 @@ public class PageConfigTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        env = RuntimeEnvironment.getInstance();
         repository = new TestRepository();
         repository.create(
                 HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
+        env.setRepositories(repository.getSourceRoot());
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         repository.destroy();
         repository = null;
     }
@@ -155,8 +159,6 @@ public class PageConfigTest {
      */
     @Test
     public void testGetResourceFileList() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
         // backup original values
         String oldSourceRootPath = env.getSourceRootPath();
         AuthorizationFramework oldAuthorizationFramework = env.getAuthorizationFramework();
@@ -177,7 +179,7 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req);
         List<String> allFiles = new ArrayList<>(cfg.getResourceFileList());
 
-        /**
+        /*
          * Check if there are some files (the "5" here is just a sufficient
          * value for now which won't break any future repository tests) without
          * any authorization.
@@ -186,7 +188,7 @@ public class PageConfigTest {
         assertTrue(allFiles.contains("git"));
         assertTrue(allFiles.contains("mercurial"));
 
-        /**
+        /*
          * Now set up the same projects with authorization plugin enabling only
          * some of them.
          * <pre>
@@ -428,13 +430,13 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence1() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        String path = env.getSourceRootPath();
         System.out.println(path);
-        RuntimeEnvironment.getInstance().setSourceRoot(null);
+        env.setSourceRoot(null);
         try {
             cfg.checkSourceRootExistence();
         } finally {
-            RuntimeEnvironment.getInstance().setSourceRoot(path);
+            env.setSourceRoot(path);
             PageConfig.cleanup(req);
         }
     }
@@ -448,12 +450,12 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence2() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        RuntimeEnvironment.getInstance().setSourceRoot("");
+        String path = env.getSourceRootPath();
+        env.setSourceRoot("");
         try {
             cfg.checkSourceRootExistence();
         } finally {
-            RuntimeEnvironment.getInstance().setSourceRoot(path);
+            env.setSourceRoot(path);
             PageConfig.cleanup(req);
         }
     }
@@ -467,16 +469,16 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence3() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        String path = env.getSourceRootPath();
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
-        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
+        env.setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
             fail("This should throw an exception when the file does not exist");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().setSourceRoot(path);
+        env.setSourceRoot(path);
         PageConfig.cleanup(req);
     }
 
@@ -490,19 +492,19 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence4() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        String path = env.getSourceRootPath();
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
         Files.createDirectories(temp.toPath());
         // skip the test if the implementation does not permit setting permissions
         Assume.assumeTrue(temp.setReadable(false));
-        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
+        env.setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
             fail("This should throw an exception when the file is not readable");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().setSourceRoot(path);
+        env.setSourceRoot(path);
 
         PageConfig.cleanup(req);
         temp.deleteOnExit();
@@ -517,13 +519,13 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence5() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        String path = env.getSourceRootPath();
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         temp.delete();
         temp.mkdirs();
-        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
+        env.setSourceRoot(temp.getAbsolutePath());
         cfg.checkSourceRootExistence();
-        RuntimeEnvironment.getInstance().setSourceRoot(path);
+        env.setSourceRoot(path);
         temp.deleteOnExit();
         PageConfig.cleanup(req);
     }

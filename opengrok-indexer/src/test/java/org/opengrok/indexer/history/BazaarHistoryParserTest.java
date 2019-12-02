@@ -24,44 +24,39 @@
 
 package org.opengrok.indexer.history;
 
-import java.nio.file.Paths;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.HashSet;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.PlatformUtils;
-import org.opengrok.indexer.web.Util;
-
-import static org.junit.Assert.*;
 
 /**
  *
  * @author austvik
  */
+@net.jcip.annotations.NotThreadSafe
 public class BazaarHistoryParserTest {
 
+    private static RuntimeEnvironment env;
     private BazaarHistoryParser instance;
-    
-    public BazaarHistoryParserTest() {
-    }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void setUpClass() {
+        env = RuntimeEnvironment.getInstance();
     }
 
     @Before
     public void setUp() {
-        if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
-            RuntimeEnvironment.getInstance().setSourceRoot("");
+        if (env.getSourceRootPath() == null) {
+            env.setSourceRoot("");
         }
         BazaarRepository bzrRepo = new BazaarRepository();
         // BazaarHistoryParser needs to have a valid directory name.
@@ -158,7 +153,6 @@ public class BazaarHistoryParserTest {
     }
     
     @Test
-    @SuppressWarnings("unchecked")
     public void parseLogDirectory() throws Exception {
         String revId1 = "1234";
         String author1 = "username@example.com";

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
@@ -49,6 +49,7 @@ import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.w3c.dom.Document;
 
+@net.jcip.annotations.NotThreadSafe
 public class ContextTest {
 
     /**

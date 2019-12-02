@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
@@ -43,6 +44,7 @@ import org.opengrok.indexer.web.Statistics;
  *
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class AuthorizationFrameworkReloadTest {
 
     private final File pluginDirectory;

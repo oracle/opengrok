@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
@@ -49,6 +49,7 @@ import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFil
  * @author Trond Norbye
  */
 @ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
+@net.jcip.annotations.NotThreadSafe
 public class PerforceRepositoryTest {
 
     @Rule

@@ -42,7 +42,6 @@ import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.StreamSource;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -75,10 +74,7 @@ public class CSharpAnalyzerFactoryTest {
 
         CSharpAnalyzerFactory analFact = new CSharpAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateUniversalCtags()) {
-            analyzer.setCtags(new Ctags());
-        }
+        analyzer.setCtags(new Ctags());
     }
 
     @AfterClass

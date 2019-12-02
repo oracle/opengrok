@@ -60,6 +60,7 @@ import org.opengrok.indexer.util.IOUtils;
  *
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class IndexerRepoTest {
 
     @Rule

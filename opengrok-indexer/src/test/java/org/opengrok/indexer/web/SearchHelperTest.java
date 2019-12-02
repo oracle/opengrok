@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -42,17 +43,22 @@ import org.opengrok.indexer.util.TestRepository;
 /**
  * Unit tests for the {@code SearchHelper} class.
  */
+@net.jcip.annotations.NotThreadSafe
 public class SearchHelperTest {
 
-    TestRepository repository;
-    RuntimeEnvironment env;
+    private static RuntimeEnvironment env;
+    private TestRepository repository;
+
+    @BeforeClass
+    public static void setUpClass() {
+        env = RuntimeEnvironment.getInstance();
+    }
 
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
 
-        env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);

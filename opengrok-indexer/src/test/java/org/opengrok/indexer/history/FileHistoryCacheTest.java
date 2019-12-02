@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -52,6 +52,7 @@ import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
  *
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class FileHistoryCacheTest {
 
     private TestRepository repositories;

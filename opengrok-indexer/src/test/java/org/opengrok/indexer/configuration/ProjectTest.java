@@ -19,8 +19,15 @@
 
  /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
@@ -31,11 +38,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import junit.framework.AssertionFailedError;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
+@net.jcip.annotations.NotThreadSafe
 public class ProjectTest {
+
+    private static RuntimeEnvironment env;
+
+    @BeforeClass
+    public static void setUpClass() {
+        env = RuntimeEnvironment.getInstance();
+    }
 
     /**
      * Test that a {@code Project} instance can be encoded and decoded without
@@ -97,7 +111,6 @@ public class ProjectTest {
         HashMap<String, Project> projects = new HashMap<>();
         projects.put("foo", foo);
         projects.put("bar", bar);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjectsEnabled(true);
         env.setProjects(projects);
 
@@ -123,7 +136,6 @@ public class ProjectTest {
         HashMap<String, Project> projects = new HashMap<>();
         projects.put("foo", foo);
         projects.put("bar", bar);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjects(projects);
 
         List<String> descs = env.getProjectNames();
@@ -138,7 +150,6 @@ public class ProjectTest {
      */
     @Test
     public void testMergeProjects1() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(new Configuration().getTabSize() + 3731);
         env.setNavigateWindowEnabled(!new Configuration().isNavigateWindowEnabled());
 
@@ -156,7 +167,6 @@ public class ProjectTest {
      */
     @Test
     public void testMergeProjects2() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(new Configuration().getTabSize() + 3731);
 
         Project p1 = new Project();
@@ -177,7 +187,6 @@ public class ProjectTest {
      */
     @Test
     public void testCreateProjectWithConfiguration() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(4);
 
         Project p1 = new Project("a", "/a");

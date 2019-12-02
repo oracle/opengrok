@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -53,19 +54,22 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Trond Norbye
  */
+@net.jcip.annotations.NotThreadSafe
 public class IgnoredNamesTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static RuntimeEnvironment env;
     private static TestRepository repository;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        env = RuntimeEnvironment.getInstance();
+
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opengrok/indexer/index/source.zip"));
 
         // Populate ignored lists with repository specific entries.
-        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
+        RepositoryFactory.initializeIgnoredNames(env);
     }
 
     /**

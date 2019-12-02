@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -52,6 +52,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 /**
  * Unit tests for the {@code HistoryContext} class.
  */
+@net.jcip.annotations.NotThreadSafe
 public class HistoryContextTest {
 
     private static TestRepository repositories;

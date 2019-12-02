@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
@@ -33,6 +34,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -47,8 +49,10 @@ import static org.junit.Assert.assertEquals;
  * @author Krystof Tulinger
  */
 @RunWith(Parameterized.class)
+@net.jcip.annotations.NotThreadSafe
 public class AuthorizationEntityTest {
 
+    private static RuntimeEnvironment env;
     private Set<Group> envGroups;
     private Map<String, Project> envProjects;
 
@@ -80,9 +84,13 @@ public class AuthorizationEntityTest {
         this.authEntityFactory = authEntityFactory;
     }
 
+    @BeforeClass
+    public static void setUpClass() {
+        env = RuntimeEnvironment.getInstance();
+    }
+
     @Before
     public void setUp() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         envGroups = env.getGroups();
         envProjects = env.getProjects();
         env.setGroups(new TreeSet<>());
@@ -91,8 +99,8 @@ public class AuthorizationEntityTest {
 
     @After
     public void tearDown() {
-        RuntimeEnvironment.getInstance().setGroups(envGroups);
-        RuntimeEnvironment.getInstance().setProjects(envProjects);
+        env.setGroups(envGroups);
+        env.setProjects(envProjects);
     }
 
     @Test
@@ -100,7 +108,6 @@ public class AuthorizationEntityTest {
         Group g1, g2, g3;
         AuthorizationEntity authEntity;
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjectsEnabled(true);
 
         env.getProjects().put("project 1", new Project("project 1"));
@@ -216,7 +223,6 @@ public class AuthorizationEntityTest {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
         authEntity.setForGroups(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})));
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         Group g1 = new Group();
         g1.setName("group 1");

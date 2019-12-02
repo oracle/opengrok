@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
@@ -32,6 +33,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.framework.PluginClassLoader;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+@net.jcip.annotations.NotThreadSafe
 public class PluginClassLoaderTest {
 
     private final File pluginDirectory;

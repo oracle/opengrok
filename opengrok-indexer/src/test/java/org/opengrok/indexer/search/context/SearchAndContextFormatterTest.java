@@ -56,6 +56,7 @@ import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
+@net.jcip.annotations.NotThreadSafe
 public class SearchAndContextFormatterTest {
 
     private static RuntimeEnvironment env;
@@ -85,8 +86,7 @@ public class SearchAndContextFormatterTest {
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
-        RuntimeEnvironment.getInstance().readConfiguration(new File(
-            configFile.getAbsolutePath()));
+        env.readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
     @AfterClass

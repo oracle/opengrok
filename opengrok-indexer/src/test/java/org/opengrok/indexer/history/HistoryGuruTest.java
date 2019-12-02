@@ -54,6 +54,7 @@ import org.opengrok.indexer.util.TestRepository;
  * @author Trond Norbye
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();

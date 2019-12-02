@@ -32,7 +32,6 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.StreamSource;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -76,10 +75,7 @@ public class ClojureAnalyzerFactoryTest {
 
         ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateUniversalCtags()) {
-            analyzer.setCtags(new Ctags());
-        }
+        analyzer.setCtags(new Ctags());
     }
 
     @AfterClass

@@ -48,15 +48,16 @@ import org.opengrok.indexer.util.TestRepository;
  * 
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class IndexVersionTest {
 
+    private static RuntimeEnvironment env;
     private TestRepository repository;
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private Path oldIndexDataDir;
     
     @BeforeClass
     public static void setUpClass() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 

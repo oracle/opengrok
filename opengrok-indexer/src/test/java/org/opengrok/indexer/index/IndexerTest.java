@@ -70,6 +70,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Trond Norbye
  */
+@net.jcip.annotations.NotThreadSafe
 public class IndexerTest {
 
     TestRepository repository;

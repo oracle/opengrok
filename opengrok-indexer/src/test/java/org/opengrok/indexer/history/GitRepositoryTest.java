@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
@@ -57,6 +57,7 @@ import org.opengrok.indexer.util.TestRepository;
  * @author austvik
  */
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@net.jcip.annotations.NotThreadSafe
 public class GitRepositoryTest {
 
     @Rule

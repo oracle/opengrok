@@ -45,6 +45,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
  *
  * @author Trond Norbye
  */
+@net.jcip.annotations.NotThreadSafe
 public class SearchEngineTest {
 
     static TestRepository repository;
@@ -71,7 +72,7 @@ public class SearchEngineTest {
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
-        RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
+        env.readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
     @AfterClass

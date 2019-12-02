@@ -19,11 +19,12 @@
 
 /*
  * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web.messages;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -33,11 +34,12 @@ import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@net.jcip.annotations.NotThreadSafe
 public class MessagesUtilsTest {
-    RuntimeEnvironment env;
+    private static RuntimeEnvironment env;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUpClass() {
         env = RuntimeEnvironment.getInstance();
     }
 

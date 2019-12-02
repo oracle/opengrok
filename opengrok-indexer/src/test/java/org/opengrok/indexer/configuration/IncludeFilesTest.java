@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -38,15 +39,17 @@ import static org.junit.Assert.assertEquals;
  * 
  * @author Vladimir Kotal
  */
+@net.jcip.annotations.NotThreadSafe
 public class IncludeFilesTest {
-    static Path includeRoot;
-    static final String CONTENT_1 = "foo";
-    static final String CONTENT_2 = "bar";
-    static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-    static final String LINE_SEP = System.lineSeparator();
+    private static RuntimeEnvironment env;
+    private static Path includeRoot;
+    private static final String CONTENT_1 = "foo";
+    private static final String CONTENT_2 = "bar";
+    private static final String LINE_SEP = System.lineSeparator();
     
     @BeforeClass
     public static void setUpClass() throws IOException {
+        env = RuntimeEnvironment.getInstance();
         includeRoot = Files.createTempDirectory("include_root");
         env.setIncludeRoot(includeRoot.toString());
     }

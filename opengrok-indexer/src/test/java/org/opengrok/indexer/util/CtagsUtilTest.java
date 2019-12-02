@@ -34,6 +34,7 @@ import java.util.List;
 /**
  * Represents a container for tests of {@link CtagsUtil}.
  */
+@net.jcip.annotations.NotThreadSafe
 public class CtagsUtilTest {
 
     @Test

@@ -46,6 +46,7 @@ import org.opengrok.indexer.search.SearchEngine;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
+@net.jcip.annotations.NotThreadSafe
 public class JarAnalyzerTest {
 
     private static final String TESTPLUGINS_JAR = "testplugins.jar";

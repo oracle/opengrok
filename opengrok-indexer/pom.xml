@@ -131,6 +131,11 @@ Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency> <!-- TODO: remove! (moving Messages to web module) -->
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
@@ -443,6 +448,9 @@ Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <forkCount>2</forkCount>
+                    <parallel>classes</parallel>
+                    <threadCount>3</threadCount>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>

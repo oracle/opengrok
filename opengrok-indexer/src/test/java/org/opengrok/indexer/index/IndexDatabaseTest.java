@@ -51,6 +51,7 @@ import org.opengrok.indexer.util.TestRepository;
 /**
  * Unit tests for the {@code IndexDatabase} class.
  */
+@net.jcip.annotations.NotThreadSafe
 public class IndexDatabaseTest {
 
     private static TestRepository repository;

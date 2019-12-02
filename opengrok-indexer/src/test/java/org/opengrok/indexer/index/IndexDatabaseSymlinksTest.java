@@ -60,6 +60,7 @@ import java.util.TreeSet;
 @ConditionalRun(UnixPresent.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@net.jcip.annotations.NotThreadSafe
 public class IndexDatabaseSymlinksTest {
 
     private static RuntimeEnvironment env;

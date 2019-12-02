@@ -61,6 +61,7 @@ import org.opengrok.indexer.util.IOUtils;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
+@net.jcip.annotations.NotThreadSafe
 public class SearchAndContextFormatterTest2 {
 
     private static final int TABSIZE = 8;
@@ -130,8 +131,7 @@ public class SearchAndContextFormatterTest2 {
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
-        RuntimeEnvironment.getInstance().readConfiguration(new File(
-            configFile.getAbsolutePath()));
+        env.readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
     @AfterClass
