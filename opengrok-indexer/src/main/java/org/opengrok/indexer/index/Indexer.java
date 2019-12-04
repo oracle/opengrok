@@ -171,6 +171,9 @@ public final class Indexer {
 
             disabledRepositories.addAll(cfg.getDisabledRepositories());
             cfg.setDisabledRepositories(disabledRepositories);
+            for (String repoName : disabledRepositories) {
+                LOGGER.log(Level.FINEST, "Disabled {0}", repoName);
+            }
 
             env = RuntimeEnvironment.getInstance();
 
