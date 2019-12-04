@@ -56,6 +56,8 @@ org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
 %>
 <%
+final String DUMMY_REVISION = "unknown";
+
 {
     // need to set it here since requesting parameters
     if (request.getCharacterEncoding() == null) {
@@ -64,6 +66,30 @@ org.opengrok.indexer.web.SearchHelper"
 
     PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
+
+    String rev = cfg.getRequestedRevision();
+    if (!cfg.isDir() && rev.length() == 0) {
+        /*
+         * Get the latest revision and redirect so that the revision number
+         * appears in the URL.
+         */
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
+        if (location != null) {
+            response.sendRedirect(location);
+            return;
+        }
+        if (!cfg.getEnv().isGenerateHtml()) {
+            /*
+             * Economy mode is on and failed to get the last revision
+             * (presumably running with history turned off).  Use dummy
+             * revision string so that xref can be generated from the resource
+             * file directly.
+             */
+            location = cfg.getRevisionLocation(DUMMY_REVISION);
+            response.sendRedirect(location);
+            return;
+        }
+    }
 
     Annotation annotation = cfg.getAnnotation();
     if (annotation != null) {
@@ -90,7 +116,6 @@ document.pageReady.push(function() { pageReadyList();});
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
-    final String DUMMY_REVISION = "unknown";
 
     String navigateWindowEnabled = project != null ? Boolean.toString(
             project.isNavigateWindowEnabled()) : "false";
@@ -186,7 +211,7 @@ document.pageReady.push(function() { pageReadyList();});
         }
     } else if (rev.length() != 0) {
         // requesting a revision
-        File xrefFile = null;
+        File xrefFile;
         if (cfg.isLatestRevision(rev) &&
                 (xrefFile = cfg.findDataFile()) != null) {
             if (cfg.annotate()) {
@@ -396,25 +421,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         }
     } else {
         // requesting cross referenced file
-        File xrefFile = null;
 
-        // Get the latest revision and redirect so that the revision number appears in the URL.
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
-        if (location != null) {
-            response.sendRedirect(location);
-            return;
-        } else {
-            if (!cfg.getEnv().isGenerateHtml()) {
-                // Economy mode is on and failed to get the last revision (presumably running with history turned off).
-                // Use dummy revision string so that xref can be generated from the resource file directly.
-                location = cfg.getRevisionLocation(DUMMY_REVISION);
-                response.sendRedirect(location);
-                return;
-            }
-
-            xrefFile = cfg.findDataFile();
-        }
-
+        File xrefFile = cfg.findDataFile();
         if (xrefFile != null) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
