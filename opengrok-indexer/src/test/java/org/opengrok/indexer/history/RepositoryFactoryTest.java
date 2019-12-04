@@ -34,6 +34,7 @@ import java.util.Set;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -163,5 +164,15 @@ public class RepositoryFactoryTest {
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
         testNotWorkingRepository("bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
+    }
+
+    @Test
+    public void testRepositoryFactoryEveryImplIsNamedAsRepository() {
+        List<Class<? extends Repository>> repositoryClasses =
+                RepositoryFactory.getRepositoryClasses();
+        for (Class<? extends Repository> clazz : repositoryClasses) {
+            assertTrue("should end with \"Repository\"",
+                    clazz.getSimpleName().endsWith("Repository"));
+        }
     }
 }
