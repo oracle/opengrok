@@ -105,8 +105,12 @@ public class RepositoryFactoryTest {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
         env.setSourceRoot(root.getAbsolutePath());
-        assertNotNull("should get MercurialRepository",
+        assertNotNull("should get repository for mercurial/",
                 RepositoryFactory.getRepository(root));
+
+        List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
+        assertTrue("should contain MercurialRepository",
+                clazzes.contains(MercurialRepository.class));
     }
 
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
@@ -120,7 +124,7 @@ public class RepositoryFactoryTest {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
         env.setSourceRoot(root.getAbsolutePath());
-        assertNull("should not get MercurialRepository if disabled",
+        assertNull("should not get repository for mercurial/ if disabled",
                 RepositoryFactory.getRepository(root));
 
         List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
