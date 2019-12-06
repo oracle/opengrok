@@ -174,7 +174,7 @@ public class Ctags implements Resettable {
         command.add("-u");
         command.add("--filter=yes");
         command.add("--filter-terminator=" + CTAGS_FILTER_TERMINATOR + "\n");
-        command.add("--fields=-anf+iKnS");
+        command.add("--fields=-af+iKnS");
         command.add("--excmd=pattern");
 
         //Ideally all below should be in ctags, or in outside config file,
