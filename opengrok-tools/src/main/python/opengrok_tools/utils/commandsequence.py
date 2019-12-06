@@ -83,16 +83,10 @@ class CommandSequence(CommandSequenceBase):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
 
-    def run_command(self, command):
+    def run_command(self, cmd):
         """
         Execute a command and return its return code.
         """
-        command_args = command.get(COMMAND_PROPERTY)
-        cmd = Command(command_args,
-                      env_vars=command.get("env"),
-                      resource_limits=command.get("limits"),
-                      args_subst={PROJECT_SUBST: self.name},
-                      args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
         self.outputs[str(cmd)] = cmd.getoutput()
@@ -119,6 +113,12 @@ class CommandSequence(CommandSequenceBase):
             if is_web_uri(command.get(COMMAND_PROPERTY)[0]):
                 call_rest_api(command, PROJECT_SUBST, self.name)
             else:
+                command_args = command.get(COMMAND_PROPERTY)
+                command = Command(command_args,
+                                  env_vars=command.get("env"),
+                                  resource_limits=command.get("limits"),
+                                  args_subst={PROJECT_SUBST: self.name},
+                                  args_append=[self.name], excl_subst=True)
                 retcode = self.run_command(command)
 
                 # If a command exits with non-zero return code,
@@ -128,14 +128,14 @@ class CommandSequence(CommandSequenceBase):
                         if not self.driveon:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break".
-                                              format(self.name, command))
+                                              format(command, self.name))
                             self.run_cleanup()
                         else:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break however "
                                               "the 'driveon' option is set "
                                               "so driving on.".
-                                              format(self.name, command))
+                                              format(command, self.name))
                             continue
                     else:
                         self.logger.error("command '{}' for project {} failed "
@@ -182,7 +182,7 @@ class CommandSequence(CommandSequenceBase):
         self.logger.debug("Output for project '{}':".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
-                self.logger.debug("{}: {}".
+                self.logger.debug("'{}': {}".
                                   format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:
