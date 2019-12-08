@@ -19,55 +19,55 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.sql;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
-@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public final class PLSQLConsts {
-    private static final Set<String> reservedKeywords;
+    private static final Set<String> kwd = new HashSet<>();
+
+    static final Set<String> KEYWORDS = Collections.unmodifiableSet(kwd);
+
     static {
-        HashSet<String> kwds = new HashSet<String>();
-        try {
-            //populateKeywordSet(kwds, "sql2003reserved.dat");
-            //populateKeywordSet(kwds, "sql2008reserved.dat");
-            populateKeywordSet(kwds, "/analysis/sql/sql2011reserved.dat");
-            populateKeywordSet(kwds, "/analysis/sql/plsql2011reserved.dat"); // this is just diff on top of sql iso
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-        reservedKeywords = Collections.unmodifiableSet(kwds);
+        kwd.addAll(org.opengrok.indexer.analysis.sql.Consts.KEYWORDS);
+
+        kwd.add("asc"); // plsql2011reserved
+        kwd.add("clusters"); // plsql2011reserved
+        kwd.add("cluster"); // plsql2011reserved
+        kwd.add("colauth"); // plsql2011reserved
+        kwd.add("columns"); // plsql2011reserved
+        kwd.add("compress"); // plsql2011reserved
+        kwd.add("crash"); // plsql2011reserved
+        kwd.add("desc"); // plsql2011reserved
+        kwd.add("exception"); // plsql2011reserved
+        kwd.add("exclusive"); // plsql2011reserved
+        kwd.add("goto"); // plsql2011reserved
+        kwd.add("identified"); // plsql2011reserved
+        kwd.add("if"); // plsql2011reserved
+        kwd.add("index"); // plsql2011reserved
+        kwd.add("indexes"); // plsql2011reserved
+        kwd.add("lock"); // plsql2011reserved
+        kwd.add("minus"); // plsql2011reserved
+        kwd.add("mode"); // plsql2011reserved
+        kwd.add("nocompress"); // plsql2011reserved
+        kwd.add("nowait"); // plsql2011reserved
+        kwd.add("option"); // plsql2011reserved
+        kwd.add("public"); // plsql2011reserved
+        kwd.add("resource"); // plsql2011reserved
+        kwd.add("share"); // plsql2011reserved
+        kwd.add("size"); // plsql2011reserved
+        kwd.add("subtype"); // plsql2011reserved
+        kwd.add("tabauth"); // plsql2011reserved
+        kwd.add("type"); // plsql2011reserved
+        kwd.add("view"); // plsql2011reserved
+        kwd.add("views"); // plsql2011reserved
     }
 
+    /** Private to enforce static. */
     private PLSQLConsts() {
-        // Util class, can not be constructed.
-    }
-
-    private static void populateKeywordSet(Set<String> set, String file) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            Consts.class.getResourceAsStream(file), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                String lline = line.toLowerCase(Locale.ROOT);
-                if (line.charAt(0) != '#') {
-                    set.add(line);
-                    set.add(lline);
-                }
-            }
-        }
-    }
-
-    static Set<String> getReservedKeywords() {
-        return reservedKeywords;
     }
 }
