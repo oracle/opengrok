@@ -240,7 +240,7 @@ class Command:
                 self.logger.debug("working directory = {}".format(os.getcwd()))
             except PermissionError:
                 pass
-            self.logger.debug("command = {}".format(self.cmd))
+            self.logger.debug("command = '{}'".format(self))
             my_args = {'stderr': stderr_dest,
                        'stdout': output_thread}
             if self.env_vars:
@@ -286,7 +286,7 @@ class Command:
         else:
             self.state = Command.FINISHED
             self.returncode = int(p.returncode)
-            self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
+            self.logger.debug("'{}' -> {}".format(self, self.getretcode()))
         finally:
             if self.timeout != 0 and timeout_thread:
                 with time_condition:
@@ -307,8 +307,8 @@ class Command:
                 self.err = stderr_thread.getoutput()
 
             elapsed_time = time.time() - start_time
-            self.logger.debug("Command {} took {} seconds".
-                              format(self.cmd, int(elapsed_time)))
+            self.logger.debug("Command '{}' took {} seconds".
+                              format(self, int(elapsed_time)))
 
         if orig_work_dir:
             try:
