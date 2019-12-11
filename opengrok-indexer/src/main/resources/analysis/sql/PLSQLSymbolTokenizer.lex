@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.sql;
@@ -30,8 +29,8 @@ import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
-%class PLSQLXref
-%extends JointSQLXref
+%class PLSQLSymbolTokenizer
+%extends JointSQLSymbolTokenizer
 %unicode
 %ignorecase
 %int
@@ -40,7 +39,6 @@ import org.opengrok.indexer.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
-%include CommonXref.lexh
 %{
     /** Gets the keywords from {@link PLSQLConsts}. */
     @Override
