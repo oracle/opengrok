@@ -24,14 +24,18 @@
 package org.opengrok.indexer.analysis.sql;
 
 import java.io.Reader;
+
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
 
 public class SQLAnalyzer extends PlainAnalyzer {
 
     public SQLAnalyzer(AnalyzerFactory factory) {
-        super(factory);
+        super(factory, new JFlexTokenizer(new SQLSymbolTokenizer(
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

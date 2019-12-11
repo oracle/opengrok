@@ -18,34 +18,10 @@
  */
 
 /*
- * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
-%{
-    /**
-     * Gets the yychar value.
-     * @return yychar
-     */
-    @Override
-    public int getYYCHAR() { return yychar; }
-
-    /**
-     * Gets the YYEOF value.
-     * @return YYEOF
-     */
-    @Override
-    public int getYYEOF() { return YYEOF; }
-
-    /**
-     * Gets the yyline value.
-     * @return yyline
-     */
-    @Override
-    public int getLineNumber() { return yyline; }
-
-    /**
-     * Sets the yyline value.
-     */
-    @Override
-    protected void setLineNumber(int x) { yyline = x; }
-%}
+Sign = "+" | "-"
+SimpleNumber = [0-9]+ | [0-9]+ "." [0-9]* | [0-9]* "." [0-9]+
+ScientificNumber = ({SimpleNumber} [eE] {Sign}? [0-9]+)
