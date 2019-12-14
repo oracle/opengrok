@@ -449,8 +449,8 @@ Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkCount>2</forkCount>
-                    <parallel>classes</parallel>
-                    <threadCount>3</threadCount>
+                    <parallel>all</parallel>
+                    <useUnlimitedThreads>true</useUnlimitedThreads>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
