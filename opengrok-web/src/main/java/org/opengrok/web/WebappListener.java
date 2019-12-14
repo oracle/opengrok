@@ -97,7 +97,7 @@ public final class WebappListener
 
         String pluginDirectory = env.getPluginDirectory();
         if (pluginDirectory != null && env.isAuthorizationWatchdog()) {
-            env.watchDog.start(new File(pluginDirectory));
+            env.getWatchDog().start(new File(pluginDirectory));
         }
 
         env.startExpirationTimer();
@@ -116,7 +116,7 @@ public final class WebappListener
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.getIndexerParallelizer().bounce();
-        env.watchDog.stop();
+        env.getWatchDog().stop();
         env.stopExpirationTimer();
         try {
             env.shutdownRevisionExecutor();

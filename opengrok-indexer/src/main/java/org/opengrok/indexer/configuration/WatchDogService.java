@@ -19,10 +19,12 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.configuration;
 
+import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
@@ -52,17 +54,13 @@ public class WatchDogService {
     private WatchService watchDogWatcher;
     public static final int THREAD_SLEEP_TIME = 2000;
 
-    WatchDogService() {
-
-    }
-
     /**
      * Starts a watch dog service for a directory. It automatically reloads the
-     * AuthorizationFramework if there was a change in <b>real-time</b>.
+     * {@link AuthorizationFramework} if there was a change, in <b>real-time</b>.
      * Suitable for plugin development.
-     *
+     * <p>
      * You can control start of this service by a configuration parameter
-     * {@link Configuration#authorizationWatchdogEnabled}
+     * {@link Configuration#setAuthorizationWatchdogEnabled(boolean)}.
      *
      * @param directory root directory for plugins
      */
@@ -126,12 +124,14 @@ public class WatchDogService {
      * Stops the watch dog service.
      */
     public void stop() {
+        boolean didStop = false;
         if (watchDogWatcher != null) {
             try {
                 watchDogWatcher.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Cannot close WatchDogService: ", ex);
             }
+            didStop = true;
         }
         if (watchDogThread != null) {
             watchDogThread.interrupt();
@@ -140,7 +140,13 @@ public class WatchDogService {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
             }
+            didStop = true;
+            // watchDogThread creates the watchDogWatcher, so null-out both here.
+            watchDogWatcher = null;
+            watchDogThread = null;
         }
-        LOGGER.log(Level.INFO, "Watchdog stoped");
+        if (didStop) {
+            LOGGER.log(Level.INFO, "Watchdog stopped");
+        }
     }
 }

@@ -125,7 +125,7 @@ public final class RuntimeEnvironment {
     private transient volatile Boolean ctagsFound;
     private final transient Set<String> ctagsLanguages = new HashSet<>();
 
-    public WatchDogService watchDog;
+    private WatchDogService watchDog;
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
@@ -2004,5 +2004,9 @@ public final class RuntimeEnvironment {
 
     public int getMessageLimit() {
         return (int) getConfigurationValue("messageLimit");
+    }
+
+    public WatchDogService getWatchDog() {
+        return watchDog;
     }
 }
