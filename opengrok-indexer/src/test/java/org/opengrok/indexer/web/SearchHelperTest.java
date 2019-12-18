@@ -19,24 +19,19 @@
 
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
@@ -48,9 +43,6 @@ import org.opengrok.indexer.util.TestRepository;
  * Unit tests for the {@code SearchHelper} class.
  */
 public class SearchHelperTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     TestRepository repository;
     RuntimeEnvironment env;
@@ -117,7 +109,6 @@ public class SearchHelperTest {
     }    
     
     @Test
-    @ConditionalRun(CtagsInstalled.class)
     public void testSearchAfterReindex() {
         SortedSet<String> projectNames = new TreeSet<>();
 

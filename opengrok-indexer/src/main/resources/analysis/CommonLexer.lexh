@@ -18,10 +18,17 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 %{
+    /**
+     * Gets the yychar value.
+     * @return yychar
+     */
+    @Override
+    public int getYYCHAR() { return yychar; }
+
     /**
      * Gets the YYEOF value.
      * @return YYEOF

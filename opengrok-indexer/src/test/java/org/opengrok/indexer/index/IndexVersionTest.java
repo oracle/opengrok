@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -35,12 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
-import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.FileUtilities;
@@ -53,9 +49,6 @@ import org.opengrok.indexer.util.TestRepository;
  * @author Vladimir Kotal
  */
 public class IndexVersionTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private TestRepository repository;
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -85,7 +78,6 @@ public class IndexVersionTest {
     
     /**
      * Generate index(es) and check version.
-     * @throws Exception 
      */
     private void testIndexVersion(boolean projectsEnabled, List<String> subFiles) throws Exception {
         env.setHistoryEnabled(false);
@@ -103,19 +95,16 @@ public class IndexVersionTest {
     }
     
     @Test
-    @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionProjects() throws Exception {
         testIndexVersion(true, new ArrayList<>());
     }
     
     @Test
-    @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionSelectedProjects() throws Exception {
         testIndexVersion(true, Arrays.asList(new String[]{ "mercurial", "git" }));
     }
     
     @Test
-    @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionNoProjects() throws Exception {
         testIndexVersion(false, new ArrayList<>());
     }

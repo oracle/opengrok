@@ -18,18 +18,18 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 from .command import Command
-from .webutil import put, post, delete
 from .utils import is_web_uri
 from .exitvals import (
     CONTINUE_EXITVAL,
     SUCCESS_EXITVAL
 )
-import json
+from .restful import call_rest_api
+from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
 import re
 
 
@@ -73,7 +73,6 @@ class CommandSequenceBase:
 
 
 class CommandSequence(CommandSequenceBase):
-    PROJECT_SUBST = '%PROJECT%'
 
     re_program = re.compile('ERROR[:]*\\s+')
 
@@ -84,48 +83,15 @@ class CommandSequence(CommandSequenceBase):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
 
-    def run_command(self, command):
+    def run_command(self, cmd):
         """
         Execute a command and return its return code.
         """
-        command_args = command.get("command")
-        cmd = Command(command_args,
-                      env_vars=command.get("env"),
-                      resource_limits=command.get("limits"),
-                      args_subst={self.PROJECT_SUBST: self.name},
-                      args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
         self.outputs[str(cmd)] = cmd.getoutput()
 
         return cmd.getretcode()
-
-    def call_rest_api(self, command):
-        """
-        Make RESTful API call. Occurrence of PROJECT_SUBST in the URI will be
-        replaced by project name.
-        """
-        command = command.get("command")
-        uri = command[0].replace(self.PROJECT_SUBST, self.name)
-        verb = command[1]
-        data = command[2]
-
-        headers = None
-        json_data = None
-        if data:
-            headers = {'Content-Type': 'application/json'}
-            json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
-            self.logger.debug("JSON data: {}".format(json_data))
-
-        if verb == 'PUT':
-            put(self.logger, uri, headers=headers, data=json_data)
-        elif verb == 'POST':
-            post(self.logger, uri, headers=headers, data=json_data)
-        elif verb == 'DELETE':
-            delete(self.logger, uri, data)
-        else:
-            self.logger.error('Unknown HTTP verb in command {}'.
-                              format(command))
 
     def run(self):
         """
@@ -144,9 +110,15 @@ class CommandSequence(CommandSequenceBase):
         """
 
         for command in self.commands:
-            if is_web_uri(command.get("command")[0]):
-                self.call_rest_api(command)
+            if is_web_uri(command.get(COMMAND_PROPERTY)[0]):
+                call_rest_api(command, PROJECT_SUBST, self.name)
             else:
+                command_args = command.get(COMMAND_PROPERTY)
+                command = Command(command_args,
+                                  env_vars=command.get("env"),
+                                  resource_limits=command.get("limits"),
+                                  args_subst={PROJECT_SUBST: self.name},
+                                  args_append=[self.name], excl_subst=True)
                 retcode = self.run_command(command)
 
                 # If a command exits with non-zero return code,
@@ -156,14 +128,14 @@ class CommandSequence(CommandSequenceBase):
                         if not self.driveon:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break".
-                                              format(self.name, command))
+                                              format(command, self.name))
                             self.run_cleanup()
                         else:
                             self.logger.debug("command '{}' for project {} "
                                               "requested break however "
                                               "the 'driveon' option is set "
                                               "so driving on.".
-                                              format(self.name, command))
+                                              format(command, self.name))
                             continue
                     else:
                         self.logger.error("command '{}' for project {} failed "
@@ -183,14 +155,14 @@ class CommandSequence(CommandSequenceBase):
             return
 
         for cleanup_cmd in self.cleanup:
-            if is_web_uri(cleanup_cmd.get("command")[0]):
-                self.call_rest_api(cleanup_cmd)
+            if is_web_uri(cleanup_cmd.get(COMMAND_PROPERTY)[0]):
+                call_rest_api(cleanup_cmd, PROJECT_SUBST, self.name)
             else:
-                command_args = cleanup_cmd.get("command")
+                command_args = cleanup_cmd.get(COMMAND_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
-                              args_subst={self.PROJECT_SUBST: self.name},
+                              args_subst={PROJECT_SUBST: self.name},
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != SUCCESS_EXITVAL:
@@ -210,7 +182,7 @@ class CommandSequence(CommandSequenceBase):
         self.logger.debug("Output for project '{}':".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
-                self.logger.debug("{}: {}".
+                self.logger.debug("'{}': {}".
                                   format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:

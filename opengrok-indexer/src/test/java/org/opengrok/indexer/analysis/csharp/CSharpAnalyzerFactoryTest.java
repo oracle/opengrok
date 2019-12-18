@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.csharp;
 
@@ -33,7 +33,6 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
@@ -43,9 +42,6 @@ import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.analysis.StreamSource;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
@@ -54,15 +50,11 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Tomas Kotal
  */
-@ConditionalRun(CtagsInstalled.class)
 public class CSharpAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -76,7 +68,6 @@ public class CSharpAnalyzerFactoryTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
-        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
         repository.create(CSharpAnalyzerFactoryTest.class.getResourceAsStream(
@@ -91,7 +82,7 @@ public class CSharpAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

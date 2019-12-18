@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -30,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -49,7 +49,6 @@ import static org.junit.Assert.assertEquals;
 
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-@ConditionalRun(CtagsInstalled.class)
 public class RepositoriesControllerTest extends JerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -88,10 +87,9 @@ public class RepositoriesControllerTest extends JerseyTest {
         repository.destroy();
     }
 
-    @Test
-    public void testGetRepositoryTypeOfNonExistenRepository() throws Exception {
-        assertEquals(Paths.get("/totally-nonexistent-repository").toString() + ":N/A",
-                getRepoType(Paths.get("/totally-nonexistent-repository").toString()));
+    @Test(expected = javax.ws.rs.NotFoundException.class)
+    public void testGetRepositoryTypeOfNonExistentRepository() throws Exception {
+        getRepoType(Paths.get("/totally-nonexistent-repository").toString());
     }
 
     @Test
@@ -111,17 +109,17 @@ public class RepositoriesControllerTest extends JerseyTest {
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
 
-        assertEquals(Paths.get("/mercurial").toString() + ":Mercurial",
+        assertEquals("Mercurial",
                 getRepoType(Paths.get("/mercurial").toString()));
-        assertEquals(Paths.get("/mercurial/closed").toString() + ":Mercurial",
+        assertEquals("Mercurial",
                 getRepoType(Paths.get("/mercurial/closed").toString()));
-        assertEquals(Paths.get("/git").toString() + ":git",
+        assertEquals("git",
                 getRepoType(Paths.get("/git").toString()));
     }
 
     private String getRepoType(final String repository) {
         return target("repositories")
-                .path("type")
+                .path("property/type")
                 .queryParam("repository", repository)
                 .request()
                 .get(String.class);

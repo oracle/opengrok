@@ -30,16 +30,20 @@ import stat
 from git import Repo
 import pytest
 import sys
+from mockito import verify, patch, spy2, mock, ANY
+import requests
 
 from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.utils.mirror import check_project_configuration, \
-    check_configuration, \
+    check_configuration, mirror_project, run_command, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
-    PROJECTS_PROPERTY
+    PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY
 import opengrok_tools.mirror
 from opengrok_tools.utils.exitvals import (
     CONTINUE_EXITVAL,
 )
+from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
+from opengrok_tools.utils.command import Command
 
 
 def test_empty_project_configuration():
@@ -173,3 +177,45 @@ def test_incoming_retval(monkeypatch):
 
 def test_empty_project_config():
     assert check_project_configuration({'foo': None})
+
+
+def test_disabled_command_api():
+    with patch(opengrok_tools.utils.mirror.call_rest_api,
+               lambda a, b, c: mock(spec=requests.Response)):
+        project_name = "foo"
+        config = {DISABLED_CMD_PROPERTY:
+                  {COMMAND_PROPERTY:
+                   ["http://localhost:8080/source/api/v1/foo",
+                    "POST", "data"]},
+                  PROJECTS_PROPERTY: {project_name: {DISABLED_PROPERTY: True}}}
+
+        assert mirror_project(config, project_name, False,
+                              None, None) == CONTINUE_EXITVAL
+        verify(opengrok_tools.utils.mirror). \
+            call_rest_api(config.get(DISABLED_CMD_PROPERTY),
+                          PROJECT_SUBST, project_name)
+
+
+def test_disabled_command_run():
+    """
+    Make sure that mirror_project() results in calling run_command().
+    """
+    spy2(opengrok_tools.utils.mirror.run_command)
+    project_name = "foo"
+    config = {DISABLED_CMD_PROPERTY:
+              {COMMAND_PROPERTY: ["cat"]},
+              PROJECTS_PROPERTY: {project_name: {DISABLED_PROPERTY: True}}}
+
+    assert mirror_project(config, project_name, False,
+                          None, None) == CONTINUE_EXITVAL
+    verify(opengrok_tools.utils.mirror).run_command(ANY, project_name)
+
+
+def test_disabled_command_run_args():
+    """
+    Make sure that run_command() calls Command.execute().
+    """
+    cmd = mock(spec=Command)
+    project_name = "foo"
+    run_command(cmd, project_name)
+    verify(cmd).execute()

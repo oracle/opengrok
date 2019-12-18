@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.pascal;
 
@@ -37,7 +37,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
@@ -45,9 +44,6 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.StreamSource;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
@@ -56,15 +52,11 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author alexanthony
  */
-@ConditionalRun(CtagsInstalled.class)
 public class PascalAnalyzerFactoryTest {
     
     private static Ctags ctags;
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -78,7 +70,6 @@ public class PascalAnalyzerFactoryTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
-        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());        
 
         repository = new TestRepository();
         repository.create(PascalAnalyzerFactoryTest.class.getResourceAsStream(
@@ -93,7 +84,7 @@ public class PascalAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         ctags.close();
         ctags = null;
     }

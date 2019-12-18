@@ -47,6 +47,8 @@ setup(
         'pytest',
         'GitPython',
         'pytest-xdist',
+        'mockito',
+        'pytest-mockito',
     ],
     entry_points={
         'console_scripts': [

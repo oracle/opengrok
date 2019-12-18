@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -39,6 +40,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -50,6 +54,10 @@ import org.opengrok.indexer.logger.LoggerFactory;
 public class Executor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Executor.class);
+
+    private static final Pattern ARG_WIN_QUOTING = Pattern.compile("[^-:.+=%a-zA-Z0-9_/\\\\]");
+    private static final Pattern ARG_UNIX_QUOTING = Pattern.compile("[^-:.+=%a-zA-Z0-9_/]");
+    private static final Pattern ARG_GNU_STYLE_EQ = Pattern.compile("^--[-.a-zA-Z0-9_]+=");
 
     private List<String> cmdList;
     private File workingDirectory;
@@ -147,7 +155,8 @@ public class Executor {
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
-        final String cmd_str = processBuilder.command().toString();
+        final String cmd_str = escapeForShell(processBuilder.command(), false,
+                PlatformUtils.isWindows());
         final String dir_str;
         Timer timer = null; // timer for timing out the process
 
@@ -172,7 +181,7 @@ public class Executor {
             env_str = " with environment: " + env_map.toString();
         }
         LOGGER.log(Level.FINER,
-                "Executing command {0} in directory {1}{2}",
+                "Executing command [{0}] in directory {1}{2}",
                 new Object[] {cmd_str, dir_str, env_str});
 
         Process process = null;
@@ -191,7 +200,7 @@ public class Executor {
                     } catch (IOException ex) {
                         if (reportExceptions) {
                             LOGGER.log(Level.SEVERE,
-                                    "Error while executing command {0} in directory {1}",
+                                    "Error while executing command [{0}] in directory {1}",
                                     new Object[] {cmd_str, dir_str});
                             LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
                         }
@@ -211,7 +220,7 @@ public class Executor {
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
                         LOGGER.log(Level.WARNING,
-                            String.format("Terminating process of command %s in directory %s " +
+                            String.format("Terminating process of command [%s] in directory %s " +
                             "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
                         proc.destroy();
                     }
@@ -223,7 +232,7 @@ public class Executor {
             ret = process.waitFor();
             
             LOGGER.log(Level.FINE,
-                "Finished command {0} in directory {1} with exit code {2}",
+                "Finished command [{0}] in directory {1} with exit code {2}",
                 new Object[] {cmd_str, dir_str, ret});
 
             // Wait for the stderr read-out thread to finish the processing and
@@ -260,9 +269,9 @@ public class Executor {
         if (ret != 0 && reportExceptions) {
             int MAX_MSG_SZ = 512; /* limit to avoid flooding the logs */
             StringBuilder msg = new StringBuilder("Non-zero exit status ")
-                    .append(ret).append(" from command ")
+                    .append(ret).append(" from command [")
                     .append(cmd_str)
-                    .append(" in directory ")
+                    .append("] in directory ")
                     .append(dir_str);
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");
@@ -396,5 +405,80 @@ public class Executor {
                 }
             });
         }
+    }
+
+    /**
+     * Build a string from the specified argv list with optional tab-indenting
+     * and line-continuations if {@code multiline} is {@code true}.
+     * @param isWindows a value indicating if the platform is Windows so that
+     *                  PowerShell escaping is done; else Bourne shell escaping
+     *                  is done.
+     * @return a defined instance
+     */
+    public static String escapeForShell(List<String> argv, boolean multiline, boolean isWindows) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < argv.size(); ++i) {
+            if (multiline && i > 0) {
+                result.append("\t");
+            }
+            String arg = argv.get(i);
+            result.append(isWindows ? maybeEscapeForPowerShell(arg) : maybeEscapeForSh(arg));
+            if (i + 1 < argv.size()) {
+                if (!multiline) {
+                    result.append(" ");
+                } else {
+                    result.append(isWindows ? " `" : " \\");
+                    result.append(System.lineSeparator());
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private static String maybeEscapeForSh(String value) {
+        Matcher m = ARG_UNIX_QUOTING.matcher(value);
+        if (!m.find()) {
+            return value;
+        }
+        m = ARG_GNU_STYLE_EQ.matcher(value);
+        if (!m.find()) {
+            return "$'" + escapeForSh(value) + "'";
+        }
+        String following = value.substring(m.end());
+        return m.group() + "$'" + escapeForSh(following) + "'";
+    }
+
+    private static String escapeForSh(String value) {
+        return value.replace("\\", "\\\\").
+                replace("'", "\\'").
+                replace("\n", "\\n").
+                replace("\r", "\\r").
+                replace("\f", "\\f").
+                replace("\u0011", "\\v").
+                replace("\t", "\\t");
+    }
+
+    private static String maybeEscapeForPowerShell(String value) {
+        Matcher m = ARG_WIN_QUOTING.matcher(value);
+        if (!m.find()) {
+            return value;
+        }
+        m = ARG_GNU_STYLE_EQ.matcher(value);
+        if (!m.find()) {
+            return "\"" + escapeForPowerShell(value) + "\"";
+        }
+        String following = value.substring(m.end());
+        return m.group() + "\"" + escapeForPowerShell(following) + "\"";
+    }
+
+    private static String escapeForPowerShell(String value) {
+        return value.replace("`", "``").
+                replace("\"", "`\"").
+                replace("$", "`$").
+                replace("\n", "`n").
+                replace("\r", "`r").
+                replace("\f", "`f").
+                replace("\u0011", "`v").
+                replace("\t", "`t");
     }
 }

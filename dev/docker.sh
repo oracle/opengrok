@@ -10,9 +10,9 @@
 # These are set via https://travis-ci.com/OpenGrok/docker/settings
 #
 
-set -x
 set -e
 
+API_URL="https://hub.docker.com/v2"
 IMAGE="opengrok/docker"
 
 if [[ -n $TRAVIS_TAG ]]; then
@@ -97,13 +97,11 @@ push_readme() {
 		exit 1
 	fi
 
-	local code=$(jq -n --arg msg "$(<${input_file})" \
-	    '{"registry":"registry-1.docker.io","full_description": $msg }' | \
-	        curl -s -o /dev/null  -L -w "%{http_code}" \
-	           https://cloud.docker.com/v2/repositories/"${image}"/ \
-	           -d @- -X PATCH \
-	           -H "Content-Type: application/json" \
-	           -H "Authorization: JWT ${token}")
+	local code=$(curl -s -o /dev/null -L -w "%{http_code}" \
+	           -X PATCH --data-urlencode \
+		   full_description@${input_file} \
+	           -H "Authorization: JWT ${token}" \
+	           ${API_URL}/repositories/"${image}"/)
 
 	if [[ "${code}" = "200" ]]; then
 		echo "Successfully pushed README to Docker Hub"
@@ -115,7 +113,7 @@ push_readme() {
 
 TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
     -d '{"username": "'${DOCKER_USERNAME}'", "password": "'${DOCKER_PASSWORD}'"}' \
-    https://hub.docker.com/v2/users/login/ | jq -r .token)
+    ${API_URL}/users/login/ | jq -r .token)
 if [[ -z $TOKEN ]]; then
 	echo "Cannot get auth token to publish the README file"
 	exit 1

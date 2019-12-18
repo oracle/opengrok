@@ -19,19 +19,19 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.sql;
 
 import java.io.IOException;
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import java.util.Set;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class SQLXref
-%extends JFlexSymbolMatcher
+%extends JointSQLXref
 %unicode
 %ignorecase
 %int
@@ -42,152 +42,33 @@ import org.opengrok.indexer.web.HtmlConsts;
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{
-    private int commentLevel;
-
+    /** Gets the keywords from {@link Consts}. */
     @Override
-    public void reset() {
-        super.reset();
-        commentLevel = 0;
+    Set<String> getDialectKeywords() {
+        return Consts.KEYWORDS;
     }
 
+    /**
+     * Gets the constant value created by JFlex to represent
+     * BRACKETED_COMMENT.
+     */
     @Override
-    public void yypop() throws IOException {
-        onDisjointSpanChanged(null, yychar);
-        super.yypop();
+    int BRACKETED_COMMENT() {
+        return BRACKETED_COMMENT;
     }
 
-    protected void chkLOC() {
-        switch (yystate()) {
-            case SINGLE_LINE_COMMENT:
-            case BRACKETED_COMMENT:
-                break;
-            default:
-                phLOC();
-                break;
-        }
+    /**
+     * Gets the constant value created by JFlex to represent
+     * SINGLE_LINE_COMMENT.
+     */
+    @Override
+    int SINGLE_LINE_COMMENT() {
+        return SINGLE_LINE_COMMENT;
     }
 %}
 
-Sign = "+" | "-"
-SimpleNumber = [0-9]+ | [0-9]+ "." [0-9]* | [0-9]* "." [0-9]+
-ScientificNumber = ({SimpleNumber} [eE] {Sign}? [0-9]+)
-BinaryConstant = [0][xX] [0-9a-fA-F]*
-
-Number = {Sign}? ({SimpleNumber} | {ScientificNumber} | {BinaryConstant})
-
-Identifier = [a-zA-Z] [a-zA-Z0-9_]*
-
-%state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
-
 %include Common.lexh
 %include CommonURI.lexh
-%%
-
-<YYINITIAL> {
-    {Identifier} {
-        chkLOC();
-        String id = yytext();
-        onFilteredSymbolMatched(id, yychar, Consts.getReservedKeywords());
-    }
-
-    {Number} {
-        chkLOC();
-        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
-        onNonSymbolMatched(yytext(), yychar);
-        onDisjointSpanChanged(null, yychar);
-    }
-
-    [nN]? "'"    {
-        chkLOC();
-        String capture = yytext();
-        String prefix = capture.substring(0, capture.length() - 1);
-        String rest = capture.substring(prefix.length());
-        onNonSymbolMatched(prefix, yychar);
-        yypush(STRING);
-        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-        onNonSymbolMatched(rest, yychar);
-    }
-
-    \"    {
-        chkLOC();
-        yypush(QUOTED_IDENTIFIER);
-        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-        onNonSymbolMatched(yytext(), yychar);
-    }
-
-    "--"    {
-        yypush(SINGLE_LINE_COMMENT);
-        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-        onNonSymbolMatched(yytext(), yychar);
-    }
-}
-
-<STRING> {
-    "''"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
-    "'"    {
-        chkLOC();
-        onNonSymbolMatched(yytext(), yychar);
-        yypop();
-    }
-}
-
-<QUOTED_IDENTIFIER> {
-    \"\"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
-    \"    {
-        chkLOC();
-        onNonSymbolMatched(yytext(), yychar);
-        yypop();
-    }
-}
-
-<SINGLE_LINE_COMMENT> {
-    {WhspChar}*{EOL} {
-        yypop();
-        onEndOfLineMatched(yytext(), yychar);
-    }
-}
-
-<YYINITIAL, BRACKETED_COMMENT> {
-    "/*" {
-        if (commentLevel++ == 0) {
-            yypush(BRACKETED_COMMENT);
-            onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-        }
-        onNonSymbolMatched(yytext(), yychar);
-    }
-}
-
-<BRACKETED_COMMENT> {
-    "*/" {
-        onNonSymbolMatched(yytext(), yychar);
-        if (--commentLevel == 0) {
-            yypop();
-        }
-    }
-}
-
-<YYINITIAL, STRING, QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT, BRACKETED_COMMENT> {
-    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-    [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
-    [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
-}
-
-<STRING> {
-    {BrowseableURI}    {
-        chkLOC();
-        onUriMatched(yytext(), yychar, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
-    }
-}
-
-<QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT> {
-    {BrowseableURI}    {
-        chkLOC();
-        onUriMatched(yytext(), yychar);
-    }
-}
-
-<BRACKETED_COMMENT> {
-    {BrowseableURI}    {
-        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
-    }
-}
+%include JointSQL.lexh
+%include SQL.lexh
+%include JointSQLProductions.lexh

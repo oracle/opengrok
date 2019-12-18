@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.configuration.CanonicalRootValidator;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
@@ -64,8 +66,10 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexVersion.IndexVersionException;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.logger.LoggerUtil;
+import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.OptionParser;
+import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.Statistics;
 
 /**
@@ -107,9 +111,8 @@ public final class Indexer {
     private static boolean bareConfig = false;
     private static boolean awaitProfiler;
 
-    private static boolean help;
+    private static int help;
     private static String helpUsage;
-    private static boolean helpDetailed;
 
     private static String configFilename = null;
     private static int status = 0;
@@ -118,6 +121,7 @@ public final class Indexer {
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final HashSet<String> canonicalRoots = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
+    private static final HashSet<String> disabledRepositories = new HashSet<>();
     private static RuntimeEnvironment env = null;
     private static String webappURI = null;
 
@@ -146,12 +150,17 @@ public final class Indexer {
 
         try {
             argv = parseOptions(argv);
-            if (help) {
+            if (help > 0) {
                 PrintStream helpStream = status != 0 ? System.err : System.out;
                 helpStream.println(helpUsage);
-                if (helpDetailed) {
+                if (help > 1) {
                     helpStream.println(AnalyzerGuruHelp.getUsage());
-                    helpStream.println(ConfigurationHelp.getSamples());
+                    helpStream.print(ConfigurationHelp.getSamples());
+                }
+                if (help > 2) {
+                    helpStream.println("Ctags command-line:");
+                    helpStream.println();
+                    helpStream.println(getCtagsCommand());
                 }
                 System.exit(status);
             }
@@ -160,6 +169,12 @@ public final class Indexer {
 
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
+            }
+
+            disabledRepositories.addAll(cfg.getDisabledRepositories());
+            cfg.setDisabledRepositories(disabledRepositories);
+            for (String repoName : disabledRepositories) {
+                LOGGER.log(Level.FINEST, "Disabled {0}", repoName);
             }
 
             env = RuntimeEnvironment.getInstance();
@@ -363,44 +378,6 @@ public final class Indexer {
     }
 
     /**
-     * Web address consisting of webappURI and port of a web address.
-     */
-    public static class WebAddress {
-        private String host;
-        private int port;
-
-        WebAddress(String host, String port) throws NumberFormatException {
-            this.host = host;
-            this.port = Integer.parseInt(port);
-        }
-        public String getHost() {
-            return host;
-        }
-        public int getPort() {
-            return port;
-        }
-    }
-
-     /**
-      * Parse a web address into its webappURI and port components
-      * This method along with the WebAddress class is used by OptionParser
-      * to validate user entry of a web address.
-      * @param webAddr expected to be in the form webappURI:port
-      * @return WebAddress object
-      * @throws NumberFormatException or IllegalArgumentException
-      */
-    public static WebAddress parseWebAddress(String webAddr) {
-        String[] hp = webAddr.split(":");
-
-        if (hp.length != 2) {
-            throw new IllegalArgumentException("WebAddress syntax error (expecting webappURI:port)");
-        }
-
-        return new WebAddress(hp[0], hp[1]);
-    }
-
-
-    /**
      * Parse OpenGrok Indexer options
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
@@ -410,8 +387,8 @@ public final class Indexer {
      * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
-        String[] usage = {HELP_OPT_1};
-        String program = "opengrok.jar";
+        final String[] usage = {HELP_OPT_1};
+        final String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
         final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
@@ -425,13 +402,13 @@ public final class Indexer {
          * Pre-match any of the --help options so that some possible exception-
          * generating args handlers (e.g. -R) can be short-circuited.
          */
-        help = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
+        boolean preHelp = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
                 HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
 
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do(cfgFile -> {
                 try {
-                    if (!help) {
+                    if (!preHelp) {
                         cfg = Configuration.read(new File((String) cfgFile));
                     }
                 } catch (IOException e) {
@@ -440,28 +417,26 @@ public final class Indexer {
             });
         });
 
-        // An example of how to add a data type for option parsing
-        OptionParser.accept(WebAddress.class, Indexer::parseWebAddress);
+        // Limit usage lines to 72 characters for concise formatting.
 
         optParser = OptionParser.Do(parser -> {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
             parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
-                    "Display this usage summary.").Do(v -> {
-                help = true;
-                helpUsage = parser.getUsage();
+                    "Display this usage summary.",
+                    "    Repeat once for AnalyzerGuru details and configuration.xml samples.",
+                    "    Repeat twice for ctags command-line.").Do(v -> {
+                        ++help;
+                        helpUsage = parser.getUsage();
             });
-
-            parser.on("--detailed",
-                "Display additional help with -h,--help.").Do(v -> helpDetailed = true);
 
             parser.on(
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
-                    "Files with the named prefix/extension should be analyzed",
-                    "with the given analyzer, where 'analyzer' may be specified",
-                    "using a simple class name (RubyAnalyzer) or language name (C)",
-                    "(Note, analyzer specification is case-sensitive)",
+                    "Files with the named prefix/extension should be analyzed with the given",
+                    "analyzer, where 'analyzer' may be specified using a simple class name",
+                    "(e.g. RubyAnalyzer) or language name (e.g. C) and is case-sensitive.",
+                    "Option may be repeated.",
                     "  Ex: -A .foo:CAnalyzer",
                     "      will use the C analyzer for all files ending with .FOO",
                     "  Ex: -A bar.:Perl",
@@ -489,11 +464,9 @@ public final class Indexer {
                     "canonical root must end with a file separator. For security, a canonical",
                     "root cannot be the root directory. Option may be repeated.").Do(v -> {
                 String root = (String) v;
-                if (!root.endsWith("/") && !root.endsWith("\\")) {
-                    die("--canonicalRoot must end with a separator");
-                }
-                if (root.equals("/") || root.equals("\\")) {
-                    die("--canonicalRoot cannot be the root directory");
+                String problem = CanonicalRootValidator.validate(root, "--canonicalRoot");
+                if (problem != null) {
+                    die(problem);
                 }
                 canonicalRoots.add(root);
             });
@@ -525,6 +498,22 @@ public final class Indexer {
                 "Scanning depth for repositories in directory structure relative to",
                 "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth -> {
                 cfg.setScanningDepth((Integer) depth);
+            });
+
+            parser.on("--disableRepository", "=type_name",
+                    "Disables operation of an OpenGrok-supported repository. Option may be",
+                    "repeated.",
+                    "  Ex: --disableRepository git",
+                    "      will disable the GitRepository",
+                    "  Ex: --disableRepository MercurialRepository").Do(v -> {
+                String repoType = (String) v;
+                String repoSimpleType = RepositoryFactory.matchRepositoryByName(repoType);
+                if (repoSimpleType == null) {
+                    System.err.println(String.format(
+                            "'--disableRepository %s' does not match a type and is ignored", v));
+                } else {
+                    disabledRepositories.add(repoSimpleType);
+                }
             });
 
             parser.on("-e", "--economical",
@@ -662,12 +651,6 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
-            parser.on("--repository", "=path/to/repository",
-                    "Path (relative to the source root) to a repository for generating",
-                    "history (if -H,--history is on). By default all discovered repositories",
-                    "are history-eligible; using --repository limits to only those specified.",
-                    "Option may be repeated.").Do(v -> repositories.add((String) v));
-
             parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do(v -> {
                 // Already handled above. This populates usage.
@@ -699,6 +682,12 @@ public final class Indexer {
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
                 "with lots of renamed files.").Do(v -> cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
+
+            parser.on("--repository", "=path/to/repository",
+                    "Path (relative to the source root) to a repository for generating",
+                    "history (if -H,--history is on). By default all discovered repositories",
+                    "are history-eligible; using --repository limits to only those specified.",
+                    "Option may be repeated.").Do(v -> repositories.add((String) v));
 
             parser.on("-S", "--search",
                     "Search for source repositories under -s,--source, and add them.").Do(v ->
@@ -776,14 +765,14 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 
-            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
-                "Web application should run ctags when necessary. Default is off.").
-                Do(v -> cfg.setWebappCtags((Boolean) v));
-
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
                 "(so that the web application can use the same configuration)")
                     .Do(configFile -> configFilename = (String) configFile);
+
+            parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
+                    "Web application should run ctags when necessary. Default is off.").
+                    Do(v -> cfg.setWebappCtags((Boolean) v));
         });
 
         // Need to read the configuration file first
@@ -1114,6 +1103,11 @@ public final class Indexer {
         if (in.equals("n")) {
             System.exit(1);
         }
+    }
+
+    private static String getCtagsCommand() {
+        Ctags ctags = CtagsUtil.newInstance(env);
+        return Executor.escapeForShell(ctags.getArgv(), true, PlatformUtils.isWindows());
     }
 
     private Indexer() {

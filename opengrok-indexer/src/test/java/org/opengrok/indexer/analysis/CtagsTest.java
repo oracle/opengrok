@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -29,31 +29,21 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
  * @author Lubos Kosco
  */
-@ConditionalRun(CtagsInstalled.class)
 public class CtagsTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
-        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
         repository.create(CtagsTest.class.getResourceAsStream(
@@ -71,7 +61,7 @@ public class CtagsTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {        
+    public static void tearDownClass() {
         ctags.close();
         ctags = null;
         repository.destroy();

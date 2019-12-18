@@ -85,7 +85,6 @@ jobs:
     services:
     - docker
     before_install: dev/before_install
-    before_script: ./mvnw -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
     script: dev/docker.sh
   - stage: javadoc
     name: Upload javadocs to Github pages

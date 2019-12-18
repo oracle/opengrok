@@ -31,6 +31,7 @@ import tempfile
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
     CommandSequenceBase
+from opengrok_tools.utils.patterns import PROJECT_SUBST
 
 
 def test_str():
@@ -46,9 +47,9 @@ def test_str():
 def test_run_retcodes():
     cmd_list = [{"command": ["/bin/echo"]},
                 {"command": ["/bin/sh", "-c",
-                 "echo " + CommandSequence.PROJECT_SUBST + "; exit 0"]},
+                 "echo " + PROJECT_SUBST + "; exit 0"]},
                 {"command": ["/bin/sh", "-c",
-                 "echo " + CommandSequence.PROJECT_SUBST + "; exit 1"]}]
+                 "echo " + PROJECT_SUBST + "; exit 1"]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
     assert cmds.retcodes == {
@@ -63,7 +64,7 @@ def test_run_retcodes():
                     reason="requires Unix")
 def test_terminate_after_non_zero_code():
     cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + CommandSequence.PROJECT_SUBST + "; exit 255"]},
+                 "echo " + PROJECT_SUBST + "; exit 255"]},
                 {"command": ["/bin/echo"]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
@@ -77,7 +78,7 @@ def test_terminate_after_non_zero_code():
                     reason="requires Unix")
 def test_exit_2_handling():
     cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
+                 "echo " + PROJECT_SUBST + "; exit 2"]},
                 {"command": ["/bin/echo"]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master", cmd_list))
     cmds.run()
@@ -92,13 +93,13 @@ def test_exit_2_handling():
                     reason="requires Unix")
 def test_driveon_flag():
     cmd_list = [{"command": ["/bin/sh", "-c",
-                 "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
+                 "echo " + PROJECT_SUBST + "; exit 2"]},
                 {"command": ["/bin/echo"]},
                 {"command": ["/bin/sh", "-c",
-                             "echo " + CommandSequence.PROJECT_SUBST +
+                             "echo " + PROJECT_SUBST +
                              "; exit 1"]},
                 {"command": ["/bin/sh", "-c",
-                             "echo " + CommandSequence.PROJECT_SUBST]}]
+                             "echo " + PROJECT_SUBST]}]
     cmds = CommandSequence(CommandSequenceBase("opengrok-master",
                                                cmd_list, driveon=True))
     cmds.run()
@@ -113,7 +114,7 @@ def test_driveon_flag():
 @pytest.mark.skipif(not os.path.exists('/bin/echo'),
                     reason="requires Unix")
 def test_project_subst():
-    cmd_list = [{"command": ["/bin/echo", CommandSequence.PROJECT_SUBST]}]
+    cmd_list = [{"command": ["/bin/echo", PROJECT_SUBST]}]
     cmds = CommandSequence(CommandSequenceBase("test-subst", cmd_list))
     cmds.run()
 
@@ -125,7 +126,7 @@ def test_cleanup_exception():
     If cleanup is not a list, Exception should be thrown when initializing
     the CommandSequence object.
     """
-    cleanup = {"cleanup": ["foo", CommandSequence.PROJECT_SUBST]}
+    cleanup = {"cleanup": ["foo", PROJECT_SUBST]}
     with pytest.raises(Exception):
         CommandSequence(CommandSequenceBase("test-cleanup-list", None,
                                             cleanup=cleanup))

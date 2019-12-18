@@ -106,7 +106,7 @@ services:
     volumes:
        - '~/opengrok-src/:/opengrok/src/'  # source code
        - '~/opengrok-etc/:/opengrok/etc/'  # folder contains configuration.xml
-       - '~/opengrok-data/:opengrok/data'  # index and other things for source code
+       - '~/opengrok-data/:/opengrok/data/'  # index and other things for source code
 ```
 
 Save the file into `docker-compose.yml` and then simply run
@@ -120,9 +120,9 @@ docker run -d \
     --name opengrok \
     -p 8080:8080/tcp \
     -e REINDEX="60" \
-    -v "~/opengrok-src/:/opengrok/src/" \
-    -v "~/opengrok-etc/:/opengrok/etc/" \
-    -v "~/opengrok-data/:opengrok/data" \
+    -v ~/opengrok-src/:/opengrok/src/ \
+    -v ~/opengrok-etc/:/opengrok/etc/ \
+    -v ~/opengrok-data/:/opengrok/data/ \
     opengrok/docker:latest
 ```
 
@@ -130,8 +130,7 @@ docker run -d \
 
 If you want to do your own development, you can build the image yourself:
 
-    ./mvnw -DskipTests=true clean package && \
-        docker build -t opengrok-dev .
+    docker build -t opengrok-dev .
 
 Then run the container:
 

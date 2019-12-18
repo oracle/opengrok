@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
@@ -41,13 +41,9 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -65,7 +61,6 @@ import org.opengrok.indexer.util.IOUtils;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-@ConditionalRun(CtagsInstalled.class)
 public class SearchAndContextFormatterTest2 {
 
     private static final int TABSIZE = 8;
@@ -76,9 +71,6 @@ public class SearchAndContextFormatterTest2 {
     private static TestRepository repository2;
     private static File configFile;
     private static boolean originalProjectsEnabled;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {

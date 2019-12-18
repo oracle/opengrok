@@ -742,9 +742,7 @@ public class IndexDatabase {
         if (env.getCtagsTimeout() != 0) {
             ctags.setTimeout(env.getCtagsTimeout());
         }
-        if (ctags.getBinary() != null) {
-            fa.setCtags(ctags);
-        }
+        fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(env.isScopesEnabled());
         fa.setFoldingEnabled(env.isFoldingEnabled());

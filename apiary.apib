@@ -71,7 +71,11 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 ### adds message to a system [POST]
 
-Usable values for `cssClass` are: `info`, `warning`, `error`
+Usable values for `cssClass` are: `info`, `warning`, `error`.
+This will affect CSS class of the displayed message, leading to different coloring.
+
+The values in the `tags` list can be: `main` (special value for top level message in the whole web application),
+project name and project group name.
 
 The format of `duration` is the same as Java's java.time.Duration class,
 see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java.lang.CharSequence-
@@ -88,6 +92,10 @@ see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java
 + Response 201
 
 ### deletes messages with specified tag [DELETE]
+
++ Request (application/text)
+
+        string value of the message text - only messages with the text (and specified tag) will be deleted
 
 + Parameters
   + tag (string) - tag
@@ -234,19 +242,13 @@ will be used for repository paths.
 
             ["sc-2","sc-1"]
 
-## Repository type [/repositories/type{?repository}]
+## Repository type [/repositories/property/{field}{?repository}]
 
-### return type of the repository [GET]
+### return the field value [GET]
 
 The repository path is relative to source root.
 
-In the response the repository type is separated from the repository path
-with a colon. If the type cannot be determined "N/A" is returned.
-
-+ Response 200 (text/plain)
-  + Body
-
-            /opengrok-master:git
++ Response 200 (application/json)
 
 + Parameters
   + repository - repository path with native path separators (of the machine

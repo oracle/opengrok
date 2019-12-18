@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
@@ -77,13 +77,17 @@ public final class WebappListener
             }
         }
 
-        /**
+        /*
          * Create a new instance of authorization framework. If the code above
          * (reading the configuration) failed then the plugin directory is
          * possibly {@code null} causing the framework to allow every request.
          */
         env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory(), env.getPluginStack()));
         env.getAuthorizationFramework().reload();
+
+        if (env.isWebappCtags() && !env.validateUniversalCtags()) {
+            LOGGER.warning("Didn't find Universal Ctags for --webappCtags");
+        }
 
         try {
             loadStatistics();
@@ -93,7 +97,7 @@ public final class WebappListener
 
         String pluginDirectory = env.getPluginDirectory();
         if (pluginDirectory != null && env.isAuthorizationWatchdog()) {
-            RuntimeEnvironment.getInstance().watchDog.start(new File(pluginDirectory));
+            env.watchDog.start(new File(pluginDirectory));
         }
 
         env.startExpirationTimer();

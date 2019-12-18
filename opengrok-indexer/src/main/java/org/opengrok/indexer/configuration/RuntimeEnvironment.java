@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -121,6 +122,11 @@ public final class RuntimeEnvironment {
 
     private transient File dtagsEftar = null;
 
+    private transient volatile Boolean ctagsFound;
+    private final transient Set<String> ctagsLanguages = new HashSet<>();
+
+    public WatchDogService watchDog;
+
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
      * singleton anti-pattern.
@@ -179,8 +185,6 @@ public final class RuntimeEnvironment {
     public static RuntimeEnvironment getInstance() {
         return instance;
     }
-
-    public WatchDogService watchDog;
 
     public IndexerParallelizer getIndexerParallelizer() {
         return lzIndexerParallelizer.get();
@@ -641,8 +645,6 @@ public final class RuntimeEnvironment {
         setConfigurationValue("hitsPerPage", hitsPerPage);
     }
 
-    private transient Boolean ctagsFound;
-
     /**
      * Validate that there is a Universal ctags program.
      *
@@ -650,13 +652,33 @@ public final class RuntimeEnvironment {
      */
     public boolean validateUniversalCtags() {
         if (ctagsFound == null) {
-            if (!CtagsUtil.validate(getCtags())) {
-                ctagsFound = false;
-            } else {
-                ctagsFound = true;
+            String ctagsBinary = getCtags();
+            configLock.writeLock().lock();
+            try {
+                if (ctagsFound == null) {
+                    ctagsFound = CtagsUtil.validate(ctagsBinary);
+                    if (ctagsFound) {
+                        List<String> languages = CtagsUtil.getLanguages(ctagsBinary);
+                        if (languages != null) {
+                            ctagsLanguages.addAll(languages);
+                        }
+                    }
+                }
+            } finally {
+                configLock.writeLock().unlock();
             }
         }
         return ctagsFound;
+    }
+
+    /**
+     * Gets the base set of supported Ctags languages.
+     * @return a defined set which may be empty if
+     * {@link #validateUniversalCtags()} has not yet been called or if the call
+     * fails
+     */
+    public Set<String> getCtagsLanguages() {
+        return Collections.unmodifiableSet(ctagsLanguages);
     }
 
     /**
@@ -993,6 +1015,16 @@ public final class RuntimeEnvironment {
         }
 
         return cmd;
+    }
+
+    public void setRepoCmds(Map<String, String> cmds) {
+        Lock writeLock = configLock.writeLock();
+        writeLock.lock();
+        try {
+            configuration.setCmds(cmds);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -1393,6 +1425,15 @@ public final class RuntimeEnvironment {
      */
     public short getContextSurround() {
         return (short) getConfigurationValue("contextSurround");
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getDisabledRepositories() {
+        return (Set<String>) getConfigurationValue("disabledRepositories");
+    }
+
+    public void setDisabledRepositories(Set<String> disabledRepositories) {
+        setConfigurationValue("disabledRepositories", disabledRepositories);
     }
 
     /**
@@ -1913,11 +1954,11 @@ public final class RuntimeEnvironment {
 
     /**
      * Remove all messages containing at least one of the tags.
-     *
      * @param tags set of tags
+     * @param text message text (can be null, empty)
      */
-    public void removeAnyMessage(final Set<String> tags) {
-        messagesContainer.removeAnyMessage(tags);
+    public void removeAnyMessage(final Set<String> tags, final String text) {
+        messagesContainer.removeAnyMessage(tags, text);
     }
 
     /**

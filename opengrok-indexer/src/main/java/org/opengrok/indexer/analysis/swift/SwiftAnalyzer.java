@@ -46,11 +46,11 @@ public class SwiftAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
-     * @return {@code "Swift"} to match the OpenGrok-customized definitions
+     * @return {@code "swift"} to match the OpenGrok-customized definitions
      */
     @Override
     public String getCtagsLang() {
-        return "Swift";
+        return "swift";
     }
 
     /**

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -27,9 +28,6 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.opengrok.suggest.Suggester;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -62,7 +60,6 @@ import static org.junit.Assert.assertThat;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
-@ConditionalRun(CtagsInstalled.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SuggesterControllerTest extends JerseyTest {
 
@@ -86,9 +83,6 @@ public class SuggesterControllerTest extends JerseyTest {
         public String token;
         public int increment;
     }
-
-    @ClassRule
-    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
