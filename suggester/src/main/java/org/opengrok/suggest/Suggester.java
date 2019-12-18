@@ -236,7 +236,7 @@ public final class Suggester implements Closeable {
 
         synchronized (lock) {
             Instant start = Instant.now();
-            logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
+            logger.log(Level.FINE, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
@@ -257,7 +257,7 @@ public final class Suggester implements Closeable {
         return () -> {
             try {
                 Instant start = Instant.now();
-                logger.log(Level.FINE, "Rebuilding {0}", data);
+                logger.log(Level.FINER, "Rebuilding {0}", data);
                 data.rebuild();
 
                 Duration d = Duration.between(start, Instant.now());
@@ -278,7 +278,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            logger.log(Level.INFO, "Removing following suggesters: {0}", names);
+            logger.log(Level.FINE, "Removing following suggesters: {0}", names);
 
             for (String suggesterName : names) {
                 SuggesterProjectData collection = projectData.get(suggesterName);

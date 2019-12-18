@@ -417,7 +417,7 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        LOGGER.log(Level.FINE,
+        LOGGER.log(Level.FINER,
             "Storing history for repository {0}",
             new Object[] {repository.getDirectoryName()});
 
@@ -490,7 +490,7 @@ class FileHistoryCache implements HistoryCache {
             fileHistoryCount++;
         }
 
-        LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
+        LOGGER.log(Level.FINER, "Stored history for {0} files", fileHistoryCount);
 
         if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
@@ -559,7 +559,7 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception", ex);
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
+        LOGGER.log(Level.FINER, "Stored history for {0} renamed files",
                 renamedFileHistoryCount.intValue());
         finishStore(repository, latestRev);
     }

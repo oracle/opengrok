@@ -179,7 +179,7 @@ public class ProjectsController {
     public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
 
         Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting data for project {0}", projectName);
+        logger.log(Level.FINE, "deleting data for project {0}", projectName);
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
 
@@ -204,7 +204,7 @@ public class ProjectsController {
     public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
 
         Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
+        logger.log(Level.FINE, "deleting history cache for project {0}", projectName);
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {

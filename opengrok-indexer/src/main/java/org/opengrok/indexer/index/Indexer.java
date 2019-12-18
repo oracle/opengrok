@@ -872,7 +872,7 @@ public final class Indexer {
         if (filename != null) {
             LOGGER.log(Level.INFO, "Writing configuration to {0}", filename);
             env.writeConfiguration(new File(filename));
-            LOGGER.info("Done...");
+            LOGGER.fine("Done...");
         }
     }
 
@@ -976,14 +976,14 @@ public final class Indexer {
         if (createHistoryCache) {
             // Even if history is disabled globally, it can be enabled for some repositories.
             if (repositories != null && !repositories.isEmpty()) {
-                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                LOGGER.log(Level.FINE, "Generating history cache for repositories: " +
                         repositories.stream().collect(Collectors.joining(",")));
                 HistoryGuru.getInstance().createCache(repositories);
-                LOGGER.info("Done...");
+                LOGGER.fine("Done...");
             } else {
-                LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                LOGGER.log(Level.FINE, "Generating history cache for all repositories ...");
                 HistoryGuru.getInstance().createCache();
-                LOGGER.info("Done...");
+                LOGGER.fine("Done...");
             }
         }
 

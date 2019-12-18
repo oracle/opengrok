@@ -334,7 +334,7 @@ class SuggesterProjectData implements Closeable {
         if (averageLengths.containsKey(field)) {
             return averageLengths.get(field);
         }
-        logger.log(Level.FINE, "Could not determine average length for field {0}, using default one", field);
+        logger.log(Level.FINER, "Could not determine average length for field {0}, using default one", field);
         return AVERAGE_LENGTH_DEFAULT;
     }
 
