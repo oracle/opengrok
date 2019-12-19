@@ -19,27 +19,26 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.haskell;
 
-import java.io.BufferedReader;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.junit.Test;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-import org.opengrok.indexer.analysis.AbstractAnalyzer;
-import org.opengrok.indexer.analysis.JFlexTokenizer;
-import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link HaskellSymbolTokenizer} class.
@@ -99,18 +98,7 @@ public class HaskellSymbolTokenizerTest {
             "analysis/haskell/sample2symbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
-        List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(
-            symres, "UTF-8"))) {
-            String line;
-            while ((line = wdsr.readLine()) != null) {
-                int hasho = line.indexOf('#');
-                if (hasho != -1) line = line.substring(0, hasho);
-                expectedSymbols.add(line.trim());
-            }
-        }
-
-        assertSymbolStream(HaskellSymbolTokenizer.class, pyres,
-            expectedSymbols);
+        List<String> expectedSymbols = readSampleSymbols(symres);
+        assertSymbolStream(HaskellSymbolTokenizer.class, pyres, expectedSymbols);
     }
 }

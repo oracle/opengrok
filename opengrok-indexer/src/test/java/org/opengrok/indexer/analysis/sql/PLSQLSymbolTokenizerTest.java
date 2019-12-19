@@ -25,15 +25,12 @@ package org.opengrok.indexer.analysis.sql;
 
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 /**
  * Tests the {@link PLSQLSymbolTokenizer} class.
@@ -52,19 +49,7 @@ public class PLSQLSymbolTokenizerTest {
                 "analysis/sql/sampleplssymbols.txt");
         assertNotNull("sampleplssymbols.txt should be an available resource", symRes);
 
-        List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                symRes, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                int hashOffset = line.indexOf('#');
-                if (hashOffset != -1) {
-                    line = line.substring(0, hashOffset);
-                }
-                expectedSymbols.add(line.trim());
-            }
-        }
-
+        List<String> expectedSymbols = readSampleSymbols(symRes);
         assertSymbolStream(PLSQLSymbolTokenizer.class, sqlRes, expectedSymbols);
     }
 }

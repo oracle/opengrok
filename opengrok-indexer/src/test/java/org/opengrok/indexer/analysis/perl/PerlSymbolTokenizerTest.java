@@ -19,25 +19,24 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.perl;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
+
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
-import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.List;
 
 /**
  * Unit tests for {@link PerlSymbolTokenizer}.
@@ -104,17 +103,7 @@ public class PerlSymbolTokenizerTest {
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/perl/samplesymbols.txt");
 
-        List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(
-            wdsres, "UTF-8"))) {
-            String line;
-            while ((line = wdsr.readLine()) != null) {
-                int hasho = line.indexOf('#');
-                if (hasho != -1) line = line.substring(0, hasho);
-                expectedSymbols.add(line.trim());
-            }            
-        }
-
+        List<String> expectedSymbols = readSampleSymbols(wdsres);
         assertSymbolStream(PerlSymbolTokenizer.class, plres, expectedSymbols);
     }
 }

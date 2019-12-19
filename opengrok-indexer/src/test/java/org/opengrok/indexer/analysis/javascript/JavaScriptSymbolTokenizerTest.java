@@ -19,20 +19,18 @@
 
 /*
  * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.javascript;
 
 import static org.junit.Assert.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * Tests the {@link JavaScriptSymbolTokenizer} class.
@@ -67,18 +65,7 @@ public class JavaScriptSymbolTokenizerTest {
                 symbolsResource);
         assertNotNull(String.format("Unable to find %s as a resource", symbolsResource), symres);
 
-        List<String> expectedSymbols = new ArrayList<>();
-        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(symres, "UTF-8"))) {
-            String line;
-            while ((line = wdsr.readLine()) != null) {
-                int hasho = line.indexOf('#');
-                if (hasho != -1) {
-                    line = line.substring(0, hasho);
-                }
-                expectedSymbols.add(line.trim());
-            }
-        }
-
+        List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(JavaScriptSymbolTokenizer.class, jsres, expectedSymbols);
     }
 }
