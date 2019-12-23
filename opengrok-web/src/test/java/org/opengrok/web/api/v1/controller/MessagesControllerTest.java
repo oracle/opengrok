@@ -22,6 +22,8 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -173,6 +175,31 @@ public class MessagesControllerTest extends JerseyTest {
         assertEquals("test&nbsp;message", msg.getMessage().getText());
     }
 
+    @Test
+    public void addMessageWithInvalidCssClass() throws JsonProcessingException {
+        // Construct correct Message object first.
+        Message msg = new Message(
+                "message with invalid cssClass",
+                Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
+                Message.CssClassType.INFO.toString(),
+                Duration.ofMinutes(10));
+
+        // Convert it to JSON string and replace the cssClass value.
+        ObjectMapper objectMapper = new ObjectMapper();
+        final String invalidCssClassName = "invalid";
+        String msgAsString = objectMapper.writeValueAsString(msg);
+        msgAsString = msgAsString.replaceAll(Message.CssClassType.INFO.toString(), invalidCssClassName);
+
+        // Finally, send the request as JSON string.
+        Response r = target("messages")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.json(msgAsString));
+
+        assertEquals(0,
+                env.getMessages().stream().filter(m -> m.getCssClass().equals(invalidCssClassName)).count());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
+    }
+
     private void addMessage(String text, String... tags) {
         if (tags == null || tags.length == 0) {
             tags = new String[] {MessagesContainer.MESSAGES_MAIN_PAGE_TAG};
@@ -255,7 +282,6 @@ public class MessagesControllerTest extends JerseyTest {
     public void addAndRemoveDifferentTagsTest() {
         addMessage("test", "tag1");
         addMessage("test", "tag2");
-
 
         assertEquals(1, env.getMessages("tag1").size());
         assertEquals(1, env.getMessages("tag2").size());
@@ -362,5 +388,4 @@ public class MessagesControllerTest extends JerseyTest {
 
         assertEquals(1, allMessages.size());
     }
-
 }
