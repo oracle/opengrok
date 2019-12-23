@@ -65,9 +65,17 @@ public class MessageTest {
         new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void createBadMessageTestBadCssClass() {
+        new Message("test", Collections.singleton("foo"), "foobar", Duration.ofMinutes(1));
+    }
+
     @Test
     public void messageToJSON() throws IOException {
-        Message m = new Message("test", Collections.singleton("test"), "foo", Duration.ofMinutes(1));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.CssClassType.INFO.toString(),
+                Duration.ofMinutes(1));
         String jsonString = m.toJSON();
         assertEquals(new HashSet<>(Arrays.asList("cssClass", "duration", "text", "tags")),
                 getTopLevelJSONFields(jsonString));

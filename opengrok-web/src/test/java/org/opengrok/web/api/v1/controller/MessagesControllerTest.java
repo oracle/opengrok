@@ -178,7 +178,11 @@ public class MessagesControllerTest extends JerseyTest {
             tags = new String[] {MessagesContainer.MESSAGES_MAIN_PAGE_TAG};
         }
 
-        Message m = new Message(text, new HashSet<>(Arrays.asList(tags)), "cssClass", Duration.ofMinutes(10));
+        Message m = new Message(
+                text,
+                new HashSet<>(Arrays.asList(tags)),
+                Message.CssClassType.INFO.toString(),
+                Duration.ofMinutes(10));
 
         target("messages")
                 .request()
@@ -190,7 +194,7 @@ public class MessagesControllerTest extends JerseyTest {
         env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                "test",
+                Message.CssClassType.INFO.toString(),
                 Duration.ofMinutes(10)
         ));
 
@@ -268,7 +272,10 @@ public class MessagesControllerTest extends JerseyTest {
 
     @Test
     public void addMessageNegativeDurationTest() throws Exception {
-        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        Message m = new Message("text",
+                Collections.singleton("test"),
+                Message.CssClassType.INFO.toString(),
+                Duration.ofMinutes(1));
         setDuration(m, Duration.ofMinutes(-10));
 
         Response r = target("messages")
@@ -286,7 +293,10 @@ public class MessagesControllerTest extends JerseyTest {
 
     @Test
     public void addEmptyMessageTest() throws Exception {
-        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        Message m = new Message("text",
+                Collections.singleton("test"),
+                Message.CssClassType.INFO.toString(),
+                Duration.ofMinutes(1));
         setText(m, "");
 
         Response r = target("messages")

@@ -50,7 +50,38 @@ public class Message implements Comparable<Message>, JSONable {
     @NotEmpty(message = "tags cannot be empty")
     private Set<String> tags = Collections.singleton(MESSAGES_MAIN_PAGE_TAG);
 
-    private String cssClass = "info";
+    public enum CssClassType {
+        /**
+         * Known values: SUCCESS, INFO, WARNING, ERROR.
+         */
+        SUCCESS("success"), INFO("info"), WARNING("warning"), ERROR("error");
+
+        private String cssClassString;
+
+        CssClassType(String str) {
+            cssClassString = str;
+        }
+
+        public static CssClassType StringToCssClassType(String val) throws IllegalArgumentException {
+            if (val == null) {
+                return INFO;
+            }
+            for (CssClassType v : CssClassType.values()) {
+                if (v.toString().equals(val)) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("class type does not match any known value");
+        }
+
+        @Override
+        public String toString() {
+            return cssClassString;
+        }
+    }
+
+    @JsonDeserialize(using = CssClassTypeDeserializer.class)
+    private CssClassType cssClass = CssClassType.INFO;
 
     @NotBlank(message = "text cannot be empty")
     @JsonSerialize(using = HTMLSerializer.class)
@@ -82,7 +113,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         this.text = text;
         this.tags = tags;
-        this.cssClass = cssClass;
+        this.cssClass = CssClassType.StringToCssClassType(cssClass);
         this.duration = duration;
     }
 
@@ -91,7 +122,7 @@ public class Message implements Comparable<Message>, JSONable {
     }
 
     public String getCssClass() {
-        return cssClass;
+        return cssClass.toString();
     }
 
     public String getText() {
@@ -155,6 +186,28 @@ public class Message implements Comparable<Message>, JSONable {
             return i;
         }
         return tags.size() - o.tags.size();
+    }
+
+    private static class CssClassTypeDeserializer extends StdDeserializer<CssClassType> {
+        private static final long serialVersionUID = 928540953227342817L;
+
+        CssClassTypeDeserializer() {
+            this(null);
+        }
+
+        CssClassTypeDeserializer(Class<?> vc) {
+            super(vc);
+        }
+
+        @Override
+        public CssClassType deserialize(final JsonParser parser, final DeserializationContext context)
+                throws IOException {
+            try {
+                return CssClassType.StringToCssClassType(context.readValue(parser, String.class));
+            } catch (DateTimeParseException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private static class DurationSerializer extends StdSerializer<Duration> {
