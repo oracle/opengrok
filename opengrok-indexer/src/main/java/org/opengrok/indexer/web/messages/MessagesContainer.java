@@ -109,6 +109,21 @@ public class MessagesContainer {
     }
 
     /**
+     * @return name of highest cssClass of messages present in the system or null.
+     */
+    public String getHighestCssClassLevel() {
+        synchronized (lock) {
+            return tagMessages.values().
+                    stream().flatMap(Collection::stream).
+                    map(AcceptedMessage::getCssClass).
+                    map(Message.CssClassType::StringToCssClassType).
+                    max(Message.CssClassType::compare).
+                    map(Message.CssClassType::toString).
+                    orElse(null);
+        }
+    }
+
+    /**
      * Add a message to the application.
      * Also schedules a expiration timer to remove this message after its expiration.
      *

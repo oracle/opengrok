@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
@@ -125,16 +124,16 @@ public class MessagesContainerTest {
 
     @Test
     public void expirationTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMillis(10));
+        Message m = new Message("test", Collections.singleton("test"), Message.CssClassType.INFO.toString(), Duration.ofMillis(10));
 
         container.addMessage(m);
 
-        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages("info").isEmpty());
+        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages(Message.CssClassType.INFO.toString()).isEmpty());
     }
 
     @Test
     public void removeTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMillis(10));
+        Message m = new Message("test", Collections.singleton("test"), Message.CssClassType.INFO.toString(), Duration.ofMillis(10));
 
         container.addMessage(m);
 
@@ -153,7 +152,7 @@ public class MessagesContainerTest {
      */
     @Test
     public void testJSON() throws IOException {
-        Message m = new Message("testJSON", Collections.singleton("testJSON"), "info", Duration.ofMinutes(10));
+        Message m = new Message("testJSON", Collections.singleton("testJSON"), Message.CssClassType.INFO.toString(), Duration.ofMinutes(10));
 
         container.addMessage(m);
 
@@ -161,5 +160,28 @@ public class MessagesContainerTest {
         String jsonString = am.toJSON();
         assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "cssClass", "text")),
                 getTopLevelJSONFields(jsonString));
+    }
+
+    /**
+     * Test MessagesContainer.getHighestCssClassLevel() - used in the UI.
+     */
+    @Test
+    public void testMessageCssClass() {
+        // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
+        List<Message.CssClassType> cssClasses = Arrays.asList(Message.CssClassType.values());
+        Collections.reverse(cssClasses);
+
+        // Test the behavior with no messages.
+        assertEquals(0, container.getAllMessages().size());
+        assertNull(container.getHighestCssClassLevel());
+
+        // Add one message for each cssClass.
+        for (Message.CssClassType val : cssClasses) {
+            Message m = new Message("test", Collections.singleton("test"), val.toString(), Duration.ofMinutes(10));
+            container.addMessage(m);
+        }
+
+        assertEquals(container.getAllMessages().size(), Message.CssClassType.values().length);
+        assertEquals(Message.CssClassType.ERROR.toString(), container.getHighestCssClassLevel());
     }
 }

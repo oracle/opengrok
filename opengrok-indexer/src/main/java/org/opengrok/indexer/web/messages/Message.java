@@ -53,6 +53,8 @@ public class Message implements Comparable<Message>, JSONable {
     public enum CssClassType {
         /**
          * Known values: SUCCESS, INFO, WARNING, ERROR.
+         * The values are sorted according to their level. Higher numeric value of the level (i.e. the enum ordinal)
+         * means higher priority.
          */
         SUCCESS("success"), INFO("info"), WARNING("warning"), ERROR("error");
 
@@ -77,6 +79,10 @@ public class Message implements Comparable<Message>, JSONable {
         @Override
         public String toString() {
             return cssClassString;
+        }
+
+        public static int compare(CssClassType c1, CssClassType c2) {
+            return Integer.compare(c1.ordinal(), c2.ordinal());
         }
     }
 
