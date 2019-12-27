@@ -161,30 +161,4 @@ public class MessagesContainerTest {
         assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "cssClass", "text")),
                 getTopLevelJSONFields(jsonString));
     }
-
-    /**
-     * Test MessagesContainer.getHighestCssClassLevel() - used in the UI.
-     */
-    @Test
-    public void testMessageCssClass() {
-        // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
-        List<Message.CssClassType> cssClasses = Arrays.asList(Message.CssClassType.values());
-        Collections.reverse(cssClasses);
-
-        // Test the behavior with no messages.
-        assertEquals(0, container.getAllMessages().size());
-        assertNull(container.getHighestCssClassLevel());
-
-        // Add one message for each cssClass.
-        for (Message.CssClassType val : cssClasses) {
-            Message m = new Message("test " + val,
-                    Collections.singleton("test-" + val),
-                    val.toString(),
-                    Duration.ofMinutes(10));
-            container.addMessage(m);
-        }
-
-        assertEquals(Message.CssClassType.values().length, container.getAllMessages().size());
-        assertEquals(Message.CssClassType.ERROR.toString(), container.getHighestCssClassLevel());
-    }
 }

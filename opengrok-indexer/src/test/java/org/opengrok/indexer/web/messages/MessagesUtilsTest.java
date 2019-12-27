@@ -23,22 +23,36 @@
 
 package org.opengrok.indexer.web.messages;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class MessagesUtilsTest {
     RuntimeEnvironment env;
 
+    private MessagesContainer container;
+
+    @After
+    public void tearDown() {
+        container.stopExpirationTimer();
+    }
+
     @Before
     public void setUp() {
         env = RuntimeEnvironment.getInstance();
+
+        container = new MessagesContainer();
+        container.startExpirationTimer();
     }
 
     @Test
@@ -53,5 +67,33 @@ public class MessagesUtilsTest {
         String jsonString = MessagesUtils.messagesToJson(projectName);
         assertNotNull(jsonString);
         assertEquals("", jsonString);
+    }
+
+
+    /**
+     * Test MessagesContainer.getHighestCssClassLevel() - used in the UI.
+     */
+    @Test
+    public void testMessageCssClass() {
+        // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
+        List<Message.CssClassType> cssClasses = Arrays.asList(Message.CssClassType.values());
+        Collections.reverse(cssClasses);
+
+        // Test the behavior with no messages.
+        assertEquals(0, container.getAllMessages().size());
+        assertNull(MessagesUtils.getHighestCssClassLevel(container.getAllMessages()));
+
+        // Add one message for each cssClass.
+        for (Message.CssClassType val : cssClasses) {
+            Message m = new Message("test " + val,
+                    Collections.singleton("test" + val),
+                    val.toString(),
+                    Duration.ofMinutes(10));
+            container.addMessage(m);
+        }
+
+        assertEquals(Message.CssClassType.values().length, container.getAllMessages().size());
+        assertEquals(Message.CssClassType.ERROR.toString(),
+                MessagesUtils.getHighestCssClassLevel(container.getAllMessages()));
     }
 }

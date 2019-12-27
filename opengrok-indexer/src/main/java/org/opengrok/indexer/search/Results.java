@@ -196,7 +196,8 @@ public final class Results {
             String messages = MessagesUtils.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG);
             if (p != null && !messages.isEmpty()) {
                 out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
-                out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
+                out.write("<span class=\"note-" + MessagesUtils.getCssClass(p.getName(), MESSAGES_MAIN_PAGE_TAG) +
+                        " important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
             }
 

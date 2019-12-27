@@ -109,7 +109,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
                                 <%
                                 if (!(messages = MessagesUtils.messagesToJson(group)).isEmpty()) { %>
-                                    <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                    <span class="note-<%= MessagesUtils.getCssClass(group.getName()) %> important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                 <% } %>
                                 <small>
                                     [<a href="#" class="projects_select_all">select all</a>]
@@ -168,7 +168,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
                                     <span class="name">Other</span>
                                     <%
                                     if (!(messages = messagesToJson("other")).isEmpty()) { %>
-                                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                        <span class="note-<%= MessagesUtils.getCssClass("other") %> important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                                     <% } %>
                                     <small>
                                         [<a href="#" class="projects_select_all">select all</a>]

@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -229,5 +230,33 @@ public final class MessagesUtils {
      */
     public static String messagesToJson(Group group) {
         return messagesToJson(group, new String[0]);
+    }
+
+    /**
+     * @return name of highest cssClass of messages present in the system or null.
+     */
+    static String getHighestCssClassLevel(Set<MessagesContainer.AcceptedMessage> messages) {
+        return messages.
+                stream().
+                map(MessagesContainer.AcceptedMessage::getCssClass).
+                map(Message.CssClassType::StringToCssClassType).
+                max(Message.CssClassType::compare).
+                map(Message.CssClassType::toString).
+                orElse(null);
+    }
+
+    /**
+     * @param tags message tags
+     * @return name of highest cssClass of messages present in the system or null.
+     */
+    public static String getCssClass(String... tags) {
+        Set<MessagesContainer.AcceptedMessage> messages = new TreeSet<>();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        for (String tag : tags) {
+            messages.addAll(env.getMessages(tag));
+        }
+
+        return getHighestCssClassLevel(messages);
     }
 }
