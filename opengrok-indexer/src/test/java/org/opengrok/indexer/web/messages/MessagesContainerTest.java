@@ -177,11 +177,14 @@ public class MessagesContainerTest {
 
         // Add one message for each cssClass.
         for (Message.CssClassType val : cssClasses) {
-            Message m = new Message("test", Collections.singleton("test"), val.toString(), Duration.ofMinutes(10));
+            Message m = new Message("test " + val,
+                    Collections.singleton("test-" + val),
+                    val.toString(),
+                    Duration.ofMinutes(10));
             container.addMessage(m);
         }
 
-        assertEquals(container.getAllMessages().size(), Message.CssClassType.values().length);
+        assertEquals(Message.CssClassType.values().length, container.getAllMessages().size());
         assertEquals(Message.CssClassType.ERROR.toString(), container.getHighestCssClassLevel());
     }
 }
