@@ -58,7 +58,7 @@ import javax.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
-import org.apache.lucene.codecs.lucene80.Lucene80Codec;
+import org.apache.lucene.codecs.lucene84.Lucene84Codec;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -416,7 +416,7 @@ public class IndexDatabase {
              * compression on the minority of data that is stored, since it
              * should not have a detrimental impact on overall throughput.
              */
-            iwc.setCodec(new Lucene80Codec(
+            iwc.setCodec(new Lucene84Codec(
                 Lucene50StoredFieldsFormat.Mode.BEST_COMPRESSION));
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
