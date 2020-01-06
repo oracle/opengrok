@@ -126,7 +126,7 @@
     <servlet>
         <display-name>Raw Source lister</display-name>
         <servlet-name>raw</servlet-name>
-        <jsp-file>/raw.jsp</jsp-file>
+        <servlet-class>org.opengrok.web.GetFile</servlet-class>
         <init-param>
             <param-name>keepgenerated</param-name>
             <param-value>true</param-value>
@@ -135,7 +135,7 @@
     <servlet>
         <display-name>Download source</display-name>
         <servlet-name>download</servlet-name>
-        <jsp-file>/raw.jsp</jsp-file>
+        <servlet-class>org.opengrok.web.GetFile</servlet-class>
         <init-param>
             <param-name>keepgenerated</param-name>
             <param-value>true</param-value>
