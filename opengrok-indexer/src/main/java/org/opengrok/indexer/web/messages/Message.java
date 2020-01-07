@@ -51,7 +51,7 @@ public class Message implements Comparable<Message>, JSONable {
     @NotEmpty(message = "tags cannot be empty")
     private Set<String> tags = Collections.singleton(MESSAGES_MAIN_PAGE_TAG);
 
-    public enum CssClassType {
+    public enum MessageLevel {
         /**
          * Known values: {@code SUCCESS}, {@code INFO}, {@code WARNING}, {@code ERROR}.
          * The values are sorted according to their level. Higher numeric value of the level (i.e. the enum ordinal)
@@ -59,14 +59,14 @@ public class Message implements Comparable<Message>, JSONable {
          */
         SUCCESS("success"), INFO("info"), WARNING("warning"), ERROR("error");
 
-        private String cssClassString;
+        private String messageLevelString;
 
-        CssClassType(String str) {
-            cssClassString = str;
+        MessageLevel(String str) {
+            messageLevelString = str;
         }
 
-        public static CssClassType stringToCssClassType(String val) throws IllegalArgumentException {
-            for (CssClassType v : CssClassType.values()) {
+        public static MessageLevel stringToMessageLevel(String val) throws IllegalArgumentException {
+            for (MessageLevel v : MessageLevel.values()) {
                 if (v.toString().equals(val)) {
                     return v;
                 }
@@ -76,14 +76,14 @@ public class Message implements Comparable<Message>, JSONable {
 
         @Override
         public String toString() {
-            return cssClassString;
+            return messageLevelString;
         }
 
-        public static final Comparator<CssClassType> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
+        public static final Comparator<MessageLevel> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
     }
 
-    @JsonDeserialize(using = CssClassTypeDeserializer.class)
-    private CssClassType cssClass = CssClassType.INFO;
+    @JsonDeserialize(using = messageLevelDeserializer.class)
+    private MessageLevel messageLevel = MessageLevel.INFO;
 
     @NotBlank(message = "text cannot be empty")
     @JsonSerialize(using = HTMLSerializer.class)
@@ -100,7 +100,7 @@ public class Message implements Comparable<Message>, JSONable {
     public Message(
             final String text,
             final Set<String> tags,
-            final String cssClass,
+            final String messageLevel,
             final Duration duration
     ) {
         if (text == null || text.isEmpty()) {
@@ -115,7 +115,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         this.text = text;
         this.tags = tags;
-        this.cssClass = CssClassType.stringToCssClassType(cssClass);
+        this.messageLevel = MessageLevel.stringToMessageLevel(messageLevel);
         this.duration = duration;
     }
 
@@ -123,8 +123,8 @@ public class Message implements Comparable<Message>, JSONable {
         return tags;
     }
 
-    public String getCssClass() {
-        return cssClass.toString();
+    public String getMessageLevel() {
+        return messageLevel.toString();
     }
 
     public String getText() {
@@ -168,14 +168,14 @@ public class Message implements Comparable<Message>, JSONable {
         }
         Message message = (Message) o;
         return Objects.equals(tags, message.tags) &&
-                Objects.equals(cssClass, message.cssClass) &&
+                Objects.equals(messageLevel, message.messageLevel) &&
                 Objects.equals(text, message.text) &&
                 Objects.equals(duration, message.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tags, cssClass, text, duration);
+        return Objects.hash(tags, messageLevel, text, duration);
     }
 
     @Override
@@ -190,22 +190,22 @@ public class Message implements Comparable<Message>, JSONable {
         return tags.size() - o.tags.size();
     }
 
-    private static class CssClassTypeDeserializer extends StdDeserializer<CssClassType> {
+    private static class messageLevelDeserializer extends StdDeserializer<MessageLevel> {
         private static final long serialVersionUID = 928540953227342817L;
 
-        CssClassTypeDeserializer() {
+        messageLevelDeserializer() {
             this(null);
         }
 
-        CssClassTypeDeserializer(Class<?> vc) {
+        messageLevelDeserializer(Class<?> vc) {
             super(vc);
         }
 
         @Override
-        public CssClassType deserialize(final JsonParser parser, final DeserializationContext context)
+        public MessageLevel deserialize(final JsonParser parser, final DeserializationContext context)
                 throws IOException {
             try {
-                return CssClassType.stringToCssClassType(context.readValue(parser, String.class));
+                return MessageLevel.stringToMessageLevel(context.readValue(parser, String.class));
             } catch (DateTimeParseException e) {
                 throw new IOException(e);
             }

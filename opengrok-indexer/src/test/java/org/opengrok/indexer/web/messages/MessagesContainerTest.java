@@ -124,16 +124,16 @@ public class MessagesContainerTest {
 
     @Test
     public void expirationTest() {
-        Message m = new Message("test", Collections.singleton("test"), Message.CssClassType.INFO.toString(), Duration.ofMillis(10));
+        Message m = new Message("test", Collections.singleton("test"), Message.MessageLevel.INFO.toString(), Duration.ofMillis(10));
 
         container.addMessage(m);
 
-        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages(Message.CssClassType.INFO.toString()).isEmpty());
+        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages(Message.MessageLevel.INFO.toString()).isEmpty());
     }
 
     @Test
     public void removeTest() {
-        Message m = new Message("test", Collections.singleton("test"), Message.CssClassType.INFO.toString(), Duration.ofMillis(10));
+        Message m = new Message("test", Collections.singleton("test"), Message.MessageLevel.INFO.toString(), Duration.ofMillis(10));
 
         container.addMessage(m);
 
@@ -152,13 +152,13 @@ public class MessagesContainerTest {
      */
     @Test
     public void testJSON() throws IOException {
-        Message m = new Message("testJSON", Collections.singleton("testJSON"), Message.CssClassType.INFO.toString(), Duration.ofMinutes(10));
+        Message m = new Message("testJSON", Collections.singleton("testJSON"), Message.MessageLevel.INFO.toString(), Duration.ofMinutes(10));
 
         container.addMessage(m);
 
         MessagesContainer.AcceptedMessage am = container.getMessages("testJSON").first();
         String jsonString = am.toJSON();
-        assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "cssClass", "text")),
+        assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "messageLevel", "text")),
                 getTopLevelJSONFields(jsonString));
     }
 }

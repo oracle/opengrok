@@ -46,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.opengrok.indexer.web.messages.Message.CssClassType.VALUE_COMPARATOR;
+import static org.opengrok.indexer.web.messages.Message.MessageLevel.VALUE_COMPARATOR;
 
 public final class MessagesUtils {
 
@@ -102,7 +102,7 @@ public final class MessagesUtils {
                 out.write("\">\n");
                 for (MessagesContainer.AcceptedMessage m : set) {
                     out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getMessage().getCssClass()));
+                    out.write(Util.encode(m.getMessage().getMessageLevel()));
                     out.write("\" title=\"Expires on ");
                     out.write(Util.encode(df.format(Date.from(m.getExpirationTime()))));
                     out.write("\">");
@@ -238,13 +238,13 @@ public final class MessagesUtils {
     /**
      * @return name of highest cssClass of messages present in the system or null.
      */
-    static String getHighestCssClassLevel(Collection<MessagesContainer.AcceptedMessage> messages) {
+    static String getHighestMessageLevel(Collection<MessagesContainer.AcceptedMessage> messages) {
         return messages.
                 stream().
-                map(MessagesContainer.AcceptedMessage::getCssClass).
-                map(Message.CssClassType::stringToCssClassType).
+                map(MessagesContainer.AcceptedMessage::getMessageLevel).
+                map(Message.MessageLevel::stringToMessageLevel).
                 max(VALUE_COMPARATOR).
-                map(Message.CssClassType::toString).
+                map(Message.MessageLevel::toString).
                 orElse(null);
     }
 
@@ -252,7 +252,7 @@ public final class MessagesUtils {
      * @param tags message tags
      * @return name of highest cssClass of messages present in the system or null.
      */
-    public static String getCssClass(String... tags) {
+    public static String getMessageLevel(String... tags) {
         Set<MessagesContainer.AcceptedMessage> messages;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -261,6 +261,6 @@ public final class MessagesUtils {
                 flatMap(Collection::stream).
                 collect(Collectors.toSet());
 
-        return getHighestCssClassLevel(messages);
+        return getHighestMessageLevel(messages);
     }
 }

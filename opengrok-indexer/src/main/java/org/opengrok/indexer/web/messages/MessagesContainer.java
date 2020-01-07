@@ -250,9 +250,9 @@ public class MessagesContainer {
             return message.getText();
         }
 
-        @JsonProperty("cssClass")
-        public String getCssClass() {
-            return message.getCssClass();
+        @JsonProperty("messageLevel")
+        public String getMessageLevel() {
+            return message.getMessageLevel();
         }
 
         private AcceptedMessage(final Message message) {

@@ -33,7 +33,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -71,17 +70,17 @@ public class MessagesUtilsTest {
     }
 
     @Test
-    public void testGetHighestCssClassLevel() {
+    public void testGetHighestMessageLevel() {
         // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
-        List<Message.CssClassType> cssClasses = Arrays.asList(Message.CssClassType.values());
+        List<Message.MessageLevel> cssClasses = Arrays.asList(Message.MessageLevel.values());
         Collections.reverse(cssClasses);
 
         // Test the behavior with no messages.
         assertEquals(0, container.getAllMessages().size());
-        assertNull(MessagesUtils.getHighestCssClassLevel(container.getAllMessages()));
+        assertNull(MessagesUtils.getHighestMessageLevel(container.getAllMessages()));
 
         // Add one message for each cssClass.
-        for (Message.CssClassType val : cssClasses) {
+        for (Message.MessageLevel val : cssClasses) {
             Message m = new Message("test " + val,
                     Collections.singleton("test" + val),
                     val.toString(),
@@ -89,16 +88,16 @@ public class MessagesUtilsTest {
             container.addMessage(m);
         }
 
-        assertEquals(Message.CssClassType.values().length, container.getAllMessages().size());
-        assertEquals(Message.CssClassType.ERROR.toString(),
-                MessagesUtils.getHighestCssClassLevel(container.getAllMessages()));
+        assertEquals(Message.MessageLevel.values().length, container.getAllMessages().size());
+        assertEquals(Message.MessageLevel.ERROR.toString(),
+                MessagesUtils.getHighestMessageLevel(container.getAllMessages()));
     }
 
     @Test
-    public void testGetCssClass() {
+    public void testGetMessageLevel() {
         HashMap<String, String> tagLevels = new HashMap<>();
-        tagLevels.put("foo", Message.CssClassType.INFO.toString());
-        tagLevels.put("bar", Message.CssClassType.ERROR.toString());
+        tagLevels.put("foo", Message.MessageLevel.INFO.toString());
+        tagLevels.put("bar", Message.MessageLevel.ERROR.toString());
 
         for (String tag : tagLevels.keySet()) {
             Message m = new Message(
@@ -109,7 +108,7 @@ public class MessagesUtilsTest {
             env.addMessage(m);
         }
 
-        assertEquals(Message.CssClassType.ERROR.toString(),
-                MessagesUtils.getCssClass(tagLevels.keySet().toArray(new String[0])));
+        assertEquals(Message.MessageLevel.ERROR.toString(),
+                MessagesUtils.getMessageLevel(tagLevels.keySet().toArray(new String[0])));
     }
 }

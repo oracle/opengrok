@@ -105,7 +105,7 @@ document.domReady.push(function() { domReadyMenu(); });
                         pRequested.remove(p.getName());
                     }
                     if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
-                        %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getCssClass(p.getName()) %>' <%
+                        %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getMessageLevel(p.getName()) %>' <%
                     }
                     %>><%= Util.formQuoteEscape(p.getName()) %></option><%
                 }
@@ -128,7 +128,7 @@ document.domReady.push(function() { domReadyMenu(); });
                 pRequested.remove(p.getName());
             }
             if (!(messages = MessagesUtils.messagesToJson(p)).isEmpty()) {
-                %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getCssClass(p.getName()) %>' <%
+                %> data-messages='<%= messages %>' data-messages-level='<%= MessagesUtils.getMessageLevel(p.getName()) %>' <%
             }
             %>><%= Util.formQuoteEscape(p.getName()) %></option><%
         }

@@ -77,7 +77,7 @@ public class MessagesControllerTest extends JerseyTest {
         public String expiration;
         public boolean expired;
         public String text;
-        public String cssClass;
+        public String messageLevel;
         public Set<String> tags;
     }
 
@@ -176,19 +176,19 @@ public class MessagesControllerTest extends JerseyTest {
     }
 
     @Test
-    public void addMessageWithInvalidCssClass() throws JsonProcessingException {
+    public void addMessageWithInvalidLevel() throws JsonProcessingException {
         // Construct correct Message object first.
         Message msg = new Message(
-                "message with invalid cssClass",
+                "message with invalid message level",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                Message.CssClassType.INFO.toString(),
+                Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(10));
 
-        // Convert it to JSON string and replace the cssClass value.
+        // Convert it to JSON string and replace the messageLevel value.
         ObjectMapper objectMapper = new ObjectMapper();
-        final String invalidCssClassName = "invalid";
+        final String invalidMessageLevel = "invalid";
         String msgAsString = objectMapper.writeValueAsString(msg);
-        msgAsString = msgAsString.replaceAll(Message.CssClassType.INFO.toString(), invalidCssClassName);
+        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString(), invalidMessageLevel);
 
         // Finally, send the request as JSON string.
         Response r = target("messages")
@@ -196,7 +196,7 @@ public class MessagesControllerTest extends JerseyTest {
                 .post(Entity.json(msgAsString));
 
         assertEquals(0,
-                env.getMessages().stream().filter(m -> m.getCssClass().equals(invalidCssClassName)).count());
+                env.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
@@ -208,7 +208,7 @@ public class MessagesControllerTest extends JerseyTest {
         Message m = new Message(
                 text,
                 new HashSet<>(Arrays.asList(tags)),
-                Message.CssClassType.INFO.toString(),
+                Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(10));
 
         target("messages")
@@ -221,7 +221,7 @@ public class MessagesControllerTest extends JerseyTest {
         env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                Message.CssClassType.INFO.toString(),
+                Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(10)
         ));
 
@@ -300,7 +300,7 @@ public class MessagesControllerTest extends JerseyTest {
     public void addMessageNegativeDurationTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
-                Message.CssClassType.INFO.toString(),
+                Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(1));
         setDuration(m, Duration.ofMinutes(-10));
 
@@ -321,7 +321,7 @@ public class MessagesControllerTest extends JerseyTest {
     public void addEmptyMessageTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
-                Message.CssClassType.INFO.toString(),
+                Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(1));
         setText(m, "");
 

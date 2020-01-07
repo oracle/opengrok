@@ -71,7 +71,7 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 ### adds message to a system [POST]
 
-Usable values for `cssClass` are: `info`, `warning`, `error`.
+Usable values for `messageLevel` are: `success`, `info`, `warning`, `error`.
 This will affect CSS class of the displayed message, leading to different coloring.
 
 The values in the `tags` list can be: `main` (special value for top level message in the whole web application),
@@ -84,7 +84,7 @@ see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java
 
         {
           "tags": ["main"],
-          "cssClass": "class",
+          "messageLevel": "class",
           "text":"test message",
           "duration":"PT10M"
         }
