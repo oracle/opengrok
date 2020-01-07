@@ -79,7 +79,7 @@ public class Message implements Comparable<Message>, JSONable {
             return cssClassString;
         }
 
-        public static Comparator<CssClassType> valueComparator = Comparator.comparingInt(Enum::ordinal);
+        public static final Comparator<CssClassType> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
     }
 
     @JsonDeserialize(using = CssClassTypeDeserializer.class)

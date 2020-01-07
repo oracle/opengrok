@@ -42,12 +42,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.opengrok.indexer.web.messages.Message.CssClassType.valueComparator;
+import static org.opengrok.indexer.web.messages.Message.CssClassType.VALUE_COMPARATOR;
 
 public final class MessagesUtils {
 
@@ -244,7 +243,7 @@ public final class MessagesUtils {
                 stream().
                 map(MessagesContainer.AcceptedMessage::getCssClass).
                 map(Message.CssClassType::stringToCssClassType).
-                max(valueComparator).
+                max(VALUE_COMPARATOR).
                 map(Message.CssClassType::toString).
                 orElse(null);
     }
