@@ -239,7 +239,7 @@ public final class MessagesUtils {
         return messages.
                 stream().
                 map(MessagesContainer.AcceptedMessage::getCssClass).
-                map(Message.CssClassType::StringToCssClassType).
+                map(Message.CssClassType::stringToCssClassType).
                 max(Message.CssClassType::compare).
                 map(Message.CssClassType::toString).
                 orElse(null);

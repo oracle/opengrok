@@ -64,7 +64,7 @@ public class Message implements Comparable<Message>, JSONable {
             cssClassString = str;
         }
 
-        public static CssClassType StringToCssClassType(String val) throws IllegalArgumentException {
+        public static CssClassType stringToCssClassType(String val) throws IllegalArgumentException {
             if (val == null) {
                 return INFO;
             }
@@ -119,7 +119,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         this.text = text;
         this.tags = tags;
-        this.cssClass = CssClassType.StringToCssClassType(cssClass);
+        this.cssClass = CssClassType.stringToCssClassType(cssClass);
         this.duration = duration;
     }
 
@@ -209,7 +209,7 @@ public class Message implements Comparable<Message>, JSONable {
         public CssClassType deserialize(final JsonParser parser, final DeserializationContext context)
                 throws IOException {
             try {
-                return CssClassType.StringToCssClassType(context.readValue(parser, String.class));
+                return CssClassType.stringToCssClassType(context.readValue(parser, String.class));
             } catch (DateTimeParseException e) {
                 throw new IOException(e);
             }
