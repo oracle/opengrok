@@ -37,6 +37,7 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -237,7 +238,7 @@ public final class MessagesUtils {
     /**
      * @return name of highest cssClass of messages present in the system or null.
      */
-    static String getHighestCssClassLevel(Set<MessagesContainer.AcceptedMessage> messages) {
+    static String getHighestCssClassLevel(Collection<MessagesContainer.AcceptedMessage> messages) {
         return messages.
                 stream().
                 map(MessagesContainer.AcceptedMessage::getCssClass).
