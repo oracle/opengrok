@@ -61,6 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
@@ -77,18 +78,13 @@ public final class Util {
 
     private static final int BOLD_COUNT_THRESHOLD = 1000;
 
-    /**
-     * Matches a character that is not ASCII alpha-numeric or underscore.
-     */
-    private static final Pattern NON_ASCII_ALPHA_NUM = Pattern.compile("[^A-Za-z0-9_]");
-
     private static final String anchorLinkStart = "<a href=\"";
     private static final String anchorClassStart = "<a class=\"";
     private static final String anchorEnd = "</a>";
     private static final String closeQuotedTag = "\">";
 
+    /** Private to enforce static. */
     private Util() {
-        // private to ensure static
     }
 
     /**
@@ -142,24 +138,15 @@ public final class Util {
     }
 
     /**
-     * Append to {@code dest} the UTF-8 URL-encoded representation of
-     * {@code str}, within explicit quotes (%22) to accommodate Lucene querying
-     * if {@code str} contains any character that is not ASCII-alphanumeric or
-     * underscore.
+     * Append to {@code dest} the UTF-8 URL-encoded representation of the
+     * Lucene-escaped version of {@code str}.
      * @param str a defined instance
      * @param dest a defined target
      * @throws IOException I/O exception
      */
     public static void qurlencode(String str, Appendable dest)
             throws IOException {
-        if (NON_ASCII_ALPHA_NUM.matcher(str).find()) {
-            final String UQUOTE = "%22";
-            dest.append(UQUOTE);
-            URIEncode(str, dest);
-            dest.append(UQUOTE);
-        } else {
-            URIEncode(str, dest);
-        }
+        URIEncode(QueryParser.escape(str), dest);
     }
 
     /**
