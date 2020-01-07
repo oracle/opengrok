@@ -45,6 +45,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static org.opengrok.indexer.web.messages.Message.CssClassType.valueComparator;
 
@@ -253,12 +254,13 @@ public final class MessagesUtils {
      * @return name of highest cssClass of messages present in the system or null.
      */
     public static String getCssClass(String... tags) {
-        Set<MessagesContainer.AcceptedMessage> messages = new TreeSet<>();
+        Set<MessagesContainer.AcceptedMessage> messages;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        for (String tag : tags) {
-            messages.addAll(env.getMessages(tag));
-        }
+        messages = Arrays.stream(tags).
+                map(env::getMessages).
+                flatMap(Collection::stream).
+                collect(Collectors.toSet());
 
         return getHighestCssClassLevel(messages);
     }

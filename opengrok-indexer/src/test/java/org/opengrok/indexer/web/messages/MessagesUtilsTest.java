@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -69,12 +70,8 @@ public class MessagesUtilsTest {
         assertEquals("", jsonString);
     }
 
-
-    /**
-     * Test MessagesContainer.getHighestCssClassLevel() - used in the UI.
-     */
     @Test
-    public void testMessageCssClass() {
+    public void testGetHighestCssClassLevel() {
         // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
         List<Message.CssClassType> cssClasses = Arrays.asList(Message.CssClassType.values());
         Collections.reverse(cssClasses);
@@ -95,5 +92,24 @@ public class MessagesUtilsTest {
         assertEquals(Message.CssClassType.values().length, container.getAllMessages().size());
         assertEquals(Message.CssClassType.ERROR.toString(),
                 MessagesUtils.getHighestCssClassLevel(container.getAllMessages()));
+    }
+
+    @Test
+    public void testGetCssClass() {
+        HashMap<String, String> tagLevels = new HashMap<>();
+        tagLevels.put("foo", Message.CssClassType.INFO.toString());
+        tagLevels.put("bar", Message.CssClassType.ERROR.toString());
+
+        for (String tag : tagLevels.keySet()) {
+            Message m = new Message(
+                    "text",
+                    Collections.singleton(tag),
+                    tagLevels.get(tag),
+                    Duration.ofMinutes(10));
+            env.addMessage(m);
+        }
+
+        assertEquals(Message.CssClassType.ERROR.toString(),
+                MessagesUtils.getCssClass(tagLevels.keySet().toArray(new String[0])));
     }
 }
