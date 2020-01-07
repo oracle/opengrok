@@ -45,6 +45,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.opengrok.indexer.web.messages.Message.CssClassType.valueComparator;
+
 public final class MessagesUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagesUtils.class);
@@ -240,7 +242,7 @@ public final class MessagesUtils {
                 stream().
                 map(MessagesContainer.AcceptedMessage::getCssClass).
                 map(Message.CssClassType::stringToCssClassType).
-                max(Message.CssClassType::compare).
+                max(valueComparator).
                 map(Message.CssClassType::toString).
                 orElse(null);
     }

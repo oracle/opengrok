@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -78,9 +79,7 @@ public class Message implements Comparable<Message>, JSONable {
             return cssClassString;
         }
 
-        public static int compare(CssClassType c1, CssClassType c2) {
-            return Integer.compare(c1.ordinal(), c2.ordinal());
-        }
+        public static Comparator<CssClassType> valueComparator = Comparator.comparingInt(Enum::ordinal);
     }
 
     @JsonDeserialize(using = CssClassTypeDeserializer.class)
