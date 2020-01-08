@@ -123,8 +123,8 @@ public class Message implements Comparable<Message>, JSONable {
         return tags;
     }
 
-    public String getMessageLevel() {
-        return messageLevel.toString();
+    public MessageLevel getMessageLevel() {
+        return messageLevel;
     }
 
     public String getText() {

@@ -251,7 +251,7 @@ public class MessagesContainer {
         }
 
         @JsonProperty("messageLevel")
-        public String getMessageLevel() {
+        public Message.MessageLevel getMessageLevel() {
             return message.getMessageLevel();
         }
 

@@ -102,7 +102,7 @@ public final class MessagesUtils {
                 out.write("\">\n");
                 for (MessagesContainer.AcceptedMessage m : set) {
                     out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getMessage().getMessageLevel()));
+                    out.write(Util.encode(m.getMessage().getMessageLevel().toString()));
                     out.write("\" title=\"Expires on ");
                     out.write(Util.encode(df.format(Date.from(m.getExpirationTime()))));
                     out.write("\">");
@@ -242,7 +242,6 @@ public final class MessagesUtils {
         return messages.
                 stream().
                 map(MessagesContainer.AcceptedMessage::getMessageLevel).
-                map(Message.MessageLevel::stringToMessageLevel).
                 max(VALUE_COMPARATOR).
                 map(Message.MessageLevel::toString).
                 orElse(null);
