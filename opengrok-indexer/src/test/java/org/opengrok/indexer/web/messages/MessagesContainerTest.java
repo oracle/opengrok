@@ -57,7 +57,10 @@ public class MessagesContainerTest {
 
     @Test
     public void addAndGetTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMinutes(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
 
         container.addMessage(m);
 
@@ -92,7 +95,9 @@ public class MessagesContainerTest {
             final int index = i;
             Thread t = new Thread(() -> {
                 for (int j = 0; j < 100; j++) {
-                    Message m = new Message("test" + index + j, Collections.singleton("test"), "info",
+                    Message m = new Message("test" + index + j,
+                            Collections.singleton("test"),
+                            Message.MessageLevel.INFO,
                             Duration.ofMinutes(10));
                     container.addMessage(m);
                 }
@@ -124,7 +129,10 @@ public class MessagesContainerTest {
 
     @Test
     public void expirationTest() {
-        Message m = new Message("test", Collections.singleton("test"), Message.MessageLevel.INFO.toString(), Duration.ofMillis(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMillis(10));
 
         container.addMessage(m);
 
@@ -133,7 +141,10 @@ public class MessagesContainerTest {
 
     @Test
     public void removeTest() {
-        Message m = new Message("test", Collections.singleton("test"), Message.MessageLevel.INFO.toString(), Duration.ofMillis(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMillis(10));
 
         container.addMessage(m);
 
@@ -152,7 +163,10 @@ public class MessagesContainerTest {
      */
     @Test
     public void testJSON() throws IOException {
-        Message m = new Message("testJSON", Collections.singleton("testJSON"), Message.MessageLevel.INFO.toString(), Duration.ofMinutes(10));
+        Message m = new Message("testJSON",
+                Collections.singleton("testJSON"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
 
         container.addMessage(m);
 

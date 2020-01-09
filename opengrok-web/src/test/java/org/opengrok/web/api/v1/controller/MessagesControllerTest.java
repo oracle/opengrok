@@ -182,7 +182,7 @@ public class MessagesControllerTest extends JerseyTest {
         Message msg = new Message(
                 "message with broken message level",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(10));
 
         // Convert it to JSON string and replace the messageLevel value.
@@ -211,7 +211,7 @@ public class MessagesControllerTest extends JerseyTest {
         Message m = new Message(
                 text,
                 new HashSet<>(Arrays.asList(tags)),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(10));
 
         target("messages")
@@ -224,7 +224,7 @@ public class MessagesControllerTest extends JerseyTest {
         env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(10)
         ));
 
@@ -303,7 +303,7 @@ public class MessagesControllerTest extends JerseyTest {
     public void addMessageNegativeDurationTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(1));
         setDuration(m, Duration.ofMinutes(-10));
 
@@ -324,7 +324,7 @@ public class MessagesControllerTest extends JerseyTest {
     public void addEmptyMessageTest() throws Exception {
         Message m = new Message("text",
                 Collections.singleton("test"),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(1));
         setText(m, "");
 

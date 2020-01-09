@@ -101,7 +101,7 @@ public class Message implements Comparable<Message>, JSONable {
     public Message(
             final String text,
             final Set<String> tags,
-            final String messageLevel,
+            final MessageLevel messageLevel,
             final Duration duration
     ) {
         if (text == null || text.isEmpty()) {
@@ -116,7 +116,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         this.text = text;
         this.tags = tags;
-        this.messageLevel = MessageLevel.stringToMessageLevel(messageLevel);
+        this.messageLevel = messageLevel;
         this.duration = duration;
     }
 

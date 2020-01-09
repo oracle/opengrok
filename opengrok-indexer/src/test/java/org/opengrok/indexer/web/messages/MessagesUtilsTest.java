@@ -72,18 +72,18 @@ public class MessagesUtilsTest {
     @Test
     public void testGetHighestMessageLevel() {
         // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
-        List<Message.MessageLevel> cssClasses = Arrays.asList(Message.MessageLevel.values());
-        Collections.reverse(cssClasses);
+        List<Message.MessageLevel> levels = Arrays.asList(Message.MessageLevel.values());
+        Collections.reverse(levels);
 
         // Test the behavior with no messages.
         assertEquals(0, container.getAllMessages().size());
         assertNull(MessagesUtils.getHighestMessageLevel(container.getAllMessages()));
 
-        // Add one message for each cssClass.
-        for (Message.MessageLevel val : cssClasses) {
+        // Add one message for each level.
+        for (Message.MessageLevel val : levels) {
             Message m = new Message("test " + val,
                     Collections.singleton("test" + val),
-                    val.toString(),
+                    val,
                     Duration.ofMinutes(10));
             container.addMessage(m);
         }
@@ -95,9 +95,9 @@ public class MessagesUtilsTest {
 
     @Test
     public void testGetMessageLevel() {
-        HashMap<String, String> tagLevels = new HashMap<>();
-        tagLevels.put("foo", Message.MessageLevel.INFO.toString());
-        tagLevels.put("bar", Message.MessageLevel.ERROR.toString());
+        HashMap<String, Message.MessageLevel> tagLevels = new HashMap<>();
+        tagLevels.put("foo", Message.MessageLevel.INFO);
+        tagLevels.put("bar", Message.MessageLevel.ERROR);
 
         for (String tag : tagLevels.keySet()) {
             Message m = new Message(

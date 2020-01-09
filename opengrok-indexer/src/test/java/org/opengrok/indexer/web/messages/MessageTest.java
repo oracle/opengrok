@@ -65,16 +65,11 @@ public class MessageTest {
         new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTestBadMessageLevel() {
-        new Message("test", Collections.singleton("foo"), "foobar", Duration.ofMinutes(1));
-    }
-
     @Test
     public void messageToJSON() throws IOException {
         Message m = new Message("test",
                 Collections.singleton("test"),
-                Message.MessageLevel.INFO.toString(),
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(1));
         String jsonString = m.toJSON();
         assertEquals(new HashSet<>(Arrays.asList("messageLevel", "duration", "text", "tags")),
