@@ -40,6 +40,7 @@ import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -67,7 +68,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         public static MessageLevel stringToMessageLevel(String val) throws IllegalArgumentException {
             for (MessageLevel v : MessageLevel.values()) {
-                if (v.toString().equals(val)) {
+                if (v.toString().equals(val.toLowerCase(Locale.ROOT))) {
                     return v;
                 }
             }

@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -179,7 +180,7 @@ public class MessagesControllerTest extends JerseyTest {
     public void addMessageWithInvalidLevel() throws JsonProcessingException {
         // Construct correct Message object first.
         Message msg = new Message(
-                "message with invalid message level",
+                "message with broken message level",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
                 Message.MessageLevel.INFO.toString(),
                 Duration.ofMinutes(10));
@@ -188,7 +189,9 @@ public class MessagesControllerTest extends JerseyTest {
         ObjectMapper objectMapper = new ObjectMapper();
         final String invalidMessageLevel = "invalid";
         String msgAsString = objectMapper.writeValueAsString(msg);
-        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString(), invalidMessageLevel);
+        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString().toUpperCase(Locale.ROOT),
+                invalidMessageLevel);
+        assertTrue(msgAsString.contains(invalidMessageLevel));
 
         // Finally, send the request as JSON string.
         Response r = target("messages")
