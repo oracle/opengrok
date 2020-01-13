@@ -83,7 +83,7 @@ public class Message implements Comparable<Message>, JSONable {
         public static final Comparator<MessageLevel> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
     }
 
-    @JsonDeserialize(using = messageLevelDeserializer.class)
+    @JsonDeserialize(using = MessageLevelDeserializer.class)
     private MessageLevel messageLevel = MessageLevel.INFO;
 
     @NotBlank(message = "text cannot be empty")
@@ -191,14 +191,14 @@ public class Message implements Comparable<Message>, JSONable {
         return tags.size() - o.tags.size();
     }
 
-    private static class messageLevelDeserializer extends StdDeserializer<MessageLevel> {
+    private static class MessageLevelDeserializer extends StdDeserializer<MessageLevel> {
         private static final long serialVersionUID = 928540953227342817L;
 
-        messageLevelDeserializer() {
+        MessageLevelDeserializer() {
             this(null);
         }
 
-        messageLevelDeserializer(Class<?> vc) {
+        MessageLevelDeserializer(Class<?> vc) {
             super(vc);
         }
 
