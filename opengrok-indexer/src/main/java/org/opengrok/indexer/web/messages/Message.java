@@ -60,7 +60,7 @@ public class Message implements Comparable<Message>, JSONable {
          */
         SUCCESS("success"), INFO("info"), WARNING("warning"), ERROR("error");
 
-        private String messageLevelString;
+        private final String messageLevelString;
 
         MessageLevel(String str) {
             messageLevelString = str;
