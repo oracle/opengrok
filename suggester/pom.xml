@@ -120,7 +120,7 @@
         <profile>
             <id>java9plus</id>
             <activation>
-                <jdk>[9,18]</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <build>
                 <plugins>
