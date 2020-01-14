@@ -24,11 +24,15 @@ if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
 fi
 
 if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-	export JAVA_HOME=${JAVA_HOME:-/c/jdk}
+	JAVA_BASE="/c/Program Files/OpenJDK"
+	JDK_DIR=$(find "$JAVA_BASE/" -type d -name 'openjdk*' -maxdepth 1 | head -1)
+	export JAVA_HOME=${JAVA_HOME:-$JDK_DIR}
+	echo "JAVA_HOME set to $JAVA_HOME"
 	export PATH=${JAVA_HOME}/bin:${PATH}
 
 	export PATH=${PATH}:/c/ProgramData/chocolatey/lib/universal-ctags/tools
 	export PATH=${PATH}:/c/Program\ Files\ \(x86\)/Subversion/bin
+	export PATH=${PATH}:${JAVA_HOME}
 
 	# needs to be before the default Python 2
 	export PATH=/c/Python38:${PATH}
