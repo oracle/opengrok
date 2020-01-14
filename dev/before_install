@@ -72,20 +72,4 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 		echo "cannot install Universal ctags"
 		exit 1
 	fi
-elif [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-	choco install jdk8 -params 'installdir=c:\\jdk' -y
-	export JAVA_HOME=${JAVA_HOME:-/c/jdk}
-	export PATH=${JAVA_HOME}/bin:${PATH}
-
-	choco install maven
-
-	choco install universal-ctags
-	export PATH=${PATH}:/c/ProgramData/chocolatey/lib/universal-ctags/tools
-
-	choco install svn
-	export PATH=${PATH}:/c/Program\ Files\ \(x86\)/Subversion/bin
-
-	choco install python3
-	# needs to be before the default Python 2
-	export PATH=/c/Python38:${PATH}
 fi
