@@ -66,7 +66,7 @@ public class Message implements Comparable<Message>, JSONable {
             messageLevelString = str;
         }
 
-        public static MessageLevel stringToMessageLevel(String val) throws IllegalArgumentException {
+        public static MessageLevel fromString(String val) throws IllegalArgumentException {
             for (MessageLevel v : MessageLevel.values()) {
                 if (v.toString().equals(val.toLowerCase(Locale.ROOT))) {
                     return v;
@@ -206,7 +206,7 @@ public class Message implements Comparable<Message>, JSONable {
         public MessageLevel deserialize(final JsonParser parser, final DeserializationContext context)
                 throws IOException {
             try {
-                return MessageLevel.stringToMessageLevel(context.readValue(parser, String.class));
+                return MessageLevel.fromString(context.readValue(parser, String.class));
             } catch (DateTimeParseException e) {
                 throw new IOException(e);
             }
