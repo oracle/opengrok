@@ -46,8 +46,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.opengrok.indexer.web.messages.Message.MessageLevel.VALUE_COMPARATOR;
-
 public final class MessagesUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagesUtils.class);
@@ -242,7 +240,7 @@ public final class MessagesUtils {
         return messages.
                 stream().
                 map(MessagesContainer.AcceptedMessage::getMessageLevel).
-                max(VALUE_COMPARATOR).
+                max(Message.MessageLevel.VALUE_COMPARATOR).
                 map(Message.MessageLevel::toString).
                 orElse(null);
     }
