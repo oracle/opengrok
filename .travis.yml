@@ -58,6 +58,15 @@ jobs:
     script: dev/main
     before_install: dev/before_install.windows openjdk8
     before_script: dev/before
+  - stage: test
+    name: Windows + Open JDK 11
+    # Use shell until Travis supports Java on Windows proper.
+    language: shell
+    os: windows
+    install: true
+    script: dev/main
+    before_install: dev/before_install.windows openjdk11
+    before_script: dev/before
   - stage: deploy
     name: Github Release
     dist: xenial
