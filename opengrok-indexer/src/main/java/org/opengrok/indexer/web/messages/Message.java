@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,7 +52,40 @@ public class Message implements Comparable<Message>, JSONable {
     @NotEmpty(message = "tags cannot be empty")
     private Set<String> tags = Collections.singleton(MESSAGES_MAIN_PAGE_TAG);
 
-    private String cssClass = "info";
+    public enum MessageLevel {
+        /**
+         * Known values: {@code SUCCESS}, {@code INFO}, {@code WARNING}, {@code ERROR}.
+         * The values are sorted according to their level. Higher numeric value of the level (i.e. the enum ordinal)
+         * means higher priority.
+         */
+        SUCCESS("success"), INFO("info"), WARNING("warning"), ERROR("error");
+
+        private final String messageLevelString;
+
+        MessageLevel(String str) {
+            messageLevelString = str;
+        }
+
+        public static MessageLevel fromString(String val) throws IllegalArgumentException {
+            for (MessageLevel v : MessageLevel.values()) {
+                if (v.toString().equals(val.toLowerCase(Locale.ROOT))) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("class type does not match any known value");
+        }
+
+        @Override
+        public String toString() {
+            return messageLevelString;
+        }
+
+        public static final Comparator<MessageLevel> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
+    }
+
+    @JsonDeserialize(using = MessageLevelDeserializer.class)
+    @JsonSerialize(using = MessageLevelSerializer.class)
+    private MessageLevel messageLevel = MessageLevel.INFO;
 
     @NotBlank(message = "text cannot be empty")
     @JsonSerialize(using = HTMLSerializer.class)
@@ -67,7 +102,7 @@ public class Message implements Comparable<Message>, JSONable {
     public Message(
             final String text,
             final Set<String> tags,
-            final String cssClass,
+            final MessageLevel messageLevel,
             final Duration duration
     ) {
         if (text == null || text.isEmpty()) {
@@ -82,7 +117,7 @@ public class Message implements Comparable<Message>, JSONable {
 
         this.text = text;
         this.tags = tags;
-        this.cssClass = cssClass;
+        this.messageLevel = messageLevel;
         this.duration = duration;
     }
 
@@ -90,8 +125,8 @@ public class Message implements Comparable<Message>, JSONable {
         return tags;
     }
 
-    public String getCssClass() {
-        return cssClass;
+    public MessageLevel getMessageLevel() {
+        return messageLevel;
     }
 
     public String getText() {
@@ -135,14 +170,14 @@ public class Message implements Comparable<Message>, JSONable {
         }
         Message message = (Message) o;
         return Objects.equals(tags, message.tags) &&
-                Objects.equals(cssClass, message.cssClass) &&
+                Objects.equals(messageLevel, message.messageLevel) &&
                 Objects.equals(text, message.text) &&
                 Objects.equals(duration, message.duration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tags, cssClass, text, duration);
+        return Objects.hash(tags, messageLevel, text, duration);
     }
 
     @Override
@@ -155,6 +190,47 @@ public class Message implements Comparable<Message>, JSONable {
             return i;
         }
         return tags.size() - o.tags.size();
+    }
+
+    static class MessageLevelSerializer extends StdSerializer<MessageLevel> {
+        private static final long serialVersionUID = 928540953227342817L;
+
+        MessageLevelSerializer() {
+            this(null);
+        }
+
+        MessageLevelSerializer(Class<MessageLevel> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(final MessageLevel messageLevel,
+                                final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeString(messageLevel.toString().toLowerCase(Locale.ROOT));
+        }
+    }
+
+    private static class MessageLevelDeserializer extends StdDeserializer<MessageLevel> {
+        private static final long serialVersionUID = 928540953227342817L;
+
+        MessageLevelDeserializer() {
+            this(null);
+        }
+
+        MessageLevelDeserializer(Class<?> vc) {
+            super(vc);
+        }
+
+        @Override
+        public MessageLevel deserialize(final JsonParser parser, final DeserializationContext context)
+                throws IOException {
+            try {
+                return MessageLevel.fromString(context.readValue(parser, String.class));
+            } catch (DateTimeParseException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private static class DurationSerializer extends StdSerializer<Duration> {

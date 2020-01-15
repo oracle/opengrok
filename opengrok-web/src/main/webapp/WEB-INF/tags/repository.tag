@@ -64,7 +64,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 
         <c:set var="messages" value="${MessagesUtils.messagesToJson(project)}"/>
         <c:if test="${not empty messages}">
-            <span class="important-note important-note-rounded"
+            <span class="note-${MessagesUtils.getMessageLevel(project.getName())} important-note important-note-rounded"
                   data-messages='${messages}'>!</span>
         </c:if>
     </td>

@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
@@ -58,7 +57,10 @@ public class MessagesContainerTest {
 
     @Test
     public void addAndGetTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMinutes(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
 
         container.addMessage(m);
 
@@ -93,7 +95,9 @@ public class MessagesContainerTest {
             final int index = i;
             Thread t = new Thread(() -> {
                 for (int j = 0; j < 100; j++) {
-                    Message m = new Message("test" + index + j, Collections.singleton("test"), "info",
+                    Message m = new Message("test" + index + j,
+                            Collections.singleton("test"),
+                            Message.MessageLevel.INFO,
                             Duration.ofMinutes(10));
                     container.addMessage(m);
                 }
@@ -125,16 +129,22 @@ public class MessagesContainerTest {
 
     @Test
     public void expirationTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMillis(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMillis(10));
 
         container.addMessage(m);
 
-        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages("info").isEmpty());
+        await().atMost(2, TimeUnit.SECONDS).until(() -> container.getMessages(Message.MessageLevel.INFO.toString()).isEmpty());
     }
 
     @Test
     public void removeTest() {
-        Message m = new Message("test", Collections.singleton("test"), "info", Duration.ofMillis(10));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMillis(10));
 
         container.addMessage(m);
 
@@ -153,13 +163,16 @@ public class MessagesContainerTest {
      */
     @Test
     public void testJSON() throws IOException {
-        Message m = new Message("testJSON", Collections.singleton("testJSON"), "info", Duration.ofMinutes(10));
+        Message m = new Message("testJSON",
+                Collections.singleton("testJSON"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
 
         container.addMessage(m);
 
         MessagesContainer.AcceptedMessage am = container.getMessages("testJSON").first();
         String jsonString = am.toJSON();
-        assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "cssClass", "text")),
+        assertEquals(new HashSet<>(Arrays.asList("tags", "expired", "created", "expiration", "messageLevel", "text")),
                 getTopLevelJSONFields(jsonString));
     }
 }

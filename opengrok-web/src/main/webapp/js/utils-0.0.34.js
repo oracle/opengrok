@@ -1100,7 +1100,7 @@
                             $ul.append(
                                 $('<li>').
                                     addClass('message-group-item').
-                                    addClass(tag.messages[j].cssClass).
+                                    addClass(tag.messages[j].messageLevel).
                                     attr('title', 'Expires on ' + tag.messages[j].expiration).
                                     html(tag.messages[j].created + ': ' + tag.messages[j].text)
                             );
@@ -1917,7 +1917,7 @@ function showError(errorText, errorElem) {
     var span = parent.find('#autocomplete-error')[0];
     if (!span) {
         span = $("<span>", {
-            "class": "important-note important-note-rounded",
+            "class": "note-error important-note important-note-rounded",
             style: "right: -10px; position: absolute; top: 0px;",
             text: "!",
             id: 'autocomplete-error'

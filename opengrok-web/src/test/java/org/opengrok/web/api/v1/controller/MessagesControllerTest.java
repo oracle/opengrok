@@ -22,6 +22,8 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -55,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -75,7 +78,7 @@ public class MessagesControllerTest extends JerseyTest {
         public String expiration;
         public boolean expired;
         public String text;
-        public String cssClass;
+        public String messageLevel;
         public Set<String> tags;
     }
 
@@ -173,12 +176,42 @@ public class MessagesControllerTest extends JerseyTest {
         assertEquals("test&nbsp;message", msg.getMessage().getText());
     }
 
+    @Test
+    public void addMessageWithInvalidLevel() throws JsonProcessingException {
+        // Construct correct Message object first.
+        Message msg = new Message(
+                "message with broken message level",
+                Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
+
+        // Convert it to JSON string and replace the messageLevel value.
+        ObjectMapper objectMapper = new ObjectMapper();
+        final String invalidMessageLevel = "invalid";
+        String msgAsString = objectMapper.writeValueAsString(msg);
+        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString(), invalidMessageLevel);
+        assertTrue(msgAsString.contains(invalidMessageLevel));
+
+        // Finally, send the request as JSON string.
+        Response r = target("messages")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.json(msgAsString));
+
+        assertEquals(0,
+                env.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
+    }
+
     private void addMessage(String text, String... tags) {
         if (tags == null || tags.length == 0) {
             tags = new String[] {MessagesContainer.MESSAGES_MAIN_PAGE_TAG};
         }
 
-        Message m = new Message(text, new HashSet<>(Arrays.asList(tags)), "cssClass", Duration.ofMinutes(10));
+        Message m = new Message(
+                text,
+                new HashSet<>(Arrays.asList(tags)),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(10));
 
         target("messages")
                 .request()
@@ -190,7 +223,7 @@ public class MessagesControllerTest extends JerseyTest {
         env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
-                "test",
+                Message.MessageLevel.INFO,
                 Duration.ofMinutes(10)
         ));
 
@@ -252,7 +285,6 @@ public class MessagesControllerTest extends JerseyTest {
         addMessage("test", "tag1");
         addMessage("test", "tag2");
 
-
         assertEquals(1, env.getMessages("tag1").size());
         assertEquals(1, env.getMessages("tag2").size());
 
@@ -268,7 +300,10 @@ public class MessagesControllerTest extends JerseyTest {
 
     @Test
     public void addMessageNegativeDurationTest() throws Exception {
-        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        Message m = new Message("text",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(1));
         setDuration(m, Duration.ofMinutes(-10));
 
         Response r = target("messages")
@@ -286,7 +321,10 @@ public class MessagesControllerTest extends JerseyTest {
 
     @Test
     public void addEmptyMessageTest() throws Exception {
-        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        Message m = new Message("text",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(1));
         setText(m, "");
 
         Response r = target("messages")
@@ -352,5 +390,4 @@ public class MessagesControllerTest extends JerseyTest {
 
         assertEquals(1, allMessages.size());
     }
-
 }

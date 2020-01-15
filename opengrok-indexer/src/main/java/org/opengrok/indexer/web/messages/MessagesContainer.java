@@ -250,9 +250,10 @@ public class MessagesContainer {
             return message.getText();
         }
 
-        @JsonProperty("cssClass")
-        public String getCssClass() {
-            return message.getCssClass();
+        @JsonProperty("messageLevel")
+        @JsonSerialize(using = Message.MessageLevelSerializer.class)
+        public Message.MessageLevel getMessageLevel() {
+            return message.getMessageLevel();
         }
 
         private AcceptedMessage(final Message message) {

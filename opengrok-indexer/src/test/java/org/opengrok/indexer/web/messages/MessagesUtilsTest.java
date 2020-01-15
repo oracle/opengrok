@@ -23,22 +23,36 @@
 
 package org.opengrok.indexer.web.messages;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class MessagesUtilsTest {
     RuntimeEnvironment env;
 
+    private MessagesContainer container;
+
+    @After
+    public void tearDown() {
+        container.stopExpirationTimer();
+    }
+
     @Before
     public void setUp() {
         env = RuntimeEnvironment.getInstance();
+
+        container = new MessagesContainer();
+        container.startExpirationTimer();
     }
 
     @Test
@@ -53,5 +67,48 @@ public class MessagesUtilsTest {
         String jsonString = MessagesUtils.messagesToJson(projectName);
         assertNotNull(jsonString);
         assertEquals("", jsonString);
+    }
+
+    @Test
+    public void testGetHighestMessageLevel() {
+        // Reverse the order of values() first to better test the behavior of getHighestCssClassLevel().
+        List<Message.MessageLevel> levels = Arrays.asList(Message.MessageLevel.values());
+        Collections.reverse(levels);
+
+        // Test the behavior with no messages.
+        assertEquals(0, container.getAllMessages().size());
+        assertNull(MessagesUtils.getHighestMessageLevel(container.getAllMessages()));
+
+        // Add one message for each level.
+        for (Message.MessageLevel val : levels) {
+            Message m = new Message("test " + val,
+                    Collections.singleton("test" + val),
+                    val,
+                    Duration.ofMinutes(10));
+            container.addMessage(m);
+        }
+
+        assertEquals(Message.MessageLevel.values().length, container.getAllMessages().size());
+        assertEquals(Message.MessageLevel.ERROR.toString(),
+                MessagesUtils.getHighestMessageLevel(container.getAllMessages()));
+    }
+
+    @Test
+    public void testGetMessageLevel() {
+        HashMap<String, Message.MessageLevel> tagLevels = new HashMap<>();
+        tagLevels.put("foo", Message.MessageLevel.INFO);
+        tagLevels.put("bar", Message.MessageLevel.ERROR);
+
+        for (String tag : tagLevels.keySet()) {
+            Message m = new Message(
+                    "text",
+                    Collections.singleton(tag),
+                    tagLevels.get(tag),
+                    Duration.ofMinutes(10));
+            env.addMessage(m);
+        }
+
+        assertEquals(Message.MessageLevel.ERROR.toString(),
+                MessagesUtils.getMessageLevel(tagLevels.keySet().toArray(new String[0])));
     }
 }

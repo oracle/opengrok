@@ -37,12 +37,14 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public final class MessagesUtils {
 
@@ -98,7 +100,7 @@ public final class MessagesUtils {
                 out.write("\">\n");
                 for (MessagesContainer.AcceptedMessage m : set) {
                     out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getMessage().getCssClass()));
+                    out.write(Util.encode(m.getMessage().getMessageLevel().toString()));
                     out.write("\" title=\"Expires on ");
                     out.write(Util.encode(df.format(Date.from(m.getExpirationTime()))));
                     out.write("\">");
@@ -229,5 +231,33 @@ public final class MessagesUtils {
      */
     public static String messagesToJson(Group group) {
         return messagesToJson(group, new String[0]);
+    }
+
+    /**
+     * @return name of highest cssClass of messages present in the system or null.
+     */
+    static String getHighestMessageLevel(Collection<MessagesContainer.AcceptedMessage> messages) {
+        return messages.
+                stream().
+                map(MessagesContainer.AcceptedMessage::getMessageLevel).
+                max(Message.MessageLevel.VALUE_COMPARATOR).
+                map(Message.MessageLevel::toString).
+                orElse(null);
+    }
+
+    /**
+     * @param tags message tags
+     * @return name of highest cssClass of messages present in the system or null.
+     */
+    public static String getMessageLevel(String... tags) {
+        Set<MessagesContainer.AcceptedMessage> messages;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        messages = Arrays.stream(tags).
+                map(env::getMessages).
+                flatMap(Collection::stream).
+                collect(Collectors.toSet());
+
+        return getHighestMessageLevel(messages);
     }
 }

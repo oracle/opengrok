@@ -12,7 +12,7 @@
 
 /*
  * Original based on SOL v2.0.2
- * Modified by Krystof Tulinger 2016
+ * Modified by Krystof Tulinger for OpenGrok in 2016.
  */
 
 /*jslint nomen: true */
@@ -66,7 +66,7 @@
                 searchplaceholder: 'Click here to search',
                 loadingData: 'Still loading data...',
                 /*
-                 * Modified 2016
+                 * Modified for OpenGrok in 2016.
                  */
                 itemsSelected: '{$a} more items selected'
             },
@@ -133,7 +133,7 @@
             useBracketParameters: false,
             multiple: undefined,
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016.
              */
             resultsContainer: undefined,
             closeOnClick: false,
@@ -275,7 +275,7 @@
             this.$container = $('<div class="sol-container"/>')
                 .hide()
                 /*
-                 * Modified 2016
+                 * Modified for OpenGrok in 2016.
                  */
                 .keydown(function (e) {
                     if (e.keyCode == 13) {
@@ -318,7 +318,7 @@
             this.$showSelectionContainer = $('<div class="sol-current-selection"/>');
 
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016.
              */
             var $el = this.config.resultsContainer || this.$innerContainer
             if (this.config.resultsContainer) {
@@ -485,7 +485,7 @@
                             // arrow up or down to select an item
                             self._setKeyBoardNavigationMode(true);
                             /*
-                             * Modified 2016
+                             * Modified for OpenGrok in 2016.
                              */
                             $currentHighlightedOption = self.$selection.find('.sol-option.keyboard-selection')
                             $currentHighlightedOption.find("input[type='checkbox']").blur();
@@ -502,12 +502,12 @@
                             $nextHighlightedOption = $($allVisibleOptions[indexOfNextHighlightedOption])
                                 .addClass('keyboard-selection');
                             /*
-                             * Modified 2016
+                             * Modified for OpenGrok in 2016.
                              */
                             $nextHighlightedOption.find("input[type='checkbox']").focus()
                             
                             /*
-                             * Modified 2016
+                             * Modified for OpenGrok in 2016.
                              */
                             //self.$selection.scrollTop(self.$selection.scrollTop() + $nextHighlightedOption.position().top);
 
@@ -601,7 +601,7 @@
             this._setKeyBoardNavigationMode(false);
 
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016.
              * recursion was very slow (however good lookin')
              */
             for (var itemIndex = 0; itemIndex < dataArray.length; itemIndex++) {
@@ -814,8 +814,8 @@
             var self = this,
                 $actualTargetContainer = $optionalTargetContainer || this.$selection,
                 $inputElement,
-               /*
-                * Modified 2016
+                /*
+                * Modified for OpenGrok in 2016.
                 */
                 $labelText = $('<div class="sol-label-text"/>')
                         .html(solOption.label.trim().length === 0 ? '&nbsp;' : solOption.label)
@@ -824,13 +824,19 @@
                 $displayElement,
                 inputName = this._getNameAttribute();
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016, 2019.
              */
             var data = $(solOption.element).data('messages');
-            if (data && data.length) {
+            var messagesLevel = $(solOption.element).data('messages-level');
+            var messagesAvailable = data && data.length;
+            if (messagesAvailable && messagesLevel) {
+                var cssString = 'pull-right ';
+                cssString += 'note-' + messagesLevel;
+                cssString += ' important-note important-note-rounded';
+
                 $labelText.append(
                         $('<span>')
-                        .addClass('pull-right important-note important-note-rounded')
+                        .addClass(cssString)
                         .data("messages", data)
                         .attr('data-messages', '')
                         .text('!')
@@ -864,7 +870,7 @@
                 })
                 .on('sol-change', function (event, skipCallback) {
                     /*
-                     * Modified 2016
+                     * Modified for OpenGrok in 2016.
                      */
                     var $closestOption = $(this).closest('.sol-option')
                     self._setKeyBoardNavigationMode(true)
@@ -888,7 +894,7 @@
                 .append($inputElement)
                 .append($labelText);
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016.
              */
             $displayElement = $('<div class="sol-option"/>').dblclick(function (e) {
                 var $el = $(this).find('.sol-checkbox');
@@ -898,9 +904,12 @@
                 }
             }).append($label);
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016, 2019.
              */
-            $inputElement.data('messages-available', data && data.length);
+            $inputElement.data('messages-available', messagesAvailable);
+            if (messagesLevel) {
+                $inputElement.data('messages-level', messagesLevel);
+            }
 
             solOption.displayElement = $displayElement;
 
@@ -923,7 +932,7 @@
                 $groupItem.addClass('disabled');
             }
             /*
-             * Modified 2016, 2017
+             * Modified for OpenGrok in 2016, 2017.
              */
             $groupCaption.click(function (e) {
                 // select all group
@@ -937,7 +946,7 @@
             });
             
             /*
-             * Modified 2016
+             * Modified for OpenGrok in 2016.
              */
             this.$selection.append($groupItem);
 
@@ -1017,13 +1026,15 @@
 
             if (!$existingDisplayItem) {
                 /*
-                 * Modified 2016
+                 * Modified for OpenGrok in 2016, 2019.
                  */
                 var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
-                var label = solOptionItem.label
+                var label = solOptionItem.label;
                 if ($changedItem.data('messages-available')) {
-                    label += ' <span class="important-note important-note-rounded" ';
-                    label += 'title="Some message is important in this project.';
+                    label += ' <span class="';
+                    label += 'note-' + $changedItem.data('messages-level');
+                    label += ' important-note important-note-rounded" ';
+                    label += 'title="Some message is present for this project.';
                     label += ' Find more info in the project list.">!</span>'
                 }
 
@@ -1033,7 +1044,7 @@
                     .attr('title', solOptionItem.tooltip)
                     .data('label', solOptionItem.label)
                     .appendTo(this.$showSelectionContainer)
-                    .dblclick(function () { // modified 2017
+                    .dblclick(function () { // Modified for OpenGrok in 2017.
                         $changedItem.dblclick();
                     });
 
@@ -1046,7 +1057,7 @@
                                 .prop('checked', false)
                                 .trigger('change');
                             /*
-                             * Modified 2017
+                             * Modified for OpenGrok in 2017.
                              */
                             if (isOnSearchPage()) {
                                 $('#sbox').submit();
@@ -1055,7 +1066,7 @@
                         .prependTo($existingDisplayItem);
                 }
                 /*
-                 * Modified 2016
+                 * Modified for OpenGrok in 2016.
                  */
                 if (this.config.maxShow != 0 && selected.length + 1 > this.config.maxShow) {
                     var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length + 1 - this.config.maxShow);
@@ -1075,7 +1086,7 @@
 
             if ($myDisplayItem) {
                 /*
-                 * Modified 2016
+                 * Modified for OpenGrok in 2016.
                  */
                 var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
                 if (this.config.maxShow != 0 && selected.length - 1 > this.config.maxShow) {
@@ -1169,7 +1180,7 @@
             }
         },
         /*
-         * Modified 2016
+         * Modified for OpenGrok in 2016.
          */
         selectAll: function (/* string or undefined */optgroup) {
             if (this.config.multiple) {
@@ -1192,7 +1203,7 @@
             }
         },
         /*
-         * Modified 2016, 2019
+         * Modified for OpenGrok in 2016, 2019.
          */
         invert: function () {
             if (this.config.multiple) {
@@ -1214,7 +1225,7 @@
             }
         },
         /*
-         * Modified 2016
+         * Modified for OpenGrok in 2016.
          */
         deselectAll: function ( /* string or undefined */ optgroup) {
             if (this.config.multiple) {

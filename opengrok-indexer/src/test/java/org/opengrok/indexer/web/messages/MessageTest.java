@@ -67,9 +67,12 @@ public class MessageTest {
 
     @Test
     public void messageToJSON() throws IOException {
-        Message m = new Message("test", Collections.singleton("test"), "foo", Duration.ofMinutes(1));
+        Message m = new Message("test",
+                Collections.singleton("test"),
+                Message.MessageLevel.INFO,
+                Duration.ofMinutes(1));
         String jsonString = m.toJSON();
-        assertEquals(new HashSet<>(Arrays.asList("cssClass", "duration", "text", "tags")),
+        assertEquals(new HashSet<>(Arrays.asList("messageLevel", "duration", "text", "tags")),
                 getTopLevelJSONFields(jsonString));
     }
 }
