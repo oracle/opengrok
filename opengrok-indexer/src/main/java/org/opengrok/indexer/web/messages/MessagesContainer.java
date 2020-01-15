@@ -251,6 +251,7 @@ public class MessagesContainer {
         }
 
         @JsonProperty("messageLevel")
+        @JsonSerialize(using = Message.MessageLevelSerializer.class)
         public Message.MessageLevel getMessageLevel() {
             return message.getMessageLevel();
         }

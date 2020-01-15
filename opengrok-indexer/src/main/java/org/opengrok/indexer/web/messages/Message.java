@@ -84,6 +84,7 @@ public class Message implements Comparable<Message>, JSONable {
     }
 
     @JsonDeserialize(using = MessageLevelDeserializer.class)
+    @JsonSerialize(using = MessageLevelSerializer.class)
     private MessageLevel messageLevel = MessageLevel.INFO;
 
     @NotBlank(message = "text cannot be empty")
@@ -189,6 +190,25 @@ public class Message implements Comparable<Message>, JSONable {
             return i;
         }
         return tags.size() - o.tags.size();
+    }
+
+    static class MessageLevelSerializer extends StdSerializer<MessageLevel> {
+        private static final long serialVersionUID = 928540953227342817L;
+
+        MessageLevelSerializer() {
+            this(null);
+        }
+
+        MessageLevelSerializer(Class<MessageLevel> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(final MessageLevel messageLevel,
+                                final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeString(messageLevel.toString().toLowerCase(Locale.ROOT));
+        }
     }
 
     private static class MessageLevelDeserializer extends StdDeserializer<MessageLevel> {
