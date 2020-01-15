@@ -189,8 +189,7 @@ public class MessagesControllerTest extends JerseyTest {
         ObjectMapper objectMapper = new ObjectMapper();
         final String invalidMessageLevel = "invalid";
         String msgAsString = objectMapper.writeValueAsString(msg);
-        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString().toUpperCase(Locale.ROOT),
-                invalidMessageLevel);
+        msgAsString = msgAsString.replaceAll(Message.MessageLevel.INFO.toString(), invalidMessageLevel);
         assertTrue(msgAsString.contains(invalidMessageLevel));
 
         // Finally, send the request as JSON string.
