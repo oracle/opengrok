@@ -1242,19 +1242,19 @@ h6.message-group-caption {
     max-height: 100%;
 }
 
-.note-success {
+.important-note.note-success {
     background-color: #3c763d;
 }
 
-.note-info {
+.important-note.note-info {
     background-color: #31708f;
 }
 
-.note-warning {
+.important-note.note-warning {
     background-color: #8a6d3b;
 }
 
-.note-error {
+.important-note.note-error {
     background-color: #a94442;
 }
 
