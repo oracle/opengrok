@@ -8,9 +8,16 @@
 
 set -e
 
-if (( $# != 1 )); then
-	echo "usage: `basename $0` <version>"
+if (( $# > 1 )); then
+	echo "usage: `basename $0` [version]"
 	exit 1
+fi
+
+# Get the latest version (needs curl + jq).
+if (( $# == 0 )); then
+	curl -s https://api.github.com/repos/oracle/opengrok/releases/latest | \
+	    jq .tag_name
+	exit 0
 fi
 
 VERSION=$1
