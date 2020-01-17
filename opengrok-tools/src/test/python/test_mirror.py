@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -37,10 +37,11 @@ from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
-    PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY
+    PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
+    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY
 import opengrok_tools.mirror
 from opengrok_tools.utils.exitvals import (
-    CONTINUE_EXITVAL,
+    CONTINUE_EXITVAL, FAILURE_EXITVAL
 )
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
 from opengrok_tools.utils.command import Command
@@ -219,3 +220,53 @@ def test_disabled_command_run_args():
     project_name = "foo"
     run_command(cmd, project_name)
     verify(cmd).execute()
+
+
+def test_mirror_project_timeout(monkeypatch):
+    """
+    Test mirror_project() timeout inheritance/override from global
+    configuration to get_repos_for_project(). The test merely verifies
+    that the timeout values are passed between the expected functions,
+    not whether it actually affects the execution.
+    """
+    cmd_timeout = 3
+    hook_timeout = 4
+
+    def mock_get_repos(*args, **kwargs):
+        mock_get_repos.called = True
+
+        assert kwargs[CMD_TIMEOUT_PROPERTY] == cmd_timeout
+
+        # Technically this function should return list of Repository objects
+        # however for this test this is not necessary.
+        return ['foo']
+
+    def mock_process_hook(hook_ident, hook, source_root, project_name_arg,
+                          proxy, hook_timeout_arg):
+
+        assert hook_timeout_arg == hook_timeout
+
+        # We want to terminate mirror_project() once this function runs.
+        # This way mirror_project() will return FAILURE_EXITVAL
+        return False
+
+    with monkeypatch.context() as m:
+        mock_get_repos.called = False
+        m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
+                  mock_get_repos)
+        m.setattr("opengrok_tools.utils.mirror.process_hook",
+                  mock_process_hook)
+
+        project_name = "foo"
+        # TODO: also test inheritance
+        global_config = {PROJECTS_PROPERTY:
+                         {project_name: {CMD_TIMEOUT_PROPERTY: cmd_timeout,
+                                         HOOK_TIMEOUT_PROPERTY: hook_timeout}}}
+
+        retval = mirror_project(global_config, project_name, False,
+                                "http://localhost:8080/source", "srcroot")
+        assert retval == FAILURE_EXITVAL
+
+        # TODO: is there better way to ensure that get_repos_for_project()
+        #       was actually called ?
+        assert mock_get_repos.called
