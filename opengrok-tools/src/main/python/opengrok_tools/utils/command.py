@@ -105,6 +105,7 @@ class Command:
                 """
                 Make sure the process goes away.
                 """
+                self.logger.info("Terminating PID {}".format(p.pid))
                 p.terminate()
 
                 # The following code tries more methods to terminate
