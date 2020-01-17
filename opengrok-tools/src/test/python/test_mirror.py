@@ -250,6 +250,15 @@ def test_mirror_project_timeout(monkeypatch):
         # This way mirror_project() will return FAILURE_EXITVAL
         return False
 
+    def test_mirror_project(config):
+        retval = mirror_project(config, project_name, False,
+                                "http://localhost:8080/source", "srcroot")
+        assert retval == FAILURE_EXITVAL
+
+        # TODO: is there better way to ensure that get_repos_for_project()
+        #       was actually called ?
+        assert mock_get_repos.called
+
     with monkeypatch.context() as m:
         mock_get_repos.called = False
         m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
@@ -258,15 +267,16 @@ def test_mirror_project_timeout(monkeypatch):
                   mock_process_hook)
 
         project_name = "foo"
-        # TODO: also test inheritance
-        global_config = {PROJECTS_PROPERTY:
-                         {project_name: {CMD_TIMEOUT_PROPERTY: cmd_timeout,
-                                         HOOK_TIMEOUT_PROPERTY: hook_timeout}}}
+        # override testing
+        global_config_1 = {PROJECTS_PROPERTY:
+                           {project_name:
+                            {CMD_TIMEOUT_PROPERTY: cmd_timeout,
+                             HOOK_TIMEOUT_PROPERTY: hook_timeout}},
+                           CMD_TIMEOUT_PROPERTY: cmd_timeout * 2,
+                           HOOK_TIMEOUT_PROPERTY: hook_timeout * 2}
+        # inheritance testing
+        global_config_2 = {CMD_TIMEOUT_PROPERTY: cmd_timeout,
+                           HOOK_TIMEOUT_PROPERTY: hook_timeout}
 
-        retval = mirror_project(global_config, project_name, False,
-                                "http://localhost:8080/source", "srcroot")
-        assert retval == FAILURE_EXITVAL
-
-        # TODO: is there better way to ensure that get_repos_for_project()
-        #       was actually called ?
-        assert mock_get_repos.called
+        test_mirror_project(global_config_1)
+        test_mirror_project(global_config_2)
