@@ -112,8 +112,8 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.2.min.js", 13));
         SCRIPTS.put("tablesorter-parsers" + DEBUG_SUFFIX, new FileScript("js/tablesorter-parsers-0.0.2.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.8.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.34.min.js", 15));
-        SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.34.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.35.min.js", 15));
+        SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.35.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.2.min.js", 20));
         SCRIPTS.put("repos" + DEBUG_SUFFIX, new FileScript("js/repos-0.0.2.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.4.min.js", 20));
@@ -190,7 +190,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      *
      * @param contextPath given context path for the used URL
      * @param scriptName  name of the script
-     * @param type type of the script to add
+     * @param type        type of the script to add
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName, Type type) {
