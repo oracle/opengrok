@@ -2166,7 +2166,12 @@ function clearSearchFrom() {
     $("#sbox input[type='text']").each(function () {
         $(this).val("");
     });
-    $("#type :selected").prop("selected", false);
+
+    if ($("#type").data(SearchableOptionList.prototype.DATA_KEY)) {
+        $("#type").searchableOptionList().deselectAll();
+    } else {
+        $("#type :selected").prop("selected", false);
+    }
 }
 
 function getSelectedProjectNames() {
