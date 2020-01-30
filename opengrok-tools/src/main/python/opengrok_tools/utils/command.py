@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -105,6 +105,7 @@ class Command:
                 """
                 Make sure the process goes away.
                 """
+                self.logger.info("Terminating PID {}".format(p.pid))
                 p.terminate()
 
                 # The following code tries more methods to terminate

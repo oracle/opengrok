@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import re
@@ -99,7 +99,7 @@ def get_repos_for_project(project_name, ignored_repos, uri, source_root,
                                   kwargs[COMMANDS_PROPERTY],
                                   kwargs[PROXY_PROPERTY],
                                   None,
-                                  kwargs['command_timeout'])
+                                  kwargs[CMD_TIMEOUT_PROPERTY])
         except (RepositoryException, OSError) as e:
             logger.error("Cannot get repository for {}: {}".
                          format(repo_path, e))
@@ -338,6 +338,11 @@ def mirror_project(config, project_name, check_changes, uri,
         ignored_repos = get_project_properties(project_config,
                                                project_name,
                                                config.get(HOOKDIR_PROPERTY))
+
+    if not command_timeout:
+        command_timeout = config.get(CMD_TIMEOUT_PROPERTY)
+    if not hook_timeout:
+        hook_timeout = config.get(HOOK_TIMEOUT_PROPERTY)
 
     proxy = None
     if use_proxy:
