@@ -84,7 +84,8 @@ def get_repos_for_project(project_name, uri, source_root,
 
         if ignored_repos:
             r_path = os.path.relpath(repo_path, '/' + project_name)
-            if any(map(lambda repo: fnmatch.fnmatch(r_path, repo), ignored_repos)):
+            if any(map(lambda repo: fnmatch.fnmatch(r_path, repo),
+                       ignored_repos)):
                 logger.info("repository {} ignored".format(repo_path))
                 continue
 
