@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -33,14 +33,14 @@ from .teamware import TeamwareRepository
 logger = logging.getLogger(__name__)
 
 
-def get_repository(path, repo_type, project, commands, env, hooks,
-                   timeout):
+def get_repository(path, repo_type, project,
+                   commands=None, env=None, hooks=None, timeout=None):
     """
     :param path: full path
     :param repo_type: repository type
     :param project: project name
-    :param commands: commands list
-    :param env: environment varibables dictionary
+    :param commands: commands dictionary with paths to SCM utilities
+    :param env: environment variables dictionary
     :param hooks: hook dictionary
     :param timeout: timeout in seconds
     :return: a Repository derived object according to the type specified
@@ -62,7 +62,7 @@ def get_repository(path, repo_type, project, commands, env, hooks,
         return TeamwareRepository(logger, path, project,
                                   commands.get("teamware"),
                                   env, hooks, timeout)
-    elif repo_lower.lower() == "cvs":
+    elif repo_lower == "cvs":
         return CVSRepository(logger, path, project,
                              commands.get("cvs"),
                              env, hooks, timeout)

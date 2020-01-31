@@ -61,14 +61,18 @@ PROJECTS_PROPERTY = 'projects'
 DISABLED_CMD_PROPERTY = 'disabled_command'
 
 
-def get_repos_for_project(project_name, ignored_repos, uri, source_root,
-                          **kwargs):
+def get_repos_for_project(project_name, uri, source_root,
+                          ignored_repos=None,
+                          commands=None, proxy=None, command_timeout=None):
     """
     :param project_name: project name
-    :param ignored_repos: list of ignored repositories
     :param uri: web application URI
     :param source_root source root
-    :param kwargs: argument dictionary
+    :param ignored_repos: list of ignored repositories
+    :param commands: dictionary of commands - paths to SCM programs
+    :param proxy: dictionary of proxy servers - to be used as environment
+                  variables
+    :param command_timeout: command timeout value in seconds
     :return: list of Repository objects
     """
 
@@ -78,10 +82,11 @@ def get_repos_for_project(project_name, ignored_repos, uri, source_root,
     for repo_path in get_repos(logger, project_name, uri):
         logger.debug("Repository path = {}".format(repo_path))
 
-        r_path = os.path.relpath(repo_path, '/' + project_name)
-        if any(map(lambda repo: fnmatch.fnmatch(r_path, repo), ignored_repos)):
-            logger.info("repository {} ignored".format(repo_path))
-            continue
+        if ignored_repos:
+            r_path = os.path.relpath(repo_path, '/' + project_name)
+            if any(map(lambda repo: fnmatch.fnmatch(r_path, repo), ignored_repos)):
+                logger.info("repository {} ignored".format(repo_path))
+                continue
 
         repo_type = get_repo_type(logger, repo_path, uri)
         if not repo_type:
@@ -92,14 +97,20 @@ def get_repos_for_project(project_name, ignored_repos, uri, source_root,
 
         repo = None
         try:
-            # Not joining the path since the form of repo_path is absolute.
-            repo = get_repository(source_root + repo_path,
+            # The OpenGrok convention is that the form of repo_path is absolute
+            # so joining would the paths would actually spoil things. Hence, be
+            # careful.
+            if repo_path.startswith(os.path.sep):
+                path = source_root + repo_path
+            else:
+                path = os.path.join(source_root, repo_path)
+
+            repo = get_repository(path,
                                   repo_type,
                                   project_name,
-                                  kwargs[COMMANDS_PROPERTY],
-                                  kwargs[PROXY_PROPERTY],
-                                  None,
-                                  kwargs[CMD_TIMEOUT_PROPERTY])
+                                  env=proxy,
+                                  timeout=command_timeout,
+                                  commands=commands)
         except (RepositoryException, OSError) as e:
             logger.error("Cannot get repository for {}: {}".
                          format(repo_path, e))
@@ -361,9 +372,9 @@ def mirror_project(config, project_name, check_changes, uri,
     # something is not right, avoiding any needless pre-hook run.
     #
     repos = get_repos_for_project(project_name,
-                                  ignored_repos,
                                   uri,
                                   source_root,
+                                  ignored_repos=ignored_repos,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
                                   proxy=proxy,

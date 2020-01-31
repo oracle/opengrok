@@ -35,7 +35,7 @@ import requests
 
 from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.utils.mirror import check_project_configuration, \
-    check_configuration, mirror_project, run_command, \
+    check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY
@@ -152,8 +152,7 @@ def test_incoming_retval(monkeypatch):
 
         def mock_get_repos(*args, **kwargs):
             return [get_repository(cloned_repo_path,
-                                   "git", project_name,
-                                   None, None, None, None)]
+                                   "git", project_name)]
 
         def mock_get(*args, **kwargs):
             return MockResponse()
@@ -280,3 +279,43 @@ def test_mirror_project_timeout(monkeypatch):
 
         test_mirror_project(global_config_1)
         test_mirror_project(global_config_2)
+
+
+def test_get_repos_for_project(monkeypatch):
+    """
+    Test argument passing between get_repos_for_project() and get_repository()
+    """
+    project_name = 'foo'
+    proxy_dict = {}
+    commands = {}
+    timeout = 314159
+    test_repo = "/" + project_name
+
+    def mock_get_repos(*args):
+        return [test_repo]
+
+    def mock_get_repo_type(*args):
+        return "Git"
+
+    with tempfile.TemporaryDirectory() as source_root:
+        # Note that it is actually not necessary to create real
+        # Git repository for the test to work. This is due to
+        # the way how Repository objects are created.
+        with monkeypatch.context() as m:
+            m.setattr("opengrok_tools.utils.mirror.get_repos",
+                      mock_get_repos)
+            m.setattr("opengrok_tools.utils.mirror.get_repo_type",
+                      mock_get_repo_type)
+
+            repos = get_repos_for_project(project_name, None, source_root,
+                                          commands=commands,
+                                          proxy=proxy_dict,
+                                          command_timeout=timeout)
+            print(repos)
+            assert len(repos) == 1
+
+            # Now ignore the repository
+            repos = get_repos_for_project(project_name, None, source_root,
+                                          ignored_repos=['.'])
+            print(repos)
+            assert len(repos) == 0
