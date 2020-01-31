@@ -41,7 +41,7 @@ def test_repofactory_timeout():
         project_name = "foo"    # does not matter for this test
         repo = get_repository(repo_path,
                               "git", project_name,
-                              None, None, None, timeout)
+                              timeout=timeout)
         assert repo is not None
         assert isinstance(repo, GitRepository)
         assert repo.timeout == timeout
