@@ -30,7 +30,8 @@ def get_repos(logger, project, uri):
     :param logger: logger instance
     :param project: project name
     :param uri: web application URI
-    :return: list of repository paths (can be empty if no match) or None on failure
+    :return: list of repository paths (can be empty if no match)
+             or None on failure
     """
 
     r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
