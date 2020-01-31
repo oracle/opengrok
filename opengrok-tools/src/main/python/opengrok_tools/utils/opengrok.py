@@ -27,9 +27,10 @@ from .webutil import put, get, post, delete, get_uri
 
 def get_repos(logger, project, uri):
     """
-    Get list of repositories for given project name.
-
-    Return  string with the result on success, None on failure.
+    :param logger: logger instance
+    :param project: project name
+    :param uri: web application URI
+    :return: list of repository paths (can be empty if no match) or None on failure
     """
 
     r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
