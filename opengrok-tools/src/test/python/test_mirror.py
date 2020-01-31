@@ -34,6 +34,7 @@ from mockito import verify, patch, spy2, mock, ANY
 import requests
 
 from opengrok_tools.scm.repofactory import get_repository
+from opengrok_tools.scm.git import GitRepository
 from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
@@ -287,7 +288,8 @@ def test_get_repos_for_project(monkeypatch):
     """
     project_name = 'foo'
     proxy_dict = {}
-    commands = {}
+    git_cmd_path = "/foo/git"
+    commands = {"git": git_cmd_path}
     timeout = 314159
     test_repo = "/" + project_name
 
@@ -311,11 +313,14 @@ def test_get_repos_for_project(monkeypatch):
                                           commands=commands,
                                           proxy=proxy_dict,
                                           command_timeout=timeout)
-            print(repos)
             assert len(repos) == 1
+            assert isinstance(repos[0], GitRepository)
+            git_repo = repos[0]
+            assert git_repo.timeout == timeout
+            assert git_repo.command == git_cmd_path
+            assert git_repo.env == proxy_dict  # XXX contains
 
             # Now ignore the repository
             repos = get_repos_for_project(project_name, None, source_root,
                                           ignored_repos=['.'])
-            print(repos)
             assert len(repos) == 0
