@@ -287,7 +287,8 @@ def test_get_repos_for_project(monkeypatch):
     Test argument passing between get_repos_for_project() and get_repository()
     """
     project_name = 'foo'
-    proxy_dict = {}
+    proxy_dict = {"http_proxy": "http://foo.bar:80",
+                  "https_proxy": "http://foo.bar:80"}
     git_cmd_path = "/foo/git"
     commands = {"git": git_cmd_path}
     timeout = 314159
@@ -318,7 +319,7 @@ def test_get_repos_for_project(monkeypatch):
             git_repo = repos[0]
             assert git_repo.timeout == timeout
             assert git_repo.command == git_cmd_path
-            assert git_repo.env == proxy_dict  # XXX contains
+            assert git_repo.env.items() >= proxy_dict.items()
 
             # Now ignore the repository
             repos = get_repos_for_project(project_name, None, source_root,
