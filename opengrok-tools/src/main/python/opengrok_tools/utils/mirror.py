@@ -99,7 +99,7 @@ def get_repos_for_project(project_name, uri, source_root,
         repo = None
         try:
             # The OpenGrok convention is that the form of repo_path is absolute
-            # so joining would the paths would actually spoil things. Hence, be
+            # so joining the paths would actually spoil things. Hence, be
             # careful.
             if repo_path.startswith(os.path.sep):
                 path = source_root + repo_path
