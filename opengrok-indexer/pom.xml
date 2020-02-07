@@ -20,6 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
