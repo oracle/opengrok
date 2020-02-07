@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
@@ -306,7 +307,7 @@ private static final String RCBREOL = "}\n";
                 fout.write(SPACE);
                 out.write(SPACE);
             }
-            fldsig = Utility.signatureToString(fld.getSignature());
+            fldsig = Utility.typeSignatureToString(fld.getSignature(), true);
             out.write(fldsig);
             fout.write(fldsig);
             out.write(SPACE);
@@ -422,7 +423,7 @@ private static final String RCBREOL = "}\n";
             out.write(TAB);
             fout.write(TAB);
             fout.write(TAB);
-            String sig = Utility.signatureToString(l.getSignature());
+            String sig = Utility.typeSignatureToString(l.getSignature(), true);
             out.write(sig);
             fout.write(sig);
             out.write(SPACE);
@@ -484,7 +485,7 @@ private static final String RCBREOL = "}\n";
                     str = Utility.methodSignatureToString(sig,
                             constantToString(cp.getConstant(i), cp, v), " ");
                 } else {
-                    str = Utility.signatureToString(sig) + ' ' +
+                    str = Utility.typeSignatureToString(sig, true) + ' ' +
                             constantToString(cp.getConstant(i), cp, v);
                 }
                 //str = constantToString(cp.getConstant(i)) +' ' + sig;
