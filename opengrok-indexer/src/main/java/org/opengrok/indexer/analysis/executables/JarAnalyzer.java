@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.zip.ZipEntry;
@@ -106,7 +107,7 @@ public class JarAnalyzer extends FileAnalyzer {
         for (String name : FIELD_NAMES) {
             if (jfbuilder.hasField(name)) {
                 String fstr = jfbuilder.write(name).toString();
-                doc.add(new OGKTextField(name, fstr, Store.NO));
+                doc.add(new OGKTextField(name, new StringReader(fstr), Store.NO));
             }
         }
     }

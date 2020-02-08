@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -151,13 +152,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         if (jfbuilder == null) {
             String dstr = dout.toString();
-            doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.NO));
+            doc.add(new OGKTextField(QueryBuilder.DEFS, new StringReader(dstr), Store.NO));
 
             String rstr = rout.toString();
-            doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.NO));
+            doc.add(new OGKTextField(QueryBuilder.REFS, new StringReader(rstr), Store.NO));
 
             String fstr = fout.toString();
-            doc.add(new OGKTextField(QueryBuilder.FULL, fstr, Store.NO));
+            doc.add(new OGKTextField(QueryBuilder.FULL, new StringReader(fstr), Store.NO));
         }
     }
 

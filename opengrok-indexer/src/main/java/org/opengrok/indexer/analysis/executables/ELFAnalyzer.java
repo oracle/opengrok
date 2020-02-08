@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.StringReader;
 import java.io.Writer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -101,7 +102,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         }
 
         if (content != null && !content.isEmpty()) {
-            doc.add(new OGKTextField(QueryBuilder.FULL, content, Store.NO));
+            doc.add(new OGKTextField(QueryBuilder.FULL, new StringReader(content), Store.NO));
             if (xrefOut != null) {
                 xrefOut.append("</pre>");
                 Util.htmlize(content, xrefOut);

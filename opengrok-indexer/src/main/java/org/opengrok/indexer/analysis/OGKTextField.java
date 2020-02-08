@@ -6,7 +6,7 @@
  *
  * Copyright (c) 2012, https://stackoverflow.com/users/1270457/amas
  * Copyright (c) 2012, https://stackoverflow.com/questions/11945728/how-to-use-termvector-lucene-4-0
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -59,16 +59,6 @@ public class OGKTextField extends Field {
      */
     public OGKTextField(String name, Reader reader, Store store) {
         super(name, reader, store == Store.YES ? TYPE_STORED : TYPE_NOT_STORED);
-    }
-
-    /**
-     * Creates a new instance with {@code String} value.
-     * @param name field name
-     * @param value string value
-     * @param store store
-     */
-    public OGKTextField(String name, String value, Store store) {
-        super(name, value, store == Store.YES ? TYPE_STORED : TYPE_NOT_STORED);
     }
 
     /**
