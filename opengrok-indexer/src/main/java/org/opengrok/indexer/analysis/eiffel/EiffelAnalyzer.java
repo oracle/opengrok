@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.eiffel;
@@ -40,7 +40,7 @@ public class EiffelAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory instance
      */
     protected EiffelAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new EiffelSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new EiffelSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.asm;
@@ -41,7 +41,8 @@ public class AsmAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory instance
      */
     protected AsmAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new AsmSymbolTokenizer(AbstractAnalyzer.DUMMY_READER)));
+        super(factory, () -> new JFlexTokenizer(new AsmSymbolTokenizer(
+                AbstractAnalyzer.DUMMY_READER)));
     }
 
     /**

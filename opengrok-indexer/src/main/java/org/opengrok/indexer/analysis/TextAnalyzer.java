@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
+
 import org.opengrok.indexer.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
@@ -42,11 +44,11 @@ public abstract class TextAnalyzer extends FileAnalyzer {
     /**
      * Creates a new instance of {@link TextAnalyzer}.
      * @param factory defined instance for the analyzer
-     * @param symbolTokenizer defined instance for the analyzer
+     * @param symbolTokenizerFactory defined instance for the analyzer
      */
     protected TextAnalyzer(AnalyzerFactory factory,
-        JFlexTokenizer symbolTokenizer) {
-        super(factory, symbolTokenizer);
+            Supplier<JFlexTokenizer> symbolTokenizerFactory) {
+        super(factory, symbolTokenizerFactory);
     }
 
     /**

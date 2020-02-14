@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.lua;
@@ -41,7 +41,7 @@ public class LuaAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected LuaAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new LuaSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new LuaSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

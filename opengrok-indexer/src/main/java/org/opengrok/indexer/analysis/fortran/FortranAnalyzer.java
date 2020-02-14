@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.fortran;
 
@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
 
     FortranAnalyzer(FortranAnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new FortranSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new FortranSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

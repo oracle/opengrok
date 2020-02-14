@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
 
@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.function.Supplier;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
@@ -63,11 +65,11 @@ public class PlainAnalyzer extends TextAnalyzer {
     /**
      * Creates a new instance of {@link PlainAnalyzer}.
      * @param factory defined instance for the analyzer
-     * @param symbolTokenizer defined instance for the analyzer
+     * @param symbolTokenizerFactory defined instance for the analyzer
      */
     protected PlainAnalyzer(AnalyzerFactory factory,
-        JFlexTokenizer symbolTokenizer) {
-        super(factory, symbolTokenizer);
+            Supplier<JFlexTokenizer> symbolTokenizerFactory) {
+        super(factory, symbolTokenizerFactory);
     }
 
     /**
@@ -116,7 +118,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         if (fullpath != null && ctags != null) {
             defs = ctags.doCtags(fullpath);
             if (defs != null && defs.numberOfSymbols() > 0) {
-                tryAddingDefs(doc, defs, src, fullpath);
+                tryAddingDefs(doc, defs, src);
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField(QueryBuilder.TAGS, tags));                
             }
@@ -125,9 +127,9 @@ public class PlainAnalyzer extends TextAnalyzer {
          * This is to explicitly use appropriate analyzer's token stream to
          * work around #1376: symbols search works like full text search.
          */
-        OGKTextField ref = new OGKTextField(QueryBuilder.REFS,
-                this.symbolTokenizer);
-        this.symbolTokenizer.setReader(getReader(src.getStream()));
+        JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
+        OGKTextField ref = new OGKTextField(QueryBuilder.REFS, symbolTokenizer);
+        symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(ref);
         
         if (scopesEnabled && xrefOut == null) {
@@ -159,13 +161,13 @@ public class PlainAnalyzer extends TextAnalyzer {
         }
     }
 
-    private void tryAddingDefs(Document doc, Definitions defs, StreamSource src,
-        String fullpath) throws IOException {
+    private void tryAddingDefs(Document doc, Definitions defs, StreamSource src)
+            throws IOException {
 
         DefinitionsTokenStream defstream = new DefinitionsTokenStream();
-        defstream.initialize(defs, src, (reader) -> wrapReader(reader));
+        defstream.initialize(defs, src, this::wrapReader);
 
-        /**
+        /*
          *     Testing showed that UnifiedHighlighter will fall back to
          * ANALYSIS in the presence of multi-term queries (MTQs) such as
          * prefixes and wildcards even for fields that are analyzed with

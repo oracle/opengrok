@@ -19,11 +19,13 @@
 
 /*
  * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
 
 import java.io.Reader;
+import java.util.function.Supplier;
+
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
@@ -50,11 +52,11 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     /**
      * Creates a new instance of abstract analyzer.
      * @param factory defined instance for the analyzer
-     * @param symbolTokenizer defined instance for the analyzer
+     * @param symbolTokenizerFactory defined instance for the analyzer
      */
     protected AbstractSourceCodeAnalyzer(AnalyzerFactory factory,
-        JFlexTokenizer symbolTokenizer) {
-        super(factory, symbolTokenizer);
+            Supplier<JFlexTokenizer> symbolTokenizerFactory) {
+        super(factory, symbolTokenizerFactory);
     }
     
     /**

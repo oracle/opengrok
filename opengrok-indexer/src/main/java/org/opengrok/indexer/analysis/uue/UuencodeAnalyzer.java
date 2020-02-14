@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.uue;
 
@@ -50,7 +50,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected UuencodeAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new UuencodeFullTokenizer(
+        super(factory, () -> new JFlexTokenizer(new UuencodeFullTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 
@@ -75,10 +75,10 @@ public class UuencodeAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
-        //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-        OGKTextField full = new OGKTextField(QueryBuilder.FULL,
-            this.symbolTokenizer);
-        this.symbolTokenizer.setReader(getReader(src.getStream()));
+        //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search
+        JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
+        OGKTextField full = new OGKTextField(QueryBuilder.FULL, symbolTokenizer);
+        symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(full);
                 
         if (xrefOut != null) {

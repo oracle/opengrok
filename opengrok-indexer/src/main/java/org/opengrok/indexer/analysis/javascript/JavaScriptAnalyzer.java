@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.javascript;
 
@@ -42,7 +42,7 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected JavaScriptAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new JavaScriptSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new JavaScriptSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 
