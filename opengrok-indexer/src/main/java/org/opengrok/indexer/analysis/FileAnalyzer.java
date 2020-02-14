@@ -20,13 +20,14 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -44,7 +45,7 @@ import org.opengrok.indexer.search.QueryBuilder;
  *
  * An Analyzer for a filetype provides
  * <ol>
- * <li>the file extentions and magic numbers it analyzes</li>
+ * <li>the file extensions and magic numbers it analyzes</li>
  * <li>a lucene document listing the fields it can support</li>
  * <li>TokenStreams for each of the field it said requires tokenizing in 2</li>
  * <li>cross reference in HTML format</li>
@@ -100,27 +101,27 @@ public class FileAnalyzer extends AbstractAnalyzer {
             throw new IllegalArgumentException("`factory' is null");
         }
         this.factory = factory;
-        this.symbolTokenizer = createPlainSymbolTokenizer();
+        this.symbolTokenizerFactory = this::createPlainSymbolTokenizer;
     }
 
     /**
      * Creates a new instance of {@link FileAnalyzer}.
      *
      * @param factory defined instance for the analyzer
-     * @param symbolTokenizer a defined instance relevant for the file
+     * @param symbolTokenizerFactory a defined instance relevant for the file
      */
     protected FileAnalyzer(AnalyzerFactory factory,
-            JFlexTokenizer symbolTokenizer) {
+            Supplier<JFlexTokenizer> symbolTokenizerFactory) {
 
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         if (factory == null) {
             throw new IllegalArgumentException("`factory' is null");
         }
-        if (symbolTokenizer == null) {
-            throw new IllegalArgumentException("`symbolTokenizer' is null");
+        if (symbolTokenizerFactory == null) {
+            throw new IllegalArgumentException("symbolTokenizerFactory is null");
         }
         this.factory = factory;
-        this.symbolTokenizer = symbolTokenizer;
+        this.symbolTokenizerFactory = symbolTokenizerFactory;
     }
 
     /**
@@ -185,7 +186,7 @@ public class FileAnalyzer extends AbstractAnalyzer {
                 return new HistoryAnalyzer().createComponents(fieldName);
             //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
             case QueryBuilder.REFS: {
-                return new TokenStreamComponents(symbolTokenizer);
+                return new TokenStreamComponents(symbolTokenizerFactory.get());
             }
             case QueryBuilder.DEFS:
                 return new TokenStreamComponents(createPlainSymbolTokenizer());

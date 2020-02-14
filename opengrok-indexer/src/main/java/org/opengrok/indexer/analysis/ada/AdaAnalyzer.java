@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.ada;
 
@@ -43,7 +43,7 @@ public class AdaAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected AdaAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new AdaSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new AdaSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

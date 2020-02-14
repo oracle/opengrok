@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.function.Supplier;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -40,8 +42,7 @@ public abstract class AbstractAnalyzer extends Analyzer {
 
     public static final Reader DUMMY_READER = new StringReader("");
     protected AnalyzerFactory factory;
-    // you analyzer HAS to override this to get proper symbols in results
-    protected JFlexTokenizer symbolTokenizer;
+    protected Supplier<JFlexTokenizer> symbolTokenizerFactory;
     protected Project project;
     protected Ctags ctags;
     protected boolean scopesEnabled;

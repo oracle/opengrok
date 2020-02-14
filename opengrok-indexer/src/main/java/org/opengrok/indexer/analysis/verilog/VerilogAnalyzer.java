@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.verilog;
@@ -41,7 +41,7 @@ public class VerilogAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory instance
      */
     protected VerilogAnalyzer(FileAnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new VerilogSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new VerilogSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

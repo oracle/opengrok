@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2016 Nikolay Denev.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.rust;
@@ -44,7 +44,7 @@ public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected RustAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new RustSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new RustSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

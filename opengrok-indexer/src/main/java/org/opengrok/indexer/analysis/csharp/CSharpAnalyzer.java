@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.csharp;
 
@@ -37,7 +37,7 @@ import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected CSharpAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new CSharpSymbolTokenizer(
+        super(factory, () -> new JFlexTokenizer(new CSharpSymbolTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 

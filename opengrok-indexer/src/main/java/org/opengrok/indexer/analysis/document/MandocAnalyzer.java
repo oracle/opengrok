@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
@@ -47,7 +47,7 @@ public class MandocAnalyzer extends TextAnalyzer {
      * @param factory defined instance for the analyzer
      */
     protected MandocAnalyzer(AnalyzerFactory factory) {
-        super(factory, new JFlexTokenizer(new TroffFullTokenizer(
+        super(factory, () -> new JFlexTokenizer(new TroffFullTokenizer(
                 AbstractAnalyzer.DUMMY_READER)));
     }
 
@@ -77,9 +77,9 @@ public class MandocAnalyzer extends TextAnalyzer {
 
         // this is to explicitly use appropriate analyzers tokenstream to
         // workaround #1376 symbols search works like full text search
-        this.symbolTokenizer.setReader(getReader(src.getStream()));
-        OGKTextField full = new OGKTextField(QueryBuilder.FULL,
-            symbolTokenizer);
+        JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
+        symbolTokenizer.setReader(getReader(src.getStream()));
+        OGKTextField full = new OGKTextField(QueryBuilder.FULL, symbolTokenizer);
         doc.add(full);
 
         if (xrefOut != null) {
