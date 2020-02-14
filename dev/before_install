@@ -30,7 +30,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	# Bitkeeper install failure is not critical, so exit code is not checked.
 	sudo ./dev/install-bitkeeper.sh
 
-	sudo ./dev/install-python-packages.sh
+	sudo -H ./dev/install-python-packages.sh
 	if [[ $? != 0 ]]; then
 		echo "cannot install Python packages"
 		exit 1
