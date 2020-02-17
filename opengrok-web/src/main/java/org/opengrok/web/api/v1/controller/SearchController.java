@@ -19,12 +19,14 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.SearchEngine;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -62,15 +64,16 @@ public class SearchController {
     @Produces(MediaType.APPLICATION_JSON)
     public SearchResult search(
             @Context final HttpServletRequest req,
-            @QueryParam("full") final String full,
-            @QueryParam("def") final String def,
-            @QueryParam("symbol") final String symbol,
-            @QueryParam("path") final String path,
-            @QueryParam("hist") final String hist,
-            @QueryParam("type") final String type,
+            @QueryParam(QueryParameters.FULL_SEARCH_PARAM) final String full,
+            @QueryParam("def") final String def, // Nearly QueryParameters.DEFS_SEARCH_PARAM
+            @QueryParam("symbol") final String symbol, // Akin to QueryBuilder.REFS_SEARCH_PARAM
+            @QueryParam(QueryParameters.PATH_SEARCH_PARAM) final String path,
+            @QueryParam(QueryParameters.HIST_SEARCH_PARAM) final String hist,
+            @QueryParam(QueryParameters.TYPE_SEARCH_PARAM) final String type,
             @QueryParam("projects") final List<String> projects,
-            @QueryParam("maxresults") @DefaultValue(MAX_RESULTS + "") final int maxResults,
-            @QueryParam("start") @DefaultValue(0 + "") final int startDocIndex
+            @QueryParam("maxresults") // Akin to QueryParameters.COUNT_PARAM
+            @DefaultValue(MAX_RESULTS + "") final int maxResults,
+            @QueryParam(QueryParameters.START_PARAM) @DefaultValue(0 + "") final int startDocIndex
     ) {
         try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type)) {
 

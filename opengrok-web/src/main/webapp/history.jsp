@@ -20,14 +20,12 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
-
+Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="org.opengrok.indexer.web.Util"%>
-<%@page import="org.opengrok.indexer.history.HistoryGuru"%>
-<%@page import="java.io.File"%>
 <%@page errorPage="error.jsp" import="
+java.io.IOException,
+java.io.File,
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
@@ -40,9 +38,12 @@ java.util.regex.Pattern,
 org.opengrok.indexer.configuration.RuntimeEnvironment,
 org.opengrok.indexer.history.History,
 org.opengrok.indexer.history.HistoryEntry,
+org.opengrok.indexer.history.HistoryGuru,
 org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.util.ForbiddenSymlinkException,
-org.opengrok.indexer.web.SearchHelper"
+org.opengrok.indexer.web.QueryParameters,
+org.opengrok.indexer.web.SearchHelper,
+org.opengrok.indexer.web.Util"
 %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
@@ -110,7 +111,7 @@ include file="httpheader.jspf"
 %>
 <body>
 <script type="text/javascript">/* <![CDATA[ */
-    document.rev = function() { return getParameter("r"); };
+    document.rev = function() { return getParameter("<%= QueryParameters.REVISION_PARAM %>"); };
     document.annotate = <%= PageConfig.get(request).annotate() %>;
     document.domReady.push(function() { domReadyMast(); });
     document.pageReady.push(function() { pageReadyMast(); });
@@ -188,8 +189,9 @@ include file="minisearch.jspf"
 
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
 
-        int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
-        int revision1 = cfg.getIntParam("r1", -1) < revision2 ? revision2 + 1 : cfg.getIntParam("r1", -1);
+        int revision2 = Math.max(cfg.getIntParam(QueryParameters.REVISION_2_PARAM, -1), 0);
+        int revision1 = cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1) < revision2 ?
+                revision2 + 1 : cfg.getIntParam(QueryParameters.REVISION_1_PARAM, -1);
         revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2;
 
         int start = cfg.getSearchStart();
@@ -222,10 +224,12 @@ document.domReady.push(function() {domReadyHistory();});
             %>
             <th><input type="submit" value=" Compare "/>
             <% if (hist.getHistoryEntries().size() > revision1 && revision1 >= 0) { %>
-                <input type="hidden" id="input_r1" name="r1" value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>" />
+                <input type="hidden" id="input_r1" name="<%= QueryParameters.REVISION_1_PARAM %>"
+                value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>"/>
             <% } %>
             <% if (hist.getHistoryEntries().size() > revision2 && revision2 >= 0) { %>
-                <input type="hidden" id="input_r2" name="r2" value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>" />
+                <input type="hidden" id="input_r2" name="<%= QueryParameters.REVISION_2_PARAM %>"
+                value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>"/>
             <% } %>
             </th><%
             }
@@ -282,13 +286,14 @@ document.domReady.push(function() {domReadyHistory();});
             %>
             <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
-                <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?r=" + Util.URIEncode(rev) %>"><%=
-                    rev %></a></td>
+                <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?" +
+                        QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(rev) %>"><%= rev %>
+                </a></td>
             <td><%
                 %><input type="radio"
                         data-revision-1="<%= (start + count) %>"
                         data-revision-2="<%= revision2 %>"
-                        data-diff-revision="r1"
+                        data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
                         data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision()%>"
                 <%
                 if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
@@ -305,7 +310,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><input type="radio"
                         data-revision-1="<%= revision1 %>"
                         data-revision-2="<%= (start + count) %>"
-                        data-diff-revision="r2"
+                        data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"
                         data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision() %>"
                 <%
                 if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
@@ -392,7 +397,8 @@ document.domReady.push(function() {domReadyHistory();});
 <a class="h" href="<%= context + Prefix.XREF_P + ifile %>"><%= jfile %></a><br/><%
                         } else {
                 %>
-<a class="h" href="<%= context + Prefix.XREF_P + ifile %>?r=<%= rev %>"><%= jfile %></a><br/><%
+<a class="h" href="<%= context + Prefix.XREF_P + ifile %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+    <%= rev %>"><%= jfile %></a><br/><%
                         }
                     }
                 %></div><%

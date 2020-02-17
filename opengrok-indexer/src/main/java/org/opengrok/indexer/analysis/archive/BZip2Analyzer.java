@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.archive;
 
@@ -35,6 +35,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Analyzes a BZip2 file.
@@ -83,7 +84,7 @@ public class BZip2Analyzer extends FileAnalyzer {
         AbstractAnalyzer fa;
 
         StreamSource bzSrc = wrap(src);
-        String path = doc.get("path");
+        String path = doc.get(QueryBuilder.PATH);
         if (path != null
                 && (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))) {
             String newname = path.substring(0, path.lastIndexOf('.'));
@@ -98,10 +99,11 @@ public class BZip2Analyzer extends FileAnalyzer {
                     this.g = Genre.DATA;
                 }
                 fa.analyze(doc, bzSrc, xrefOut);
-                if (doc.get("t") != null) {
-                    doc.removeField("t");
+                if (doc.get(QueryBuilder.T) != null) {
+                    doc.removeField(QueryBuilder.T);
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", g.typeName(), AnalyzerGuru.string_ft_stored_nanalyzed_norms));
+                        doc.add(new Field(QueryBuilder.T, g.typeName(),
+                                AnalyzerGuru.string_ft_stored_nanalyzed_norms));
                     }
                 }
             }

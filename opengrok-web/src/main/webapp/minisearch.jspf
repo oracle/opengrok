@@ -17,17 +17,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
-
+Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
-java.io.File,
-java.io.IOException,
-
 org.opengrok.indexer.configuration.Project,
-org.opengrok.indexer.history.HistoryGuru,
-org.opengrok.indexer.web.EftarFileReader,
 org.opengrok.indexer.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.Util"%><%
     /* ---------------------- minisearch.jspf start --------------------- */
 {
@@ -62,9 +58,13 @@ org.opengrok.indexer.web.Util"%><%
                onclick="javascript:
                            window.location = '<%= context + Prefix.XREF_P + cfg.getUriEncodedPath() %>'
                            // taken from get_annotations() from utils.js
-                           + '?a=true'
-                           + (document.rev && document.rev() ? '&amp;r=' + encodeURIComponent(document.rev()) : '')
-                           + (window.location.hash ? '&amp;h=' + window.location.hash.substring(1, window.location.hash.length) : '');
+                           + '?<%= QueryParameters.ANNOTATION_PARAM_EQ_TRUE %>'
+                           + (document.rev && document.rev() ?
+                                   '&amp;<%= QueryParameters.REVISION_PARAM_EQ %>'
+                           + encodeURIComponent(document.rev()) : '')
+                           + (window.location.hash ?
+                                   '&amp;<%= QueryParameters.WINDOW_HASH_PARAM_EQ %>'
+                           + window.location.hash.substring(1, window.location.hash.length) : '');
                            return false;">
                 <span class="annotate"></span>
                 Annotate
@@ -88,24 +88,29 @@ org.opengrok.indexer.web.Util"%><%
             --%><span id="defbox"></span>Navigate#</a></li><%
         }
         %>
-	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath()
-            + (cfg.getRequestedRevision().length() == 0 ? "" : "?r=" + Util.URIEncode(cfg.getRequestedRevision()))
+	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath() +
+            (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
+            QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(cfg.getRequestedRevision()))
             %>"><span id="raw"></span>Raw</a></li>
-	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath()
-            + (cfg.getRequestedRevision().length() == 0 ? "" : "?r=" + Util.URIEncode(cfg.getRequestedRevision()))
+	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath() +
+            (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
+            QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(cfg.getRequestedRevision()))
             %>"><span id="download"></span>Download</a></li>
 	<%
     }
-        %><li><input type="text" id="search" name="full" class="q" /></li>
+        %><li><input type="text" id="search" name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
+                  class="q" /></li>
             <li><input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
-        %><li><input id="minisearch-path" type="checkbox" name="path" value='"<%= vals[0]
+        %><li><input id="minisearch-path" type="checkbox"
+                  name="<%= QueryParameters.PATH_SEARCH_PARAM %>" value='"<%= vals[0]
             %>"' <%= vals[2] %>/> current directory</li>
     </ul><%
     if (proj != null) {
     %>
-    <input id="minisearch-project" type="hidden" name="project" value="<%=proj.getName()%>" /><%
+    <input id="minisearch-project" type="hidden" name="<%= QueryParameters.PROJECT_SEARCH_PARAM %>"
+           value="<%=proj.getName()%>" /><%
     }
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />

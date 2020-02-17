@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -36,6 +36,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -258,7 +259,8 @@ public abstract class JFlexNonXref extends JFlexStateStacker
 
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + "project=" + project.getName());
+        return project == null ? "" : (amp + QueryParameters.PROJECT_SEARCH_PARAM_EQ +
+                project.getName());
     }
 
     protected void startScope() {

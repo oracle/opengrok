@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 
@@ -82,6 +82,13 @@ public final class Util {
     private static final String anchorClassStart = "<a class=\"";
     private static final String anchorEnd = "</a>";
     private static final String closeQuotedTag = "\">";
+
+    private static final String RE_Q_ESC_AMP_AMP = "\\?|&amp;|&";
+    private static final String RE_Q_E_A_A_COUNT_EQ_VAL = "(" + RE_Q_ESC_AMP_AMP + "|\\b)" +
+            QueryParameters.COUNT_PARAM_EQ + "\\d+";
+    private static final String RE_Q_E_A_A_START_EQ_VAL = "(" + RE_Q_ESC_AMP_AMP + "|\\b)" +
+            QueryParameters.START_PARAM_EQ + "\\d+";
+    private static final String RE_A_ANCHOR_Q_E_A_A = "^(" + RE_Q_ESC_AMP_AMP + ")";
 
     /** Private to enforce static. */
     private Util() {
@@ -731,7 +738,10 @@ public final class Util {
             out.write(annotation.getColors().getOrDefault(r, "inherit"));
             out.write("\" href=\"");
             out.write(URIEncode(annotation.getFilename()));
-            out.write("?a=true&amp;r=");
+            out.write("?");
+            out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
+            out.write("&amp;");
+            out.write(QueryParameters.REVISION_PARAM_EQ);
             out.write(URIEncode(r));
             String msg = annotation.getDesc(r);
             out.write("\" title=\"");
@@ -765,10 +775,19 @@ public final class Util {
             // Write link to search the revision in current project.
             out.write(anchorClassStart);
             out.write("search\" href=\"" + env.getUrlPrefix());
-            out.write("defs=&amp;refs=&amp;path=");
+            out.write(QueryParameters.DEFS_SEARCH_PARAM_EQ);
+            out.write("&amp;");
+            out.write(QueryParameters.REFS_SEARCH_PARAM_EQ);
+            out.write("&amp;");
+            out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
             out.write(project);
-            out.write("&amp;hist=&quot;" + URIEncode(r) + "&quot;");
-            out.write("&amp;type=\" title=\"Search history for this changeset");
+            out.write("&amp;");
+            out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
+            out.write("&quot;");
+            out.write(URIEncode(r));
+            out.write("&quot;&amp;");
+            out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
+            out.write("\" title=\"Search history for this revision");
             out.write(closeQuotedTag);
             out.write("S");
             out.write(anchorEnd);
@@ -865,7 +884,9 @@ public final class Util {
             out.write(" <a href=\"");
             out.write(xrefPrefixE);
             out.write(entry);
-            out.write("?a=true\" title=\"Annotate\">A</a> ");
+            out.write("?");
+            out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
+            out.write("\" title=\"Annotate\">A</a> ");
             out.write("<a href=\"");
             out.write(downloadPrefixE);
             out.write(entry);
@@ -1369,17 +1390,18 @@ public final class Util {
                         // append request parameters
                         if (request != null && request.getQueryString() != null) {
                             String query = request.getQueryString();
-                            query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
-                            query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
-                            query = query.replaceFirst("^(\\?|&amp;|&)", "");
+                            query = query.replaceFirst(RE_Q_E_A_A_COUNT_EQ_VAL, "");
+                            query = query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, "");
+                            query = query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, "");
                             if (!query.isEmpty()) {
                                 buf.append(query);
                                 buf.append("&amp;");
                             }
                         }
-                        buf.append("n=").append(limit);
+                        buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
                         if (myOffset != 0) {
-                            buf.append("&amp;start=").append(myOffset);
+                            buf.append("&amp;").append(QueryParameters.START_PARAM_EQ).
+                                    append(myOffset);
                         }
                         buf.append("\">");
                         // add << or >> if this link would lead to another section

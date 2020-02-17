@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -31,6 +31,7 @@ import org.opengrok.indexer.analysis.Scopes.Scope;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -297,7 +298,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                 case FILELIKE:
                     out.write("<a href=\"");
                     out.write(urlPrefix);
-                    out.write("path=");
+                    out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
                     /*
                      * Maybe in the future the following should properly be
                      * qurlencode(), but just htmlize() it for now.
@@ -309,13 +310,13 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                     out.write("</a>");
                     break;
                 case PATHLIKE:
-                    out.write(Util.breadcrumbPath(urlPrefix + "path=", str,
-                        '/'));
+                    out.write(Util.breadcrumbPath(urlPrefix +
+                            QueryParameters.PATH_SEARCH_PARAM_EQ, str, '/'));
                     break;
                 case QUERY:
                     out.write("<a href=\"");
                     out.write(urlPrefix);
-                    out.write("full=");
+                    out.write(QueryParameters.FULL_SEARCH_PARAM_EQ);
                     Util.qurlencode(lstr, out);
                     JFlexXrefUtils.appendProject(out, project);
                     out.write("\">");
@@ -325,7 +326,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                 case REFS:
                     out.write("<a href=\"");
                     out.write(urlPrefix);
-                    out.write("refs=");
+                    out.write(QueryParameters.REFS_SEARCH_PARAM_EQ);
                     Util.qurlencode(lstr, out);
                     JFlexXrefUtils.appendProject(out, project);
                     out.write("\">");
@@ -347,8 +348,9 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     @Override
     public void pathlikeMatched(PathlikeMatchedEvent evt) {
         String str = evt.getStr();
-        String breadcrumbPath = Util.breadcrumbPath(urlPrefix + "path=", str,
-            evt.getSep(), getProjectPostfix(true), evt.getCanonicalize());
+        String breadcrumbPath = Util.breadcrumbPath(urlPrefix +
+                QueryParameters.PATH_SEARCH_PARAM_EQ, str, evt.getSep(),
+                getProjectPostfix(true), evt.getCanonicalize());
         try {
             out.write(breadcrumbPath);
         } catch (IOException ex) {
@@ -406,7 +408,8 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + "project=" + project.getName());
+        return project == null ? "" : (amp + QueryParameters.PROJECT_SEARCH_PARAM_EQ +
+                project.getName());
     }
 
     protected void startScope() {

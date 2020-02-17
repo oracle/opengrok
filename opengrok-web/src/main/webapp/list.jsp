@@ -1,6 +1,4 @@
 <%--
-$Id$
-
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -25,9 +23,11 @@ Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page errorPage="error.jsp" import="
 java.io.BufferedInputStream,
+java.io.File,
 java.io.FileInputStream,
 java.io.InputStream,
 java.io.InputStreamReader,
+java.io.IOException,
 java.io.Reader,
 java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
@@ -44,6 +44,7 @@ org.opengrok.indexer.analysis.AbstractAnalyzer,
 org.opengrok.indexer.analysis.AbstractAnalyzer.Genre,
 org.opengrok.indexer.analysis.AnalyzerFactory,
 org.opengrok.indexer.history.Annotation,
+org.opengrok.indexer.history.HistoryGuru,
 org.opengrok.indexer.index.IndexDatabase,
 org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
@@ -53,6 +54,7 @@ org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.ForbiddenSymlinkException,
 org.opengrok.indexer.util.ObjectPool,
 org.opengrok.indexer.util.IOUtils,
+org.opengrok.indexer.web.QueryParameters,
 org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
 %>
@@ -234,7 +236,7 @@ document.pageReady.push(function() { pageReadyList();});
                     if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>"/>
+    <img src="<%= rawPath %>" alt="Image from Source Repository"/>
 </div><%
                     } else if ( g == AbstractAnalyzer.Genre.HTML) {
                         /**
@@ -323,7 +325,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                         if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
     %>
     <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
+    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+        <%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
                         } else {
     %>
@@ -370,7 +373,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                         defs, annotation, project);
                             } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
-        <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
+        <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"/>
         <pre><%
                             } else if (g == AbstractAnalyzer.Genre.HTML) {
                                 /**
@@ -385,7 +388,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                  */
                                 Util.dumpXref(out, r, request.getContextPath());
                             } else {
-        %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
+        %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+            <%= Util.URIEncode(rev) %>"><%= basename %></a><%
                             }
                         }
                     } catch (IOException e) {
@@ -416,12 +420,14 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             } else if (g == AbstractAnalyzer.Genre.IMAGE) {
     %>
     <div id="src">
-        <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
+        <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"
+	    alt="Image from Source Repository"/>
     </div><%
             } else {
     %>
     <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
+    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+        <%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
             }
         }

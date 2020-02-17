@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.document;
@@ -28,6 +28,7 @@ import org.opengrok.indexer.analysis.JFlexNonXref;
 import java.io.IOException;
 import java.io.Writer;
 import org.opengrok.indexer.analysis.JFlexXrefUtils;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 %%
 %public
@@ -242,7 +243,9 @@ T[\{\}] { chkLOC(); }
 {File} {
         chkLOC();
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
+        out.write("<a href=\"");
+        out.write(urlPrefix);
+        out.write(QueryParameters.PATH_SEARCH_PARAM_EQ);
         out.write(path);
         JFlexXrefUtils.appendProject(out, project);
         out.write("\">");
@@ -251,7 +254,7 @@ T[\{\}] { chkLOC(); }
 
  {RelaxedMiddleFPath}    {
     chkLOC();
-    out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/'));
+    out.write(Util.breadcrumbPath(urlPrefix + QueryParameters.PATH_SEARCH_PARAM_EQ, yytext(), '/'));
  }
 \\&.    { chkLOC(); out.write(yycharat(yylength() - 1)); }
 \\-     { chkLOC(); out.write('-'); }

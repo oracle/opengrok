@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -43,6 +43,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.UriUtils;
 import org.opengrok.indexer.web.HtmlConsts;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -107,7 +108,8 @@ public class JFlexXrefUtils {
     public static void appendProject(Writer out, Project project)
             throws IOException {
         if (project != null) {
-            out.write("&amp;project=");
+            out.write("&amp;");
+            out.write(QueryParameters.PROJECT_SEARCH_PARAM_EQ);
             out.write(project.getName());
         }
     }
@@ -267,7 +269,7 @@ public class JFlexXrefUtils {
             // 2) Create a link that searches for all references to this symbol.
             out.append("<a href=\"");
             out.append(urlPrefix);
-            out.append("refs=");
+            out.append(QueryParameters.REFS_SEARCH_PARAM_EQ);
             Util.qurlencode(symbol, out);
             appendProject(out, project);
             out.append("\" class=\"");
@@ -286,7 +288,7 @@ public class JFlexXrefUtils {
             // link to search for all definitions of that symbol instead.
             out.append("<a href=\"");
             out.append(urlPrefix);
-            out.append("defs=");
+            out.append(QueryParameters.DEFS_SEARCH_PARAM_EQ);
             Util.qurlencode(symbol, out);
             appendProject(out, project);
             out.append("\"");

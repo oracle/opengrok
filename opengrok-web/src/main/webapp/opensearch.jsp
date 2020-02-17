@@ -20,12 +20,13 @@ CDDL HEADER END
 
 Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 --%><%@page  session="false" errorPage="error.jsp" import="
 java.util.Set,
 
 org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.Util"
 %>
 <%
@@ -75,7 +76,7 @@ include file="projects.jspf"
     Set<String> projects = cfg.getRequestedProjects();
     for (String name : projects) {
         text.append(name).append(',');
-        Util.appendQuery(url, "project", name);
+        Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM, name);
     }
     if (text.length() != 0) {
         text.setLength(text.length()-1);
@@ -87,7 +88,8 @@ include file="projects.jspf"
     <InputEncoding>UTF-8</InputEncoding>
     <Image height="16" width="16" type="image/png"><%= imgurl %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
-    <Url template="<%= url.toString() %>&amp;full={searchTerms}" type="text/html"/>
+    <Url template="<%= url.toString() %>&amp;<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>{searchTerms}"
+        type="text/html"/>
 </OpenSearchDescription>
 <%
 }
