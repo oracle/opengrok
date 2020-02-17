@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -28,12 +28,14 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 <%@page session="false" errorPage="error.jsp" import="
 org.apache.lucene.queryparser.classic.QueryParser,
 org.opengrok.indexer.search.Results,
+org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory,
+org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.SearchHelper,
 org.opengrok.indexer.web.SortOrder,
-org.opengrok.indexer.web.Suggestion"
+org.opengrok.indexer.web.Suggestion,
+
+java.util.List"
 %>
-<%@ page import="org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory" %>
-<%@ page import="java.util.List" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
@@ -50,18 +52,19 @@ include file="projects.jspf"
         if (menu) {
             url.append("search?");
         } else {
-            Util.appendQuery(url, "sort", sh.order.toString());
+            Util.appendQuery(url, QueryParameters.SORT_PARAM, sh.order.toString());
         }
         if (qb != null) {
-            Util.appendQuery(url, "full", qb.getFreetext());
-            Util.appendQuery(url, "defs", qb.getDefs());
-            Util.appendQuery(url, "refs", qb.getRefs());
-            Util.appendQuery(url, "path", qb.getPath());
-            Util.appendQuery(url, "hist", qb.getHist());
-            Util.appendQuery(url, "type", qb.getType());
+            Util.appendQuery(url, QueryParameters.FULL_SEARCH_PARAM, qb.getFreetext());
+            Util.appendQuery(url, QueryParameters.DEFS_SEARCH_PARAM, qb.getDefs());
+            Util.appendQuery(url, QueryParameters.REFS_SEARCH_PARAM, qb.getRefs());
+            Util.appendQuery(url, QueryParameters.PATH_SEARCH_PARAM, qb.getPath());
+            Util.appendQuery(url, QueryParameters.HIST_SEARCH_PARAM, qb.getHist());
+            Util.appendQuery(url, QueryParameters.TYPE_SEARCH_PARAM, qb.getType());
         }
         if (sh.projects != null && sh.projects.size() != 0) {
-            Util.appendQuery(url, "project", PageConfig.get(request).getRequestedProjectsAsString());
+            Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM,
+                    PageConfig.get(request).getRequestedProjectsAsString());
         }
         return url;
     }
@@ -116,7 +119,8 @@ include file="pageheader.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
-    StringBuilder url = createUrl(request, searchHelper, true).append("&amp;sort=");
+    StringBuilder url = createUrl(request, searchHelper, true).append("&amp;").
+            append(QueryParameters.SORT_PARAM_EQ);
     int ordcnt = 0;
     for (SortOrder o : SortOrder.values()) {
         if (searchHelper.order == o) {
@@ -171,19 +175,22 @@ include file="menu.jspf"
         %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
 	  if (hint.freetext!=null) { 
 	    for (String word : hint.freetext) {
-            %> <a href="search?full=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+            %> <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>
+                <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.refs!=null)  {
 	    for (String word : hint.refs) {
-            %> <a href="search?refs=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+            %> <a href="search?<%= QueryParameters.REFS_SEARCH_PARAM_EQ %>
+                <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.defs!=null) {
 	    for (String word : hint.defs) {
-            %> <a href="search?defs=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+            %> <a href="search?<%= QueryParameters.DEFS_SEARCH_PARAM_EQ %>
+                <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
             }
 	  }

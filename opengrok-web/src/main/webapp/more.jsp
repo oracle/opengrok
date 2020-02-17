@@ -20,16 +20,15 @@ CDDL HEADER END
 
 Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 --%><%@page errorPage="error.jsp" import="
+java.io.File,
 java.io.FileInputStream,
 java.io.Reader,
 java.nio.charset.StandardCharsets,
 java.util.logging.Level,
-java.util.logging.Logger,
 
-org.apache.lucene.search.IndexSearcher,
 org.apache.lucene.search.Query,
 org.opengrok.indexer.configuration.RuntimeEnvironment,
 org.opengrok.indexer.search.QueryBuilder,

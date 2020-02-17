@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -64,6 +64,7 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -166,21 +167,19 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private static final String AHREF = "<a href=\"";
     private static final String AHREFT_END = "\">";
     private static final String AHREFEND = "</a>";
-    private static final String ADEFS = "defs=";
-    private static final String APATH = "path=";
     private static final String AIHREF = "\" href=\"";
     private static final String ADHREF = "<a class=\"d\" name=\"";
     private final StringBuffer rstring = new StringBuffer(512);
     protected String linkPath(String path) {
         rstring.setLength(0);
-        return rstring.append(AHREF).append(urlPrefix).append(APATH)
+        return rstring.append(AHREF).append(urlPrefix).append(QueryParameters.PATH_SEARCH_PARAM_EQ)
                 .append(Util.URIEncodePath(path)).append(AHREFT_END)
                 .append(Util.htmlize(path)).append(AHREFEND).toString();
     }
 
     protected String linkDef(String def) {
         rstring.setLength(0);
-        return rstring.append(AHREF).append(urlPrefix).append(ADEFS)
+        return rstring.append(AHREF).append(urlPrefix).append(QueryParameters.DEFS_SEARCH_PARAM_EQ)
                 .append(Util.URIEncode(def)).append(AHREFT_END)
                 .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
@@ -195,7 +194,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         rstring.setLength(0);
         return rstring.append(ADHREF).append(Util.formQuoteEscape(name))
-                .append(AIHREF).append(urlPrefix).append(ADEFS)
+                .append(AIHREF).append(urlPrefix).append(QueryParameters.DEFS_SEARCH_PARAM_EQ)
                 .append(Util.URIEncode(def)).append(AHREFT_END)
                 .append(Util.htmlize(def)).append(AHREFEND).toString();
     }

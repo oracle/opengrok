@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -237,7 +237,7 @@ public final class PageConfig {
          * The code below extracts file path and revision from the URI.
          */
         for (int i = 1; i <= 2; i++) {
-            String p = req.getParameter("r" + i);
+            String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
             if (p != null) {
                 int j = p.lastIndexOf("@");
                 if (j != -1) {
@@ -369,7 +369,7 @@ public final class PageConfig {
      * value {@code 1} was found.
      */
     public boolean fullDiff() {
-        String val = req.getParameter("full");
+        String val = req.getParameter(QueryParameters.DIFF_LEVEL_PARAM);
         return val != null && val.equals("1");
     }
 
@@ -550,7 +550,7 @@ public final class PageConfig {
      * number, the number found otherwise.
      */
     public int getSearchStart() {
-        return getIntParam("start", 0);
+        return getIntParam(QueryParameters.START_PARAM, 0);
     }
 
     /**
@@ -561,7 +561,7 @@ public final class PageConfig {
      * is not set or not a number, the number found otherwise.
      */
     public int getSearchMaxItems() {
-        return getIntParam("n", getEnv().getHitsPerPage());
+        return getIntParam(QueryParameters.COUNT_PARAM, getEnv().getHitsPerPage());
     }
 
     public int getRevisionMessageCollapseThreshold() {
@@ -585,7 +585,7 @@ public final class PageConfig {
      */
     public List<SortOrder> getSortOrder() {
         List<SortOrder> sort = new ArrayList<>();
-        List<String> vals = getParamVals("sort");
+        List<String> vals = getParamVals(QueryParameters.SORT_PARAM);
         for (String s : vals) {
             SortOrder so = SortOrder.get(s);
             if (so != null) {
@@ -680,7 +680,7 @@ public final class PageConfig {
      */
     public String getRequestedRevision() {
         if (rev == null) {
-            String tmp = req.getParameter("r");
+            String tmp = req.getParameter(QueryParameters.REVISION_PARAM);
             rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
@@ -1347,7 +1347,8 @@ public final class PageConfig {
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
         sb.append(Util.URIEncodePath(path));
-        sb.append("?r=");
+        sb.append("?");
+        sb.append(QueryParameters.REVISION_PARAM_EQ);
         sb.append(Util.URIEncode(revStr));
 
         if (req.getQueryString() != null) {

@@ -19,27 +19,27 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
-
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 --%>
-<%@page import="java.util.TreeSet"%>
-<%@page import="java.util.Set"%>
-<%@page import="org.opengrok.indexer.configuration.Group"%>
-<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
-<%@page import="org.opengrok.indexer.web.SearchHelper"%>
-<%@page import="java.util.Map"%>
 <%@page import="
+java.util.Map,
+java.util.Set,
 java.util.SortedSet,
 java.util.TreeMap,
+java.util.TreeSet,
 
+org.opengrok.indexer.configuration.Group,
 org.opengrok.indexer.configuration.Project,
 org.opengrok.indexer.search.QueryBuilder,
 org.opengrok.indexer.web.PageConfig,
-org.opengrok.indexer.web.messages.MessagesUtils,
-org.opengrok.indexer.web.Util"
+org.opengrok.indexer.web.ProjectHelper,
+org.opengrok.indexer.web.QueryParameters,
+org.opengrok.indexer.web.SearchHelper,
+org.opengrok.indexer.web.Util,
+org.opengrok.indexer.web.messages.MessagesUtils"
 %>
-<%@ page import="org.opengrok.indexer.web.messages.Message" %>
 <%
 /* ---------------------- menu.jspf start --------------------- */
 {
@@ -80,11 +80,11 @@ document.domReady.push(function() { domReadyMenu(); });
     <tbody id="ptbl">
     <tr>
     <td id="projectLabelTd">
-    <label for="project">Project(s)</label>
+    <label for="<%= QueryParameters.PROJECT_SEARCH_PARAM %>">Project(s)</label>
     </td>
     <td colspan="2">
-    <select tabindex="8" class="q" id="project"
-        name="project" multiple="multiple" size="<%=
+    <select tabindex="8" class="q" id="<%= QueryParameters.PROJECT_SEARCH_PARAM %>"
+        name="<%= QueryParameters.PROJECT_SEARCH_PARAM %>" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
         SortedSet<String> pRequested = new TreeSet<>(cfg.getRequestedProjects());
         for (Group group : ph.getGroups()) {
@@ -159,39 +159,55 @@ document.domReady.push(function() { domReadyMenu(); });
     %>
     <tbody>
     <tr>
-        <td><label for="full" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td colspan="2"><input tabindex="1" class="q" name="full" id="full" type="text" value="<%=
+        <td><label for="<%= QueryParameters.FULL_SEARCH_PARAM %>" title="Text token(s) or other
+            fields to be found (Lucene query--this is not full text)">Full&nbsp;Search</label></td>
+        <td colspan="2"><input tabindex="1" class="q"
+                name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
+                id="<%= QueryParameters.FULL_SEARCH_PARAM %>" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="defs" title="Definition of function/variable/class">Definition</label></td>
-        <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
+        <td><label for="<%= QueryParameters.DEFS_SEARCH_PARAM %>" title="Definition of
+            function/variable/class">Definition</label></td>
+        <td colspan="2"><input class="q" tabindex="2"
+            name="<%= QueryParameters.DEFS_SEARCH_PARAM %>"
+            id="<%= QueryParameters.DEFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="refs" title="Usage of function/variable/class">Symbol</label></td>
-        <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
+        <td><label for="<%= QueryParameters.REFS_SEARCH_PARAM %>" title="Usage of
+            function/variable/class">Symbol</label></td>
+        <td colspan="2"><input class="q" tabindex="3"
+            name="<%= QueryParameters.REFS_SEARCH_PARAM %>"
+            id="<%= QueryParameters.REFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="path" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
-        <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
+        <td><label for="<%= QueryParameters.PATH_SEARCH_PARAM %>" title="Path or parts of it (no need to use dividers)">File&nbsp;Path
+            </label></td>
+        <td colspan="2"><input class="q" tabindex="4"
+            name="<%= QueryParameters.PATH_SEARCH_PARAM %>"
+            id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <%
         if (cfg.getEnv().isHistoryEnabled()) {
     %>
     <tr>
-        <td><label for="hist" title="Search in log messages">History</label></td>
-        <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
+        <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>" title="Search in log
+            messages">History</label></td>
+        <td colspan="2"><input class="q" tabindex="5"
+            name="<%= QueryParameters.HIST_SEARCH_PARAM %>"
+            id="<%= QueryParameters.HIST_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
     <%
         }
     %>
     <tr>
-        <td id="typeLabelTd"><label for="type">Type</label></td>
-        <td><select class="q" tabindex="6" name="type" id="type"><%
+        <td id="typeLabelTd"><label for="<%= QueryParameters.TYPE_SEARCH_PARAM %>">Type</label></td>
+        <td><select class="q" tabindex="6" name="<%= QueryParameters.TYPE_SEARCH_PARAM %>"
+                id="<%= QueryParameters.TYPE_SEARCH_PARAM %>"><%
                 String selection = queryParams.getType();
                 %>
                 <option value="">Any</option><%

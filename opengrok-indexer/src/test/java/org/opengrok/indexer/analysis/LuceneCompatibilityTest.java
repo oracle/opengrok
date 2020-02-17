@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -32,6 +33,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * external tests, need to have test-framework on the path this will do a sanity
@@ -117,15 +119,23 @@ public class LuceneCompatibilityTest extends TestCase {
                         && !name.endsWith("TarAnalyzer") && !name.endsWith("PhpAnalyzer") && !name.endsWith("FortranAnalyzer")) {
 
                     System.out.println("Testing refs with " + name);
-                    //BaseTokenStreamTestCase.assertTokenStreamContents(testA.tokenStream("refs", new StringReader(input)), output, null, null, null, null, null, input.length());
-                    testM.invoke(testC, testA.tokenStream("refs", new StringReader(input)), output, null, null, null, null, null, input.length(), true);
+                    //BaseTokenStreamTestCase.assertTokenStreamContents(testA.tokenStream(
+                    //        QueryBuilder.REFS, new StringReader(input)), output, null, null, null,
+                    //        null, null, input.length());
+                    testM.invoke(testC, testA.tokenStream(QueryBuilder.REFS,
+                            new StringReader(input)), output, null, null, null, null, null,
+                            input.length(), true);
                 }
                 output = new String[]{"hello", "world"};
                 //below analyzers have no full, they just wrap data inside them         
                 if (!name.endsWith("FileAnalyzer") && !name.endsWith("BZip2Analyzer") && !name.endsWith("GZIPAnalyzer")) {
                     System.out.println("Testing full with " + name);
-                    //BaseTokenStreamTestCase.assertTokenStreamContents(testA.tokenStream("full", new StringReader(input)), output, null, null, null, null, null, input.length());
-                    testM.invoke(testC, testA.tokenStream("full", new StringReader(input)), output, null, null, null, null, null, input.length(), true);
+                    //BaseTokenStreamTestCase.assertTokenStreamContents(testA.tokenStream(
+                    //        QueryBuilder.FULL, new StringReader(input)), output, null, null, null,
+                    //        null, null, input.length());
+                    testM.invoke(testC, testA.tokenStream(QueryBuilder.FULL,
+                            new StringReader(input)), output, null, null, null, null, null,
+                            input.length(), true);
                 }
             } catch (InvocationTargetException x) {
                 Throwable cause = x.getCause();

@@ -301,7 +301,7 @@ public class Summarizer {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter        
         ArrayList<SToken> result = new ArrayList<>();
-        try (TokenStream ts = analyzer.tokenStream("full", text)) {
+        try (TokenStream ts = analyzer.tokenStream(QueryBuilder.FULL, text)) {
             CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
             OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);
             ts.reset();
@@ -316,8 +316,6 @@ public class Summarizer {
 
     /**
      * Get the terms from a query and adds them to highlight a stream of tokens.
-     *
-     * @param query
      */
     private void getTerms(Query query) {
         if (query instanceof BooleanQuery) {

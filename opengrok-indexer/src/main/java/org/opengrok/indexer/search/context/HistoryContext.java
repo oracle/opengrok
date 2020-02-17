@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -44,6 +44,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -230,9 +231,9 @@ public class HistoryContext {
             out.append("<a href=\"");
             printHTML(out, wcontext + Prefix.DIFF_P +
                     Util.URIEncodePath(path) +
-                    "?r2=" + Util.URIEncodePath(path) + "@" + rev +
-                    "&r1=" + Util.URIEncodePath(path) + "@" + nrev +
-                    "\" title=\"diff to previous version\"", flatten);
+                    "?" + QueryParameters.REVISION_2_PARAM_EQ + Util.URIEncodePath(path) + "@" +
+                    rev + "&" + QueryParameters.REVISION_1_PARAM_EQ + Util.URIEncodePath(path) +
+                    "@" + nrev + "\" title=\"diff to previous version\"", flatten);
             out.append(">diff</a> ");
         }
 

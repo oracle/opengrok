@@ -20,7 +20,7 @@
 /* 
  * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
@@ -103,7 +103,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "full" field.
+     * Set search string for the {@link #FULL} field.
      *
      * @param freetext query string to set
      * @return this instance
@@ -113,7 +113,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "full" field.
+     * Get search string for the {@link #FULL} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -122,7 +122,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "defs" field.
+     * Set search string for the {@link #DEFS} field.
      *
      * @param defs query string to set
      * @return this instance
@@ -132,7 +132,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "full" field.
+     * Get search string for the {@link #FULL} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -141,7 +141,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "refs" field.
+     * Set search string for the {@link #REFS} field.
      *
      * @param refs query string to set
      * @return this instance
@@ -151,7 +151,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "refs" field.
+     * Get search string for the {@link #REFS} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -160,7 +160,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "path" field.
+     * Set search string for the {@link #PATH} field.
      *
      * @param path query string to set
      * @return this instance
@@ -170,7 +170,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "path" field.
+     * Get search string for the {@link #PATH} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -179,7 +179,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "dirpath" field.
+     * Set search string for the {@link #DIRPATH} field.
      * @param path query string to set
      * @return this instance
      */
@@ -189,7 +189,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "dirpath" field.
+     * Get search string for the {@link #DIRPATH} field.
      * @return {@code null} if not set; the query string otherwise.
      */
     public String getDirPath() {
@@ -228,7 +228,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "hist" field.
+     * Set search string for the {@link #HIST} field.
      *
      * @param hist query string to set
      * @return this instance
@@ -238,7 +238,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "hist" field.
+     * Get search string for the {@link #HIST} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -247,7 +247,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "type" field.
+     * Set search string for the {@link #TYPE} field.
      *
      * @param type query string to set
      * @return this instance
@@ -257,7 +257,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Get search string for the "type" field.
+     * Get search string for the {@link #TYPE} field.
      *
      * @return {@code null} if not set, the query string otherwise.
      */
@@ -318,7 +318,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Used to tell if this search only has the "definitions" field filled in.
+     * Used to tell if this search only has the {@link #DEFS} field filled in.
      *
      * @return whether above statement is true or false
      */

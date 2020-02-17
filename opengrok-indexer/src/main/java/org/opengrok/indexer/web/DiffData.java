@@ -20,6 +20,7 @@
 /*
  * Copyright 2009 - 2011 Jens Elkner.
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -53,7 +54,7 @@ public class DiffData {
     public String[][] file;
     /** error message to show, if diffs are not available. */
     public String errorMsg;
-    /** If {@code true} a full diff is desired (request parameter {@code full=1}. */
+    /** If {@code true} a full diff is desired. */
     public boolean full;
     /** How should the data be displayed (request parameter {@code format}. */
     public DiffType type;
