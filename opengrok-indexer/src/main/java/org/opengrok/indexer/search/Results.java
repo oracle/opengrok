@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search;
@@ -229,7 +229,8 @@ public final class Results {
                 out.write("</a>");
                 out.write("</td><td><code class=\"con\">");
                 if (sh.sourceContext != null) {
-                    AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get("t"));
+                    AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(
+                            doc.get(QueryBuilder.T));
                     if (AbstractAnalyzer.Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
