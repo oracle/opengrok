@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -83,6 +83,7 @@ include file="projects.jspf"
     SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
+        return;
     }
     if (searchHelper.errorMsg != null) {
         cfg.setTitle("Search Error");
