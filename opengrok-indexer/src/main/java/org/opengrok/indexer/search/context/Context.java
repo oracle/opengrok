@@ -63,7 +63,7 @@ public class Context {
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
-    String queryAsURI;
+    private final String queryAsURI;
 
     /**
      * Map whose keys tell which fields to look for in the source file, and
@@ -95,7 +95,9 @@ public class Context {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, TOKEN_FIELDS);
         if (m != null) {
-            buildQueryAsURI(qbuilder.getQueries());
+            queryAsURI = buildQueryAsURI(qbuilder.getQueries());
+        } else {
+            queryAsURI = "";
         }
     }
 
@@ -232,10 +234,9 @@ public class Context {
      *
      * @param subqueries a map containing the query text for each field
      */
-    private void buildQueryAsURI(Map<String, String> subqueries) {
+    private String buildQueryAsURI(Map<String, String> subqueries) {
         if (subqueries.isEmpty()) {
-            queryAsURI = "";
-            return;
+            return "";
         }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
@@ -245,7 +246,7 @@ public class Context {
                 .append('&');
         }
         sb.setLength(sb.length() - 1);
-        queryAsURI = sb.toString();
+        return sb.toString();
     }
 
     private boolean alt = true;
