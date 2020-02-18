@@ -63,7 +63,6 @@ public class Context {
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
-    PlainLineTokenizer tokens;
     String queryAsURI;
 
     /**
@@ -97,8 +96,6 @@ public class Context {
         m = qm.getMatchers(query, TOKEN_FIELDS);
         if (m != null) {
             buildQueryAsURI(qbuilder.getQueries());
-            //System.err.println("Found Matchers = "+ m.length + " for " + query);
-            tokens = new PlainLineTokenizer((Reader) null);
         }
     }
 
@@ -367,9 +364,9 @@ public class Context {
         if (in == null) {
             return anything;
         }
-        int charsRead;
-        boolean truncated = false;
 
+        PlainLineTokenizer tokens = new PlainLineTokenizer(null);
+        boolean truncated = false;
         boolean lim = limit;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (!env.isQuickContextScan()) {
@@ -378,6 +375,7 @@ public class Context {
 
         if (lim) {
             char[] buffer = new char[MAXFILEREAD];
+            int charsRead;
             try {
                 charsRead = in.read(buffer);
                 if (charsRead == MAXFILEREAD) {
