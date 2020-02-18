@@ -63,7 +63,6 @@ public class Context {
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
-    private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;
 
@@ -99,7 +98,6 @@ public class Context {
         if (m != null) {
             buildQueryAsURI(qbuilder.getQueries());
             //System.err.println("Found Matchers = "+ m.length + " for " + query);
-            buffer = new char[MAXFILEREAD];
             tokens = new PlainLineTokenizer((Reader) null);
         }
     }
@@ -213,7 +211,7 @@ public class Context {
 
         try {
             List<String> fieldList = qbuilder.getContextFields();
-            String[] fields = fieldList.toArray(new String[fieldList.size()]);
+            String[] fields = fieldList.toArray(new String[0]);
 
             String res = uhi.highlightFieldsUnion(fields, query, docId,
                 linelimit);
@@ -299,7 +297,8 @@ public class Context {
                             if (scopes != null) {
                                 Scope scp = scopes.getScope(tag.line);
                                 scope = scp.getName() + "()";
-                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.getLineFrom()) + "\">" + scope + "</a>";
+                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" +
+                                        scp.getLineFrom() + "\">" + scope + "</a>";
                             }
 
                             /* desc[0] is matched symbol
@@ -368,7 +367,7 @@ public class Context {
         if (in == null) {
             return anything;
         }
-        int charsRead = 0;
+        int charsRead;
         boolean truncated = false;
 
         boolean lim = limit;
@@ -378,6 +377,7 @@ public class Context {
         }
 
         if (lim) {
+            char[] buffer = new char[MAXFILEREAD];
             try {
                 charsRead = in.read(buffer);
                 if (charsRead == MAXFILEREAD) {
