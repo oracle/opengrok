@@ -6,6 +6,14 @@ OpenGrok RESTful API documentation. The following endpoints are accessible under
 
 Besides `/suggester` and `/search` endpoints, everything is accessible from `localhost` only.
 
+## Authorization framework reload [/configuration/authorization/reload]
+
+### reloads authorization framework [POST]
+
++ Request (application/text)
+
++ Response 204
+
 ## Configuration [/configuration]
 
 ### return XML representation of configuration [GET]
@@ -59,11 +67,68 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Response 204
 
-## Authorization framework reload [/configuration/authorization/reload]
+## History [/history]
 
-### reloads authorization framework [POST]
+### get history entries [GET]
 
-+ Request (application/text)
++ Parameters
+  + path (string) - path of file/directory to get history for
+  + withFiles (optional, string) - whether to include list of files
+  + start (optional, int) - start index
+  + max (optional, int) - number of entries to get (default value 1000)
+
++ Response 200 (application/json)
+  + Body
+
+        {
+          "entries": [
+            {
+              "revision": "86b0ab6b",
+              "date": 1565163646000,
+              "author": "Adam Hornacek <adam.hornacek@oracle.com>",
+              "tags": null,
+              "message": "Try to use mvnw in CI",
+              "files": [
+                "/opengrok/docker/README.md"
+              ]
+            },
+            {
+              "revision": "a391bead",
+              "date": 1564745178000,
+              "author": "Adam Hornacek <adam.hornacek@oracle.com>",
+              "tags": null,
+              "message": "Fix docker readme typo",
+              "files": [
+                "/opengrok/docker/README.md"
+              ]
+            },
+            {
+              "revision": "33551f14",
+              "date": 1563531391000,
+              "author": "Vladimir Kotal <vlada@devnull.cz>",
+              "tags": "1.3.0, 1.2.25, 1.2.24",
+              "message": "document docker-compose",
+              "files": [
+                "/opengrok/docker/README.md"
+              ]
+            }
+          ]
+        }
+
+## Include files reload [/system/includes/reload]
+
+### reloads all include files for web application [PUT]
+
++ Response 204
+
+## Index searchers refresh [/system/refresh]
+
+### refreshes index searchers for specified project [PUT]
+
++ Request (text/plain)
+  + Body
+
+            project name to refresh
 
 + Response 204
 
@@ -121,6 +186,18 @@ see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java
             "text": "test&nbsp;message"
           }
         ]
+
+## Path descriptions [/system/pathdesc]
+
+### updates path descriptions for web application [POST]
+
++ Request (text/plain)
+  + Body
+
+            /foo    bar
+            /foo/foo    bar bar
+
++ Response 204
 
 ## Projects [/projects]
 
@@ -266,7 +343,7 @@ The repository path is relative to source root.
   + hist (optional, string) - history field value to search for
   + type (optional, string) - type of the files to search for
   + projects (optional, string) - projects to search in
-  + maxresults (optional, string) - maximum number of documents whose hits will be returned
+  + maxresults (optional, string) - maximum number of documents whose hits will be returned (default 1000)
   + start (optional, string) - start index from which to return results
 
 + Response 200 (application/json)
@@ -426,34 +503,5 @@ This kicks off suggester data rebuild in the background, i.e. the rebuild will v
 
 + Parameters
   + project - project name
-
-+ Response 204
-
-## Index searchers refresh [/system/refresh]
-
-### refreshes index searchers for specified project [PUT]
-
-+ Request (text/plain)
-  + Body
-  
-            project name to refresh
-
-+ Response 204
-
-## Include files reload [/system/includes/reload]
-
-### reloads all include files for web application [PUT]
-
-+ Response 204
-
-## Path descriptions [/system/pathdesc]
-
-### updates path descriptions for web application [POST]
-
-+ Request (text/plain)
-  + Body
-  
-            /foo    bar
-            /foo/foo    bar bar
 
 + Response 204
