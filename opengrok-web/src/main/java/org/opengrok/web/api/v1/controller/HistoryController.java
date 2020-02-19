@@ -55,7 +55,7 @@ import java.util.SortedSet;
 @Path(HistoryController.PATH)
 public final class HistoryController {
 
-    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final int MAX_RESULTS = 1000;
 
@@ -95,15 +95,15 @@ public final class HistoryController {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
+            if (obj == null) { return false; }
+            if (getClass() != obj.getClass()) { return false; }
             final HistoryEntryDTO other = (HistoryEntryDTO) obj;
-            if (!Objects.equals(this.revision, other.revision)) return false;
-            if (!Objects.equals(this.date, other.date)) return false;
-            if (!Objects.equals(this.author, other.author)) return false;
-            if (!Objects.equals(this.tags, other.tags)) return false;
-            if (!Objects.equals(this.message, other.message)) return false;
-            if (!Objects.equals(this.files, other.files)) return false;
+            if (!Objects.equals(this.revision, other.revision)) { return false; }
+            if (!Objects.equals(this.date, other.date)) { return false; }
+            if (!Objects.equals(this.author, other.author)) { return false; }
+            if (!Objects.equals(this.tags, other.tags)) { return false; }
+            if (!Objects.equals(this.message, other.message)) { return false; }
+            if (!Objects.equals(this.files, other.files)) { return false; }
             return true;
         }
 
@@ -132,8 +132,8 @@ public final class HistoryController {
         }
 
         public boolean equals(Object obj) {
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
+            if (obj == null) { return false; }
+            if (getClass() != obj.getClass()) { return false; }
             final HistoryDTO other = (HistoryDTO) obj;
             return Objects.equals(this.entries, other.entries);
         }
