@@ -413,9 +413,13 @@ public class SearchHelper {
                 }
             }
             if (uniqueDefinition) {
+                String anchor = Util.URIEncode(((TermQuery) query).getTerm().text());
                 redirect = contextPath + Prefix.XREF_P
                         + Util.URIEncodePath(searcher.doc(hits[0].doc).get(QueryBuilder.PATH))
-                        + '#' + Util.URIEncode(((TermQuery) query).getTerm().text());
+                        + '?'
+                        + UriConsts.FRAGMENT_IDENTIFIER
+                        + '=' + anchor
+                        + '#' + anchor;
             }
         } catch (BooleanQuery.TooManyClauses e) {
             errorMsg = "Too many results for wildcard!";

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -1353,6 +1353,11 @@ public final class PageConfig {
         if (req.getQueryString() != null) {
             sb.append("&");
             sb.append(req.getQueryString());
+        }
+        String frag = req.getParameter(UriConsts.FRAGMENT_IDENTIFIER);
+        if (frag != null) {
+            sb.append("#");
+            sb.append(Util.URIEncode(frag));
         }
 
         return sb.toString();

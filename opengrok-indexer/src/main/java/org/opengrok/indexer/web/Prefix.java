@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2011 Jens Elkner.
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -105,7 +106,7 @@ public enum Prefix {
      * @see #toString()
      */
     public static Prefix get(String servletPath) {
-        if (servletPath == null || servletPath.length() < 3 || servletPath.charAt(0) != '/') {
+        if (servletPath == null || servletPath.length() < 2 || servletPath.charAt(0) != '/') {
             return UNKNOWN;
         }
         int idx = servletPath.indexOf('/', 1);
