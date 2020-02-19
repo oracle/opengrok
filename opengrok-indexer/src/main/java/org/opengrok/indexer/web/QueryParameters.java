@@ -78,6 +78,16 @@ public class QueryParameters {
     public static final String FORMAT_PARAM_EQ = FORMAT_PARAM + "=";
 
     /**
+     * Parameter name to specify a mediated fragment identifier.
+     */
+    public static final String FRAGMENT_IDENTIFIER_PARAM = "fi";
+
+    /**
+     * {@link #FRAGMENT_IDENTIFIER_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String FRAGMENT_IDENTIFIER_PARAM_EQ = FRAGMENT_IDENTIFIER_PARAM + "=";
+
+    /**
      * Parameter name to specify an OpenGrok full search.
      */
     public static final String FULL_SEARCH_PARAM = "full";

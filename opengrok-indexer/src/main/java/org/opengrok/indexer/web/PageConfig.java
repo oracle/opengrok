@@ -1355,6 +1355,11 @@ public final class PageConfig {
             sb.append("&");
             sb.append(req.getQueryString());
         }
+        String frag = req.getParameter(QueryParameters.FRAGMENT_IDENTIFIER_PARAM);
+        if (frag != null) {
+            sb.append("#");
+            sb.append(Util.URIEncode(frag));
+        }
 
         return sb.toString();
     }
