@@ -88,6 +88,11 @@ public final class HistoryController {
             this.files = entry.getFiles();
         }
 
+        // for testing
+        public String getAuthor() {
+            return author;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) return false;
@@ -121,6 +126,11 @@ public final class HistoryController {
             this.entries = entries;
         }
 
+        // for testing
+        public List<HistoryEntryDTO> getEntries() {
+            return entries;
+        }
+
         public boolean equals(Object obj) {
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
@@ -136,11 +146,8 @@ public final class HistoryController {
 
     static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries) {
         List<HistoryEntryDTO> entries = new ArrayList<>();
-        for (HistoryEntry entry : historyEntries) {
-            entries.add(new HistoryEntryDTO(entry));
-        }
-        HistoryDTO res = new HistoryDTO(entries);
-        return res;
+        historyEntries.stream().map(HistoryEntryDTO::new).forEach(entries::add);
+        return new HistoryDTO(entries);
     }
 
     @GET

@@ -105,12 +105,19 @@ public class HistoryControllerTest extends JerseyTest {
     @Test
     public void testHistoryGet() throws Exception {
         final String path = "git";
+        int size = 5;
+        int start = 2;
         Response response = target("history")
                 .queryParam("path", path)
+                .queryParam("max", size)
+                .queryParam("start", start)
                 .request()
                 .get();
         HistoryDTO history = response.readEntity(new GenericType<HistoryDTO>() {});
+        assertEquals(size, history.getEntries().size());
+        assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
+
         History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
-        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries()));
+        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start)));
     }
 }
