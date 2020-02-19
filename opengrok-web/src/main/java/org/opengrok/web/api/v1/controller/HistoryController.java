@@ -24,7 +24,8 @@
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jetbrains.annotations.NotNull;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -33,13 +34,18 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +53,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 @Path("/history")
-public class HistoryController {
+public final class HistoryController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -138,11 +144,25 @@ public class HistoryController {
     @GET
     @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
-    public HistoryDTO get(@QueryParam("path") final String path,
+    public HistoryDTO get(@Context HttpServletRequest request,
+                          @Context HttpServletResponse response,
+                          @QueryParam("path") final String path,
                           @QueryParam("withFiles") final boolean withFiles,
                           @QueryParam("max") @DefaultValue(MAX_RESULTS + "") final int maxEntries,
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
-            throws HistoryException {
+            throws HistoryException, IOException {
+
+        if (request != null) {
+            AuthorizationFramework auth = env.getAuthorizationFramework();
+            if (auth != null) {
+                Project p = Project.getProject(path.startsWith("/") ? path : "/" + path);
+                if (p != null && !auth.isAllowed(request, p)) {
+                    response.sendError(Response.status(Response.Status.FORBIDDEN).build().getStatus(),
+                            "not authorized");
+                    return null;
+                }
+            }
+        }
 
         History history = HistoryGuru.getInstance().getHistory(new File(env.getSourceRootFile(), path),
                 withFiles, true);
