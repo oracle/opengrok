@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
@@ -56,12 +56,13 @@ import org.opengrok.indexer.web.Util;
  */
 public class Context {
 
+    static final int MAXFILEREAD = 1024 * 1024;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
-    static final int MAXFILEREAD = 1024 * 1024;
     private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;
