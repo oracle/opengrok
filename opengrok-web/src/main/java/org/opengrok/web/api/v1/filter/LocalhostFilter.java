@@ -23,6 +23,7 @@
 package org.opengrok.web.api.v1.filter;
 
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.web.api.v1.controller.HistoryController;
 import org.opengrok.web.api.v1.controller.SearchController;
 import org.opengrok.web.api.v1.controller.SuggesterController;
 
@@ -56,7 +57,8 @@ public class LocalhostFilter implements ContainerRequestFilter {
      * @see SuggesterController#getConfig()
      */
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
-            SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config"));
+            SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config",
+            HistoryController.PATH));
 
     @Context
     private HttpServletRequest request;

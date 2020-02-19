@@ -52,12 +52,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 
-@Path("/history")
+@Path(HistoryController.PATH)
 public final class HistoryController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final int MAX_RESULTS = 1000;
+
+    public static final String PATH = "/history";
 
     static class HistoryEntryDTO implements JSONable {
         @JsonProperty
