@@ -55,7 +55,7 @@ import java.util.SortedSet;
 @Path(HistoryController.PATH)
 public final class HistoryController {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final int MAX_RESULTS = 1000;
 
@@ -110,7 +110,7 @@ public final class HistoryController {
 
     static class HistoryDTO implements JSONable {
         @JsonProperty
-        private List<HistoryEntryDTO> entries;
+        private final List<HistoryEntryDTO> entries;
 
         // for testing
         HistoryDTO() {
