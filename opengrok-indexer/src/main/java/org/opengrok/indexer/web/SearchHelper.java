@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -401,7 +401,7 @@ public class SearchHelper {
             // one single definition term AND we have exactly one match AND there
             // is only one definition of that symbol in the document that matches.
             boolean uniqueDefinition = false;
-            if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
+            if (isCrossRefSearch && isSingleDefinitionSearch && hits != null && hits.length == 1) {
                 Document doc = searcher.doc(hits[0].doc);
                 if (doc.getField(QueryBuilder.TAGS) != null) {
                     byte[] rawTags = doc.getField(QueryBuilder.TAGS).binaryValue().bytes;
@@ -412,9 +412,7 @@ public class SearchHelper {
                     }
                 }
             }
-            // @TODO fix me. I should try to figure out where the exact hit is
-            // instead of returning a page with just _one_ entry in....
-            if (uniqueDefinition && hits != null && hits.length > 0 && isCrossRefSearch) {
+            if (uniqueDefinition) {
                 redirect = contextPath + Prefix.XREF_P
                         + Util.URIEncodePath(searcher.doc(hits[0].doc).get(QueryBuilder.PATH))
                         + '#' + Util.URIEncode(((TermQuery) query).getTerm().text());
