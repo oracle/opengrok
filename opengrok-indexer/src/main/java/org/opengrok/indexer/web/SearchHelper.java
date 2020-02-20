@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanQuery;
@@ -401,24 +402,25 @@ public class SearchHelper {
             // one single definition term AND we have exactly one match AND there
             // is only one definition of that symbol in the document that matches.
             boolean uniqueDefinition = false;
+            Document doc = null;
+            String symbol = null;
             if (isCrossRefSearch && isSingleDefinitionSearch && hits != null && hits.length == 1) {
-                Document doc = searcher.doc(hits[0].doc);
-                if (doc.getField(QueryBuilder.TAGS) != null) {
-                    byte[] rawTags = doc.getField(QueryBuilder.TAGS).binaryValue().bytes;
+                doc = searcher.doc(hits[0].doc);
+                IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+                if (tagsField != null) {
+                    byte[] rawTags = tagsField.binaryValue().bytes;
                     Definitions tags = Definitions.deserialize(rawTags);
-                    String symbol = ((TermQuery) query).getTerm().text();
+                    symbol = ((TermQuery) query).getTerm().text();
                     if (tags.occurrences(symbol) == 1) {
                         uniqueDefinition = true;
                     }
                 }
             }
             if (uniqueDefinition) {
-                String anchor = Util.URIEncode(((TermQuery) query).getTerm().text());
+                String anchor = Util.URIEncode(symbol);
                 redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(searcher.doc(hits[0].doc).get(QueryBuilder.PATH))
-                        + '?'
-                        + UriConsts.FRAGMENT_IDENTIFIER
-                        + '=' + anchor
+                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + '?' + UriConsts.FRAGMENT_IDENTIFIER + '=' + anchor
                         + '#' + anchor;
             }
         } catch (BooleanQuery.TooManyClauses e) {
