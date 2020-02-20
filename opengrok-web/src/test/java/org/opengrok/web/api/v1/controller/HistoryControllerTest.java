@@ -96,8 +96,8 @@ public class HistoryControllerTest extends JerseyTest {
         assertEquals(entry1, entry1);
         assertNotEquals(entry1, entry2);
 
-        HistoryDTO history1 = new HistoryDTO(Collections.singletonList(entry1));
-        HistoryDTO history2 = new HistoryDTO(Collections.singletonList(entry2));
+        HistoryDTO history1 = new HistoryDTO(Collections.singletonList(entry1), 0, 1, 1);
+        HistoryDTO history2 = new HistoryDTO(Collections.singletonList(entry2), 0, 1, 1);
         assertEquals(history1, history1);
         assertNotEquals(history1, history2);
     }
@@ -118,6 +118,7 @@ public class HistoryControllerTest extends JerseyTest {
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
 
         History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
-        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start)));
+        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start),
+                start, size, repoHistory.getHistoryEntries().size()));
     }
 }

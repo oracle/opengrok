@@ -116,14 +116,23 @@ public final class HistoryController {
     static class HistoryDTO implements JSONable {
         @JsonProperty
         private final List<HistoryEntryDTO> entries;
+        @JsonProperty
+        private int start;
+        @JsonProperty
+        private int count;
+        @JsonProperty
+        private int total;
 
         // for testing
         HistoryDTO() {
             this.entries = new ArrayList<>();
         }
 
-        HistoryDTO(List<HistoryEntryDTO> entries) {
+        HistoryDTO(List<HistoryEntryDTO> entries, int start, int count, int total) {
             this.entries = entries;
+            this.start = start;
+            this.count = count;
+            this.total = total;
         }
 
         // for testing
@@ -135,19 +144,23 @@ public final class HistoryController {
             if (obj == null) { return false; }
             if (getClass() != obj.getClass()) { return false; }
             final HistoryDTO other = (HistoryDTO) obj;
-            return Objects.equals(this.entries, other.entries);
+            if (!Objects.equals(this.entries, other.entries)) { return false; }
+            if (!Objects.equals(this.start, other.start)) { return false; }
+            if (!Objects.equals(this.count, other.count)) { return false; }
+            if (!Objects.equals(this.total, other.total)) { return false; }
+            return true;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(entries);
+            return Objects.hash(entries, start, count, total);
         }
     }
 
-    static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries) {
+    static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries, int start, int count, int total) {
         List<HistoryEntryDTO> entries = new ArrayList<>();
         historyEntries.stream().map(HistoryEntryDTO::new).forEach(entries::add);
-        return new HistoryDTO(entries);
+        return new HistoryDTO(entries, start, count, total);
     }
 
     @GET
@@ -179,8 +192,7 @@ public final class HistoryController {
             return null;
         }
 
-        HistoryDTO res = getHistoryDTO(history.getHistoryEntries(maxEntries, startIndex));
-
-        return res;
+        return getHistoryDTO(history.getHistoryEntries(maxEntries, startIndex),
+                startIndex, maxEntries, history.getHistoryEntries().size());
     }
 }
