@@ -24,8 +24,6 @@
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.opengrok.indexer.authorization.AuthorizationFramework;
-import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -51,6 +49,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
+
+import static org.opengrok.web.util.AuthPathUtil.isPathAuthorized;
 
 @Path(HistoryController.PATH)
 public final class HistoryController {
@@ -202,16 +202,10 @@ public final class HistoryController {
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
             throws HistoryException, IOException {
 
-        if (request != null) {
-            AuthorizationFramework auth = env.getAuthorizationFramework();
-            if (auth != null) {
-                Project p = Project.getProject(path.startsWith("/") ? path : "/" + path);
-                if (p != null && !auth.isAllowed(request, p)) {
-                    response.sendError(Response.status(Response.Status.FORBIDDEN).build().getStatus(),
-                            "not authorized");
-                    return null;
-                }
-            }
+        if (!isPathAuthorized(path, request)) {
+            response.sendError(Response.status(Response.Status.FORBIDDEN).build().getStatus(),
+                    "not authorized");
+            return null;
         }
 
         History history = HistoryGuru.getInstance().getHistory(new File(env.getSourceRootFile(), path),
