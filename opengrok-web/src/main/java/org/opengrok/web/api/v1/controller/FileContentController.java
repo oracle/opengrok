@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static org.opengrok.web.util.AuthPathUtil.isPathAuthorized;
 
@@ -51,20 +52,21 @@ public class FileContentController {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    class FileContentDTO {
+    private ArrayList<String> lines = new ArrayList<>();
+    private int gcount = 1;
+
+    class LineDTO {
         @JsonProperty
-        ArrayList<String> lines;
+        private String line;
+        @JsonProperty
+        private int count;
 
-        FileContentDTO() {
-            lines = new ArrayList<>();
+        LineDTO() {
         }
 
-        public ArrayList<String> getLines() {
-            return lines;
-        }
-
-        public void add(String line) {
-            lines.add(line);
+        LineDTO(String line) {
+            this.line = line;
+            this.count = gcount++;
         }
     }
 
@@ -88,15 +90,14 @@ public class FileContentController {
             // TODO: set error
             return null;
         }
-        FileContentDTO fileContent = new FileContentDTO();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-               fileContent.add(line);
+               lines.add(line);
             }
         }
 
         // TODO: array of lines with line number
-        return fileContent.getLines();
+        return lines.stream().map(LineDTO::new).collect(Collectors.toList());
     }
 }
