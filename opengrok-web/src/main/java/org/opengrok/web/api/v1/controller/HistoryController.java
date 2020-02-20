@@ -47,12 +47,10 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 
 @Path(HistoryController.PATH)
 public final class HistoryController {
@@ -115,10 +113,47 @@ public final class HistoryController {
         }
     }
 
+    static class HistoryDTO implements JSONable {
+        @JsonProperty
+        private final List<HistoryEntryDTO> entries;
+
+        // for testing
+        HistoryDTO() {
+            this.entries = new ArrayList<>();
+        }
+
+        HistoryDTO(List<HistoryEntryDTO> entries) {
+            this.entries = entries;
+        }
+
+        // for testing
+        public List<HistoryEntryDTO> getEntries() {
+            return entries;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == null) { return false; }
+            if (getClass() != obj.getClass()) { return false; }
+            final HistoryDTO other = (HistoryDTO) obj;
+            return Objects.equals(this.entries, other.entries);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(entries);
+        }
+    }
+
+    static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries) {
+        List<HistoryEntryDTO> entries = new ArrayList<>();
+        historyEntries.stream().map(HistoryEntryDTO::new).forEach(entries::add);
+        return new HistoryDTO(entries);
+    }
+
     @GET
     @CorsEnable
     @Produces(MediaType.APPLICATION_JSON)
-    public List<HistoryEntryDTO> get(@Context HttpServletRequest request,
+    public HistoryDTO get(@Context HttpServletRequest request,
                           @Context HttpServletResponse response,
                           @QueryParam("path") final String path,
                           @QueryParam("withFiles") final boolean withFiles,
@@ -144,8 +179,8 @@ public final class HistoryController {
             return null;
         }
 
-        return history.getHistoryEntries(maxEntries, startIndex).stream().
-                map(HistoryEntryDTO::new).
-                collect(Collectors.toList());
+        HistoryDTO res = getHistoryDTO(history.getHistoryEntries(maxEntries, startIndex));
+
+        return res;
     }
 }

@@ -10,11 +10,13 @@ import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.web.api.v1.controller.HistoryController.HistoryDTO;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryEntryDTO;
 
 import javax.ws.rs.core.Application;
@@ -22,13 +24,13 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class HistoryControllerTest extends JerseyTest {
@@ -93,6 +95,11 @@ public class HistoryControllerTest extends JerseyTest {
 
         assertEquals(entry1, entry1);
         assertNotEquals(entry1, entry2);
+
+        HistoryDTO history1 = new HistoryDTO(Collections.singletonList(entry1));
+        HistoryDTO history2 = new HistoryDTO(Collections.singletonList(entry2));
+        assertEquals(history1, history1);
+        assertNotEquals(history1, history2);
     }
 
     @Test
@@ -106,14 +113,11 @@ public class HistoryControllerTest extends JerseyTest {
                 .queryParam("start", start)
                 .request()
                 .get();
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        List<HistoryEntryDTO> historyAPI = response.readEntity(new GenericType<List<HistoryEntryDTO>>() {});
-        assertEquals(size, historyAPI.size());
-        assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", historyAPI.get(0).getAuthor());
+        HistoryDTO history = response.readEntity(new GenericType<HistoryDTO>() {});
+        assertEquals(size, history.getEntries().size());
+        assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
 
-        List<HistoryEntry> historyRepo = HistoryGuru.getInstance().
-                getHistory(new File(repository.getSourceRoot(), path)).
-                getHistoryEntries(size, start);
-        assertEquals(historyAPI, historyRepo.stream().map(HistoryEntryDTO::new).collect(Collectors.toList()));
+        History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
+        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start)));
     }
 }
