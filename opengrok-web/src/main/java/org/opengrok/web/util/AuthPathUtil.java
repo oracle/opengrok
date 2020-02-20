@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AuthPathUtil {
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    // TODO make this a filter ?
     public static boolean isPathAuthorized(String path, HttpServletRequest request) {
         if (request != null) {
             AuthorizationFramework auth = env.getAuthorizationFramework();
