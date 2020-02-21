@@ -24,6 +24,9 @@
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 
@@ -36,10 +39,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -83,13 +89,22 @@ public class FileContentController {
             return null;
         }
 
-        // TODO: identify the file type and return only for text files
-
         File file = new File(env.getSourceRootFile(), path);
         if (!file.isFile()) {
             // TODO: set error
             return null;
         }
+
+        // TODO: identify the file type and return only for text files
+        try (InputStream in = new BufferedInputStream(
+                new FileInputStream(file))) {
+            AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
+            if (!(fa instanceof TextAnalyzer)) {
+                // TODO set error
+                return null;
+            }
+        }
+
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
