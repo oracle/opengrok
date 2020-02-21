@@ -48,7 +48,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -423,8 +422,6 @@ public class SearchHelper {
                         + '?' + QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ + anchor
                         + '#' + anchor;
             }
-        } catch (BooleanQuery.TooManyClauses e) {
-            errorMsg = "Too many results for wildcard!";
         } catch (IOException | ClassNotFoundException e) {
             errorMsg = e.getMessage();
         }
@@ -495,19 +492,19 @@ public class SearchHelper {
                         && !builder.getFreetext().isEmpty()) {
                     t = new Term(QueryBuilder.FULL, builder.getFreetext());
                     getSuggestion(t, ir, dummy);
-                    s.freetext = dummy.toArray(new String[dummy.size()]);
+                    s.freetext = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 if (builder.getRefs() != null && !builder.getRefs().isEmpty()) {
                     t = new Term(QueryBuilder.REFS, builder.getRefs());
                     getSuggestion(t, ir, dummy);
-                    s.refs = dummy.toArray(new String[dummy.size()]);
+                    s.refs = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 if (builder.getDefs() != null && !builder.getDefs().isEmpty()) {
                     t = new Term(QueryBuilder.DEFS, builder.getDefs());
                     getSuggestion(t, ir, dummy);
-                    s.defs = dummy.toArray(new String[dummy.size()]);
+                    s.defs = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 //TODO suggest also for path and history?
