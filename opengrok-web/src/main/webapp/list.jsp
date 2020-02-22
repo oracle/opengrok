@@ -394,7 +394,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             }
                         }
                     } catch (IOException e) {
-                        error = e.getMessage();
+                        LOGGER.log(Level.SEVERE, "Failed xref on-the-fly", e);
                     } finally {
                         if (r != null) {
                             IOUtils.close(r);
