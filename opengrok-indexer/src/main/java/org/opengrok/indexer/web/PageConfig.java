@@ -1334,15 +1334,11 @@ public final class PageConfig {
 
     /**
      * Get the location of cross reference for given file containing the given revision.
-     * @param revStr revision string
-     * @return location to redirect to or null if revision string is empty
+     * @param revStr defined revision string
+     * @return location to redirect to
      */
     public String getRevisionLocation(String revStr) {
         StringBuilder sb = new StringBuilder();
-
-        if (revStr == null) {
-            return null;
-        }
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);

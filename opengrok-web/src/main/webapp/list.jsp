@@ -76,8 +76,9 @@ final String DUMMY_REVISION = "unknown";
          * Get the latest revision and redirect so that the revision number
          * appears in the URL.
          */
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
-        if (location != null) {
+        String latestRevision = cfg.getLatestRevision();
+        if (latestRevision != null) {
+            String location = cfg.getRevisionLocation(latestRevision);
             response.sendRedirect(location);
             return;
         }
@@ -88,7 +89,7 @@ final String DUMMY_REVISION = "unknown";
              * revision string so that xref can be generated from the resource
              * file directly.
              */
-            location = cfg.getRevisionLocation(DUMMY_REVISION);
+            String location = cfg.getRevisionLocation(DUMMY_REVISION);
             response.sendRedirect(location);
             return;
         }
