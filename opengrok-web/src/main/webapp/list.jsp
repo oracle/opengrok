@@ -78,11 +78,13 @@ final String DUMMY_REVISION = "unknown";
          */
         String latestRevision = cfg.getLatestRevision();
         if (latestRevision != null) {
+            cfg.evaluateMatchOffset();
             String location = cfg.getRevisionLocation(latestRevision);
             response.sendRedirect(location);
             return;
         }
         if (!cfg.getEnv().isGenerateHtml()) {
+            cfg.evaluateMatchOffset();
             /*
              * Economy mode is on and failed to get the last revision
              * (presumably running with history turned off).  Use dummy
@@ -90,6 +92,17 @@ final String DUMMY_REVISION = "unknown";
              * file directly.
              */
             String location = cfg.getRevisionLocation(DUMMY_REVISION);
+            response.sendRedirect(location);
+            return;
+        }
+
+        if (cfg.evaluateMatchOffset()) {
+            /*
+             * If after calling, a match offset has been translated to a
+             * fragment identifier (specifying a line#), then redirect to self.
+             * This block will not be activated again the second time.
+             */
+            String location = cfg.getRevisionLocation(""); // empty
             response.sendRedirect(location);
             return;
         }

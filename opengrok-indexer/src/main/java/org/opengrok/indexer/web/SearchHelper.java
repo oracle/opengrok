@@ -46,20 +46,28 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Matches;
+import org.apache.lucene.search.MatchesIterator;
+import org.apache.lucene.search.MatchesUtils;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
@@ -142,6 +150,11 @@ public class SearchHelper {
      * met.
      */
     public boolean isCrossRefSearch;
+    /**
+     * As with {@link #isCrossRefSearch}, but here indicating either a
+     * cross-reference search or a "full blown search".
+     */
+    public boolean isGuiSearch;
     /**
      * if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
@@ -391,42 +404,93 @@ public class SearchHelper {
             TopFieldDocs fdocs = searcher.search(query, start + maxItems, sort);
             totalHits = fdocs.totalHits.value;
             hits = fdocs.scoreDocs;
-            // Bug #3900: Check if this is a search for a single term, and that
-            // term is a definition. If that's the case, and we only have one match,
-            // we'll generate a direct link instead of a listing.
-            boolean isSingleDefinitionSearch
-                    = (query instanceof TermQuery) && (builder.getDefs() != null);
 
-            // Attempt to create a direct link to the definition if we search for
-            // one single definition term AND we have exactly one match AND there
-            // is only one definition of that symbol in the document that matches.
-            boolean uniqueDefinition = false;
-            Document doc = null;
-            String symbol = null;
-            if (isCrossRefSearch && isSingleDefinitionSearch && hits != null && hits.length == 1) {
-                doc = searcher.doc(hits[0].doc);
-                IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
-                if (tagsField != null) {
-                    byte[] rawTags = tagsField.binaryValue().bytes;
-                    Definitions tags = Definitions.deserialize(rawTags);
-                    symbol = ((TermQuery) query).getTerm().text();
-                    if (tags.occurrences(symbol) == 1) {
-                        uniqueDefinition = true;
-                    }
+            /*
+             * Determine if possibly a single-result redirect to xref is
+             * eligible and applicable. If history query is active, then nope.
+             */
+            if (hits != null && hits.length == 1 && builder.getHist() == null) {
+                int docID = hits[0].doc;
+                if (isCrossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
+                    maybeRedirectToDefinition(docID, (TermQuery) query);
+                } else if (isGuiSearch) {
+                    maybeRedirectToMatchOffset(docID, builder.getContextFields());
                 }
-            }
-            if (uniqueDefinition) {
-                String anchor = Util.URIEncode(symbol);
-                redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
-                        + '?' + QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ + anchor
-                        + '#' + anchor;
             }
         } catch (IOException | ClassNotFoundException e) {
             errorMsg = e.getMessage();
         }
         return this;
     }
+
+    private void maybeRedirectToDefinition(int docID, TermQuery termQuery)
+            throws IOException, ClassNotFoundException {
+        // Bug #3900: Check if this is a search for a single term, and that
+        // term is a definition. If that's the case, and we only have one match,
+        // we'll generate a direct link instead of a listing.
+        //
+        // Attempt to create a direct link to the definition if we search for
+        // one single definition term AND we have exactly one match AND there
+        // is only one definition of that symbol in the document that matches.
+        Document doc = searcher.doc(docID);
+        IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+        if (tagsField != null) {
+            byte[] rawTags = tagsField.binaryValue().bytes;
+            Definitions tags = Definitions.deserialize(rawTags);
+            String symbol = termQuery.getTerm().text();
+            if (tags.occurrences(symbol) == 1) {
+                String anchor = Util.URIEncode(symbol);
+                redirect = contextPath + Prefix.XREF_P
+                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + '?' + QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ + anchor
+                        + '#' + anchor;
+            }
+        }
+    }
+
+    private void maybeRedirectToMatchOffset(int docID, List<String> contextFields)
+            throws IOException {
+        /*
+         * Only PLAIN files might redirect to a file offset, since an offset
+         * must be subsequently converted to a line number and that is tractable
+         * only from plain text.
+         */
+        Document doc = searcher.doc(docID);
+        String genre = doc.get(QueryBuilder.T);
+        if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(genre)) {
+            return;
+        }
+
+        List<LeafReaderContext> leaves = reader.leaves();
+        int subIndex = ReaderUtil.subIndex(docID, leaves);
+        LeafReaderContext leaf = leaves.get(subIndex);
+
+        Query rewritten = query.rewrite(reader);
+        Weight weight = rewritten.createWeight(searcher, ScoreMode.COMPLETE_NO_SCORES, 1);
+        Matches matches = weight.matches(leaf, docID);
+        if (matches != MatchesUtils.MATCH_WITH_NO_TERMS) {
+            int matchCount = 0;
+            int offset = -1;
+            for (String field : contextFields) {
+                MatchesIterator matchesIterator = matches.getMatches(field);
+                while (matchesIterator.next()) {
+                    if (matchesIterator.startOffset() >= 0) {
+                        // Abort if there is more than a single match offset.
+                        if (++matchCount > 1) {
+                            return;
+                        }
+                        offset = matchesIterator.startOffset();
+                    }
+                }
+            }
+            if (offset >= 0) {
+                redirect = contextPath + Prefix.XREF_P
+                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset;
+            }
+        }
+    }
+
     private static final Pattern TABSPACE = Pattern.compile("[\t ]+");
 
     private void getSuggestion(Term term, IndexReader ir,

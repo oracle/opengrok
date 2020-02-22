@@ -108,6 +108,16 @@ public class QueryParameters {
     public static final String HIST_SEARCH_PARAM_EQ = HIST_SEARCH_PARAM + "=";
 
     /**
+     * Parameter name to specify a match offset.
+     */
+    public static final String MATCH_OFFSET_PARAM = "mo";
+
+    /**
+     * {@link #MATCH_OFFSET_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String MATCH_OFFSET_PARAM_EQ = MATCH_OFFSET_PARAM + "=";
+
+    /**
      * Parameter name to specify an OpenGrok search of paths.
      */
     public static final String PATH_SEARCH_PARAM = "path";
