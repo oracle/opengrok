@@ -267,12 +267,12 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                     }
                 } finally {
                     if (r != null) {
-                        try { r.close(); bin = null; }
-                        catch (Exception e) { /* ignore */ }
+                        IOUtils.close(r);
+                        bin = null;
                     }
                     if (bin != null) {
-                        try { bin.close(); }
-                        catch (Exception e) { /* ignore */ }
+                        IOUtils.close(bin);
+                        bin = null;
                     }
                 }
 
@@ -396,12 +396,12 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                         error = e.getMessage();
                     } finally {
                         if (r != null) {
-                            try { r.close(); in = null;}
-                            catch (Exception e) { /* ignore */ }
+                            IOUtils.close(r);
+                            in = null;
                         }
                         if (in != null) {
-                            try { in.close(); }
-                            catch (Exception e) { /* ignore */ }
+                            IOUtils.close(in);
+                            in = null;
                         }
                         if (tempf != null) {
                             tempf.delete();
