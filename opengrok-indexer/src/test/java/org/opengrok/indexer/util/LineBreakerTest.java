@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -46,7 +46,10 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("");
         brkr.reset(src);
         assertEquals("split count", 1, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+
+        assertEquals("split find-index", 0, brkr.findLineIndex(0));
+        assertEquals("split find-index", -1, brkr.findLineIndex(1));
     }
 
     @Test
@@ -54,9 +57,9 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("abc\ndef\n");
         brkr.reset(src);
         assertEquals("split count", 3, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 4, brkr.getPosition(1));
-        assertEquals("split position", 8, brkr.getPosition(2));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 4, brkr.getOffset(1));
+        assertEquals("split offset", 8, brkr.getOffset(2));
     }
 
     @Test
@@ -64,8 +67,9 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("abc\r\ndef");
         brkr.reset(src);
         assertEquals("split count", 2, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 5, brkr.getPosition(1));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 5, brkr.getOffset(1));
+        assertEquals("split offset", 8, brkr.getOffset(2));
     }
 
     @Test
@@ -77,10 +81,14 @@ public class LineBreakerTest {
 
         brkr.reset(src);
         assertEquals("split count", 5, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 4, brkr.getPosition(1));
-        assertEquals("split position", 9, brkr.getPosition(2));
-        assertEquals("split position", 15, brkr.getPosition(3));
-        assertEquals("split position", 20, brkr.getPosition(4));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 4, brkr.getOffset(1));
+        assertEquals("split offset", 9, brkr.getOffset(2));
+        assertEquals("split offset", 15, brkr.getOffset(3));
+        assertEquals("split offset", 20, brkr.getOffset(4));
+
+        assertEquals("split find-index", 3, brkr.findLineIndex(19));
+        assertEquals("split find-index", 4, brkr.findLineIndex(20));
+        assertEquals("split find-index", 4, brkr.findLineIndex(21));
     }
 }

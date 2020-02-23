@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -75,11 +75,11 @@ public class PassageConverter {
                 continue;
             }
 
-            int m = splitter.findLineOffset(start);
+            int m = splitter.findLineIndex(start);
             if (m < 0) {
                 continue;
             }
-            int n = splitter.findLineOffset(end - 1);
+            int n = splitter.findLineIndex(end - 1);
             if (n < 0) {
                 continue;
             }
@@ -97,23 +97,23 @@ public class PassageConverter {
             // Create LineHighlight entries for passage matches.
             for (int i = 0; i < passage.getNumMatches(); ++i) {
                 int mstart = passage.getMatchStarts()[i];
-                int mm = splitter.findLineOffset(mstart);
+                int mm = splitter.findLineIndex(mstart);
                 int mend = passage.getMatchEnds()[i];
-                int nn = splitter.findLineOffset(mend - 1);
+                int nn = splitter.findLineIndex(mend - 1);
                 if (mstart < mend && mm >= m && mm <= n && nn >= m && nn <= n) {
                     if (mm == nn) {
-                        int lbeg = splitter.getPosition(mm);
+                        int lbeg = splitter.getOffset(mm);
                         int lstart = mstart - lbeg;
                         int lend = mend - lbeg;
                         LineHighlight lhigh = res.get(mm);
                         lhigh.addMarkup(PhraseHighlight.create(lstart, lend));
                     } else {
-                        int lbeg = splitter.getPosition(mm);
+                        int lbeg = splitter.getOffset(mm);
                         int loff = mstart - lbeg;
                         LineHighlight lhigh = res.get(mm);
                         lhigh.addMarkup(PhraseHighlight.createStarter(loff));
 
-                        lbeg = splitter.getPosition(nn);
+                        lbeg = splitter.getOffset(nn);
                         loff = mend - lbeg;
                         lhigh = res.get(nn);
                         lhigh.addMarkup(PhraseHighlight.createEnder(loff));

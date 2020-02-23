@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.plain;
@@ -118,7 +118,7 @@ public class DefinitionsTokenStream extends TokenStream {
 
             if (lineno >= 0 && lineno < brk.count() && tag.symbol != null &&
                     tag.text != null) {
-                int lineoff = brk.getPosition(lineno);
+                int lineoff = brk.getOffset(lineno);
                 if (tag.lineStart >= 0) {
                     PendingToken tok = new PendingToken(tag.symbol, lineoff +
                         tag.lineStart, lineoff + tag.lineEnd);
