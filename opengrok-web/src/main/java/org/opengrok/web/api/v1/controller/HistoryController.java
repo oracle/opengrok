@@ -31,6 +31,7 @@ import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
+import org.opengrok.web.api.v1.filter.PathAuthorized;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,8 +50,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
-
-import static org.opengrok.web.util.AuthPathUtil.isPathAuthorized;
 
 @Path(HistoryController.PATH)
 public final class HistoryController {
@@ -193,6 +192,7 @@ public final class HistoryController {
 
     @GET
     @CorsEnable
+    @PathAuthorized
     @Produces(MediaType.APPLICATION_JSON)
     public HistoryDTO get(@Context HttpServletRequest request,
                           @Context HttpServletResponse response,
@@ -200,13 +200,7 @@ public final class HistoryController {
                           @QueryParam("withFiles") final boolean withFiles,
                           @QueryParam("max") @DefaultValue(MAX_RESULTS + "") final int maxEntries,
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
-            throws HistoryException, IOException {
-
-        if (!isPathAuthorized(path, request)) {
-            response.sendError(Response.status(Response.Status.FORBIDDEN).build().getStatus(),
-                    "not authorized");
-            return null;
-        }
+            throws HistoryException {
 
         History history = HistoryGuru.getInstance().getHistory(new File(env.getSourceRootFile(), path),
                 withFiles, true);

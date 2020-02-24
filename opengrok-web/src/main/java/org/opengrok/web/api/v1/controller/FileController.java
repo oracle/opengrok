@@ -29,6 +29,7 @@ import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.web.api.v1.filter.CorsEnable;
+import org.opengrok.web.api.v1.filter.PathAuthorized;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +39,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,58 +49,71 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-import static org.opengrok.web.util.AuthPathUtil.isPathAuthorized;
+@Path(FileController.PATH)
+public class FileController {
 
-@Path(FileContentController.PATH)
-public class FileContentController {
-
-    public static final String PATH = "/filecontent";
+    public static final String PATH = "/file";
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private ArrayList<String> lines = new ArrayList<>();
-    private int gcount = 1;
+    private int count = 1;
 
     class LineDTO {
         @JsonProperty
         private String line;
         @JsonProperty
-        private int count;
+        private int number;
 
+        // for testing
         LineDTO() {
         }
 
         LineDTO(String line) {
             this.line = line;
-            this.count = gcount++;
+            this.number = count++;
         }
     }
 
-    @GET
-    @CorsEnable
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@Context HttpServletRequest request,
-                      @Context HttpServletResponse response,
-                      @QueryParam("path") final String path) throws IOException {
-
-        if (!isPathAuthorized(path, request)) {
-            response.sendError(Response.status(Response.Status.FORBIDDEN).build().getStatus(),
-                    "not authorized");
+    private static File getFile(String path, HttpServletResponse response) throws IOException {
+        if (path == null) {
+            if (response != null) {
+                response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Missing path parameter");
+            }
             return null;
         }
 
         File file = new File(env.getSourceRootFile(), path);
         if (!file.isFile()) {
-            // TODO: set error
+            if (response != null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
+            }
             return null;
         }
 
-        // TODO: identify the file type and return only for text files
+        return file;
+    }
+
+    @GET
+    @CorsEnable
+    @PathAuthorized
+    @Path("/content")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object getContent(@Context HttpServletRequest request,
+                             @Context HttpServletResponse response,
+                             @QueryParam("path") final String path) throws IOException {
+
+        File file = getFile(path, response);
+        if (file == null) {
+            // error already set in the response
+            return null;
+        }
+
         try (InputStream in = new BufferedInputStream(
                 new FileInputStream(file))) {
             AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
             if (!(fa instanceof TextAnalyzer)) {
-                // TODO set error
+                response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
                 return null;
             }
         }
@@ -108,11 +121,30 @@ public class FileContentController {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-               lines.add(line);
+                lines.add(line);
             }
         }
 
-        // TODO: array of lines with line number
         return lines.stream().map(LineDTO::new).collect(Collectors.toList());
+    }
+
+    @GET
+    @CorsEnable
+    @PathAuthorized
+    @Path("/genre")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getGenre(@Context HttpServletRequest request,
+                           @Context HttpServletResponse response,
+                           @QueryParam("path") final String path) throws IOException {
+
+        File file = getFile(path, response);
+        if (file == null) {
+            return null;
+        }
+
+        try (InputStream in = new BufferedInputStream(
+                new FileInputStream(file))) {
+            return AnalyzerGuru.getGenre(in).toString();
+        }
     }
 }

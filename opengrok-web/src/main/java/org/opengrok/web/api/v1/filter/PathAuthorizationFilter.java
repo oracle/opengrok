@@ -21,19 +21,34 @@
  * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.web.util;
+package org.opengrok.web.api.v1.filter;
 
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
-public class AuthPathUtil {
+/**
+ * Serves for authorization of specific REST API endpoints.
+ */
+@Provider
+@PathAuthorized
+public class PathAuthorizationFilter implements ContainerRequestFilter {
+
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    // TODO make this a filter ?
-    public static boolean isPathAuthorized(String path, HttpServletRequest request) {
+    public static final String PATH_PARAM = "path";
+
+    @Context
+    private HttpServletRequest request;
+
+    private static boolean isPathAuthorized(String path, HttpServletRequest request) {
         if (request != null) {
             AuthorizationFramework auth = env.getAuthorizationFramework();
             if (auth != null) {
@@ -43,5 +58,18 @@ public class AuthPathUtil {
         }
 
         return false;
+    }
+
+    @Override
+    public void filter(final ContainerRequestContext context) {
+        if (request == null) { // happens in tests
+            return;
+        }
+
+        String path = request.getParameter(PATH_PARAM);
+        if (!isPathAuthorized(path, request)) {
+            // TODO: this should probably update statistics for denied requests like in AuthorizationFilter
+            context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+        }
     }
 }
