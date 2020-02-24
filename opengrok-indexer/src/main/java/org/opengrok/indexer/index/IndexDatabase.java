@@ -1356,7 +1356,9 @@ public class IndexDatabase {
      * @param listener the object to receive the events
      */
     public void addIndexChangedListener(IndexChangedListener listener) {
-        listeners.add(listener);
+        if (listener != null) {
+            listeners.add(listener);
+        }
     }
 
     /**

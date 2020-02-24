@@ -15,6 +15,7 @@ import org.opengrok.web.api.v1.controller.FileController.LineDTO;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,7 +51,7 @@ public class FileControllerTest extends JerseyTest {
                 false, // don't create dictionary
                 null, // subFiles - needed when refreshing history partially
                 null); // repositories - needed when refreshing history partially
-        Indexer.getInstance().doIndexerExecution(true, null, null);
+        Indexer.getInstance().doIndexerExecution(true, Collections.singletonList("/git"), null);
     }
 
     @After
