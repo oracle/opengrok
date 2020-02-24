@@ -73,7 +73,8 @@ public class PathAuthorizationFilter implements ContainerRequestFilter {
 
         String path = request.getParameter(PATH_PARAM);
         if (path == null || path.isEmpty()) {
-            logger.log(Level.WARNING, "request does not contain \"path\" parameter: {0}", request);
+            logger.log(Level.WARNING, "request does not contain \"{0}\" parameter: {1}",
+                    new Object[]{ PATH_PARAM, request });
             context.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
         }
 
