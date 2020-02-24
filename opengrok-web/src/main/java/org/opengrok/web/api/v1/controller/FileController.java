@@ -24,10 +24,14 @@
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
 
@@ -48,6 +52,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.opengrok.indexer.index.IndexDatabase.getDocument;
 
 @Path(FileController.PATH)
 public class FileController {
@@ -108,7 +114,7 @@ public class FileController {
     @Produces(MediaType.APPLICATION_JSON)
     public Object getContent(@Context HttpServletRequest request,
                              @Context HttpServletResponse response,
-                             @QueryParam("path") final String path) throws IOException {
+                             @QueryParam("path") final String path) throws IOException, ParseException {
 
         File file = getFile(path, response);
         if (file == null) {
@@ -116,13 +122,16 @@ public class FileController {
             return null;
         }
 
-        try (InputStream in = new BufferedInputStream(
-                new FileInputStream(file))) {
-            AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
-            if (!(fa instanceof TextAnalyzer)) {
-                response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
-                return null;
-            }
+        Document doc;
+        if ((doc = getDocument(file)) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
+            return null;
+        }
+
+        String fileType = doc.get(QueryBuilder.T);
+        if (!fileType.equals(AbstractAnalyzer.Genre.PLAIN.typeName())) {
+            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
+            return null;
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -148,16 +157,19 @@ public class FileController {
     @Produces(MediaType.TEXT_PLAIN)
     public String getGenre(@Context HttpServletRequest request,
                            @Context HttpServletResponse response,
-                           @QueryParam("path") final String path) throws IOException {
+                           @QueryParam("path") final String path) throws IOException, ParseException {
 
         File file = getFile(path, response);
         if (file == null) {
             return null;
         }
 
-        try (InputStream in = new BufferedInputStream(
-                new FileInputStream(file))) {
-            return AnalyzerGuru.getGenre(in).toString();
+        Document doc;
+        if ((doc = getDocument(file)) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot find document for file");
+            return null;
         }
+
+        return AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T)).toString();
     }
 }

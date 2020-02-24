@@ -1568,8 +1568,27 @@ public class IndexDatabase {
      * @throws ClassNotFoundException if the class for the stored definitions
      * instance cannot be found
      */
-    public static Definitions getDefinitions(File file)
-            throws IOException, ParseException, ClassNotFoundException {
+    public static Definitions getDefinitions(File file) throws ParseException, IOException, ClassNotFoundException {
+        Document doc = getDocument(file);
+
+        IndexableField tags = doc.getField(QueryBuilder.TAGS);
+        if (tags != null) {
+            return Definitions.deserialize(tags.binaryValue().bytes);
+        }
+
+        // Didn't find any definitions.
+        return null;
+    }
+
+    /**
+     * TODO
+     * @param file
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    public static Document getDocument(File file)
+            throws IOException, ParseException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
         try {
@@ -1588,6 +1607,7 @@ public class IndexDatabase {
             return null;
         }
 
+        Document doc;
         try {
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
@@ -1596,22 +1616,18 @@ public class IndexDatabase {
                 // No hits, no definitions...
                 return null;
             }
-            Document doc = searcher.doc(top.scoreDocs[0].doc);
+            doc = searcher.doc(top.scoreDocs[0].doc);
             String foundPath = doc.get(QueryBuilder.PATH);
 
             // Only use the definitions if we found an exact match.
-            if (path.equals(foundPath)) {
-                IndexableField tags = doc.getField(QueryBuilder.TAGS);
-                if (tags != null) {
-                    return Definitions.deserialize(tags.binaryValue().bytes);
-                }
+            if (!path.equals(foundPath)) {
+                return null;
             }
         } finally {
             ireader.close();
         }
 
-        // Didn't find any definitions.
-        return null;
+        return doc;
     }
 
     @Override
