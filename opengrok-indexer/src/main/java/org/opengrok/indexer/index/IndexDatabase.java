@@ -1581,9 +1581,8 @@ public class IndexDatabase {
     }
 
     /**
-     * TODO
-     * @param file
-     * @return
+     * @param file File object of a file under source root
+     * @return Document object for the file or {@code null}
      * @throws IOException
      * @throws ParseException
      */
