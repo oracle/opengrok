@@ -26,6 +26,7 @@ package org.opengrok.web.api.v1.filter;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -33,6 +34,8 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Serves for authorization of specific REST API endpoints.
@@ -40,6 +43,8 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @PathAuthorized
 public class PathAuthorizationFilter implements ContainerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(PathAuthorizationFilter.class);
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -67,6 +72,11 @@ public class PathAuthorizationFilter implements ContainerRequestFilter {
         }
 
         String path = request.getParameter(PATH_PARAM);
+        if (path == null || path.isEmpty()) {
+            logger.log(Level.WARNING, "request does not contain \"path\" parameter: {0}", request);
+            context.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+
         if (!isPathAuthorized(path, request)) {
             // TODO: this should probably update statistics for denied requests like in AuthorizationFilter
             context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
