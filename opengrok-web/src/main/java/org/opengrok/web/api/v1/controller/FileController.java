@@ -47,6 +47,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Path(FileController.PATH)
@@ -57,9 +58,8 @@ public class FileController {
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private ArrayList<String> lines = new ArrayList<>();
-    private int count = 1;
 
-    class LineDTO {
+    static class LineDTO {
         @JsonProperty
         private String line;
         @JsonProperty
@@ -69,9 +69,17 @@ public class FileController {
         LineDTO() {
         }
 
-        LineDTO(String line) {
+        LineDTO(String line, int num) {
             this.line = line;
-            this.number = count++;
+            this.number = num;
+        }
+
+        public String getLine() {
+            return this.line;
+        }
+
+        public int getNumber() {
+            return this.number;
         }
     }
 
@@ -125,7 +133,13 @@ public class FileController {
             }
         }
 
-        return lines.stream().map(LineDTO::new).collect(Collectors.toList());
+        int count = 1;
+        List<LineDTO> linesDTO = new ArrayList<>();
+        for (String line: lines) {
+            LineDTO l = new LineDTO(line, count++);
+            linesDTO.add(l);
+        }
+        return linesDTO;
     }
 
     @GET
