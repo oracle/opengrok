@@ -1570,6 +1570,9 @@ public class IndexDatabase {
      */
     public static Definitions getDefinitions(File file) throws ParseException, IOException, ClassNotFoundException {
         Document doc = getDocument(file);
+        if (doc == null) {
+            return null;
+        }
 
         IndexableField tags = doc.getField(QueryBuilder.TAGS);
         if (tags != null) {
