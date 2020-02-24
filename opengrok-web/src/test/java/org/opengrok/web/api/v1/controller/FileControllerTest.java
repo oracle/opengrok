@@ -15,7 +15,6 @@ import org.opengrok.web.api.v1.controller.FileController.LineDTO;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
