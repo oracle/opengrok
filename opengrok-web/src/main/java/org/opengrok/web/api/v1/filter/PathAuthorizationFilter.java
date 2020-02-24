@@ -38,7 +38,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Serves for authorization of specific REST API endpoints.
+ * Serves for authorization of REST API endpoints that have a path parameter
+ * which is file path relative to source root.
  */
 @Provider
 @PathAuthorized
