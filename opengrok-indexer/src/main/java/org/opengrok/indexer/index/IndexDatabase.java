@@ -1607,31 +1607,31 @@ public class IndexDatabase {
         IndexReader ireader = getIndexReader(path);
 
         if (ireader == null) {
-            // No index, no definitions...
+            // No index, no document..
             return null;
         }
 
-        Document doc;
         try {
+            Document doc;
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
             TopDocs top = searcher.search(q, 1);
             if (top.totalHits.value == 0) {
-                // No hits, no definitions...
+                // No hits, no document...
                 return null;
             }
             doc = searcher.doc(top.scoreDocs[0].doc);
             String foundPath = doc.get(QueryBuilder.PATH);
 
-            // Only use the definitions if we found an exact match.
+            // Only use the document if we found an exact match.
             if (!path.equals(foundPath)) {
                 return null;
             }
+
+            return doc;
         } finally {
             ireader.close();
         }
-
-        return doc;
     }
 
     @Override

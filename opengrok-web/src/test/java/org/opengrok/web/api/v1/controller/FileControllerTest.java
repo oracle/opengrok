@@ -14,6 +14,7 @@ import org.opengrok.web.api.v1.controller.FileController.LineDTO;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

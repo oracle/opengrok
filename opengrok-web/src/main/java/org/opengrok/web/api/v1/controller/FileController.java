@@ -56,8 +56,6 @@ public class FileController {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private ArrayList<String> lines = new ArrayList<>();
-
     static class LineDTO {
         @JsonProperty
         private String line;
@@ -85,7 +83,7 @@ public class FileController {
     private static File getFile(String path, HttpServletResponse response) throws IOException {
         if (path == null) {
             if (response != null) {
-                response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Missing path parameter");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing path parameter");
             }
             return null;
         }
@@ -123,24 +121,21 @@ public class FileController {
         }
 
         String fileType = doc.get(QueryBuilder.T);
-        if (!fileType.equals(AbstractAnalyzer.Genre.PLAIN.typeName())) {
+        if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(fileType)) {
             response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
             return null;
         }
 
+        int count = 1;
+        List<LineDTO> linesDTO = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                lines.add(line);
+                LineDTO l = new LineDTO(line, count++);
+                linesDTO.add(l);
             }
         }
 
-        int count = 1;
-        List<LineDTO> linesDTO = new ArrayList<>();
-        for (String line: lines) {
-            LineDTO l = new LineDTO(line, count++);
-            linesDTO.add(l);
-        }
         return linesDTO;
     }
 
@@ -155,15 +150,22 @@ public class FileController {
 
         File file = getFile(path, response);
         if (file == null) {
+            // error already set in the response
             return null;
         }
 
         Document doc;
         if ((doc = getDocument(file)) == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot find document for file");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
             return null;
         }
 
-        return AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T)).toString();
+        AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T));
+        if (genre == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get genre from the document");
+            return null;
+        }
+
+        return genre.toString();
     }
 }
