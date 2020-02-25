@@ -40,10 +40,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,9 +109,9 @@ public class FileController {
     @PathAuthorized
     @Path("/content")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object getContent(@Context HttpServletRequest request,
-                             @Context HttpServletResponse response,
-                             @QueryParam("path") final String path) throws IOException, ParseException {
+    public Object getContenJson(@Context HttpServletRequest request,
+                                @Context HttpServletResponse response,
+                                @QueryParam("path") final String path) throws IOException, ParseException {
 
         File file = getFile(path, response);
         if (file == null) {
@@ -137,6 +142,72 @@ public class FileController {
         }
 
         return linesDTO;
+    }
+
+    private StreamingOutput transfer(File file) throws FileNotFoundException {
+        InputStream in = new FileInputStream(file);
+        return out -> {
+            byte[] buffer = new byte[1024];
+            int len = in.read(buffer);
+            while (len != -1) {
+                out.write(buffer, 0, len);
+                len = in.read(buffer);
+            }
+        };
+    }
+
+    @GET
+    @CorsEnable
+    @PathAuthorized
+    @Path("/content")
+    @Produces(MediaType.TEXT_PLAIN)
+    public StreamingOutput getContentPlain(@Context HttpServletRequest request,
+                             @Context HttpServletResponse response,
+                             @QueryParam("path") final String path) throws IOException, ParseException {
+
+        File file = getFile(path, response);
+        if (file == null) {
+            // error already set in the response
+            return null;
+        }
+
+        Document doc;
+        if ((doc = getDocument(file)) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
+            return null;
+        }
+
+        String fileType = doc.get(QueryBuilder.T);
+        if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(fileType)) {
+            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
+            return null;
+        }
+
+        return transfer(file);
+    }
+
+    @GET
+    @CorsEnable
+    @PathAuthorized
+    @Path("/content")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public StreamingOutput getContenOctets(@Context HttpServletRequest request,
+                                           @Context HttpServletResponse response,
+                                           @QueryParam("path") final String path) throws IOException, ParseException {
+
+        File file = getFile(path, response);
+        if (file == null) {
+            // error already set in the response
+            return null;
+        }
+
+        Document doc;
+        if ((doc = getDocument(file)) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
+            return null;
+        }
+
+        return transfer(file);
     }
 
     @GET
