@@ -23,7 +23,6 @@
 
 package org.opengrok.web.api.v1.controller;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -41,15 +40,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.opengrok.indexer.index.IndexDatabase.getDocument;
 
@@ -59,30 +54,6 @@ public class FileController {
     public static final String PATH = "/file";
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    static class LineDTO {
-        @JsonProperty
-        private String line;
-        @JsonProperty
-        private int number;
-
-        // for testing
-        LineDTO() {
-        }
-
-        LineDTO(String line, int num) {
-            this.line = line;
-            this.number = num;
-        }
-
-        public String getLine() {
-            return this.line;
-        }
-
-        public int getNumber() {
-            return this.number;
-        }
-    }
 
     private static File getFile(String path, HttpServletResponse response) throws IOException {
         if (path == null) {
@@ -101,46 +72,6 @@ public class FileController {
         }
 
         return file;
-    }
-
-    @GET
-    @CorsEnable
-    @PathAuthorized
-    @Path("/content")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Object getContenJson(@Context HttpServletRequest request,
-                                @Context HttpServletResponse response,
-                                @QueryParam("path") final String path) throws IOException, ParseException {
-
-        File file = getFile(path, response);
-        if (file == null) {
-            // error already set in the response
-            return null;
-        }
-
-        Document doc;
-        if ((doc = getDocument(file)) == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
-            return null;
-        }
-
-        String fileType = doc.get(QueryBuilder.T);
-        if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(fileType)) {
-            response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Not a text file");
-            return null;
-        }
-
-        int count = 1;
-        List<LineDTO> linesDTO = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                LineDTO l = new LineDTO(line, count++);
-                linesDTO.add(l);
-            }
-        }
-
-        return linesDTO;
     }
 
     private StreamingOutput transfer(File file) throws FileNotFoundException {
@@ -190,7 +121,7 @@ public class FileController {
     @PathAuthorized
     @Path("/content")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public StreamingOutput getContenOctets(@Context HttpServletRequest request,
+    public StreamingOutput getContentOctets(@Context HttpServletRequest request,
                                            @Context HttpServletResponse response,
                                            @QueryParam("path") final String path) throws IOException, ParseException {
 

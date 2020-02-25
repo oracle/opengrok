@@ -10,14 +10,13 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
-import org.opengrok.web.api.v1.controller.FileController.LineDTO;
 
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -68,17 +67,16 @@ public class FileControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testFileContent() {
+    public void testFileContent() throws IOException {
         final String path = "git/header.h";
-        List<LineDTO> list = target("file")
+        byte[] encoded = Files.readAllBytes(Paths.get(repository.getSourceRoot(), path));
+        String contents = new String(encoded);
+        String output = target("file")
                 .path("content")
                 .queryParam("path", path)
                 .request()
-                .get(new GenericType<List<LineDTO>>() {});
-        assertEquals(2, list.size());
-        assertEquals("#include <stdlib.h>", list.get(0).getLine());
-        assertEquals(1, list.get(0).getNumber());
-        assertEquals(2, list.get(1).getNumber());
+                .get(String.class);
+        assertEquals(contents, output);
     }
 
     @Test

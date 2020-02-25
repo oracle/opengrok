@@ -71,24 +71,10 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 ### get file content [GET]
 
-Honors the Accept header. The text and JSON types work for plain text files only.
+Honors the Accept header. The text type works for plain text files only.
 
 + Parameters
   + path (string) - path of file, relative to source root
-
-+ Response 200 (application/json)
-  + Body
-
-            [
-              {
-                "line": "foo",
-                "number": 1
-              },
-              {
-                "line": "bar",
-                "number": 2
-              }
-            ]
 
 + Response 200 (text/plain)
   + Body
