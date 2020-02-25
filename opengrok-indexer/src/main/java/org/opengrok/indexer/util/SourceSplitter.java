@@ -163,45 +163,36 @@ public class SourceSplitter {
         int c;
         while ((c = reader.read()) != -1) {
             ++length;
-            bld.append((char) c);
-            switch (c) {
-                case '\r':
-                    c = reader.read();
-                    if (c == -1) {
+
+            redo_c:
+            while (true) {
+                bld.append((char) c);
+                switch (c) {
+                    case '\r':
+                        c = reader.read();
+                        if (c == -1) {
+                            slist.add(bld.toString());
+                            bld.setLength(0);
+                            break redo_c;
+                        }
+                        ++length;
+                        if (c == '\n') {
+                            bld.append((char) c);
+                            slist.add(bld.toString());
+                            bld.setLength(0);
+                            break redo_c;
+                        }
                         slist.add(bld.toString());
                         bld.setLength(0);
-                        break;
-                    } else {
-                        ++length;
-                        switch (c) {
-                            case '\n':
-                                bld.append((char) c);
-                                slist.add(bld.toString());
-                                bld.setLength(0);
-                                break;
-                            case '\r':
-                                slist.add(bld.toString());
-                                bld.setLength(0);
-
-                                bld.append((char) c);
-                                slist.add(bld.toString());
-                                bld.setLength(0);
-                                break;
-                            default:
-                                slist.add(bld.toString());
-                                bld.setLength(0);
-
-                                bld.append((char) c);
-                                break;
-                        }
-                    }
-                    break;
-                case '\n':
-                    slist.add(bld.toString());
-                    bld.setLength(0);
-                    break;
-                default:
-                    break;
+                        continue redo_c;
+                    case '\n':
+                        slist.add(bld.toString());
+                        bld.setLength(0);
+                        break redo_c;
+                    default:
+                        // pass
+                }
+                break;
             }
         }
         if (bld.length() > 0) {

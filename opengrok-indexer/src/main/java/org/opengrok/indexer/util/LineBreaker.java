@@ -76,33 +76,30 @@ public class LineBreaker {
         int c;
         while ((c = reader.read()) != -1) {
             ++length;
-            switch (c) {
-                case '\r':
-                    c = reader.read();
-                    if (c == -1) {
-                        newOffsets.add(length);
-                        break;
-                    } else {
-                        ++length;
-                        switch (c) {
-                            case '\n':
-                                newOffsets.add(length);
-                                break;
-                            case '\r':
-                                newOffsets.add(length - 1);
-                                newOffsets.add(length);
-                                break;
-                            default:
-                                newOffsets.add(length - 1);
-                                break;
+
+            redo_c:
+            while (true) {
+                switch (c) {
+                    case '\r':
+                        c = reader.read();
+                        if (c == -1) {
+                            newOffsets.add(length);
+                            break redo_c;
                         }
-                    }
-                    break;
-                case '\n':
-                    newOffsets.add(length);
-                    break;
-                default:
-                    break;
+                        ++length;
+                        if (c == '\n') {
+                            newOffsets.add(length);
+                            break redo_c;
+                        }
+                        newOffsets.add(length - 1);
+                        continue redo_c;
+                    case '\n':
+                        newOffsets.add(length);
+                        break redo_c;
+                    default:
+                        // pass
+                }
+                break;
             }
         }
 
