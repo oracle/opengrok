@@ -137,7 +137,12 @@ public class FileController {
             return null;
         }
 
-        return transfer(file);
+        try {
+            return transfer(file);
+        } catch (FileNotFoundException e) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot find file");
+            return null;
+        }
     }
 
     @GET
