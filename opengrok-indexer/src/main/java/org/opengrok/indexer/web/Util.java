@@ -713,82 +713,88 @@ public final class Util {
         out.write(closeQuotedTag);
         out.write(snum);
         out.write(anchorEnd);
+
         if (annotation != null) {
-            String r = annotation.getRevision(num);
-            boolean enabled = annotation.isEnabled(num);
-            out.write("<span class=\"blame\">");
-            if (enabled) {
-                out.write(anchorClassStart);
-                out.write("r");
-                out.write("\" style=\"background-color: ");
-                out.write(annotation.getColors().getOrDefault(r, "inherit"));
-                out.write("\" href=\"");
-                out.write(URIEncode(annotation.getFilename()));
-                out.write("?a=true&amp;r=");
-                out.write(URIEncode(r));
-                String msg = annotation.getDesc(r);
-                out.write("\" title=\"");
-                if (msg != null) {
-                    out.write(msg);
-                }
-                if (annotation.getFileVersion(r) != 0) {
-                    out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
-                            + annotation.getRevisions().size());
-                }
-                out.write(closeQuotedTag);
+            writeAnnotation(num, out, annotation, userPageLink, userPageSuffix, project);
+        }
+    }
+
+    private static void writeAnnotation(int num, Writer out, Annotation annotation, String userPageLink,
+                                        String userPageSuffix, String project) throws IOException {
+        String r = annotation.getRevision(num);
+        boolean enabled = annotation.isEnabled(num);
+        out.write("<span class=\"blame\">");
+        if (enabled) {
+            out.write(anchorClassStart);
+            out.write("r");
+            out.write("\" style=\"background-color: ");
+            out.write(annotation.getColors().getOrDefault(r, "inherit"));
+            out.write("\" href=\"");
+            out.write(URIEncode(annotation.getFilename()));
+            out.write("?a=true&amp;r=");
+            out.write(URIEncode(r));
+            String msg = annotation.getDesc(r);
+            out.write("\" title=\"");
+            if (msg != null) {
+                out.write(Util.encode(msg));
             }
-            StringBuilder buf = new StringBuilder();
-            final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
-            // print an asterisk for the most recent revision
-            if (most_recent_revision) {
-                buf.append("<span class=\"most_recent_revision\">");
-                buf.append('*');
+            if (annotation.getFileVersion(r) != 0) {
+                out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
+                        + annotation.getRevisions().size());
             }
-            htmlize(r, buf);
-            if (most_recent_revision) {
-                buf.append("</span>"); // recent revision span
+            out.write(closeQuotedTag);
+        }
+        StringBuilder buf = new StringBuilder();
+        final boolean most_recent_revision = annotation.getFileVersion(r) == annotation.getRevisions().size();
+        // print an asterisk for the most recent revision
+        if (most_recent_revision) {
+            buf.append("<span class=\"most_recent_revision\">");
+            buf.append('*');
+        }
+        htmlize(r, buf);
+        if (most_recent_revision) {
+            buf.append("</span>"); // recent revision span
+        }
+        out.write(buf.toString());
+        buf.setLength(0);
+        if (enabled) {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+            out.write(anchorEnd);
+
+            // Write link to search the revision in current project.
+            out.write(anchorClassStart);
+            out.write("search\" href=\"" + env.getUrlPrefix());
+            out.write("defs=&amp;refs=&amp;path=");
+            out.write(project);
+            out.write("&amp;hist=&quot;" + URIEncode(r) + "&quot;");
+            out.write("&amp;type=\" title=\"Search history for this changeset");
+            out.write(closeQuotedTag);
+            out.write("S");
+            out.write(anchorEnd);
+        }
+        String a = annotation.getAuthor(num);
+        if (userPageLink == null) {
+            out.write(HtmlConsts.SPAN_A);
+            htmlize(a, buf);
+            out.write(buf.toString());
+            out.write(HtmlConsts.ZSPAN);
+            buf.setLength(0);
+        } else {
+            out.write(anchorClassStart);
+            out.write("a\" href=\"");
+            out.write(userPageLink);
+            out.write(URIEncode(a));
+            if (userPageSuffix != null) {
+                out.write(userPageSuffix);
             }
+            out.write(closeQuotedTag);
+            htmlize(a, buf);
             out.write(buf.toString());
             buf.setLength(0);
-            if (enabled) {
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-                out.write(anchorEnd);
-
-                // Write link to search the revision in current project.
-                out.write(anchorClassStart);
-                out.write("search\" href=\"" + env.getUrlPrefix());
-                out.write("defs=&amp;refs=&amp;path=");
-                out.write(project);
-                out.write("&amp;hist=&quot;" + URIEncode(r) + "&quot;");
-                out.write("&amp;type=\" title=\"Search history for this changeset");
-                out.write(closeQuotedTag);
-                out.write("S");
-                out.write(anchorEnd);
-            }
-            String a = annotation.getAuthor(num);
-            if (userPageLink == null) {
-                out.write(HtmlConsts.SPAN_A);
-                htmlize(a, buf);
-                out.write(buf.toString());
-                out.write(HtmlConsts.ZSPAN);
-                buf.setLength(0);
-            } else {
-                out.write(anchorClassStart);
-                out.write("a\" href=\"");
-                out.write(userPageLink);
-                out.write(URIEncode(a));
-                if (userPageSuffix != null) {
-                    out.write(userPageSuffix);
-                }
-                out.write(closeQuotedTag);
-                htmlize(a, buf);
-                out.write(buf.toString());
-                buf.setLength(0);
-                out.write(anchorEnd);
-            }
-            out.write("</span>");
+            out.write(anchorEnd);
         }
+        out.write("</span>");
     }
 
     /**

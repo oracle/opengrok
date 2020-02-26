@@ -6,6 +6,31 @@ OpenGrok RESTful API documentation. The following endpoints are accessible under
 
 Besides `/suggester` and `/search` endpoints, everything is accessible from `localhost` only.
 
+## Annotation [/annotation{?path}]
+
+### Get annotation for a file [GET]
+
++ Parameters
+  + path (string) - path of file, relative to source root
+
++ Response 200 (application/json)
+  + Body
+
+            [
+              {
+                "revision": "c55d5891",
+                "author": "Adam Hornáček",
+                "description": "changeset: c55d5891\nsummary: Rewrite README.txt to use markdown syntax\nuser: Adam Hornáček <adam.hornacek@oracle.com>\ndate: Wed Aug 30 17:42:12 CEST 2017",
+                "version": "1/15"
+              },
+              {
+                "revision": "5e0c6b22",
+                "author": "Vladimir Kotal",
+                "description": "changeset: 5e0c6b22\nsummary: bump year\nuser: Vladimir Kotal <vlada@devnull.cz>\ndate: Thu Jul 18 14:43:01 CEST 2019",
+                "version": "14/15"
+              }
+            ]
+
 ## Authorization framework reload [/configuration/authorization/reload]
 
 ### reloads authorization framework [POST]

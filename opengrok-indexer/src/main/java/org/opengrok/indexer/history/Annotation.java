@@ -28,7 +28,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Color;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.RainbowColorGenerator;
-import org.opengrok.indexer.web.Util;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -53,7 +52,7 @@ public class Annotation {
     private static final Logger LOGGER = LoggerFactory.getLogger(Annotation.class);
 
     private final List<Line> lines = new ArrayList<>();
-    private final Map<String, String> desc = new HashMap<>();
+    private final Map<String, String> desc = new HashMap<>(); // revision to description
     private final Map<String, Integer> fileVersions = new HashMap<>(); // maps revision to file version
     private final LazilyInstantiate<Map<String, String>> colors = LazilyInstantiate.using(this::generateColors);
     private int widestRevision;
@@ -163,7 +162,7 @@ public class Annotation {
     }
 
     void addDesc(String revision, String description) {
-        desc.put(revision, Util.encode(description));
+        desc.put(revision, description);
     }
 
     public String getDesc(String revision) {
