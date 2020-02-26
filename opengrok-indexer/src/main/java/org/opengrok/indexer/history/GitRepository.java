@@ -389,7 +389,6 @@ public class GitRepository extends Repository {
                 ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
                 "rev-list",
                 "--reverse",
-                "--max-count=1",
                 "HEAD",
                 "--",
                 fullpath
