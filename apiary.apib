@@ -67,6 +67,35 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
 
 + Response 204
 
+## File content [/file/content{?path}]
+
+### get file content [GET]
+
+Honors the Accept header. The text type works for plain text files only.
+
++ Parameters
+  + path (string) - path of file, relative to source root
+
++ Response 200 (text/plain)
+  + Body
+
+            foo
+            bar
+
++ Response 200 (application/octet-stream)
+
+## File genre [/file/genre{?path}]
+
+### get file genre [GET]
+
++ Parameters
+  + path (string) - path of file, relative to source root
+
++ Response 200 (text/plain)
+  + Body
+
+            genre as identified by analyzer, could be PLAIN, XREFABLE, IMAGE, DATA, HTML
+
 ## History [/history{?path,withFiles,start,max}]
 
 ### get history entries [GET]

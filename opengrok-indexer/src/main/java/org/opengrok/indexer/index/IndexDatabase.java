@@ -1356,7 +1356,9 @@ public class IndexDatabase {
      * @param listener the object to receive the events
      */
     public void addIndexChangedListener(IndexChangedListener listener) {
-        listeners.add(listener);
+        if (listener != null) {
+            listeners.add(listener);
+        }
     }
 
     /**
@@ -1568,8 +1570,29 @@ public class IndexDatabase {
      * @throws ClassNotFoundException if the class for the stored definitions
      * instance cannot be found
      */
-    public static Definitions getDefinitions(File file)
-            throws IOException, ParseException, ClassNotFoundException {
+    public static Definitions getDefinitions(File file) throws ParseException, IOException, ClassNotFoundException {
+        Document doc = getDocument(file);
+        if (doc == null) {
+            return null;
+        }
+
+        IndexableField tags = doc.getField(QueryBuilder.TAGS);
+        if (tags != null) {
+            return Definitions.deserialize(tags.binaryValue().bytes);
+        }
+
+        // Didn't find any definitions.
+        return null;
+    }
+
+    /**
+     * @param file File object of a file under source root
+     * @return Document object for the file or {@code null}
+     * @throws IOException
+     * @throws ParseException
+     */
+    public static Document getDocument(File file)
+            throws IOException, ParseException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
         try {
@@ -1584,34 +1607,31 @@ public class IndexDatabase {
         IndexReader ireader = getIndexReader(path);
 
         if (ireader == null) {
-            // No index, no definitions...
+            // No index, no document..
             return null;
         }
 
         try {
+            Document doc;
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
             TopDocs top = searcher.search(q, 1);
             if (top.totalHits.value == 0) {
-                // No hits, no definitions...
+                // No hits, no document...
                 return null;
             }
-            Document doc = searcher.doc(top.scoreDocs[0].doc);
+            doc = searcher.doc(top.scoreDocs[0].doc);
             String foundPath = doc.get(QueryBuilder.PATH);
 
-            // Only use the definitions if we found an exact match.
-            if (path.equals(foundPath)) {
-                IndexableField tags = doc.getField(QueryBuilder.TAGS);
-                if (tags != null) {
-                    return Definitions.deserialize(tags.binaryValue().bytes);
-                }
+            // Only use the document if we found an exact match.
+            if (!path.equals(foundPath)) {
+                return null;
             }
+
+            return doc;
         } finally {
             ireader.close();
         }
-
-        // Didn't find any definitions.
-        return null;
     }
 
     @Override
