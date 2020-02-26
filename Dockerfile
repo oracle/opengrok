@@ -1,4 +1,4 @@
-# Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
 
 FROM ubuntu:bionic as build
 
@@ -39,12 +39,15 @@ FROM tomcat:9-jre8
 LABEL maintainer="opengrok-dev@yahoogroups.com"
 
 # install dependencies and Python tools
-RUN apt-get update && apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv
+RUN apt-get update && \
+    apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv
 
 # compile and install universal-ctags
-RUN apt-get install -y pkg-config autoconf build-essential && git clone https://github.com/universal-ctags/ctags /root/ctags && \
+RUN apt-get install -y pkg-config autoconf build-essential && \
+    git clone https://github.com/universal-ctags/ctags /root/ctags && \
     cd /root/ctags && ./autogen.sh && ./configure && make && make install && \
-    apt-get remove -y autoconf build-essential && apt-get -y autoremove && apt-get -y autoclean && \
+    apt-get remove -y autoconf build-essential && \
+    apt-get -y autoremove && apt-get -y autoclean && \
     cd /root && rm -rf /root/ctags
 
 # prepare OpenGrok binaries and directories
