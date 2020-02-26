@@ -30,6 +30,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
+import org.opengrok.web.util.NoPathParameterException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.opengrok.indexer.index.IndexDatabase.getDocument;
+import static org.opengrok.web.util.FileUtil.toFile;
 
 @Path(FileController.PATH)
 public class FileController {
@@ -54,25 +56,6 @@ public class FileController {
     public static final String PATH = "/file";
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    private static File getFile(String path, HttpServletResponse response) throws IOException {
-        if (path == null) {
-            if (response != null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing path parameter");
-            }
-            return null;
-        }
-
-        File file = new File(env.getSourceRootFile(), path);
-        if (!file.isFile()) {
-            if (response != null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
-            }
-            return null;
-        }
-
-        return file;
-    }
 
     private StreamingOutput transfer(File file) throws FileNotFoundException {
         InputStream in = new FileInputStream(file);
@@ -93,9 +76,9 @@ public class FileController {
     @Produces(MediaType.TEXT_PLAIN)
     public StreamingOutput getContentPlain(@Context HttpServletRequest request,
                              @Context HttpServletResponse response,
-                             @QueryParam("path") final String path) throws IOException, ParseException {
+                             @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
-        File file = getFile(path, response);
+        File file = toFile(path);
         if (file == null) {
             // error already set in the response
             return null;
@@ -123,11 +106,10 @@ public class FileController {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public StreamingOutput getContentOctets(@Context HttpServletRequest request,
                                            @Context HttpServletResponse response,
-                                           @QueryParam("path") final String path) throws IOException, ParseException {
+                                           @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
-        File file = getFile(path, response);
+        File file = toFile(path);
         if (file == null) {
-            // error already set in the response
             return null;
         }
 
@@ -152,9 +134,9 @@ public class FileController {
     @Produces(MediaType.TEXT_PLAIN)
     public String getGenre(@Context HttpServletRequest request,
                            @Context HttpServletResponse response,
-                           @QueryParam("path") final String path) throws IOException, ParseException {
+                           @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
-        File file = getFile(path, response);
+        File file = toFile(path);
         if (file == null) {
             // error already set in the response
             return null;

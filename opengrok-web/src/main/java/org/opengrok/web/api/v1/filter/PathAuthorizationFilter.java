@@ -76,12 +76,16 @@ public class PathAuthorizationFilter implements ContainerRequestFilter {
         if (path == null || path.isEmpty()) {
             logger.log(Level.WARNING, "request does not contain \"{0}\" parameter: {1}",
                     new Object[]{PATH_PARAM, request});
-            context.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
+            // This should align with whatever NoPathExceptionMapper does.
+            // We cannot throw the exception here as it would not match the filter() signature.
+            context.abortWith(Response.status(Response.Status.NOT_ACCEPTABLE).build());
+            return;
         }
 
         if (!isPathAuthorized(path, request)) {
             // TODO: this should probably update statistics for denied requests like in AuthorizationFilter
             context.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+            return; // for good measure
         }
     }
 }
