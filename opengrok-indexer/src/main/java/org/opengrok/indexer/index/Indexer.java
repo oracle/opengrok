@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
@@ -946,7 +946,7 @@ public final class Indexer {
                     p.setName(name);
                     p.completeWithDefaults();
                     projects.put(name, p);
-                } else if (!name.startsWith(".") && file.isDirectory()) {
+                } else if (file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
                     projects.put(name, new Project(name, path));
