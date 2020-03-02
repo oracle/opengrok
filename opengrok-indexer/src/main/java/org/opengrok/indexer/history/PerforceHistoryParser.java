@@ -20,9 +20,13 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
+
+import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
+import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceFilename;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +35,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,18 +44,42 @@ import java.util.regex.Pattern;
 
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
-import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 
 /**
  * Parse source history for a Perforce Repository.
  *
  * @author Emilio Monti - emilmont@gmail.com
  */
-public class PerforceHistoryParser {
+class PerforceHistoryParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(PerforceHistoryParser.class);
 
-    History parse(File file, Repository repos) throws HistoryException {
-        return this.parse(file, null, repos);
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("//[^/]+/(.+)");
+
+    private static final String PAT_P4_DATE_TIME_BY =
+            "on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)";
+
+    /**
+     * E.g.<p>
+     * ... #1 change 2 add on 2008/02/12 14:14:37 by user@host
+     */
+    private static final Pattern REVISION_PATTERN = Pattern.compile(
+            "\\.\\.\\. #\\d+ change (\\d+) \\S+ " + PAT_P4_DATE_TIME_BY);
+
+    /**
+     * E.g.<p>
+     * Change 177601 on 2008/02/12 14:14:37 by user@host
+     */
+    private static final Pattern CHANGE_PATTERN = Pattern.compile(
+            "Change (\\d+) " + PAT_P4_DATE_TIME_BY);
+
+    private final PerforceRepository repo;
+
+    PerforceHistoryParser(PerforceRepository repo) {
+        this.repo = repo;
+    }
+
+    History parse(File file) throws HistoryException {
+        return parse(file, null);
     }
 
     /**
@@ -58,200 +87,204 @@ public class PerforceHistoryParser {
      *
      * @param file the file to parse history for
      * @param sinceRevision the revision before the start of desired history
-     * @param repos Pointer to the {@code PerforceRepository}
      * @return object representing the file's history
      * @throws HistoryException if a problem occurs while executing p4 command
      */
-    History parse(File file, String sinceRevision, Repository repos) throws HistoryException {
-        History history;
+    History parse(File file, String sinceRevision) throws HistoryException {
 
-        if (!PerforceRepository.isInP4Depot(file, false)) {
+        if (!repo.isInP4Depot(file, false)) {
             return null;
         }
 
         try {
-            if (file.isDirectory()) {
-                /* TODO: Do I need to think about revisions here? */
-                history = parseDirectory(file);
-            } else {
-                if (sinceRevision == null || "".equals(sinceRevision)) {
-                    /* Get all revisions */
-                    history = getRevisions(file, null);
-                } else {
-                    /* Get revisions between specified and head */
-                    history = getRevisionsSince(file, sinceRevision);
-                }
-            }
+            return file.isDirectory() ? parseDirectory(file, sinceRevision) :
+                    getRevisions(file, sinceRevision);
         } catch (IOException ioe) {
             throw new HistoryException(ioe);
         }
-        return history;
     }
 
-    private History parseDirectory(File file) throws IOException {
-        ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
-        cmd.add("changes");
-        cmd.add("-t");
-        cmd.add("...");
+    private History parseDirectory(File file, String sinceRevision) throws IOException {
+        ArrayList<String> cmd = new ArrayList<>();
 
-        Executor executor = new Executor(cmd, file.getCanonicalFile());
+        // First run
+        cmd.add(repo.RepoCommand);
+        cmd.add("changes");
+        cmd.add("-tl");
+        String directorySpec = "..." + asRevisionSuffix(sinceRevision);
+        cmd.add(directorySpec);
+
+        Executor executor = new Executor(cmd, file);
         executor.exec();
-        return parseChanges(executor.getOutputReader());
+        History history = parseChanges(executor.getOutputReader());
+
+        // Run filelog without -l
+        cmd.clear();
+        cmd.add(repo.RepoCommand);
+        cmd.add("filelog");
+        cmd.add("-ti");
+        cmd.add(directorySpec);
+        executor = new Executor(cmd, file);
+        executor.exec();
+        parseTruncatedFileLog(history, executor.getOutputReader());
+        return history;
     }
 
     /**
      * Retrieve the history of a given file.
      *
      * @param file the file to parse history for
-     * @param rev the revision at which to end history
+     * @param sinceRevision the revision at which to end history
      * @return object representing the file's history
      */
-    public static History getRevisions(File file, String rev) throws IOException {
-        ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
+    History getRevisions(File file, String sinceRevision) throws IOException {
+        ArrayList<String> cmd = new ArrayList<>();
+        cmd.add(repo.RepoCommand);
         cmd.add("filelog");
         cmd.add("-lti");
-        cmd.add(protectPerforceFilename(file.getName()) + PerforceRepository.getRevisionCmd(rev));
-        Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
-        executor.exec();
+        cmd.add(protectPerforceFilename(file.getName()) + asRevisionSuffix(sinceRevision));
 
+        Executor executor = new Executor(cmd, file.getParentFile());
+        executor.exec();
         return parseFileLog(executor.getOutputReader());
     }
 
     /**
-     * Retrieve the history of a given file, beginning after the specified
-     * revision.
-     *
-     * @param file the file to parse history for
-     * @param rev the revision before the start of desired history
-     * @return object representing the file's history
-     */
-    public static History getRevisionsSince(File file, String rev) throws IOException {
-        ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
-        cmd.add("filelog");
-        cmd.add("-lti");
-        /* Okay.  This is a little cheeky.  getRevisionCmd(String,String) gives
-         * a range spec that _includes_ the first revision.  But, we don't want
-         * that in this case here.  So, presume that "rev" is always an integer
-         * for perforce, add one to it, then convert back into a string to
-         * pass into getRevisionCmd as a starting revision. */
-        try {
-            Integer irev = Integer.parseInt(rev);
-            irev += 1;
-            rev = irev.toString();
-        } catch (NumberFormatException e) {
-            LOGGER.log(Level.WARNING,
-                    "Unable to increment revision {}, NumberFormatException",
-                    new Object[]{rev});
-            /* Move along with rev unchanged... */
-        }
-        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev, "now"));
-        Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
-        executor.exec();
-
-        return parseFileLog(executor.getOutputReader());
-    }
-
-    private static final Pattern REVISION_PATTERN = Pattern.compile(
-            "#\\d+ change (\\d+) \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
-    private static final Pattern CHANGE_PATTERN = Pattern.compile(
-            "Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
-
-    /**
-     * Parses the history in the given string. The given reader will be closed.
+     * Parses lines from a `changes` run.
      *
      * @param fileHistory String with history to parse
      * @return History object with all the history entries
      * @throws java.io.IOException if it fails to read from the supplied reader
      */
-    protected static History parseChanges(Reader fileHistory) throws IOException {
-        /* OUTPUT:
-        Directory changelog:
-        Change 177601 on 2008/02/12 by user@host 'description'
-         */
-        History history = new History();
-        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    History parseChanges(Reader fileHistory) throws IOException {
+        List<HistoryEntry> entries = new ArrayList<>();
+        HistoryEntry entry = null;
+        StringBuilder messageBuilder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(fileHistory)) {
             String line;
-            Matcher matcher = CHANGE_PATTERN.matcher("");
             while ((line = reader.readLine()) != null) {
-                matcher.reset(line);
+                Matcher matcher = CHANGE_PATTERN.matcher(line);
                 if (matcher.find()) {
-                    HistoryEntry entry = new HistoryEntry();
-                    entry.setRevision(matcher.group(1)); 
-                    int year = Integer.parseInt(matcher.group(2));
-                    int month = Integer.parseInt(matcher.group(3));
-                    int day = Integer.parseInt(matcher.group(4));
-                    int hour = Integer.parseInt(matcher.group(5));
-                    int minute = Integer.parseInt(matcher.group(6));
-                    int second = Integer.parseInt(matcher.group(7));
-                    entry.setDate(newDate(year, month, day, hour, minute, second));
-                    entry.setAuthor(matcher.group(8));
-                    entry.setMessage(matcher.group(9).trim());
-                    entry.setActive(true);
-                    entries.add(entry);
-                }
-            }
-        }
-        history.setHistoryEntries(entries);
-        return history;
-    }
-
-    /**
-     * Parse file log. Te supplied reader will be closed.
-     *
-     * @param fileLog reader to the information to parse
-     * @return A history object containing history entries
-     * @throws java.io.IOException If it fails to read from the supplied reader.
-     */
-    protected static History parseFileLog(Reader fileLog) throws IOException {
-        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        HistoryEntry entry = null;
-        try (BufferedReader reader = new BufferedReader(fileLog)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Matcher matcher = REVISION_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    /* An entry finishes when a new entry starts ... */
-                    if (entry != null) {
-                        entries.add(entry);
-                        entry = null;
-                    }
-                    /* New entry */
-                    entry = new HistoryEntry();
-                    entry.setRevision(matcher.group(1));
-                    int year = Integer.parseInt(matcher.group(2));
-                    int month = Integer.parseInt(matcher.group(3));
-                    int day = Integer.parseInt(matcher.group(4));
-                    int hour = Integer.parseInt(matcher.group(5));
-                    int minute = Integer.parseInt(matcher.group(6));
-                    int second = Integer.parseInt(matcher.group(7));
-                    entry.setDate(newDate(year, month, day, hour, minute, second));
-                    entry.setAuthor(matcher.group(8));
-                    entry.setActive(true);
-                } else {
-                    if (entry != null) {
-                        /* ... an entry can also finish when some branch/edit entry is encountered */
-                        if (line.startsWith("... ...")) {
-                            entries.add(entry);
-                            entry = null;
-                        } else {
-                            entry.appendMessage(line);
-                        }
-                    }
+                    entry = parseLedeLine(entries, entry, messageBuilder, matcher);
+                } else if (line.startsWith("\t")) {
+                    messageBuilder.append(line.substring(1));
+                    messageBuilder.append("\n");
                 }
             }
         }
         /* ... an entry can also finish when the log is finished */
         if (entry != null) {
+            entry.setMessage(messageBuilder.toString().trim());
             entries.add(entry);
         }
 
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
+    }
+
+    /**
+     * Parses lines from a `filelog` run with -l long description output.
+     *
+     * @param fileLog reader to the information to parse
+     * @return A history object containing history entries
+     * @throws java.io.IOException If it fails to read from the supplied reader.
+     */
+    History parseFileLog(Reader fileLog) throws IOException {
+        List<HistoryEntry> entries = new ArrayList<>();
+        HistoryEntry entry = null;
+        String fileName = null;
+        StringBuilder messageBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(fileLog)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = FILENAME_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    fileName = repo.getDirectoryNameRelative() + File.separator +
+                            unprotectPerforceFilename(matcher.group(1));
+                    continue;
+                }
+
+                matcher = REVISION_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    entry = parseLedeLine(entries, entry, messageBuilder, matcher);
+                    if (fileName != null) {
+                        entry.addFile(fileName);
+                        /*
+                         * Leave fileName defined in case multiple changes are
+                         * reported for it.
+                         */
+                    }
+                    continue;
+                }
+
+                if (line.startsWith("\t")) {
+                    messageBuilder.append(line.substring(1));
+                    messageBuilder.append("\n");
+                } else if (line.startsWith("... ...")) {
+                    /* ... an entry can also finish when some branch/edit entry is encountered */
+                    if (entry != null) {
+                        entry.setMessage(messageBuilder.toString().trim());
+                        entries.add(entry);
+                        entry = null;
+                    }
+                    messageBuilder.setLength(0);
+                }
+            }
+        }
+        /* ... an entry can also finish when the log is finished */
+        if (entry != null) {
+            entry.setMessage(messageBuilder.toString().trim());
+            entries.add(entry);
+        }
+
+        History history = new History();
+        history.setHistoryEntries(entries);
+        return history;
+    }
+
+    /**
+     * Parses lines from a `filelog` run with default description truncation,
+     * for integrating into a `changes` run.
+     *
+     * @param history a defined instance
+     * @param fileLog reader to the information to parse
+     * @throws IOException if an I/O error occurs
+     */
+    private void parseTruncatedFileLog(History history, Reader fileLog) throws IOException {
+        // Index history by revision.
+        HashMap<String, HistoryEntry> byRevision = new HashMap<>();
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            byRevision.put(entry.getRevision(), entry);
+        }
+
+        try (BufferedReader reader = new BufferedReader(fileLog)) {
+            String fileName = null;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = FILENAME_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    fileName = repo.getDirectoryNameRelative() + File.separator +
+                            unprotectPerforceFilename(matcher.group(1));
+                } else if (fileName != null) {
+                    matcher = REVISION_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        String revision = matcher.group(1);
+                        HistoryEntry entry = byRevision.get(revision);
+                        if (entry != null) {
+                            entry.addFile(fileName);
+                        } else {
+                            LOGGER.log(Level.WARNING, "Changes missed revision {0} for {1}",
+                                    new Object[]{revision, fileName});
+                        }
+                    }
+                    /*
+                     * Leave fileName defined in case multiple changes are
+                     * reported for it.
+                     */
+                }
+            }
+        }
     }
 
     /**
@@ -270,5 +303,57 @@ public class PerforceHistoryParser {
         // Convert 1-based month to 0-based
         cal.set(year, month - 1, day, hour, minute, second);
         return cal.getTime();
+    }
+
+    private static HistoryEntry parseLedeLine(List<HistoryEntry> entries, HistoryEntry entry,
+            StringBuilder messageBuilder, Matcher matcher) {
+        if (entry != null) {
+            /* An entry finishes when a new entry starts ... */
+            entry.setMessage(messageBuilder.toString().trim());
+            messageBuilder.setLength(0);
+            entries.add(entry);
+        }
+        entry = new HistoryEntry();
+        parseDateTimeBy(entry, matcher);
+        entry.setActive(true);
+        return entry;
+    }
+
+    private static void parseDateTimeBy(HistoryEntry entry, Matcher matcher) {
+        entry.setRevision(matcher.group(1));
+        int year = Integer.parseInt(matcher.group(2));
+        int month = Integer.parseInt(matcher.group(3));
+        int day = Integer.parseInt(matcher.group(4));
+        int hour = Integer.parseInt(matcher.group(5));
+        int minute = Integer.parseInt(matcher.group(6));
+        int second = Integer.parseInt(matcher.group(7));
+        entry.setDate(newDate(year, month, day, hour, minute, second));
+        entry.setAuthor(matcher.group(8));
+    }
+
+    private String asRevisionSuffix(String sinceRevision) {
+        if (sinceRevision == null || "".equals(sinceRevision)) {
+            /* Get all revisions */
+            return "";
+        }
+        /*
+         * Get revisions between specified and head.
+         * Okay.  This is a little cheeky.  getRevisionCmd(String,String) gives
+         * a range spec that _includes_ the first revision.  But, we don't want
+         * that in this case here.  So, presume that "rev" is always an integer
+         * for perforce, add one to it, then convert back into a string to
+         * pass into getRevisionCmd as a starting revision.
+         */
+        try {
+            int irev = Integer.parseInt(sinceRevision);
+            irev += 1;
+            sinceRevision = Integer.toString(irev);
+        } catch (NumberFormatException e) {
+            LOGGER.log(Level.WARNING,
+                    "Unable to increment revision {}, NumberFormatException",
+                    new Object[]{sinceRevision});
+            /* Move along with rev unchanged... */
+        }
+        return repo.getRevisionCmd(sinceRevision, "now");
     }
 }

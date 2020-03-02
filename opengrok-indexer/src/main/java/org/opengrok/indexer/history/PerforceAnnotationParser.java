@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -49,19 +50,23 @@ public class PerforceAnnotationParser implements Executor.StreamHandler {
      */
     private final Annotation annotation;
 
+    private final PerforceRepository repo;
+
     private final File file;
 
     private final String rev;
     
     private static final Pattern ANNOTATION_PATTERN
             = Pattern.compile("^(\\d+): .*");
-   
+
     /**
+     * @param repo defined instance
      * @param file the file being annotated
      * @param rev revision to be annotated
      */
-    public PerforceAnnotationParser(File file, String rev) {
+    public PerforceAnnotationParser(PerforceRepository repo, File file, String rev) {
         annotation = new Annotation(file.getName());
+        this.repo = repo;
         this.file = file;
         this.rev = rev;
     }
@@ -77,8 +82,9 @@ public class PerforceAnnotationParser implements Executor.StreamHandler {
     
     @Override
     public void processStream(InputStream input) throws IOException {
-        List<HistoryEntry> revisions
-                = PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
+        // Pass null for revision to get all history for the file.
+        PerforceHistoryParser parser = new PerforceHistoryParser(repo);
+        List<HistoryEntry> revisions = parser.getRevisions(file, null).getHistoryEntries();
         HashMap<String, String> revAuthor = new HashMap<>();
         for (HistoryEntry entry : revisions) {
             // a.addDesc(entry.getRevision(), entry.getMessage());
@@ -90,6 +96,11 @@ public class PerforceAnnotationParser implements Executor.StreamHandler {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
             while ((line = reader.readLine()) != null) {
                 ++lineno;
+                if (line.equals("(... files differ ...)")) {
+                    // Perforce knows as a binary file?
+                    continue;
+                }
+
                 Matcher matcher = ANNOTATION_PATTERN.matcher(line);
                 if (matcher.find()) {
                     String revision = matcher.group(1);

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 
 import java.io.File;
@@ -40,15 +41,14 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
+import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceFilename;
 
 /**
  * Do basic testing of the Perforce support
  *
  * @author Trond Norbye
  */
-@ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
 public class PerforceRepositoryTest {
 
     @Rule
@@ -56,20 +56,23 @@ public class PerforceRepositoryTest {
     
     private static boolean skip;
     private static List<File> files;
-    private static final File root = new File("/export/opengrok_p4_test");
+    private static final File root = new File("/var/opengrok/src/p4foo");
 
     @BeforeClass
     public static void setUpClass() {
         if (!root.exists()) {
             skip=true;
-            return;
+        } else {
+            files = new ArrayList<>();
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            RepositoryFactory.initializeIgnoredNames(env);
+            FileUtilities.getAllFiles(root, files, false);
+            env.setSourceRoot(root.getAbsolutePath());
         }
-        files = new ArrayList<>();
-        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
-        FileUtilities.getAllFiles(root, files, false);
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
     public void testHistoryAndAnnotations() throws Exception {
         if (skip) {
             return;
@@ -116,6 +119,25 @@ public class PerforceRepositoryTest {
         for (SimpleImmutableEntry<String,String> ent : testmap) {
             String prot = protectPerforceFilename(ent.getKey());
             assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
+        }
+    }
+
+    @Test
+    public void testUnprotectFilename() throws Exception {
+        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<>();
+        testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
+        testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
+        testmap.add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
+        testmap.add(new SimpleImmutableEntry<>("Test@", "Test%40"));
+        testmap.add(new SimpleImmutableEntry<>("@seventeen", "%40seventeen"));
+        testmap.add(new SimpleImmutableEntry<>("upNdown(", "upNdown("));
+        testmap.add(new SimpleImmutableEntry<>("tst#99", "tst%2399"));
+        testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
+        testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
+
+        for (SimpleImmutableEntry<String,String> ent : testmap) {
+            String u = unprotectPerforceFilename(ent.getValue());
+            assertEquals("Bad unprotected filename for " + ent.getValue(), ent.getKey(), u);
         }
     }
 }
