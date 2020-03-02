@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -51,21 +51,30 @@ public final class RepositoryFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryFactory.class);
 
     private static final Repository[] repositories = {
-        new BitKeeperRepository(),
-        new MercurialRepository(),
-        new AccuRevRepository(),
-        new BazaarRepository(),
-        new GitRepository(),
-        new MonotoneRepository(),
-        new SubversionRepository(),
-        new SCCSRepository(),
-        new RazorRepository(),
-        new ClearCaseRepository(),
-        new PerforceRepository(),
-        new RCSRepository(),
-        new CVSRepository(),
-        new RepoRepository(),
-        new SSCMRepository()
+            /*
+             * The following do cheap checks to determine isRepositoryFor(),
+             * but still put the most popular at the head of the repositories
+             * array.
+             */
+            new GitRepository(),
+            new MercurialRepository(),
+            new RepoRepository(),
+            new BitKeeperRepository(),
+            new BazaarRepository(),
+            new MonotoneRepository(),
+            new SubversionRepository(),
+            new SCCSRepository(),
+            new RazorRepository(),
+            new RCSRepository(),
+            new CVSRepository(),
+            new SSCMRepository(),
+            /*
+             * The following do expensive checks to determine isRepositoryFor(),
+             * so put them at the end of the repositories array.
+             */
+            new AccuRevRepository(),
+            new ClearCaseRepository(),
+            new PerforceRepository()
     };
 
     private static final Map<String, Class<? extends Repository>> byName = new HashMap<>();
