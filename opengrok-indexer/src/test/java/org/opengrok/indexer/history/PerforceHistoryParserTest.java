@@ -19,54 +19,39 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.StringReader;
 import java.util.Calendar;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
- *
  * @author austvik
  */
 public class PerforceHistoryParserTest {
-
-    public PerforceHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of parseChanges method, of class PerforceHistoryParser.
      */
     @Test
     public void parseChanges() throws Exception {
-        String output = "Change 1234 on 2008/10/13 11:30:00 by ADMIN@UserWorkspaceName 'Comment given to changelist within single qoutes, this is change one'\n" +
-                "Change 6543 on 2008/10/08 18:25:38 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
-                "Change 7654 on 2008/09/30 01:00:01 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
-                "Change 2345 on 2008/09/30 17:45:33 by ADMIN@Workspace2 'Comment given to changelist within single qoutes'\n";
-        History result = PerforceHistoryParser.parseChanges(new StringReader(output));
+        String output = "Change 1234 on 2008/10/13 11:30:00 by ADMIN@UserWorkspaceName\n" +
+                "\tComment given to changelist within single qoutes, this is change one\n" +
+                "Change 6543 on 2008/10/08 18:25:38 by USER@USER_WS\n" +
+                "\t'Comment given to changelist within single qoutes'\n" +
+                "Change 7654 on 2008/09/30 01:00:01 by USER@USER_WS\n" +
+                "\t'Comment given to changelist within single qoutes'\n" +
+                "Change 2345 on 2008/09/30 17:45:33 by ADMIN@Workspace2\n" +
+                "\t'Comment given to changelist within single qoutes'\n";
+        PerforceHistoryParser parser = new PerforceHistoryParser(new PerforceRepository());
+        History result = parser.parseChanges(new StringReader(output));
 
         assertNotNull(result);
         assertEquals(4, result.getHistoryEntries().size());
@@ -103,21 +88,22 @@ public class PerforceHistoryParserTest {
                 "\n" +
                 "... #4 change 1234 edit on 2008/08/19 11:30:00 by User@UserWorkspaceName (text)\n" +
                 "\n" +
-                "        Comment for the change number 4\n" +
+                "\tComment for the change number 4\n" +
                 "\n" +
                 "... #3 change 5678 edit on 2008/08/19 18:25:38 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
-                "        Comment for the change\n" +
+                "\tComment for the change\n" +
                 "\n" +
                 "... #2 change 8765 edit on 2008/08/01 01:00:01 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
-                "        Comment for the change\n" +
+                "\tComment for the change\n" +
                 "\n" +
                 "... #1 change 1 add on 2008/07/30 17:45:33 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
-                "        Comment for the change";
+                "\tComment for the change";
 
-        History result = PerforceHistoryParser.parseFileLog(new StringReader(output));
+        PerforceHistoryParser parser = new PerforceHistoryParser(new PerforceRepository());
+        History result = parser.parseFileLog(new StringReader(output));
 
         assertNotNull(result);
         assertEquals(4, result.getHistoryEntries().size());
@@ -125,7 +111,7 @@ public class PerforceHistoryParserTest {
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals("1234", e1.getRevision());
         assertEquals("User", e1.getAuthor());
-        assertEquals(0, e1.getFiles().size());
+        assertEquals(1, e1.getFiles().size());
         assertTrue(e1.getMessage().contains("number 4"));
 
         HistoryEntry e2 = result.getHistoryEntries().get(1);

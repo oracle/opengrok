@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
@@ -78,18 +78,31 @@ public class PerforceRepository extends Repository {
         return t;
     }
 
+    static String unprotectPerforceFilename(String name) {
+        String t = name.replace("%40", "@");
+        t = t.replace("%23", "#");
+        t = t.replace("%2A", "*");
+        t = t.replace("%25", "%");
+        if (!name.equals(t)) {
+            LOGGER.log(Level.FINEST,
+                    "unprotectPerforceFilename: replaced ''{0}'' with ''{1}''",
+                    new Object[]{name, t});
+        }
+        return t;
+    }
+
     @Override
-    public Annotation annotate(File file, String rev) throws IOException {
+    public Annotation annotate(File file, String rev) {
         ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-qci");
-        cmd.add(protectPerforceFilename(file.getPath()) + getRevisionCmd(rev));
+        cmd.add(protectPerforceFilename(file.getName()) + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        PerforceAnnotationParser parser = new PerforceAnnotationParser(file, rev);
+        PerforceAnnotationParser parser = new PerforceAnnotationParser(this, file, rev);
         executor.exec(true, parser);
         
         return parser.getAnnotation();
@@ -129,8 +142,6 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
-    private static final PerforceRepository testRepo = new PerforceRepository();
-
     /**
      * Check if a given file is in the depot.
      *
@@ -138,42 +149,49 @@ public class PerforceRepository extends Repository {
      * @param interactive interactive mode flag
      * @return true if the given file is in the depot, false otherwise
      */
-    static boolean isInP4Depot(File file, boolean interactive) {
+    boolean isInP4Depot(File file, boolean interactive) {
         boolean status = false;
-        if (testRepo.isWorking()) {
+        if (isWorking()) {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             ArrayList<String> cmd = new ArrayList<>();
             String name = protectPerforceFilename(file.getName());
             File dir = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;
                 name = "*";
-                cmd.add(testRepo.RepoCommand);
+                cmd.add(RepoCommand);
                 cmd.add("dirs");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+                        env.getInteractiveCommandTimeout() : env.getCommandTimeout());
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
                  stderr: name - no such file(s).
                  */
                 status = (executor.getOutputString().contains("//"));
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "p4 status is {0} for {1}",
+                            new Object[] {status, file});
+                }
             }
             if (!status) {
                 cmd.clear();
-                cmd.add(testRepo.RepoCommand);
+                cmd.add(RepoCommand);
                 cmd.add("files");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+                        env.getInteractiveCommandTimeout() : env.getCommandTimeout());
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
                  stderr: name - no such file(s).
                  */
                 status = (executor.getOutputString().contains("//"));
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "p4 status is {0} for {1}",
+                            new Object[] {status, file});
+                }
             }
         }
         return status;
@@ -200,17 +218,18 @@ public class PerforceRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return new PerforceHistoryParser().parse(file, this);
+        PerforceHistoryParser parser = new PerforceHistoryParser(this);
+        return parser.parse(file);
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
-        return new PerforceHistoryParser().parse(file, sinceRevision, this);
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        PerforceHistoryParser parser = new PerforceHistoryParser(this);
+        return parser.parse(file, sinceRevision);
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(boolean interactive) {
         return null;
     }
 
@@ -223,7 +242,7 @@ public class PerforceRepository extends Repository {
      * @param rev Internal rev number.
      * @return rev number formatted for P4 command-line.
      */
-    static String getRevisionCmd(String rev) {
+    String getRevisionCmd(String rev) {
         if (rev == null || "".equals(rev)) {
             return "";
         }
@@ -235,7 +254,7 @@ public class PerforceRepository extends Repository {
      * @param last Last revision number.
      * @return rev number formatted for P4 command-line.
      */
-    static String getRevisionCmd(String first, String last) {
+    String getRevisionCmd(String first, String last) {
         if ((first == null || "".equals(first)) &&
             ((last == null) || "".equals(last))) {
             return "";
