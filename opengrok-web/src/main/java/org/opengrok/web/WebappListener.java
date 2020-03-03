@@ -68,7 +68,7 @@ public final class WebappListener
         
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
-            LOGGER.severe("CONFIGURATION section missing in web.xml");
+            throw new Error("CONFIGURATION parameter missing in the web.xml file");
         } else {
             try {
                 env.readConfiguration(new File(config), true);
