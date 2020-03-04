@@ -108,6 +108,10 @@ public class HistoryContext {
             return false;
         }
         History hist = HistoryGuru.getInstance().getHistory(src);
+        if (hist == null) {
+            LOGGER.log(Level.INFO, "Null history got for {0}", src);
+            return false;
+        }
         return getHistoryContext(hist, path, out, null, context);
     }
 
