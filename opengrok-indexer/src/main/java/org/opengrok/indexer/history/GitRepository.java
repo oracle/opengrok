@@ -47,6 +47,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.HeadHandler;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.Version;
 
@@ -396,23 +397,17 @@ public class GitRepository extends Repository {
 
         Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        int status = executor.exec();
+        HeadHandler headHandler = new HeadHandler(1);
+        int status = executor.exec(false, headHandler);
 
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(executor.getOutputStream()))) {
-            String line;
-
-            if ((line = in.readLine()) != null) {
-                return line.trim();
-            }
+        String line;
+        if (headHandler.count() > 0 && (line = headHandler.get(0)) != null) {
+            return line.trim();
         }
 
-        if (status != 0) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get first revision for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status)});
-            return null;
-        }
+        LOGGER.log(Level.WARNING,
+                "Failed to get first revision for: \"{0}\" Exit code: {1}",
+                new Object[]{fullpath, String.valueOf(status)});
 
         return null;
     }
@@ -449,10 +444,10 @@ public class GitRepository extends Repository {
         cmd.add("--");
         cmd.add(getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath()));
 
-        Executor exec = new Executor(cmd, new File(getDirectoryName()),
+        Executor executor = new Executor(cmd, new File(getDirectoryName()),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         GitAnnotationParser parser = new GitAnnotationParser(file.getName());
-        int status = exec.exec(true, parser);
+        int status = executor.exec(true, parser);
 
         // File might have changed its location if it was renamed.
         // Try to lookup its original name and get the annotation again.
@@ -468,10 +463,10 @@ public class GitRepository extends Repository {
             }
             cmd.add("--");
             cmd.add(findOriginalName(file.getCanonicalPath(), revision));
-            exec = new Executor(cmd, new File(getDirectoryName()),
+            executor = new Executor(cmd, new File(getDirectoryName()),
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
             parser = new GitAnnotationParser(file.getName());
-            status = exec.exec(true, parser);
+            status = executor.exec(true, parser);
         }
 
         if (status != 0) {
