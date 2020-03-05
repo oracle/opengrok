@@ -71,6 +71,45 @@ public class PerforceRepositoryTest {
         }
     }
 
+    /**
+     * Following are steps to set up for testing:
+     * <p><ul>
+     * <li>Install a Perforce server instance. I elected to install the
+     * helix-p4d package on Ubuntu by following the instructions at
+     * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/install.linux.packages.install.html">
+     * Helix Core Server Administrator Guide > Installing the server > Linux
+     * package-based installation > Installation</a>.
+     * <li>Configure the Perforce server. Follow the instructions at
+     * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/install.linux.packages.configure.html">
+     * Helix Core Server Administrator Guide > Installing the server > Linux
+     * package-based installation > Post-installation configuration</a>.
+     * <li>Secure the Perforce server transport layer. I deployed a private key
+     * and certificate following the instructions at
+     * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/DB5-16618.html">
+     * Helix Core Server Administrator Guide > Securing the server > Using SSL
+     * to encrypt connections to a Helix server > Key and certificate
+     * management</a>.
+     * <li>Define an authentication method for the Perforce server. I elected to
+     * authenticate against my home Active Directory following the instructions
+     * at <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.auth.html">
+     * Helix Core Server Administrator Guide > Securing the server > LDAP
+     * authentication > Authenticating against Active Directory and LDAP
+     * servers</a> and then testing the LDAP configuration per
+     * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.testing.html">
+     * Helix Core Server Administrator Guide > Securing the server > LDAP
+     * authentication > Testing and enabling LDAP configurations</a>.
+     * <li>Install Perforce on the development workstation. I used Homebrew to
+     * install: {@code admin$ brew cask install perforce}
+     * <li>Set environment to connect to the Perforce server. My server is named
+     * p4: {@code export P4PORT=ssl:p4.localdomain:1666}
+     * <li>Define a Perforce client view on the workstation. For a workstation
+     * named workstation1: {@code cd /var/opengrok/src && p4 client workstation1}
+     * <li>Add sample code and submit: {@code p4 add *.h && p4 submit}
+     * <li>Add more sample code and submit: {@code p4 add *.c && p4 submit}
+     * <li>Add more sample code and submit: {@code p4 add *.txt && p4 submit}
+     * <li>Code, Index, Test, and Debug.
+     * </ul><p>
+     */
     @Test
     @ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
     public void testHistoryAndAnnotations() throws Exception {

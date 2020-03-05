@@ -165,7 +165,7 @@ class PerforceHistoryParser {
             while ((line = reader.readLine()) != null) {
                 Matcher matcher = CHANGE_PATTERN.matcher(line);
                 if (matcher.find()) {
-                    entry = parseLedeLine(entries, entry, messageBuilder, matcher);
+                    entry = parseEntryLine(entries, entry, messageBuilder, matcher);
                 } else if (line.startsWith("\t")) {
                     messageBuilder.append(line.substring(1));
                     messageBuilder.append("\n");
@@ -207,7 +207,7 @@ class PerforceHistoryParser {
 
                 matcher = REVISION_PATTERN.matcher(line);
                 if (matcher.find()) {
-                    entry = parseLedeLine(entries, entry, messageBuilder, matcher);
+                    entry = parseEntryLine(entries, entry, messageBuilder, matcher);
                     if (fileName != null) {
                         entry.addFile(fileName);
                         /*
@@ -305,7 +305,7 @@ class PerforceHistoryParser {
         return cal.getTime();
     }
 
-    private static HistoryEntry parseLedeLine(List<HistoryEntry> entries, HistoryEntry entry,
+    private static HistoryEntry parseEntryLine(List<HistoryEntry> entries, HistoryEntry entry,
             StringBuilder messageBuilder, Matcher matcher) {
         if (entry != null) {
             /* An entry finishes when a new entry starts ... */
