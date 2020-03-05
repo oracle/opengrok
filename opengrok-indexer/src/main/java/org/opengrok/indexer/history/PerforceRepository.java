@@ -70,7 +70,7 @@ public class PerforceRepository extends Repository {
         t = t.replace("#", "%23");
         t = t.replace("*", "%2A");
         t = t.replace("@", "%40");
-        if (!name.equals(t)) {
+        if (LOGGER.isLoggable(Level.FINEST) && !name.equals(t)) {
             LOGGER.log(Level.FINEST,
                        "protectPerforceFilename: replaced ''{0}'' with ''{1}''",
                        new Object[]{name, t});
@@ -83,7 +83,7 @@ public class PerforceRepository extends Repository {
         t = t.replace("%23", "#");
         t = t.replace("%2A", "*");
         t = t.replace("%25", "%");
-        if (!name.equals(t)) {
+        if (LOGGER.isLoggable(Level.FINEST) && !name.equals(t)) {
             LOGGER.log(Level.FINEST,
                     "unprotectPerforceFilename: replaced ''{0}'' with ''{1}''",
                     new Object[]{name, t});
