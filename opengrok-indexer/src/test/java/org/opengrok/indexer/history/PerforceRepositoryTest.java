@@ -77,27 +77,27 @@ public class PerforceRepositoryTest {
      * <li>Install a Perforce server instance. I elected to install the
      * helix-p4d package on Ubuntu by following the instructions at
      * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/install.linux.packages.install.html">
-     * Helix Core Server Administrator Guide > Installing the server > Linux
-     * package-based installation > Installation</a>.
+     * Helix Core Server Administrator Guide &gt; Installing the server &gt; Linux
+     * package-based installation &gt; Installation</a>.
      * <li>Configure the Perforce server. Follow the instructions at
      * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/install.linux.packages.configure.html">
-     * Helix Core Server Administrator Guide > Installing the server > Linux
-     * package-based installation > Post-installation configuration</a>.
+     * Helix Core Server Administrator Guide &gt; Installing the server &gt; Linux
+     * package-based installation &gt; Post-installation configuration</a>.
      * <li>Secure the Perforce server transport layer. I deployed a private key
      * and certificate following the instructions at
      * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/DB5-16618.html">
-     * Helix Core Server Administrator Guide > Securing the server > Using SSL
-     * to encrypt connections to a Helix server > Key and certificate
+     * Helix Core Server Administrator Guide &gt; Securing the server &gt; Using SSL
+     * to encrypt connections to a Helix server &gt; Key and certificate
      * management</a>.
      * <li>Define an authentication method for the Perforce server. I elected to
      * authenticate against my home Active Directory following the instructions
      * at <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.auth.html">
-     * Helix Core Server Administrator Guide > Securing the server > LDAP
-     * authentication > Authenticating against Active Directory and LDAP
+     * Helix Core Server Administrator Guide &gt; Securing the server &gt; LDAP
+     * authentication &gt; Authenticating against Active Directory and LDAP
      * servers</a> and then testing the LDAP configuration per
      * <a href="https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.testing.html">
-     * Helix Core Server Administrator Guide > Securing the server > LDAP
-     * authentication > Testing and enabling LDAP configurations</a>.
+     * Helix Core Server Administrator Guide &gt; Securing the server &gt; LDAP
+     * authentication &gt; Testing and enabling LDAP configurations</a>.
      * <li>Install Perforce on the development workstation. I used Homebrew to
      * install: {@code admin$ brew cask install perforce}
      * <li>Set environment to connect to the Perforce server. My server is named
