@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search;
@@ -43,7 +43,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 public class DirectoryExtraReader {
 
     // N.b.: update #search() comment when changing
-    private final int DIR_LIMIT_NUM = 2000;
+    private static final int DIR_LIMIT_NUM = 2000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         DirectoryExtraReader.class);

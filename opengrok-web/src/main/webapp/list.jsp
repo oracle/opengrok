@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page errorPage="error.jsp" import="
@@ -34,8 +34,9 @@ java.nio.charset.StandardCharsets,
 java.util.List,
 java.util.Locale,
 java.util.logging.Level,
-java.util.Set,
 java.util.logging.Logger,
+java.util.Set,
+java.util.TreeSet,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Ctags,
 org.opengrok.indexer.analysis.Definitions,
@@ -129,14 +130,15 @@ document.pageReady.push(function() { pageReadyList();});
         // mast.jsp assures, that resourceFile is valid and not /
         // see cfg.resourceNotAvailable()
         String cookieValue = cfg.getRequestedProjectsAsString();
+        String projectName = null;
         if (project != null) {
+            projectName = project.getName();
             Set<String>  projects = cfg.getRequestedProjects();
-            if (!projects.contains(project.getName())) {
-                projects.add(project.getName());
+            if (!projects.contains(projectName)) {
+                projects.add(projectName);
                 // update cookie
-                cookieValue = cookieValue.length() == 0
-                    ? project.getName()
-                    : project.getName() + ',' + cookieValue;
+                cookieValue = cookieValue.length() == 0 ? projectName :
+                        projectName + ',' + cookieValue;
                 Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
@@ -148,26 +150,30 @@ document.pageReady.push(function() { pageReadyList();});
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
             List<FileExtra> extras = null;
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            /*
+             * N.b. searchHelper.destroy() is called via
+             * WebappListener.requestDestroyed() on presence of the following
+             * REQUEST_ATTR.
+             */
+            request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
             if (project != null) {
-                SearchHelper searchHelper = cfg.prepareInternalSearch();
-                // N.b. searchHelper.destroy() is called via
-                // WebappListener.requestDestroyed() on presence of the
-                // following REQUEST_ATTR.
-                request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
                 searchHelper.prepareExec(project);
+            } else {
+                //noinspection Convert2Diamond
+                searchHelper.prepareExec(new TreeSet<String>());
+            }
 
-                if (searchHelper.searcher != null) {
-                    DirectoryExtraReader extraReader =
-                        new DirectoryExtraReader();
-                    String primePath = path;
-                    try {
-                        primePath = searchHelper.getPrimeRelativePath(project.getName(), path);
-                    } catch (IOException | ForbiddenSymlinkException ex) {
-                        LOGGER.log(Level.WARNING, String.format(
-                                "Error getting prime relative for %s", path), ex);
-                    }
-                    extras = extraReader.search(searchHelper.searcher, primePath);
+            if (searchHelper.searcher != null) {
+                DirectoryExtraReader extraReader = new DirectoryExtraReader();
+                String primePath = path;
+                try {
+                    primePath = searchHelper.getPrimeRelativePath(projectName, path);
+                } catch (IOException | ForbiddenSymlinkException ex) {
+                    LOGGER.log(Level.WARNING, String.format(
+                            "Error getting prime relative for %s", path), ex);
                 }
+                extras = extraReader.search(searchHelper.searcher, primePath);
             }
 
             FileExtraZipper zipper = new FileExtraZipper();
