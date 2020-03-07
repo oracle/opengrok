@@ -1,4 +1,5 @@
 # Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
+# Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 FROM ubuntu:bionic as build
 
@@ -19,10 +20,6 @@ RUN sed -i 's:<module>opengrok-tools</module>::g' /mvn/pom.xml
 
 RUN mkdir -p /mvn/opengrok-indexer/target/jflex-sources
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp
-COPY opengrok-indexer/jflex-tt.txt /mvn/opengrok-indexer/jflex-tt.txt
-COPY opengrok-indexer/jflex-tt-end.txt /mvn/opengrok-indexer/jflex-tt-end.txt
-COPY opengrok-indexer/jflex-code.txt /mvn/opengrok-indexer/jflex-code.txt
-COPY opengrok-indexer/jflex-code-end.txt /mvn/opengrok-indexer/jflex-code-end.txt
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -33,8 +33,8 @@ public class LinkageMatchedEvent {
     private final Object source;
     private final String str;
     private final LinkageType linkageType;
-    private final int start;
-    private final int end;
+    private final long start;
+    private final long end;
     private final String lstr;
 
     /**
@@ -46,8 +46,8 @@ public class LinkageMatchedEvent {
      * @param start the text start position
      * @param end the text end position
      */
-    public LinkageMatchedEvent(Object source, String str,
-        LinkageType linkageType, int start, int end) {
+    public LinkageMatchedEvent(Object source, String str, LinkageType linkageType,
+            long start, long end) {
         this.source = source;
         this.str = str;
         this.linkageType = linkageType;
@@ -65,8 +65,8 @@ public class LinkageMatchedEvent {
      * @param end the text end position
      * @param lstr the text link string
      */
-    public LinkageMatchedEvent(Object source, String str,
-        LinkageType linkageType, int start, int end, String lstr) {
+    public LinkageMatchedEvent(Object source, String str, LinkageType linkageType,
+            long start, long end, String lstr) {
         this.source = source;
         this.str = str;
         this.linkageType = linkageType;
@@ -112,7 +112,7 @@ public class LinkageMatchedEvent {
      * Gets the text start position.
      * @return the initial value
      */
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -120,7 +120,7 @@ public class LinkageMatchedEvent {
      * Gets the text end position.
      * @return the initial value
      */
-    public int getEnd() {
+    public long getEnd() {
         return end;
     }
 }

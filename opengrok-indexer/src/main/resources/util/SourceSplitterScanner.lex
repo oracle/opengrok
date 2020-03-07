@@ -47,11 +47,11 @@ import java.util.List;
 %{
     private final StringBuilder builder = new StringBuilder();
 
-    private int length;
+    private long length;
 
     private List<String> lines;
 
-    public int getLength() {
+    public long getLength() {
         return length;
     }
 

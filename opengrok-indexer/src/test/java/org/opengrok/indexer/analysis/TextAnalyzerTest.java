@@ -32,7 +32,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public class TextAnalyzerTest {
 
     @Test
     public void utf16WithBOM() throws IOException {
-        final ByteBuffer utf16str = Charset.forName("UTF-16").encode("hello");
+        final ByteBuffer utf16str = StandardCharsets.UTF_16.encode("hello");
         byte[] bytes = new byte[utf16str.remaining()];
         utf16str.get(bytes, 0, bytes.length);
 
@@ -86,7 +86,7 @@ public class TextAnalyzerTest {
 
     @Test
     public void utf16WithBOMAlternate() throws IOException {
-        final ByteBuffer utf16str = Charset.forName("UTF-16").encode("hello");
+        final ByteBuffer utf16str = StandardCharsets.UTF_16.encode("hello");
         byte[] bytes = new byte[utf16str.remaining()];
         utf16str.get(bytes, 0, bytes.length);
 
@@ -114,7 +114,12 @@ public class TextAnalyzerTest {
         @Override
         public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
             try (Reader r = getReader(src.getStream())) {
-                encoding = ((InputStreamReader) r).getEncoding();
+                // Gross and fragile but testing of encoding is needed.
+                if (r instanceof ZeroReader) {
+                    encoding = ((ZeroReader) r).getUnderlyingEncoding();
+                } else {
+                    encoding = ((InputStreamReader) r).getEncoding();
+                }
 
                 StringBuilder sb = new StringBuilder();
                 int c;

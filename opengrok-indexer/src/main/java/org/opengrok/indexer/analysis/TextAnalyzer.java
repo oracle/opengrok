@@ -91,10 +91,13 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      */
     protected abstract Xrefer newXref(Reader reader);
 
+    /**
+     * Gets a BOM-stripped {@link Reader} (default UTF-8 charset) of the
+     * specified {@code stream}, wrapped in a {@link ZeroReader}.
+     */
     protected Reader getReader(InputStream stream) throws IOException {
-        // SRCROOT is read with UTF-8 as a default.
-        return IOUtils.createBOMStrippedReader(stream,
-            StandardCharsets.UTF_8.name());
+        // sourceRoot is read with UTF-8 as a default.
+        return new ZeroReader(IOUtils.createBOMStrippedReader(stream,
+                StandardCharsets.UTF_8.name()));
     }
-
 }

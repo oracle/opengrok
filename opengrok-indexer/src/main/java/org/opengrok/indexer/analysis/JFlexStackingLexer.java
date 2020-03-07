@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -50,7 +50,7 @@ public interface JFlexStackingLexer extends JFlexLexer {
     /**
      * Gets the yychar value.
      */
-    int getYYCHAR();
+    long getYYCHAR();
 
     /**
      * Gets the YYEOF value.

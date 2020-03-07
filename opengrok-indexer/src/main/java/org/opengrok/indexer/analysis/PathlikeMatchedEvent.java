@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -33,8 +33,8 @@ public class PathlikeMatchedEvent {
     private final String str;
     private final char sep;
     private final boolean canonicalize;
-    private final int start;
-    private final int end;
+    private final long start;
+    private final long end;
 
     /**
      * Initializes an immutable instance of {@link PathlikeMatchedEvent}.
@@ -47,7 +47,7 @@ public class PathlikeMatchedEvent {
      * @param end the text end position
      */
     public PathlikeMatchedEvent(Object source, String str, char sep,
-        boolean canonicalize, int start, int end) {
+        boolean canonicalize, long start, long end) {
         this.source = source;
         this.str = str;
         this.sep = sep;
@@ -76,7 +76,7 @@ public class PathlikeMatchedEvent {
      * Gets the text start position.
      * @return the initial value
      */
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -84,7 +84,7 @@ public class PathlikeMatchedEvent {
      * Gets the text end position.
      * @return the initial value
      */
-    public int getEnd() {
+    public long getEnd() {
         return end;
     }
 

@@ -23,7 +23,7 @@
 
 %{
     /**
-     * Calls {@link #onSourceCodeSeen(int)} with {@code yychar}.
+     * Calls {@link #onSourceCodeSeen(long)} with {@code yychar}.
      */
     public void phLOC() { onSourceCodeSeen(yychar); }
 %}

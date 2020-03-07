@@ -162,7 +162,12 @@ public class SourceSplitter {
         SourceSplitterScanner scanner = new SourceSplitterScanner(reader);
         scanner.setTarget(slist);
         scanner.consume();
-        length = scanner.getLength();
+        long fullLength = scanner.getLength();
+        /*
+         * Lucene cannot go past Integer.MAX_VALUE so revise the length to fit
+         * within the Integer constraint.
+         */
+        length = fullLength > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) fullLength;
 
         lines = slist.toArray(new String[0]);
         setLineOffsets();
