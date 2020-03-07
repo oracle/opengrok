@@ -26,6 +26,7 @@ package org.opengrok.indexer.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.opengrok.indexer.analysis.StreamSource;
 
@@ -70,16 +71,33 @@ public class LineBreaker {
         length = 0;
         lineOffsets = null;
 
-        List<Integer> newOffsets = new ArrayList<>();
+        List<Long> newOffsets = new ArrayList<>();
         LineBreakerScanner scanner = new LineBreakerScanner(reader);
         scanner.setTarget(newOffsets);
         scanner.consume();
-        length = scanner.getLength();
+        long fullLength = scanner.getLength();
+        /*
+         * Lucene cannot go past Integer.MAX_VALUE so revise the length to fit
+         * within the Integer constraint.
+         */
+        length = fullLength > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) fullLength;
         count = newOffsets.size() - 1;
 
         lineOffsets = new int[newOffsets.size()];
         for (int i = 0; i < lineOffsets.length; ++i) {
-            lineOffsets[i] = newOffsets.get(i);
+            long fullOffset = newOffsets.get(i);
+            if (fullOffset <= Integer.MAX_VALUE) {
+                lineOffsets[i] = (int) fullOffset;
+            } else {
+                /*
+                 * Lucene cannot go past Integer.MAX_VALUE so revise the line
+                 * breaks to fit within the Integer constraint, and stop.
+                 */
+                lineOffsets[i] = Integer.MAX_VALUE;
+                lineOffsets = Arrays.copyOf(lineOffsets, i + 1);
+                count -= newOffsets.size() - lineOffsets.length;
+                break;
+            }
         }
     }
 

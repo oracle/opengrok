@@ -169,7 +169,7 @@ public class HistoryContext {
                 tokens.reInit(line);
                 String token;
                 int matchState;
-                int start = -1;
+                long start = -1;
                 while ((token = tokens.next()) != null) {
                     for (LineMatcher lineMatcher : m) {
                         matchState = lineMatcher.match(token);
@@ -177,13 +177,17 @@ public class HistoryContext {
                             if (start < 0) {
                                 start = tokens.getMatchStart();
                             }
-                            int end = tokens.getMatchEnd();
-                            if (out == null) {
+                            long end = tokens.getMatchEnd();
+                            if (start > Integer.MAX_VALUE || end > Integer.MAX_VALUE) {
+                                LOGGER.log(Level.INFO, "Unexpected out of bounds for {0}", path);
+                            } else if (out == null) {
                                 StringBuilder sb = new StringBuilder();
-                                writeMatch(sb, line, start, end, true, path, wcontext, nrev, rev);
+                                writeMatch(sb, line, (int) start, (int) end,
+                                        true, path, wcontext, nrev, rev);
                                 hits.add(new Hit(path, sb.toString(), "", false, false));
                             } else {
-                                writeMatch(out, line, start, end, false, path, wcontext, nrev, rev);
+                                writeMatch(out, line, (int) start, (int) end,
+                                        false, path, wcontext, nrev, rev);
                             }
                             matchedLines++;
                             break;

@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -28,6 +28,7 @@ import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.util.AttributeImpl;
 
 /**
  * Tokenizer which uses lex to identify tokens.
@@ -38,7 +39,10 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 public class JFlexTokenizer extends Tokenizer
     implements SymbolMatchedListener {
 
+    private static final int LUCENE_MAX_TOKEN_LENGTH = 32766;
+
     private final ScanningSymbolMatcher matcher;
+    private boolean didSetAttribsValues;
 
     /**
      * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
@@ -66,7 +70,7 @@ public class JFlexTokenizer extends Tokenizer
         super.reset();
         matcher.yyreset(input);
         matcher.reset();
-        clearAttributes();
+        clearAttributesEtc();
     }
 
     /**
@@ -87,20 +91,25 @@ public class JFlexTokenizer extends Tokenizer
         PositionIncrementAttribute.class);
 
     /**
-     * This will re-initialize internal AttributeImpls, or it returns false if
-     * end of input Reader ...
+     * Attempts to advance the stream to the next acceptable token, and updates
+     * the appropriate {@link AttributeImpl}s.
      *
-     * @return false if no more tokens, otherwise true
+     * @return {@code true} if an acceptable token was produced; {@code false}
+     * otherwise to indicate end of stream
      * @throws IOException in case of I/O error
      */
     @Override
     public final boolean incrementToken() throws IOException {
-        clearAttributes();
-        return matcher.yylex() != matcher.getYYEOF();
+        boolean notAtEOF;
+        do {
+            clearAttributesEtc();
+            notAtEOF = matcher.yylex() != matcher.getYYEOF();
+        } while (!didSetAttribsValues && notAtEOF);
+        return notAtEOF;
     }
 
     /**
-     * Calls {@link #setAttribs(java.lang.String, int, int)} on the publishing
+     * Calls {@link #setAttribs(String, long, long)} on the publishing
      * of a {@link SymbolMatchedEvent}.
      * @param evt the event raised
      */
@@ -119,18 +128,44 @@ public class JFlexTokenizer extends Tokenizer
 
     /**
      * Clears, and then resets the instances attributes per the specified
-     * arguments.
+     * arguments. If {@code start} or {@code end} is past
+     * {@link Integer#MAX_VALUE}, then only the clearing occurs.
      * @param str the matched symbol
      * @param start the match start position
      * @param end the match end position
      */
-    protected void setAttribs(String str, int start, int end) {
+    protected void setAttribs(String str, long start, long end) {
+        clearAttributesEtc();
+        if (start < Integer.MAX_VALUE && end < Integer.MAX_VALUE) {
+
+            if (str.length() > LUCENE_MAX_TOKEN_LENGTH) {
+                str = str.substring(0, LUCENE_MAX_TOKEN_LENGTH);
+                /*
+                 * Leave `end` unadjusted. The truncated string will represent
+                 * the full source text, similar to how a Lucene synonym is an
+                 * alternative representation of full source text.
+                 */
+            }
+
+            /*
+             * FIXME increasing below by one(default) might be tricky, need more
+             * analysis after lucene upgrade to 3.5 below is most probably not
+             * even needed.
+             */
+            this.posIncrAtt.setPositionIncrement(1);
+            this.termAtt.setEmpty();
+            this.termAtt.append(str);
+            this.offsetAtt.setOffset((int) start, (int) end);
+            this.didSetAttribsValues = true;
+        }
+    }
+
+    /**
+     * Calls {@link #clearAttributes()}, and also resets some additional tracked
+     * state.
+     */
+    protected void clearAttributesEtc() {
         clearAttributes();
-        //FIXME increasing below by one(default) might be tricky, need more analysis
-        // after lucene upgrade to 3.5 below is most probably not even needed        
-        this.posIncrAtt.setPositionIncrement(1);
-        this.termAtt.setEmpty();
-        this.termAtt.append(str);
-        this.offsetAtt.setOffset(start, end);
+        didSetAttribsValues = false;
     }
 }
