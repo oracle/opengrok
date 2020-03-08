@@ -176,6 +176,7 @@ public class Ctags implements Resettable {
         command.add("--filter-terminator=" + CTAGS_FILTER_TERMINATOR + "\n");
         command.add("--fields=-af+iKnS");
         command.add("--excmd=pattern");
+        command.add("--pattern-length-limit=180"); // Increase from default 96
 
         //Ideally all below should be in ctags, or in outside config file,
         //we might run out of command line SOON
