@@ -60,8 +60,8 @@ include file="pageheader.jspf"
     PageConfig cfg = PageConfig.get(request);
     String configError = "";
     if (cfg.getSourceRootPath() == null || cfg.getSourceRootPath().isEmpty()) {
-        configError = "The source root path has not been configured ! "
-            + " Please configure your webapp.";
+        configError = "The source root path has not been configured! "
+            + "Please configure your webapp.";
     } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
         configError = "The source root " +  cfg.getEnv().getSourceRootPath()
             + " specified in your configuration does "
