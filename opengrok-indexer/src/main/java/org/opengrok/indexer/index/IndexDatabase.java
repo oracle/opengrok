@@ -88,6 +88,8 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -120,6 +122,8 @@ public class IndexDatabase {
 
     private static final Set<String> CHECK_FIELDS;
 
+    private static final Set<String> REVERT_COUNTS_FIELDS;
+
     private final Object INSTANCE_LOCK = new Object();
 
     /**
@@ -136,6 +140,7 @@ public class IndexDatabase {
     private IndexWriter writer;
     private IndexAnalysisSettings3 settings;
     private PendingFileCompleter completer;
+    private NumLinesLOCAggregator countsAggregator;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
     private PathAccepter pathAccepter;
@@ -147,6 +152,8 @@ public class IndexDatabase {
     private final Object lock = new Object();
     private boolean dirty;
     private boolean running;
+    private boolean isCountingDeltas;
+    private boolean isWithDirectoryCounts;
     private List<String> directories;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
@@ -182,6 +189,12 @@ public class IndexDatabase {
     static {
         CHECK_FIELDS = new HashSet<>();
         CHECK_FIELDS.add(QueryBuilder.TYPE);
+
+        REVERT_COUNTS_FIELDS = new HashSet<>();
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.D);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.PATH);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.NUML);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.LOC);
     }
 
     /**
@@ -400,6 +413,8 @@ public class IndexDatabase {
         uidIter = null;
         postsIter = null;
         indexedSymlinks.clear();
+        isWithDirectoryCounts = false;
+        isCountingDeltas = false;
 
         IOException finishingException = null;
         try {
@@ -444,14 +459,27 @@ public class IndexDatabase {
 
                 String startuid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
+                countsAggregator = new NumLinesLOCAggregator();
                 settings = readAnalysisSettings();
                 if (settings == null) {
                     settings = new IndexAnalysisSettings3();
                 }
                 Terms terms = null;
-                int numDocs = reader.numDocs();
-                if (numDocs > 0) {
+                if (reader.numDocs() > 0) {
                     terms = MultiTerms.getTerms(reader, QueryBuilder.U);
+
+                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                    if (countsAccessor.hasStored(reader)) {
+                        isWithDirectoryCounts = true;
+                        isCountingDeltas = true;
+                    } else {
+                        boolean foundCounts = countsAccessor.register(countsAggregator, reader);
+                        isWithDirectoryCounts = false;
+                        isCountingDeltas = foundCounts;
+                        if (!isCountingDeltas) {
+                            LOGGER.info("Forcing reindexing to fully compute directory counts");
+                        }
+                    }
                 }
 
                 try {
@@ -494,6 +522,10 @@ public class IndexDatabase {
                             uidIter = null;
                         }
                     }
+
+                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                    countsAccessor.store(writer, reader, countsAggregator,
+                            isWithDirectoryCounts && isCountingDeltas);
 
                     markProjectIndexed(project);
                 } finally {
@@ -697,6 +729,25 @@ public class IndexDatabase {
             listener.fileRemove(path);
         }
 
+        // Determine if a reversal of counts is necessary, and execute if so.
+        if (isCountingDeltas) {
+            postsIter = uidIter.postings(postsIter);
+            while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+                // Read a limited-fields version of the document.
+                Document doc = reader.document(postsIter.docID(), REVERT_COUNTS_FIELDS);
+                if (doc != null) {
+                    NullableNumLinesLOC nullableCounts = NumLinesLOCUtil.read(doc);
+                    if (nullableCounts.getNumLines() != null && nullableCounts.getLOC() != null) {
+                        NumLinesLOC counts = new NumLinesLOC(path,
+                                -nullableCounts.getNumLines(),
+                                -nullableCounts.getLOC());
+                        countsAggregator.register(counts);
+                    }
+                    break;
+                }
+            }
+        }
+
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
 
         removeXrefFile(path);
@@ -734,6 +785,7 @@ public class IndexDatabase {
             ctags.setTimeout(env.getCtagsTimeout());
         }
         fa.setCtags(ctags);
+        fa.setCountsAggregator(countsAggregator);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(env.isScopesEnabled());
         fa.setFoldingEnabled(env.isFoldingEnabled());
@@ -759,6 +811,7 @@ public class IndexDatabase {
             return;
         } finally {
             fa.setCtags(null);
+            fa.setCountsAggregator(null);
         }
 
         try {
@@ -1195,8 +1248,12 @@ public class IndexDatabase {
                         if (uidIter != null && uidIter.term() != null &&
                                 uidIter.term().bytesEquals(buid)) {
 
-                            boolean chkres = checkSettings(file, path);
-                            if (!chkres) {
+                            /*
+                             * Possibly short-circuit to force reindexing of prior-version indexes.
+                             */
+                            boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
+                                    checkSettings(file, path);
+                            if (!matchOK) {
                                 removeFile(false);
                             }
 
@@ -1205,7 +1262,7 @@ public class IndexDatabase {
                                 uidIter = null;
                             }
 
-                            if (chkres) {
+                            if (matchOK) {
                                 continue; // keep matching docs
                             }
                         }
@@ -1397,8 +1454,7 @@ public class IndexDatabase {
 
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
-            int numDocs = ireader.numDocs();
-            if (numDocs > 0) {
+            if (ireader.numDocs() > 0) {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.U);
                 iter = terms.iterator(); // init uid iterator
             }
@@ -1435,11 +1491,9 @@ public class IndexDatabase {
      */
     public int getNumFiles() throws IOException {
         IndexReader ireader = null;
-        int numDocs = 0;
-
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
-            numDocs = ireader.numDocs();
+            return ireader.numDocs();
         } finally {
             if (ireader != null) {
                 try {
@@ -1449,8 +1503,6 @@ public class IndexDatabase {
                 }
             }
         }
-
-        return numDocs;
     }
 
     static void listFrequentTokens(List<String> subFiles) throws IOException {
@@ -1487,8 +1539,7 @@ public class IndexDatabase {
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
-            int numDocs = ireader.numDocs();
-            if (numDocs > 0) {
+            if (ireader.numDocs() > 0) {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
                 iter = terms.iterator(); // init uid iterator
             }
@@ -1574,8 +1625,6 @@ public class IndexDatabase {
     /**
      * @param file File object of a file under source root
      * @return Document object for the file or {@code null}
-     * @throws IOException
-     * @throws ParseException
      */
     public static Document getDocument(File file)
             throws IOException, ParseException {

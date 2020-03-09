@@ -34,6 +34,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.index.NumLinesLOCAggregator;
 
 /**
  * @author Chandan
@@ -45,6 +46,7 @@ public abstract class AbstractAnalyzer extends Analyzer {
     protected Supplier<JFlexTokenizer> symbolTokenizerFactory;
     protected Project project;
     protected Ctags ctags;
+    protected NumLinesLOCAggregator countsAggregator;
     protected boolean scopesEnabled;
     protected boolean foldingEnabled;
 
@@ -75,6 +77,10 @@ public abstract class AbstractAnalyzer extends Analyzer {
 
     public void setCtags(Ctags ctags) {
         this.ctags = ctags;
+    }
+
+    public void setCountsAggregator(NumLinesLOCAggregator countsAggregator) {
+        this.countsAggregator = countsAggregator;
     }
 
     public void setProject(Project project) {
@@ -114,12 +120,14 @@ public abstract class AbstractAnalyzer extends Analyzer {
     @Override
     protected abstract TokenStreamComponents createComponents(String fieldName);
 
-    protected abstract void addNumLines(Document doc, int value);
-
-    protected abstract void addLOC(Document doc, int value);
-
     @Override
     protected abstract TokenStream normalize(String fieldName, TokenStream in);
+
+    /**
+     * Subclasses must override to incorporate a determined number of lines and
+     * lines-of-code (LOC).
+     */
+    protected abstract void addNumLinesLOC(Document doc, NumLinesLOC counts);
 
     /**
      * What kind of file is this?

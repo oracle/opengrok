@@ -34,6 +34,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
+import org.opengrok.indexer.index.NumLinesLOCUtil;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -55,7 +57,7 @@ public class DirectoryExtraReader {
      * @return a list of results, limited to 2000 values
      * @throws IOException if an error occurs searching the index
      */
-    public List<FileExtra> search(IndexSearcher searcher, String path)
+    public List<NullableNumLinesLOC> search(IndexSearcher searcher, String path)
             throws IOException {
         if (searcher == null) {
             throw new IllegalArgumentException("`searcher' is null");
@@ -77,35 +79,21 @@ public class DirectoryExtraReader {
         }
 
         TopDocs hits = searcher.search(query, DIR_LIMIT_NUM);
-        List<FileExtra> results = processHits(searcher, hits);
+        List<NullableNumLinesLOC> results = processHits(searcher, hits);
         return results;
     }
 
-    private List<FileExtra> processHits(IndexSearcher searcher, TopDocs hits)
+    private List<NullableNumLinesLOC> processHits(IndexSearcher searcher, TopDocs hits)
             throws IOException {
 
-        List<FileExtra> results = new ArrayList<>();
+        List<NullableNumLinesLOC> results = new ArrayList<>();
 
         for (ScoreDoc sd : hits.scoreDocs) {
             Document d = searcher.doc(sd.doc);
-            String filepath = d.get(QueryBuilder.PATH);
-            Integer numlines = tryParseInt(d.get(QueryBuilder.NUML));
-            Integer loc = tryParseInt(d.get(QueryBuilder.LOC));
-            FileExtra extra = new FileExtra(filepath, numlines, loc);
+            NullableNumLinesLOC extra = NumLinesLOCUtil.read(d);
             results.add(extra);
         }
 
         return results;
-    }
-
-    private static Integer tryParseInt(String value) {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 }

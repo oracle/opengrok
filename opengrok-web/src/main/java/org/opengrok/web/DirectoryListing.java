@@ -35,12 +35,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.search.DirectoryEntry;
-import org.opengrok.indexer.search.FileExtra;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Util;
 
@@ -271,11 +272,11 @@ public class DirectoryListing {
 
     private void printNumlines(Writer out, DirectoryEntry entry)
             throws IOException {
-        Integer numlines = null;
+        Long numlines = null;
         String readableNumlines = "";
-        FileExtra extra = entry.getExtra();
+        NullableNumLinesLOC extra = entry.getExtra();
         if (extra != null) {
-            numlines = extra.getNumlines();
+            numlines = extra.getNumLines();
         }
         if (numlines != null) {
             readableNumlines = Util.readableCount(numlines);
@@ -288,11 +289,11 @@ public class DirectoryListing {
 
     private void printLoc(Writer out, DirectoryEntry entry)
             throws IOException {
-        Integer loc = null;
+        Long loc = null;
         String readableLoc = "";
-        FileExtra extra = entry.getExtra();
+        NullableNumLinesLOC extra = entry.getExtra();
         if (extra != null) {
-            loc = extra.getLoc();
+            loc = extra.getLOC();
         }
         if (loc != null) {
             readableLoc = Util.readableCount(loc);

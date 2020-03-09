@@ -63,7 +63,8 @@ public class QueryBuilder {
     /**
      * Fields we use in lucene: internal ones.
      */
-    public static final String U = "u";
+    public static final String D = "d"; // Directory key
+    public static final String U = "u"; // File and timestamp key
     public static final String TAGS = "tags";
     public static final String T = "t";
     public static final String FULLPATH = "fullpath";
