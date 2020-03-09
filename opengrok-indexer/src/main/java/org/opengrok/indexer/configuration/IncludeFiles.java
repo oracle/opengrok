@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
 
 package org.opengrok.indexer.configuration;
@@ -36,6 +37,7 @@ public class IncludeFiles {
         getHeaderIncludeFileContent(true);
         getFooterIncludeFileContent(true);
         getForbiddenIncludeFileContent(true);
+        getHttpHeaderIncludeFileContent(true);
     }
 
     private transient String footer = null;
@@ -109,5 +111,23 @@ public class IncludeFiles {
                     Configuration.E_FORBIDDEN_INCLUDE_FILE));
         }
         return eforbidden_content;
+    }
+
+    private transient String http_header = null;
+
+    /**
+     * Get the contents of the HTTP header include file.
+     *
+     * @param force if true, reload even if already set
+     * @return an empty string if it could not be read successfully, the
+     * contents of the file otherwise.
+     * @see Configuration#HTTP_HEADER_INCLUDE_FILE
+     */
+    public String getHttpHeaderIncludeFileContent(boolean force) {
+        if (http_header == null || force) {
+            http_header = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.HTTP_HEADER_INCLUDE_FILE));
+        }
+        return http_header;
     }
 }

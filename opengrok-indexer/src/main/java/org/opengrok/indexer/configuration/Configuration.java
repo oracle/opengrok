@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -1164,6 +1165,13 @@ public final class Configuration {
      * code 403 Forbidden.
      */
     public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
+
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the HTTP header of generated web pages.
+     */
+    public static final String HTTP_HEADER_INCLUDE_FILE = "http_header_include";
 
     /**
      * @return path to the file holding compiled path descriptions for the web application
