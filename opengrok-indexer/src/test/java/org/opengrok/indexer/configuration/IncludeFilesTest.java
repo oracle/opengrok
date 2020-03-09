@@ -100,4 +100,15 @@ public class IncludeFilesTest {
         assertEquals(CONTENT_2 + LINE_SEP,
                 env.includeFiles.getForbiddenIncludeFileContent(true));
     }
+
+    @Test
+    public void testGetHttpHeaderIncludeFileContent() throws IOException {
+        File file = new File(includeRoot.toFile(), Configuration.HTTP_HEADER_INCLUDE_FILE);
+        writeStringToFile(file, CONTENT_1);
+        assertEquals(CONTENT_1 + LINE_SEP,
+                env.includeFiles.getHttpHeaderIncludeFileContent(false));
+        writeStringToFile(file, CONTENT_2);
+        assertEquals(CONTENT_2 + LINE_SEP,
+                env.includeFiles.getHttpHeaderIncludeFileContent(true));
+    }
 }

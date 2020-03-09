@@ -36,6 +36,7 @@ public class IncludeFiles {
         getHeaderIncludeFileContent(true);
         getFooterIncludeFileContent(true);
         getForbiddenIncludeFileContent(true);
+        getHttpHeaderIncludeFileContent(true);
     }
 
     private transient String footer = null;
@@ -107,6 +108,22 @@ public class IncludeFiles {
         if (eforbidden_content == null || force) {
             eforbidden_content = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
                     Configuration.E_FORBIDDEN_INCLUDE_FILE));
+        }
+        return eforbidden_content;
+    }
+
+    /**
+     * Get the contents of the HTTP header include file
+     *
+     * @param force if true, reload even if already set
+     * @return an empty string if it could not be read successfully, the
+     * contents of the file otherwise.
+     * @see Configuration#HTTP_HEADER_INCLUDE_FILE
+     */
+    public String getHttpHeaderIncludeFileContent(boolean force) {
+        if (eforbidden_content == null || force) {
+            eforbidden_content = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.HTTP_HEADER_INCLUDE_FILE));
         }
         return eforbidden_content;
     }

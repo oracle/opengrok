@@ -98,6 +98,7 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     document.domReady = [];
 /* ]]> */
 </script>
+<%= cfg.getEnv().getIncludeFiles().getHttpHeaderIncludeFileContent(false) %>
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>

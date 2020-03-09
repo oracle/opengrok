@@ -1165,6 +1165,13 @@ public final class Configuration {
      */
     public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
 
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the HTTP header of generated web pages.
+     */
+    public static final String HTTP_HEADER_INCLUDE_FILE = "http_header_include";
+
     /**
      * @return path to the file holding compiled path descriptions for the web application
      */
