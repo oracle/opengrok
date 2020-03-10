@@ -113,7 +113,7 @@ public class IncludeFiles {
     }
 
     /**
-     * Get the contents of the HTTP header include file
+     * Get the contents of the HTTP header include file.
      *
      * @param force if true, reload even if already set
      * @return an empty string if it could not be read successfully, the
