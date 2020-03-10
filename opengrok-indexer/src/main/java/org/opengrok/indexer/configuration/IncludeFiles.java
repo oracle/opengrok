@@ -112,6 +112,8 @@ public class IncludeFiles {
         return eforbidden_content;
     }
 
+    private transient String http_header = null;
+
     /**
      * Get the contents of the HTTP header include file.
      *
@@ -121,10 +123,10 @@ public class IncludeFiles {
      * @see Configuration#HTTP_HEADER_INCLUDE_FILE
      */
     public String getHttpHeaderIncludeFileContent(boolean force) {
-        if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+        if (http_header == null || force) {
+            http_header = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
                     Configuration.HTTP_HEADER_INCLUDE_FILE));
         }
-        return eforbidden_content;
+        return http_header;
     }
 }
