@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -26,40 +27,24 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.Configuration;
-import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-public class ConfigurationControllerTest extends JerseyTest {
+public class ConfigurationControllerTest extends OGKJerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

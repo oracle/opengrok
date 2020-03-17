@@ -19,12 +19,12 @@
 
 /*
  * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-public class AnnotationControllerTest extends JerseyTest {
+public class AnnotationControllerTest extends OGKJerseyTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
@@ -71,6 +71,7 @@ public class AnnotationControllerTest extends JerseyTest {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         repository = new TestRepository();
@@ -92,6 +93,7 @@ public class AnnotationControllerTest extends JerseyTest {
     }
 
     @After
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
 

@@ -19,11 +19,11 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -36,7 +36,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class StatsControllerTest extends JerseyTest {
+public class StatsControllerTest extends OGKJerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -30,7 +31,6 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.DeploymentContext;
-import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.spi.TestContainer;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
@@ -57,7 +57,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -66,7 +65,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class MessagesControllerTest extends JerseyTest {
+public class MessagesControllerTest extends OGKJerseyTest {
 
     private static final GenericType<List<AcceptedMessageModel>> messagesType =
             new GenericType<List<AcceptedMessageModel>>() {};

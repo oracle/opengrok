@@ -1,10 +1,34 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ */
+
 package org.opengrok.web.api.v1.controller;
 
-import org.glassfish.jersey.test.JerseyTest;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 
@@ -16,12 +40,11 @@ import static org.junit.Assert.assertEquals;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
-public class SearchControllerTest extends JerseyTest {
+public class SearchControllerTest extends OGKJerseyTest {
     @ClassRule
     public static ConditionalRunRule rule = new ConditionalRunRule();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
 
     private static TestRepository repository;
 
@@ -49,11 +72,6 @@ public class SearchControllerTest extends JerseyTest {
         repository.destroy();
     }
 
-    @Before
-    public void before() {
-
-    }
-
     @Test
     public void testSearchCors() {
         Response response = target(SearchController.PATH)
@@ -62,5 +80,4 @@ public class SearchControllerTest extends JerseyTest {
                 .get();
         assertEquals("*", response.getHeaderString(ALLOW_CORS_HEADER));
     }
-
 }
