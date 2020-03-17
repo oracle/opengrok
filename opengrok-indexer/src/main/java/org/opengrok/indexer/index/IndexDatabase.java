@@ -344,10 +344,9 @@ public class IndexDatabase {
         return false;
     }
 
-    private void showFileCount(
-            String dir, IndexDownArgs args, Statistics elapsed) {
+    private void showFileCount(String dir, IndexDownArgs args) {
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-            elapsed.report(LOGGER, String.format("Need to process: %d files for %s",
+            LOGGER.log(Level.INFO, String.format("Need to process: %d files for %s",
                     args.cur_count, dir));
         }
     }
@@ -485,7 +484,7 @@ public class IndexDatabase {
                     indexDown(sourceRoot, dir, args);
                     elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir));
 
-                    showFileCount(dir, args, elapsed);
+                    showFileCount(dir, args);
 
                     args.cur_count = 0;
                     elapsed = new Statistics();
