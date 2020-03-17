@@ -26,6 +26,7 @@ package org.opengrok.web.api.v1.controller;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.Before;
+import org.opengrok.indexer.util.PortChecker;
 
 import java.util.Random;
 
@@ -39,6 +40,8 @@ public abstract class OGKJerseyTest extends JerseyTest {
     /** Random.nextInt() will be at most one less than this -- but OK */
     private static final int DYNAMIC_OR_PRIVATE_PORT_RANGE = 16383;
 
+    private static final int MAX_PORT_TRIES = 20;
+
     private final Random rand = new Random();
 
     /**
@@ -47,9 +50,20 @@ public abstract class OGKJerseyTest extends JerseyTest {
      */
     @Before
     public void setUp() throws Exception {
-        int jerseyPort = BASE_DYNAMIC_OR_PRIVATE_PORT +
-                rand.nextInt(DYNAMIC_OR_PRIVATE_PORT_RANGE);
-        forceSet(TestProperties.CONTAINER_PORT, String.valueOf(jerseyPort));
+
+        int triesCount = 0;
+        while (true) {
+            int jerseyPort = BASE_DYNAMIC_OR_PRIVATE_PORT +
+                    rand.nextInt(DYNAMIC_OR_PRIVATE_PORT_RANGE);
+            if (PortChecker.available(jerseyPort)) {
+                forceSet(TestProperties.CONTAINER_PORT, String.valueOf(jerseyPort));
+                break;
+            }
+            if (++triesCount > MAX_PORT_TRIES) {
+                throw new RuntimeException("Could not find an available port after " +
+                        MAX_PORT_TRIES + " tries");
+            }
+        }
 
         super.setUp();
     }

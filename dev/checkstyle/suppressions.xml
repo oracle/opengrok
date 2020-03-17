@@ -19,7 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
 -->
 
@@ -33,7 +33,7 @@ Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
         |Summary\.java|OGKUnifiedHighlighter\.java|ResponseHeaderFilter\.java|BoundedBlockingObjectPool\.java|
         |ObjectPool\.java|ObjectValidator\.java|ObjectFactory\.java|AbstractObjectPool\.java|
         |BlockingObjectPool\.java|OGKTextVecField\.java|OGKTextField\.java|
-        |LazilyInstantiate\.java" />
+        |LazilyInstantiate\.java|PortChecker\.java" />
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
