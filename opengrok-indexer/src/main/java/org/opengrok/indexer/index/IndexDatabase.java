@@ -483,6 +483,8 @@ public class IndexDatabase {
                     Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
                     indexDown(sourceRoot, dir, args);
+                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir));
+
                     showFileCount(dir, args, elapsed);
 
                     args.cur_count = 0;
