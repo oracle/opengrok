@@ -19,7 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -46,6 +46,15 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <skipPythonTests>false</skipPythonTests>
+            </properties>
+        </profile>
+        <profile>
             <id>Windows python environment</id>
             <activation>
                 <os>
@@ -55,6 +64,28 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <properties>
                 <python.system.executable>python</python.system.executable>
                 <python.environment>${project.build.directory}/env/Scripts</python.environment>
+            </properties>
+        </profile>
+        <profile>
+            <id>skipTestsRun</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                </property>
+            </activation>
+            <properties>
+                <skipPythonTests>true</skipPythonTests>
+            </properties>
+        </profile>
+        <profile>
+            <id>specificTestRun</id>
+            <activation>
+                <property>
+                    <name>test</name>
+                </property>
+            </activation>
+            <properties>
+                <skipPythonTests>true</skipPythonTests>
             </properties>
         </profile>
     </profiles>
@@ -216,6 +247,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
                             </arguments>
+                            <skip>${skipPythonTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
@@ -289,7 +321,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>test</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
+                            <skip>${skipPythonTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
