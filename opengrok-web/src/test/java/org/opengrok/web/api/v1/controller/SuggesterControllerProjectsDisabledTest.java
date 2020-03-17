@@ -19,11 +19,10 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -49,7 +48,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
-public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
+public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

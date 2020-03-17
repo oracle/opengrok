@@ -19,12 +19,11 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.index.Term;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.opengrok.suggest.Suggester;
@@ -61,7 +60,7 @@ import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SuggesterControllerTest extends JerseyTest {
+public class SuggesterControllerTest extends OGKJerseyTest {
 
     public static class Result {
         public long time;

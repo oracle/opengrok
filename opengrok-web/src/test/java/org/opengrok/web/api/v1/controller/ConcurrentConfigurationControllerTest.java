@@ -1,3 +1,26 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ */
+
 package org.opengrok.web.api.v1.controller;
 
 import java.nio.file.Paths;
@@ -17,7 +40,6 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +58,7 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-public class ConcurrentConfigurationControllerTest extends JerseyTest {
+public class ConcurrentConfigurationControllerTest extends OGKJerseyTest {
 
     private static final int PROJECTS_COUNT = 20;
     private static final int THREAD_COUNT = Math.max(30, Runtime.getRuntime().availableProcessors() * 2);
@@ -69,6 +91,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         origSourceRootPath = env.getSourceRootPath();
@@ -112,6 +135,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
     }
 
     @After
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
         repository.destroy();

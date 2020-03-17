@@ -19,13 +19,12 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,7 +75,7 @@ import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
-public class ProjectsControllerTest extends JerseyTest {
+public class ProjectsControllerTest extends OGKJerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -101,6 +100,7 @@ public class ProjectsControllerTest extends JerseyTest {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         repository = new TestRepository();
@@ -115,6 +115,7 @@ public class ProjectsControllerTest extends JerseyTest {
     }
 
     @After
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
         // This should match Configuration constructor.
