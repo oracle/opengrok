@@ -284,6 +284,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
+                            <skip>${skipPythonTests}</skip>
                         </configuration>
                         <phase>verify</phase>
                         <goals>
