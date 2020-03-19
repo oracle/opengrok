@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -790,11 +791,11 @@ public final class RuntimeEnvironment {
      * Search through the directory for repositories and use the result to replace
      * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.
      *
-     * @param dir the root directory to start the search in
+     * @param dir the directories to start the search in
      */
-    public void setRepositories(String dir) {
+    public void setRepositories(String... dir) {
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
-                addRepositories(new File[]{new File(dir)},
+                addRepositories(Arrays.stream(dir).map(File::new).toArray(File[]::new),
                     RuntimeEnvironment.getInstance().getIgnoredNames()));
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }

@@ -291,7 +291,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
                 filter(p -> p.getName().equals("git")).
                 collect(Collectors.toSet()).size());
 
-        // Run the indexer (ala 'indexpart') so that data directory is populated.
+        // Run the indexer so that data directory is populated.
         ArrayList<String> subFiles = new ArrayList<>();
         subFiles.add("/git");
         subFiles.add("/mercurial");
@@ -301,7 +301,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         repos.add("/mercurial");
         repos.add("/svn");
         // This is necessary so that repositories in HistoryGuru get populated.
-        // When 'indexpart' is run, this is called from setConfiguration() because
+        // For per project reindex this is called from setConfiguration() because
         // of the -R option is present.
         HistoryGuru.getInstance().invalidateRepositories(
                 env.getRepositories(), null, false);

@@ -33,6 +33,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -348,6 +349,25 @@ public class IndexerTest {
         assertEquals("/mercurial/bar.txt", listener.removedFiles.peek());
 
         testrepo.destroy();
+    }
+
+    @Test
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    public void testSetRepositories() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        TestRepository testrepo = new TestRepository();
+        testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        env.setSourceRoot(testrepo.getSourceRoot());
+
+        env.setRepositories(testrepo.getSourceRoot());
+        assertEquals(9, env.getRepositories().size());
+
+        String[] repoNames = {"mercurial", "git"};
+        env.setRepositories(Arrays.stream(repoNames).
+                map(t -> Paths.get(env.getSourceRootPath(), t).toString()).distinct().toArray(String[]::new));
+        assertEquals(2, env.getRepositories().size());
     }
 
     @Test

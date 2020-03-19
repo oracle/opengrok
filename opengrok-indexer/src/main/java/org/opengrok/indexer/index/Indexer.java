@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -118,6 +119,7 @@ public final class Indexer {
     private static int status = 0;
 
     private static final Set<String> repositories = new HashSet<>();
+    private static Set<String> searchPaths = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final HashSet<String> canonicalRoots = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
@@ -335,7 +337,16 @@ public final class Indexer {
                     new Object[]{Info.getVersion(), Info.getRevision()});
 
             // Create history cache first.
-            getInstance().prepareIndexer(env, searchRepositories, addProjects,
+            if (searchRepositories) {
+                if (searchPaths.isEmpty()) {
+                    searchPaths.add(env.getSourceRootPath());
+                } else {
+                    searchPaths = searchPaths.stream().
+                            map(t -> Paths.get(env.getSourceRootPath(), t).toString()).
+                            collect(Collectors.toSet());
+                }
+            }
+            getInstance().prepareIndexer(env, searchPaths, addProjects,
                     createDict, runIndex, subFiles, new ArrayList<>(repositories));
 
             // prepareIndexer() populated the list of projects so now default projects can be set.
@@ -416,6 +427,8 @@ public final class Indexer {
                 }
             });
         });
+
+        searchPaths.clear();
 
         // Limit usage lines to 72 characters for concise formatting.
 
@@ -689,9 +702,16 @@ public final class Indexer {
                     "are history-eligible; using --repository limits to only those specified.",
                     "Option may be repeated.").Do(v -> repositories.add((String) v));
 
-            parser.on("-S", "--search",
-                    "Search for source repositories under -s,--source, and add them.").Do(v ->
-                    searchRepositories = true);
+            parser.on("-S", "--search", "=[path/to/repository]",
+                    "Search for source repositories under -s,--source, and add them." +
+                    "Path (relative to the source root) to repository is optional. " +
+                    "Option may be repeated.").Do(v -> {
+                        searchRepositories = true;
+                        String repoPath = (String) v;
+                        if (!repoPath.isEmpty()) {
+                            searchPaths.add(repoPath);
+                        }
+                    });
 
             parser.on("-s", "--source", "=/path/to/source/root",
                 "The root directory of the source tree.").
@@ -873,8 +893,9 @@ public final class Indexer {
                                List<String> subFiles,
                                List<String> repositories) throws IndexerException, IOException {
 
-        prepareIndexer(env, searchRepositories, addProjects, createDict, true,
-                subFiles, repositories);
+        prepareIndexer(env,
+                searchRepositories ? Collections.singleton(env.getSourceRootPath()) : Collections.emptySet(),
+                addProjects, createDict, true, subFiles, repositories);
     }
 
     /**
@@ -888,7 +909,7 @@ public final class Indexer {
      * for performance. We prefer clarity over performance here, so silence it.
      *
      * @param env runtime environment
-     * @param searchRepositories if true, search for repositories
+     * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
      * @param createDict if true, create dictionary
      * @param createHistoryCache create history cache flag
@@ -899,7 +920,7 @@ public final class Indexer {
      */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
-            boolean searchRepositories,
+            Set<String> searchPaths,
             boolean addProjects,
             boolean createDict,
             boolean createHistoryCache,
@@ -954,10 +975,10 @@ public final class Indexer {
             }
         }
         
-        if (searchRepositories) {
-            LOGGER.log(Level.INFO, "Scanning for repositories...");
+        if (!searchPaths.isEmpty()) {
+            LOGGER.log(Level.INFO, "Scanning for repositories in {0}...", searchPaths);
             Statistics stats = new Statistics();
-            env.setRepositories(env.getSourceRootPath());
+            env.setRepositories(searchPaths.toArray(new String[0]));
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
                     env.getRepositories().size()));
         }
