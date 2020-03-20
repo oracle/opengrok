@@ -79,24 +79,6 @@ public class IndexerRepoTest {
         repository.destroy();
     }
 
-    private void checkNumberOfThreads() {
-        /*
-         * There should not be any threads in the renamed pool now.
-         * We need to check it like this since the test framework tears
-         * down the threads at the end of the test case run so any
-         * hangs due to executors not being shut down would not be visible.
-         */
-        ThreadGroup mainGroup = Thread.currentThread().getThreadGroup();
-        Thread[] threads = new Thread[mainGroup.activeCount()];
-        mainGroup.enumerate(threads);
-        for (int i = 0; i < threads.length; i++) {
-            if (threads[i] == null || threads[i].getName() == null) {
-                continue;
-            }
-            assertFalse(threads[i].getName().contains("renamed-handling"));
-        }
-    }
-
     /**
      * Test it is possible to disable history per project.
      */
@@ -221,31 +203,5 @@ public class IndexerRepoTest {
         // cleanup
         IOUtils.removeRecursive(realSource);
         IOUtils.removeRecursive(sourceRoot);
-    }
-
-    /**
-     * Test cleanup of renamed thread pool after indexing with -H.
-     */
-    @Test
-    public void testMainWithH() {
-        System.out.println("Generate index by using command line options with -H");
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
-                "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-        Indexer.main(argv);
-        checkNumberOfThreads();
-    }
-
-    /**
-     * Test cleanup of renamed thread pool after indexing without -H.
-     */
-    @Test
-    public void testMainWithoutH() {
-        System.out.println("Generate index by using command line options without -H");
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
-                "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-        Indexer.main(argv);
-        checkNumberOfThreads();
     }
 }
