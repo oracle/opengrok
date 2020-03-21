@@ -61,6 +61,7 @@ import org.opengrok.indexer.configuration.LuceneLockName;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoriesHelp;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -167,6 +168,9 @@ public final class Indexer {
                         break;
                     case GURU:
                         helpStream.println(AnalyzerGuruHelp.getUsage());
+                        break;
+                    case REPOS:
+                        helpStream.println(RepositoriesHelp.getText());
                         break;
                     default:
                         helpStream.println(helpUsage);
@@ -448,7 +452,8 @@ public final class Indexer {
                     "With no mode specified, display this usage summary. Or specify a mode:",
                     "  config - display configuration.xml examples.",
                     "   ctags - display ctags command-line.",
-                    "    guru - display AnalyzerGuru details.").Do(v -> {
+                    "    guru - display AnalyzerGuru details.",
+                    "   repos - display enabled repositories.").Do(v -> {
                         help = true;
                         helpUsage = parser.getUsage();
                         String mode = (String) v;
@@ -1148,7 +1153,7 @@ public final class Indexer {
     }
 
     private enum HelpMode {
-        CONFIG, CTAGS, DEFAULT, GURU
+        CONFIG, CTAGS, DEFAULT, GURU, REPOS
     }
 
     private Indexer() {
