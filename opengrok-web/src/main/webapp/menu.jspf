@@ -159,32 +159,33 @@ document.domReady.push(function() { domReadyMenu(); });
     %>
     <tbody>
     <tr>
-        <td><label for="<%= QueryParameters.FULL_SEARCH_PARAM %>" title="Text token(s) or other
-            fields to be found (Lucene query--this is not full text)">Full&nbsp;Search</label></td>
+        <td><label for="<%= QueryParameters.FULL_SEARCH_PARAM %>"
+              title="Text token(s) or other fields to be found (Lucene query--this is not full text)">
+            Full&nbsp;Search</label></td>
         <td colspan="2"><input tabindex="1" class="q"
                 name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
                 id="<%= QueryParameters.FULL_SEARCH_PARAM %>" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="<%= QueryParameters.DEFS_SEARCH_PARAM %>" title="Definition of
-            function/variable/class">Definition</label></td>
+        <td><label for="<%= QueryParameters.DEFS_SEARCH_PARAM %>"
+              title="Definitions of function/variable/class">Definition</label></td>
         <td colspan="2"><input class="q" tabindex="2"
             name="<%= QueryParameters.DEFS_SEARCH_PARAM %>"
             id="<%= QueryParameters.DEFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="<%= QueryParameters.REFS_SEARCH_PARAM %>" title="Usage of
-            function/variable/class">Symbol</label></td>
+        <td><label for="<%= QueryParameters.REFS_SEARCH_PARAM %>"
+              title="Usage of function/variable/class">Symbol</label></td>
         <td colspan="2"><input class="q" tabindex="3"
             name="<%= QueryParameters.REFS_SEARCH_PARAM %>"
             id="<%= QueryParameters.REFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="<%= QueryParameters.PATH_SEARCH_PARAM %>" title="Path or parts of it (no need to use dividers)">File&nbsp;Path
-            </label></td>
+        <td><label for="<%= QueryParameters.PATH_SEARCH_PARAM %>"
+              title="Path or parts of it (no need to use separators)">File&nbsp;Path</label></td>
         <td colspan="2"><input class="q" tabindex="4"
             name="<%= QueryParameters.PATH_SEARCH_PARAM %>"
             id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
@@ -194,8 +195,8 @@ document.domReady.push(function() { domReadyMenu(); });
         if (cfg.getEnv().isHistoryEnabled()) {
     %>
     <tr>
-        <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>" title="Search in log
-            messages">History</label></td>
+        <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>"
+              title="Search in project(s) repository log messages">History</label></td>
         <td colspan="2"><input class="q" tabindex="5"
             name="<%= QueryParameters.HIST_SEARCH_PARAM %>"
             id="<%= QueryParameters.HIST_SEARCH_PARAM %>" type="text" value="<%=
