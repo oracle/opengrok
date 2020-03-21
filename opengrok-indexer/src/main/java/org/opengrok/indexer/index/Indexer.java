@@ -250,7 +250,7 @@ public final class Indexer {
                     IndexVersion.check(subFilesList);
                 } catch (IndexVersionException e) {
                     System.err.printf("Index version check failed: %s\n", e);
-                    System.err.printf("You might want to remove " +
+                    System.err.print("You might want to remove " +
                             (subFilesList.size() > 0 ?
                                     "data for projects " + String.join(",", subFilesList) : "all data") +
                             " under the DATA_ROOT and to reindex\n");
@@ -407,17 +407,16 @@ public final class Indexer {
         boolean preHelp = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
                 HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
 
-        OptionParser configure = OptionParser.scan(parser -> {
-            parser.on("-R configPath").Do(cfgFile -> {
-                try {
-                    if (!preHelp) {
-                        cfg = Configuration.read(new File((String) cfgFile));
-                    }
-                } catch (IOException e) {
-                    die(e.getMessage());
+        OptionParser configure = OptionParser.scan(parser ->
+                parser.on("-R configPath").Do(cfgFile -> {
+            try {
+                if (!preHelp) {
+                    cfg = Configuration.read(new File((String) cfgFile));
                 }
-            });
-        });
+            } catch (IOException e) {
+                die(e.getMessage());
+            }
+        }));
 
         searchPaths.clear();
 
@@ -450,9 +449,9 @@ public final class Indexer {
                     "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
                     "Associates files with the specified prefix or extension (case-",
                     "insensitive) to be analyzed with the given analyzer, where 'analyzer'",
-                    "may be specified using a simple class name (case-sensitive e.g.",
-                    "RubyAnalyzer) or language name (case-sensitive e.g. C) prefix. Option",
-                    "may be repeated.",
+                    "may be specified using a class name (case-sensitive e.g. RubyAnalyzer)",
+                    "or analyzer language name (case-sensitive e.g. C). Option may be",
+                    "repeated.",
                     "  Ex: -A .foo:CAnalyzer",
                     "      will use the C analyzer for all files ending with .FOO",
                     "  Ex: -A bar.:Perl",
@@ -469,9 +468,8 @@ public final class Indexer {
             );
 
             parser.on("-c", "--ctags", "=/path/to/ctags",
-                    "Path to Universal Ctags. Default is ctags in PATH.").Do(ctagsPath ->
-                    cfg.setCtags((String) ctagsPath)
-            );
+                    "Path to Universal Ctags. Default is ctags in environment PATH.").Do(
+                            v -> cfg.setCtags((String) v));
 
             parser.on("--canonicalRoot", "=/path/",
                     "Allow symlinks to canonical targets starting with the specified root",
@@ -487,9 +485,8 @@ public final class Indexer {
             });
 
             parser.on("--checkIndexVersion",
-                    "Check if current Lucene version matches index version.").Do(v -> {
-                checkIndexVersion = true;
-            });
+                    "Check if current Lucene version matches index version.").Do(v ->
+                    checkIndexVersion = true);
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
@@ -511,9 +508,8 @@ public final class Indexer {
 
             parser.on("--depth", "=number", Integer.class,
                 "Scanning depth for repositories in directory structure relative to",
-                "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth -> {
-                cfg.setScanningDepth((Integer) depth);
-            });
+                "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth ->
+                    cfg.setScanningDepth((Integer) depth));
 
             parser.on("--disableRepository", "=type_name",
                     "Disables operation of an OpenGrok-supported repository. See also",
@@ -537,13 +533,10 @@ public final class Indexer {
                     "be slightly slow.").Do(v -> cfg.setGenerateHtml(false));
 
             parser.on("-G", "--assignTags",
-                "Assign commit tags to all entries in history for all repositories.").Do(v -> {
-                cfg.setTagsEnabled(true);
-            });
+                "Assign commit tags to all entries in history for all repositories.").Do(v ->
+                    cfg.setTagsEnabled(true));
 
-            parser.on("-H", "--history", "Enable history.").Do(v -> {
-                cfg.setHistoryEnabled(true);
-            });
+            parser.on("-H", "--history", "Enable history.").Do(v -> cfg.setHistoryEnabled(true));
 
             parser.on("-I", "--include", "=pattern",
                     "Only files matching this pattern will be examined. Pattern supports",
@@ -571,9 +564,8 @@ public final class Indexer {
             });
 
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
-                "Allow or disallow leading wildcards in a search. Default is on.").Do(v -> {
-                cfg.setAllowLeadingWildcard((Boolean) v);
-            });
+                "Allow or disallow leading wildcards in a search. Default is on.").Do(v ->
+                    cfg.setAllowLeadingWildcard((Boolean) v));
 
             parser.on("-m", "--memory", "=number", Double.class,
                     "Amount of memory (MB) that may be used for buffering added documents and",
@@ -661,9 +653,8 @@ public final class Indexer {
                     cfg.setQuickContextScan((Boolean) v));
 
             parser.on("-q", "--quiet",
-                    "Run as quietly as possible. Sets logging level to WARNING.").Do(v -> {
-                LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
-            });
+                    "Run as quietly as possible. Sets logging level to WARNING.").Do(v ->
+                    LoggerUtil.setBaseConsoleLogLevel(Level.WARNING));
 
             parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do(v -> {
@@ -821,7 +812,7 @@ public final class Indexer {
         }
 
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
-            die("Repositories were specified; however history is off");
+            die("Repositories were specified; history is off however");
         }
     }
 
@@ -988,7 +979,7 @@ public final class Indexer {
             // Even if history is disabled globally, it can be enabled for some repositories.
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
-                        repositories.stream().collect(Collectors.joining(",")));
+                        String.join(",", repositories));
                 HistoryGuru.getInstance().createCache(repositories);
                 LOGGER.info("Done...");
             } else {
