@@ -155,28 +155,7 @@ public final class Indexer {
         try {
             argv = parseOptions(argv);
             if (help) {
-                PrintStream helpStream = status != 0 ? System.err : System.out;
-                switch (helpMode) {
-                    case CONFIG:
-                        helpStream.print(ConfigurationHelp.getSamples());
-                        break;
-                    case CTAGS:
-                        helpStream.println("Ctags command-line:");
-                        helpStream.println();
-                        helpStream.println(getCtagsCommand());
-                        helpStream.println();
-                        break;
-                    case GURU:
-                        helpStream.println(AnalyzerGuruHelp.getUsage());
-                        break;
-                    case REPOS:
-                        helpStream.println(RepositoriesHelp.getText());
-                        break;
-                    default:
-                        helpStream.println(helpUsage);
-                        break;
-                }
-                System.exit(status);
+                exitWithHelp();
             }
 
             checkConfiguration();
@@ -467,16 +446,18 @@ public final class Indexer {
             });
 
             parser.on(
-                "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
-                    "Files with the named prefix/extension should be analyzed with the given",
-                    "analyzer, where 'analyzer' may be specified using a simple class name",
-                    "(e.g. RubyAnalyzer) or language name (e.g. C) and is case-sensitive.",
-                    "Option may be repeated.",
+                "-A (.ext|prefix.):(-|analyzer)", "--analyzer",
+                    "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
+                    "Associates files with the specified prefix or extension (case-",
+                    "insensitive) to be analyzed with the given analyzer, where 'analyzer'",
+                    "may be specified using a simple class name (case-sensitive e.g.",
+                    "RubyAnalyzer) or language name (case-sensitive e.g. C) prefix. Option",
+                    "may be repeated.",
                     "  Ex: -A .foo:CAnalyzer",
                     "      will use the C analyzer for all files ending with .FOO",
                     "  Ex: -A bar.:Perl",
-                    "      will use the Perl analyzer for all files starting",
-                    "      with \"BAR\" (no full-stop)",
+                    "      will use the Perl analyzer for all files starting with",
+                    "      \"BAR\" (no full-stop)",
                     "  Ex: -A .c:-",
                     "      will disable specialized analyzers for all files ending with .c").
                 Do(analyzerSpec -> {
@@ -488,9 +469,8 @@ public final class Indexer {
             );
 
             parser.on("-c", "--ctags", "=/path/to/ctags",
-                "Path to Universal Ctags",
-                "By default takes the Universal Ctags in PATH.").
-                Do(ctagsPath -> cfg.setCtags((String) ctagsPath)
+                    "Path to Universal Ctags. Default is ctags in PATH.").Do(ctagsPath ->
+                    cfg.setCtags((String) ctagsPath)
             );
 
             parser.on("--canonicalRoot", "=/path/",
@@ -507,7 +487,7 @@ public final class Indexer {
             });
 
             parser.on("--checkIndexVersion",
-                    "Check if current Lucene version matches index version").Do(v -> {
+                    "Check if current Lucene version matches index version.").Do(v -> {
                 checkIndexVersion = true;
             });
 
@@ -536,8 +516,8 @@ public final class Indexer {
             });
 
             parser.on("--disableRepository", "=type_name",
-                    "Disables operation of an OpenGrok-supported repository. Option may be",
-                    "repeated.",
+                    "Disables operation of an OpenGrok-supported repository. See also",
+                    "-h,--help repos. Option may be repeated.",
                     "  Ex: --disableRepository git",
                     "      will disable the GitRepository",
                     "  Ex: --disableRepository MercurialRepository").Do(v -> {
@@ -577,9 +557,8 @@ public final class Indexer {
                     cfg.getIgnoredNames().add((String) pattern));
 
             parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
-                "Set OpenGrok/Lucene locking mode of the Lucene database",
-                "during index generation. \"on\" is an alias for \"simple\".",
-                "Default is off.").Do(v -> {
+                    "Set OpenGrok/Lucene locking mode of the Lucene database during index",
+                    "generation. \"on\" is an alias for \"simple\". Default is off.").Do(v -> {
                 try {
                     if (v != null) {
                         String vuc = v.toString().toUpperCase(Locale.ROOT);
@@ -592,7 +571,7 @@ public final class Indexer {
             });
 
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
-                "Allow or disallow leading wildcards in a search.").Do(v -> {
+                "Allow or disallow leading wildcards in a search. Default is on.").Do(v -> {
                 cfg.setAllowLeadingWildcard((Boolean) v);
             });
 
@@ -619,7 +598,7 @@ public final class Indexer {
             parser.on("-N", "--symlink", "=/path/to/symlink",
                     "Allow the symlink to be followed. Other symlinks targeting the same",
                     "canonical target or canonical children will be allowed too. Option may",
-                    "be repeated. (By default only symlinks directly under source root",
+                    "be repeated. (By default only symlinks directly under the source root",
                     "directory are allowed. See also --canonicalRoot)").Do(v ->
                     allowedSymlinks.add((String) v));
 
@@ -629,8 +608,8 @@ public final class Indexer {
                     runIndex = false);
 
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
-                "Turn on/off the optimization of the index database",
-                "as part of the indexing step.").
+                    "Turn on/off the optimization of the index database as part of the",
+                    "indexing step. Default is on.").
                 Do(v -> {
                     boolean oldval = cfg.isOptimizeDatabase();
                     cfg.setOptimizeDatabase((Boolean) v);
@@ -678,11 +657,11 @@ public final class Indexer {
                     "Turn on/off quick context scan. By default, only the first 1024KB of a",
                     "file is scanned, and a link ('[..all..]') is inserted when the file is",
                     "bigger. Activating this may slow the server down. (Note: this setting",
-                    "only affects the web application.)").Do(v ->
+                    "only affects the web application.) Default is on.").Do(v ->
                     cfg.setQuickContextScan((Boolean) v));
 
-            parser.on("-q", "--quiet", "Run as quietly as possible.",
-                    "Sets logging level to WARNING.").Do(v -> {
+            parser.on("-q", "--quiet",
+                    "Run as quietly as possible. Sets logging level to WARNING.").Do(v -> {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
@@ -716,7 +695,8 @@ public final class Indexer {
             parser.on("--renamedHistory", "=on|off", ON_OFF, Boolean.class,
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
-                "with lots of renamed files.").Do(v -> cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
+                "with lots of renamed files. Default is off.").Do(v ->
+                    cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
 
             parser.on("--repository", "=path/to/repository",
                     "Path (relative to the source root) to a repository for generating",
@@ -755,16 +735,16 @@ public final class Indexer {
                     cfg.setWebappLAF((String) stylePath));
 
             parser.on("-T", "--threads", "=number", Integer.class,
-                "The number of threads to use for index generation.",
-                "By default the number of threads will be set to the number",
-                "of available CPUs.").Do(threadCount -> cfg.setIndexingParallelism((Integer) threadCount));
+                    "The number of threads to use for index generation. By default the number",
+                    "of threads will be set to the number of available CPUs.").Do(threadCount ->
+                    cfg.setIndexingParallelism((Integer) threadCount));
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
                 "Default tab size to use (number of spaces per tab character).")
                     .Do(tabSize -> cfg.setTabSize((Integer) tabSize));
 
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
-                "Send the current configuration to the specified webappURI").Do(webAddr -> {
+                "Send the current configuration to the specified web application.").Do(webAddr -> {
                     webappURI = (String) webAddr;
                     try {
                         URI uri = new URI(webappURI);
@@ -784,7 +764,7 @@ public final class Indexer {
             parser.on("---unitTest");  // For unit test only, will not appear in help
 
             parser.on("--updateConfig",
-                    "Populate the webapp with bare configuration, and exit.").Do(v ->
+                    "Populate the web application with a bare configuration, and exit.").Do(v ->
                     bareConfig = true);
 
             parser.on("--userPage", "=URL",
@@ -807,9 +787,9 @@ public final class Indexer {
             });
 
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
-                "Write the current configuration to the specified file",
-                "(so that the web application can use the same configuration)")
-                    .Do(configFile -> configFilename = (String) configFile);
+                    "Write the current configuration to the specified file (so that the web",
+                    "application can use the same configuration).").Do(configFile ->
+                    configFilename = (String) configFile);
 
             parser.on("--webappCtags", "=on|off", ON_OFF, Boolean.class,
                     "Web application should run ctags when necessary. Default is off.").
@@ -837,11 +817,11 @@ public final class Indexer {
         env = RuntimeEnvironment.getInstance();
 
         if (bareConfig && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
-            die("Missing webappURI URL");
+            die("Missing webappURI setting");
         }
 
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
-            die("Repositories were specified however history is off");
+            die("Repositories were specified; however history is off");
         }
     }
 
@@ -1145,6 +1125,31 @@ public final class Indexer {
         if (in.equals("n")) {
             System.exit(1);
         }
+    }
+
+    private static void exitWithHelp() {
+        PrintStream helpStream = status != 0 ? System.err : System.out;
+        switch (helpMode) {
+            case CONFIG:
+                helpStream.print(ConfigurationHelp.getSamples());
+                break;
+            case CTAGS:
+                helpStream.println("Ctags command-line:");
+                helpStream.println();
+                helpStream.println(getCtagsCommand());
+                helpStream.println();
+                break;
+            case GURU:
+                helpStream.println(AnalyzerGuruHelp.getUsage());
+                break;
+            case REPOS:
+                helpStream.println(RepositoriesHelp.getText());
+                break;
+            default:
+                helpStream.println(helpUsage);
+                break;
+        }
+        System.exit(status);
     }
 
     private static String getCtagsCommand() {
