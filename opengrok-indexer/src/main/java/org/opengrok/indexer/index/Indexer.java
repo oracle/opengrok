@@ -720,9 +720,8 @@ public final class Indexer {
                     "Option may be repeated.").Do(v -> repositories.add((String) v));
 
             parser.on("-S", "--search", "=[path/to/repository]",
-                    "Search for source repositories under -s,--source, and add them." +
-                    "Path (relative to the source root) to repository is optional. " +
-                    "Option may be repeated.").Do(v -> {
+                    "Search for source repositories under -s,--source, and add them. Path",
+                    "(relative to the source root) is optional. Option may be repeated.").Do(v -> {
                         searchRepositories = true;
                         String repoPath = (String) v;
                         if (!repoPath.isEmpty()) {
