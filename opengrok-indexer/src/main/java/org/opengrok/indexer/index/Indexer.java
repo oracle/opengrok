@@ -112,8 +112,9 @@ public final class Indexer {
     private static boolean bareConfig = false;
     private static boolean awaitProfiler;
 
-    private static int help;
+    private static boolean help;
     private static String helpUsage;
+    private static HelpMode helpMode = HelpMode.DEFAULT;
 
     private static String configFilename = null;
     private static int status = 0;
@@ -152,17 +153,24 @@ public final class Indexer {
 
         try {
             argv = parseOptions(argv);
-            if (help > 0) {
+            if (help) {
                 PrintStream helpStream = status != 0 ? System.err : System.out;
-                helpStream.println(helpUsage);
-                if (help > 1) {
-                    helpStream.println(AnalyzerGuruHelp.getUsage());
-                    helpStream.print(ConfigurationHelp.getSamples());
-                }
-                if (help > 2) {
-                    helpStream.println("Ctags command-line:");
-                    helpStream.println();
-                    helpStream.println(getCtagsCommand());
+                switch (helpMode) {
+                    case CONFIG:
+                        helpStream.print(ConfigurationHelp.getSamples());
+                        break;
+                    case CTAGS:
+                        helpStream.println("Ctags command-line:");
+                        helpStream.println();
+                        helpStream.println(getCtagsCommand());
+                        helpStream.println();
+                        break;
+                    case GURU:
+                        helpStream.println(AnalyzerGuruHelp.getUsage());
+                        break;
+                    default:
+                        helpStream.println(helpUsage);
+                        break;
                 }
                 System.exit(status);
             }
@@ -436,12 +444,21 @@ public final class Indexer {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
-            parser.on(HELP_OPT_3, Indexer.HELP_OPT_2, HELP_OPT_1,
-                    "Display this usage summary.",
-                    "    Repeat once for AnalyzerGuru details and configuration.xml samples.",
-                    "    Repeat twice for ctags command-line.").Do(v -> {
-                        ++help;
+            parser.on(HELP_OPT_3, HELP_OPT_2, HELP_OPT_1, "=[mode]",
+                    "With no mode specified, display this usage summary. Or specify a mode:",
+                    "  config - display configuration.xml examples.",
+                    "   ctags - display ctags command-line.",
+                    "    guru - display AnalyzerGuru details.").Do(v -> {
+                        help = true;
                         helpUsage = parser.getUsage();
+                        String mode = (String) v;
+                        if (mode != null && !mode.isEmpty()) {
+                            try {
+                                helpMode = HelpMode.valueOf(((String) v).toUpperCase(Locale.ROOT));
+                            } catch (IllegalArgumentException ex) {
+                                die("mode '" + v + "' is not valid.");
+                            }
+                        }
             });
 
             parser.on(
@@ -1129,6 +1146,10 @@ public final class Indexer {
     private static String getCtagsCommand() {
         Ctags ctags = CtagsUtil.newInstance(env);
         return Executor.escapeForShell(ctags.getArgv(), true, PlatformUtils.isWindows());
+    }
+
+    private enum HelpMode {
+        CONFIG, CTAGS, DEFAULT, GURU
     }
 
     private Indexer() {
