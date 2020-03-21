@@ -29,6 +29,7 @@ java.util.TreeSet,
 
 org.opengrok.indexer.configuration.Group,
 org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.search.context.ContextArgs,
 org.opengrok.indexer.search.QueryBuilder,
 org.opengrok.web.PageConfig,
 org.opengrok.web.ProjectHelper,
@@ -69,7 +70,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <label for="<%= QueryParameters.PROJECT_SEARCH_PARAM %>">Project(s)</label>
     </td>
     <td colspan="2">
-    <select tabindex="8" class="q" id="<%= QueryParameters.PROJECT_SEARCH_PARAM %>"
+    <select tabindex="0" class="q" id="<%= QueryParameters.PROJECT_SEARCH_PARAM %>"
         name="<%= QueryParameters.PROJECT_SEARCH_PARAM %>" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
         SortedSet<String> pRequested = new TreeSet<>(cfg.getRequestedProjects());
@@ -126,15 +127,15 @@ document.domReady.push(function() { domReadyMenu(); });
     </tr>
     <tr>
     <td colspan="3" >
-    <button tabindex="6" type="button"
+    <button tabindex="0" type="button"
         onclick="selectAllProjects(); return false;"
         >select all</button>
     &nbsp;
-    <button tabindex="7" type="button"
+    <button tabindex="0" type="button"
         onclick="invertAllProjects(); return false;"
         >invert selection</button>
     &nbsp;
-    <button tabindex="8" type="button"
+    <button tabindex="0" type="button"
         onclick="deselectAllProjects(); return false;"
         >clear</button>
     </td>
@@ -148,7 +149,7 @@ document.domReady.push(function() { domReadyMenu(); });
         <td><label for="<%= QueryParameters.FULL_SEARCH_PARAM %>"
               title="Text token(s) or other fields to be found (Lucene query--this is not full text)">
             Full&nbsp;Search</label></td>
-        <td colspan="2"><input tabindex="1" class="q"
+        <td colspan="2"><input tabindex="0" class="q"
                 name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
                 id="<%= QueryParameters.FULL_SEARCH_PARAM %>" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
@@ -156,7 +157,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
         <td><label for="<%= QueryParameters.DEFS_SEARCH_PARAM %>"
               title="Definitions of function/variable/class">Definition</label></td>
-        <td colspan="2"><input class="q" tabindex="2"
+        <td colspan="2"><input class="q" tabindex="0"
             name="<%= QueryParameters.DEFS_SEARCH_PARAM %>"
             id="<%= QueryParameters.DEFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
@@ -164,7 +165,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
         <td><label for="<%= QueryParameters.REFS_SEARCH_PARAM %>"
               title="Usage of function/variable/class">Symbol</label></td>
-        <td colspan="2"><input class="q" tabindex="3"
+        <td colspan="2"><input class="q" tabindex="0"
             name="<%= QueryParameters.REFS_SEARCH_PARAM %>"
             id="<%= QueryParameters.REFS_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
@@ -172,7 +173,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
         <td><label for="<%= QueryParameters.PATH_SEARCH_PARAM %>"
               title="Path or parts of it (no need to use separators)">File&nbsp;Path</label></td>
-        <td colspan="2"><input class="q" tabindex="4"
+        <td colspan="2"><input class="q" tabindex="0"
             name="<%= QueryParameters.PATH_SEARCH_PARAM %>"
             id="<%= QueryParameters.PATH_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
@@ -183,7 +184,7 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
         <td><label for="<%= QueryParameters.HIST_SEARCH_PARAM %>"
               title="Search in project(s) repository log messages">History</label></td>
-        <td colspan="2"><input class="q" tabindex="5"
+        <td colspan="2"><input class="q" tabindex="0"
             name="<%= QueryParameters.HIST_SEARCH_PARAM %>"
             id="<%= QueryParameters.HIST_SEARCH_PARAM %>" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
@@ -193,7 +194,7 @@ document.domReady.push(function() { domReadyMenu(); });
     %>
     <tr>
         <td id="typeLabelTd"><label for="<%= QueryParameters.TYPE_SEARCH_PARAM %>">Type</label></td>
-        <td><select class="q" tabindex="6" name="<%= QueryParameters.TYPE_SEARCH_PARAM %>"
+        <td><select class="q" tabindex="0" name="<%= QueryParameters.TYPE_SEARCH_PARAM %>"
                 id="<%= QueryParameters.TYPE_SEARCH_PARAM %>"><%
                 String selection = queryParams.getType();
                 %>
@@ -216,18 +217,25 @@ document.domReady.push(function() { domReadyMenu(); });
     </tbody>
 </table>
 <div id="form-controls">
-    <input tabindex="9" class="submit btn" onclick="$('#xrd').val(''); $('#sbox').submit()"
+    <input tabindex="0" class="submit btn" onclick="$('#xrd').val(''); $('#sbox').submit()"
            type="submit" value="Search"/>
-    <input tabindex="10" class="submit btn" onclick="clearSearchFrom();"
+    <input tabindex="0" class="submit btn" onclick="clearSearchFrom();"
            type="button" value="Clear"/>
-    <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
+    <input tabindex="0" class="submit btn" onclick="window.open('help.jsp', '_blank');"
            type="button" value="Help"/>
-    <input tabindex="12" class="submit btn" onclick="window.open('settings.jsp', '_self');"
+    <input tabindex="0" class="submit btn" onclick="window.open('settings.jsp', '_self');"
            type="button" value="Settings"/>
+    <label for="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>" class="sch">
+      <input type="number" name="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>"
+             id="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>" min="0"
+             max="<%= ContextArgs.MAX_CONTEXT_SURROUND %>" step="1"
+             value="<%= cfg.getLimitedContextArgs().getContextSurround() %>">
+        context &nbsp;
+    </label>
 </div>
 </div>
 <div id="ltbl">
-    <!-- filled with javascript -->
+    <%-- filled with javascript --%>
 </div>
 <input type="hidden" id="<%= QueryParameters.NO_REDIRECT_PARAM %>"
        name="<%= QueryParameters.NO_REDIRECT_PARAM %>" value=""/>

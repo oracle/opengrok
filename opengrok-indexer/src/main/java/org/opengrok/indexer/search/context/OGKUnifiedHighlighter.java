@@ -37,6 +37,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.uhighlight.PassageFormatter;
 import org.apache.lucene.search.uhighlight.UHComponents;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.util.BytesRef;
@@ -58,35 +59,30 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         OGKUnifiedHighlighter.class);
 
-    private final RuntimeEnvironment env;
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private int tabSize;
 
     private String fileTypeName;
+
+    private ContextArgs contextArgs;
 
     /**
      * Initializes an instance with
      * {@link UnifiedHighlighter#UnifiedHighlighter(org.apache.lucene.search.IndexSearcher, org.apache.lucene.analysis.Analyzer)}
      * for the specified {@code indexSearcher} and {@code indexAnalyzer}, and
      * stores the {@code env} for later use.
-     * @param env a required instance
      * @param indexSearcher a required instance
      * @param indexAnalyzer a required instance
      * @throws IllegalArgumentException if any argument is null
      */
-    public OGKUnifiedHighlighter(RuntimeEnvironment env,
-            IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
+    public OGKUnifiedHighlighter(IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
         super(indexSearcher, indexAnalyzer);
-
-        if (env == null) {
-            throw new IllegalArgumentException("env is null");
-        }
-        this.env = env;
     }
 
     /**
      * Gets a file type name-specific analyzer during the execution of
-     * {@link #highlightFieldsUnion(java.lang.String[], org.apache.lucene.search.Query, int, int)},
+     * {@link #highlightFieldsUnion(java.lang.String[], org.apache.lucene.search.Query, int)},
      * or just gets the object passed in to the constructor at all other times.
      * @return a defined instance
      */
@@ -109,19 +105,27 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     }
 
     /**
+     * Sets the instance used (if applicable) for the {@link PassageFormatter}
+     * assigned to {@link #setFormatter(PassageFormatter)}.
+     * @param contextArgs a defined instance or {@code null}
+     */
+    public void setContextArgs(ContextArgs contextArgs) {
+        this.contextArgs = contextArgs;
+    }
+
+    /**
      * Transiently arranges that {@link #getIndexAnalyzer()} returns a file type
      * name-specific analyzer during a subsequent call of
-     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int, int)}.
+     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int)}.
      * @param fields a defined instance
      * @param query a defined instance
      * @param docId a valid document ID
-     * @param lineLimit the maximum number of lines to return
      * @return a defined instance or else {@code null} if there are no results
      * @throws IOException if accessing the Lucene document fails
      */
-    public String highlightFieldsUnion(String[] fields, Query query,
-            int docId, int lineLimit) throws IOException {
-        /**
+    public String highlightFieldsUnion(String[] fields, Query query, int docId)
+            throws IOException {
+        /*
          * Setting fileTypeName has to happen before getFieldHighlighter() is
          * called by highlightFieldsAsObjects() so that the result of
          * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
@@ -130,7 +134,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         Document doc = searcher.doc(docId);
         fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
         try {
-            return highlightFieldsUnionWork(fields, query, docId, lineLimit);
+            return highlightFieldsUnionWork(fields, query, docId);
         } finally {
             fileTypeName = null;
         }
@@ -144,25 +148,30 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * @param fields a defined instance
      * @param query a defined instance
      * @param docId a valid document ID
-     * @param lineLimit the maximum number of lines to return
      * @return a defined instance or else {@code null} if there are no results
      * @throws IOException if accessing the Lucene document fails
      */
-    protected String highlightFieldsUnionWork(String[] fields, Query query,
-            int docId, int lineLimit) throws IOException {
+    protected String highlightFieldsUnionWork(String[] fields, Query query, int docId)
+            throws IOException {
+
+        int lineLimit = contextArgs != null ? contextArgs.getContextLimit() : Short.MAX_VALUE;
         int[] maxPassagesCopy = new int[fields.length];
-        /**
+        /*
          * N.b. linelimit + 1 so that the ContextFormatter has an indication
-         * when to display the "more..." link.
+         * when to display the "more..." link. If we're showing surrounding
+         * context, though, then leave this essentially unbounded (initially),
+         * or else Lucene's BM25 sampling when limited can result in highlights
+         * confusingly missing from surrounding context.
          */
-        Arrays.fill(maxPassagesCopy, lineLimit + 1);
+        Arrays.fill(maxPassagesCopy, contextArgs != null &&
+                contextArgs.getContextSurround() > 0 ? Short.MAX_VALUE : lineLimit + 1);
 
         FormattedLines res = null;
         Map<String, Object[]> mappedRes = highlightFieldsAsObjects(fields,
             query, new int[]{docId}, maxPassagesCopy);
-        for (Object[] flinesz : mappedRes.values()) {
-            for (Object obj : flinesz) {
-                /**
+        for (Object[] passageObjects : mappedRes.values()) {
+            for (Object obj : passageObjects) {
+                /*
                  * Empirical testing showed that the passage could be null if
                  * the original source text is not available to the highlighter.
                  */
@@ -246,7 +255,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         OffsetSource res = super.getOptimizedOffsetSource(components);
         String field = components.getField();
         if (res == OffsetSource.ANALYSIS) {
-            /**
+            /*
              *     Testing showed that UnifiedHighlighter falls back to
              * ANALYSIS in the presence of multi-term queries (MTQs) such as
              * prefixes and wildcards even for fields that are analyzed with

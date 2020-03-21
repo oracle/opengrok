@@ -66,7 +66,7 @@ public class RubyXrefTest extends XrefTestBase {
                 + "data-definition-place=\"undefined-in-file\">logfn</a>"
                 + "<span class=\"s\">}:&quot;</span>\n" +
             "<a class=\"l\" name=\"2\" href=\"#2\">2</a>\n";
-        assertLinesEqual("Ruby colon-quote", xexpected, xout);
+        assertLinesEqual(xexpected, xout, "Ruby colon-quote");
         assertEquals(1, actLOC, "Ruby colon-quote LOC");
     }
 }

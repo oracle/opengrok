@@ -33,6 +33,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -61,13 +62,16 @@ class SearchAndContextFormatterTest {
     private static RuntimeEnvironment env;
     private static TestRepository repository;
     private static File configFile;
+    private static boolean savedHistoryEnabled;
 
     @BeforeAll
     public static void setUpClass() throws Exception {
+        env = RuntimeEnvironment.getInstance();
+        savedHistoryEnabled = env.isHistoryEnabled();
+
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
 
-        env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -92,6 +96,11 @@ class SearchAndContextFormatterTest {
         configFile.delete();
     }
 
+    @AfterEach
+    public void tearDown() {
+        env.setHistoryEnabled(savedHistoryEnabled);
+    }
+
     @Test
     void testSearch() throws IOException {
         SearchEngine instance = new SearchEngine();
@@ -103,12 +112,13 @@ class SearchAndContextFormatterTest {
         assertNotNull(frags, "getFirstFragments() should return something");
         assertEquals(1, frags.length, "frags should have one element");
 
-        final String CTX = "<a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#12\"><span class=\"l\">12</span>"
-                + "     std::random_device rd;</a><br/><a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#13\">"
-                + "<span class=\"l\">13</span>     std::<b>mt19937</b> gen(rd());</a><br/><a class=\"s\" "
-                + "href=\"/source/bitkeeper/bkexlib.cpp#14\"><span class=\"l\">14</span>     "
-                + "std::uniform_int_distribution&lt;&gt; dis(0, RAND_MAX);</a><br/>";
-        assertLinesEqual("ContextFormatter output", CTX, frags[0]);
+        final String CTX = "<span class=\"xovl\"><a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#12\">" +
+                "<span class=\"l\">12</span>     std::random_device rd;</a><br/></span><span class=\"xovl\">" +
+                "<a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#13\"><span class=\"l\">13</span>     " +
+                "std::<b>mt19937</b> gen(rd());</a><br/></span><span class=\"xovl\">" +
+                "<a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#14\"><span class=\"l\">14</span>     " +
+                "std::uniform_int_distribution&lt;&gt; dis(0, RAND_MAX);</a><br/></span>";
+        assertLinesEqual(CTX, frags[0], "ContextFormatter output");
         instance.destroy();
     }
 
@@ -124,7 +134,7 @@ class SearchAndContextFormatterTest {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, instance.getSearcher(), anz);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(instance.getSearcher(), anz);
         uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
 

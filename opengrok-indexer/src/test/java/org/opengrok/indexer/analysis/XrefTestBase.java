@@ -86,7 +86,7 @@ public abstract class XrefTestBase {
         String[] expected = expStr.split("\n");
 
         String messagePrefix = factory.getClass().getName();
-        assertLinesEqual(messagePrefix + " xref", expected, gotten);
+        assertLinesEqual(expected, gotten, messagePrefix + " xref");
         assertEquals(expectedLOC, actLOC, messagePrefix + " LOC");
     }
 

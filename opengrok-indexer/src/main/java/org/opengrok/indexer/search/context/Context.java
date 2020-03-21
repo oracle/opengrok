@@ -47,6 +47,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.Util;
 
 /**
@@ -112,26 +113,19 @@ public class Context {
     /**
      * Look for context for this instance's initialized query in a search result
      * {@link Document}, and output according to the parameters.
-     * @param env required environment
      * @param searcher required search that produced the document
      * @param docId document ID for producing context
      * @param dest required target to write
      * @param urlPrefix prefix for links
      * @param morePrefix optional link to more... page
-     * @param limit a value indicating if the number of matching lines should be
-     * limited. N.b. unlike
-     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String,
-     * org.opengrok.indexer.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.indexer.analysis.Scopes)},
-     * the {@code limit} argument will not be interpreted w.r.t.
-     * {@link RuntimeEnvironment#isQuickContextScan()}.
+     * @param contextArgs a value specifying how much context to show
      * @param tabSize optional positive tab size that must accord with the value
      * used when indexing or else postings may be wrongly shifted until
      * re-indexing
      * @return Did it get any matching context?
      */
-    public boolean getContext2(RuntimeEnvironment env, IndexSearcher searcher,
-        int docId, Appendable dest, String urlPrefix, String morePrefix,
-        boolean limit, int tabSize) {
+    public boolean getContext2(IndexSearcher searcher, int docId, Appendable dest,
+            String urlPrefix, String morePrefix, ContextArgs contextArgs, int tabSize) {
 
         if (isEmpty()) {
             return false;
@@ -178,35 +172,29 @@ public class Context {
 
         String path = doc.get(QueryBuilder.PATH);
         String pathE = Util.uriEncodePath(path);
-        String urlPrefixE = urlPrefix == null ? "" : Util.uriEncodePath(urlPrefix);
-        String moreURL = morePrefix == null ? null : Util.uriEncodePath(morePrefix) + pathE + "?" + queryAsURI;
+        String urlPrefixE = urlPrefix == null ? "" : Util.uriEncodePath(
+            urlPrefix);
+        String moreURL = morePrefix == null ? null : Util.uriEncodePath(morePrefix) + pathE + "?" +
+                QueryParameters.CONTEXT_SURROUND_PARAM_EQ + contextArgs.getContextSurround() +
+                "&" + queryAsURI;
 
-        ContextArgs args = new ContextArgs(env.getContextSurround(), env.getContextLimit());
-        /*
-         * Lucene adds to the following value in FieldHighlighter, so avoid
-         * integer overflow by not using Integer.MAX_VALUE -- Short is good
-         * enough.
-         */
-        int linelimit = limit ? args.getContextLimit() : Short.MAX_VALUE;
-
-        ContextFormatter formatter = new ContextFormatter(args);
+        ContextFormatter formatter = new ContextFormatter(contextArgs);
         formatter.setUrl(urlPrefixE + pathE);
         formatter.setDefs(tags);
         formatter.setScopes(scopes);
         formatter.setMoreUrl(moreURL);
-        formatter.setMoreLimit(linelimit);
 
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, searcher, anz);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(searcher, anz);
         uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(tabSize);
+        uhi.setContextArgs(contextArgs);
 
         try {
             List<String> fieldList = qbuilder.getContextFields();
             String[] fields = fieldList.toArray(new String[0]);
 
-            String res = uhi.highlightFieldsUnion(fields, query, docId,
-                linelimit);
+            String res = uhi.highlightFieldsUnion(fields, query, docId);
             if (res != null) {
                 dest.append(res);
                 return true;

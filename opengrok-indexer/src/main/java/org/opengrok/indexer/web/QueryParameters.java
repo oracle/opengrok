@@ -37,6 +37,16 @@ public class QueryParameters {
     public static final String ANNOTATION_PARAM_EQ_TRUE = ANNOTATION_PARAM + "=true";
 
     /**
+     * Parameter name to specify a number of context lines.
+     */
+    public static final String CONTEXT_SURROUND_PARAM = "x";
+
+    /**
+     * {@link #CONTEXT_SURROUND_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String CONTEXT_SURROUND_PARAM_EQ = CONTEXT_SURROUND_PARAM + "=";
+
+    /**
      * Parameter name to specify a count value.
      */
     public static final String COUNT_PARAM = "n";

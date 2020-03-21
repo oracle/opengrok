@@ -27,6 +27,13 @@ package org.opengrok.indexer.search.context;
  * to producing context presentations.
  */
 public class ContextArgs {
+    /**
+     * The maximum number of lines of surrounding context in a single direction
+     * to allow during a search. If there is sufficient content both preceding
+     * and following a hit, then the total context might be twice this value.
+     */
+    public static final short MAX_CONTEXT_SURROUND = 4;
+
     /** Not Lucene-related, so {@code int} does fine. */
     private static final int CONTEXT_WIDTH = 100;
 

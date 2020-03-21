@@ -187,13 +187,12 @@ input.submit { /* start search button */
 }
 /* ############### end of header ############## */
 
-
 /* ############### start of content ############## */
+
 #content {
     position: static;
     overflow-x: hidden;
 }
-
 
 /* *** help page *** */
 #help h4 {
@@ -216,13 +215,22 @@ input.submit { /* start search button */
 
 /* *** more page ***/
 #more {
-    line-height: 1.25em;
+    line-height: 1.5em;
 }
 
 #more b { /* highlight matches */
     background-color: #e5e5e5;
 }
 
+#more .ovl, #results .ovl {
+    /*
+     * overline non-consecutive, contextual, "more" line contents or search-
+     * result line contents
+     */
+    border-style: dotted none none none;
+    border-width: 1px;
+    display: block;
+}
 
 /* *** history page *** */
 table#revisions {
@@ -257,6 +265,10 @@ table#revisions {
 #revisions tbody td:nth-child(4) { /* author column */
     padding: 0 1ex;
     text-align: center;
+}
+
+.rev-message-hidden {
+    display: none;
 }
 
 .rssbadge { /* RSS/XML Feed on history page */
@@ -320,19 +332,41 @@ table#dirlist { /* the "Name" column */
     border-collapse: collapse;
 }
 
+table#dirlist thead tr:nth-child(1) {
+    height: 22px;
+}
+
 #dirlist .r, #dirlist .p {
     padding: 0;
     margin: 0 0 0 1em;
 }
 
-#dirlist td:nth-child(n+2) { /* all but the first column */
+#dirlist td:nth-child(n+3) { /* all but the first 2 columns */
     padding-right: 1em;
 }
 
-#dirlist tbody td:nth-child(4) {
+#dirlist tbody td:nth-child(5) {
     text-align: right; /* CSS3 may allow " " (single space char) */
 }
 
+#dirlist td.q { /* 2nd column: H A D */
+    white-space: nowrap;
+    font-size: small;
+    padding-left: 16px;
+    width: 3em;
+}
+
+#dirlist td.numlines { /* 5th column: #Lines */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+#dirlist td.loc { /* 6th column: LOC */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+span.simplified-path {
+    color: #888;
+}
 
 /* file display */
 #src {
@@ -365,12 +399,22 @@ table#dirlist { /* the "Name" column */
     color: #000;
 }
 
+/* highlight line number with anchor */
+#src a.l:target, #src a.hl:target {
+    background: orange;
+    color:yellow;
+}
+
 .blame .r { /* revision number "column" (annotation) */
     text-align: right;
 }
 
 .blame .a { /* author name "column" (annotation) */
     text-align: center;
+}
+
+.most_recent_revision {
+    font-weight: bold;
 }
 
 /* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
@@ -504,10 +548,6 @@ a.xsr    { /* subroutine */         color: #00f; font-weight: bold;             
 }
 /* ############### end of footer ############## */
 
-.important-note {
-    display: none;
-}
-
 /* *** scopes *** */
 
 span.scope-head {
@@ -535,5 +575,9 @@ span.scope-signature {
 }
 
 div#scope {
+    display: none;
+}
+
+.important-note {
     display: none;
 }

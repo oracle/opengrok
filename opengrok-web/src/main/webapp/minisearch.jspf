@@ -21,10 +21,12 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
 org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.search.context.ContextArgs,
 org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.QueryParameters,
-org.opengrok.indexer.web.Util"%><%
+org.opengrok.indexer.web.Util"%>
+<%
     /* ---------------------- minisearch.jspf start --------------------- */
 {
         PageConfig cfg = PageConfig.get(request);
@@ -98,10 +100,20 @@ org.opengrok.indexer.web.Util"%><%
     }
         %><li><input type="text" id="search" name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
                   class="q" aria-label="Search"/></li>
-            <li><input type="submit" value="Search" class="submit" /></li><%
+        <li><input type="submit" value="Search" class="submit" /></li>
+        <li>
+            <label for="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>" class="sch">
+            <input type="number" name="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>"
+                   id="<%= QueryParameters.CONTEXT_SURROUND_PARAM %>" min="0"
+                   max="<%= ContextArgs.MAX_CONTEXT_SURROUND %>" step="1"
+                   value="<%= cfg.getLimitedContextArgs().getContextSurround() %>">
+            context &nbsp;
+        </label></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
-        %><li><label><input id="minisearch-path" type="checkbox"
+        %><li>
+            <label for="<%= QueryParameters.PATH_SEARCH_PARAM %>" class="sch">
+            <input id="minisearch-path" type="checkbox"
                   name="<%= QueryParameters.PATH_SEARCH_PARAM %>" value='"<%= vals[0]
             %>"' <%= vals[2] %>/> current directory</label></li>
     </ul><%

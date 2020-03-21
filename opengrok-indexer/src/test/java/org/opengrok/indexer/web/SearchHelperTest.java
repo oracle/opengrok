@@ -82,7 +82,7 @@ class SearchHelperTest {
                 env.getDataRootFile(), env.getSourceRootFile(),
                 env.getHitsPerPage(), null,
                 new QueryBuilder().setFreetext(searchTerm), false,
-                env.getUrlPrefix(), false, false);
+                null, env.getUrlPrefix(), false, false);
 
         assertNotSame(0, sh.getBuilder().getSize());
         return sh;
@@ -93,7 +93,7 @@ class SearchHelperTest {
                 env.getDataRootFile(), env.getSourceRootFile(),
                 env.getHitsPerPage(), null,
                 new QueryBuilder().setPath(searchTerm), false,
-                env.getUrlPrefix(), false, false);
+                null, env.getUrlPrefix(), false, false);
 
         assertNotSame(0, sh.getBuilder().getSize());
         return sh;

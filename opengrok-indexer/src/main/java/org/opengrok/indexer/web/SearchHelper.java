@@ -78,6 +78,7 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SettingsHelper;
 import org.opengrok.indexer.search.Summarizer;
 import org.opengrok.indexer.search.context.Context;
+import org.opengrok.indexer.search.context.ContextArgs;
 import org.opengrok.indexer.search.context.HistoryContext;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
@@ -133,6 +134,10 @@ public class SearchHelper {
      * max. number of result items to show
      */
     private final int maxItems;
+    /**
+     * args to use when context is limited.
+     */
+    private final ContextArgs limitedContextArgs;
     /**
      * The QueryBuilder used to create the query.
      */
@@ -235,6 +240,7 @@ public class SearchHelper {
 
     public SearchHelper(int start, SortOrder sortOrder, File dataRoot, File sourceRoot, int maxItems,
                         EftarFileReader eftarFileReader, QueryBuilder queryBuilder, boolean crossRefSearch,
+                        ContextArgs limitedContextArgs,
                         String contextPath, boolean guiSearch, boolean noRedirect) {
         this.start = start;
         this.order = sortOrder;
@@ -244,6 +250,7 @@ public class SearchHelper {
         this.desc = eftarFileReader;
         this.builder = queryBuilder;
         this.crossRefSearch = crossRefSearch;
+        this.limitedContextArgs = limitedContextArgs;
         this.contextPath = contextPath;
         this.guiSearch = guiSearch;
         this.noRedirect = noRedirect;
@@ -263,6 +270,10 @@ public class SearchHelper {
 
     public QueryBuilder getBuilder() {
         return builder;
+    }
+
+    public ContextArgs getLimitedContextArgs() {
+        return limitedContextArgs;
     }
 
     public String getContextPath() {
@@ -516,6 +527,10 @@ public class SearchHelper {
             errorMsg = e.getMessage();
         }
         return this;
+    }
+
+    public ContextArgs getUnlimitedContextArgs() {
+        return new ContextArgs(limitedContextArgs.getContextSurround(), Short.MAX_VALUE);
     }
 
     private void maybeRedirectToDefinition(int docID, TermQuery termQuery)

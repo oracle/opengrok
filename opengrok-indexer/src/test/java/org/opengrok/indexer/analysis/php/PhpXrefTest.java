@@ -78,20 +78,19 @@ public class PhpXrefTest {
         AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
         Xrefer xref = analyzer.writeXref(xargs);
-        assertLinesEqual("PHP quoting",
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
-                        + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" "
-                        + "data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">&quot;FOO&quot;</span>,"
-                        + " <span class=\"s\">&apos;BAR<strong>\\&apos;</strong>&quot;&apos;</span>); "
-                        + "$<a href=\"/source/s?defs=foo\" class=\"intelliWindow-symbol\" "
-                        + "data-definition-place=\"undefined-in-file\">foo</a>=<span class=\"s\">&apos;bar&apos;</span>; "
-                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
-                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;ls&quot;</span>; "
-                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
-                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&apos;&apos;</span>; "
-                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
-                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
-                w.toString());
+        assertLinesEqual("<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> " +
+                "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" " +
+                "data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">&quot;FOO&quot;</span>, " +
+                "<span class=\"s\">&apos;BAR<strong>\\&apos;</strong>&quot;&apos;</span>); " +
+                "$<a href=\"/source/s?defs=foo\" class=\"intelliWindow-symbol\" " +
+                "data-definition-place=\"undefined-in-file\">foo</a>=<span class=\"s\">&apos;bar&apos;</span>; " +
+                "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" " +
+                "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;ls&quot;</span>; " +
+                "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" " +
+                "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&apos;&apos;</span>; " +
+                "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" " +
+                "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
+                w.toString(), "PHP quoting");
         assertEquals(1, xref.getLOC(), "PHP LOC");
     }
 
@@ -146,7 +145,7 @@ public class PhpXrefTest {
 
         String[] gotten = new String(baos.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         String[] expected = new String(expbytes, StandardCharsets.UTF_8).split("\n");
-        assertLinesEqual("PHP xref", expected, gotten);
+        assertLinesEqual(expected, gotten, "PHP xref");
         assertEquals(29, actLOC, "PHP LOC");
 
         assertEquals(expected.length, gotten.length);

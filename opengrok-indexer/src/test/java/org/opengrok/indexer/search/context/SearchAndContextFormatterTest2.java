@@ -37,9 +37,9 @@ import java.util.TreeSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -75,13 +75,16 @@ public class SearchAndContextFormatterTest2 {
     private static TestRepository repository1;
     private static TestRepository repository2;
     private static File configFile;
-    private static boolean originalProjectsEnabled;
+    private static boolean savedProjectsEnabled;
+    private static Set<String> savedAllowedSymlinks;
 
     @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
-        originalProjectsEnabled = env.isProjectsEnabled();
+        savedProjectsEnabled = env.isProjectsEnabled();
+        savedAllowedSymlinks = new HashSet<>(env.getAllowedSymlinks());
+
         env.setProjectsEnabled(true);
 
         File sourceRoot = createTemporaryDirectory("srcroot");
@@ -137,9 +140,6 @@ public class SearchAndContextFormatterTest2 {
 
     @AfterAll
     public static void tearDownClass() {
-        env.setProjectsEnabled(originalProjectsEnabled);
-        env.setAllowedSymlinks(new HashSet<>());
-
         if (repository1 != null) {
             repository1.destroy();
         }
@@ -163,8 +163,14 @@ public class SearchAndContextFormatterTest2 {
         }
     }
 
+    @AfterEach
+    public void tearDown() {
+        env.setProjectsEnabled(savedProjectsEnabled);
+        env.setAllowedSymlinks(savedAllowedSymlinks);
+    }
+
     @Test
-    public void testSearch() throws IOException, InvalidTokenOffsetsException {
+    public void testSearch() throws IOException {
         SearchEngine instance = new SearchEngine();
         instance.setFreetext("Hello");
         instance.setFile("renamed2.c");
@@ -173,19 +179,18 @@ public class SearchAndContextFormatterTest2 {
         String[] frags = getFirstFragments(instance);
         assertNotNull(frags, "getFirstFragments() should return something");
         assertEquals(1, frags.length, "frags should have one element");
-        assertNotNull("frags[0] should be defined", frags[0]);
+        assertNotNull(frags[0], "frags[0] should be defined");
 
         final String CTX =
-                "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#16\"><span class=\"l\">16</span> </a><br/>" +
-                        "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#17\"><span class=\"l\">17</span>" +
-                        "         printf ( &quot;<b>Hello</b>, world!\\n&quot; );</a><br/>" +
-                        "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#18\"><span class=\"l\">18</span> </a><br/>";
-        assertLinesEqual("ContextFormatter output", CTX, frags[0]);
+            "<span class=\"xovl\"><a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#16\"><span class=\"l\">16</span> </a><br/></span>" +
+            "<span class=\"xovl\"><a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#17\"><span class=\"l\">17</span>" +
+                    "         printf ( &quot;<b>Hello</b>, world!\\n&quot; );</a><br/></span>" +
+            "<span class=\"xovl\"><a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#18\"><span class=\"l\">18</span> </a><br/></span>";
+        assertLinesEqual(CTX, frags[0], "ContextFormatter output");
         instance.destroy();
     }
 
-    private String[] getFirstFragments(SearchEngine instance)
-            throws IOException, InvalidTokenOffsetsException {
+    private String[] getFirstFragments(SearchEngine instance) throws IOException {
 
         ContextArgs args = new ContextArgs((short) 1, (short) 10);
 
@@ -197,8 +202,7 @@ public class SearchAndContextFormatterTest2 {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-                instance.getSearcher(), anz);
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(instance.getSearcher(), anz);
         uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(TABSIZE);

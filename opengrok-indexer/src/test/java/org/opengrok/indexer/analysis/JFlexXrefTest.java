@@ -230,8 +230,8 @@ public class JFlexXrefTest {
         StringWriter output = new StringWriter();
         xref.write(output);
 
-        assertLinesEqual("xref " + xrefClass.getSimpleName(),
-            FIRST_LINE_PREAMBLE + expectedOutput, output.toString());
+        assertLinesEqual(FIRST_LINE_PREAMBLE + expectedOutput, output.toString(), "xref " +
+                xrefClass.getSimpleName());
     }
 
     /**
@@ -248,9 +248,8 @@ public class JFlexXrefTest {
             new StringReader(ECHO_QUOT_XYZ)));
         StringWriter out = new StringWriter();
         xref.write(out);
-        assertLinesEqual("Unterminated string:\n" + ECHO_QUOT_XYZ,
-            FIRST_LINE_PREAMBLE +
-            "<b>echo</b> <span class=\"s\">&quot;xyz</span>", out.toString());
+        assertLinesEqual(FIRST_LINE_PREAMBLE + "<b>echo</b> <span class=\"s\">&quot;xyz</span>",
+                out.toString(), "Unterminated string:\n" + ECHO_QUOT_XYZ);
 
         // Reuse the xref and verify that the broken syntax in the previous
         // file doesn't cause broken highlighting in the next file
@@ -259,10 +258,8 @@ public class JFlexXrefTest {
         xref.setReader(new StringReader(new String(contents.toCharArray())));
         xref.reset();
         xref.write(out);
-        assertLinesEqual("reused ShXref after broken syntax",
-            FIRST_LINE_PREAMBLE +
-            "<b>echo</b> <span class=\"s\">&quot;hello&quot;</span>",
-            out.toString());
+        assertLinesEqual(FIRST_LINE_PREAMBLE + "<b>echo</b> <span class=\"s\">&quot;hello&quot;</span>",
+                out.toString(), "reused ShXref after broken syntax");
     }
 
     /**
@@ -413,13 +410,12 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         xref.write(out);
 
-        assertLinesEqual("UuencodeXref truncated",
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-                + "<strong>begin</strong> <em>644</em> "
-                + "<a href=\"/source/s?full=test.txt\">test.txt</a>"
-                + "<span class=\"c\">\n"
-                + "<a class=\"l\" name=\"2\" href=\"#2\">2</a></span>",
-                out.toString());
+        assertLinesEqual("<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
+                "<strong>begin</strong> <em>644</em> " +
+                "<a href=\"/source/s?full=test.txt\">test.txt</a>" +
+                "<span class=\"c\">\n" +
+                "<a class=\"l\" name=\"2\" href=\"#2\">2</a></span>", out.toString(),
+                "UuencodeXref truncated");
     }
 
     /**

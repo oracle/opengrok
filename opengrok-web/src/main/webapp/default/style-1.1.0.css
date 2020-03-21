@@ -104,6 +104,11 @@ button:hover, button:active, .btn:hover, .btn:active {
 label {
 }
 
+label.sch {
+    /* Surrounding context chooser */
+    font-size: small;
+}
+
 .pre { /* the diff content */
     white-space: pre-wrap;
     font-family: monospace;
@@ -500,13 +505,40 @@ html.history #content{
 
 /* *** more page ***/
 #more {
-    line-height: 1.25em;
+    line-height: 1.5em;
 }
 
 #more b { /* highlight matches */
     background-color: #ffff99;
 }
 
+#more .ovl, #results .ovl {
+    /*
+     * overline non-consecutive, contextual, "more" line contents or search-
+     * result line contents.
+     */
+    border-style: dotted none none none;
+    border-width: 1px;
+    display: block;
+    white-space: pre;
+    /* Safari work-around re word-wrap when white-space: pre is used. */
+    word-wrap: normal;
+}
+
+#more .xovl, #results .xovl {
+    /*
+     * Applies for contextual search result line contents that are not #ovl.
+     * Technically #more is already in a <pre> but avoiding a missing style.
+     */
+    white-space: pre;
+    /* Safari work-around re word-wrap when white-space: pre is used. */
+    word-wrap: normal;
+}
+
+#more .ovl b, #results .ovl b, #more .xovl b, #results .xovl b {
+    /* highlight matches when surrounding context is shown. */
+    background-color: #ffff99;
+}
 
 /* *** history page *** */
 table#revisions {

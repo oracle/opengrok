@@ -83,6 +83,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.context.ContextArgs;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
@@ -1565,6 +1566,7 @@ public final class PageConfig {
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
         return new SearchHelper(getSearchStart(), sortOrder, getDataRoot(), new File(getSourceRootPath()),
                 getSearchMaxItems(), getEftarReader(), getQueryBuilder(), getPrefix() == Prefix.SEARCH_R,
+                getLimitedContextArgs(),
                 req.getContextPath(), getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P,
                 xrValue != null && !xrValue.isEmpty());
     }
@@ -1851,7 +1853,7 @@ public final class PageConfig {
                         breaker.reset(streamSource, in -> ExpandTabsReader.wrap(in, getProject()));
                         int matchLine = breaker.findLineIndex(matchOffset);
                         if (matchLine >= 0) {
-                            // Convert to 1-based offset to accord with OpenGrok line number.
+                            // Convert to 1-based index to accord with OpenGrok line number.
                             fragmentIdentifier = String.valueOf(matchLine + 1);
                             return true;
                         }
@@ -1863,5 +1865,60 @@ public final class PageConfig {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets context settings as specified by the user if available or else using
+     * the configured defaults -- but also bound by
+     * {@link ContextArgs#MAX_CONTEXT_SURROUND}.
+     * @return a defined instance
+     */
+    public ContextArgs getLimitedContextArgs() {
+        int userContextSurround = getIntParam(QueryParameters.CONTEXT_SURROUND_PARAM, -1);
+        short contextSurround;
+        if (userContextSurround < 0) {
+            contextSurround = env.getContextSurround();
+        } else {
+            contextSurround = userContextSurround <= Short.MAX_VALUE ?
+                    (short) userContextSurround : Short.MAX_VALUE;
+        }
+
+        if (contextSurround < 0) {
+            contextSurround = 0;
+        } else if (contextSurround > ContextArgs.MAX_CONTEXT_SURROUND) {
+            contextSurround = ContextArgs.MAX_CONTEXT_SURROUND;
+        }
+
+        short scaledContextLimit = scaleContextLimit(contextSurround, env.getContextLimit());
+        return new ContextArgs(contextSurround, scaledContextLimit);
+    }
+
+    private short scaleContextLimit(short contextSurround, short contextLimit) {
+        if (contextSurround <= 0) {
+            return contextLimit;
+        }
+        /*
+         * I experimentally arrived at formula below which scales the
+         * surrounding context at a slowing rate until then growing linearly
+         * when sizing for roughly a single match with its large context. I've
+         * actually decided to cap the maximum surrounding context (elsewhere),
+         * so the max() is probably not transformative -- but leaving it
+         * doesn't hurt in case the cap is lifted.
+         *
+         * E.g. for contextLimit=10, the scaled limit as contextSurround grows:
+         * 1  -> 15     2  -> 18     3  -> 20     4  -> 21
+         * ...
+         * 10 -> 25     11 -> 25     12 -> 26
+         * 13 -> 27 [max() is transformative.]
+         * 14 -> 29 [max() is transformative.]
+         * ...
+         */
+        double scale = 1 + Math.log10(3 * contextSurround);
+        long limit = Math.round(scale * contextLimit);
+        limit = Math.max(limit, 2 * contextSurround + 1);
+        if (limit > Short.MAX_VALUE) {
+            return Short.MAX_VALUE;
+        }
+        return (short) limit;
     }
 }
