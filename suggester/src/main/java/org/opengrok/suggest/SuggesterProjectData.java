@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -261,8 +261,10 @@ class SuggesterProjectData implements Closeable {
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
 
-        double averageLength = (double) iterator.termLengthAccumulator / lookup.getCount();
-        averageLengths.put(field, averageLength);
+        if (lookup.getCount() > 0) {
+            double averageLength = (double) iterator.termLengthAccumulator / lookup.getCount();
+            averageLengths.put(field, averageLength);
+        }
 
         return lookup;
     }
