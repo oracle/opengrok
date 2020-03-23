@@ -611,7 +611,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataSimple() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("rust",
-                new Term(QueryBuilder.FULL, "main"), 10));
+                new Term(QueryBuilder.FULL, "main"), 10, true));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
@@ -626,9 +626,9 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataAll() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
-                new Term(QueryBuilder.FULL, "mynamespace"), 10));
+                new Term(QueryBuilder.FULL, "mynamespace"), 10, true));
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
-                new Term(QueryBuilder.FULL, "topclass"), 15));
+                new Term(QueryBuilder.FULL, "topclass"), 15, true));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
@@ -645,9 +645,9 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataDifferentField() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
-                new Term(QueryBuilder.FULL, "print"), 10));
+                new Term(QueryBuilder.FULL, "print"), 10, true));
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
-                new Term(QueryBuilder.DEFS, "greet"), 4));
+                new Term(QueryBuilder.DEFS, "greet"), 4, true));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
