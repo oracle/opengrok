@@ -249,13 +249,13 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public void increaseSearchCount(final String project, final Term term, final int value) {
+    public boolean increaseSearchCount(final String project, final Term term, final int value) {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                return;
+                return false;
             }
-            suggester.increaseSearchCount(project, term, value);
+            return suggester.increaseSearchCount(project, term, value);
         } finally {
             lock.readLock().unlock();
         }
