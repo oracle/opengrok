@@ -377,9 +377,19 @@ will be used for repository paths.
 
             ["sc-2","sc-1"]
 
-## Repository type [/repositories/property/{field}{?repository}]
+## Repository field value [/repositories/property/{field}{?repository}]
 
 ### return the field value [GET]
+
+The repository path is relative to source root. Examples of field names:
+  - `working` (boolean)
+  - `type` (string)
+  - `remote` (boolean)
+  - `parent` (string)
+  - `branch` (string)
+  - `currentVersion` (string)
+  - handleRenamedFiles (boolean)
+  - `historyEnabled` (boolean)
 
 The repository path is relative to source root.
 
@@ -541,7 +551,7 @@ The repository path is relative to source root.
 
 + Response 200 (application/json)
   + Body
-  
+
             [{"iso":3},{"the":3},{"to":3},{"conform":3},{"-":2},
              {"sc_window_set":1},{"_lso_outbound":1},{"missing":1}]
 
