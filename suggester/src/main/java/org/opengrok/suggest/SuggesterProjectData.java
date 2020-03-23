@@ -289,9 +289,16 @@ class SuggesterProjectData implements Closeable {
         searchCountMaps.clear();
 
         for (String field : fields) {
+            int numEntries = (int) lookups.get(field).getCount();
+            if (numEntries == 0) {
+                logger.log(Level.FINE, "Skipping creation of ChronicleMap for field " + field + " in directory "
+                        + suggesterDir + " due to zero number of entries");
+                continue;
+            }
+
             ChronicleMapConfiguration conf = ChronicleMapConfiguration.load(suggesterDir, field);
             if (conf == null) { // it was not yet initialized
-                conf = new ChronicleMapConfiguration((int) lookups.get(field).getCount(), getAverageLength(field));
+                conf = new ChronicleMapConfiguration(numEntries, getAverageLength(field));
                 conf.save(suggesterDir, field);
             }
 
@@ -301,12 +308,14 @@ class SuggesterProjectData implements Closeable {
             try {
                 m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
             } catch (IllegalArgumentException e) {
-                logger.log(Level.SEVERE, "Could not create ChronicleMap due to invalid key size: "
-                        + conf.getAverageKeySize(), e);
+                logger.log(Level.SEVERE, "Could not create ChronicleMap for field " + field + " in directory "
+                        + suggesterDir + " due to invalid key size ("
+                        + conf.getAverageKeySize() + ") or number of entries: (" + conf.getEntries() + "):", e);
                 return;
             } catch (Throwable t) {
                 logger.log(Level.SEVERE,
-                        "Could not create ChronicleMap, most popular completion disabled, if you are using "
+                        "Could not create ChronicleMap for field " + field + " in directory "
+                                + suggesterDir + " , most popular completion disabled, if you are using "
                                 + "JDK9+ make sure to specify: "
                                 + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
                                 + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
