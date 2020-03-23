@@ -469,7 +469,7 @@ public final class Suggester implements Closeable {
      * @param value positive value by which to increase the search count
      * @return false if update failed, otherwise true
      */
-    public boolean increaseSearchCount(final String project, final Term term, final int value) {
+    public boolean increaseSearchCount(final String project, final Term term, final int value, final boolean waitForLock) {
         if (!allowMostPopular) {
             return false;
         }
@@ -486,7 +486,7 @@ public final class Suggester implements Closeable {
             return false;
         }
 
-        return data.incrementSearchCount(term, value);
+        return data.incrementSearchCount(term, value, waitForLock);
     }
 
     /**

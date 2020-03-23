@@ -419,16 +419,25 @@ class SuggesterProjectData implements Closeable {
      * @return false if update failed, otherwise true
      */
     public boolean incrementSearchCount(final Term term, final int value) {
+        return incrementSearchCount(term, value, false);
+    }
+
+    boolean incrementSearchCount(final Term term, final int value, boolean waitForLock) {
         if (term == null) {
             throw new IllegalArgumentException("Cannot increment search count for null");
         }
 
         boolean ret = false;
-        boolean gotLock = lock.readLock().tryLock();
-        if (!gotLock) { // do not wait for rebuild
-            logger.log(Level.INFO, "Cannot increment search count for term {0} in {1}, rebuild in progress",
-                    new Object[]{term, suggesterDir});
-            return false;
+        boolean gotLock;
+        if (waitForLock) {
+            lock.readLock().lock();
+        } else {
+            gotLock = lock.readLock().tryLock();
+            if (!gotLock) {
+                logger.log(Level.INFO, "Cannot increment search count for term {0} in {1}, rebuild in progress",
+                        new Object[]{term, suggesterDir});
+                return false;
+            }
         }
 
         try {

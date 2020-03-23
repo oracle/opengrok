@@ -282,7 +282,7 @@ public class SuggesterTest {
     public void testIncreaseSearchCount() throws IOException {
         SuggesterTestData t = initSuggester();
 
-        t.s.increaseSearchCount("test", new Term("test", "term2"), 100);
+        t.s.increaseSearchCount("test", new Term("test", "term2"), 100, true);
 
         List<Entry<BytesRef, Integer>> res = t.s.getSearchCounts("test", "test", 0, 10);
 

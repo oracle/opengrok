@@ -84,6 +84,16 @@ public interface SuggesterService {
     boolean increaseSearchCount(String project, Term term, int value);
 
     /**
+     * Increments most popular completion data for the specified {@code term} by {@code value}.
+     * @param project project to update
+     * @param term term to update
+     * @param value value by which to change the data, represents how many times was the {@code term} searched
+     * @param waitForLock wait for lock
+     * @return false if update failed, otherwise true
+     */
+    boolean increaseSearchCount(String project, Term term, int value, boolean waitForLock);
+
+    /**
      * Returns the searched terms sorted according to their popularity.
      * @param project project for which to return the data
      * @param field field for which to return the data

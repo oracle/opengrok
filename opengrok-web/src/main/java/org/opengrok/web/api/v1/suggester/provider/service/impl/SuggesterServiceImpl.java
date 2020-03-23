@@ -255,7 +255,21 @@ public class SuggesterServiceImpl implements SuggesterService {
             if (suggester == null) {
                 return false;
             }
-            return suggester.increaseSearchCount(project, term, value);
+            return suggester.increaseSearchCount(project, term, value, false);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean increaseSearchCount(final String project, final Term term, final int value, boolean waitForLock) {
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                return false;
+            }
+            return suggester.increaseSearchCount(project, term, value, waitForLock);
         } finally {
             lock.readLock().unlock();
         }
