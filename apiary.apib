@@ -382,14 +382,16 @@ will be used for repository paths.
 ### return the field value [GET]
 
 The repository path is relative to source root. Examples of field names:
-  - `working` (boolean)
-  - `type` (string)
-  - `remote` (boolean)
-  - `parent` (string)
-  - `branch` (string)
-  - `currentVersion` (string)
-  - handleRenamedFiles (boolean)
-  - `historyEnabled` (boolean)
+  - `working` (boolean) - is the repository capable of running underlying SCM
+    commands
+  - `type` (string) - type of SCM
+  - `remote` (boolean) - is the SCM source remote
+  - `parent` (string) - origin/parent of the SCM
+  - `branch` (string) - branch identification
+  - `currentVersion` (string) - current revision ID
+  - `handleRenamedFiles` (boolean) - whether to handle renamed files for history
+    cache generation
+  - `historyEnabled` (boolean) - is history enabled
 
 The repository path is relative to source root.
 
