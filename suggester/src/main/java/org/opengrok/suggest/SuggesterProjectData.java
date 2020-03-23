@@ -416,29 +416,37 @@ class SuggesterProjectData implements Closeable {
      * Increments search count for {@code term} by {@code value}.
      * @param term term for which to increment search count
      * @param value value to increment by
+     * @return false if update failed, otherwise true
      */
-    public void incrementSearchCount(final Term term, final int value) {
+    public boolean incrementSearchCount(final Term term, final int value) {
         if (term == null) {
             throw new IllegalArgumentException("Cannot increment search count for null");
         }
 
+        boolean ret = false;
         boolean gotLock = lock.readLock().tryLock();
         if (!gotLock) { // do not wait for rebuild
-            return;
+            logger.log(Level.INFO, "Cannot increment search count for term {0} in {1}, rebuild in progress",
+                    new Object[]{term, suggesterDir});
+            return false;
         }
 
         try {
             if (lookups.get(term.field()).get(term.text()) == null) {
-                return; // unknown term
+                logger.log(Level.WARNING, "Cannot increment search count for unknown term {0} in {1}",
+                        new Object[]{term, suggesterDir});
+                return false; // unknown term
             }
 
             PopularityMap map = searchCountMaps.get(term.field());
             if (map != null) {
                 map.increment(term.bytes(), value);
+                ret = true;
             }
         } finally {
             lock.readLock().unlock();
         }
+        return ret;
     }
 
     /**

@@ -467,10 +467,11 @@ public final class Suggester implements Closeable {
      * @param project project where the term resides
      * @param term term for which to increase search count
      * @param value positive value by which to increase the search count
+     * @return false if update failed, otherwise true
      */
-    public void increaseSearchCount(final String project, final Term term, final int value) {
+    public boolean increaseSearchCount(final String project, final Term term, final int value) {
         if (!allowMostPopular) {
-            return;
+            return false;
         }
         SuggesterProjectData data;
         if (!projectsEnabled) {
@@ -482,10 +483,10 @@ public final class Suggester implements Closeable {
         if (data == null) {
             logger.log(Level.WARNING, "Cannot update search count because of missing suggester data{}",
                     projectsEnabled ? " for project " + project : "");
-            return;
+            return false;
         }
 
-        data.incrementSearchCount(term, value);
+        return data.incrementSearchCount(term, value);
     }
 
     /**

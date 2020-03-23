@@ -63,6 +63,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
@@ -609,7 +610,8 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     @Test
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataSimple() {
-        SuggesterServiceImpl.getInstance().increaseSearchCount("rust", new Term(QueryBuilder.FULL, "main"), 10);
+        assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("rust",
+                new Term(QueryBuilder.FULL, "main"), 10));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
@@ -617,17 +619,16 @@ public class SuggesterControllerTest extends OGKJerseyTest {
                 .request()
                 .get(popularityDataType);
 
-
         assertThat(res, contains(new SimpleEntry<>("main", 10)));
     }
 
     @Test
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataAll() {
-        SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
-                new Term(QueryBuilder.FULL, "mynamespace"), 10);
-        SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
-                new Term(QueryBuilder.FULL, "topclass"), 15);
+        assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
+                new Term(QueryBuilder.FULL, "mynamespace"), 10));
+        assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
+                new Term(QueryBuilder.FULL, "topclass"), 15));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
@@ -643,8 +644,10 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     @Test
     @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataDifferentField() {
-        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
-        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.DEFS, "greet"), 4);
+        assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
+                new Term(QueryBuilder.FULL, "print"), 10));
+        assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
+                new Term(QueryBuilder.DEFS, "greet"), 4));
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")

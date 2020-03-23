@@ -79,8 +79,9 @@ public interface SuggesterService {
      * @param project project to update
      * @param term term to update
      * @param value value by which to change the data, represents how many times was the {@code term} searched
+     * @return false if update failed, otherwise true
      */
-    void increaseSearchCount(String project, Term term, int value);
+    boolean increaseSearchCount(String project, Term term, int value);
 
     /**
      * Returns the searched terms sorted according to their popularity.
