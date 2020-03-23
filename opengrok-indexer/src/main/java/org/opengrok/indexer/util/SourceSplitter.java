@@ -159,52 +159,10 @@ public class SourceSplitter {
         lineOffsets = null;
 
         List<String> slist = new ArrayList<>();
-        StringBuilder bld = new StringBuilder();
-        int c;
-        while ((c = reader.read()) != -1) {
-            ++length;
-
-            redo_c:
-            while (true) {
-                bld.append((char) c);
-                switch (c) {
-                    case '\r':
-                        c = reader.read();
-                        if (c == -1) {
-                            slist.add(bld.toString());
-                            bld.setLength(0);
-                            break redo_c;
-                        }
-                        ++length;
-                        if (c == '\n') {
-                            bld.append((char) c);
-                            slist.add(bld.toString());
-                            bld.setLength(0);
-                            break redo_c;
-                        }
-                        slist.add(bld.toString());
-                        bld.setLength(0);
-                        continue redo_c;
-                    case '\n':
-                        slist.add(bld.toString());
-                        bld.setLength(0);
-                        break redo_c;
-                    default:
-                        // pass
-                }
-                break;
-            }
-        }
-        if (bld.length() > 0) {
-            slist.add(bld.toString());
-            bld.setLength(0);
-        } else {
-            /*
-             * Following JFlexXref's custom, an empty file or a file ending
-             * with LF produces an additional line of length zero.
-             */
-            slist.add("");
-        }
+        SourceSplitterScanner scanner = new SourceSplitterScanner(reader);
+        scanner.setTarget(slist);
+        scanner.consume();
+        length = scanner.getLength();
 
         lines = slist.toArray(new String[0]);
         setLineOffsets();

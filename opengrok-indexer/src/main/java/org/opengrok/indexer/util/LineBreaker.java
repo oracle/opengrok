@@ -71,43 +71,11 @@ public class LineBreaker {
         lineOffsets = null;
 
         List<Integer> newOffsets = new ArrayList<>();
-        newOffsets.add(0);
-
-        int c;
-        while ((c = reader.read()) != -1) {
-            ++length;
-
-            redo_c:
-            while (true) {
-                switch (c) {
-                    case '\r':
-                        c = reader.read();
-                        if (c == -1) {
-                            newOffsets.add(length);
-                            break redo_c;
-                        }
-                        ++length;
-                        if (c == '\n') {
-                            newOffsets.add(length);
-                            break redo_c;
-                        }
-                        newOffsets.add(length - 1);
-                        continue redo_c;
-                    case '\n':
-                        newOffsets.add(length);
-                        break redo_c;
-                    default:
-                        // pass
-                }
-                break;
-            }
-        }
-
-        count = newOffsets.size();
-        if (newOffsets.get(newOffsets.size() - 1) < length) {
-            newOffsets.add(length);
-            // Do not increment count.
-        }
+        LineBreakerScanner scanner = new LineBreakerScanner(reader);
+        scanner.setTarget(newOffsets);
+        scanner.consume();
+        length = scanner.getLength();
+        count = newOffsets.size() - 1;
 
         lineOffsets = new int[newOffsets.size()];
         for (int i = 0; i < lineOffsets.length; ++i) {

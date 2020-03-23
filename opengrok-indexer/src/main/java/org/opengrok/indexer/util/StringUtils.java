@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -37,7 +37,7 @@ public final class StringUtils {
     /**
      * Matches a standard end-of-line indicator, identical to Common.lexh's {EOL}.
      */
-    public static final Pattern STANDARD_EOL = Pattern.compile("\\r?\\n|\\r");
+    public static final Pattern STANDARD_EOL = Pattern.compile("\\r\\n?|\\n");
 
     /**
      * Matches an apostrophe not following a backslash escape or following an
