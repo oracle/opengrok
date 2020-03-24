@@ -35,21 +35,16 @@ import java.util.List;
     return false;
 %eofval}
 %eof{
-    length = yychar;
-
     /*
      * Following JFlexXref's custom, an empty file or a file ending with EOL
      * produces an additional line of length zero. We also ensure there are two
      * entries to describe the boundaries.
      */
-    if (lastHadEOL || offsets.size() <= 1) {
-        offsets.add(yychar);
-    }
+    offsets.add(yychar);
+    length = yychar;
 %eof}
 %{
     private int length;
-
-    private boolean lastHadEOL;
 
     private List<Integer> offsets;
 
@@ -58,12 +53,11 @@ import java.util.List;
     }
 
     /**
-     * Sets the required target to write.
+     * Sets the required target to write, and adds a first offset of 0.
      * @param offsets a required instance
      */
     public void setTarget(List<Integer> offsets) {
         this.length = 0;
-        this.lastHadEOL = false;
         this.offsets = offsets;
         offsets.add(0);
     }
@@ -84,12 +78,9 @@ import java.util.List;
 %include Common.lexh
 %%
 
-[^\n\r]* {EOL}    {
+{EOL}    {
     offsets.add(yychar + yylength());
-    lastHadEOL = true;
 }
 
-[^\n\r]+    {
-    offsets.add(yychar + yylength());
-    lastHadEOL = false;
+[^\n\r]    {
 }

@@ -35,20 +35,19 @@ import java.util.List;
     return false;
 %eofval}
 %eof{
-    length = yychar;
-
     /*
      * Following JFlexXref's custom, an empty file or a file ending with EOL
      * produces an additional line of length zero.
      */
-    if (lastHadEOL || lines.size() < 1) {
-        lines.add("");
-    }
+    lines.add(builder.toString());
+    builder.setLength(0);
+
+    length = yychar;
 %eof}
 %{
-    private int length;
+    private final StringBuilder builder = new StringBuilder();
 
-    private boolean lastHadEOL;
+    private int length;
 
     private List<String> lines;
 
@@ -61,8 +60,8 @@ import java.util.List;
      * @param lines a required instance
      */
     public void setTarget(List<String> lines) {
+        this.builder.setLength(0);
         this.length = 0;
-        this.lastHadEOL = false;
         this.lines = lines;
     }
 
@@ -82,12 +81,16 @@ import java.util.List;
 %include Common.lexh
 %%
 
-[^\n\r]* {EOL}    {
-    lines.add(yytext());
-    lastHadEOL = true;
+{EOL}    {
+    for (int i = 0; i < yylength(); ++i) {
+        builder.append(yycharat(i)); // faster than yytext()
+    }
+    lines.add(builder.toString());
+    builder.setLength(0);
 }
 
-[^\n\r]+    {
-    lines.add(yytext());
-    lastHadEOL = false;
+[^\n\r]    {
+    for (int i = 0; i < yylength(); ++i) {
+        builder.append(yycharat(i)); // faster than yytext()
+    }
 }
