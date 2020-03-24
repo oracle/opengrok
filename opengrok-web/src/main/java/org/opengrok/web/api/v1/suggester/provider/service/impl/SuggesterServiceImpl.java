@@ -399,6 +399,10 @@ public class SuggesterServiceImpl implements SuggesterService {
         return d.get();
     }
 
+    public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
+        suggester.waitForRebuild(timeout, unit);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void close() {
