@@ -53,6 +53,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -86,6 +89,10 @@ public final class Suggester implements Closeable {
     private final int timeThreshold;
 
     private final int rebuildParallelismLevel;
+
+    private boolean rebuilding;
+    private final Lock rebuildLock = new ReentrantLock();
+    private final Condition initialRebuildDone = rebuildLock.newCondition();
 
     // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
     private final ExecutorService executorService = Executors.newFixedThreadPool(
@@ -234,6 +241,11 @@ public final class Suggester implements Closeable {
             return;
         }
 
+        // for testing
+        rebuildLock.lock();
+        rebuilding = true;
+        rebuildLock.unlock();
+
         synchronized (lock) {
             Instant start = Instant.now();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
@@ -250,6 +262,27 @@ public final class Suggester implements Closeable {
             }
 
             shutdownAndAwaitTermination(executor, start, "Suggesters for " + indexDirs + " were successfully rebuilt");
+        }
+
+        // for testing
+        rebuildLock.lock();
+        try {
+            rebuilding = false;
+            initialRebuildDone.signalAll();
+        } finally {
+            rebuildLock.unlock();
+        }
+    }
+
+    // for testing
+    public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
+        rebuildLock.lock();
+        try {
+            while (rebuilding) {
+                initialRebuildDone.await(timeout, unit);
+            }
+        } finally {
+            rebuildLock.unlock();
         }
     }
 

@@ -31,6 +31,7 @@ import org.opengrok.suggest.query.SuggesterQuery;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 public interface SuggesterService {
 
@@ -60,6 +61,13 @@ public interface SuggesterService {
      * @param project project name
      */
     void rebuild(String project);
+
+    /**
+     * Wait for the initial rebuild. For testing.
+     * @param timeout timeout to wait for
+     * @param unit timeout unit
+     */
+    void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException;
 
     /**
      * Deletes all suggester data for the {@code project}.
@@ -107,5 +115,4 @@ public interface SuggesterService {
      * Closes the underlying service explicitly.
      */
     void close();
-
 }

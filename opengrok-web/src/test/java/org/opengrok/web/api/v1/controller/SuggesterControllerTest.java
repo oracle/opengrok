@@ -28,7 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -673,17 +672,18 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void ZtestRebuild() {
+    public void ZtestRebuild() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .request()
                 .put(Entity.text(""));
 
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+        SuggesterServiceImpl.getInstance().waitForRebuild(15, TimeUnit.SECONDS);
     }
 
     @Test
-    public void ZtestRebuildProject() {
+    public void ZtestRebuildProject() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .path("c")
@@ -691,5 +691,6 @@ public class SuggesterControllerTest extends OGKJerseyTest {
                 .put(Entity.text(""));
 
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+        SuggesterServiceImpl.getInstance().waitForRebuild(15, TimeUnit.SECONDS);
     }
 }
