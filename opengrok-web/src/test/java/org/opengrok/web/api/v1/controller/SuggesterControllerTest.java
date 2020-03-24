@@ -24,8 +24,15 @@
 package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.index.Term;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.opengrok.indexer.util.TestCasePrinterRule;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
@@ -61,6 +68,9 @@ import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SuggesterControllerTest extends OGKJerseyTest {
+
+    @Rule
+    public TestCasePrinterRule pr = new TestCasePrinterRule();
 
     public static class Result {
         public long time;
