@@ -263,8 +263,6 @@ public class SuggesterControllerTest extends OGKJerseyTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
-    // temporarily disabled, see https://github.com/oracle/opengrok/issues/2030
-    @Ignore
     @Test
     public void testGetSuggestionsMultipleProjects() {
         Result res = target(SuggesterController.PATH)
