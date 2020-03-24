@@ -189,12 +189,12 @@
 .sol-action-buttons a {
     line-height: 1em;
     text-decoration: none;
-    color: #0088cc;
+    color: #08c;
     border-bottom: 1px solid transparent;
 }
 
 .sol-action-buttons a:hover {
-    border-bottom: 1px solid #0088CC;
+    border-bottom: 1px solid #08c;
 }
 
 .sol-action-buttons .sol-select-all {
