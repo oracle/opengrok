@@ -170,6 +170,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.git}/.git"/>
+      <delete dir="${test.subversion}/.svn"/>
       <delete dir="${test.svn}"/>
       <delete dir="${test.razor}"/>
       <delete file="${test.cvs.repo}/CVS/Root"/>
