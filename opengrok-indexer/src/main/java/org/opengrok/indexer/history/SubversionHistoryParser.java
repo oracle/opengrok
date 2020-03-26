@@ -61,6 +61,11 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     private static class Handler extends DefaultHandler2 {
 
+        /**
+         * Example of the longest date format that we should except - SimpleDateFormat cannot cope with micro/nano seconds.
+         */
+        static final int SVN_MILLIS_DATE_LENGTH = "2020-03-26T15:38:55.999Z".length();
+
         final String prefix;
         final String home;
         final int length;
@@ -105,8 +110,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 try {
                     // need to strip microseconds off - assume final character is Z otherwise invalid anyway.
                     String dateString = s;
-                    if (s.length() > 24) {
-                      dateString = dateString.substring(0, 23) + dateString.charAt(dateString.length() - 1);
+                    if (s.length() > SVN_MILLIS_DATE_LENGTH) {
+                      dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) + dateString.charAt(dateString.length() - 1);
                     }
                     entry.setDate(repository.parse(dateString));
                 } catch (ParseException ex) {
