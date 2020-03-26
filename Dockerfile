@@ -67,7 +67,6 @@ ENV CATALINA_HOME /usr/local/tomcat
 ENV CATALINA_BASE /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
 ENV PATH $CATALINA_HOME/bin:$PATH
-# ENV JRE_HOME /usr
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 
 # custom deployment to / with redirect from /source
