@@ -39,6 +39,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
+    <property name="test.subversion" value="${test.repositories}/subversion"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
     <property name="build.test.reposroots" value="target/reposroot"/>
@@ -95,13 +96,18 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${test.bzr}/bzr"/>
         </copy>
 
+      <!-- Generate ZIP files used for unit testing svn/.svn are renamed -->
+      <copy todir="${test.subversion}/.svn">
+          <fileset dir="${test.subversion}/svn"/>
+      </copy>
+              	
         <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/index/source.zip"
               basedir="${test.sources}"
               update="false"
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/history/repositories.zip"
                 basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**"
+                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**, subversion/svn/**"
                 update="false"
                 defaultexcludes="no"/>
 
