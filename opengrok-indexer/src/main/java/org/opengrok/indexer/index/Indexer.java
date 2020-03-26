@@ -324,8 +324,8 @@ public final class Indexer {
                 }
             }
 
-            LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
-                    new Object[]{Info.getVersion(), Info.getRevision()});
+            LOGGER.log(Level.INFO, "Indexer version {0} ({1}) running on Java {2}",
+                    new Object[]{Info.getVersion(), Info.getRevision(), System.getProperty("java.version")});
 
             // Create history cache first.
             if (searchRepositories) {
