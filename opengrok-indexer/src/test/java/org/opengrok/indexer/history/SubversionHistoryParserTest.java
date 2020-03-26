@@ -22,19 +22,22 @@
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.indexer.web.Util;
-
-import static org.junit.Assert.*;
 
 /**
  *
@@ -167,24 +170,42 @@ public class SubversionHistoryParserTest {
         assertTrue(e3.getMessage().contains("line3"));
     }
 
+    private static class DateTimeTestData {
+
+      private final String dateTimeString;
+      private final LocalDateTime actualDateTime;
+      private final boolean expectedException;
+
+      DateTimeTestData(String dateTimeString, LocalDateTime actualDateTime) {
+        this.dateTimeString = dateTimeString;
+        this.actualDateTime = actualDateTime;
+        this.expectedException = false;
+      }
+      DateTimeTestData(String dateTimeString) {
+        this.dateTimeString = dateTimeString;
+        this.actualDateTime = null;
+        this.expectedException = true;
+      }
+
+    }
+
+
     @Test
     public void testDateFormats() {
-        String[][] dates = new String[][]{
-            new String[]{"2007-09-11T11:48:56.123456Z", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null},
-            new String[]{"2007-09-11T11:48:56.000000Z", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null},
-            new String[]{"2007-09-11T11:48:56.Z", "yyyy-MM-dd'T'HH:mm:ss.'Z'", null},
-            new String[]{"2007-09-11 11:48:56Z", null, "throws exception"},
-            new String[]{"2007-09-11T11:48:56", null, "throws exception"},
-            new String[]{"2007-09-11T11:48:56.123456", null, "throws exception"},
-            new String[]{"2007-09-11T11:48:56.000000", null, "throws exception"},
+      DateTimeTestData[] dates = new DateTimeTestData[]{
+            new DateTimeTestData("2020-03-24T17:11:35.545818Z", LocalDateTime.of(2020, 3, 24, 17, 11, 35, 545000000)),
+            new DateTimeTestData("2007-09-11T11:48:56.123456Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56, 123000000)),
+            new DateTimeTestData("2007-09-11T11:48:56.000000Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+            new DateTimeTestData("2007-09-11T11:48:56.Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+            new DateTimeTestData("2007-09-11 11:48:56Z"),
+            new DateTimeTestData("2007-09-11T11:48:56"),
+            new DateTimeTestData("2007-09-11T11:48:56.123456"),
+            new DateTimeTestData("2007-09-11T11:48:56.000000"),
         };
 
         for (int i = 0; i < dates.length; i++) {
             String revId = "12345";
             String author = "username1";
-            String date = dates[i][0];
-            String format = dates[i][1];
-            boolean expectedException = dates[i][2] != null;
             String file = "trunk/project/filename.ext";
             try {
                 String output = "<?xml version=\"1.0\"?>\n"
@@ -192,7 +213,7 @@ public class SubversionHistoryParserTest {
                         + "<logentry\n"
                         + "   revision=\"" + revId + "\">\n"
                         + "<author>" + author + "</author>\n"
-                        + "<date>" + date + "</date>\n"
+                        + "<date>" + dates[i].dateTimeString + "</date>\n"
                         + "<paths>\n"
                         + "<path\n"
                         + "   action=\"M\">" + file + "</path>\n"
@@ -210,15 +231,18 @@ public class SubversionHistoryParserTest {
                 HistoryEntry e = result.getHistoryEntries().get(0);
                 assertEquals(revId, e.getRevision());
                 assertEquals(author, e.getAuthor());
-                assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
+
+                Date actualDateTime = Date.from(dates[i].actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+                assertEquals(dates[i].dateTimeString, actualDateTime, e.getDate());
                 assertEquals(1, e.getFiles().size());
                 assertEquals(Paths.get(Paths.get("/"+file).toUri()).toFile().toString(), e.getFiles().first());
-            } catch (IOException ex) {
-                if (!expectedException) {
-                    fail("Should not throw an IO exception for " + date);
+                if (dates[i].expectedException) {
+                  fail("Should throw an IO exception for " + dates[i].dateTimeString);
                 }
-            } catch (ParseException ex) {
-                fail("Parsing the date " + date + " should not throw a parse exception");
+            } catch (IOException ex) {
+                if (!dates[i].expectedException) {
+                    fail("Should not throw an IO exception for " + dates[i].dateTimeString);
+                }
             }
         }
     }

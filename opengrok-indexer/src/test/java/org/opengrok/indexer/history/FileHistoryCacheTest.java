@@ -23,6 +23,19 @@
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
+
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,18 +48,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
-
 /**
  * Test file based history cache with special focus on incremental reindex.
  *
@@ -54,6 +55,7 @@ import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
  */
 public class FileHistoryCacheTest {
 
+    private static final String SVN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private TestRepository repositories;
     private FileHistoryCache cache;
 
@@ -606,6 +608,133 @@ public class FileHistoryCacheTest {
         assertSameEntries(histConstruct.getHistoryEntries(),
                 updatedHistory.getHistoryEntries(), false);
     }
+
+
+    /**
+     * Make sure produces correct history where several files are renamed in a single commit.
+     */
+    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @Test
+    public void testMultipleRenamedFiles() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "subversion");
+        History updatedHistory;
+
+        // The test expects support for renamed files.
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+
+        // Generate history index.
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+        cache.store(historyToStore, repo);
+
+        /* quick sanity check */
+        updatedHistory = cache.get(reposRoot, repo, true);
+        assertEquals(10, updatedHistory.getHistoryEntries().size());
+
+        // Check complete list of history entries for the renamed file.
+        File testFile = new File(reposRoot.toString() + File.separatorChar + "FileZ.txt");
+        updatedHistory = cache.get(testFile, repo, false);
+        assertEquals(3, updatedHistory.getHistoryEntries().size());
+
+        HistoryEntry e0 = new HistoryEntry(
+                "10",
+                DateUtils.parseDate("2020-03-26T10:47:13.633Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Rename fileA to fileZ and fileB to fileX in a single commit",
+                true);
+        HistoryEntry e1 = new HistoryEntry(
+                "7",
+                DateUtils.parseDate("2020-03-26T10:44:52.041Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Amend file A",
+                true);
+        HistoryEntry e2 = new HistoryEntry(
+                "6",
+                DateUtils.parseDate("2020-03-26T10:43:46.254Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Add file A",
+                true);
+
+        History histConstruct = new History();
+        LinkedList<HistoryEntry> entriesConstruct = new LinkedList<>();
+        entriesConstruct.add(e0);
+        entriesConstruct.add(e1);
+        entriesConstruct.add(e2);
+        histConstruct.setHistoryEntries(entriesConstruct);
+        assertSameEntries(histConstruct.getHistoryEntries(),
+                updatedHistory.getHistoryEntries(), false);
+    }
+
+
+    /**
+     * Make sure produces correct history for a renamed and moved file in Subversion
+     */
+    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @Test
+    public void testRenamedFile() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "subversion");
+        History updatedHistory;
+
+        // The test expects support for renamed files.
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+
+        // Generate history index.
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+        cache.store(historyToStore, repo);
+
+        /* quick sanity check */
+        updatedHistory = cache.get(reposRoot, repo, true);
+        assertEquals(10, updatedHistory.getHistoryEntries().size());
+
+        // Check complete list of history entries for the renamed file.
+        File testFile = new File(reposRoot.toString() + File.separatorChar + "subfolder" + File.separatorChar + "TestFileRenamedAgain.txt");
+        updatedHistory = cache.get(testFile, repo, false);
+        assertEquals(4, updatedHistory.getHistoryEntries().size());
+
+        HistoryEntry e0 = new HistoryEntry(
+                "5",
+                DateUtils.parseDate("2020-03-24T17:11:35.545Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Moved file to subfolder and renamed",
+                true);
+        HistoryEntry e1 = new HistoryEntry(
+                "3",
+                DateUtils.parseDate("2020-03-24T17:10:35.128Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Edited content",
+                true);
+        HistoryEntry e2 = new HistoryEntry(
+                "2",
+                DateUtils.parseDate("2020-03-24T17:10:14.166Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Rename file",
+                true);
+        HistoryEntry e3 = new HistoryEntry(
+                "1",
+                DateUtils.parseDate("2020-03-24T17:09:47.714Z", SVN_DATE_FORMAT),
+                "RichardH",
+                null,
+                "Add initial file",
+                true);
+
+        History histConstruct = new History();
+        LinkedList<HistoryEntry> entriesConstruct = new LinkedList<>();
+        entriesConstruct.add(e0);
+        entriesConstruct.add(e1);
+        entriesConstruct.add(e2);
+        entriesConstruct.add(e3);
+        histConstruct.setHistoryEntries(entriesConstruct);
+        assertSameEntries(histConstruct.getHistoryEntries(),
+                updatedHistory.getHistoryEntries(), false);
+    }
+
 
     private void checkNoHistoryFetchRepo(String reponame, String filename,
             boolean hasHistory, boolean historyFileExists) throws Exception {
