@@ -2,7 +2,7 @@
 
 FROM ubuntu:bionic as build
 
-RUN apt-get update && apt-get install -y openjdk-8-jdk maven python3 python3-venv
+RUN apt-get update && apt-get install -y maven python3 python3-venv
 
 # Create a first layer to cache the "Maven World" in the local repository.
 # Incremental docker builds will always resume after that, unless you update the pom
