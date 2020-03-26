@@ -35,7 +35,7 @@ WORKDIR /opengrok-source
 RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
 RUN cp distribution/target/*.tar.gz /opengrok.tar.gz
 
-FROM tomcat:9-jre8
+FROM tomcat:9-jdk11
 LABEL maintainer="opengrok-dev@yahoogroups.com"
 
 # install dependencies and Python tools
@@ -67,7 +67,7 @@ ENV CATALINA_HOME /usr/local/tomcat
 ENV CATALINA_BASE /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
 ENV PATH $CATALINA_HOME/bin:$PATH
-ENV JRE_HOME /usr
+# ENV JRE_HOME /usr
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 
 # custom deployment to / with redirect from /source
