@@ -33,7 +33,7 @@ COPY ./ /opengrok-source
 WORKDIR /opengrok-source
 
 RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
-RUN cp distribution/target/*.tar.gz /opengrok.tar.gz
+RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
 FROM tomcat:9-jdk11
 LABEL maintainer="opengrok-dev@yahoogroups.com"
