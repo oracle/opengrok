@@ -273,7 +273,7 @@ PROPS-END
 Node-path: FileB.txt
 Node-kind: file
 Node-action: change
-Text-content-md5: ba5e3977ff625d3358db32c448fbdc6e
+Text-content-md5: 13637ca94d336401d9525253f8bb0f7a
 Text-content-sha1: a1e4fbebcb1e284a7247cb93c36f8d9eca8b0bba
 Text-content-length: 46
 Content-length: 46
@@ -304,7 +304,7 @@ Node-kind: file
 Node-action: add
 Node-copyfrom-rev: 9
 Node-copyfrom-path: FileB.txt
-Text-copy-source-md5: ba5e3977ff625d3358db32c448fbdc6e
+Text-copy-source-md5: 13637ca94d336401d9525253f8bb0f7a
 Text-copy-source-sha1: a1e4fbebcb1e284a7247cb93c36f8d9eca8b0bba
 
 
