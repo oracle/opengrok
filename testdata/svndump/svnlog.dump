@@ -274,12 +274,13 @@ Node-path: FileB.txt
 Node-kind: file
 Node-action: change
 Text-content-md5: 13637ca94d336401d9525253f8bb0f7a
-Text-content-sha1: a1e4fbebcb1e284a7247cb93c36f8d9eca8b0bba
+Text-content-sha1: 1d5a5b57543d2c9dbeba5c2fa7dfc78b5de25465
 Text-content-length: 46
 Content-length: 46
 
 My content goes here.
 A new line in the file.
+
 
 Revision-number: 10
 Prop-content-length: 162
@@ -305,7 +306,7 @@ Node-action: add
 Node-copyfrom-rev: 9
 Node-copyfrom-path: FileB.txt
 Text-copy-source-md5: 13637ca94d336401d9525253f8bb0f7a
-Text-copy-source-sha1: a1e4fbebcb1e284a7247cb93c36f8d9eca8b0bba
+Text-copy-source-sha1: 1d5a5b57543d2c9dbeba5c2fa7dfc78b5de25465
 
 
 Node-path: FileZ.txt
