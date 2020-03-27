@@ -19,9 +19,10 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.indexer.index;
+package org.opengrok.indexer.configuration;
 
 import java.io.File;
 import java.io.Serializable;

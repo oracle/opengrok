@@ -88,6 +88,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
@@ -137,8 +138,7 @@ public class IndexDatabase {
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
-    private IgnoredNames ignoredNames;
-    private Filter includedNames;
+    private PathAccepter pathAccepter;
     private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
@@ -307,8 +307,7 @@ public class IndexDatabase {
 
             lockfact = pickLockFactory(env);
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
-            ignoredNames = env.getIgnoredNames();
-            includedNames = env.getIncludedNames();
+            pathAccepter = env.getPathAccepter();
             analyzerGuru = new AnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
@@ -819,15 +818,7 @@ public class IndexDatabase {
         ret.localRelPath = null;
         String absolutePath = file.getAbsolutePath();
 
-        if (!includedNames.isEmpty()
-                && // the filter should not affect directory names
-                (!(file.isDirectory() || includedNames.match(file)))) {
-            LOGGER.log(Level.FINER, "not including {0}", absolutePath);
-            return false;
-        }
-
-        if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
+        if (!pathAccepter.accept(file)) {
             return false;
         }
 

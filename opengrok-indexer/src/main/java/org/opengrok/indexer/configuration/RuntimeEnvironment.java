@@ -62,8 +62,6 @@ import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.index.Filter;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -188,6 +186,13 @@ public final class RuntimeEnvironment {
 
     public IndexerParallelizer getIndexerParallelizer() {
         return lzIndexerParallelizer.get();
+    }
+
+    /**
+     * Gets an instance associated to this environment.
+     */
+    public PathAccepter getPathAccepter() {
+        return new PathAccepter(getIgnoredNames(), getIncludedNames());
     }
 
     private String getCanonicalPath(String s) {
@@ -704,8 +709,7 @@ public final class RuntimeEnvironment {
      */
     public void setRepositories(String... dir) {
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
-                addRepositories(Arrays.stream(dir).map(File::new).toArray(File[]::new),
-                        getIgnoredNames()));
+                addRepositories(Arrays.stream(dir).map(File::new).toArray(File[]::new)));
         setRepositories(repos);
     }
 

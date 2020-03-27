@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
@@ -35,10 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.search.FileExtra;
 import org.opengrok.indexer.web.EftarFileReader;
@@ -111,9 +111,8 @@ public class DirectoryListing {
 
         if (files.length == 1) {
             File entry = new File(dir, files[0]);
-            IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
-
-            if (!ignoredNames.ignore(entry) && entry.isDirectory()) {
+            PathAccepter pathAccepter = RuntimeEnvironment.getInstance().getPathAccepter();
+            if (pathAccepter.accept(entry) && entry.isDirectory()) {
                 return (dir.getName() + "/" + getSimplifiedPath(entry));
             }
         }
@@ -156,8 +155,8 @@ public class DirectoryListing {
      * @param out write destination
      * @param path virtual path of the directory (usually the path name of
      *  <var>dir</var> with the source root directory stripped off).
-     * @param entries basenames of potential children of the directory to list.
-     *  Gets filtered by {@link IgnoredNames}.
+     * @param entries basenames of potential children of the directory to list,
+     *  but filtered by {@link PathAccepter}.
      * @return a possible empty list of README files included in the written
      *  listing.
      * @throws org.opengrok.indexer.history.HistoryException when we cannot
@@ -195,9 +194,8 @@ public class DirectoryListing {
             out.write("<th><samp>Description</samp></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        IgnoredNames ignoredNames = env.getIgnoredNames();
 
+        PathAccepter pathAccepter = RuntimeEnvironment.getInstance().getPathAccepter();
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
 
         // Print the '..' entry even for empty directories.
@@ -214,7 +212,7 @@ public class DirectoryListing {
         if (entries != null) {
             for (DirectoryEntry entry : entries) {
                 File child = entry.getFile();
-                if (ignoredNames.ignore(child)) {
+                if (!pathAccepter.accept(child)) {
                     continue;
                 }
                 String filename = child.getName();

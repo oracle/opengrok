@@ -19,9 +19,9 @@
 
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.index;
+package org.opengrok.indexer.configuration;
 
 import java.io.File;
 import java.io.Serializable;
@@ -60,6 +60,12 @@ public class IgnoredNames implements Serializable {
         }
     }
 
+    /**
+     * Adds the specified {@code pattern} if it follows the expected naming
+     * convention (or else ignored).
+     * @param pattern defined pattern starting either with {@code "f:"} for
+     *                ignore-file or with {@code "d:"} for an ignore-directory
+     */
     public void add(String pattern) {
         if (pattern.startsWith(FILE_PREFIX)) {
             ignoredFiles.add(pattern.substring(FILE_PREFIX.length()));

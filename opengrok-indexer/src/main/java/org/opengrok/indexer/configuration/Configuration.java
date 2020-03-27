@@ -59,8 +59,6 @@ import java.util.stream.Collectors;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.index.Filter;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 
