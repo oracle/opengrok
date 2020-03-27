@@ -36,8 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 

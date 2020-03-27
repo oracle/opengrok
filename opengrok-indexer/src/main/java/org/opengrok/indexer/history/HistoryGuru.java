@@ -46,8 +46,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
+import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
@@ -387,7 +387,6 @@ public final class HistoryGuru {
      * to the internally used map.
      *
      * @param files list of files to check if they contain a repository
-     * @param ignoredNames what files to ignore
      * @param allowedNesting number of levels of nested repos to allow
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
@@ -396,10 +395,10 @@ public final class HistoryGuru {
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames, int allowedNesting, int depth,
-            boolean isNested) {
+            int allowedNesting, int depth, boolean isNested) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
+        PathAccepter pathAccepter = env.getPathAccepter();
 
         for (File file : files) {
             if (!file.isDirectory()) {
@@ -427,7 +426,7 @@ public final class HistoryGuru {
                 }
                 if (repository == null) {
                     // Not a repository, search its sub-dirs.
-                    if (!ignoredNames.ignore(file)) {
+                    if (pathAccepter.accept(file)) {
                         File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
@@ -435,7 +434,7 @@ public final class HistoryGuru {
                                     "check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            repoList.addAll(addRepositories(subFiles, ignoredNames,
+                            repoList.addAll(addRepositories(subFiles,
                                     allowedNesting, depth + 1, isNested));
                         }
                     }
@@ -455,7 +454,7 @@ public final class HistoryGuru {
                         } else if (depth <= scanningDepth) {
                             // Search down to a limit -- if not: too much
                             // stat'ing for huge Mercurial repositories
-                            repoList.addAll(addRepositories(subFiles, ignoredNames,
+                            repoList.addAll(addRepositories(subFiles,
                                     allowedNesting - 1, depth + 1, true));
                         }
                     }
@@ -476,13 +475,10 @@ public final class HistoryGuru {
      * to the internally used repository map.
      *
      * @param files list of directories to check if they contain a repository
-     * @param ignoredNames what files to ignore
      * @return collection of added repositories
      */
-    public Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames) {
-
-        return addRepositories(files, ignoredNames, env.getNestingMaximum(), 0, false);
+    public Collection<RepositoryInfo> addRepositories(File[] files) {
+        return addRepositories(files, env.getNestingMaximum(), 0, false);
     }
 
     /**
@@ -490,15 +486,13 @@ public final class HistoryGuru {
      * to the internally used repository map.
      *
      * @param repos collection of repository paths
-     * @param ignoredNames what files to ignore
      * @return collection of added repositories
      */
-    public Collection<RepositoryInfo> addRepositories(Collection<String> repos,
-            IgnoredNames ignoredNames) {
+    public Collection<RepositoryInfo> addRepositories(Collection<String> repos) {
 
         return addRepositories(repos.stream().
                 map(r -> new File(r)).
-                collect(Collectors.toList()).toArray(new File[0]), ignoredNames);
+                collect(Collectors.toList()).toArray(new File[0]));
     }
 
     /**

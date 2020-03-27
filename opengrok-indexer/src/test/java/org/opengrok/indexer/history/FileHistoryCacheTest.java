@@ -19,13 +19,15 @@
 
 /*
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 
@@ -45,6 +47,8 @@ import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.condition.UnixPresent;
+import org.opengrok.indexer.configuration.Filter;
+import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
@@ -57,16 +61,21 @@ import org.opengrok.indexer.util.TestRepository;
 public class FileHistoryCacheTest {
 
     private static final String SVN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private TestRepository repositories;
     private FileHistoryCache cache;
+
+    private boolean savedFetchHistoryWhenNotInCache;
+    private int savedHistoryReaderTimeLimit;
+    private boolean savedIsHandleHistoryOfRenamedFiles;
+    private boolean savedIsTagsEnabled;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * Set up the test environment with repositories and a cache instance.
-     *
-     * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
@@ -75,6 +84,11 @@ public class FileHistoryCacheTest {
 
         cache = new FileHistoryCache();
         cache.initialize();
+
+        savedFetchHistoryWhenNotInCache = env.isFetchHistoryWhenNotInCache();
+        savedHistoryReaderTimeLimit = env.getHistoryReaderTimeLimit();
+        savedIsHandleHistoryOfRenamedFiles = env.isHandleHistoryOfRenamedFiles();
+        savedIsTagsEnabled = env.isTagsEnabled();
     }
 
     /**
@@ -87,13 +101,12 @@ public class FileHistoryCacheTest {
 
         cache = null;
 
-        // Various tests change the runtime environment settings.
-        // In case any assertions fail we should reset them to their defaults
-        // after each test for a good measure.
-        RuntimeEnvironment.getInstance().setTagsEnabled(false);
-        RuntimeEnvironment.getInstance().setFetchHistoryWhenNotInCache(true);
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
-        RuntimeEnvironment.getInstance().setHistoryReaderTimeLimit(30);
+        env.setFetchHistoryWhenNotInCache(savedFetchHistoryWhenNotInCache);
+        env.setHistoryReaderTimeLimit(savedHistoryReaderTimeLimit);
+        env.setIgnoredNames(new IgnoredNames());
+        env.setIncludedNames(new Filter());
+        env.setHandleHistoryOfRenamedFiles(savedIsHandleHistoryOfRenamedFiles);
+        env.setTagsEnabled(savedIsTagsEnabled);
     }
 
     /**
@@ -169,7 +182,7 @@ public class FileHistoryCacheTest {
     @Test
     public void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
-        RuntimeEnvironment.getInstance().setTagsEnabled(true);
+        env.setTagsEnabled(true);
 
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
@@ -246,7 +259,7 @@ public class FileHistoryCacheTest {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
 
         // The test expects support for renamed files.
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        env.setHandleHistoryOfRenamedFiles(true);
 
         Repository repo = RepositoryFactory.getRepository(reposRoot);
         History historyToStore = repo.getHistory(reposRoot);
@@ -371,10 +384,10 @@ public class FileHistoryCacheTest {
         History updatedHistory;
 
         // The test expects support for renamed files.
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        env.setHandleHistoryOfRenamedFiles(true);
 
         // Use tags for better coverage.
-        RuntimeEnvironment.getInstance().setTagsEnabled(true);
+        env.setTagsEnabled(true);
 
         // Generate history index.
         // It is necessary to call getRepository() only after tags were enabled
@@ -499,10 +512,10 @@ public class FileHistoryCacheTest {
         History updatedHistory;
 
         // The test expects support for renamed files.
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        env.setHandleHistoryOfRenamedFiles(true);
 
         // Use tags for better coverage.
-        RuntimeEnvironment.getInstance().setTagsEnabled(true);
+        env.setTagsEnabled(true);
 
         // Branch the repo and add one changeset.
         runHgCommand(reposRoot, "unbundle",
@@ -624,7 +637,7 @@ public class FileHistoryCacheTest {
         History updatedHistory;
 
         // The test expects support for renamed files.
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        env.setHandleHistoryOfRenamedFiles(true);
 
         // Generate history index.
         Repository repo = RepositoryFactory.getRepository(reposRoot);
@@ -683,7 +696,7 @@ public class FileHistoryCacheTest {
         History updatedHistory;
 
         // The test expects support for renamed files.
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        env.setHandleHistoryOfRenamedFiles(true);
 
         // Generate history index.
         Repository repo = RepositoryFactory.getRepository(reposRoot);
@@ -773,13 +786,13 @@ public class FileHistoryCacheTest {
     @Test
     public void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
-        RuntimeEnvironment.getInstance().setFetchHistoryWhenNotInCache(false);
+        env.setFetchHistoryWhenNotInCache(false);
 
         // Make cache.get() predictable. Normally when the retrieval of
         // history of given file is faster than the limit, the history of this
         // file is not stored. For the sake of this test we want the history
         // to be always stored.
-        RuntimeEnvironment.getInstance().setHistoryReaderTimeLimit(0);
+        env.setHistoryReaderTimeLimit(0);
 
         // Pretend we are done with first phase of indexing.
         cache.setHistoryIndexDone();
@@ -788,5 +801,39 @@ public class FileHistoryCacheTest {
         checkNoHistoryFetchRepo("mercurial", "main.c", false, false);
         // Second try repo which can fetch history of individual files only.
         checkNoHistoryFetchRepo("teamware", "header.h", true, true);
+    }
+
+    /**
+     * Test history when activating PathAccepter for ignoring files.
+     */
+    @ConditionalRun(UnixPresent.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testStoreAndTryToGetIgnored() throws Exception {
+        env.getIgnoredNames().add("f:Make*");
+
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+
+        cache.store(historyToStore, repo);
+
+        // test reindex history
+        History historyNull = new History();
+        cache.store(historyNull, repo);
+
+        // test get history for single file
+        File makefile = new File(reposRoot, "Makefile");
+        assertTrue("" + makefile + " should exist", makefile.exists());
+
+        History retrievedHistory = cache.get(makefile, repo, true);
+        assertNull("history for Makefile should be null", retrievedHistory);
+
+        // Gross that we can break encapsulation, but oh well.
+        env.getIgnoredNames().clear();
+        cache.store(historyToStore, repo);
+        retrievedHistory = cache.get(makefile, repo, true);
+        assertNotNull("history for Makefile should not be null", retrievedHistory);
     }
 }

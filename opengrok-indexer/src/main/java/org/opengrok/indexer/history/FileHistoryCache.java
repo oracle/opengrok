@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -55,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -67,6 +69,7 @@ import org.opengrok.indexer.util.TandemPath;
 class FileHistoryCache implements HistoryCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHistoryCache.class);
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private final Object lock = new Object();
 
@@ -74,6 +77,7 @@ class FileHistoryCache implements HistoryCache {
     private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
     private static final String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
+    private final PathAccepter pathAccepter = env.getPathAccepter();
     private boolean historyIndexDone = false;
 
     @Override
@@ -90,15 +94,14 @@ class FileHistoryCache implements HistoryCache {
      * Generate history for single file.
      * @param filename name of the file
      * @param historyEntries list of HistoryEntry objects forming the (incremental) history of the file
-     * @param env runtime environment
      * @param repository repository object in which the file belongs
      * @param srcFile file object
      * @param root root of the source repository
      * @param renamed true if the file was renamed in the past
      */
     private void doFileHistory(String filename, List<HistoryEntry> historyEntries,
-            RuntimeEnvironment env, Repository repository,
-            File srcFile, File root, boolean renamed) throws HistoryException {
+            Repository repository, File srcFile, File root, boolean renamed)
+            throws HistoryException {
 
         History hist = null;
 
@@ -147,9 +150,8 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
-    private boolean isRenamedFile(String filename,
-            RuntimeEnvironment env,
-            Repository repository, History history) throws IOException {
+    private boolean isRenamedFile(String filename, Repository repository, History history)
+            throws IOException {
 
         String repodir;
         try {
@@ -197,7 +199,6 @@ class FileHistoryCache implements HistoryCache {
      */
     private static File getCachedFile(File file) throws HistoryException,
             ForbiddenSymlinkException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
@@ -238,7 +239,6 @@ class FileHistoryCache implements HistoryCache {
      * @param dir directory where the file will be saved
      * @param history history to store
      * @param cacheFile the file to store the history to
-     * @throws HistoryException
      */
     private void writeHistoryToFile(File dir, History history, File cacheFile) throws HistoryException {
         // We have a problem that multiple threads may access the cache layer
@@ -299,7 +299,6 @@ class FileHistoryCache implements HistoryCache {
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
                 ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
                 while (li.hasPrevious()) {
@@ -398,12 +397,10 @@ class FileHistoryCache implements HistoryCache {
      *
      * @param history history object to process into per-file histories
      * @param repository repository object
-     * @throws HistoryException
      */
     @Override
     public void store(History history, Repository repository)
             throws HistoryException {
-        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
         String latestRev = null;
@@ -420,10 +417,10 @@ class FileHistoryCache implements HistoryCache {
 
         // Firstly store the history for the top-level directory.
         doFileHistory(repository.getDirectoryName(), history.getHistoryEntries(),
-                env, repository, env.getSourceRootFile(), null, false);
+                repository, env.getSourceRootFile(), null, false);
 
-        HashMap<String, List<HistoryEntry>> map =
-                new HashMap<>();
+        HashMap<String, List<HistoryEntry>> map = new HashMap<>();
+        HashMap<String, Boolean> acceptanceCache = new HashMap<>();
 
         /*
          * Go through all history entries for this repository (acquired through
@@ -441,10 +438,24 @@ class FileHistoryCache implements HistoryCache {
                 /*
                  * We do not want to generate history cache for files which
                  * do not currently exist in the repository.
+                 *
+                 * Also we cache the result of this evaluation to boost
+                 * performance, since a particular file can appear in many
+                 * repository revisions.
                  */
                 File test = new File(env.getSourceRootPath() + s);
-                if (!test.exists()) {
-                    continue;
+                String testKey = test.getAbsolutePath();
+                Boolean cachedAcceptance = acceptanceCache.get(testKey);
+                if (cachedAcceptance != null) {
+                    if (!cachedAcceptance) {
+                        continue;
+                    }
+                } else {
+                    boolean testResult = test.exists() && pathAccepter.accept(test);
+                    acceptanceCache.put(testKey, testResult);
+                    if (!testResult) {
+                        continue;
+                    }
                 }
 
                 List<HistoryEntry> list = map.get(s);
@@ -470,20 +481,20 @@ class FileHistoryCache implements HistoryCache {
          * hash map entry for the file) in a file. Skip renamed files
          * which will be handled separately below.
          */
-        final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        final File root = env.getSourceRootFile();
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (handleRenamedFiles &&
-                    isRenamedFile(map_entry.getKey(), env, repository, history)) {
-                        continue;
+                        isRenamedFile(map_entry.getKey(), repository, history)) {
+                    continue;
                 }
             } catch (IOException ex) {
                LOGGER.log(Level.WARNING, "isRenamedFile() got exception", ex);
             }
 
             doFileHistory(map_entry.getKey(), map_entry.getValue(),
-                env, repository, null, root, false);
+                    repository, null, root, false);
             fileHistoryCount++;
         }
 
@@ -501,7 +512,7 @@ class FileHistoryCache implements HistoryCache {
                 new HashMap<>();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (isRenamedFile(map_entry.getKey(), env, repository, history)) {
+                if (isRenamedFile(map_entry.getKey(), repository, history)) {
                     renamed_map.put(map_entry.getKey(), map_entry.getValue());
                 }
             } catch (IOException ex) {
@@ -535,7 +546,7 @@ class FileHistoryCache implements HistoryCache {
             env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
                     try {
                         doFileHistory(map_entry.getKey(), map_entry.getValue(),
-                            env, repositoryF,
+                            repositoryF,
                             new File(env.getSourceRootPath() + map_entry.getKey()),
                             root, true);
                         renamedFileHistoryCount.getAndIncrement();
@@ -581,11 +592,14 @@ class FileHistoryCache implements HistoryCache {
          * since the history of all files in this repository should have been
          * fetched in the first phase of indexing.
          */
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (isHistoryIndexDone() && repository.isHistoryEnabled() &&
-            repository.hasHistoryForDirectories() &&
-            !env.isFetchHistoryWhenNotInCache()) {
-                return null;
+                repository.hasHistoryForDirectories() &&
+                !env.isFetchHistoryWhenNotInCache()) {
+            return null;
+        }
+
+        if (!pathAccepter.accept(file)) {
+            return null;
         }
 
         final History history;
@@ -643,7 +657,6 @@ class FileHistoryCache implements HistoryCache {
         if (repos == null) {
             return true;
         }
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File dir = env.getDataRootFile();
         dir = new File(dir, FileHistoryCache.HISTORY_CACHE_DIR_NAME);
         try {
@@ -670,7 +683,6 @@ class FileHistoryCache implements HistoryCache {
     }
 
     public String getRepositoryHistDataDirname(Repository repository) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String repoDirBasename;
 
         try {
@@ -726,7 +738,7 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public String getLatestCachedRevision(Repository repository) {
-        String rev = null;
+        String rev;
         BufferedReader input;
 
         String revPath = getRepositoryCachedRevPath(repository);
@@ -793,7 +805,6 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public void clearFile(String path) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File historyFile;
         try {
             historyFile = getCachedFile(new File(env.getSourceRootPath() + path));

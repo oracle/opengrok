@@ -134,7 +134,7 @@ public class ProjectsController {
         // There is no need to perform the work of invalidateRepositories(),
         // since addRepositories() calls getRepository() for each of
         // the repos.
-        return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}, env.getIgnoredNames()));
+        return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}));
     }
 
     private Project disableProject(String projectName) {

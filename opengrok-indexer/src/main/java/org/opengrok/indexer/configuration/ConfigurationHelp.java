@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.configuration;
@@ -39,8 +39,6 @@ import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.index.Filter;
-import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.util.StringUtils;
 
 /**

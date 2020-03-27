@@ -19,8 +19,9 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.index;
+package org.opengrok.indexer.configuration;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
@@ -44,7 +45,6 @@ import junit.framework.AssertionFailedError;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.c.CAnalyzerFactoryTest;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;

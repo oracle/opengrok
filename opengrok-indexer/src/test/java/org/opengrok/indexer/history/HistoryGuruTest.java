@@ -162,8 +162,7 @@ public class HistoryGuruTest {
         // Try to add non-existent repository.
         Collection<String> repos = new ArrayList<>();
         repos.add("totally-nonexistent-repository");
-        Collection<RepositoryInfo> added = instance.addRepositories(repos,
-                env.getIgnoredNames());
+        Collection<RepositoryInfo> added = instance.addRepositories(repos);
         Assert.assertEquals(0, added.size());
         Assert.assertEquals(numReposOrig, instance.getRepositories().size());
         
@@ -174,7 +173,7 @@ public class HistoryGuruTest {
         Assert.assertEquals(numReposOrig - 1, instance.getRepositories().size());
         
         // Add the repository back.
-        added = instance.addRepositories(repos, env.getIgnoredNames());
+        added = instance.addRepositories(repos);
         Assert.assertEquals(1, added.size());
         Assert.assertEquals(numReposOrig, instance.getRepositories().size());
     }
@@ -196,8 +195,8 @@ public class HistoryGuruTest {
                 cvsRoot.toPath().resolve("cvsroot").toFile().getAbsolutePath(), "checkout", "cvsrepo");
 
         Collection<RepositoryInfo> addedRepos = instance.
-                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "git").toString()),
-                        env.getIgnoredNames());
+                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(),
+                        "git").toString()));
         assertEquals(1, addedRepos.size());
     }
 
@@ -214,8 +213,8 @@ public class HistoryGuruTest {
                 "clone", hgRoot.getAbsolutePath(), "subrepo");
 
         Collection<RepositoryInfo> addedRepos = instance.
-                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "mercurial").toString()),
-                        env.getIgnoredNames());
+                addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(),
+                        "mercurial").toString()));
         assertEquals(2, addedRepos.size());
     }
 
@@ -238,13 +237,13 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         Collection<RepositoryInfo> addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(),
-                        "repoRoot").toString()), env.getIgnoredNames());
+                        "repoRoot").toString()));
         assertEquals("should add to default nesting maximum", 2, addedRepos.size());
 
         env.setNestingMaximum(2);
         addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(),
-                        "repoRoot").toString()), env.getIgnoredNames());
+                        "repoRoot").toString()));
         assertEquals("should get one more repo", 3, addedRepos.size());
     }
 
