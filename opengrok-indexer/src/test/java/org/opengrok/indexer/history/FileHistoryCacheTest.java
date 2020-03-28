@@ -351,7 +351,7 @@ public class FileHistoryCacheTest {
     /**
      * Check how incremental reindex behaves when indexing changesets that
      * rename+change file.
-     * 
+     *
      * The scenario goes as follows:
      * - create Mercurial repository
      * - perform full reindex
@@ -400,7 +400,7 @@ public class FileHistoryCacheTest {
                 "13:e55a793086da",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null, 
+                null,
                 "Do something else",
                 true);
         HistoryEntry e1 = new HistoryEntry(
@@ -533,7 +533,7 @@ public class FileHistoryCacheTest {
         /* overall history check */
         updatedHistory = cache.get(reposRoot, repo, false);
         assertEquals(12, updatedHistory.getHistoryEntries().size());
-        
+
         // Check complete list of history entries for the renamed file.
         File testFile = new File(reposRoot.toString() + File.separatorChar + "blog.txt");
         updatedHistory = cache.get(testFile, repo, false);
@@ -639,21 +639,21 @@ public class FileHistoryCacheTest {
 
         HistoryEntry e0 = new HistoryEntry(
                 "10",
-                DateUtils.parseDate("2020-03-26T10:47:13.633Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:24:43.921Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
-                "Rename fileA to fileZ and fileB to fileX in a single commit",
+                "Rename FileA to FileZ and FileB to FileX in a single commit",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "7",
-                DateUtils.parseDate("2020-03-26T10:44:52.041Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:21:55.273Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Amend file A",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "6",
-                DateUtils.parseDate("2020-03-26T10:43:46.254Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:21:05.888Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Add file A",
@@ -698,28 +698,28 @@ public class FileHistoryCacheTest {
 
         HistoryEntry e0 = new HistoryEntry(
                 "5",
-                DateUtils.parseDate("2020-03-24T17:11:35.545Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:20:11.821Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Moved file to subfolder and renamed",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "3",
-                DateUtils.parseDate("2020-03-24T17:10:35.128Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:19:03.145Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Edited content",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "2",
-                DateUtils.parseDate("2020-03-24T17:10:14.166Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:18:29.481Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Rename file",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "1",
-                DateUtils.parseDate("2020-03-24T17:09:47.714Z", SVN_DATE_FORMAT),
+                DateUtils.parseDate("2020-03-28T07:17:54.756Z", SVN_DATE_FORMAT),
                 "RichardH",
                 null,
                 "Add initial file",
@@ -751,7 +751,7 @@ public class FileHistoryCacheTest {
         // FetchHistoryWhenNotInCache this should create corresponding file
         // in history cache.
         History retrievedHistory = cache.get(repoFile, repo, true);
-        assertEquals(hasHistory, (retrievedHistory != null));
+        assertEquals(hasHistory, retrievedHistory != null);
 
         // The file in history cache should not exist since
         // FetchHistoryWhenNotInCache is set to false.
