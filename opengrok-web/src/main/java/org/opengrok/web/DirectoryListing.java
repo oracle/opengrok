@@ -251,8 +251,8 @@ public class DirectoryListing {
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename, isDir);
                 printDateSize(out, child, modTimes.get(filename), dateFormatter);
-                printNumlines(out, entry);
-                printLoc(out, entry);
+                printNumlines(out, entry, isDir);
+                printLoc(out, entry, isDir);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, filename);
                     if (briefDesc == null) {
@@ -270,7 +270,7 @@ public class DirectoryListing {
         return readMes;
     }
 
-    private void printNumlines(Writer out, DirectoryEntry entry)
+    private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
         Long numlines = null;
         String readableNumlines = "";
@@ -279,7 +279,7 @@ public class DirectoryListing {
             numlines = extra.getNumLines();
         }
         if (numlines != null) {
-            readableNumlines = Util.readableCount(numlines);
+            readableNumlines = Util.readableCount(numlines, isDir);
         }
 
         out.write("<td class=\"numlines\">");
@@ -287,7 +287,7 @@ public class DirectoryListing {
         out.write("</td>");
     }
 
-    private void printLoc(Writer out, DirectoryEntry entry)
+    private void printLoc(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
         Long loc = null;
         String readableLoc = "";
@@ -296,7 +296,7 @@ public class DirectoryListing {
             loc = extra.getLOC();
         }
         if (loc != null) {
-            readableLoc = Util.readableCount(loc);
+            readableLoc = Util.readableCount(loc, isDir);
         }
 
         out.write("<td class=\"loc\">");
