@@ -11,17 +11,7 @@ addons:
 jobs:
   include:
   - stage: test
-    name: Linux + OpenJDK 8
-    os: linux
-    dist: xenial
-    sudo: required
-    jdk: openjdk8
-    install: true
-    script: dev/main
-    before_install: dev/before_install
-    before_script: dev/before
-  - stage: test
-    name: Linux + Oracle JDK 11
+    name: Linux + OpenJDK 11
     os: linux
     dist: xenial
     sudo: required
@@ -31,26 +21,27 @@ jobs:
     before_install: dev/before_install
     before_script: dev/before
   - stage: test
-    name: macOS + Oracle JDK 8
+    name: macOS + Oracle JDK 11
     os: osx
-    osx_image: xcode8.3
+    osx_image: xcode10.1
+    jdk: oraclejdk11
     install: true
     script: dev/main
     before_install: dev/before_install
     before_script: dev/before
   - stage: test
-    name: Windows + Open JDK 8
+    name: Windows + Open JDK 11
     # Use shell until Travis supports Java on Windows proper.
     language: shell
     os: windows
     install: true
     script: dev/main
-    before_install: dev/before_install.windows openjdk8
+    before_install: dev/before_install.windows openjdk11
     before_script: dev/before
   - stage: deploy
     name: Github Release
     dist: xenial
-    jdk: openjdk8
+    jdk: openjdk11
     if: repo = "oracle/opengrok" AND tag IS present
     before_install: dev/before_install
     install: true
@@ -68,7 +59,7 @@ jobs:
   - stage: docker
     name: Docker image build
     dist: xenial
-    jdk: openjdk8
+    jdk: openjdk11
     install: true
     services:
     - docker
@@ -78,7 +69,7 @@ jobs:
     name: Upload javadocs to Github pages
     os: linux
     dist: xenial
-    jdk: openjdk8
+    jdk: openjdk11
     script: dev/javadoc.sh
     install: true
     if: repo = "oracle/opengrok" AND tag IS NOT present
