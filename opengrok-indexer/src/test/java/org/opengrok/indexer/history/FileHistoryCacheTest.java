@@ -692,7 +692,8 @@ public class FileHistoryCacheTest {
         assertEquals(10, updatedHistory.getHistoryEntries().size());
 
         // Check complete list of history entries for the renamed file.
-        File testFile = new File(reposRoot.toString() + File.separatorChar + "subfolder" + File.separatorChar + "TestFileRenamedAgain.txt");
+        File testFile = new File(reposRoot.toString() + File.separatorChar
+                            + "subfolder" + File.separatorChar + "TestFileRenamedAgain.txt");
         updatedHistory = cache.get(testFile, repo, false);
         assertEquals(4, updatedHistory.getHistoryEntries().size());
 

@@ -85,7 +85,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         List<String> getRenamedFiles() {
-          return new ArrayList<>(renamedFiles);
+            return new ArrayList<>(renamedFiles);
         }
 
         @Override
@@ -111,7 +111,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     // need to strip microseconds off - assume final character is Z otherwise invalid anyway.
                     String dateString = s;
                     if (s.length() > SVN_MILLIS_DATE_LENGTH) {
-                      dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) + dateString.charAt(dateString.length() - 1);
+                      dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) +
+                          dateString.charAt(dateString.length() - 1);
                     }
                     entry.setDate(repository.parse(dateString));
                 } catch (ParseException ex) {
@@ -123,13 +124,13 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                  * top-level directory itself, hence the check for inequality.
                  */
                 if (s.startsWith(prefix) && !s.equals(prefix)) {
-                  File file = new File(home, s.substring(prefix.length()));
-                  String path = file.getAbsolutePath().substring(length);
+                    File file = new File(home, s.substring(prefix.length()));
+                    String path = file.getAbsolutePath().substring(length);
                     // The same file names may be repeated in many commits,
                     // so intern them to reduce the memory footprint.
                     entry.addFile(path.intern());
                     if (isRenamed) {
-                      renamedFiles.add(file.getAbsolutePath().substring(home.length() + 1));
+                        renamedFiles.add(file.getAbsolutePath().substring(home.length() + 1));
                     }
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);

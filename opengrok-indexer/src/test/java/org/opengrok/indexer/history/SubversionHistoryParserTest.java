@@ -173,20 +173,20 @@ public class SubversionHistoryParserTest {
 
     private static class DateTimeTestData {
 
-      private final String dateTimeString;
-      private final LocalDateTime actualDateTime;
-      private final boolean expectedException;
+        private final String dateTimeString;
+        private final LocalDateTime actualDateTime;
+        private final boolean expectedException;
 
-      DateTimeTestData(String dateTimeString, LocalDateTime actualDateTime) {
-        this.dateTimeString = dateTimeString;
-        this.actualDateTime = actualDateTime;
-        this.expectedException = false;
-      }
-      DateTimeTestData(String dateTimeString) {
-        this.dateTimeString = dateTimeString;
-        this.actualDateTime = null;
-        this.expectedException = true;
-      }
+        DateTimeTestData(String dateTimeString, LocalDateTime actualDateTime) {
+            this.dateTimeString = dateTimeString;
+            this.actualDateTime = actualDateTime;
+            this.expectedException = false;
+        }
+        DateTimeTestData(String dateTimeString) {
+            this.dateTimeString = dateTimeString;
+            this.actualDateTime = null;
+            this.expectedException = true;
+        }
 
     }
 
@@ -233,12 +233,13 @@ public class SubversionHistoryParserTest {
                 assertEquals(revId, e.getRevision());
                 assertEquals(author, e.getAuthor());
 
-                Date actualDateTime = Date.from(dates[i].actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+                Date actualDateTime =
+                    Date.from(dates[i].actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
                 assertEquals(dates[i].dateTimeString, actualDateTime, e.getDate());
                 assertEquals(1, e.getFiles().size());
                 assertEquals(Paths.get(Paths.get("/"+file).toUri()).toFile().toString(), e.getFiles().first());
                 if (dates[i].expectedException) {
-                  fail("Should throw an IO exception for " + dates[i].dateTimeString);
+                    fail("Should throw an IO exception for " + dates[i].dateTimeString);
                 }
             } catch (IOException ex) {
                 if (!dates[i].expectedException) {
