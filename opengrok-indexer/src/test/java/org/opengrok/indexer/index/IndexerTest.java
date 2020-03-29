@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -362,7 +363,7 @@ public class IndexerTest {
         env.setSourceRoot(testrepo.getSourceRoot());
 
         env.setRepositories(testrepo.getSourceRoot());
-        assertEquals(9, env.getRepositories().size());
+        assertEquals(10, env.getRepositories().size());
 
         String[] repoNames = {"mercurial", "git"};
         env.setRepositories(Arrays.stream(repoNames).
