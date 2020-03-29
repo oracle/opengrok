@@ -21,7 +21,7 @@ fi
 
 if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	JAVA_BASE="/c/Program Files/OpenJDK"
-	JDK_DIR=$(find "$JAVA_BASE/" -type d -name 'openjdk*' -maxdepth 1 | head -1)
+	JDK_DIR=$(find "$JAVA_BASE/" -type d -name '*jdk*' -maxdepth 1 | head -1)
 	export JAVA_HOME=${JAVA_HOME:-$JDK_DIR}
 	echo "JAVA_HOME set to $JAVA_HOME"
 	export PATH=${JAVA_HOME}/bin:${PATH}
