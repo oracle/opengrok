@@ -12,4 +12,5 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
-testdata\svndump\svnlog.dump text eol=lf
+
+/testdata/svndump/svnlog.dump text eol=lf
