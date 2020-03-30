@@ -29,6 +29,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -51,6 +52,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import static org.apache.lucene.search.BoostAttribute.DEFAULT_BOOST;
 
 /**
  * Used for parsing the text of a query for which suggestions should be retrieved. Decouples the query into 2 parts:
@@ -93,14 +96,17 @@ class SuggesterQueryParser extends CustomQueryParser {
     }
 
     @Override
-    protected Query newTermQuery(final Term term) {
+    protected Query newTermQuery(final Term term, float boost) {
         if (term.text().contains(identifier)) {
-            SuggesterPrefixQuery q = new SuggesterPrefixQuery(replaceIdentifier(term, identifier));
-            this.suggesterQuery = q;
+            Query q = new SuggesterPrefixQuery(replaceIdentifier(term, identifier));
+            this.suggesterQuery = (SuggesterPrefixQuery) q;
+            if (boost != DEFAULT_BOOST) {
+                q = new BoostQuery(q, boost);
+            }
             return q;
         }
 
-        return super.newTermQuery(term);
+        return super.newTermQuery(term, boost);
     }
 
     private Term replaceIdentifier(final Term term, final String identifier) {
