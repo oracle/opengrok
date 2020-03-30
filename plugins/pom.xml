@@ -106,33 +106,13 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
                     <systemPropertyVariables>
                         <junit-force-all>true</junit-force-all>
                     </systemPropertyVariables>
-                    <argLine>@{surefireArgLine}</argLine>
+                    <argLine>
+                        @{surefireArgLine}
+                        --illegal-access=permit
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>java9plus</id>
-            <activation>
-                <jdk>[9,18]</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <argLine>
-                                @{surefireArgLine}
-                                --illegal-access=permit
-                            </argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>
