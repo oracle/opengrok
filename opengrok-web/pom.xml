@@ -246,8 +246,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                        -Djna.nosys=true
                         @{surefireArgLine}
+                        -Djna.nosys=true
+                        --illegal-access=permit
+                        --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
+                        --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
+                        --add-exports java.base/sun.nio.ch=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>
@@ -277,33 +281,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>java9plus</id>
-            <activation>
-                <jdk>[9,18]</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <argLine>
-                                @{surefireArgLine}
-                                -Djna.nosys=true
-                                --illegal-access=permit
-                                --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
-                                --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
-                                --add-exports java.base/sun.nio.ch=ALL-UNNAMED
-                            </argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <pluginRepositories>
         <pluginRepository>
