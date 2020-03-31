@@ -403,6 +403,10 @@ public class SuggesterServiceImpl implements SuggesterService {
         suggester.waitForRebuild(timeout, unit);
     }
 
+    public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
+        suggester.waitForInit(timeout, unit);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void close() {

@@ -70,6 +70,13 @@ public interface SuggesterService {
     void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException;
 
     /**
+     * Wait for the initialization. For testing.
+     * @param timeout timeout to wait for
+     * @param unit timeout unit
+     */
+    void waitForInit(long timeout, TimeUnit unit) throws InterruptedException;
+
+    /**
      * Deletes all suggester data for the {@code project}.
      * @param project name of the project to delete
      */
