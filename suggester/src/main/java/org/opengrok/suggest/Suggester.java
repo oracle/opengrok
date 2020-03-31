@@ -92,7 +92,7 @@ public final class Suggester implements Closeable {
 
     private boolean rebuilding;
     private final Lock rebuildLock = new ReentrantLock();
-    private final Condition initialRebuildDone = rebuildLock.newCondition();
+    private final Condition rebuildDone = rebuildLock.newCondition();
 
     // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
     private final ExecutorService executorService = Executors.newFixedThreadPool(
@@ -268,7 +268,7 @@ public final class Suggester implements Closeable {
         rebuildLock.lock();
         try {
             rebuilding = false;
-            initialRebuildDone.signalAll();
+            rebuildDone.signalAll();
         } finally {
             rebuildLock.unlock();
         }
@@ -279,7 +279,7 @@ public final class Suggester implements Closeable {
         rebuildLock.lock();
         try {
             while (rebuilding) {
-                initialRebuildDone.await(timeout, unit);
+                rebuildDone.await(timeout, unit);
             }
         } finally {
             rebuildLock.unlock();
