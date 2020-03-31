@@ -63,7 +63,7 @@ public interface SuggesterService {
     void rebuild(String project);
 
     /**
-     * Wait for the initial rebuild. For testing.
+     * Wait for rebuild. For testing.
      * @param timeout timeout to wait for
      * @param unit timeout unit
      */
