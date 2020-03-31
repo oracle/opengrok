@@ -32,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.opengrok.indexer.util.TestCasePrinterRule;
-import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -46,18 +45,15 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-import java.lang.reflect.Field;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
@@ -129,22 +125,10 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Before
-    public void before() {
-        await().atMost(15, TimeUnit.SECONDS).until(() ->
-                getSuggesterProjectDataSize() == env.getProjectList().size());
+    public void before() throws InterruptedException {
+        SuggesterServiceImpl.getInstance().waitForInit(15, TimeUnit.SECONDS);
 
         env.setSuggesterConfig(new SuggesterConfig());
-    }
-
-    private static int getSuggesterProjectDataSize() throws Exception {
-        Field f = SuggesterServiceImpl.class.getDeclaredField("suggester");
-        f.setAccessible(true);
-        Suggester suggester = (Suggester) f.get(SuggesterServiceImpl.getInstance());
-
-        Field f2 = Suggester.class.getDeclaredField("projectData");
-        f2.setAccessible(true);
-
-        return ((Map) f2.get(suggester)).size();
     }
 
     @Test

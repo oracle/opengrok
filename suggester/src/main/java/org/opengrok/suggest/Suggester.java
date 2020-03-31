@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -93,6 +94,8 @@ public final class Suggester implements Closeable {
     private boolean rebuilding;
     private final Lock rebuildLock = new ReentrantLock();
     private final Condition rebuildDone = rebuildLock.newCondition();
+
+    private final CountDownLatch initDone = new CountDownLatch(1);
 
     // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
     private final ExecutorService executorService = Executors.newFixedThreadPool(
@@ -166,7 +169,12 @@ public final class Suggester implements Closeable {
             }
 
             shutdownAndAwaitTermination(executor, start, "Suggester successfully initialized");
+            initDone.countDown();
         }
+    }
+
+    public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
+        initDone.await(timeout, unit);
     }
 
     private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir) {
