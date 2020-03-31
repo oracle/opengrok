@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 [[ "$TRAVIS_OS_NAME" == "windows" ]] || exit 1
 
 JDK="$1"
