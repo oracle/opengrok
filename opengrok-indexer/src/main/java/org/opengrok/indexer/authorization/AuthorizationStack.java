@@ -116,12 +116,10 @@ public class AuthorizationStack extends AuthorizationEntity {
 
     /**
      * Load all authorization entities in this stack.
-     *
      * <p>
-     * If the method is unable to load any of the entities contained in this
+     * <p>If the method is unable to load any of the entities contained in this
      * stack then this stack is marked as failed. Note that it does not affect
      * the authorization decision made by this stack.
-     * </p>
      *
      * @param parameters parameters given in the configuration
      *
@@ -286,13 +284,11 @@ public class AuthorizationStack extends AuthorizationEntity {
      * Set the plugin to all classes in this stack which requires this class in
      * the configuration. This creates a new instance of the plugin for each
      * class which needs it.
-     *
      * <p>
-     * This is where the loaded plugin classes get to be a part of the
+     * <p>This is where the loaded plugin classes get to be a part of the
      * authorization process. When the {@link AuthorizationPlugin} does not get
      * its {@link IAuthorizationPlugin} it is marked as failed and returns false
      * to all authorization decisions.
-     * </p>
      *
      * @param plugin the new instance of a plugin
      * @return true if there is such case; false otherwise

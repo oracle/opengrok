@@ -186,11 +186,9 @@ public abstract class PluginFramework<PluginType> {
     /**
      * Load a class into JVM with custom class loader. Call a non-parametric
      * constructor to create a new instance of that class.
-     *
      * <p>
-     * The classes implementing/extending the {@code PluginType} type are
+     * <p>The classes implementing/extending the {@code PluginType} type are
      * returned and initialized with a call to a non-parametric constructor.
-     * </p>
      *
      * @param classname the full name of the class to load
      * @return the class implementing/extending the {@code PluginType} class
@@ -345,9 +343,8 @@ public abstract class PluginFramework<PluginType> {
 
     /**
      * Calling this function forces the framework to reload the plugins.
-     *
      * <p>
-     * Plugins are taken from the pluginDirectory.</p>
+     * <p>Plugins are taken from the pluginDirectory.
      */
     public final void reload() {
         if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {

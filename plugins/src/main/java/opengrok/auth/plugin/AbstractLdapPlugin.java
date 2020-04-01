@@ -37,7 +37,7 @@ import org.opengrok.indexer.configuration.Project;
 
 /**
  * Abstract class for all plug-ins working with LDAP. Takes care of
- * <ul>
+ * <p><ul>
  * <li>controlling the established session</li>
  * <li>controlling if the session belongs to the user</li>
  * </ul>
@@ -46,7 +46,6 @@ import org.opengrok.indexer.configuration.Project;
  * The intended methods to implement are the
  * {@link #checkEntity(HttpServletRequest, Project)} and
  * {@link #checkEntity(HttpServletRequest, Group)}.
- * </p>
  *
  * @author Krystof Tulinger
  */
