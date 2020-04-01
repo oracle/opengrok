@@ -91,7 +91,7 @@ public final class Suggester implements Closeable {
 
     private final int rebuildParallelismLevel;
 
-    private boolean rebuilding;
+    private volatile boolean rebuilding;
     private final Lock rebuildLock = new ReentrantLock();
     private final Condition rebuildDone = rebuildLock.newCondition();
 
