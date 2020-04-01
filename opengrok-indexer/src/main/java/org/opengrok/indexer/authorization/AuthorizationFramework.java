@@ -268,18 +268,18 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
 
     /**
      * Add a plug-in into the plug-in array.
-     *
-     * <h3>Configured plugin</h3>
-     * For plug-in that has an entry in configuration, the new plug-in is put
-     * in the place respecting the user-defined order of execution.
-     *
-     * <h3>New plugin</h3>
-     * If there is no entry in configuration for this class, the plugin is
-     * appended to the end of the plugin stack with flag <code>flag</code>
-     *
-     * <p><b>The plug-in's load method is NOT invoked at this point</b></p>
      * <p>
-     * This has the same effect as invoking
+     * <p>Configured plugin:
+     * <p>For plug-in that has an entry in configuration, the new plug-in is put
+     * in the place respecting the user-defined order of execution.
+     * <p>
+     * <p>New plugin:
+     * <p>If there is no entry in configuration for this class, the plugin is
+     * appended to the end of the plugin stack with flag <code>flag</code>
+     * <p>
+     * <p><b>The plug-in's load method is NOT invoked at this point</b>
+     * <p>
+     * <p>This has the same effect as invoking
      * {@code addPlugin(new AuthorizationEntity(stack, flag,
      * getClassName(plugin), plugin)}.
      *
@@ -358,17 +358,14 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
 
     /**
      * Calling this function forces the framework to reload its stack.
-     *
      * <p>
-     * Plugins are taken from the pluginDirectory.</p>
-     *
+     * <p>Plugins are taken from the pluginDirectory.
      * <p>
-     * Old instances in stack are removed and new list of stack is constructed.
-     * Unload and load event is fired on each plugin.</p>
-     *
+     * <p>Old instances in stack are removed and new list of stack is constructed.
+     * Unload and load event is fired on each plugin.
      * <p>
-     * This method is thread safe with respect to the currently running
-     * authorization checks.</p>
+     * <p>This method is thread safe with respect to the currently running
+     * authorization checks.
      *
      * @see IAuthorizationPlugin#load(java.util.Map)
      * @see IAuthorizationPlugin#unload()
@@ -453,43 +450,40 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
     /**
      * Checks if the request should have an access to a resource. This method is
      * thread safe with respect to the concurrent reload of plugins.
-     *
      * <p>
-     * Internally performed with a predicate. Using cache in request
-     * attributes.</p>
-     *
-     * <h3>Order of plugin invocation</h3>
-     *
+     * <p>Internally performed with a predicate. Using cache in request
+     * attributes.
+     * <p>
+     * <p>Order of plugin invocation:
      * <p>
      * The order of plugin invocation is given by the stack and appropriate
      * actions are taken when traversing the stack with set of keywords,
-     * such as:</p>
-     *
-     * <h4>required</h4>
+     * such as:
+     * <p>
+     * <p>required:
      * Failure of such a plugin will ultimately lead to the authorization
      * framework returning failure but only after the remaining plugins have
      * been invoked.
-     *
-     * <h4>requisite</h4>
+     * <p>
+     * <p>requisite:
      * Like required, however, in the case that such a plugin returns a failure,
      * control is directly returned to the application. The return value is that
      * associated with the first required or requisite plugin to fail.
-     *
-     * <h4>sufficient</h4>
-     * If such a plugin succeeds and no prior required plugin has failed the
+     * <p>
+     * <p>sufficient
+     * <p>If such a plugin succeeds and no prior required plugin has failed the
      * authorization framework returns success to the application immediately
      * without calling any further plugins in the stack. A failure of a
      * sufficient plugin is ignored and processing of the plugin list continues
      * unaffected.
-     *
+     * <p>
      * <p>
      * Loaded plugins which do not occur in the configuration are appended to
      * the list with "required" keyword. As of the nature of the class discovery
      * this means that the order of invocation of these plugins is rather
-     * random.</p>
-     *
+     * random.
      * <p>
-     * Plugins in the configuration which have not been loaded are skipped.</p>
+     * <p>Plugins in the configuration which have not been loaded are skipped.
      *
      * @param request           request object
      * @param cache             cache

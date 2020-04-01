@@ -272,11 +272,9 @@ public class JFlexXrefTest {
     }
 
     /**
-     * <p>
      * Test the handling of #include in C and C++. In particular, these issues
      * are tested:
-     * </p>
-     *
+     * <p>
      * <ul>
      *
      * <li>

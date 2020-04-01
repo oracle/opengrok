@@ -430,7 +430,7 @@ public final class PageConfig {
      *
      * <p>
      * For the root directory (/xref/) an authorization is performed for each
-     * project in case that projects are used.</p>
+     * project in case that projects are used.
      *
      * @see #getResourceFile()
      * @see #isDir()
@@ -1748,7 +1748,7 @@ public final class PageConfig {
      * <p>
      * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
-     * </p>
+     *
      * <ul>
      * <li>the source file modification</li>
      * <li>project messages</li>
@@ -1758,7 +1758,7 @@ public final class PageConfig {
      *
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
-     * </p>
+     *
      *
      * @param request the http request containing the headers
      * @param response the http response for setting the headers
