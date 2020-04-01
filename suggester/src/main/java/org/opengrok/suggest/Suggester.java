@@ -173,6 +173,12 @@ public final class Suggester implements Closeable {
         }
     }
 
+    /**
+     * wait for initialization to finish.
+     * @param timeout timeout value
+     * @param unit timeout unit
+     * @throws InterruptedException
+     */
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
         initDone.await(timeout, unit);
     }
@@ -249,7 +255,6 @@ public final class Suggester implements Closeable {
             return;
         }
 
-        // for testing
         rebuildLock.lock();
         rebuilding = true;
         rebuildLock.unlock();
@@ -272,7 +277,6 @@ public final class Suggester implements Closeable {
             shutdownAndAwaitTermination(executor, start, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
 
-        // for testing
         rebuildLock.lock();
         try {
             rebuilding = false;
@@ -282,7 +286,12 @@ public final class Suggester implements Closeable {
         }
     }
 
-    // for testing
+    /**
+     * wait for rebuild to finish.
+     * @param timeout timeout value
+     * @param unit timeout unit
+     * @throws InterruptedException
+     */
     public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
         rebuildLock.lock();
         try {
