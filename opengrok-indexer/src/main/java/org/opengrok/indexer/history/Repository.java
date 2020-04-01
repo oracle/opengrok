@@ -124,15 +124,12 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * <p>
      * Get the history after a specified revision.
-     * </p>
-     *
      * <p>
-     * The default implementation first fetches the full history and then throws
+     * <p>The default implementation first fetches the full history and then throws
      * away the oldest revisions. This is not efficient, so subclasses should
      * override it in order to get good performance. Once every subclass has
      * implemented a more efficient method, the default implementation should be
      * removed and made abstract.
-     * </p>
      *
      * @param file the file to get the history for
      * @param sinceRevision the revision right before the first one to return,

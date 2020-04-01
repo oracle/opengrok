@@ -51,19 +51,15 @@ import javax.servlet.http.Part;
 import static org.opengrok.indexer.util.RandomString.generate;
 
 /**
- * <p>
  * An dummy implementation of {@code HttpServletRequest} in which most methods
  * simply throw an exception. Unit tests that need an instance of
  * {@code HttpServletRequest} can create sub-classes that implement those
  * methods needed by the test case.
- * </p>
- *
  * <p>
- * Some methods that would have similar implementations in all sub-classes,
+ * <p>Some methods that would have similar implementations in all sub-classes,
  * like set/get pairs, could be implemented here. Methods that would require
  * different implementations depending on the test, should rather just throw
  * an exception and let the tests override them.
- * </p>
  */
 public class DummyHttpServletRequest implements HttpServletRequest {
 
