@@ -62,7 +62,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     private static class Handler extends DefaultHandler2 {
 
         /**
-         * Example of the longest date format that we should except - SimpleDateFormat cannot cope with micro/nano seconds.
+         * Example of the longest date format that we should accept - SimpleDateFormat cannot cope with micro/nano seconds.
          */
         static final int SVN_MILLIS_DATE_LENGTH = "2020-03-26T15:38:55.999Z".length();
 
