@@ -87,10 +87,13 @@ public class FileHistoryCacheTest {
 
         cache = null;
 
-        // testStoreAndGetIncrementalTags() enables tags. In case any of its
-        // assertions fail, the tags will remain enabled which might affect
-        // the run of other tests so unset it after each test for a good measure.
+        // Various tests change the runtime environment settings.
+        // In case any assertions fail we should reset them to their defaults
+        // after each test for a good measure.
         RuntimeEnvironment.getInstance().setTagsEnabled(false);
+        RuntimeEnvironment.getInstance().setFetchHistoryWhenNotInCache(true);
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
+        RuntimeEnvironment.getInstance().setHistoryReaderTimeLimit(30);
     }
 
     /**
