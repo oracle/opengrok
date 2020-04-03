@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -30,11 +31,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -56,13 +61,20 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     private static class Handler extends DefaultHandler2 {
 
+        /**
+         * Example of the longest date format that we should accept - SimpleDateFormat cannot cope with micro/nano seconds.
+         */
+        static final int SVN_MILLIS_DATE_LENGTH = "2020-03-26T15:38:55.999Z".length();
+
         final String prefix;
         final String home;
         final int length;
-        final List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        final List<HistoryEntry> entries = new ArrayList<>();
+        final Set<String> renamedFiles = new HashSet<>();
         final SubversionRepository repository;
         HistoryEntry entry;
         StringBuilder sb;
+        boolean isRenamed;
 
         Handler(String home, String prefix, int length, SubversionRepository repository) {
             this.home = home;
@@ -72,12 +84,19 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             sb = new StringBuilder();
         }
 
+        List<String> getRenamedFiles() {
+            return new ArrayList<>(renamedFiles);
+        }
+
         @Override
         public void startElement(String uri, String localName, String qname, Attributes attr) {
+            isRenamed = false;
             if ("logentry".equals(qname)) {
                 entry = new HistoryEntry();
                 entry.setActive(true);
                 entry.setRevision(attr.getValue("revision"));
+            } else if ("path".equals(qname)) {
+                isRenamed = attr.getIndex("copyfrom-path") != -1;
             }
             sb.setLength(0);
         }
@@ -89,7 +108,13 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 entry.setAuthor(s);
             } else if ("date".equals(qname)) {
                 try {
-                    entry.setDate(repository.parse(s));
+                    // need to strip microseconds off - assume final character is Z otherwise invalid anyway.
+                    String dateString = s;
+                    if (s.length() > SVN_MILLIS_DATE_LENGTH) {
+                      dateString = dateString.substring(0, SVN_MILLIS_DATE_LENGTH - 1) +
+                          dateString.charAt(dateString.length() - 1);
+                    }
+                    entry.setDate(repository.parse(dateString));
                 } catch (ParseException ex) {
                     throw new SAXException("Failed to parse date: " + s, ex);
                 }
@@ -104,6 +129,9 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     // The same file names may be repeated in many commits,
                     // so intern them to reduce the memory footprint.
                     entry.addFile(path.intern());
+                    if (isRenamed) {
+                        renamedFiles.add(file.getAbsolutePath().substring(home.length() + 1));
+                    }
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);
                 }
@@ -177,7 +205,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             repos.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
-        return new History(entries);
+        return new History(entries, handler.getRenamedFiles());
     }
 
    /**
@@ -206,6 +234,6 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     History parse(String buffer) throws IOException {
         handler = new Handler("/", "", 0, new SubversionRepository());
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
-        return new History(handler.entries);
+        return new History(handler.entries, handler.getRenamedFiles());
     }
 }

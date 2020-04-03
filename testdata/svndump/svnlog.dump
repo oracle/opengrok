@@ -1,0 +1,321 @@
+SVN-fs-dump-format-version: 2
+
+UUID: de706905-c097-f545-8400-eb40395bc249
+
+Revision-number: 0
+Prop-content-length: 56
+Content-length: 56
+
+K 8
+svn:date
+V 27
+2020-03-28T07:16:27.776676Z
+PROPS-END
+
+Revision-number: 1
+Prop-content-length: 119
+Content-length: 119
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:17:54.756119Z
+K 7
+svn:log
+V 16
+Add initial file
+PROPS-END
+
+Node-path: TestFile.txt
+Node-kind: file
+Node-action: add
+Text-content-md5: 78138d2003f1a87043d65c692fb3a64b
+Text-content-sha1: 5675a5ef35ac3b16e22addbe9e4c2b1945a6ba18
+Prop-content-length: 10
+Text-content-length: 12
+Content-length: 22
+
+PROPS-END
+Some Content
+
+Revision-number: 2
+Prop-content-length: 114
+Content-length: 114
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:18:29.481583Z
+K 7
+svn:log
+V 11
+Rename file
+PROPS-END
+
+Node-path: TestFileRenamed.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 1
+Node-copyfrom-path: TestFile.txt
+Text-copy-source-md5: 78138d2003f1a87043d65c692fb3a64b
+Text-copy-source-sha1: 5675a5ef35ac3b16e22addbe9e4c2b1945a6ba18
+
+
+Node-path: TestFile.txt
+Node-action: delete
+
+
+Revision-number: 3
+Prop-content-length: 117
+Content-length: 117
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:19:03.145644Z
+K 7
+svn:log
+V 14
+Edited content
+PROPS-END
+
+Node-path: TestFileRenamed.txt
+Node-kind: file
+Node-action: change
+Text-content-md5: 4b8fde0252bfa76f42078118996020b3
+Text-content-sha1: acd6ade918c374d7868ef29783d0f8228364f848
+Text-content-length: 21
+Content-length: 21
+
+Some Content - edited
+
+Revision-number: 4
+Prop-content-length: 116
+Content-length: 116
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:19:37.224336Z
+K 7
+svn:log
+V 13
+add subfolder
+PROPS-END
+
+Node-path: subfolder
+Node-kind: dir
+Node-action: add
+Prop-content-length: 10
+Content-length: 10
+
+PROPS-END
+
+
+Revision-number: 5
+Prop-content-length: 138
+Content-length: 138
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:20:11.821405Z
+K 7
+svn:log
+V 35
+Moved file to subfolder and renamed
+PROPS-END
+
+Node-path: subfolder/TestFileRenamedAgain.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 4
+Node-copyfrom-path: TestFileRenamed.txt
+Text-copy-source-md5: 4b8fde0252bfa76f42078118996020b3
+Text-copy-source-sha1: acd6ade918c374d7868ef29783d0f8228364f848
+
+
+Node-path: TestFileRenamed.txt
+Node-action: delete
+
+
+Revision-number: 6
+Prop-content-length: 113
+Content-length: 113
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:21:05.888223Z
+K 7
+svn:log
+V 10
+Add file A
+PROPS-END
+
+Node-path: FileA.txt
+Node-kind: file
+Node-action: add
+Text-content-md5: d85d9f78a152a4db01396c3dd1afa7dc
+Text-content-sha1: 155241c0d64bb4710b46a739f49f1520c19a50c9
+Prop-content-length: 10
+Text-content-length: 15
+Content-length: 25
+
+PROPS-END
+text for file A
+
+Revision-number: 7
+Prop-content-length: 115
+Content-length: 115
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:21:55.273509Z
+K 7
+svn:log
+V 12
+Amend file A
+PROPS-END
+
+Node-path: FileA.txt
+Node-kind: file
+Node-action: change
+Text-content-md5: 8bf0e77df51562482c65232a08dabd20
+Text-content-sha1: 388636c026d85252264c378155befed8d3d928c8
+Text-content-length: 45
+Content-length: 45
+
+text for file A - add some more content to it
+
+Revision-number: 8
+Prop-content-length: 113
+Content-length: 113
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:22:42.227441Z
+K 7
+svn:log
+V 10
+Add file B
+PROPS-END
+
+Node-path: FileB.txt
+Node-kind: file
+Node-action: add
+Text-content-md5: 83cc576ac209c3f3eb905c6726932058
+Text-content-sha1: fe023074a52fff7d1985c94343790e7ef213cc4d
+Prop-content-length: 10
+Text-content-length: 21
+Content-length: 31
+
+PROPS-END
+My content goes here.
+
+Revision-number: 9
+Prop-content-length: 126
+Content-length: 126
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:23:35.831161Z
+K 7
+svn:log
+V 23
+Amend content of file B
+PROPS-END
+
+Node-path: FileB.txt
+Node-kind: file
+Node-action: change
+Text-content-md5: 3272a8e4cdbbb8442f6f16a42ae30947
+Text-content-sha1: cf1d0a10642dab109f9770b96d4abf7d4429fd7b
+Text-content-length: 53
+Content-length: 53
+
+My content goes here. Additional content in the file.
+
+Revision-number: 10
+Prop-content-length: 162
+Content-length: 162
+
+K 10
+svn:author
+V 8
+RichardH
+K 8
+svn:date
+V 27
+2020-03-28T07:24:43.921651Z
+K 7
+svn:log
+V 59
+Rename FileA to FileZ and FileB to FileX in a single commit
+PROPS-END
+
+Node-path: FileX.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 9
+Node-copyfrom-path: FileB.txt
+Text-copy-source-md5: 3272a8e4cdbbb8442f6f16a42ae30947
+Text-copy-source-sha1: cf1d0a10642dab109f9770b96d4abf7d4429fd7b
+
+
+Node-path: FileZ.txt
+Node-kind: file
+Node-action: add
+Node-copyfrom-rev: 9
+Node-copyfrom-path: FileA.txt
+Text-copy-source-md5: 8bf0e77df51562482c65232a08dabd20
+Text-copy-source-sha1: 388636c026d85252264c378155befed8d3d928c8
+
+
+Node-path: FileA.txt
+Node-action: delete
+
+
+Node-path: FileB.txt
+Node-action: delete
+
+

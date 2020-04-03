@@ -30,6 +30,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <property name="test.repositories" value="../testdata/repositories"/>
     <property name="test.sources" value="../testdata/sources"/>
+    <property name="test.svndump" value="../testdata/svndump"/>
     <property name="test.plugins" value="../testdata/plugins"/>
     <property name="test.cvs" value="${test.repositories}/cvs_test"/>
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
@@ -39,6 +40,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
+    <property name="test.svn2" value="${test.repositories}/subversion"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
     <property name="build.test.reposroots" value="target/reposroot"/>
@@ -122,6 +124,10 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
         <map from="" to="file:///"/>
         <path location="${build.test.reposroots}/svn"/>
       </pathconvert>
+      <pathconvert property="test.svn.url2">
+        <map from="" to="file:///"/>
+        <path location="${build.test.reposroots}/svn2"/>
+      </pathconvert>
 
       <exec executable="svn" failifexecutionfails="false">
         <arg value="import"/>
@@ -134,6 +140,22 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
         <arg value="checkout"/>
         <arg value="${test.svn.url}"/>
         <arg value="${test.svn}"/>
+      </exec>
+
+      <exec executable="svnadmin" failifexecutionfails="true">
+        <arg value="create"/>
+        <arg value="${build.test.reposroots}/svn2"/>
+      </exec>
+    	
+      <exec executable="svnadmin" input="${test.svndump}/svnlog.dump" failifexecutionfails="true">
+        <arg value="load"/>
+        <arg value="${build.test.reposroots}/svn2"/>
+      </exec>
+    
+      <exec executable="svn" failifexecutionfails="false">
+        <arg value="checkout"/>
+        <arg value="${test.svn.url2}"/>
+        <arg value="${test.svn2}"/>
       </exec>
     </target>
     
@@ -158,13 +180,14 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!-- clean up generated test repositories -->
-    <target name="-delete-generated-repository-files">
+    <target name="-delete-generated-repository-files"> 
       <delete dir="${test.bk}/.bk"/>
       <delete dir="${test.bzr}/.bzr"/>
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.git}/.git"/>
       <delete dir="${test.svn}"/>
+      <delete dir="${test.svn2}"/>
       <delete dir="${test.razor}"/>
       <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>

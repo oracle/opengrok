@@ -19,11 +19,12 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>. 
  */
 package org.opengrok.indexer.history;
 
-import java.text.DateFormat;
 import java.text.ParseException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,6 +45,7 @@ public class SubversionRepositoryTest {
             {"2016-01-01T00:70:00Z", null}, // lenient - wrong minute
             {"2016-01-01T00:00:99Z", null}, // lenient - wrong second
             {"2016-03-40T00:00:00Z", null}, // lenient - wrong day
+            {"2016-01-01T10:00:00.200999Z", null},
             {"2016-01-01T10:00:00.200Z", null},
             {"2016-01-01T11:00:00.200Z", null},
             {"2016-01-01T10:00:00.Z", null},
