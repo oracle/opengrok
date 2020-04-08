@@ -53,7 +53,7 @@ import org.opengrok.indexer.util.Executor;
 class PerforceHistoryParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(PerforceHistoryParser.class);
 
-    private static final Pattern FILENAME_PATTERN = Pattern.compile("//[^/]+/(.+)");
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("^//[^/]+/(.+)");
 
     private static final String PAT_P4_DATE_TIME_BY =
             "on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)";
@@ -122,7 +122,7 @@ class PerforceHistoryParser {
         cmd.clear();
         cmd.add(repo.RepoCommand);
         cmd.add("filelog");
-        cmd.add("-ti");
+        cmd.add("-sti");
         cmd.add(directorySpec);
         executor = new Executor(cmd, file);
         executor.exec();
@@ -141,7 +141,7 @@ class PerforceHistoryParser {
         ArrayList<String> cmd = new ArrayList<>();
         cmd.add(repo.RepoCommand);
         cmd.add("filelog");
-        cmd.add("-lti");
+        cmd.add("-slti");
         cmd.add(protectPerforceFilename(file.getName()) + asRevisionSuffix(sinceRevision));
 
         Executor executor = new Executor(cmd, file.getParentFile());
