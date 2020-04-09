@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -51,7 +51,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.7"
+__version__ = "0.8"
 
 
 def worker(base):
@@ -64,6 +64,52 @@ def worker(base):
     base.fill(x.retcodes, x.outputs, x.failed)
 
     return base
+
+
+def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
+            logger, uri):
+
+    if args.projects:
+        dirs_to_process = args.projects
+        logger.debug("Processing directories: {}".
+                     format(dirs_to_process))
+    elif args.indexed:
+        indexed_projects = list_indexed_projects(logger, uri)
+        logger.debug("Processing indexed projects: {}".
+                     format(indexed_projects))
+
+        if indexed_projects:
+            for line in indexed_projects:
+                dirs_to_process.append(line.strip())
+        else:
+            logger.error("cannot get list of projects")
+            sys.exit(FAILURE_EXITVAL)
+    else:
+        logger.debug("Processing directory {}".format(directory))
+        for entry in os.listdir(directory):
+            if path.isdir(path.join(directory, entry)):
+                dirs_to_process.append(entry)
+    logger.debug("to process: {}".format(dirs_to_process))
+    cmds_base = []
+    for d in dirs_to_process:
+        cmd_base = CommandSequenceBase(d, commands, args.loglevel,
+                                       config.get("cleanup"),
+                                       args.driveon)
+        cmds_base.append(cmd_base)
+    # Map the commands into pool of workers so they can be processed.
+    with Pool(processes=int(args.workers)) as pool:
+        try:
+            cmds_base_results = pool.map(worker, cmds_base, 1)
+        except KeyboardInterrupt:
+            sys.exit(FAILURE_EXITVAL)
+        else:
+            for cmds_base in cmds_base_results:
+                logger.debug("Checking results of project {}".
+                             format(cmds_base))
+                cmds = CommandSequence(cmds_base)
+                cmds.fill(cmds_base.retcodes, cmds_base.outputs,
+                          cmds_base.failed)
+                cmds.check(ignore_errors)
 
 
 def main():
@@ -95,6 +141,10 @@ def main():
     parser.add_argument('-f', '--driveon', action='store_true', default=False,
                         help='continue command sequence processing even '
                         'if one of the commands requests break')
+    parser.add_argument('--nolock', action='store_false', default=True,
+                        help='do not acquire lock that prevents multiple '
+                        'instances from running')
+
     try:
         args = parser.parse_args()
     except ValueError as e:
@@ -151,57 +201,19 @@ def main():
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
-    lock = FileLock(os.path.join(tempfile.gettempdir(),
-                                 "opengrok-sync.lock"))
-    try:
-        with lock.acquire(timeout=0):
-            if args.projects:
-                dirs_to_process = args.projects
-                logger.debug("Processing directories: {}".
-                             format(dirs_to_process))
-            elif args.indexed:
-                indexed_projects = list_indexed_projects(logger, uri)
-                logger.debug("Processing indexed projects: {}".
-                             format(indexed_projects))
-
-                if indexed_projects:
-                    for line in indexed_projects:
-                        dirs_to_process.append(line.strip())
-                else:
-                    logger.error("cannot get list of projects")
-                    sys.exit(FAILURE_EXITVAL)
-            else:
-                logger.debug("Processing directory {}".format(directory))
-                for entry in os.listdir(directory):
-                    if path.isdir(path.join(directory, entry)):
-                        dirs_to_process.append(entry)
-
-            logger.debug("to process: {}".format(dirs_to_process))
-
-            cmds_base = []
-            for d in dirs_to_process:
-                cmd_base = CommandSequenceBase(d, commands, args.loglevel,
-                                               config.get("cleanup"),
-                                               args.driveon)
-                cmds_base.append(cmd_base)
-
-            # Map the commands into pool of workers so they can be processed.
-            with Pool(processes=int(args.workers)) as pool:
-                try:
-                    cmds_base_results = pool.map(worker, cmds_base, 1)
-                except KeyboardInterrupt:
-                    sys.exit(FAILURE_EXITVAL)
-                else:
-                    for cmds_base in cmds_base_results:
-                        logger.debug("Checking results of project {}".
-                                     format(cmds_base))
-                        cmds = CommandSequence(cmds_base)
-                        cmds.fill(cmds_base.retcodes, cmds_base.outputs,
-                                  cmds_base.failed)
-                        cmds.check(ignore_errors)
-    except Timeout:
-        logger.warning("Already running, exiting.")
-        sys.exit(FAILURE_EXITVAL)
+    if args.nolock:
+        do_sync(args, commands, config, directory, dirs_to_process,
+                ignore_errors, logger, uri)
+    else:
+        lock = FileLock(os.path.join(tempfile.gettempdir(),
+                                     "opengrok-sync.lock"))
+        try:
+            with lock.acquire(timeout=0):
+                do_sync(args, commands, config, directory, dirs_to_process,
+                        ignore_errors, logger, uri)
+        except Timeout:
+            logger.warning("Already running, exiting.")
+            sys.exit(FAILURE_EXITVAL)
 
 
 if __name__ == '__main__':
