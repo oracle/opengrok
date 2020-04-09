@@ -21,6 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020, Chris Quick <gtoph00@gmail.com>.
  */
 
 package org.opengrok.indexer.history;
