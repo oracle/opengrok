@@ -1,0 +1,244 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
+ */
+
+<HERE> {
+    ^ {Identifier} / {MaybeWhsp}{EOL}    {
+        chkLOC();
+        maybeHereEnd(yytext());
+    }
+}
+
+<HEREin> {
+    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}    {
+        chkLOC();
+        maybeHereEnd(yytext());
+    }
+}
+
+<YYINITIAL> {
+    "<<" "-"? {MaybeWhsp} {Identifier}    {
+        chkLOC();
+        hereOp(yytext());
+    }
+
+    {Identifier}    {
+        chkLOC();
+        if (offerSymbol(yytext(), 0, true)) {
+            yypush(POST_IDENTIFIER);
+            if (returnOnSymbol()) {
+                return yystate();
+            }
+        }
+    }
+
+    {Numeric_literal}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar + yylength());
+    }
+
+    \"    {
+        chkLOC();
+        yypush(QUOTED);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "#" | "//"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "/*"    {
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+
+    [\{\}]    {
+        chkLOC();
+        String capture = yytext();
+        if (!maybeInterpolationEnd(capture)) {
+            offer(capture);
+        }
+    }
+}
+
+<QUOTED, STRING, HERE, HEREin> {
+    \\\\    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+<QUOTED, STRING> {
+    \\\"    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        offer(yytext());
+        yypop();
+        onDisjointSpanChanged(null, yychar + yylength());
+    }
+}
+
+<QUOTED, HERE, HEREin> {
+    /*
+     * Handle the escaping of interpolation and directive introductions as just
+     * regular quoted expression.
+     */
+    ("$$" | "%%") "{"    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    // Interpolation or directive introduction
+    [$%] "{"    {
+        chkLOC();
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypush(YYINITIAL);
+        pushData();
+        interpOp();
+    }
+}
+
+<QUOTED, STRING, HERE, HEREin> {
+    /*
+     * For HCL quoted template expressions or string literals, "literal newline
+     * sequences are not permitted," but we'll handle anyway to avoid a possible
+     * JFlex "Error: could not match input" if a user accidentally violated
+     * HCL syntax.
+     */
+
+    {MaybeWhsp}{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<COMMENT> {
+    {MaybeWhsp}{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    }
+
+    "*/"    {
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
+        yypop();
+    }
+}
+
+<SCOMMENT> {
+    {MaybeWhsp}{EOL}    {
+        yypushback(yylength());
+        yypop();
+        onDisjointSpanChanged(null, yychar);
+    }
+}
+
+<YYINITIAL, POST_IDENTIFIER> {
+    {MaybeWhsp}{EOL}    {
+        if (maybeHereStart()) {
+            yypushback(yylength());
+        } else {
+            onEndOfLineMatched(yytext(), yychar);
+        }
+    }
+}
+
+<POST_IDENTIFIER> {
+    \"    {
+        chkLOC();
+        yypop(); // Pop out of POST_IDENTIFIER first.
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+}
+
+<YYINITIAL, POST_IDENTIFIER, COMMENT, SCOMMENT, QUOTED, STRING, HERE, HEREin> {
+    // Only one whitespace char at a time.
+    {WhspChar} | [[\s]--[\n\r]]    {
+        offer(yytext());
+    }
+}
+
+<POST_IDENTIFIER> {
+    // Any other character after handling above causes POST_IDENTIFIER to end.
+    [^]    {
+        yypushback(yylength());
+        yypop();
+    }
+}
+
+<YYINITIAL, COMMENT, SCOMMENT, QUOTED, STRING, HERE, HEREin> {
+    // Only one char at a time.
+    [^\n\r]    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+// "string links" and "comment links"
+<COMMENT, SCOMMENT, QUOTED, STRING, HERE, HEREin> {
+    {FPath}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onPathlikeMatched(yytext(), '/', false, yychar);
+        }
+    }
+
+    {File}    {
+        chkLOC();
+        if (takeAllContent()) {
+            String path = yytext();
+            onFilelikeMatched(path, yychar);
+        }
+    }
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
+        if (takeAllContent()) {
+            onEmailAddressMatched(yytext(), yychar);
+        }
+    }
+}
+
+<COMMENT, SCOMMENT, QUOTED, STRING, HERE, HEREin> {
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar, null);
+        }
+    }
+}

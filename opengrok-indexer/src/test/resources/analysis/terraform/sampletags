@@ -1,0 +1,17 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/30cd8e03/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_PATTERN_LENGTH_LIMIT	180	/0 for no limit/
+azurerm_resource_group.myresourcegroup	grok.tf	/^resource "azurerm_resource_group" "myresourcegroup" {$/;"	struct	line:24
+azurerm_virtual_network.vnet	grok.tf	/^resource "azurerm_virtual_network" "vnet" {$/;"	struct	line:29
+azurerm_subnet.subnet	grok.tf	/^resource "azurerm_subnet" "subnet" {$/;"	struct	line:36
+azurerm_network_security_group.catapp-sg	grok.tf	/^resource "azurerm_network_security_group" "catapp-sg" {$/;"	struct	line:43
+azurerm_network_interface.catapp-nic	grok.tf	/^resource "azurerm_network_interface" "catapp-nic" {$/;"	struct	line:85
+azurerm_public_ip.catapp-pip	grok.tf	/^resource "azurerm_public_ip" "catapp-pip" {$/;"	struct	line:99
+azurerm_virtual_machine.catapp	grok.tf	/^resource "azurerm_virtual_machine" "catapp" {$/;"	struct	line:107
+null_resource.configure-cat-app	grok.tf	/^resource "null_resource" "configure-cat-app" {$/;"	struct	line:153
