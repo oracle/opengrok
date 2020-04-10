@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -185,22 +185,15 @@ public class Ctags implements Resettable {
         //on Solaris regexp.h used is different than on linux (gnu regexp)
         //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
         addScalaSupport(command);
-
         addHaskellSupport(command);
-
         //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
         addClojureSupport(command);
-
         addKotlinSupport(command);
-
         addSwiftSupport(command);
-
         addRustSupport(command);
-
         addPascalSupport(command);
-
         addPowerShellSupport(command);
-
+        addTerraformSupport(command);
         //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
         if (langMap == null) {
@@ -399,6 +392,30 @@ public class Ctags implements Resettable {
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
         command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
+    }
+
+    private void addTerraformSupport(List<String> command) {
+        if (!env.getCtagsLanguages().contains("Terraform")) { // Built-in would be capitalized.
+            command.add("--langdef=terraform"); // Lower-case if user-defined.
+        }
+
+        /*
+         * Ignore Terraform single-line comments with short-form (only two
+         * separators following the pattern), exclusive matches.
+         */
+        command.add("--regex-terraform=,^[[:space:]]*#,,{exclusive}");
+        command.add("--regex-terraform=,^[[:space:]]*//,,{exclusive}");
+
+        /*
+         * Terraform "resource block declares a resource of a given type ...
+         * with a given local name...." Unfortunately there is no Posix
+         * equivalent of {Identifier} from HCL.lexh, so we must approximate with
+         * the possibility of leaving out some matches.
+         */
+        command.add("--regex-terraform=" +
+                "/[[:<:]]resource[[:space:]]*\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*" +
+                "\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*\\{/" +
+                "\\1.\\2/s,struct,resource names/");
     }
 
     /**

@@ -1,0 +1,91 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ */
+
+<YYINITIAL> {
+
+    "var." {Identifier}    {
+        chkLOC();
+        String capture = yytext();
+        String id = capture.substring("var.".length());
+        offerKeyword("var");
+        offer(".");
+        // Push back the ID, and let the {Identifier} handling take over.
+        yypushback(id.length());
+    }
+
+    "local." {Identifier}    {
+        chkLOC();
+        String capture = yytext();
+        String id = capture.substring("local.".length());
+        offerKeyword("local");
+        offer(".");
+        // Push back the ID, and let the {Identifier} handling take over.
+        yypushback(id.length());
+    }
+
+    "module." {Identifier}    {
+        chkLOC();
+        String capture = yytext();
+        String id = capture.substring("module.".length());
+        offerKeyword("module");
+        offer(".");
+        // Push back the ID, and let the {Identifier} handling take over.
+        yypushback(id.length());
+    }
+
+    "data." {Identifier}    {
+        chkLOC();
+        String capture = yytext();
+        String id = capture.substring("data.".length());
+        offerKeyword("data");
+        offer(".");
+        // Push back the ID, and let the {Identifier} handling take over.
+        yypushback(id.length());
+    }
+
+    "path." {Identifier}    {
+        chkLOC();
+        String capture = yytext();
+        String id = capture.substring("path.".length());
+        if (Consts.PATH_KEYWORDS.contains(id)) {
+            offerKeyword("path");
+            offer(".");
+            offerKeyword(id);
+        } else {
+            yypushback(yylength() - "path".length());
+            if (offerSymbol("path", 0, true)) {
+                yypush(POST_IDENTIFIER);
+                if (returnOnSymbol()) {
+                    return yystate();
+                }
+            }
+        }
+    }
+
+    "terraform.workspace"    {
+        chkLOC();
+        offerKeyword("terraform");
+        offer(".");
+        offerKeyword("workspace");
+    }
+}

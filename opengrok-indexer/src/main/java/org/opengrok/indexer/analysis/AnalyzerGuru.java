@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -80,6 +79,7 @@ import org.opengrok.indexer.analysis.executables.JavaClassAnalyzerFactory;
 import org.opengrok.indexer.analysis.fortran.FortranAnalyzerFactory;
 import org.opengrok.indexer.analysis.golang.GolangAnalyzerFactory;
 import org.opengrok.indexer.analysis.haskell.HaskellAnalyzerFactory;
+import org.opengrok.indexer.analysis.hcl.HCLAnalyzerFactory;
 import org.opengrok.indexer.analysis.java.JavaAnalyzerFactory;
 import org.opengrok.indexer.analysis.javascript.JavaScriptAnalyzerFactory;
 import org.opengrok.indexer.analysis.json.JsonAnalyzerFactory;
@@ -101,6 +101,7 @@ import org.opengrok.indexer.analysis.sql.PLSQLAnalyzerFactory;
 import org.opengrok.indexer.analysis.sql.SQLAnalyzerFactory;
 import org.opengrok.indexer.analysis.swift.SwiftAnalyzerFactory;
 import org.opengrok.indexer.analysis.tcl.TclAnalyzerFactory;
+import org.opengrok.indexer.analysis.terraform.TerraformAnalyzerFactory;
 import org.opengrok.indexer.analysis.typescript.TypeScriptAnalyzerFactory;
 import org.opengrok.indexer.analysis.uue.UuencodeAnalyzerFactory;
 import org.opengrok.indexer.analysis.vb.VBAnalyzerFactory;
@@ -221,8 +222,6 @@ public class AnalyzerGuru {
      */
     private static final List<String> analysisPkgNames = new ArrayList<>();
 
-    public static final Reader dummyR = new StringReader("");
-    public static final String dummyS = "";
     public static final FieldType string_ft_stored_nanalyzed_norms = new FieldType(StringField.TYPE_STORED);
     public static final FieldType string_ft_nstored_nanalyzed_norms = new FieldType(StringField.TYPE_NOT_STORED);
 
@@ -300,7 +299,9 @@ public class AnalyzerGuru {
                 new EiffelAnalyzerFactory(),
                 new VerilogAnalyzerFactory(),
                 new TypeScriptAnalyzerFactory(),
-                new AsmAnalyzerFactory()
+                new AsmAnalyzerFactory(),
+                new HCLAnalyzerFactory(),
+                new TerraformAnalyzerFactory()
             };
 
             for (AnalyzerFactory analyzer : analyzers) {
@@ -334,7 +335,7 @@ public class AnalyzerGuru {
      * {@link FileAnalyzerFactory} subclasses are revised to target more or
      * different files.
      * @return a value whose lower 32-bits are a static value
-     * 20191120_00
+     * 20200410_00
      * for the current implementation and whose higher-32 bits are non-zero if
      * {@link #addExtension(java.lang.String, AnalyzerFactory)}
      * or
@@ -342,7 +343,7 @@ public class AnalyzerGuru {
      * has been called.
      */
     public static long getVersionNo() {
-        final int ver32 = 20191120_00; // Edit comment above too!
+        final int ver32 = 20200410_00; // Edit comment above too!
         long ver = ver32;
         if (customizationHashCode != 0) {
             ver |= (long) customizationHashCode << 32;
@@ -634,26 +635,6 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get the content type for a named file.
-     *
-     * @param in The input stream we want to get the content type for (if we
-     * cannot determine the content type by the filename)
-     * @param file The name of the file
-     * @return The contentType suitable for printing to
-     * response.setContentType() or null if the factory was not found
-     * @throws java.io.IOException If an error occurs while accessing the input
-     * stream.
-     */
-    public static String getContentType(InputStream in, String file) throws IOException {
-        AnalyzerFactory factory = find(in, file);
-        String type = null;
-        if (factory != null) {
-            type = factory.getContentType();
-        }
-        return type;
-    }
-
-    /**
      * Write a browse-able version of the file.
      *
      * @param factory The analyzer factory for this file type
@@ -780,7 +761,7 @@ public class AnalyzerGuru {
     public static AnalyzerFactory findFactory(String factoryClassName)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, 
             InvocationTargetException {
-        Class<?> fcn = null;
+        Class<?> fcn;
         try {
             fcn = Class.forName(factoryClassName);
             
@@ -1031,9 +1012,7 @@ public class AnalyzerGuru {
         return null;
     }
 
-    private static AnalyzerFactory findMagicString(String opening,
-        String file)
-            throws IOException {
+    private static AnalyzerFactory findMagicString(String opening, String file) {
 
         // first, try to look up two words in magics
         String fragment = getWords(opening, 2);
@@ -1207,6 +1186,6 @@ public class AnalyzerGuru {
         if (a_name == null && b_name == null) {
             return false;
         }
-        return a_name == null || b_name == null || !a_name.equals(b_name);
+        return a_name == null || !a_name.equals(b_name);
     }
 }

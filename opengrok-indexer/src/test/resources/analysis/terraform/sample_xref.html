@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
+<script type="text/javascript">/* <![CDATA[ */
+function get_sym_list(){return [["Struct","xs",[["azurerm_network_interface.catapp-nic",85],["azurerm_network_security_group.catapp-sg",43],["azurerm_public_ip.catapp-pip",99],["azurerm_resource_group.myresourcegroup",24],["azurerm_subnet.subnet",36],["azurerm_virtual_machine.catapp",107],["azurerm_virtual_network.vnet",29],["null_resource.configure-cat-app",153]]]];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><span class="c">/*</span>
+<a class="l" name="2" href="#2">2</a><span class="c"> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<a class="l" name="3" href="#3">3</a><span class="c"> * you may not use this file except in compliance with the License.</span>
+<a class="l" name="4" href="#4">4</a><span class="c"> * You may obtain a copy of the License at</span>
+<a class="l" name="5" href="#5">5</a><span class="c"> *</span>
+<a class="l" name="6" href="#6">6</a><span class="c"> *     <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></span>
+<a class="l" name="7" href="#7">7</a><span class="c"> *</span>
+<a class="l" name="8" href="#8">8</a><span class="c"> * Unless required by applicable law or agreed to in writing, software</span>
+<a class="l" name="9" href="#9">9</a><span class="c"> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<a class="hl" name="10" href="#10">10</a><span class="c"> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<a class="l" name="11" href="#11">11</a><span class="c"> * See the License for the specific language governing permissions and</span>
+<a class="l" name="12" href="#12">12</a><span class="c"> * limitations under the License.</span>
+<a class="l" name="13" href="#13">13</a><span class="c"> */</span>
+<a class="l" name="14" href="#14">14</a>
+<a class="l" name="15" href="#15">15</a><span class="c">/*</span>
+<a class="l" name="16" href="#16">16</a><span class="c"> * This is derived from Hashicat main.tf just for testing OpenGrok&apos;s Terraform</span>
+<a class="l" name="17" href="#17">17</a><span class="c"> * handling and modified arbitrarily to test other Terraform or HCL syntax.</span>
+<a class="l" name="18" href="#18">18</a><span class="c"> */</span>
+<a class="l" name="19" href="#19">19</a>
+<a class="hl" name="20" href="#20">20</a><a href="/source/s?defs=provider" class="intelliWindow-symbol" data-definition-place="undefined-in-file">provider</a> <span class="s">&quot;azurerm&quot;</span> {
+<a class="l" name="21" href="#21">21</a>  <a href="/source/s?defs=version" class="intelliWindow-symbol" data-definition-place="undefined-in-file">version</a> = <span class="s">&quot;=1.44.0&quot;</span>
+<a class="l" name="22" href="#22">22</a>}
+<a class="l" name="23" href="#23">23</a>
+<a class="l" name="24" href="#24">24</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_resource_group&quot;</span> <span class="s">&quot;myresourcegroup&quot;</span> {
+<a class="l" name="25" href="#25">25</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>     = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-workshop&quot;</span>
+<a class="l" name="26" href="#26">26</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a> = <b>var</b>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="l" name="27" href="#27">27</a>}
+<a class="l" name="28" href="#28">28</a>
+<a class="l" name="29" href="#29">29</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_virtual_network&quot;</span> <span class="s">&quot;vnet&quot;</span> {
+<a class="hl" name="30" href="#30">30</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-vnet&quot;</span>
+<a class="l" name="31" href="#31">31</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>            = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="l" name="32" href="#32">32</a>  <a href="/source/s?defs=address_space" class="intelliWindow-symbol" data-definition-place="undefined-in-file">address_space</a>       = [<b>var</b>.<a href="/source/s?defs=address_space" class="intelliWindow-symbol" data-definition-place="undefined-in-file">address_space</a>]
+<a class="l" name="33" href="#33">33</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a> = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="34" href="#34">34</a>}
+<a class="l" name="35" href="#35">35</a>
+<a class="l" name="36" href="#36">36</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_subnet&quot;</span> <span class="s">&quot;subnet&quot;</span> {
+<a class="l" name="37" href="#37">37</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                 = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-subnet&quot;</span>
+<a class="l" name="38" href="#38">38</a>  <a href="/source/s?defs=virtual_network_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">virtual_network_name</a> = <a href="/source/s?defs=azurerm_virtual_network" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_virtual_network</a>.<a href="/source/s?defs=vnet" class="intelliWindow-symbol" data-definition-place="undefined-in-file">vnet</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="39" href="#39">39</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a>  = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="hl" name="40" href="#40">40</a>  <a href="/source/s?defs=address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">address_prefix</a>       = <b>var</b>.<a href="/source/s?defs=subnet_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">subnet_prefix</a>
+<a class="l" name="41" href="#41">41</a>}
+<a class="l" name="42" href="#42">42</a>
+<a class="l" name="43" href="#43">43</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_network_security_group&quot;</span> <span class="s">&quot;catapp-sg&quot;</span> {
+<a class="l" name="44" href="#44">44</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-sg&quot;</span>
+<a class="l" name="45" href="#45">45</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>            = <b>var</b>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="l" name="46" href="#46">46</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a> = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="47" href="#47">47</a>
+<a class="l" name="48" href="#48">48</a>  <a href="/source/s?defs=security_rule" class="intelliWindow-symbol" data-definition-place="undefined-in-file">security_rule</a> {
+<a class="l" name="49" href="#49">49</a>    <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                       = <span class="s">&quot;HTTP&quot;</span>
+<a class="hl" name="50" href="#50">50</a>    <a href="/source/s?defs=priority" class="intelliWindow-symbol" data-definition-place="undefined-in-file">priority</a>                   = <span class="n">100</span>
+<a class="l" name="51" href="#51">51</a>    <a href="/source/s?defs=direction" class="intelliWindow-symbol" data-definition-place="undefined-in-file">direction</a>                  = <span class="s">&quot;Inbound&quot;</span>
+<a class="l" name="52" href="#52">52</a>    <a href="/source/s?defs=access" class="intelliWindow-symbol" data-definition-place="undefined-in-file">access</a>                     = <span class="s">&quot;Allow&quot;</span>
+<a class="l" name="53" href="#53">53</a>    <a href="/source/s?defs=protocol" class="intelliWindow-symbol" data-definition-place="undefined-in-file">protocol</a>                   = <span class="s">&quot;Tcp&quot;</span>
+<a class="l" name="54" href="#54">54</a>    <a href="/source/s?defs=source_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_port_range</a>          = <span class="s">&quot;*&quot;</span>
+<a class="l" name="55" href="#55">55</a>    <a href="/source/s?defs=destination_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_port_range</a>     = <span class="s">&quot;80&quot;</span>
+<a class="l" name="56" href="#56">56</a>    <a href="/source/s?defs=source_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_address_prefix</a>      = <span class="s">&quot;*&quot;</span>
+<a class="l" name="57" href="#57">57</a>    <a href="/source/s?defs=destination_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_address_prefix</a> = <span class="s">&quot;*&quot;</span>
+<a class="l" name="58" href="#58">58</a>  }
+<a class="l" name="59" href="#59">59</a>
+<a class="hl" name="60" href="#60">60</a>  <a href="/source/s?defs=security_rule" class="intelliWindow-symbol" data-definition-place="undefined-in-file">security_rule</a> {
+<a class="l" name="61" href="#61">61</a>    <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                       = <span class="s">&quot;HTTPS&quot;</span>
+<a class="l" name="62" href="#62">62</a>    <a href="/source/s?defs=priority" class="intelliWindow-symbol" data-definition-place="undefined-in-file">priority</a>                   = <span class="n">102</span>
+<a class="l" name="63" href="#63">63</a>    <a href="/source/s?defs=direction" class="intelliWindow-symbol" data-definition-place="undefined-in-file">direction</a>                  = <span class="s">&quot;Inbound&quot;</span>
+<a class="l" name="64" href="#64">64</a>    <a href="/source/s?defs=access" class="intelliWindow-symbol" data-definition-place="undefined-in-file">access</a>                     = <span class="s">&quot;Allow&quot;</span>
+<a class="l" name="65" href="#65">65</a>    <a href="/source/s?defs=protocol" class="intelliWindow-symbol" data-definition-place="undefined-in-file">protocol</a>                   = <span class="s">&quot;Tcp&quot;</span>
+<a class="l" name="66" href="#66">66</a>    <a href="/source/s?defs=source_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_port_range</a>          = <span class="s">&quot;*&quot;</span>
+<a class="l" name="67" href="#67">67</a>    <a href="/source/s?defs=destination_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_port_range</a>     = <span class="s">&quot;443&quot;</span>
+<a class="l" name="68" href="#68">68</a>    <a href="/source/s?defs=source_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_address_prefix</a>      = <span class="s">&quot;*&quot;</span>
+<a class="l" name="69" href="#69">69</a>    <a href="/source/s?defs=destination_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_address_prefix</a> = <span class="s">&quot;*&quot;</span>
+<a class="hl" name="70" href="#70">70</a>  }
+<a class="l" name="71" href="#71">71</a>
+<a class="l" name="72" href="#72">72</a>  <a href="/source/s?defs=security_rule" class="intelliWindow-symbol" data-definition-place="undefined-in-file">security_rule</a> {
+<a class="l" name="73" href="#73">73</a>    <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                       = <span class="s">&quot;SSH&quot;</span>
+<a class="l" name="74" href="#74">74</a>    <a href="/source/s?defs=priority" class="intelliWindow-symbol" data-definition-place="undefined-in-file">priority</a>                   = <span class="n">101</span>
+<a class="l" name="75" href="#75">75</a>    <a href="/source/s?defs=direction" class="intelliWindow-symbol" data-definition-place="undefined-in-file">direction</a>                  = <span class="s">&quot;Inbound&quot;</span>
+<a class="l" name="76" href="#76">76</a>    <a href="/source/s?defs=access" class="intelliWindow-symbol" data-definition-place="undefined-in-file">access</a>                     = <span class="s">&quot;Allow&quot;</span>
+<a class="l" name="77" href="#77">77</a>    <a href="/source/s?defs=protocol" class="intelliWindow-symbol" data-definition-place="undefined-in-file">protocol</a>                   = <span class="s">&quot;Tcp&quot;</span>
+<a class="l" name="78" href="#78">78</a>    <a href="/source/s?defs=source_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_port_range</a>          = <span class="s">&quot;*&quot;</span>
+<a class="l" name="79" href="#79">79</a>    <a href="/source/s?defs=destination_port_range" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_port_range</a>     = <span class="s">&quot;22&quot;</span>
+<a class="hl" name="80" href="#80">80</a>    <a href="/source/s?defs=source_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source_address_prefix</a>      = <span class="s">&quot;*&quot;</span>
+<a class="l" name="81" href="#81">81</a>    <a href="/source/s?defs=destination_address_prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination_address_prefix</a> = <span class="s">&quot;*&quot;</span>
+<a class="l" name="82" href="#82">82</a>  }
+<a class="l" name="83" href="#83">83</a>}
+<a class="l" name="84" href="#84">84</a>
+<a class="l" name="85" href="#85">85</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_network_interface&quot;</span> <span class="s">&quot;catapp-nic&quot;</span> {
+<a class="l" name="86" href="#86">86</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                      = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-catapp-nic&quot;</span>
+<a class="l" name="87" href="#87">87</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>                  = <b>var</b>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="l" name="88" href="#88">88</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a>       = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="89" href="#89">89</a>  <a href="/source/s?defs=network_security_group_id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">network_security_group_id</a> = <a href="/source/s?defs=azurerm_network_security_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_network_security_group</a>.<a href="/source/s?defs=catapp%5C-sg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp-sg</a>.<a href="/source/s?defs=id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">id</a>
+<a class="hl" name="90" href="#90">90</a>
+<a class="l" name="91" href="#91">91</a>  <a href="/source/s?defs=ip_configuration" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ip_configuration</a> {
+<a class="l" name="92" href="#92">92</a>    <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                          = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}ipconfig&quot;</span>
+<a class="l" name="93" href="#93">93</a>    <a href="/source/s?defs=subnet_id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">subnet_id</a>                     = <a href="/source/s?defs=azurerm_subnet" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_subnet</a>.<a href="/source/s?defs=subnet" class="intelliWindow-symbol" data-definition-place="undefined-in-file">subnet</a>.<a href="/source/s?defs=id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">id</a>
+<a class="l" name="94" href="#94">94</a>    <a href="/source/s?defs=private_ip_address_allocation" class="intelliWindow-symbol" data-definition-place="undefined-in-file">private_ip_address_allocation</a> = <span class="s">&quot;Dynamic&quot;</span>
+<a class="l" name="95" href="#95">95</a>    <a href="/source/s?defs=public_ip_address_id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">public_ip_address_id</a>          = <a href="/source/s?defs=azurerm_public_ip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_public_ip</a>.<a href="/source/s?defs=catapp%5C-pip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp-pip</a>.<a href="/source/s?defs=id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">id</a>
+<a class="l" name="96" href="#96">96</a>  }
+<a class="l" name="97" href="#97">97</a>}
+<a class="l" name="98" href="#98">98</a>
+<a class="l" name="99" href="#99">99</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_public_ip&quot;</span> <span class="s">&quot;catapp-pip&quot;</span> {
+<a class="hl" name="100" href="#100">100</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-ip&quot;</span>
+<a class="l" name="101" href="#101">101</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>            = <b>var</b>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="l" name="102" href="#102">102</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a> = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="103" href="#103">103</a>  <a href="/source/s?defs=allocation_method" class="intelliWindow-symbol" data-definition-place="undefined-in-file">allocation_method</a>   = <span class="s">&quot;Dynamic&quot;</span>
+<a class="l" name="104" href="#104">104</a>  <a href="/source/s?defs=domain_name_label" class="intelliWindow-symbol" data-definition-place="undefined-in-file">domain_name_label</a>   = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-meow&quot;</span>
+<a class="l" name="105" href="#105">105</a>}
+<a class="l" name="106" href="#106">106</a>
+<a class="l" name="107" href="#107">107</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;azurerm_virtual_machine&quot;</span> <span class="s">&quot;catapp&quot;</span> {
+<a class="l" name="108" href="#108">108</a>  <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>                = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-meow&quot;</span>
+<a class="l" name="109" href="#109">109</a>  <a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>            = <b>var</b>.<a href="/source/s?defs=location" class="intelliWindow-symbol" data-definition-place="undefined-in-file">location</a>
+<a class="hl" name="110" href="#110">110</a>  <a href="/source/s?defs=resource_group_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource_group_name</a> = <a href="/source/s?defs=azurerm_resource_group" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_resource_group</a>.<a href="/source/s?defs=myresourcegroup" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myresourcegroup</a>.<a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>
+<a class="l" name="111" href="#111">111</a>  <a href="/source/s?defs=vm_size" class="intelliWindow-symbol" data-definition-place="undefined-in-file">vm_size</a>             = <b>var</b>.<a href="/source/s?defs=vm_size" class="intelliWindow-symbol" data-definition-place="undefined-in-file">vm_size</a>
+<a class="l" name="112" href="#112">112</a>
+<a class="l" name="113" href="#113">113</a>  <a href="/source/s?defs=network_interface_ids" class="intelliWindow-symbol" data-definition-place="undefined-in-file">network_interface_ids</a>         = [<a href="/source/s?defs=azurerm_network_interface" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_network_interface</a>.<a href="/source/s?defs=catapp%5C-nic" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp-nic</a>.<a href="/source/s?defs=id" class="intelliWindow-symbol" data-definition-place="undefined-in-file">id</a>]
+<a class="l" name="114" href="#114">114</a>  <a href="/source/s?defs=delete_os_disk_on_termination" class="intelliWindow-symbol" data-definition-place="undefined-in-file">delete_os_disk_on_termination</a> = <span class="s">&quot;true&quot;</span>
+<a class="l" name="115" href="#115">115</a>
+<a class="l" name="116" href="#116">116</a>  <a href="/source/s?defs=storage_image_reference" class="intelliWindow-symbol" data-definition-place="undefined-in-file">storage_image_reference</a> {
+<a class="l" name="117" href="#117">117</a>    <a href="/source/s?defs=publisher" class="intelliWindow-symbol" data-definition-place="undefined-in-file">publisher</a> = <b>var</b>.<a href="/source/s?defs=image_publisher" class="intelliWindow-symbol" data-definition-place="undefined-in-file">image_publisher</a>
+<a class="l" name="118" href="#118">118</a>    <a href="/source/s?defs=offer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">offer</a>     = <b>var</b>.<a href="/source/s?defs=image_offer" class="intelliWindow-symbol" data-definition-place="undefined-in-file">image_offer</a>
+<a class="l" name="119" href="#119">119</a>    <a href="/source/s?defs=sku" class="intelliWindow-symbol" data-definition-place="undefined-in-file">sku</a>       = <b>var</b>.<a href="/source/s?defs=image_sku" class="intelliWindow-symbol" data-definition-place="undefined-in-file">image_sku</a>
+<a class="hl" name="120" href="#120">120</a>    <a href="/source/s?defs=version" class="intelliWindow-symbol" data-definition-place="undefined-in-file">version</a>   = <b>var</b>.<a href="/source/s?defs=image_version" class="intelliWindow-symbol" data-definition-place="undefined-in-file">image_version</a>
+<a class="l" name="121" href="#121">121</a>  }
+<a class="l" name="122" href="#122">122</a>
+<a class="l" name="123" href="#123">123</a>  <a href="/source/s?defs=storage_os_disk" class="intelliWindow-symbol" data-definition-place="undefined-in-file">storage_os_disk</a> {
+<a class="l" name="124" href="#124">124</a>    <a href="/source/s?defs=name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">name</a>              = <span class="s">&quot;${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">}-osdisk&quot;</span>
+<a class="l" name="125" href="#125">125</a>    <a href="/source/s?defs=managed_disk_type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">managed_disk_type</a> = <span class="s">&quot;Standard_LRS&quot;</span>
+<a class="l" name="126" href="#126">126</a>    <a href="/source/s?defs=caching" class="intelliWindow-symbol" data-definition-place="undefined-in-file">caching</a>           = <span class="s">&quot;ReadWrite&quot;</span>
+<a class="l" name="127" href="#127">127</a>    <a href="/source/s?defs=create_option" class="intelliWindow-symbol" data-definition-place="undefined-in-file">create_option</a>     = <span class="s">&quot;FromImage&quot;</span>
+<a class="l" name="128" href="#128">128</a>  }
+<a class="l" name="129" href="#129">129</a>
+<a class="hl" name="130" href="#130">130</a>  <a href="/source/s?defs=os_profile" class="intelliWindow-symbol" data-definition-place="undefined-in-file">os_profile</a> {
+<a class="l" name="131" href="#131">131</a>    <a href="/source/s?defs=computer_name" class="intelliWindow-symbol" data-definition-place="undefined-in-file">computer_name</a>  = <b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a>
+<a class="l" name="132" href="#132">132</a>    <a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a> = <b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a>
+<a class="l" name="133" href="#133">133</a>    <a href="/source/s?defs=admin_password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_password</a> = <b>var</b>.<a href="/source/s?defs=admin_password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_password</a>
+<a class="l" name="134" href="#134">134</a>  }
+<a class="l" name="135" href="#135">135</a>
+<a class="l" name="136" href="#136">136</a>  <a href="/source/s?defs=os_profile_linux_config" class="intelliWindow-symbol" data-definition-place="undefined-in-file">os_profile_linux_config</a> {
+<a class="l" name="137" href="#137">137</a>    <a href="/source/s?defs=disable_password_authentication" class="intelliWindow-symbol" data-definition-place="undefined-in-file">disable_password_authentication</a> = <a href="/source/s?defs=false" class="intelliWindow-symbol" data-definition-place="undefined-in-file">false</a>
+<a class="l" name="138" href="#138">138</a>  }
+<a class="l" name="139" href="#139">139</a>}
+<a class="hl" name="140" href="#140">140</a>
+<a class="l" name="141" href="#141">141</a><span class="c"># We&apos;re using a little trick here so we can run the provisioner without</span>
+<a class="l" name="142" href="#142">142</a><span class="c"># destroying the VM. Do not do this in production.</span>
+<a class="l" name="143" href="#143">143</a>
+<a class="l" name="144" href="#144">144</a><span class="c"># If you need ongoing management (Day N) of your virtual machines a tool such</span>
+<a class="l" name="145" href="#145">145</a><span class="c"># as Chef or Puppet is a better choice. These tools track the state of</span>
+<a class="l" name="146" href="#146">146</a><span class="c"># individual files and can keep them in the correct configuration.</span>
+<a class="l" name="147" href="#147">147</a>
+<a class="l" name="148" href="#148">148</a><span class="c"># Here we do the following steps:</span>
+<a class="l" name="149" href="#149">149</a><span class="c"># Sync everything in files/ to the remote VM.</span>
+<a class="hl" name="150" href="#150">150</a><span class="c"># Set up some environment variables for our script.</span>
+<a class="l" name="151" href="#151">151</a><span class="c"># Add execute permissions to our scripts.</span>
+<a class="l" name="152" href="#152">152</a><span class="c"># Run the deploy_app.sh script.</span>
+<a class="l" name="153" href="#153">153</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;null_resource&quot;</span> <span class="s">&quot;configure-cat-app&quot;</span> {
+<a class="l" name="154" href="#154">154</a>  <a href="/source/s?defs=depends_on" class="intelliWindow-symbol" data-definition-place="undefined-in-file">depends_on</a> = [
+<a class="l" name="155" href="#155">155</a>    <a href="/source/s?defs=azurerm_virtual_machine" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_virtual_machine</a>.<a href="/source/s?defs=catapp" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp</a>,
+<a class="l" name="156" href="#156">156</a>  ]
+<a class="l" name="157" href="#157">157</a>
+<a class="l" name="158" href="#158">158</a>  <span class="c"># Terraform 0.11</span>
+<a class="l" name="159" href="#159">159</a>  <span class="c"># triggers {</span>
+<a class="hl" name="160" href="#160">160</a>  <span class="c">#   build_number = &quot;${timestamp()}&quot;</span>
+<a class="l" name="161" href="#161">161</a>  <span class="c"># }</span>
+<a class="l" name="162" href="#162">162</a>
+<a class="l" name="163" href="#163">163</a>  <span class="c"># Terraform 0.12</span>
+<a class="l" name="164" href="#164">164</a>  <a href="/source/s?defs=triggers" class="intelliWindow-symbol" data-definition-place="undefined-in-file">triggers</a> = {
+<a class="l" name="165" href="#165">165</a>    <a href="/source/s?defs=build_number" class="intelliWindow-symbol" data-definition-place="undefined-in-file">build_number</a> = <a href="/source/s?defs=timestamp" class="intelliWindow-symbol" data-definition-place="undefined-in-file">timestamp</a>()
+<a class="l" name="166" href="#166">166</a>  }
+<a class="l" name="167" href="#167">167</a>
+<a class="l" name="168" href="#168">168</a>  <a href="/source/s?defs=provisioner" class="intelliWindow-symbol" data-definition-place="undefined-in-file">provisioner</a> <span class="s">&quot;file&quot;</span> {
+<a class="l" name="169" href="#169">169</a>    <a href="/source/s?defs=source" class="intelliWindow-symbol" data-definition-place="undefined-in-file">source</a>      = <span class="s">&quot;files/&quot;</span>
+<a class="hl" name="170" href="#170">170</a>    <a href="/source/s?defs=destination" class="intelliWindow-symbol" data-definition-place="undefined-in-file">destination</a> = <span class="s">&quot;/home/${</span><b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a><span class="s">}/&quot;</span>
+<a class="l" name="171" href="#171">171</a>
+<a class="l" name="172" href="#172">172</a>    <a href="/source/s?defs=connection" class="intelliWindow-symbol" data-definition-place="undefined-in-file">connection</a> {
+<a class="l" name="173" href="#173">173</a>      <a href="/source/s?defs=type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">type</a>     = <span class="s">&quot;ssh&quot;</span>
+<a class="l" name="174" href="#174">174</a>      <a href="/source/s?defs=user" class="intelliWindow-symbol" data-definition-place="undefined-in-file">user</a>     = <b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a>
+<a class="l" name="175" href="#175">175</a>      <a href="/source/s?defs=password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">password</a> = <b>var</b>.<a href="/source/s?defs=admin_password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_password</a>
+<a class="l" name="176" href="#176">176</a>      <a href="/source/s?defs=host" class="intelliWindow-symbol" data-definition-place="undefined-in-file">host</a>     = <a href="/source/s?defs=azurerm_public_ip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_public_ip</a>.<a href="/source/s?defs=catapp%5C-pip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp-pip</a>.<a href="/source/s?defs=fqdn" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fqdn</a>
+<a class="l" name="177" href="#177">177</a>    }
+<a class="l" name="178" href="#178">178</a>  }
+<a class="l" name="179" href="#179">179</a>
+<a class="hl" name="180" href="#180">180</a>  <a href="/source/s?defs=provisioner" class="intelliWindow-symbol" data-definition-place="undefined-in-file">provisioner</a> <span class="s">&quot;remote-exec&quot;</span> {
+<a class="l" name="181" href="#181">181</a>    <a href="/source/s?defs=inline" class="intelliWindow-symbol" data-definition-place="undefined-in-file">inline</a> = [
+<a class="l" name="182" href="#182">182</a>      <span class="s">&quot;sudo apt -y update&quot;</span>,
+<a class="l" name="183" href="#183">183</a>      <span class="s">&quot;sudo apt -y install apache2&quot;</span>,
+<a class="l" name="184" href="#184">184</a>      <span class="s">&quot;sudo systemctl start apache2&quot;</span>,
+<a class="l" name="185" href="#185">185</a>      <span class="s">&quot;sudo chown -R ${</span><b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a><span class="s">}:${</span><b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a><span class="s">} /<a href="/source/s?path=/var/">var</a>/<a href="/source/s?path=/var/www/">www</a>/<a href="/source/s?path=/var/www/html">html</a>&quot;</span>,
+<a class="l" name="186" href="#186">186</a>      <span class="s">&quot;chmod +x *.sh&quot;</span>,
+<a class="l" name="187" href="#187">187</a>      <span class="s">&quot;PLACEHOLDER=${</span><b>var</b>.<a href="/source/s?defs=placeholder" class="intelliWindow-symbol" data-definition-place="undefined-in-file">placeholder</a><span class="s">} WIDTH=${</span><b>var</b>.<a href="/source/s?defs=width" class="intelliWindow-symbol" data-definition-place="undefined-in-file">width</a><span class="s">} HEIGHT=${</span><b>var</b>.<a href="/source/s?defs=height" class="intelliWindow-symbol" data-definition-place="undefined-in-file">height</a><span class="s">} PREFIX=${</span><b>var</b>.<a href="/source/s?defs=prefix" class="intelliWindow-symbol" data-definition-place="undefined-in-file">prefix</a><span class="s">} ./deploy_app.sh&quot;</span>,
+<a class="l" name="188" href="#188">188</a>    ]
+<a class="l" name="189" href="#189">189</a>
+<a class="hl" name="190" href="#190">190</a>    <a href="/source/s?defs=connection" class="intelliWindow-symbol" data-definition-place="undefined-in-file">connection</a> {
+<a class="l" name="191" href="#191">191</a>      <a href="/source/s?defs=type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">type</a>     = <span class="s">&quot;ssh&quot;</span>
+<a class="l" name="192" href="#192">192</a>      <a href="/source/s?defs=user" class="intelliWindow-symbol" data-definition-place="undefined-in-file">user</a>     = <b>var</b>.<a href="/source/s?defs=admin_username" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_username</a>
+<a class="l" name="193" href="#193">193</a>      <a href="/source/s?defs=password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">password</a> = <b>var</b>.<a href="/source/s?defs=admin_password" class="intelliWindow-symbol" data-definition-place="undefined-in-file">admin_password</a>
+<a class="l" name="194" href="#194">194</a>      <a href="/source/s?defs=host" class="intelliWindow-symbol" data-definition-place="undefined-in-file">host</a>     = <a href="/source/s?defs=azurerm_public_ip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">azurerm_public_ip</a>.<a href="/source/s?defs=catapp%5C-pip" class="intelliWindow-symbol" data-definition-place="undefined-in-file">catapp-pip</a>.<a href="/source/s?defs=fqdn" class="intelliWindow-symbol" data-definition-place="undefined-in-file">fqdn</a>
+<a class="l" name="195" href="#195">195</a>    }
+<a class="l" name="196" href="#196">196</a>  }
+<a class="l" name="197" href="#197">197</a>}
+<a class="l" name="198" href="#198">198</a>
+<a class="l" name="199" href="#199">199</a><a href="/source/s?defs=resource" class="intelliWindow-symbol" data-definition-place="undefined-in-file">resource</a> <span class="s">&quot;no-interp-here-${var.admin_username}&quot;</span> {
+<a class="hl" name="200" href="#200">200</a>    <a href="/source/s?defs=doc1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">doc1</a> = &lt;&lt;END<span class="s"></span>
+<a class="l" name="201" href="#201">201</a><span class="s">    ${</span><b>var</b>.<a href="/source/s?defs=val1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">val1</a><span class="s">}</span>
+<a class="l" name="202" href="#202">202</a><span class="s">    ${</span><b>local</b>.<a href="/source/s?defs=val2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">val2</a><span class="s">}</span>
+<a class="l" name="203" href="#203">203</a><span class="s">    ${</span><b>module</b>.<a href="/source/s?defs=val3" class="intelliWindow-symbol" data-definition-place="undefined-in-file">val3</a><span class="s">}</span>
+<a class="l" name="204" href="#204">204</a><span class="s">    ${</span><b>data</b>.<a href="/source/s?defs=val4" class="intelliWindow-symbol" data-definition-place="undefined-in-file">val4</a><span class="s">}</span>
+<a class="l" name="205" href="#205">205</a><span class="s">    ${</span><b>path</b>.<b>cwd</b><span class="s">}</span>
+<a class="l" name="206" href="#206">206</a><span class="s">    END (ineligible END)</span>
+<a class="l" name="207" href="#207">207</a><span class="s"></span>END
+<a class="l" name="208" href="#208">208</a>
+<a class="l" name="209" href="#209">209</a>    <a href="/source/s?defs=doc2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">doc2</a> = &lt;&lt;- END<span class="s"></span>
+<a class="hl" name="210" href="#210">210</a><span class="s">    ${</span><a href="/source/s?defs=path" class="intelliWindow-symbol" data-definition-place="undefined-in-file">path</a>.<a href="/source/s?defs=other_value" class="intelliWindow-symbol" data-definition-place="undefined-in-file">other_value</a><span class="s">}</span>
+<a class="l" name="211" href="#211">211</a><span class="s">    Now is the winter of our discontent.</span>
+<a class="l" name="212" href="#212">212</a><span class="s"></span>    END
+<a class="l" name="213" href="#213">213</a>
+<a class="l" name="214" href="#214">214</a>    <a href="/source/s?defs=value1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">value1</a> = <b>terraform</b>.<b>workspace</b>
+<a class="l" name="215" href="#215">215</a>}
+<a class="l" name="216" href="#216">216</a></body>
+</html>

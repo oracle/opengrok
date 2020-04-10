@@ -1,0 +1,61 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
+ */
+
+MaybeWhsp     = {WhspChar}*
+
+/*
+ * spec.md: Identifier = ID_Start (ID_Continue | '-')*;
+ */
+Identifier = \p{ID_Start} (\p{ID_Continue} | "-")*
+
+/*
+ * spec.md: Numeric Literals
+ *
+ * A numeric literal is a decimal representation of a real number. It has an
+ * integer part, a fractional part, and an exponent part.
+ *
+ * NumericLit = decimal+ ("." decimal+)? (expmark decimal+)?;
+ * decimal    = '0' .. '9';
+ * expmark    = ('e' | 'E') ("+" | "-")?;
+ */
+Numeric_literal = {decimal}+ ("." {decimal}+)? ({expmark} {decimal}+)?
+decimal = [0-9]
+expmark = [eE] [\+\-]?
+
+FileExt = [Hh][Cc][Ll]
+File = [a-zA-Z]{FNameChar}* "." {FileExt}
+
+/*
+ * YYINITIAL : base scanning state
+ * POST_IDENTIFIER : after an identifier has been matched to allow
+ *     distinguishing a STRING from a QUOTED. E.g. after an identifier a quoted
+ *     expression does not allow interpolation and is therefore a STRING.
+ * COMMENT: multi-line comment
+ * SCOMMENT : single-line comment
+ * QUOTED: quoted template
+ * STRING: literal string expression
+ * HERE : Here-docs
+ * HEREin : Indented Here-docs
+ */
+%state POST_IDENTIFIER COMMENT SCOMMENT QUOTED STRING HERE HEREin
