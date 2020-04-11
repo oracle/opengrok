@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.ruby;
@@ -45,7 +45,7 @@ public class RubyXrefTest extends XrefTestBase {
         writeAndCompare(new RubyAnalyzerFactory(),
                 "analysis/ruby/sample.rb",
                 "analysis/ruby/ruby_xrefres.html",
-                readTagsFromResource("analysis/ruby/sampletags"), 159);
+                readTagsFromResource("analysis/ruby/sampletags"), 161);
     }
 
     @Test
