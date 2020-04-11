@@ -170,8 +170,8 @@ public class Ctags implements Resettable {
         command.add("--kinds-sql=+l");
         command.add("--kinds-Fortran=+L");
         command.add("--kinds-C++=+l");
-        command.add("--file-scope=yes");
-        command.add("-u");
+        command.add("--extras=+F"); // Replacement for `--file-scope=yes` since 2017
+        command.add("-u"); // Equivalent to `--sort=no` (i.e. "unsorted")
         command.add("--filter=yes");
         command.add("--filter-terminator=" + CTAGS_FILTER_TERMINATOR + "\n");
         command.add("--fields=-af+iKnS");
