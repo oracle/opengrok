@@ -19,6 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
 <project name="OpenGrok" default="jar" basedir=".">
@@ -112,7 +113,9 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="-create-svn-repository">
       <delete dir="${test.svn}"/>
+      <delete dir="${test.svn2}"/>
       <delete dir="${build.test.reposroots}/svn"/>
+      <delete dir="${build.test.reposroots}/svn2"/>
       <mkdir dir="${build.test.reposroots}"/>
       <exec executable="svnadmin" failifexecutionfails="true">
         <arg value="create"/>
@@ -180,7 +183,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!-- clean up generated test repositories -->
-    <target name="-delete-generated-repository-files"> 
+    <target name="-delete-generated-repository-files">
       <delete dir="${test.bk}/.bk"/>
       <delete dir="${test.bzr}/.bzr"/>
       <delete dir="${test.hg}/.hg"/>
