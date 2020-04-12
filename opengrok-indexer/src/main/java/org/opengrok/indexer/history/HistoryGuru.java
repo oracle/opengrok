@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -580,8 +580,7 @@ public final class HistoryGuru {
                         createCache(entry.getKey(), entry.getValue());
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING,
-                                "createCacheReal() got exception{0}", ex);
+                        LOGGER.log(Level.WARNING, "createCacheReal() got exception", ex);
                     } finally {
                         latch.countDown();
                     }
@@ -597,8 +596,7 @@ public final class HistoryGuru {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE,
-                    "latch exception{0}", ex);
+            LOGGER.log(Level.SEVERE, "latch exception", ex);
             return;
         }
 
@@ -739,7 +737,6 @@ public final class HistoryGuru {
         }
 
         Repository repository = getRepository(file);
-
         if (repository == null) {
             // no repository -> no history :(
             return;
@@ -758,7 +755,7 @@ public final class HistoryGuru {
 
         // Create cache from the beginning if it doesn't exist, or update it
         // incrementally otherwise.
-        createCache(getRepository(file), sinceRevision);
+        createCache(repository, sinceRevision);
     }
 
     protected Repository getRepository(File path) {
@@ -909,7 +906,7 @@ public final class HistoryGuru {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception{0}", ex);
+            LOGGER.log(Level.SEVERE, "latch exception", ex);
         }
         executor.shutdown();
 

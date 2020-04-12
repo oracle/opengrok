@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
@@ -75,7 +75,7 @@ public class Progress implements AutoCloseable {
         if (loggerThread != null) {
             // nag the thread.
             synchronized (sync) {
-                sync.notify();
+                sync.notifyAll();
             }
         }
     }
@@ -136,7 +136,7 @@ public class Progress implements AutoCloseable {
         try {
             run = false;
             synchronized (sync) {
-                sync.notify();
+                sync.notifyAll();
             }
             loggerThread.join();
         } catch (InterruptedException e) {

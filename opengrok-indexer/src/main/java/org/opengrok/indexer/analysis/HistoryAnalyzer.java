@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -55,9 +55,11 @@ public final class HistoryAnalyzer extends Analyzer {
     }
    
     /**
-     * Filters LowerCaseTokenizer with StopFilter.
+     * Creates components using a new {@link PlainFullTokenizer}, filtered using
+     * a default set of English stop-words.
      * @param fieldName name of field for which to create components     
-     * @return components for this analyzer
+     * @return components for this analyzer (NB safe to use even if this
+     * analyzer were to be garbage-collected)
      */
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        

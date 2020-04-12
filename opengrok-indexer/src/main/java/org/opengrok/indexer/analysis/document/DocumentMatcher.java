@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
@@ -124,7 +124,10 @@ public class DocumentMatcher implements Matcher {
             return null;
         }
         if (bomLength > 0) {
-            in.skip(bomLength);
+            if (in.skip(bomLength) != bomLength) {
+                in.reset();
+                return null;
+            }
         }
 
         // read line-by-line for a first few lines

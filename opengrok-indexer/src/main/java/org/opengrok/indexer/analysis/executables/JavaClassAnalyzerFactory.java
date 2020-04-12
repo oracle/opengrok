@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.executables;
@@ -72,8 +72,8 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
                 }
             }
             // Require known major_version number.
-            int majorVersion = (content[MAJOR_VER_HIGHBYTE] << 1) |
-                content[MAJOR_VER_LOWBYTE];
+            int majorVersion = ((content[MAJOR_VER_HIGHBYTE] & 0xff) << 1) |
+                    (content[MAJOR_VER_LOWBYTE] & 0xff);
             if (majorVersion >= JDK1_1_MAJOR_VER && majorVersion <=
                 JAVA_SE_9_MAJOR_VER) {
                 return JavaClassAnalyzerFactory.DEFAULT_INSTANCE;

@@ -143,7 +143,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             try { 
                 xrefOut.flush();
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Couldn't flush xref, will retry once added to doc", ex);
+                LOGGER.log(Level.WARNING, "Couldn''t flush. Will retry once added to doc", ex);
             }
         }        
 

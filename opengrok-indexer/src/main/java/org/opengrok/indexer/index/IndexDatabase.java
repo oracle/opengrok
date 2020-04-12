@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -626,7 +626,7 @@ public class IndexDatabase {
             }
         } catch (IOException e) {
             writerException = e;
-            LOGGER.log(Level.SEVERE, "ERROR: optimizing index: {0}", e);
+            LOGGER.log(Level.SEVERE, "ERROR: optimizing index", e);
         } finally {
             if (wrt != null) {
                 try {

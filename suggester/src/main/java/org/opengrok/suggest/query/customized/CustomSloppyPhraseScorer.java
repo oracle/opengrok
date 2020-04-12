@@ -82,7 +82,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         super(weight);
         this.slop = slop;
         this.offset = offset; // custom
-        this.numPostings = postings==null ? 0 : postings.length;
+        this.numPostings = postings.length;
         pq = new PhraseQueue(postings.length);
         DocIdSetIterator[] iterators = new DocIdSetIterator[postings.length];
         phrasePositions = new PhrasePositions[postings.length];

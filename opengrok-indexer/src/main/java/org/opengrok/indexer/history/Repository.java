@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -63,7 +63,8 @@ public abstract class Repository extends RepositoryInfo {
      * <p>
      * NOTE: SimpleDateFormat is not thread-safe, lock must be held when formatting
      */
-    protected static final SimpleDateFormat OUTPUT_DATE_FORMAT = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
+    protected static final SimpleDateFormat OUTPUT_DATE_FORMAT =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm Z");
 
     /**
      * The command with which to access the external repository. Can be

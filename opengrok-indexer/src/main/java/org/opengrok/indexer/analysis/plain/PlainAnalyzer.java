@@ -110,6 +110,7 @@ public class PlainAnalyzer extends TextAnalyzer {
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
         Definitions defs = null;
+        NullWriter nullWriter = null;
 
         doc.add(new OGKTextField(QueryBuilder.FULL,
             getReader(src.getStream())));
@@ -138,7 +139,8 @@ public class PlainAnalyzer extends TextAnalyzer {
              * turned off we still need to run writeXref to produce scopes,
              * we use a dummy writer that will throw away any xref output.
              */
-            xrefOut = new NullWriter();
+            nullWriter = new NullWriter();
+            xrefOut = nullWriter;
         }
 
         if (xrefOut != null) {
@@ -157,6 +159,10 @@ public class PlainAnalyzer extends TextAnalyzer {
 
                 addNumLines(doc, xref.getLineNumber());
                 addLOC(doc, xref.getLOC());
+            } finally {
+                if (nullWriter != null) {
+                    nullWriter.close();
+                }
             }
         }
     }
