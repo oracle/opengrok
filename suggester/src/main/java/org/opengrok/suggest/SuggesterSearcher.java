@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest;
 
@@ -183,12 +184,12 @@ class SuggesterSearcher extends IndexSearcher {
                 postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.NONE);
             }
 
-            int score;
+            int score = 0;
             if (!needsDocumentIds) {
                 score = normalizeDocumentFrequency(termsEnum.docFreq(), numDocs);
             } else if (needPositionsAndFrequencies) {
                 score = getPhraseScore(complexQueryData, leafReaderContext.docBase, postingsEnum);
-            } else {
+            } else if (complexQueryData != null) {
                 score = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
             }
 

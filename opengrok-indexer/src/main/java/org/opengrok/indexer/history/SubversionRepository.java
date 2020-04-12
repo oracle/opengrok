@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -396,7 +396,7 @@ public class SubversionRepository extends Repository {
             String url = getInfoPart(document, URLattr);
             int idx;
             final String branchesStr = "branches/";
-            if ((idx = url.indexOf(branchesStr)) > 0) {
+            if (url != null && (idx = url.indexOf(branchesStr)) > 0) {
                 branch = url.substring(idx + branchesStr.length());
             }
         }

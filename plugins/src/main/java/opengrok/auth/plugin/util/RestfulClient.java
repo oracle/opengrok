@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package opengrok.auth.plugin.util;
@@ -65,7 +66,7 @@ public class RestfulClient {
 
             return status;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "REST request failed: {0}", e);
+            LOGGER.log(Level.WARNING, "REST request failed", e);
             return -1;
         }
     }

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.web.api.v1.controller;
@@ -60,11 +61,15 @@ public class FileController {
     private StreamingOutput transfer(File file) throws FileNotFoundException {
         InputStream in = new FileInputStream(file);
         return out -> {
-            byte[] buffer = new byte[1024];
-            int len = in.read(buffer);
-            while (len != -1) {
-                out.write(buffer, 0, len);
-                len = in.read(buffer);
+            try {
+                byte[] buffer = new byte[1024];
+                int len = in.read(buffer);
+                while (len != -1) {
+                    out.write(buffer, 0, len);
+                    len = in.read(buffer);
+                }
+            } finally {
+                in.close();
             }
         };
     }

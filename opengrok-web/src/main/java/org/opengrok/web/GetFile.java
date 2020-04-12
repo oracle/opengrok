@@ -21,6 +21,7 @@ package org.opengrok.web;
 
 /*
  * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -64,7 +65,7 @@ public class GetFile extends HttpServlet {
             revision = null;
         }
 
-        InputStream in = null;
+        InputStream in;
         try {
             if (revision != null) {
                 in = HistoryGuru.getInstance().getRevision(f.getParent(),
@@ -75,20 +76,19 @@ public class GetFile extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
                     return;
                 }
-                in = new FileInputStream(f);
                 response.setContentLength((int) f.length());
                 response.setDateHeader("Last-Modified", f.lastModified());
+                in = new FileInputStream(f);
             }
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        String mimeType = getServletContext().getMimeType(f.getAbsolutePath());
-        response.setContentType(mimeType);
-
         try {
+            String mimeType = getServletContext().getMimeType(f.getAbsolutePath());
+            response.setContentType(mimeType);
+
             if (cfg.getPrefix() == Prefix.DOWNLOAD_P) {
                 response.setHeader("content-disposition", "attachment; filename="
                         + f.getName());

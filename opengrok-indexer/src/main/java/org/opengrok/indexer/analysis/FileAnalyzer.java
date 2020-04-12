@@ -183,7 +183,9 @@ public class FileAnalyzer extends AbstractAnalyzer {
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
-                return new HistoryAnalyzer().createComponents(fieldName);
+                try (HistoryAnalyzer historyAnalyzer = new HistoryAnalyzer()) {
+                    return historyAnalyzer.createComponents(fieldName);
+                }
             //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
             case QueryBuilder.REFS: {
                 return new TokenStreamComponents(symbolTokenizerFactory.get());

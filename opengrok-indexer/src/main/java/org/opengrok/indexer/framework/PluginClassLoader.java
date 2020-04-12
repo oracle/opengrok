@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.framework;
 
@@ -131,8 +132,6 @@ public class PluginClassLoader extends ClassLoader {
                         });
                 return c;
             }
-        } catch (IOException e) {
-            throw new ClassNotFoundException(e.toString(), e);
         } catch (Throwable e) {
             throw new ClassNotFoundException(e.toString(), e);
         }
@@ -140,7 +139,9 @@ public class PluginClassLoader extends ClassLoader {
 
     private byte[] loadBytes(InputStream in) throws IOException {
         byte[] bytes = new byte[in.available()];
-        in.read(bytes);
+        if (in.read(bytes) != bytes.length) {
+            throw new IOException("unexpected truncated read");
+        }
         return bytes;
     }
 
@@ -254,7 +255,7 @@ public class PluginClassLoader extends ClassLoader {
                     }
                     return c;
                 }
-            } catch (ClassNotFoundException ex) {
+            } catch (ClassNotFoundException ignored) {
             }
         }
 
@@ -268,7 +269,7 @@ public class PluginClassLoader extends ClassLoader {
                 }
                 return c;
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ignored) {
         }
 
         try {
@@ -281,7 +282,7 @@ public class PluginClassLoader extends ClassLoader {
                 }
                 return c;
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ignored) {
         }
 
         throw new ClassNotFoundException("Class \"" + name + "\" was not found");

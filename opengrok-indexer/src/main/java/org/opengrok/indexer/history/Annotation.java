@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2007, 2019 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -233,7 +234,8 @@ public class Annotation {
         revisions.forEach(revision -> {
             final int lineVersion = getRevisions().size() - getFileVersion(revision);
             final double bucketTotal = colorsPerBucket * lineVersion;
-            final int bucketIndex = (int) Math.max(Math.min(Math.floor(bucketTotal), nColors - 1), 0);
+            final int bucketIndex = (int) Math.max(
+                    Math.min(Math.floor(bucketTotal), nColors - 1.0), 0);
             Color color = colors.get(bucketIndex);
             colorMap.put(revision, String.format("rgb(%d, %d, %d)", color.red, color.green, color.blue));
         });

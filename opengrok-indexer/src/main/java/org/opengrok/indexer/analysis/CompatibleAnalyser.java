@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -49,7 +49,9 @@ public class CompatibleAnalyser extends Analyzer {
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
-                return new HistoryAnalyzer().createComponents(fieldName);
+                try (HistoryAnalyzer historyAnalyzer = new HistoryAnalyzer()) {
+                    return historyAnalyzer.createComponents(fieldName);
+                }
             default:
                 return new TokenStreamComponents(createPlainFullTokenizer());
         }

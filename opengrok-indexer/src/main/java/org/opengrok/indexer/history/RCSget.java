@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -77,7 +78,7 @@ public class RCSget extends InputStream {
     }
 
     @Override
-    public void reset() throws IOException {
+    public synchronized void reset() throws IOException {
         stream.reset();
     }
 
@@ -87,7 +88,7 @@ public class RCSget extends InputStream {
     }
 
     @Override
-    public void mark(int readlimit) {
+    public synchronized void mark(int readlimit) {
         stream.mark(readlimit);
     }
 

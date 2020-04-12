@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -102,17 +102,17 @@ public class CVSRepository extends RCSRepository {
                 try {
                     root = input.readLine();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.WARNING, "failed to load: {0}", e);
+                    LOGGER.log(Level.WARNING, "failed to load", e);
                     return;
                 } finally {
                     try {
                         input.close();
                     } catch (java.io.IOException e) {
-                        LOGGER.log(Level.INFO, "failed to close: {0}", e);
+                        LOGGER.log(Level.INFO, "failed to close", e);
                     }
                 }
             } catch (java.io.FileNotFoundException e) {
-                LOGGER.log(Level.FINE, "not loading CVS Root file: {0}", e);
+                LOGGER.log(Level.FINE, "not loading CVS Root file", e);
                 return;
             }
 
