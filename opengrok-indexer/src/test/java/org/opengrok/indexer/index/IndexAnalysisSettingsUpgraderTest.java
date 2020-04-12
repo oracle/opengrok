@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
@@ -74,23 +75,22 @@ public class IndexAnalysisSettingsUpgraderTest {
                 (long)vLatest.getAnalyzerGuruVersion());
         assertEquals("should have expected analyzer versions",
                 vLatest.getAnalyzersVersions().size(), actAnalyzersVersionNos.size());
-        /*
-         * Smelly but I know the underlying Map implementations are the same;
-         * otherwise the following tests might not work.
-         */
-        assertArrayEquals("analyzer versions keysets should be equal",
-                actAnalyzersVersionNos.keySet().toArray(),
-                vLatest.getAnalyzersVersions().keySet().toArray());
-        assertArrayEquals("analyzer versions values should be equal",
-                actAnalyzersVersionNos.values().toArray(),
-                vLatest.getAnalyzersVersions().values().toArray());
 
+        Object[] expectedVersionKeys = actAnalyzersVersionNos.keySet().stream().sorted().toArray();
+        assertArrayEquals("analyzer versions keysets should be equal",
+                expectedVersionKeys,
+                vLatest.getAnalyzersVersions().keySet().stream().sorted().toArray());
+        assertArrayEquals("analyzer versions values should be equal",
+                getMapValues(actAnalyzersVersionNos, expectedVersionKeys),
+                getMapValues(vLatest.getAnalyzersVersions(), expectedVersionKeys));
+
+        Object[] expectedSymlinkKeys = TEST_MAPPED_SYMLINKS.keySet().stream().sorted().toArray();
         assertArrayEquals("index symlinks keysets should be equal",
-                TEST_MAPPED_SYMLINKS.keySet().toArray(),
-                vLatest.getIndexedSymlinks().keySet().toArray());
+                expectedSymlinkKeys,
+                vLatest.getIndexedSymlinks().keySet().stream().sorted().toArray());
         assertArrayEquals("index symlinks values should be equal",
-                TEST_MAPPED_SYMLINKS.values().toArray(),
-                vLatest.getIndexedSymlinks().values().toArray());
+                getMapValues(TEST_MAPPED_SYMLINKS, expectedSymlinkKeys),
+                getMapValues(vLatest.getIndexedSymlinks(), expectedSymlinkKeys));
     }
 
     @Test
@@ -147,5 +147,14 @@ public class IndexAnalysisSettingsUpgraderTest {
             passed = true;
         }
         assertTrue("should have thrown on too-old version", passed);
+    }
+
+    private static <K, V> Object[] getMapValues(Map<K, V> map, Object[] keys) {
+        Object[] values = new Object[keys.length];
+        for (int i = 0; i < keys.length; ++i) {
+            //noinspection SuspiciousMethodCalls
+            values[i] = map.get(keys[i]);
+        }
+        return values;
     }
 }
