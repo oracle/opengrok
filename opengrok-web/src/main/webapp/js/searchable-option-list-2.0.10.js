@@ -152,7 +152,6 @@
         init: function () {
             this.numSelected = 0;
             this.valMap = null;
-            this.bulkMode = false;
             this.config = $.extend(true, {}, this.defaults, this.options, this.metadata);
 
             var originalName = this._getNameAttribute(),
@@ -1052,7 +1051,7 @@
             this.numSelected = 1 + this.numSelected;
 
             if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
-                if (!this.bulkMode) {
+                if (this.valMap == null) {
                     this._setXItemsSelected();
                 }
             } else {
@@ -1110,7 +1109,7 @@
                 $myDisplayItem.remove();
                 solOptionItem.displaySelectionItem = undefined;
             }
-            if (!this.bulkMode) {
+            if (this.valMap == null) {
                 this._setXItemsSelected();
             }
         },
@@ -1199,7 +1198,6 @@
         selectAll: function (/* string or undefined */optgroup) {
             if (this.config.multiple) {
                 this._buildValMap();
-                this.bulkMode = true;
 
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
@@ -1218,7 +1216,6 @@
                     this.config.events.onChange.call(this, this, $changedInputs);
                 }
 
-                this.bulkMode = false;
                 this.valMap = null;
                 this._setXItemsSelected();
             }
@@ -1229,7 +1226,6 @@
         invert: function () {
             if (this.config.multiple) {
                 this._buildValMap();
-                this.bulkMode = true;
 
                 var $closedInputs = this.$selectionContainer
                     .find('input[type="checkbox"][name=project]:not([disabled], :checked)')
@@ -1247,7 +1243,6 @@
                     this.config.events.onChange.call(this, this, $openedInputs.add($closedInputs));
                 }
 
-                this.bulkMode = false;
                 this.valMap = null;
                 this._setXItemsSelected();
             }
@@ -1258,7 +1253,6 @@
         deselectAll: function ( /* string or undefined */ optgroup) {
             if (this.config.multiple) {
                 this._buildValMap();
-                this.bulkMode = true;
 
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
@@ -1277,7 +1271,6 @@
                     this.config.events.onChange.call(this, this, $changedInputs);
                 }
 
-                this.bulkMode = false;
                 this.valMap = null;
                 this._setXItemsSelected();
             }
