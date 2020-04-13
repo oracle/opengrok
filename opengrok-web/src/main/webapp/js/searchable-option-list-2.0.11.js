@@ -1044,10 +1044,6 @@
         },
 
         _addSelectionDisplayItem: function ($changedItem) {
-            var solOptionItem = $changedItem.data('sol-item'),
-                $existingDisplayItem = solOptionItem.displaySelectionItem,
-                $displayItemText;
-
             this.numSelected = 1 + this.numSelected;
 
             if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
@@ -1055,59 +1051,91 @@
                     this._setXItemsSelected();
                 }
             } else {
-                /*
-                 * Modified for OpenGrok in 2016, 2019.
-                 */
-                var label = solOptionItem.label;
-                if ($changedItem.data('messages-available')) {
-                    label += ' <span class="';
-                    label += 'note-' + $changedItem.data('messages-level');
-                    label += ' important-note important-note-rounded" ';
-                    label += 'title="Some message is present for this project.';
-                    label += ' Find more info in the project list.">!</span>'
-                }
-
-                $displayItemText = $('<span class="sol-selected-display-item-text" />').html(label);
-                $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
-                    .append($displayItemText)
-                    .attr('title', solOptionItem.tooltip)
-                    .data('label', solOptionItem.label)
-                    .appendTo(this.$showSelectionContainer)
-                    .dblclick(function () { // Modified for OpenGrok in 2017.
-                        $changedItem.dblclick();
-                    });
-
-                // show remove button on display items if not disabled and null selection allowed
-                if ((this.config.multiple || this.config.allowNullSelection) && !$changedItem.prop('disabled')) {
-                    $('<span class="sol-quick-delete"/>')
-                        .html(this.config.texts.quickDelete)
-                        .click(function () { // deselect the project and refresh the search
-                            $changedItem
-                                .prop('checked', false)
-                                .trigger('change');
-                            /*
-                             * Modified for OpenGrok in 2017.
-                             */
-                            if (isOnSearchPage()) {
-                                $('#sbox').submit();
-                            }
-                        })
-                        .prependTo($existingDisplayItem);
-                }
-
-                solOptionItem.displaySelectionItem = $existingDisplayItem;
+                this._buildSelectionDisplayItem($changedItem);
             }
+        },
+
+        _buildSelectionDisplayItem: function ($changedItem) {
+            var solOptionItem = $changedItem.data('sol-item'),
+                $existingDisplayItem,
+                $displayItemText;
+
+            /*
+             * Modified for OpenGrok in 2016, 2019.
+             */
+            var label = solOptionItem.label;
+            if ($changedItem.data('messages-available')) {
+                label += ' <span class="';
+                label += 'note-' + $changedItem.data('messages-level');
+                label += ' important-note important-note-rounded" ';
+                label += 'title="Some message is present for this project.';
+                label += ' Find more info in the project list.">!</span>'
+            }
+
+            $displayItemText = $('<span class="sol-selected-display-item-text" />').html(label);
+            $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
+                .append($displayItemText)
+                .attr('title', solOptionItem.tooltip)
+                .data('label', solOptionItem.label)
+                .appendTo(this.$showSelectionContainer)
+                .dblclick(function () { // Modified for OpenGrok in 2017.
+                    $changedItem.dblclick();
+                });
+
+            // show remove button on display items if not disabled and null selection allowed
+            if ((this.config.multiple || this.config.allowNullSelection) && !$changedItem.prop('disabled')) {
+                $('<span class="sol-quick-delete"/>')
+                    .html(this.config.texts.quickDelete)
+                    .click(function () { // deselect the project and refresh the search
+                        $changedItem
+                            .prop('checked', false)
+                            .trigger('change');
+                        /*
+                         * Modified for OpenGrok in 2017.
+                         */
+                        if (isOnSearchPage()) {
+                            $('#sbox').submit();
+                        }
+                    })
+                    .prependTo($existingDisplayItem);
+            }
+
+            solOptionItem.displaySelectionItem = $existingDisplayItem;
         },
 
         _removeSelectionDisplayItem: function ($changedItem) {
             var solOptionItem = $changedItem.data('sol-item'),
                 $myDisplayItem = solOptionItem.displaySelectionItem;
 
+            var wasExceeding = this.config.maxShow !== 0 && this.numSelected > this.config.maxShow;
             this.numSelected = this.numSelected - 1;
 
             if ($myDisplayItem) {
                 $myDisplayItem.remove();
                 solOptionItem.displaySelectionItem = undefined;
+
+                /*
+                 * N.b. for bulk mode, wasExceeding handling is off since only
+                 * Clear or Invert-Selection would cause this function to be
+                 * called. For Clear, there won't be any selected items at the
+                 * end, so wasExceeding is irrelevant. For Invert-Selection,
+                 * checked options are unchecked first -- i.e. we go to zero
+                 * this.numSelected first -- so normal _addSelectionDisplayItem
+                 * takes care of things.
+                 */
+
+                if (wasExceeding && this.valMap == null) {
+                    var self = this;
+                    this.$selectionContainer
+                        .find('.sol-option input[type="checkbox"]:not([disabled]):checked')
+                        .each(function (index, item) {
+                            var $currentOptionItem = $(item);
+                            if ($currentOptionItem.data('sol-item').displaySelectionItem == null) {
+                                self._buildSelectionDisplayItem($currentOptionItem);
+                                return false;
+                            }
+                        });
+                }
             }
             if (this.valMap == null) {
                 this._setXItemsSelected();
