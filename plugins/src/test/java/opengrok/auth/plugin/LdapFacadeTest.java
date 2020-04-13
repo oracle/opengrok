@@ -43,7 +43,8 @@ public class LdapFacadeTest {
     public void testToString() {
         Configuration config = new Configuration();
         config.setServers(Arrays.asList(new LdapServer("http://foo.foo"),
-                new LdapServer("http://bar.bar")));
+                new LdapServer("http://bar.bar",
+                        "cn=FOOBAR,l=amer,dc=example,dc=com", "MySecretPassword")));
         config.setSearchBase("dc=foo,dc=com");
         int timeoutValue = 42;
         config.setConnectTimeout(timeoutValue);

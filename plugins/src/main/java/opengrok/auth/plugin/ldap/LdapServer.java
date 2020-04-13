@@ -67,6 +67,13 @@ public class LdapServer implements Serializable {
         this.url = server;
     }
 
+    public LdapServer(String server, String username, String password) {
+        this(prepareEnv());
+        this.url = server;
+        this.username = username;
+        this.password = password;
+    }
+
     public LdapServer(Hashtable<String, String> env) {
         this.env = env;
     }
@@ -134,7 +141,7 @@ public class LdapServer implements Serializable {
      * @return the new connection or null
      */
     private synchronized LdapContext connect() {
-        LOGGER.log(Level.INFO, "Server {0} connecting", this.url);
+        LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this.toString());
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             LOGGER.log(Level.INFO, "LDAP server {0} is down", this.url);
@@ -159,7 +166,7 @@ public class LdapServer implements Serializable {
                 ctx = new InitialLdapContext(env, null);
                 ctx.reconnect(null);
                 ctx.setRequestControls(null);
-                LOGGER.log(Level.INFO, "Connected to LDAP server {0}", env.get(Context.PROVIDER_URL));
+                LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this.toString());
                 errorTimestamp = 0;
             } catch (NamingException ex) {
                 LOGGER.log(Level.INFO, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
@@ -252,6 +259,20 @@ public class LdapServer implements Serializable {
 
     @Override
     public String toString() {
-        return getUrl();
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(getUrl());
+
+        if (getConnectTimeout() > 0) {
+            sb.append(" timeout: ");
+            sb.append(getConnectTimeout());
+        }
+
+        if (getUsername() != null && !getUsername().isEmpty()) {
+            sb.append(" username: ");
+            sb.append(getUsername());
+        }
+
+        return sb.toString();
     }
 }
