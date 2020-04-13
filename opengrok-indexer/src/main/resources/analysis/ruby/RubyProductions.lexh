@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -483,6 +483,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     }
     // Only one char at a time due to restriction on {WhspChar} above.
     [^\n\r]    {
+        chkLOC();
         maybeIntraState();
         offer(yytext());
     }
