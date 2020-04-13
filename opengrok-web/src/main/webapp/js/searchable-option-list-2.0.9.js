@@ -4,6 +4,7 @@
  * https://pbauerochse.github.io/searchable-option-list/
  *
  * Copyright 2015, Patrick Bauerochse
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  *
  * Licensed under the MIT license:
  * http://www.opensource.org/licenses/MIT
@@ -149,6 +150,9 @@
 
         // initialize the plugin
         init: function () {
+            this.numSelected = 0;
+            this.valMap = null;
+            this.bulkMode = false;
             this.config = $.extend(true, {}, this.defaults, this.options, this.metadata);
 
             var originalName = this._getNameAttribute(),
@@ -988,14 +992,22 @@
             // e.g. $('#myPreviousSelectWhichNowIsSol').val()
             if (this.$originalElement && this.$originalElement.prop('tagName').toLowerCase() === 'select') {
                 var self = this;
-                this.$originalElement.find('option').each(function (index, item) {
-                    var $currentOriginalOption = $(item);
-                    if ($currentOriginalOption.val() === $changeItem.val()) {
-                        $currentOriginalOption.prop('selected', $changeItem.prop('checked'));
+                if (this.valMap == null) {
+                    this.$originalElement.find('option').each(function (index, item) {
+                        var $currentOriginalOption = $(item);
+                        if ($currentOriginalOption.val() === $changeItem.val()) {
+                            $currentOriginalOption.prop('selected', $changeItem.prop('checked'));
+                            self.$originalElement.trigger('change');
+                            return false; // stop the loop
+                        }
+                    });
+                } else {
+                    var mappedVal = this.valMap.get($changeItem.val());
+                    if (mappedVal) {
+                        mappedVal.prop('selected', $changeItem.prop('checked'));
                         self.$originalElement.trigger('change');
-                        return;
                     }
-                });
+                }
             }
 
             if ($changeItem.prop('checked')) {
@@ -1019,16 +1031,34 @@
             }
         },
 
+        _setXItemsSelected: function() {
+            if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
+                var xItemsText = this.config.texts.itemsSelected.replace('{$a}',
+                    this.numSelected - this.config.maxShow);
+                this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' +
+                    xItemsText + '<div>');
+                this.$showSelectionContainer.append(this.$xItemsSelected);
+                this.$xItemsSelected.show();
+            } else {
+                this.$xItemsSelected.hide();
+            }
+        },
+
         _addSelectionDisplayItem: function ($changedItem) {
             var solOptionItem = $changedItem.data('sol-item'),
                 $existingDisplayItem = solOptionItem.displaySelectionItem,
                 $displayItemText;
 
-            if (!$existingDisplayItem) {
+            this.numSelected = 1 + this.numSelected;
+
+            if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
+                if (!this.bulkMode) {
+                    this._setXItemsSelected();
+                }
+            } else {
                 /*
                  * Modified for OpenGrok in 2016, 2019.
                  */
-                var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
                 var label = solOptionItem.label;
                 if ($changedItem.data('messages-available')) {
                     label += ' <span class="';
@@ -1065,17 +1095,7 @@
                         })
                         .prependTo($existingDisplayItem);
                 }
-                /*
-                 * Modified for OpenGrok in 2016.
-                 */
-                if (this.config.maxShow != 0 && selected.length + 1 > this.config.maxShow) {
-                    var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length + 1 - this.config.maxShow);
-                    this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' + xitemstext + '<div>');
-                    this.$showSelectionContainer.append(this.$xItemsSelected);
-                    this.$xItemsSelected.show();
-                    $existingDisplayItem.hide();
-                }
-                
+
                 solOptionItem.displaySelectionItem = $existingDisplayItem;
             }
         },
@@ -1084,31 +1104,14 @@
             var solOptionItem = $changedItem.data('sol-item'),
                 $myDisplayItem = solOptionItem.displaySelectionItem;
 
-            if ($myDisplayItem) {
-                /*
-                 * Modified for OpenGrok in 2016.
-                 */
-                var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
-                if (this.config.maxShow != 0 && selected.length - 1 > this.config.maxShow) {
-                    var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length - 1 - this.config.maxShow);
-                    this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' + xitemstext + '<div>');
-                    this.$showSelectionContainer.append(this.$xItemsSelected);
-                    this.$xItemsSelected.show();
-                } else {
-                    this.$xItemsSelected.hide();
-                }
+            this.numSelected = this.numSelected - 1;
 
-                if ($myDisplayItem.is(":visible")) {
-                    $myDisplayItem
-                            .siblings('.sol-selected-display-item')
-                            .not(":visible")
-                            .not(this.$xItemsSelected)
-                            .first()
-                            .show();
-                }
-                
+            if ($myDisplayItem) {
                 $myDisplayItem.remove();
                 solOptionItem.displaySelectionItem = undefined;
+            }
+            if (!this.bulkMode) {
+                this._setXItemsSelected();
             }
         },
 
@@ -1127,6 +1130,17 @@
                 if (this.$actionButtons) {
                     this.$actionButtons.show();
                 }
+            }
+        },
+
+        _buildValMap: function () {
+            if (this.$originalElement && this.$originalElement.prop('tagName').toLowerCase() === 'select') {
+                var self = this;
+                this.valMap = new Map();
+                this.$originalElement.find('option').each(function (index, item) {
+                    var $currentOriginalOption = $(item);
+                    self.valMap.set($currentOriginalOption.val(), $currentOriginalOption);
+                });
             }
         },
 
@@ -1184,6 +1198,9 @@
          */
         selectAll: function (/* string or undefined */optgroup) {
             if (this.config.multiple) {
+                this._buildValMap();
+                this.bulkMode = true;
+
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
@@ -1200,6 +1217,10 @@
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $changedInputs);
                 }
+
+                this.bulkMode = false;
+                this.valMap = null;
+                this._setXItemsSelected();
             }
         },
         /*
@@ -1207,6 +1228,9 @@
          */
         invert: function () {
             if (this.config.multiple) {
+                this._buildValMap();
+                this.bulkMode = true;
+
                 var $closedInputs = this.$selectionContainer
                     .find('input[type="checkbox"][name=project]:not([disabled], :checked)')
                 var $openedInputs = this.$selectionContainer
@@ -1222,6 +1246,10 @@
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $openedInputs.add($closedInputs));
                 }
+
+                this.bulkMode = false;
+                this.valMap = null;
+                this._setXItemsSelected();
             }
         },
         /*
@@ -1229,6 +1257,9 @@
          */
         deselectAll: function ( /* string or undefined */ optgroup) {
             if (this.config.multiple) {
+                this._buildValMap();
+                this.bulkMode = true;
+
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
@@ -1245,6 +1276,10 @@
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $changedInputs);
                 }
+
+                this.bulkMode = false;
+                this.valMap = null;
+                this._setXItemsSelected();
             }
         },
 
