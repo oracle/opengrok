@@ -106,19 +106,26 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @see HttpServletRequest#getContextPath()
      */
     static {
-        SCRIPTS.put("jquery", new FileScript("js/jquery-3.4.1.min.js", 10));
-        SCRIPTS.put("jquery-ui", new FileScript("js/jquery-ui-1.12.1-custom.min.js", 11));
-        SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
-        SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.2.min.js", 13));
-        SCRIPTS.put("tablesorter-parsers" + DEBUG_SUFFIX, new FileScript("js/tablesorter-parsers-0.0.2.js", 13));
-        SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.10.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.34.min.js", 15));
-        SCRIPTS.put("utils" + DEBUG_SUFFIX, new FileScript("js/utils-0.0.34.js", 15));
-        SCRIPTS.put("repos", new FileScript("js/repos-0.0.2.min.js", 20));
-        SCRIPTS.put("repos" + DEBUG_SUFFIX, new FileScript("js/repos-0.0.2.js", 20));
-        SCRIPTS.put("diff", new FileScript("js/diff-0.0.4.min.js", 20));
-        SCRIPTS.put("diff" + DEBUG_SUFFIX, new FileScript("js/diff-0.0.4.js", 20));
-        SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
+        putjs("jquery", "js/jquery-3.4.1", 10);
+        putjs("jquery-ui", "js/jquery-ui-1.12.1-custom", 11);
+        putjs("jquery-tablesorter", "js/jquery-tablesorter-2.26.6", 12);
+        putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.2", 13, true);
+        putjs("searchable-option-list", "js/searchable-option-list-2.0.10", 14);
+        putjs("utils", "js/utils-0.0.34", 15, true);
+        putjs("repos", "js/repos-0.0.2", 20, true);
+        putjs("diff", "js/diff-0.0.4", 20, true);
+        putjs("jquery-caret", "js/jquery.caret-1.5.2", 25);
+    }
+
+    private static void putjs(String key, String pathPrefix, int priority) {
+        putjs(key, pathPrefix, priority, false);
+    }
+
+    private static void putjs(String key, String pathPrefix, int priority, boolean debug) {
+        SCRIPTS.put(key, new FileScript(pathPrefix + ".min.js", priority));
+        if (debug) {
+            SCRIPTS.put(key + DEBUG_SUFFIX, new FileScript(pathPrefix + ".js", priority));
+        }
     }
 
     private static final Comparator<Script> SCRIPTS_COMPARATOR = Comparator
