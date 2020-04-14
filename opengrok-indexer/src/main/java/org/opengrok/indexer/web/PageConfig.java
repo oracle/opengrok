@@ -1527,6 +1527,8 @@ public final class PageConfig {
         sh.isGuiSearch = sh.isCrossRefSearch || getPrefix() == Prefix.SEARCH_P;
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
+        String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
+        sh.noRedirect = xrValue != null && !xrValue.isEmpty();
         return sh;
     }
 

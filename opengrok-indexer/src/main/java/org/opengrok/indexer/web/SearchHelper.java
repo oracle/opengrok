@@ -157,6 +157,11 @@ public class SearchHelper {
      */
     public String redirect;
     /**
+     * A value indicating if redirection should be short-circuited when state or
+     * query result would have indicated otherwise.
+     */
+    public boolean noRedirect;
+    /**
      * if not {@code null}, the UI should show this error message and stop
      * processing the search. Automatically set via
      * {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
@@ -404,7 +409,7 @@ public class SearchHelper {
              * Determine if possibly a single-result redirect to xref is
              * eligible and applicable. If history query is active, then nope.
              */
-            if (hits != null && hits.length == 1 && builder.getHist() == null) {
+            if (!noRedirect && hits != null && hits.length == 1 && builder.getHist() == null) {
                 int docID = hits[0].doc;
                 if (isCrossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
                     maybeRedirectToDefinition(docID, (TermQuery) query);

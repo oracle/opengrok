@@ -118,6 +118,13 @@ public class QueryParameters {
     public static final String MATCH_OFFSET_PARAM_EQ = MATCH_OFFSET_PARAM + "=";
 
     /**
+     * Parameter name to specify a value indicating if redirection should be
+     * short-circuited when state or query result would have an indicated
+     * otherwise.
+     */
+    public static final String NO_REDIRECT_PARAM = "xrd";
+
+    /**
      * Parameter name to specify an OpenGrok search of paths.
      */
     public static final String PATH_SEARCH_PARAM = "path";
