@@ -261,6 +261,22 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 </executions>
             </plugin>
             <plugin>
+              <groupId>org.eluder.coveralls</groupId>
+              <artifactId>coveralls-maven-plugin</artifactId>
+              <version>4.3.0</version>
+              <dependencies>
+                <!-- Explicit dep on jaxb-api to avoid problems with
+                  JDK9 and later, until a new version of
+                  coveralls-maven-plugin is released.
+                  See also https://github.com/trautonen/coveralls-maven-plugin/issues/112-->
+                <dependency>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${mavenjavadocplugin.version}</version>
