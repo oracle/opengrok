@@ -468,7 +468,7 @@ public class SearchHelper {
         Query rewritten = query.rewrite(reader);
         Weight weight = rewritten.createWeight(searcher, ScoreMode.COMPLETE_NO_SCORES, 1);
         Matches matches = weight.matches(leaf, docID);
-        if (matches != MatchesUtils.MATCH_WITH_NO_TERMS) {
+        if (matches != null && matches != MatchesUtils.MATCH_WITH_NO_TERMS) {
             int matchCount = 0;
             int offset = -1;
             for (String field : contextFields) {
