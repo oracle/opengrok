@@ -21,6 +21,7 @@ org.opengrok.indexer.analysis.executables
 org.opengrok.indexer.analysis.fortran
 org.opengrok.indexer.analysis.golang
 org.opengrok.indexer.analysis.haskell
+org.opengrok.indexer.analysis.hcl
 org.opengrok.indexer.analysis.java
 org.opengrok.indexer.analysis.javascript
 org.opengrok.indexer.analysis.json
@@ -40,6 +41,7 @@ org.opengrok.indexer.analysis.sh
 org.opengrok.indexer.analysis.sql
 org.opengrok.indexer.analysis.swift
 org.opengrok.indexer.analysis.tcl
+org.opengrok.indexer.analysis.terraform
 org.opengrok.indexer.analysis.typescript
 org.opengrok.indexer.analysis.uue
 org.opengrok.indexer.analysis.vb
