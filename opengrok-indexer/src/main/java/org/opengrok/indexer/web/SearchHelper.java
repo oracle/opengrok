@@ -112,11 +112,6 @@ public class SearchHelper {
      */
     public String contextPath;
     /**
-     * piggyback: if {@code true}, files in opengrok's data directory are
-     * gzipped compressed.
-     */
-    public boolean compressed;
-    /**
      * piggyback: the source root directory.
      */
     public File sourceRoot;

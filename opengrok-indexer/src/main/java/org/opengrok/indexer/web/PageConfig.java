@@ -1525,7 +1525,6 @@ public final class PageConfig {
         sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
         sh.isCrossRefSearch = getPrefix() == Prefix.SEARCH_R;
         sh.isGuiSearch = sh.isCrossRefSearch || getPrefix() == Prefix.SEARCH_P;
-        sh.compressed = env.isCompressXref();
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
         return sh;
