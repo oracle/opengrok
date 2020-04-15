@@ -361,7 +361,7 @@ public final class PageConfig {
      * @see DiffType#toString()
      */
     public DiffType getDiffType() {
-        DiffType d = DiffType.get(req.getParameter("format"));
+        DiffType d = DiffType.get(req.getParameter(QueryParameters.FORMAT_PARAM));
         return d == null ? DiffType.SIDEBYSIDE : d;
     }
 
@@ -723,7 +723,7 @@ public final class PageConfig {
     public boolean annotate() {
         if (annotate == null) {
             annotate = hasAnnotations()
-                    && Boolean.parseBoolean(req.getParameter("a"));
+                    && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
         }
         return annotate;
     }
