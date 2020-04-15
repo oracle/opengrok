@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.indexer.web.LaunderUtil;
 import org.opengrok.web.api.v1.RestApp;
 
 public class AuthorizationFilter implements Filter {
@@ -55,8 +57,11 @@ public class AuthorizationFilter implements Filter {
         // The /search endpoint will go through authorization via SearchEngine.search()
         // so does not have to be exempted here.
         if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
-            LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
-                    new Object[]{httpReq.getServletPath(), AuthorizationFilter.class.getName() });
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
+                        new Object[] {LaunderUtil.logging(httpReq.getServletPath()),
+                                AuthorizationFilter.class.getName()});
+            }
             fc.doFilter(sr, sr1);
             return;
         }
@@ -66,12 +71,15 @@ public class AuthorizationFilter implements Filter {
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
-            if (httpReq.getRemoteUser() != null) {
-                LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
-                        new Object[]{httpReq.getRemoteUser(),
-                            httpReq.getRequestURI()});
-            } else {
-                LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
+            if (LOGGER.isLoggable(Level.INFO)) {
+                if (httpReq.getRemoteUser() != null) {
+                    LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
+                            new Object[] {LaunderUtil.logging(httpReq.getRemoteUser()),
+                                    LaunderUtil.logging(httpReq.getRequestURI())});
+                } else {
+                    LOGGER.log(Level.INFO, "Access denied for URI: {0}",
+                            LaunderUtil.logging(httpReq.getRequestURI()));
+                }
             }
 
             /*

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -226,8 +226,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     private static class VobsHolder {
-
-        public static String[] vobs = runLsvob();
+        static String[] vobs = runLsvob();
     }
 
     private static String[] getAllVobs() {

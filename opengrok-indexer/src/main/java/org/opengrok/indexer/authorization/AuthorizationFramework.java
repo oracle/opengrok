@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
@@ -37,6 +38,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.framework.PluginFramework;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.LaunderUtil;
 import org.opengrok.indexer.web.Statistics;
 
 /**
@@ -484,7 +486,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
 
         if (entity == null) {
             LOGGER.log(Level.WARNING, "entity was null for request with parameters: {}",
-                    request.getParameterMap());
+                    LaunderUtil.logging(request.getParameterMap()));
             return false;
         }
 

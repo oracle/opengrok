@@ -617,12 +617,13 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter(QueryBuilder.FULL))
-                    .setDefs(req.getParameter(QueryBuilder.DEFS))
-                    .setRefs(req.getParameter(QueryBuilder.REFS))
-                    .setPath(req.getParameter(QueryBuilder.PATH))
-                    .setHist(req.getParameter(QueryBuilder.HIST))
-                    .setType(req.getParameter(QueryBuilder.TYPE));
+            queryBuilder = new QueryBuilder().
+                    setFreetext(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.FULL)))
+                    .setDefs(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.DEFS)))
+                    .setRefs(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.REFS)))
+                    .setPath(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.PATH)))
+                    .setHist(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.HIST)))
+                    .setType(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.TYPE)));
         }
 
         return queryBuilder;
@@ -683,7 +684,7 @@ public final class PageConfig {
      */
     public String getRequestedRevision() {
         if (rev == null) {
-            String tmp = req.getParameter(QueryParameters.REVISION_PARAM);
+            String tmp = LaunderUtil.userInput(req.getParameter(QueryParameters.REVISION_PARAM));
             rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
@@ -1100,7 +1101,7 @@ public final class PageConfig {
      */
     public String getPath() {
         if (path == null) {
-            path = Util.getCanonicalPath(req.getPathInfo(), PATH_SEPARATOR);
+            path = Util.getCanonicalPath(LaunderUtil.userInput(req.getPathInfo()), PATH_SEPARATOR);
             if (PATH_SEPARATOR_STRING.equals(path)) {
                 path = "";
             }

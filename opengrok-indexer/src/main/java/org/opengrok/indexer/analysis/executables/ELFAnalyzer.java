@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
@@ -193,23 +193,23 @@ public class ELFAnalyzer extends FileAnalyzer {
         // Word = int
         // un = unsignedBtye
 
-        public EI_Class ei_class;
-        public EI_Data ei_data;
+        EI_Class ei_class;
+        EI_Data ei_data;
         @SuppressWarnings("unused")
-        public int ei_version;
-        public E_Type e_type;
-        public E_Machine e_machine;
-        public E_Version e_version;
-        public int e_entry;
-        public int e_phoff;
-        public int e_shoff;
-        public int e_flags;
-        public int e_ehsize;
-        public int e_phentsize;
-        public int e_phnum;
-        public int e_shentsize;
-        public int e_shnum;
-        public int e_shstrndx;
+        int ei_version;
+        E_Type e_type;
+        E_Machine e_machine;
+        E_Version e_version;
+        int e_entry;
+        int e_phoff;
+        int e_shoff;
+        int e_flags;
+        int e_ehsize;
+        int e_phentsize;
+        int e_phnum;
+        int e_shentsize;
+        int e_shnum;
+        int e_shstrndx;
 
         ELFHeader(MappedByteBuffer fmap) throws IllegalArgumentException {
             if (fmap.get(ELFIdentification.EI_MAG0.value()) != 0x7f ||
@@ -256,46 +256,46 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
 
     private static class ELFSection {
-        public static final int SHT_NULL =      0;      /* Section header table entry unused */
-        public static final int SHT_PROGBITS =  1;      /* Program data */
-        public static final int SHT_SYMTAB =    2;      /* Symbol table */
-        public static final int SHT_STRTAB =    3;      /* String table */
-        public static final int SHT_RELA =      4;      /* Relocation entries with addends */
-        public static final int SHT_HASH =      5;      /* Symbol hash table */
-        public static final int SHT_DYNAMIC =   6;      /* Dynamic linking information */
-        public static final int SHT_NOTE =      7;      /* Notes */
-        public static final int SHT_NOBITS =    8;      /* Program space with no data (bss) */
-        public static final int SHT_REL =       9;      /* Relocation entries, no addends */
-        public static final int SHT_SHLIB =     10;     /* Reserved */
-        public static final int SHT_DYNSYM =    11;     /* Dynamic linker symbol table */
-        public static final int SHT_INIT_ARRAY =        14;     /* Array of constructors */
-        public static final int SHT_FINI_ARRAY =        15;     /* Array of destructors */
-        public static final int SHT_PREINIT_ARRAY =     16;     /* Array of pre-constructors */
-        public static final int SHT_GROUP =     17;     /* Section group */
-        public static final int SHT_SYMTAB_SHNDX =      18;     /* Extended section indices */
-        public static final int SHT_NUM =       19;     /* Number of defined types.  */
-        public static final int SHT_LOOS =      0x60000000;     /* Start OS-specific */
-        public static final int SHT_GNU_LIBLIST =       0x6ffffff7;     /* Prelink library list */
-        public static final int SHT_CHECKSUM =  0x6ffffff8;     /* Checksum for DSO content.  */
-        public static final int SHT_LOSUNW =    0x6ffffffa;     /* Sun-specific low bound.  */
-        public static final int SHT_SUNW_COMDAT =       0x6ffffffb;
-        public static final int SHT_HISUNW =    0x6fffffff;     /* Sun-specific high bound.  */
-        public static final int SHT_HIOS =      0x6fffffff;     /* End OS-specific type */
-        public static final int SHT_LOPROC =    0x70000000;     /* Start of processor-specific */
-        public static final int SHT_HIPROC =    0x7fffffff;     /* End of processor-specific */
-        public static final int SHT_LOUSER =    0x80000000;     /* Start of application-specific */
-        public static final int SHT_HIUSER =    0x8fffffff;     /* End of application-specific */
+        static final int SHT_NULL =      0;      /* Section header table entry unused */
+        static final int SHT_PROGBITS =  1;      /* Program data */
+        static final int SHT_SYMTAB =    2;      /* Symbol table */
+        static final int SHT_STRTAB =    3;      /* String table */
+        static final int SHT_RELA =      4;      /* Relocation entries with addends */
+        static final int SHT_HASH =      5;      /* Symbol hash table */
+        static final int SHT_DYNAMIC =   6;      /* Dynamic linking information */
+        static final int SHT_NOTE =      7;      /* Notes */
+        static final int SHT_NOBITS =    8;      /* Program space with no data (bss) */
+        static final int SHT_REL =       9;      /* Relocation entries, no addends */
+        static final int SHT_SHLIB =     10;     /* Reserved */
+        static final int SHT_DYNSYM =    11;     /* Dynamic linker symbol table */
+        static final int SHT_INIT_ARRAY =        14;     /* Array of constructors */
+        static final int SHT_FINI_ARRAY =        15;     /* Array of destructors */
+        static final int SHT_PREINIT_ARRAY =     16;     /* Array of pre-constructors */
+        static final int SHT_GROUP =     17;     /* Section group */
+        static final int SHT_SYMTAB_SHNDX =      18;     /* Extended section indices */
+        static final int SHT_NUM =       19;     /* Number of defined types.  */
+        static final int SHT_LOOS =      0x60000000;     /* Start OS-specific */
+        static final int SHT_GNU_LIBLIST =       0x6ffffff7;     /* Prelink library list */
+        static final int SHT_CHECKSUM =  0x6ffffff8;     /* Checksum for DSO content.  */
+        static final int SHT_LOSUNW =    0x6ffffffa;     /* Sun-specific low bound.  */
+        static final int SHT_SUNW_COMDAT =       0x6ffffffb;
+        static final int SHT_HISUNW =    0x6fffffff;     /* Sun-specific high bound.  */
+        static final int SHT_HIOS =      0x6fffffff;     /* End OS-specific type */
+        static final int SHT_LOPROC =    0x70000000;     /* Start of processor-specific */
+        static final int SHT_HIPROC =    0x7fffffff;     /* End of processor-specific */
+        static final int SHT_LOUSER =    0x80000000;     /* Start of application-specific */
+        static final int SHT_HIUSER =    0x8fffffff;     /* End of application-specific */
 
-        public int sh_name;
-        public int sh_type;
-        public int sh_flags;
-        public int sh_addr;
-        public int sh_offset;
-        public int sh_size;
-        public int sh_link;
-        public int sh_info;
-        public int sh_addralign;
-        public int sh_entsize;
+        int sh_name;
+        int sh_type;
+        int sh_flags;
+        int sh_addr;
+        int sh_offset;
+        int sh_size;
+        int sh_link;
+        int sh_info;
+        int sh_addralign;
+        int sh_entsize;
 
         ELFSection(MappedByteBuffer fmap) {
             sh_name = fmap.getInt();
@@ -336,7 +336,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             this.value = value;
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
     }
@@ -366,7 +366,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
 
@@ -397,7 +397,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
     }
@@ -432,7 +432,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
 
@@ -483,7 +483,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
 
@@ -519,7 +519,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         }
 
-        public int value() {
+        int value() {
             return this.value;
         }
 

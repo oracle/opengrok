@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -97,7 +97,7 @@ public final class Indexer {
 
     //whole app uses this separator
     public static final char PATH_SEPARATOR = '/';
-    public static String PATH_SEPARATOR_STRING = Character.toString(PATH_SEPARATOR);
+    public static final String PATH_SEPARATOR_STRING = Character.toString(PATH_SEPARATOR);
 
     private static final String HELP_OPT_1 = "--help";
     private static final String HELP_OPT_2 = "-?";

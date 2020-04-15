@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest.query.customized;
 
@@ -68,7 +69,7 @@ public class CustomSloppyPhraseScorerTest {
         }
 
         CustomPhraseQuery query = new CustomPhraseQuery(slop, "test", terms);
-        query.offset = offset;
+        query.setOffset(offset);
 
         try (IndexReader ir = DirectoryReader.open(dir)) {
             IndexSearcher is = new IndexSearcher(ir);

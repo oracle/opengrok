@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -60,6 +61,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.LaunderUtil;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 @Path("/projects")
@@ -67,14 +69,17 @@ public class ProjectsController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectsController.class);
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Inject
     private SuggesterService suggester;
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public Response addProject(final String projectName) {
+    public Response addProject(String projectName) {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+
         File srcRoot = env.getSourceRootFile();
         File projDir = new File(srcRoot, projectName);
 
@@ -146,8 +151,10 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}")
-    public void deleteProject(@PathParam("project") final String projectName)
+    public void deleteProject(@PathParam("project") String projectName)
             throws HistoryException {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
@@ -177,11 +184,11 @@ public class ProjectsController {
     @DELETE
     @Path("/{project}/data")
     public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
-
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
 
         // Delete index and xrefs.
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
@@ -202,6 +209,8 @@ public class ProjectsController {
     @DELETE
     @Path("/{project}/historycache")
     public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
@@ -234,7 +243,9 @@ public class ProjectsController {
     @PUT
     @Path("/{project}/indexed")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void markIndexed(@PathParam("project") final String projectName) throws Exception {
+    public void markIndexed(@PathParam("project") String projectName) throws Exception {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -269,10 +280,14 @@ public class ProjectsController {
     @PUT
     @Path("/{project}/property/{field}")
     public void set(
-            @PathParam("project") final String projectName,
-            @PathParam("field") final String field,
+            @PathParam("project") String projectName,
+            @PathParam("field") String field,
             final String value
     ) throws Exception {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+        field = LaunderUtil.userInput(field);
+
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             // Set the property.
@@ -296,8 +311,11 @@ public class ProjectsController {
     @GET
     @Path("/{project}/property/{field}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@PathParam("project") final String projectName, @PathParam("field") final String field)
+    public Object get(@PathParam("project") String projectName, @PathParam("field") String field)
             throws IOException {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+        field = LaunderUtil.userInput(field);
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
@@ -326,7 +344,10 @@ public class ProjectsController {
     @GET
     @Path("/{project}/repositories")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getRepositories(@PathParam("project") final String projectName) {
+    public List<String> getRepositories(@PathParam("project") String projectName) {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             List<RepositoryInfo> infos = env.getProjectRepositoriesMap().get(project);
@@ -343,7 +364,10 @@ public class ProjectsController {
     @GET
     @Path("/{project}/repositories/type")
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<String> getRepositoriesType(@PathParam("project") final String projectName) {
+    public Set<String> getRepositoriesType(@PathParam("project") String projectName) {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             List<RepositoryInfo> infos = env.getProjectRepositoriesMap().get(project);
@@ -360,6 +384,9 @@ public class ProjectsController {
     @Path("/{project}/files")
     @Produces(MediaType.APPLICATION_JSON)
     public Set<String> getProjectIndexFiles(@PathParam("project") String projectName) throws IOException {
+        // Avoid classification as a taint bug.
+        projectName = LaunderUtil.userInput(projectName);
+
         return IndexDatabase.getAllFiles(Collections.singletonList("/" + projectName));
     }
 }
