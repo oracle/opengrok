@@ -166,19 +166,13 @@ document.pageReady.push(function() { pageReadyList();});
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
             List<FileExtra> extras = null;
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
             /*
              * N.b. searchHelper.destroy() is called via
-             * WebappListener.requestDestroyed() on presence of the following
-             * REQUEST_ATTR.
+             * WebappListener.requestDestroyed() on presence of an attribute,
+             * REQUEST_ATTR, set by the following.
              */
-            request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
-            if (project != null) {
-                searchHelper.prepareExec(project);
-            } else {
-                //noinspection Convert2Diamond
-                searchHelper.prepareExec(new TreeSet<String>());
-            }
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            prepareExec(searchHelper, project);
 
             if (searchHelper.searcher != null) {
                 DirectoryExtraReader extraReader = new DirectoryExtraReader();
@@ -302,8 +296,22 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
+
             AnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
+            /*
+             * N.b. searchHelper.destroy() is called via
+             * WebappListener.requestDestroyed() on presence of an attribute,
+             * REQUEST_ATTR, set by the following.
+             */
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            prepareExec(searchHelper, project);
+            Genre g = null;
+            if (searchHelper.searcher != null) {
+                g = searchHelper.searchSingleGenre(resourceFile);
+            }
+            if (g == null) {
+                g = AnalyzerGuru.getGenre(a);
+            }
             String error = null;
             if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
@@ -338,7 +346,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                         if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
     %>
     <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+    Download file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
                         } else {
@@ -401,7 +409,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                  */
                                 Util.dumpXref(out, r, request.getContextPath());
                             } else {
-        %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+        %>Download file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.URIEncode(rev) %>"><%= basename %></a><%
                             }
                         }
@@ -439,7 +447,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             } else {
     %>
     <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
+    Download file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
             }
@@ -467,4 +475,14 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
 
 include file="foot.jspf"
 
+%>
+<%!
+    private static void prepareExec(SearchHelper searchHelper, Project project) {
+        if (project != null) {
+            searchHelper.prepareExec(project);
+        } else {
+            //noinspection Convert2Diamond
+            searchHelper.prepareExec(new TreeSet<String>());
+        }
+    }
 %>

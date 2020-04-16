@@ -432,7 +432,18 @@ public final class Indexer {
 
         searchPaths.clear();
 
-        // Limit usage lines to 72 characters for concise formatting.
+        /*
+         * FOR CONCISE FORMATTING, LIMIT USAGE DESCRIPTION LINES TO
+         *
+         *    8888888888  .d8888b.                888
+         *          d88P d88P  Y88b               888
+         *         d88P         888               888
+         *        d88P        .d88P       .d8888b 88888b.   8888b.  888d888 .d8888b
+         *     88888888   .od888P"       d88P"    888 "88b     "88b 888P"   88K
+         *      d88P     d88P"           888      888  888 .d888888 888     "Y8888b.
+         *     d88P      888"            Y88b.    888  888 888  888 888          X88
+         *    d88P       888888888        "Y8888P 888  888 "Y888888 888      88888P'
+         */
 
         optParser = OptionParser.execute(parser -> {
             parser.setPrologue(
@@ -550,16 +561,27 @@ public final class Indexer {
 
             parser.on("-H", "--history", "Enable history.").execute(v -> cfg.setHistoryEnabled(true));
 
+            parser.on("--historyRenamedThreads", "=number", Integer.class,
+                    "The number of threads to use for history cache generation when dealing",
+                    "with renamed files. By default the number of threads will be set to the",
+                    "number of available CPUs. Assumes --renamedHistory=on").execute(threadCount ->
+                    cfg.setHistoryRenamedParallelism((Integer) threadCount));
+
             parser.on("--historyThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation. By default the number",
-                    "of threads will be set to the number of available CPUs. Assumes -H/--history.").execute(threadCount ->
+                    "The number of threads to use for history cache generation. By default",
+                    "the number of threads will be set to the number of available CPUs.",
+                    "Assumes -H/--history.").execute(threadCount ->
                     cfg.setHistoryParallelism((Integer) threadCount));
 
-            parser.on("--historyRenamedThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation when dealing with renamed files.",
-                    "By default the number of threads will be set to the number of available CPUs.",
-                    "Assumes --renamedHistory=on").execute(threadCount ->
-                    cfg.setHistoryRenamedParallelism((Integer) threadCount));
+            parser.on("--hugeBytes", "=number", Integer.class,
+                    "Threshold number of bytes to qualify a Huge Text data file vs a plain-",
+                    "text source code file. Default is 1_000_000.").execute(value ->
+                    cfg.setHugeTextThresholdBytes((int) value));
+
+            parser.on("--hugeCharacters", "=number", Integer.class,
+                    "Limit for number of characters to read and index from a Huge Text data",
+                    "Assumes --renamedHistory=on").execute(value ->
+                    cfg.setHugeTextLimitCharacters((int) value));
 
             parser.on("-I", "--include", "=pattern",
                     "Only files matching this pattern will be examined. Pattern supports",

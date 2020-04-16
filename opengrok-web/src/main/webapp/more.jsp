@@ -63,13 +63,12 @@ file="mast.jsp"
     if (activeProject == null) {
         qbuilder = cfg.getQueryBuilder();
     } else {
-        searchHelper = cfg.prepareInternalSearch();
         /*
          * N.b. searchHelper.destroy() is called via
-         * WebappListener.requestDestroyed() on presence of the following
-         * REQUEST_ATTR.
+         * WebappListener.requestDestroyed() on presence of an attribute,
+         * REQUEST_ATTR, set by the following.
          */
-        request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+        searchHelper = cfg.prepareInternalSearch();
         searchHelper.prepareExec(activeProject);
         if (searchHelper.searcher != null) {
             docId = searchHelper.searchSingle(resourceFile);

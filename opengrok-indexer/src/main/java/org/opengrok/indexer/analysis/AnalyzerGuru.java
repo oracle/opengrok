@@ -67,6 +67,7 @@ import org.opengrok.indexer.analysis.c.CAnalyzerFactory;
 import org.opengrok.indexer.analysis.c.CxxAnalyzerFactory;
 import org.opengrok.indexer.analysis.clojure.ClojureAnalyzerFactory;
 import org.opengrok.indexer.analysis.csharp.CSharpAnalyzerFactory;
+import org.opengrok.indexer.analysis.data.HugeTextAnalyzerFactory;
 import org.opengrok.indexer.analysis.data.IgnorantAnalyzerFactory;
 import org.opengrok.indexer.analysis.data.ImageAnalyzerFactory;
 import org.opengrok.indexer.analysis.document.MandocAnalyzerFactory;
@@ -244,6 +245,8 @@ public class AnalyzerGuru {
     private static final LangTreeMap langMap = new LangTreeMap();
     private static final LangTreeMap defaultLangMap = new LangTreeMap();
 
+    private static String hugeTextFileTypeName;
+
     /*
      * If you write your own analyzer please register it here. The order is
      * important for any factory that uses a FileAnalyzerFactory.Matcher
@@ -303,7 +306,8 @@ public class AnalyzerGuru {
                 new AsmAnalyzerFactory(),
                 new HCLAnalyzerFactory(),
                 new TerraformAnalyzerFactory(),
-                new RAnalyzerFactory()
+                new RAnalyzerFactory(),
+                HugeTextAnalyzerFactory.DEFAULT_INSTANCE
             };
 
             for (AnalyzerFactory analyzer : analyzers) {
@@ -391,6 +395,21 @@ public class AnalyzerGuru {
 
     public static List<AnalyzerFactory> getAnalyzerFactories() {
         return Collections.unmodifiableList(factories);
+    }
+
+    /**
+     * Gets the normalized name of the
+     * {@link org.opengrok.indexer.analysis.data.HugeTextAnalyzer} class.
+     * @return a defined instance
+     */
+    public static String getHugeTextFileTypeName() {
+        if (hugeTextFileTypeName == null) {
+            String newValue = HugeTextAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer().
+                    getFileTypeName();
+            hugeTextFileTypeName = newValue;
+            return newValue;
+        }
+        return hugeTextFileTypeName;
     }
 
     /**

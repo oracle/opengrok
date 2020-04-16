@@ -61,13 +61,12 @@ org.opengrok.indexer.web.Util"
         String primePath = path;
         Project project = cfg.getProject();
         if (project != null) {
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
             /*
              * N.b. searchHelper.destroy() is called via
-             * WebappListener.requestDestroyed() on presence of the following
-             * REQUEST_ATTR.
+             * WebappListener.requestDestroyed() on presence of an attribute,
+             * REQUEST_ATTR, set by the following.
              */
-            request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
             searchHelper.prepareExec(project);
 
             try {

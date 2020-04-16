@@ -88,6 +88,7 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.data.HugeTextAnalyzerFactory;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -708,6 +709,11 @@ public class IndexDatabase {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         AbstractAnalyzer fa = getAnalyzerFor(file, path);
+
+        if (AbstractAnalyzer.Genre.PLAIN.equals(fa.getGenre()) &&
+                file.length() >= env.getHugeTextThresholdBytes()) {
+            fa = HugeTextAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer();
+        }
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -1708,14 +1714,14 @@ public class IndexDatabase {
     }
 
     /**
-     * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
-     * or return a value to indicate mismatch.
+     * Verify TABSIZE, validate AnalyzerGuru version together with Analyzer
+     * version, and recheck huge text file constraint -- or return a value to
+     * indicate mismatch.
      * @param file the source file object
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean checkSettings(File file,
-                                  String path) throws IOException {
+    private boolean checkSettings(File file, String path) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean outIsXrefWriter = false;
@@ -1759,8 +1765,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                AnalyzerFactory fac =
-                        AnalyzerGuru.findByFileTypeName(fileTypeName);
+                AnalyzerFactory fac = AnalyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();
                 }
@@ -1795,7 +1800,27 @@ public class IndexDatabase {
                 return false;
             }
 
+            // If it is a Huge Text file, re-check constraints.
+            if (AnalyzerGuru.getHugeTextFileTypeName().equals(fileTypeName) &&
+                    file.length() < env.getHugeTextThresholdBytes()) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "{0} no longer qualifies: {1}",
+                            new Object[]{fileTypeName, path});
+                }
+                return false;
+            }
+
             if (fa != null) {
+                // If the Genre is PLAIN, re-check Huge Text file constraints.
+                if (AbstractAnalyzer.Genre.PLAIN.equals(fa.getGenre()) &&
+                        file.length() >= env.getHugeTextThresholdBytes()) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "{0} is now a huge text file: {1}",
+                                new Object[]{fileTypeName, path});
+                    }
+                    return false;
+                }
+
                 outIsXrefWriter = isXrefWriter(fa);
             }
 

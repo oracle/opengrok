@@ -1488,6 +1488,11 @@ public final class PageConfig {
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
+     * <p>
+     * The result is stored as a request attribute keyed to
+     * {@link SearchHelper#REQUEST_ATTR} for later cleanup via
+     * {@link SearchHelper#destroy()}. Any object already set will have
+     * {@link SearchHelper#destroy()} called.
      *
      * @return a search helper.
      */
@@ -1519,9 +1524,21 @@ public final class PageConfig {
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
+     * <p>
+     * The result is stored as a request attribute keyed to
+     * {@link SearchHelper#REQUEST_ATTR} for later cleanup via
+     * {@link SearchHelper#destroy()}. Any object already set will have
+     * {@link SearchHelper#destroy()} called.
+     *
      * @return a search helper.
      */
     public SearchHelper prepareInternalSearch() {
+        Object cached = req.getAttribute(SearchHelper.REQUEST_ATTR);
+        if (cached != null) {
+            req.setAttribute(SearchHelper.REQUEST_ATTR, null);
+            ((SearchHelper) cached).destroy();
+        }
+
         SearchHelper sh = new SearchHelper();
         sh.dataRoot = getDataRoot(); // throws Exception if none-existent
         sh.order = SortOrder.RELEVANCY;
@@ -1537,6 +1554,13 @@ public final class PageConfig {
         sh.sourceRoot = new File(getSourceRootPath());
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
         sh.noRedirect = xrValue != null && !xrValue.isEmpty();
+
+        /*
+         * N.b. searchHelper.destroy() is called via
+         * WebappListener.requestDestroyed() on presence of the following
+         * REQUEST_ATTR.
+         */
+        req.setAttribute(SearchHelper.REQUEST_ATTR, sh);
         return sh;
     }
 

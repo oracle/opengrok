@@ -641,12 +641,11 @@ public class SearchHelper {
     /**
      * Searches for a document for a single file from the index.
      * @param file the file whose definitions to find
-     * @return {@link ScoreDoc#doc} or -1 if it could not be found
+     * @return a defined instance or {@code null} if not found
      * @throws IOException if an error happens when accessing the index
      * @throws ParseException if an error happens when building the Lucene query
      */
-    public int searchSingle(File file) throws IOException,
-            ParseException {
+    public SingleResult searchSingleResult(File file) throws IOException, ParseException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
@@ -654,7 +653,7 @@ public class SearchHelper {
             path = env.getPathRelativeToSourceRoot(file);
         } catch (ForbiddenSymlinkException e) {
             LOGGER.log(Level.FINER, e.getMessage());
-            return -1;
+            return null;
         }
         //sanitize windows path delimiters
         //in order not to conflict with Lucene escape character
@@ -668,7 +667,7 @@ public class SearchHelper {
 
         TopDocs top = searcher.search(query, 1);
         if (top.totalHits.value == 0) {
-            return -1;
+            return null;
         }
 
         int docID = top.scoreDocs[0].doc;
@@ -677,10 +676,41 @@ public class SearchHelper {
         String foundPath = doc.get(QueryBuilder.PATH);
         // Only use the result if PATH matches exactly.
         if (!path.equals(foundPath)) {
-            return -1;
+            return null;
         }
 
-        return docID;
+        return new SingleResult(doc, docID);
+    }
+
+    /**
+     * Searches for a document for a single file from the index.
+     * @param file the file whose definitions to find
+     * @return {@link ScoreDoc#doc} or -1 if it could not be found
+     * @throws IOException if an error happens when accessing the index
+     * @throws ParseException if an error happens when building the Lucene query
+     */
+    public int searchSingle(File file) throws IOException, ParseException {
+        SingleResult result = searchSingleResult(file);
+        if (result != null) {
+            return result.getDocID();
+        }
+        return -1;
+    }
+
+    /**
+     * Searches for a document for a single file from the index to retrieve its
+     * {@link AbstractAnalyzer.Genre}.
+     * @param file the file whose definitions to find
+     * @return a defined instance or {@code null} if not found
+     * @throws IOException if an error happens when accessing the index
+     * @throws ParseException if an error happens when building the Lucene query
+     */
+    public AbstractAnalyzer.Genre searchSingleGenre(File file) throws IOException, ParseException {
+        SingleResult result = searchSingleResult(file);
+        if (result != null) {
+            return AbstractAnalyzer.Genre.get(result.getDocument().get(QueryBuilder.T));
+        }
+        return null;
     }
 
     /**
