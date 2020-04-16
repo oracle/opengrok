@@ -92,10 +92,15 @@ public class ConfigurationHelp {
                     mthd);
             }
 
+            String propertyName = mthd.getName().replaceFirst("^set", "");
+
             sample = conf.getXMLRepresentationAsString();
             sample = sample.replaceFirst(
                 "(?sx)^<\\?xml.*Configuration\\d*\">\\n", "");
             sample = sample.replaceFirst("</object>\\n</java>", "");
+            // With Java 11 the following excision is necessary.
+            sample = sample.replaceFirst("(?isx)^.*\\n(?=\\s*<void\\s+property=\"" +
+                    propertyName + "\")", "");
 
             h.clear();
             h.append(XML_COMMENT_START);
