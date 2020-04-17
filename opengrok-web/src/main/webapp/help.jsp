@@ -63,7 +63,7 @@ include file="menu.jspf"
 
 To find where setResourceMonitors is defined:
 <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>&amp;
-    <%= QueryParameters.DEFS_SEARCH_PARAM_EQ %>setResourceMonitors">
+<%= QueryParameters.DEFS_SEARCH_PARAM_EQ %>setResourceMonitors">
     <%= QueryBuilder.DEFS %>:setResourceMonitors</a>
 
 To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:

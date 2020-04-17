@@ -398,7 +398,7 @@ document.domReady.push(function() {domReadyHistory();});
                         } else {
                 %>
 <a class="h" href="<%= context + Prefix.XREF_P + ifile %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-    <%= rev %>"><%= jfile %></a><br/><%
+<%= rev %>"><%= jfile %></a><br/><%
                         }
                     }
                 %></div><%
