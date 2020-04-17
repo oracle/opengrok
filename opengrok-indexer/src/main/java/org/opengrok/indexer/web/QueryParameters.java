@@ -125,6 +125,12 @@ public class QueryParameters {
     public static final String NO_REDIRECT_PARAM = "xrd";
 
     /**
+     * Parameter name to specify a count of projects selected by the user
+     * through browser interaction.
+     */
+    public static final String NUM_SELECTED_PARAM = "nn";
+
+    /**
      * Parameter name to specify an OpenGrok search of paths.
      */
     public static final String PATH_SEARCH_PARAM = "path";

@@ -1366,6 +1366,9 @@ function init_searchable_option_list() {
         showSelectAll: false,
         maxShow: 30,
         resultsContainer: $("#ltbl"),
+        numSelectedItem: $("#nn"),
+        quickDeleteForm: $("#sbox"),
+        quickDeletePermit: checkIsOnSearchPage,
         texts: {
             searchplaceholder: 'Click here to select project(s)'
         },
@@ -2235,6 +2238,14 @@ function scope_on_scroll() {
  */
 function isOnSearchPage() {
     return $(document.documentElement).hasClass('search');
+}
+
+function checkIsOnSearchPage() {
+    if (isOnSearchPage()) {
+        $('#xrd').val("1"); // no redirect
+        return true;
+    }
+    return false;
 }
 
 /**

@@ -27,7 +27,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 java.util.Map,
 java.util.Set,
 java.util.SortedSet,
-java.util.TreeMap,
 java.util.TreeSet,
 
 org.opengrok.indexer.configuration.Group,
@@ -47,9 +46,6 @@ org.opengrok.indexer.web.messages.MessagesUtils"
     ProjectHelper ph = ProjectHelper.getInstance(cfg);
     String messages;
     Set<Project> projects = ph.getAllProjects();
-    if (projects == null) {
-        projects = new TreeSet<>();
-    }
     int projectsSize = ph.getAllUngrouped().size();
     if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0)
         projectsSize++;
@@ -57,15 +53,7 @@ org.opengrok.indexer.web.messages.MessagesUtils"
         projectsSize++;
         projectsSize += ph.getAllGrouped(group).size();
     }
-    TreeMap<String, String> pMap = new TreeMap<>();
     QueryBuilder queryParams = cfg.getQueryBuilder();
-    if (projects.size() != 0) {
-        for (Project p : projects) {
-            String name = p.getName();
-            String esc = Util.formQuoteEscape(p.getName());
-            pMap.put(name, esc);
-        }
-    }
 %>
 <script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() { domReadyMenu(); });
@@ -243,6 +231,8 @@ document.domReady.push(function() { domReadyMenu(); });
 </div>
 <input type="hidden" id="<%= QueryParameters.NO_REDIRECT_PARAM %>"
        name="<%= QueryParameters.NO_REDIRECT_PARAM %>" value=""/>
+<input type="hidden" id="<%= QueryParameters.NUM_SELECTED_PARAM %>"
+       name="<%= QueryParameters.NUM_SELECTED_PARAM %>" value=""/>
 </form>
 <div class="clearfix"></div>
 <%
