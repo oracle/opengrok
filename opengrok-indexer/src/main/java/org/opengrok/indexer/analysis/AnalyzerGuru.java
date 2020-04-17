@@ -389,7 +389,7 @@ public class AnalyzerGuru {
         return Collections.unmodifiableMap(fileTypeDescriptions);
     }
 
-    public List<AnalyzerFactory> getAnalyzerFactories() {
+    public static List<AnalyzerFactory> getAnalyzerFactories() {
         return Collections.unmodifiableList(factories);
     }
 
@@ -575,9 +575,8 @@ public class AnalyzerGuru {
      * @throws IOException If an exception occurs while collecting the data
      * @throws InterruptedException if a timeout occurs
      */
-    public void populateDocument(Document doc, File file, String path,
-        AbstractAnalyzer fa, Writer xrefOut) throws IOException,
-            InterruptedException {
+    public static void populateDocument(Document doc, File file, String path,
+            AbstractAnalyzer fa, Writer xrefOut) throws IOException, InterruptedException {
 
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
@@ -1189,5 +1188,9 @@ public class AnalyzerGuru {
             return false;
         }
         return a_name == null || !a_name.equals(b_name);
+    }
+
+    /* private to enforce static */
+    private AnalyzerGuru() {
     }
 }

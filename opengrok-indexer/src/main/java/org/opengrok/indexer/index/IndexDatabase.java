@@ -129,7 +129,7 @@ public class IndexDatabase {
     private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
             Comparator.comparingInt(String::length).thenComparing(o -> o));
 
-    private Project project;
+    private final Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
@@ -138,7 +138,6 @@ public class IndexDatabase {
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
     private PathAccepter pathAccepter;
-    private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
     private CopyOnWriteArrayList<IndexChangedListener> listeners;
@@ -307,7 +306,6 @@ public class IndexDatabase {
             lockfact = pickLockFactory(env);
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
             pathAccepter = env.getPathAccepter();
-            analyzerGuru = new AnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
@@ -726,7 +724,7 @@ public class IndexDatabase {
 
         Document doc = new Document();
         try (Writer xrefOut = newXrefWriter(fa, path)) {
-            analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+            AnalyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
                 new Object[]{path, e.getMessage()});

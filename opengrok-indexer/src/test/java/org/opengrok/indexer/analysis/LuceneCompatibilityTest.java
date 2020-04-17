@@ -72,7 +72,6 @@ public class LuceneCompatibilityTest extends TestCase {
         }
     }
     Analyzer testA;
-    AnalyzerGuru guru;
     Method testM;
     Object testC = null;
 
@@ -81,7 +80,6 @@ public class LuceneCompatibilityTest extends TestCase {
      */
     @Override
     protected void setUp() throws Exception {
-        guru = new AnalyzerGuru();
         Class<?> c = Class.forName(LUCENE_TEST_CLASS);
         //testC = c.newInstance(); //this is static call
         Class<?>[] argTypes = {TokenStream.class, String[].class, int[].class, int[].class, String[].class, int[].class, int[].class, Integer.class, boolean.class};
@@ -89,7 +87,7 @@ public class LuceneCompatibilityTest extends TestCase {
     }
 
     public void testCompatibility() throws Exception {
-        for (AnalyzerFactory fa : guru.getAnalyzerFactories()) {
+        for (AnalyzerFactory fa : AnalyzerGuru.getAnalyzerFactories()) {
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();
