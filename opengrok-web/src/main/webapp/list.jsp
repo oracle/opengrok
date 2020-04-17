@@ -326,7 +326,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %>
     <div id="src">
     Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-        <%= Util.URIEncode(rev) %>"><%= basename %></a>
+<%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
                         } else {
     %>
@@ -389,7 +389,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 Util.dumpXref(out, r, request.getContextPath());
                             } else {
         %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-            <%= Util.URIEncode(rev) %>"><%= basename %></a><%
+<%= Util.URIEncode(rev) %>"><%= basename %></a><%
                             }
                         }
                     } catch (IOException e) {
@@ -427,7 +427,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %>
     <div id="src">
     Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-        <%= Util.URIEncode(rev) %>"><%= basename %></a>
+<%= Util.URIEncode(rev) %>"><%= basename %></a>
     </div><%
             }
         }
