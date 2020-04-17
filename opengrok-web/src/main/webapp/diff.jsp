@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -169,10 +169,10 @@ include file="mast.jsp"
             %></span><%
             } else {
         %> <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-                <%= QueryParameters.FORMAT_PARAM_EQ %><%= t.getAbbrev() %>&amp;
-                <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'
-            %>"><%= t.toString() %><%
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= t.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
+            <%
                 if (t == DiffType.OLD) {
             %>  ( <%= data.rev[0] %> )<%
                 } else if (t == DiffType.NEW) {
@@ -186,23 +186,23 @@ include file="mast.jsp"
         if (!full) {
         %>
         <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-            <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-            <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1">full</a></span>
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1">full</a></span>
         <span class="active">compact</span><%
         } else {
         %>
         <span class="active">full</span>
         <span> <a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-            <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-            <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>0">compact</a></span><%
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>0">compact</a></span><%
         }
         %><span><a href="#" id="toggle-jumper">jumper</a></span>
         <span><a href="<%= reqURI %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-            <%= QueryParameters.FORMAT_PARAM_EQ %><%= DiffType.TEXT %>&amp;
-            action=download">download diff</a></span><%
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= DiffType.TEXT %>&amp;
+action=download">download diff</a></span><%
     %></div>
 </div>
 
@@ -275,10 +275,10 @@ include file="mast.jsp"
                             }
                 %><br/>--- <b><%= cn2 - ln2 - 16
                     %> unchanged lines hidden</b> (<a href="<%= reqURI
-                    %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-                    <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-                    <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-                    <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
+%>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
                     --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
@@ -339,10 +339,10 @@ include file="mast.jsp"
                             }
                 %><br/>--- <b><%= cn1 - ln1 - 16
                     %> unchanged lines hidden</b> (<a href="<%= reqURI
-                    %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-                    <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-                    <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-                    <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
+%>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
                     --- <br/><br/><%
                             ln1 = cn1 - 8;
                             for (int j = ln1; j < cn1; j++) {
@@ -356,10 +356,10 @@ include file="mast.jsp"
                             }
                 %><br/>--- <b><%= cn2 - ln2 - 16
                     %> unchanged lines hidden</b> (<a href="<%= reqURI
-                    %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-                    <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-                    <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-                    <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
+%>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>)
                     --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
@@ -398,10 +398,10 @@ include file="mast.jsp"
                             }
         %><br/>--- <b><%= cn1 - ln1 - 16
             %> unchanged lines hidden</b> (<a href="<%= reqURI
-            %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-            <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-            <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%=ln1%>">view full</a>) --- <br/><br/><%
+%>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%=ln1%>">view full</a>) --- <br/><br/><%
                             ln1 = cn1 - 8;
                             for (int j = ln1; j < cn1; j++) {
         %><i><%= ++ln1 %></i><%=
@@ -430,10 +430,10 @@ include file="mast.jsp"
                             }
         %><br/>--- <b><%= cn2 - ln2 - 16
             %> unchanged lines hidden</b> (<a href="<%= reqURI
-            %>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
-            <%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
-            <%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
-            <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>) --- <br/><br/><%
+%>?<%= QueryParameters.REVISION_1_PARAM_EQ %><%= rp1 %>&amp;
+<%= QueryParameters.REVISION_2_PARAM_EQ %><%= rp2 %>&amp;
+<%= QueryParameters.FORMAT_PARAM_EQ %><%= type.getAbbrev() %>&amp;
+<%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>) --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
             %><i><%= ++ln2 %></i><%=
