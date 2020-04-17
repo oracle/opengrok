@@ -59,6 +59,7 @@ import org.opengrok.indexer.search.QueryBuilder;
 public class FileAnalyzer extends AbstractAnalyzer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAnalyzer.class);
+    private static final String ANALYZER_LC = "analyzer";
 
     /**
      * @return {@code null} as there is no aligned language
@@ -134,10 +135,9 @@ public class FileAnalyzer extends AbstractAnalyzer {
     @Override
     public String getFileTypeName() {
         String name = this.getClass().getSimpleName().toLowerCase(Locale.ROOT);
-        String suffix = "analyzer";
 
-        if (name.endsWith(suffix)) {
-            return name.substring(0, name.length() - suffix.length());
+        if (name.endsWith(ANALYZER_LC)) {
+            return name.substring(0, name.length() - ANALYZER_LC.length());
         }
 
         return name;
