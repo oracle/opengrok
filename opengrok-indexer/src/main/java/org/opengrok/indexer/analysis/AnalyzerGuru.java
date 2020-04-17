@@ -626,7 +626,7 @@ public class AnalyzerGuru {
 
         if (fa != null) {
             AbstractAnalyzer.Genre g = fa.getGenre();
-            if (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.XREFABLE || g == AbstractAnalyzer.Genre.HTML) {
+            if (g != null) {
                 doc.add(new Field(QueryBuilder.T, g.typeName(), string_ft_stored_nanalyzed_norms));
             }
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
