@@ -38,6 +38,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -131,7 +132,7 @@ public class HugeTextTest {
 
         @Override
         public void fileAdded(String path, String analyzer) {
-            addedFiles.add(new AddedFile(path, analyzer));
+            addedFiles.add(new AddedFile(Util.fixPathIfWindows(path), analyzer));
         }
 
         @Override
@@ -140,7 +141,7 @@ public class HugeTextTest {
 
         @Override
         public void fileRemoved(String path) {
-            removedFiles.add(path);
+            removedFiles.add(Util.fixPathIfWindows(path));
         }
 
         void reset() {
