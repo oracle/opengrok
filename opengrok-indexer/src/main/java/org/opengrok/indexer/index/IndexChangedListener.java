@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -50,9 +51,4 @@ public interface IndexChangedListener {
      * @param path The path to the file (absolute from source root)
      */
     void fileRemoved(String path);
-    /**
-     * A file is to be updated in the index database.
-     * @param path The path to the file (absolute from source root)
-     */
-    void fileUpdate(String path);
 }

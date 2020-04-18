@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.index;
@@ -203,10 +203,6 @@ public class IndexerTest {
         }
 
         @Override
-        public void fileUpdate(String path) {
-        }
-
-        @Override
         public void fileRemoved(String path) {
             removedFiles.add(path);
         }
@@ -279,10 +275,6 @@ public class IndexerTest {
 
         @Override
         public void fileRemove(String path) {
-        }
-
-        @Override
-        public void fileUpdate(String path) {
         }
 
         @Override

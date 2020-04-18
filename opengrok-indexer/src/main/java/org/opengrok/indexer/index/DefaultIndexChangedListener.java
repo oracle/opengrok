@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -49,10 +49,6 @@ public class DefaultIndexChangedListener implements IndexChangedListener {
     @Override
     public void fileRemove(String path) {
         LOGGER.log(Level.FINE, "Remove file:{0}", path);
-    }
-    @Override
-    public void fileUpdate(String path) {
-        LOGGER.log(Level.FINE, "Update: {0}", path);
     }
 
     @Override
