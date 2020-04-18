@@ -46,6 +46,8 @@ import java.io.Writer;
  */
 public abstract class CompressedAnalyzer extends FileAnalyzer {
 
+    private static final int CHUNK_SIZE = 8 * 1024;
+
     protected Genre g;
 
     @Override
@@ -93,10 +95,17 @@ public abstract class CompressedAnalyzer extends FileAnalyzer {
             return false;
         }
 
-        byte[] buf = new byte[8 * 1024];
-        int bytesRead = 0;
-        int n;
         try (InputStream in = compressedSrc.getStream()) {
+            // Try skip first.
+            SkipResult result = meetsHugeTextThresholdBySkip(in, hugeTextThresholdBytes);
+            if (result.didMeet) {
+                return true;
+            }
+
+            // Even if some skipped, only read==-1 is a true indicator of EOF.
+            long bytesRead = result.bytesSkipped;
+            byte[] buf = new byte[CHUNK_SIZE];
+            long n;
             while ((n = in.read(buf, 0, buf.length)) != -1) {
                 bytesRead += n;
                 if (bytesRead >= hugeTextThresholdBytes) {
@@ -105,5 +114,31 @@ public abstract class CompressedAnalyzer extends FileAnalyzer {
             }
         }
         return false;
+    }
+
+    private SkipResult meetsHugeTextThresholdBySkip(InputStream in, int hugeTextThresholdBytes) {
+        long bytesSkipped = 0;
+        long n;
+        try {
+            while ((n = in.skip(CHUNK_SIZE)) > 0) {
+                bytesSkipped += n;
+                if (bytesSkipped >= hugeTextThresholdBytes) {
+                    return new SkipResult(bytesSkipped, true);
+                }
+            }
+        } catch (IOException ignored) {
+            // Ignore and assume not capable of skip.
+        }
+        return new SkipResult(bytesSkipped, false);
+    }
+
+    private static class SkipResult {
+        final long bytesSkipped;
+        final boolean didMeet;
+
+        SkipResult(long bytesSkipped, boolean didMeet) {
+            this.bytesSkipped = bytesSkipped;
+            this.didMeet = didMeet;
+        }
     }
 }
