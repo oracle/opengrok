@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-package org.opengrok.indexer.util;
+package org.opengrok.web.api.v1.controller;
 
 import java.io.IOException;
 import java.net.DatagramSocket;

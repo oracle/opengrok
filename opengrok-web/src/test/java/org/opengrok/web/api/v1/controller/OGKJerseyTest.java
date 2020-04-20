@@ -26,7 +26,6 @@ package org.opengrok.web.api.v1.controller;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.Before;
-import org.opengrok.indexer.util.PortChecker;
 
 import java.util.Random;
 
