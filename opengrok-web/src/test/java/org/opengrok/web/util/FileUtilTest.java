@@ -18,16 +18,31 @@
  */
 
 /*
- * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.web.util;
 
-public class NoPathParameterException extends Exception {
-    private static final long serialVersionUID = 1L;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    public NoPathParameterException(String message) {
-        super(message);
+import org.junit.Test;
+import java.io.FileNotFoundException;
+import java.util.UUID;
+
+/**
+ * Represents a container for tests of {@link FileUtil}.
+ */
+public class FileUtilTest {
+
+    @Test
+    public void shouldThrowOnNullArgument() throws FileNotFoundException {
+        assertThrows(NoPathParameterException.class, () -> FileUtil.toFile(null),
+                "toFile(null)");
+    }
+
+    @Test
+    public void shouldThrowOnMissingFile() throws NoPathParameterException {
+        assertThrows(FileNotFoundException.class, () -> FileUtil.toFile(
+                UUID.randomUUID().toString()), "toFile(randomUUID)");
     }
 }
