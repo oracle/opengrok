@@ -33,11 +33,14 @@ import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.data.HugeTextAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a base for compressed formats (e.g. gzip or bzip2) but not for
@@ -45,6 +48,8 @@ import java.io.Writer;
  * @author Chandan
  */
 public abstract class CompressedAnalyzer extends FileAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressedAnalyzer.class);
 
     private static final int CHUNK_SIZE = 8 * 1024;
 
@@ -68,8 +73,13 @@ public abstract class CompressedAnalyzer extends FileAnalyzer {
 
         if (fa.getGenre() == Genre.PLAIN) {
             if (meetsHugeTextThreshold(compressedSrc)) {
+                String origFileTypeName = fa.getFileTypeName();
                 fa = HugeTextAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer();
                 g = Genre.DATA;
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, "{0} is compressed huge text: {1}",
+                            new Object[]{origFileTypeName, compressedSrc.getSourceIdentifier()});
+                }
             } else {
                 g = Genre.XREFABLE;
             }

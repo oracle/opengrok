@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.plain;
@@ -173,6 +173,11 @@ public class DefinitionsTokenStreamTest {
                     getResourceAsStream(name);
                 assertNotNull(name + " as resource,", srcres);
                 return srcres;
+            }
+
+            @Override
+            public String getSourceIdentifier() {
+                return name;
             }
         };
     }

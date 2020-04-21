@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright 2009 - 2011 Jens Elkner. 
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
@@ -123,6 +124,11 @@ public class TroffAnalyzerTest {
             @Override
             public InputStream getStream() throws IOException {
                 return new ByteArrayInputStream(content.getBytes());
+            }
+
+            @Override
+            public String getSourceIdentifier() {
+                return "String";
             }
         }, xrefOut);
     }

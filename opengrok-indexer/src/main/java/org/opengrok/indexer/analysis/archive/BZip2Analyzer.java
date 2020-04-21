@@ -112,6 +112,11 @@ public class BZip2Analyzer extends CompressedAnalyzer {
                     throw new IOException("Not BZIP2 format");
                 }
             }
+
+            @Override
+            public String getSourceIdentifier() {
+                return src.getSourceIdentifier();
+            }
         };
     }    
 }

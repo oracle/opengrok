@@ -712,7 +712,12 @@ public class IndexDatabase {
 
         if (AbstractAnalyzer.Genre.PLAIN.equals(fa.getGenre()) &&
                 file.length() >= env.getHugeTextThresholdBytes()) {
+            String origFileTypeName = fa.getFileTypeName();
             fa = HugeTextAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer();
+            if (LOGGER.isLoggable(Level.WARNING)) {
+                LOGGER.log(Level.WARNING, "{0} is huge text: {1}",
+                        new Object[]{origFileTypeName, path});
+            }
         }
 
         for (IndexChangedListener listener : listeners) {
@@ -1803,8 +1808,8 @@ public class IndexDatabase {
             // If it is a Huge Text file, re-check constraints.
             if (AnalyzerGuru.getHugeTextFileTypeName().equals(fileTypeName) &&
                     file.length() < env.getHugeTextThresholdBytes()) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "{0} no longer qualifies: {1}",
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, "{0} no longer qualifies: {1}",
                             new Object[]{fileTypeName, path});
                 }
                 return false;
@@ -1814,8 +1819,8 @@ public class IndexDatabase {
                 // If the Genre is PLAIN, re-check Huge Text file constraints.
                 if (AbstractAnalyzer.Genre.PLAIN.equals(fa.getGenre()) &&
                         file.length() >= env.getHugeTextThresholdBytes()) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "{0} is now a huge text file: {1}",
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.log(Level.WARNING, "{0} is now huge text: {1}",
                                 new Object[]{fileTypeName, path});
                     }
                     return false;

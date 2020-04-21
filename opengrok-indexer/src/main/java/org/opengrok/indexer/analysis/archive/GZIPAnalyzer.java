@@ -105,6 +105,11 @@ public class GZIPAnalyzer extends CompressedAnalyzer {
                 return new BufferedInputStream(
                         new GZIPInputStream(src.getStream()));
             }
+
+            @Override
+            public String getSourceIdentifier() {
+                return src.getSourceIdentifier();
+            }
         };
     }    
 }

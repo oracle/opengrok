@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.pascal;
 
@@ -58,15 +58,6 @@ public class PascalAnalyzerFactoryTest {
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
 
-    private static StreamSource getStreamSource(final String fname) {
-        return new StreamSource() {
-            @Override
-            public InputStream getStream() throws IOException {
-                return new FileInputStream(fname);
-            }
-        };
-    }
-    
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
@@ -108,7 +99,7 @@ public class PascalAnalyzerFactoryTest {
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
-        analyzer.analyze(doc, getStreamSource(path), xrefOut);
+        analyzer.analyze(doc, StreamSource.fromFile(f), xrefOut);
 
         Definitions definitions = Definitions.deserialize(doc.getField(QueryBuilder.TAGS).binaryValue().bytes);
         assertNotNull(definitions);
