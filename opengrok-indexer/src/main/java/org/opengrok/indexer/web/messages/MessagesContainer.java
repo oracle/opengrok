@@ -28,6 +28,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.opengrok.indexer.logger.LoggerFactory;
+
 import javax.validation.constraints.NotBlank;
 
 import java.io.IOException;
@@ -45,9 +47,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class MessagesContainer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessagesContainer.class);
 
     public static final String MESSAGES_MAIN_PAGE_TAG = "main";
 
@@ -121,7 +127,9 @@ public class MessagesContainer {
             }
 
             if (isMessageLimitExceeded()) {
-                return;
+                LOGGER.log(Level.WARNING, "cannot add message to the system, limit of {0} messages exceeded." +
+                        "consider setting the ''messageLimit'' tunable.", messageLimit);
+                throw new IllegalStateException("Cannot add message - message limit exceeded");
             }
 
             if (expirationTimer == null) {
