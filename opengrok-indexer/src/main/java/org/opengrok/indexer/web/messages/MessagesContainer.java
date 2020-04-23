@@ -127,8 +127,8 @@ public class MessagesContainer {
             }
 
             if (isMessageLimitExceeded()) {
-                LOGGER.log(Level.WARNING, "cannot add message to the system, limit of {0} messages exceeded." +
-                        "consider setting the ''messageLimit'' tunable.", messageLimit);
+                LOGGER.log(Level.WARNING, "cannot add message to the system, " +
+                                "exceeded Configuration messageLimit of {0}", messageLimit);
                 throw new IllegalStateException("Cannot add message - message limit exceeded");
             }
 
