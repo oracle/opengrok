@@ -53,7 +53,7 @@ public final class CloseableReentrantReadWriteLock extends ReentrantReadWriteLoc
     }
 
     /**
-     * @return a defined {@link ResourceLock} once the {@link #writeLock()} ()}
+     * @return a defined {@link ResourceLock} once the {@link #writeLock()}
      * has been acquired
      */
     public ResourceLock writeLockAsResource() {
@@ -76,10 +76,10 @@ public final class CloseableReentrantReadWriteLock extends ReentrantReadWriteLoc
     }
 
     private ResourceLock newReadUnlocker() {
-        return () -> CloseableReentrantReadWriteLock.this.readLock().unlock();
+        return () -> this.readLock().unlock();
     }
 
     private ResourceLock newWriteUnlocker() {
-        return () -> CloseableReentrantReadWriteLock.this.writeLock().unlock();
+        return () -> this.writeLock().unlock();
     }
 }
