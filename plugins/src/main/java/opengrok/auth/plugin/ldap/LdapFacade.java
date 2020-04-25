@@ -295,6 +295,10 @@ public class LdapFacade extends AbstractLdapProvider {
         return lookup(dn, filter, attributes, mapper, 0);
     }
 
+    private String getSearchDescription(String dn, String filter, String[] attributes) {
+        return "DN: " + dn + " , filter: " + filter + " , attributes: " + String.join(",", attributes);
+    }
+
     /**
      * Lookups the LDAP server for content.
      *
@@ -354,7 +358,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 return new LdapSearchResult<>(sr.getNameInNamespace(), processResult(sr, mapper));
             }
         } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.WARNING, String.format("The LDAP name was not found on server %s", server), ex);
+            LOGGER.log(Level.WARNING, String.format("The LDAP name for search '%s' was not found on server %s",
+                    getSearchDescription(dn, filter, attributes), server), ex);
             throw new LdapException("The LDAP name was not found.", ex);
         } catch (SizeLimitExceededException ex) {
             LOGGER.log(Level.SEVERE, String.format("The maximum size of the LDAP result has exceeded "
@@ -375,8 +380,8 @@ public class LdapFacade extends AbstractLdapProvider {
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (NamingException ex) {
-            LOGGER.log(Level.SEVERE, String.format("An arbitrary LDAP error occurred on server %s",
-                    server), ex);
+            LOGGER.log(Level.SEVERE, String.format("An arbitrary LDAP error occurred on server %s " +
+                    "when searching for '%s'",  getSearchDescription(dn, filter, attributes), server), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
