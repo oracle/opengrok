@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.executables;
@@ -48,7 +48,7 @@ public class JavaClassAnalyzerFactoryTest {
         assertNotNull("despite inclusion locally,", res);
 
         // assert that it is matched
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = AnalyzerGuru.getAnalyzerFactory(res, AnalyzerGuru.ANONYMOUS_NAME);
         assertNotNull("javaclass.bin should have factory", fac);
         assertSame("should be JavaClassAnalyzerFactory", fac.getClass(),
             JavaClassAnalyzerFactory.class);
@@ -64,7 +64,7 @@ public class JavaClassAnalyzerFactoryTest {
             "analysis/executables/fat.dylib");
         assertNotNull("despite inclusion locally,", res);
 
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = AnalyzerGuru.getAnalyzerFactory(res, AnalyzerGuru.ANONYMOUS_NAME);
         if (fac != null) {
             assertNotSame("should not be JavaClassAnalyzerFactory",
                 fac.getClass(), JavaClassAnalyzerFactory.class);

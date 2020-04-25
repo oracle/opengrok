@@ -23,8 +23,10 @@
  */
 package org.opengrok.indexer.analysis;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +49,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -129,6 +132,13 @@ import org.opengrok.indexer.web.Util;
  * @author Chandan
  */
 public class AnalyzerGuru {
+
+    /**
+     * A value used as a placeholder for a filename when content is anonymous
+     * (e.g. from temporary source or from a stream for which an identifier is
+     * not available).
+     */
+    public static final String ANONYMOUS_NAME = "<anonymous>";
 
     /**
      * The maximum number of characters (multi-byte if a BOM is identified) to
@@ -551,27 +561,90 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get an analyzer suited to analyze a file. This function will reuse
-     * analyzers since they are costly.
+     * Gets an analyzer factory suited to analyze a file, but without a check
+     * for Huge Text since the file size is not available.
      *
      * @param in Input stream containing data to be analyzed
-     * @param file Name of the file to be analyzed
-     * @return An analyzer suited for that file content
+     * @param fileName Name of the file to be analyzed
+     * @return An analyzer factory suited for that file content
      * @throws java.io.IOException If an error occurs while accessing the data
      * in the input stream.
      */
-    public static AbstractAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
-        AnalyzerFactory factory = find(in, file);
+    public static AnalyzerFactory getAnalyzerFactory(InputStream in, String fileName)
+            throws IOException {
+        AnalyzerFactory factory = find(in, fileName);
         if (factory == null) {
-            AbstractAnalyzer defaultAnalyzer = getAnalyzer();
+            factory = DEFAULT_ANALYZER_FACTORY;
             if (LOGGER.isLoggable(Level.FINEST)) {
+                AbstractAnalyzer defaultAnalyzer = factory.getAnalyzer();
                 LOGGER.log(Level.FINEST, "{0}: fallback {1}",
-                    new Object[]{file,
-                    defaultAnalyzer.getClass().getSimpleName() });
+                        new Object[]{fileName, defaultAnalyzer.getClass().getSimpleName()});
             }
-            return defaultAnalyzer;
         }
+        return factory;
+    }
+
+    /**
+     * Gets an analyzer suited to analyze a file, but without a check for Huge
+     * Text since the file size is not available.
+     *
+     * @param in Input stream containing data to be analyzed
+     * @param fileName Name of the file to be analyzed
+     * @return An analyzer factory suited for the file content
+     * @throws java.io.IOException If an error occurs while accessing the data
+     * in the input stream.
+     */
+    public static AbstractAnalyzer getAnalyzer(InputStream in, String fileName)
+            throws IOException {
+        AnalyzerFactory factory = getAnalyzerFactory(in, fileName);
         return factory.getAnalyzer();
+    }
+
+    /**
+     * Gets an analyzer factory suited to analyze a file, with a check for Huge
+     * Text.
+     *
+     * @param file a defined instance to be analyzed
+     * @param path Name (possibly normalized) of the file to be analyzed
+     * @param logHugeText a value indicating whether to log if the file is
+     *                    identified as Huge Text
+     * @return An analyzer factory suited for the file content
+     * @throws java.io.IOException If an error occurs while reading the file
+     */
+    public static AnalyzerFactory getAnalyzerFactory(File file, String path, boolean logHugeText)
+            throws IOException {
+
+        AnalyzerFactory fac;
+        try (InputStream in = new BufferedInputStream(
+                new FileInputStream(file))) {
+            fac = AnalyzerGuru.getAnalyzerFactory(in, path);
+        }
+
+        if (AbstractAnalyzer.Genre.PLAIN.equals(fac.getGenre()) &&
+                file.length() >= RuntimeEnvironment.getInstance().getHugeTextThresholdBytes()) {
+            fac = HugeTextAnalyzerFactory.DEFAULT_INSTANCE;
+            if (logHugeText && LOGGER.isLoggable(Level.WARNING)) {
+                String origFileTypeName = fac.getAnalyzer().getFileTypeName();
+                LOGGER.log(Level.WARNING, "{0} is huge text: {1}",
+                        new Object[]{origFileTypeName, path});
+            }
+        }
+        return fac;
+    }
+
+    /**
+     * Get an analyzer suited to analyze a file, with a check for Huge Text.
+     *
+     * @param file a defined instance to be analyzed
+     * @param path Name (possibly normalized) of the file to be analyzed
+     * @param logHugeText a value indicating whether to log if the file is
+     *                    identified as Huge Text
+     * @return An analyzer suited for the file content
+     * @throws java.io.IOException If an error occurs while reading the file
+     */
+    public static AbstractAnalyzer getAnalyzer(File file, String path, boolean logHugeText)
+            throws IOException {
+        return getAnalyzerFactory(file, path, logHugeText).getAnalyzer();
     }
 
     /**
@@ -718,24 +791,36 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Get the genre of a file.
+     * Get the genre of a file, with a check for Huge Text.
      *
      * @param file The file to inspect
+     * @param fileName name of the file to inspect
      * @return The genre suitable to decide how to display the file
      */
-    public static AbstractAnalyzer.Genre getGenre(String file) {
-        return getGenre(find(file));
+    public static AbstractAnalyzer.Genre getGenre(File file, String fileName) {
+        try {
+            return getGenre(getAnalyzerFactory(file, fileName, true));
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error reading {0}", fileName);
+            return null;
+        }
     }
 
     /**
-     * Get the genre of a bulk of data.
+     * Get the genre of a bulk of data, but without a check for Huge Text since
+     * the file size is not available.
      *
      * @param in A stream containing the data
+     * @param fileName name of the file to inspect
      * @return The genre suitable to decide how to display the file
-     * @throws java.io.IOException If an error occurs while getting the content
      */
-    public static AbstractAnalyzer.Genre getGenre(InputStream in) throws IOException {
-        return getGenre(find(in));
+    public static AbstractAnalyzer.Genre getGenre(InputStream in, String fileName) {
+        try {
+            return getGenre(getAnalyzerFactory(in, fileName));
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error reading {0}", fileName);
+            return null;
+        }
     }
 
     /**
@@ -881,13 +966,12 @@ public class AnalyzerGuru {
      *
      *
      * @param in The input stream containing the data
-     * @param file The file name to get the analyzer for
+     * @param fileName The file name to get the analyzer for
      * @return the analyzer factory to use
      * @throws java.io.IOException If a problem occurs while reading the data
      */
-    public static AnalyzerFactory find(InputStream in, String file)
-            throws IOException {
-        AnalyzerFactory factory = find(file);
+    static AnalyzerFactory find(InputStream in, String fileName) throws IOException {
+        AnalyzerFactory factory = find(fileName);
         // TODO above is not that great, since if 2 analyzers share one extension
         // then only the first one registered will own it
         // it would be cool if above could return more analyzers and below would
@@ -895,17 +979,23 @@ public class AnalyzerGuru {
         if (factory != null) {
             return factory;
         }
-        return findForStream(in, file);
+        return findForStream(in, fileName);
     }
 
     /**
-     * Finds a suitable analyser class for file name.
+     * Finds a suitable analyser class for {@code fileName}, which should only
+     * be used in rare situations, such as for a JAR member or when content is
+     * not available to support a full determination.
+     * <p>To clarify, a full determination as done by
+     * {@link #getAnalyzerFactory(File, String, boolean)} also reads a bit of
+     * content as well as inspects file length to determine the ultimate
+     * analyser.
      *
-     * @param file The file name to get the analyzer for
+     * @param fileName The file name to get the analyzer for
      * @return the analyzer factory to use
      */
-    public static AnalyzerFactory find(String file) {
-        String path = file;
+    public static AnalyzerFactory find(String fileName) {
+        String path = fileName;
         int i;
 
         // Get basename of the file first.
@@ -924,8 +1014,7 @@ public class AnalyzerGuru {
                 if (factory != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST, "{0}: chosen by prefix: {1}",
-                            new Object[]{file,
-                            factory.getClass().getSimpleName() });
+                                new Object[]{fileName, factory.getClass().getSimpleName()});
                     }
                     return factory;
                 }
@@ -938,8 +1027,7 @@ public class AnalyzerGuru {
             if (factory != null) {
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST, "{0}: chosen by suffix: {1}",
-                        new Object[]{file,
-                        factory.getClass().getSimpleName() });
+                            new Object[]{fileName, factory.getClass().getSimpleName()});
                 }
                 return factory;
             }
@@ -957,8 +1045,8 @@ public class AnalyzerGuru {
      * @throws java.io.IOException if an error occurs while reading data from
      * the stream
      */
-    public static AnalyzerFactory find(InputStream in) throws IOException {
-        return findForStream(in, "<anonymous>");
+    static AnalyzerFactory find(InputStream in) throws IOException {
+        return findForStream(in, ANONYMOUS_NAME);
     }
 
     /**
@@ -966,13 +1054,13 @@ public class AnalyzerGuru {
      * corresponding to a file of the specified name.
      *
      * @param in The stream containing the data to analyze
-     * @param file The file name to get the analyzer for
+     * @param fileName The file name to get the analyzer for
      * @return the analyzer factory to use
      * @throws java.io.IOException if an error occurs while reading data from
      * the stream
      */
-    private static AnalyzerFactory findForStream(InputStream in,
-        String file) throws IOException {
+    private static AnalyzerFactory findForStream(InputStream in, String fileName)
+            throws IOException {
 
         in.mark(MAGIC_BYTES_NUM);
         byte[] content = new byte[MAGIC_BYTES_NUM];
@@ -998,8 +1086,8 @@ public class AnalyzerGuru {
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                            "{0}: chosen by precise magic: {1}", new Object[]{
-                            file, fac.getClass().getSimpleName() });
+                                "{0}: chosen by precise magic: {1}",
+                                new Object[]{fileName, fac.getClass().getSimpleName()});
                     }
                     return fac;
                 }
@@ -1008,7 +1096,7 @@ public class AnalyzerGuru {
 
         // Next, look for magic strings
         String opening = readOpening(in, content);
-        fac = findMagicString(opening, file);
+        fac = findMagicString(opening, fileName);
         if (fac != null) {
             return fac;
         }
@@ -1020,9 +1108,8 @@ public class AnalyzerGuru {
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
                         LOGGER.log(Level.FINEST,
-                            "{0}: chosen by imprecise magic: {1}",
-                            new Object[]{file,
-                            fac.getClass().getSimpleName() });
+                                "{0}: chosen by imprecise magic: {1}",
+                                new Object[]{fileName, fac.getClass().getSimpleName()});
                     }
                     return fac;
                 }
@@ -1032,7 +1119,7 @@ public class AnalyzerGuru {
         return null;
     }
 
-    private static AnalyzerFactory findMagicString(String opening, String file) {
+    private static AnalyzerFactory findMagicString(String opening, String fileName) {
 
         // first, try to look up two words in magics
         String fragment = getWords(opening, 2);
@@ -1040,8 +1127,7 @@ public class AnalyzerGuru {
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{file, fac.getClass().getSimpleName(),
-                    fragment});
+                        new Object[]{fileName, fac.getClass().getSimpleName(), fragment});
             }
             return fac;
         }
@@ -1052,8 +1138,7 @@ public class AnalyzerGuru {
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{file, fac.getClass().getSimpleName(),
-                    fragment});
+                        new Object[]{fileName, fac.getClass().getSimpleName(), fragment});
             }
             return fac;
         }
@@ -1066,8 +1151,8 @@ public class AnalyzerGuru {
                 fac = entry.getValue();
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST,
-                        "{0}: chosen by magic(substr) {2}: {1}", new Object[]{
-                        file, fac.getClass().getSimpleName(), magic});
+                            "{0}: chosen by magic(substr) {2}: {1}",
+                            new Object[]{fileName, fac.getClass().getSimpleName(), magic});
                 }
                 return fac;
             }

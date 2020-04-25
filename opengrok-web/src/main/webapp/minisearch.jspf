@@ -45,7 +45,7 @@ org.opengrok.indexer.web.Util"%><%
     }
     if (!cfg.hasAnnotations() /* || cfg.getPrefix() == Prefix.HIST_S */ ) {
         %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%
-    } else if (cfg.annotate()) {
+    } else if (cfg.shouldAnnotate()) {
         %><li><span id="toggle-annotate-by-javascript" style="display: none"><a
             href="#" onclick="javascript:toggle_annotations(); return false;"
             title="Show or hide line annotation (revisions, authors)."

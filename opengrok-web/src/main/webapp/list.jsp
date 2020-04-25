@@ -40,7 +40,6 @@ java.util.TreeSet,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Ctags,
 org.opengrok.indexer.analysis.Definitions,
-org.opengrok.indexer.analysis.AbstractAnalyzer,
 org.opengrok.indexer.analysis.AbstractAnalyzer.Genre,
 org.opengrok.indexer.analysis.AnalyzerFactory,
 org.opengrok.indexer.history.Annotation,
@@ -62,6 +61,8 @@ org.opengrok.indexer.web.SearchHelper"
 final String DUMMY_REVISION = "unknown";
 
 {
+    resetData();
+
     // need to set it here since requesting parameters
     if (request.getCharacterEncoding() == null) {
         request.setCharacterEncoding("UTF-8");
@@ -108,14 +109,27 @@ final String DUMMY_REVISION = "unknown";
         }
     }
 
-    Annotation annotation = cfg.getAnnotation();
-    if (annotation != null) {
-        int r = annotation.getWidestRevision();
-        int a = annotation.getWidestAuthor();
-        cfg.addHeaderData("<style type=\"text/css\">"
-            + ".blame .r { width: " + (r == 0 ? 6 : Math.ceil(r * 0.7)) + "em; } "
-            + ".blame .a { width: " + (a == 0 ? 6 : Math.ceil(a * 0.7)) + "em; } "
-            + "</style>");
+    // Set just after the redirects above so that the field is defined early.
+    project = cfg.getProject();
+
+    boolean isAnnotatableGenre = false;
+    if (cfg.wantsAnnotation() && !cfg.isDir()) {
+        prepareExec(cfg);
+        if (searchHelper.searcher != null) {
+            genre = searchHelper.searchSingleGenre(cfg.getResourceFile());
+            isAnnotatableGenre = Genre.PLAIN.equals(genre);
+        }
+    }
+    if (isAnnotatableGenre) {
+        Annotation annotation = cfg.getAnnotation();
+        if (annotation != null) {
+            int r = annotation.getWidestRevision();
+            int a = annotation.getWidestAuthor();
+            cfg.addHeaderData("<style type=\"text/css\">"
+                    + ".blame .r { width: " + (r == 0 ? 6 : Math.ceil(r * 0.7)) + "em; } "
+                    + ".blame .a { width: " + (a == 0 ? 6 : Math.ceil(a * 0.7)) + "em; } "
+                    + "</style>");
+        }
     }
 }
 %><%@include
@@ -132,7 +146,6 @@ document.pageReady.push(function() { pageReadyList();});
 
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
-    Project project = cfg.getProject();
 
     String navigateWindowEnabled = project != null ? Boolean.toString(
             project.isNavigateWindowEnabled()) : "false";
@@ -166,14 +179,8 @@ document.pageReady.push(function() { pageReadyList();});
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
             List<FileExtra> extras = null;
-            /*
-             * N.b. searchHelper.destroy() is called via
-             * WebappListener.requestDestroyed() on presence of an attribute,
-             * REQUEST_ATTR, set by the following.
-             */
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
-            prepareExec(searchHelper, project);
 
+            prepareExec(cfg);
             if (searchHelper.searcher != null) {
                 DirectoryExtraReader extraReader = new DirectoryExtraReader();
                 String primePath = path;
@@ -230,23 +237,20 @@ document.pageReady.push(function() { pageReadyList();});
         File xrefFile;
         if (cfg.isLatestRevision(rev) &&
                 (xrefFile = cfg.findDataFile()) != null) {
-            if (cfg.annotate()) {
+            if (cfg.shouldAnnotate()) {
                 // annotate
                 BufferedInputStream bin =
                         new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
-                    AnalyzerFactory a = AnalyzerGuru.find(basename);
-                    AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
-                    if (g == null) {
-                        a = AnalyzerGuru.find(bin);
-                        g = AnalyzerGuru.getGenre(a);
-                    }
-                    if (g == AbstractAnalyzer.Genre.IMAGE) {
+                    AnalyzerFactory a = AnalyzerGuru.getAnalyzerFactory(
+                            resourceFile, basename, true);
+                    genre = AnalyzerGuru.getGenre(a);
+                    if (genre == Genre.IMAGE) {
 %>
 <div id="src">
     <img src="<%= rawPath %>" alt="Image from Source Repository"/>
 </div><%
-                    } else if ( g == AbstractAnalyzer.Genre.HTML) {
+                    } else if (genre == Genre.HTML) {
                         /**
                          * For backward compatibility, read the OpenGrok-produced
                          * document using the system default charset.
@@ -254,7 +258,7 @@ document.pageReady.push(function() { pageReadyList();});
                         r = new InputStreamReader(bin);
                         // dumpXref() is also useful here for translating links.
                         Util.dumpXref(out, r, request.getContextPath());
-                    } else if (g == AbstractAnalyzer.Genre.PLAIN) {
+                    } else if (genre == Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
@@ -297,23 +301,19 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
 
-            AnalyzerFactory a = AnalyzerGuru.find(basename);
-            /*
-             * N.b. searchHelper.destroy() is called via
-             * WebappListener.requestDestroyed() on presence of an attribute,
-             * REQUEST_ATTR, set by the following.
-             */
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
-            prepareExec(searchHelper, project);
-            Genre g = null;
-            if (searchHelper.searcher != null) {
-                g = searchHelper.searchSingleGenre(resourceFile);
+            AnalyzerFactory a = rev.equals(DUMMY_REVISION) ? AnalyzerGuru.getAnalyzerFactory(
+                    resourceFile, path, true) : AnalyzerGuru.find(basename);
+            if (genre == null) {
+                prepareExec(cfg);
+                if (searchHelper.searcher != null) {
+                    genre = searchHelper.searchSingleGenre(resourceFile);
+                }
             }
-            if (g == null) {
-                g = AnalyzerGuru.getGenre(a);
+            if (genre == null) {
+                genre = AnalyzerGuru.getGenre(a);
             }
             String error = null;
-            if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
+            if (genre == Genre.PLAIN || genre == Genre.HTML || genre == null) {
                 InputStream in = null;
                 File tempf = null;
                 try {
@@ -339,11 +339,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 }
                 if (in != null) {
                     try {
-                        if (g == null) {
-                            a = AnalyzerGuru.find(in, basename);
-                            g = AnalyzerGuru.getGenre(a);
+                        if (genre == null) {
+                            a = AnalyzerGuru.getAnalyzerFactory(in, basename);
+                            genre = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
+                        if (genre == Genre.DATA || genre == Genre.XREFABLE || genre == null) {
     %>
     <div id="src">
     Download file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
@@ -353,7 +353,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %>
     <div id="src">
         <pre><%
-                            if (g == AbstractAnalyzer.Genre.PLAIN) {
+                            if (genre == Genre.PLAIN) {
                                 Definitions defs = null;
                                 ObjectPool<Ctags> ctagsPool = cfg.getEnv().
                                         getIndexerParallelizer().getCtagsPool();
@@ -392,11 +392,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                         request.getContextPath(),
                                         a, r, out,
                                         defs, annotation, project);
-                            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
+                            } else if (genre == Genre.IMAGE) {
         %></pre>
         <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"/>
         <pre><%
-                            } else if (g == AbstractAnalyzer.Genre.HTML) {
+                            } else if (genre == Genre.HTML) {
                                 /**
                                  * For backward compatibility, read the
                                  * OpenGrok-produced document using the system
@@ -438,7 +438,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     <p class="error"><%= error %></p><%
                     }
                 }
-            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
+            } else if (genre == Genre.IMAGE) {
     %>
     <div id="src">
         <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"
@@ -465,8 +465,16 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %></pre>
 </div><%
         } else {
+            AnalyzerFactory fac = AnalyzerGuru.getAnalyzerFactory(resourceFile, path, true);
+            if (Genre.DATA.equals(fac.getGenre())) {
+    %>
+    <div id="src">
+        Download file, <a href="<%= rawPath %>"><%= basename %></a>
+    </div><%
+            } else {
 %>
 <p class="error">Failed to get xref file</p><%
+            }
         }
     }
 }
@@ -477,12 +485,31 @@ include file="foot.jspf"
 
 %>
 <%!
-    private static void prepareExec(SearchHelper searchHelper, Project project) {
-        if (project != null) {
-            searchHelper.prepareExec(project);
-        } else {
-            //noinspection Convert2Diamond
-            searchHelper.prepareExec(new TreeSet<String>());
+    private Project project;
+    private SearchHelper searchHelper;
+    private Genre genre;
+
+    private void resetData() {
+        project = null;
+        searchHelper = null;
+        genre = null;
+    }
+
+    private void prepareExec(PageConfig cfg) {
+        if (searchHelper == null) {
+            /*
+             * N.b. searchHelper.destroy() is called via
+             * WebappListener.requestDestroyed() on presence of an attribute,
+             * REQUEST_ATTR, set by the following.
+             */
+            searchHelper = cfg.prepareInternalSearch();
+
+            if (project != null) {
+                searchHelper.prepareExec(project);
+            } else {
+                //noinspection Convert2Diamond
+                searchHelper.prepareExec(new TreeSet<String>());
+            }
         }
     }
 %>

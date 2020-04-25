@@ -1,6 +1,4 @@
 <%--
-$Id$
-
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -111,7 +109,7 @@ include file="httpheader.jspf"
 <body>
 <script type="text/javascript">/* <![CDATA[ */
     document.rev = function() { return getParameter("<%= QueryParameters.REVISION_PARAM %>"); };
-    document.annotate = <%= PageConfig.get(request).annotate() %>;
+    document.annotate = <%= PageConfig.get(request).shouldAnnotate() %>;
     document.domReady.push(function() { domReadyMast(); });
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
