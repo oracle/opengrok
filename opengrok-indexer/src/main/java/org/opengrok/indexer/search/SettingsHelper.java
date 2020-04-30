@@ -67,13 +67,10 @@ public class SettingsHelper {
      * Gets any mapped symlinks (after having called {@link #getSettings(String)}).
      * @return either a defined map or {@code null}
      */
-    public Map<String, IndexedSymlink> getSymlinks(String projectName) {
-        if (mappedIndexedSymlinks == null) {
-            throw new IllegalStateException("getSettings() not yet called");
-        }
-
-        String k = projectName != null ? projectName : "";
-        Map<String, IndexedSymlink> indexSymlinks = mappedIndexedSymlinks.get(k);
+    public Map<String, IndexedSymlink> getSymlinks(String projectName) throws IOException {
+        getSettings(projectName);
+        String projectKey = projectName != null ? projectName : "";
+        Map<String, IndexedSymlink> indexSymlinks = mappedIndexedSymlinks.get(projectKey);
         if (indexSymlinks != null) {
             return Collections.unmodifiableMap(indexSymlinks);
         }
@@ -114,8 +111,8 @@ public class SettingsHelper {
             map(setts);
         }
 
-        String k = projectName != null ? projectName : "";
-        return mappedAnalysisSettings.get(k);
+        String projectKey = projectName != null ? projectName : "";
+        return mappedAnalysisSettings.get(projectKey);
     }
 
     private void map(IndexAnalysisSettings3[] setts) {
@@ -125,9 +122,9 @@ public class SettingsHelper {
 
         for (IndexAnalysisSettings3 settings : setts) {
             String projectName = settings.getProjectName();
-            String k = projectName != null ? projectName : "";
-            settingsMap.put(k, settings);
-            symlinksMap.put(k, mapSymlinks(settings));
+            String projectKey = projectName != null ? projectName : "";
+            settingsMap.put(projectKey, settings);
+            symlinksMap.put(projectKey, mapSymlinks(settings));
         }
         mappedAnalysisSettings = settingsMap;
         mappedIndexedSymlinks = symlinksMap;
