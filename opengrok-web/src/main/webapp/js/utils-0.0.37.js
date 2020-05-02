@@ -1460,6 +1460,8 @@ function init_tablesorter() {
     $("#dirlist").tablesorter({
         sortList: [[0, 0]],
         cancelSelection: true,
+        sortReset : true,
+        sortRestart : true,
         sortInitialOrder: "desc",
         headers: {
             1: {
