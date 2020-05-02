@@ -124,45 +124,53 @@ public final class StringUtils {
         return javaClassPattern.matcher(s).matches();
     }
 
-  /**
-   * Convert value in milliseconds to readable time.
-   * @param time_ms delta in milliseconds
-   * @return human readable string   
-   */
-  public static String getReadableTime(long time_ms) {
-      String output = "";
-      long time_delta = time_ms;
+    /**
+     * Convert value in milliseconds to readable time.
+     * @param time_ms delta in milliseconds
+     * @return human readable string
+     */
+    public static String getReadableTime(long time_ms) {
+        StringBuilder output = new StringBuilder();
+        long time_delta = time_ms;
 
-      int milliseconds = (int) (time_delta % 1000);
-      time_delta /= 1000;
-      int seconds = (int) (time_delta % 60);
-      time_delta /= 60;
-      int minutes = (int) (time_delta % 60);
-      time_delta /= 60;
-      int hours = (int) (time_delta % 24);
-      int days = (int) (time_delta / 24);
+        int milliseconds = (int) (time_delta % 1000);
+        time_delta /= 1000;
+        int seconds = (int) (time_delta % 60);
+        time_delta /= 60;
+        int minutes = (int) (time_delta % 60);
+        time_delta /= 60;
+        int hours = (int) (time_delta % 24);
+        int days = (int) (time_delta / 24);
 
-      if (days != 0) {
-          output += String.format("%d day", days);
-          if (days > 1) {
-              output += "s";
-          }
-          if ((hours != 0) || (minutes != 0) || (seconds != 0)) {
-              output += " ";
-          }
-      }
-      if ((hours != 0) || (minutes != 0)) {
-          return output + String.format("%d:%02d:%02d", hours, minutes, seconds);
-      }
-      if (seconds != 0) {
-          return output + String.format("%d.%d seconds", seconds, milliseconds);
-      }
-      if (milliseconds != 0) {
-          return output + String.format("%d ms", milliseconds);
-      }
+        if (days != 0) {
+            output.append(days);
+            output.append(" day");
+            if (days > 1) {
+                output.append("s");
+            }
+        }
+        if ((hours != 0) || (minutes != 0)) {
+            if (output.length() > 0) {
+                // Use zero-padded hours here as it's longer than a day.
+                output.append(String.format(" %02d:%02d:%02d", hours, minutes, seconds));
+            } else {
+                // Don't pad hours if less than a day.
+                output.append(String.format("%d:%02d:%02d", hours, minutes, seconds));
+            }
+        } else if (output.length() > 0) {
+            /*
+             * If a day+ with zero hours and zero minutes, just report the days.
+             * E.g. "1 day", and not "1 day 35 ms".
+             */
+            return output.toString();
+        } else if (seconds != 0) {
+            output.append(String.format("%d.%d seconds", seconds, milliseconds));
+        } else if (milliseconds != 0) {
+            output.append(String.format("%d ms", milliseconds));
+        }
 
-      return (output.length() == 0 ? "0" : output);
-  }
+        return (output.length() == 0 ? "0 ms" : output.toString());
+    }
 
     /**
      * Finds n-th index of a given substring in a string.

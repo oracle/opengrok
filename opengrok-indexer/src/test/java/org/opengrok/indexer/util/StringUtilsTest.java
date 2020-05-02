@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -39,12 +39,12 @@ public class StringUtilsTest {
         int i;
         long[] values = {
             0, 100, 1000, 1500, 64000, 124531, 3651782, 86400000, 86434349,
-            1075634299
+            1075634299, 86480001
         };
         String[] expected = {
-            "0", "100 ms", "1.0 seconds", "1.500 seconds", "0:01:04",
-            "0:02:04", "1:00:51", "1 day", "1 day 34.349 seconds",
-            "12 days 10:47:14"
+            "0 ms", "100 ms", "1.0 seconds", "1.500 seconds", "0:01:04",
+            "0:02:04", "1:00:51", "1 day", "1 day",
+            "12 days 10:47:14", "1 day 00:01:20"
         };
 
         for (i = 0; i < values.length; i++) {
