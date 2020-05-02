@@ -46,9 +46,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Progress;
+import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.TandemPath;
 
 /**
@@ -173,24 +173,27 @@ class PendingFileCompleter {
     public int complete() throws IOException {
         Instant start = Instant.now();
         int numDeletions = completeDeletions();
-        LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
-                new Object[]{numDeletions, DurationFormatUtils.
-                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
-                        true, true)});
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "deleted {0} file(s) (took {1})",
+                    new Object[] {numDeletions, StringUtils.getReadableTime(
+                            Duration.between(start, Instant.now()).toMillis())});
+        }
 
         start = Instant.now();
         int numRenamings = completeRenamings();
-        LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
-                new Object[]{numRenamings, DurationFormatUtils.
-                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
-                true, true)});
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "renamed {0} file(s) (took {1})",
+                    new Object[] {numRenamings, StringUtils.getReadableTime(
+                            Duration.between(start, Instant.now()).toMillis())});
+        }
 
         start = Instant.now();
         int numLinkages = completeLinkages();
-        LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
-                new Object[]{numLinkages, DurationFormatUtils.
-                        formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
-                        true, true)});
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "affirmed links for {0} path(s) (took {1})",
+                    new Object[] {numLinkages, StringUtils.getReadableTime(
+                            Duration.between(start, Instant.now()).toMillis())});
+        }
 
         return numDeletions + numRenamings + numLinkages;
     }
