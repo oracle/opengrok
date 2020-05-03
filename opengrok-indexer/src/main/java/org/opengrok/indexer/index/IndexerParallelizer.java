@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -44,7 +44,11 @@ import org.opengrok.indexer.util.ObjectPool;
  * <p>A fixed-thread pool is used for parallelism across repositories, and a
  * work-stealing {@link ForkJoinPool} is used for parallelism within any
  * {@link IndexDatabase}. Threads in the former pool are customers of the
- * latter, and the bulk of work is done in the latter pool.
+ * latter, and the bulk of work is done in the latter pool. The work-stealing
+ * {@link ForkJoinPool} makes use of a corresponding fixed pool of {@link Ctags}
+ * instances.
+ * <p>Additionally there are pools for executing for history, for renamings in
+ * history, and for watching the {@link Ctags} instances for timing purposes.
  */
 public class IndexerParallelizer implements AutoCloseable {
 
@@ -52,22 +56,11 @@ public class IndexerParallelizer implements AutoCloseable {
     private final int indexingParallelism;
 
     private LazilyInstantiate<ForkJoinPool> lzForkJoinPool;
-    private ForkJoinPool forkJoinPool;
-
     private LazilyInstantiate<ObjectPool<Ctags>> lzCtagsPool;
-    private ObjectPool<Ctags> ctagsPool;
-
     private LazilyInstantiate<ExecutorService> lzFixedExecutor;
-    private ExecutorService fixedExecutor;
-
     private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
-    private ExecutorService historyExecutor;
-
     private LazilyInstantiate<ExecutorService> lzHistoryRenamedExecutor;
-    private ExecutorService historyRenamedExecutor;
-
     private LazilyInstantiate<ExecutorService> lzCtagsWatcherExecutor;
-    private ExecutorService ctagsWatcherExecutor;
 
     /**
      * Initializes a new instance using settings from the specified environment
@@ -97,54 +90,42 @@ public class IndexerParallelizer implements AutoCloseable {
      * @return the fixedExecutor
      */
     public ExecutorService getFixedExecutor() {
-        ExecutorService result = lzFixedExecutor.get();
-        fixedExecutor = result;
-        return result;
+        return lzFixedExecutor.get();
     }
 
     /**
      * @return the forkJoinPool
      */
     public ForkJoinPool getForkJoinPool() {
-        ForkJoinPool result = lzForkJoinPool.get();
-        forkJoinPool = result;
-        return result;
+        return lzForkJoinPool.get();
     }
 
     /**
      * @return the ctagsPool
      */
     public ObjectPool<Ctags> getCtagsPool() {
-        ObjectPool<Ctags> result = lzCtagsPool.get();
-        ctagsPool = result;
-        return result;
+        return lzCtagsPool.get();
     }
 
     /**
      * @return the ExecutorService used for history parallelism
      */
     public ExecutorService getHistoryExecutor() {
-        ExecutorService result = lzHistoryExecutor.get();
-        historyExecutor = result;
-        return result;
+        return lzHistoryExecutor.get();
     }
 
     /**
      * @return the ExecutorService used for history-renamed parallelism
      */
     public ExecutorService getHistoryRenamedExecutor() {
-        ExecutorService result = lzHistoryRenamedExecutor.get();
-        historyRenamedExecutor = result;
-        return result;
+        return lzHistoryRenamedExecutor.get();
     }
 
     /**
      * @return the Executor used for ctags parallelism
      */
     public ExecutorService getCtagsWatcherExecutor() {
-        ExecutorService result = lzCtagsWatcherExecutor.get();
-        ctagsWatcherExecutor = result;
-        return result;
+        return lzCtagsWatcherExecutor.get();
     }
 
     /**
@@ -157,8 +138,9 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     /**
-     * Shuts down the instance's executors if any of the getters were called;
-     * and prepares them to be called again to return new instances.
+     * Shuts down the instance's executors if any of the getters were called,
+     * releasing all resources; and prepares them to be called again to return
+     * new instances.
      * <p>
      * N.b. this method is not thread-safe w.r.t. the getters, so care must be
      * taken that any scheduled work has been completed and that no other
@@ -172,44 +154,38 @@ public class IndexerParallelizer implements AutoCloseable {
      * call this method satisfactorily too.
      */
     public void bounce() {
-        ForkJoinPool formerForkJoinPool = forkJoinPool;
-        if (formerForkJoinPool != null) {
-            forkJoinPool = null;
+        if (lzForkJoinPool.isActive()) {
+            ForkJoinPool formerForkJoinPool = lzForkJoinPool.get();
             createLazyForkJoinPool();
             formerForkJoinPool.shutdown();
         }
 
-        ExecutorService formerFixedExecutor = fixedExecutor;
-        if (formerFixedExecutor != null) {
-            fixedExecutor = null;
+        if (lzFixedExecutor.isActive()) {
+            ExecutorService formerFixedExecutor = lzFixedExecutor.get();
             createLazyFixedExecutor();
             formerFixedExecutor.shutdown();
         }
 
-        ObjectPool<Ctags> formerCtagsPool = ctagsPool;
-        if (formerCtagsPool != null) {
-            ctagsPool = null;
+        if (lzCtagsPool.isActive()) {
+            ObjectPool<Ctags> formerCtagsPool = lzCtagsPool.get();
             createLazyCtagsPool();
             formerCtagsPool.shutdown();
         }
 
-        formerFixedExecutor = historyExecutor;
-        if (formerFixedExecutor != null) {
-            historyExecutor = null;
+        if (lzHistoryExecutor.isActive()) {
+            ExecutorService formerHistoryExecutor = lzHistoryExecutor.get();
             createLazyHistoryExecutor();
-            formerFixedExecutor.shutdown();
+            formerHistoryExecutor.shutdown();
         }
 
-        formerFixedExecutor = historyRenamedExecutor;
-        if (formerFixedExecutor != null) {
-            historyRenamedExecutor = null;
+        if (lzHistoryRenamedExecutor.isActive()) {
+            ExecutorService formerHistoryRenamedExecutor = lzHistoryRenamedExecutor.get();
             createLazyHistoryRenamedExecutor();
-            formerFixedExecutor.shutdown();
+            formerHistoryRenamedExecutor.shutdown();
         }
 
-        ExecutorService formerCtagsWatcherExecutor = ctagsWatcherExecutor;
-        if (formerCtagsWatcherExecutor != null) {
-            ctagsWatcherExecutor = null;
+        if (lzCtagsWatcherExecutor.isActive()) {
+            ExecutorService formerCtagsWatcherExecutor = lzCtagsWatcherExecutor.get();
             createLazyCtagsWatcherExecutor();
             formerCtagsWatcherExecutor.shutdown();
         }
