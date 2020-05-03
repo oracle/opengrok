@@ -9,7 +9,7 @@
  * It's only meant to be helpful
  * I'd prefer that you don't take credit for it, though.  You don't have to give
  * credit; just don't take it."
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -65,6 +65,7 @@ public class LazilyInstantiate<T> implements Supplier<T> {
 
     private final Supplier<T> supplier;
     private Supplier<T> current;
+    private volatile boolean active;
 
     public static <T> LazilyInstantiate<T> using(Supplier<T> supplier) {
         return new LazilyInstantiate<>(supplier);
@@ -81,9 +82,17 @@ public class LazilyInstantiate<T> implements Supplier<T> {
         return current.get();
     }
 
+    /**
+     * Gets a value indicating if the instance is active and no longer
+     * technically lazy, since {@link #get()} has been called.
+     */
+    public boolean isActive() {
+        return active;
+    }
+
     private LazilyInstantiate(Supplier<T> supplier) {
         this.supplier = supplier;
-        this.current = () -> swapper();
+        this.current = this::swapper;
     }
 
     //swaps the itself out for a supplier of an instantiated object
@@ -91,20 +100,21 @@ public class LazilyInstantiate<T> implements Supplier<T> {
         if (!Factory.class.isInstance(current)) {
             T obj = supplier.get();
             current = new Factory<>(obj);
+            active = true;
         }
         return current.get();
     }
 
-    private class Factory<T> implements Supplier<T> {
+    private static class Factory<U> implements Supplier<U> {
 
-        private final T obj;
+        private final U obj;
 
-        Factory(T obj) {
+        Factory(U obj) {
             this.obj = obj;
         }
 
         @Override
-        public T get() {
+        public U get() {
             return obj;
         }
     }
