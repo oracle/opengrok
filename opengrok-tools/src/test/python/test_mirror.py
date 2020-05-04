@@ -181,6 +181,10 @@ def test_empty_project_config():
 
 
 def test_disabled_command_api():
+    """
+    Test that mirror_project() calls call_rest_api() if API
+    call is specified in the configuration for disabled project.
+    """
     with patch(opengrok_tools.utils.mirror.call_rest_api,
                lambda a, b, c: mock(spec=requests.Response)):
         project_name = "foo"

@@ -304,14 +304,23 @@ def run_command(cmd, project_name):
                             cmd.getoutputstr()))
 
 
-def handle_disabled_project(config, project_name):
+def handle_disabled_project(config, project_name, disabled_msg):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
 
         logger.debug("Calling disabled command: {}".format(disabled_command))
         command_args = disabled_command.get(COMMAND_PROPERTY)
-        if is_web_uri(command_args[0]):
+        uri = command_args[0]
+        if is_web_uri(uri):
+            # Is this perhaps OpenGrok API call to supply a Message ?
+            # If so and there was a string supplied, append it
+            # to the message text.
+            text = command_args[2].get("text")
+            if uri.find("/api/v1/") > 0 and disabled_msg and type(disabled_msg) is str and text:
+                logger.debug("Appending text to message: {}".format(disabled_msg))
+                command_args[2]["text"] = text + ": " + disabled_msg
+
             r = call_rest_api(disabled_command, PROJECT_SUBST, project_name)
             try:
                 r.raise_for_status()
@@ -320,11 +329,15 @@ def handle_disabled_project(config, project_name):
                              "project '{}': {}".
                              format(project_name, r))
         else:
+            args = [project_name]
+            if disabled_msg and type(disabled_msg) is str:
+                args.append(disabled_command)
+
             cmd = Command(command_args,
                           env_vars=disabled_command.get("env"),
                           resource_limits=disabled_command.get("limits"),
                           args_subst={PROJECT_SUBST: project_name},
-                          args_append=[project_name], excl_subst=True)
+                          args_append=args, excl_subst=True)
             run_command(cmd, project_name)
 
 
@@ -362,8 +375,9 @@ def mirror_project(config, project_name, check_changes, uri,
 
     # We want this to be logged to the log file (if any).
     if project_config:
-        if project_config.get(DISABLED_PROPERTY):
-            handle_disabled_project(config, project_name)
+        disabled_value = project_config.get(DISABLED_PROPERTY)
+        if disabled_value:
+            handle_disabled_project(config, project_name, disabled_value)
             logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL
