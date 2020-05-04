@@ -97,14 +97,11 @@ include file="pageheader.jspf"
                     MessagesContainer.MESSAGES_MAIN_PAGE_TAG);
     }
     %>
-    <% if (!messages.isEmpty()) { %>
-    <span class="note-<%= MessagesUtils.getMessageLevel(cfg.getProject().getName(), MessagesContainer.MESSAGES_MAIN_PAGE_TAG) %> important-note">
-    <% } %>
-        <a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
-        .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-        <% if (rev.length() != 0) { %>
+    <a href="<%= context + Prefix.XREF_P %>/">xref</a>:
+    <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+    <% if (rev.length() != 0) { %>
         (revision <%= Util.htmlize(rev) %>)
-        <% } %>
+    <% } %>
     <span id="dtag">
     <%
     String dtag = cfg.getDefineTagsIndex();
@@ -113,7 +110,6 @@ include file="pageheader.jspf"
     }
     %></span>
     <% if (!messages.isEmpty()) { %>
-    </span>
     <span class="note-<%= MessagesUtils.getMessageLevel(cfg.getProject().getName(), MessagesContainer.MESSAGES_MAIN_PAGE_TAG) %> important-note important-note-rounded"
           data-messages='<%= messages %>'>!</span>
     <% }
