@@ -317,7 +317,7 @@ def handle_disabled_project(config, project_name, disabled_msg):
             # If so and there was a string supplied, append it
             # to the message text.
             text = command_args[2].get("text")
-            if uri.find("/api/v1/") > 0 and disabled_msg and type(disabled_msg) is str and text:
+            if text and uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
                 logger.debug("Appending text to message: {}".format(disabled_msg))
                 command_args[2]["text"] = text + ": " + disabled_msg
 
