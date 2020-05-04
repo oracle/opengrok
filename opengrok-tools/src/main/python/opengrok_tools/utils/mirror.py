@@ -316,7 +316,10 @@ def handle_disabled_project(config, project_name, disabled_msg):
             # Is this perhaps OpenGrok API call to supply a Message ?
             # If so and there was a string supplied, append it
             # to the message text.
-            text = command_args[2].get("text")
+            data = command_args[2]
+            text = None
+            if type(data) is dict:
+                text = data.get("text")
             if text and uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
                 logger.debug("Appending text to message: {}".format(disabled_msg))
                 command_args[2]["text"] = text + ": " + disabled_msg
