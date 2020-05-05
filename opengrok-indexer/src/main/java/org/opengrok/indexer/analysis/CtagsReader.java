@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -395,9 +395,9 @@ public class CtagsReader {
 
         int woff = strictIndexOf(whole, str);
         if (woff < 0) {
-            /**
+            /*
              * When a splitter is available, search the entire line.
-             * (N.b. use 0-offset vs ctags's 1-offset.)
+             * (N.b. use 0-based indexing vs ctags's 1-based.)
              */
             String cut = trySplitterCut(lineno - 1, 1);
             if (cut == null || !cut.startsWith(whole)) {
@@ -512,9 +512,9 @@ public class CtagsReader {
             return new CpatIndex(lineno, s, e);
         }
 
-        /**
+        /*
          * When a splitter is available, search the next several lines.
-         * (N.b. use 0-offset vs ctags's 1-offset.)
+         * (N.b. use 0-based indexing vs ctags's 1-based.)
          */
         String cut = trySplitterCut(lineno - 1, MAX_CUT_LINES);
         if (cut == null || !cut.startsWith(whole)) {
@@ -640,22 +640,22 @@ public class CtagsReader {
     }
 
     /**
-     * Finds the line with the longest content from {@code midx}.
+     * Finds the line with the longest content from {@code cut}.
      * <p>
      * The {@link Definitions} tag model is based on a match within a line.
      * "signature" fields, however, can be condensed from multiple lines; and a
      * fuzzy match can therefore span multiple lines.
      */
     private CpatIndex bestLineOfMatch(int lineno, PatResult pr, String cut) {
-        // (N.b. use 0-offset vs ctags's 1-offset.)
-        int lpos = splitter.getPosition(lineno - 1);
-        int mpos = lpos + pr.start;
-        int moff = splitter.findLineOffset(mpos);
-        int zpos = lpos + pr.end - 1;
-        int zoff = splitter.findLineOffset(zpos);
+        // (N.b. use 0-based indexing vs ctags's 1-based.)
+        int lineOff = splitter.getOffset(lineno - 1);
+        int mOff = lineOff + pr.start;
+        int mIndex = splitter.findLineIndex(mOff);
+        int zOff = lineOff + pr.end - 1;
+        int zIndex = splitter.findLineIndex(zOff);
 
         int t = tabSize;
-        int resoff = moff;
+        int resIndex = mIndex;
         int contentLength = 0;
         /**
          * Initialize the following just to silence warnings but with values
@@ -664,31 +664,31 @@ public class CtagsReader {
         String whole = "";
         int s = 0;
         int e = 1;
-        /**
-         * Iterate to determine the length of the portion of `midx' that
-         * is contained within each line.
+        /*
+         * Iterate to determine the length of the portion of cut that is
+         * contained within each line.
          */
-        for (int ioff = moff; ioff <= zoff; ++ioff) {
-            String iwhole = splitter.getLine(ioff);
-            int ioffpos = splitter.getPosition(ioff);
-            int iendpos = ioffpos + iwhole.length();
-            int i_s = pr.start + lpos < ioffpos ? ioffpos : pr.start + lpos;
-            int i_e = pr.end + lpos > iendpos ? iendpos : pr.end + lpos;
-            if (i_e - i_s > contentLength) {
-                contentLength = i_e - i_s;
-                resoff = ioff;
+        for (int lIndex = mIndex; lIndex <= zIndex; ++lIndex) {
+            String iwhole = splitter.getLine(lIndex);
+            int lOff = splitter.getOffset(lIndex);
+            int lOffZ = lOff + iwhole.length();
+            int offStart = Math.max(pr.start + lineOff, lOff);
+            int offEnd = Math.min(pr.end + lineOff, lOffZ);
+            if (offEnd - offStart > contentLength) {
+                contentLength = offEnd - offStart;
+                resIndex = lIndex;
                 whole = iwhole;
                 // (The following are not yet adjusted for tabs.)
-                s = i_s - ioffpos;
-                e = i_e - ioffpos;
+                s = offStart - lOff;
+                e = offEnd - lOff;
             }
         }
 
         if (s >= 0 && s < whole.length() && e >= 0 && e <= whole.length()) {
             s = ExpandTabsReader.translate(whole, s, t);
             e = ExpandTabsReader.translate(whole, e, t);
-            // (N.b. use ctags's 1-offset.)
-            return new CpatIndex(resoff + 1, s, e);
+            // (N.b. use ctags's 1-based indexing.)
+            return new CpatIndex(resIndex + 1, s, e);
         }
 
         /**

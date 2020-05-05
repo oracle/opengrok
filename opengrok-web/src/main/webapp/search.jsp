@@ -86,6 +86,7 @@ include file="projects.jspf"
     SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
+        return;
     }
     if (searchHelper.errorMsg != null) {
         cfg.setTitle("Search Error");

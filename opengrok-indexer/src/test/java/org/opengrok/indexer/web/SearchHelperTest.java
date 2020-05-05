@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web;
@@ -84,7 +84,6 @@ public class SearchHelperTest {
         sh.contextPath = env.getUrlPrefix();
         sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
         sh.isCrossRefSearch = false;
-        sh.compressed = env.isCompressXref();
         sh.desc = null;
         sh.sourceRoot = env.getSourceRootFile();
         return sh;
@@ -102,7 +101,6 @@ public class SearchHelperTest {
         sh.contextPath = env.getUrlPrefix();
         sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
         sh.isCrossRefSearch = false;
-        sh.compressed = env.isCompressXref();
         sh.desc = null;
         sh.sourceRoot = env.getSourceRootFile();
         return sh;

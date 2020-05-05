@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -323,7 +323,7 @@ public class ContextFormatter extends PassageFormatter {
             throws IOException {
         Scopes.Scope scope = null;
         if (scopes != null) {
-            // N.b. use ctags 1-offset vs 0-offset.
+            // N.b. use ctags 1-based indexing vs 0-based.
             scope = scopes.getScope(lineOffset + 1);
         }
         if (scope != null && scope != scopes.getScope(-1)) {
@@ -340,7 +340,7 @@ public class ContextFormatter extends PassageFormatter {
     private void writeTag(int lineOffset, Appendable dest, List<String> marks)
             throws IOException {
         if (defs != null) {
-            // N.b. use ctags 1-offset vs 0-offset.
+            // N.b. use ctags 1-based indexing vs 0-based.
             List<Tag> linetags =  defs.getTags(lineOffset + 1);
             if (linetags != null) {
                 Tag pickedTag = findTagForMark(linetags, marks);

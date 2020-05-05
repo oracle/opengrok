@@ -76,19 +76,33 @@ final String DUMMY_REVISION = "unknown";
          * Get the latest revision and redirect so that the revision number
          * appears in the URL.
          */
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
-        if (location != null) {
+        String latestRevision = cfg.getLatestRevision();
+        if (latestRevision != null) {
+            cfg.evaluateMatchOffset();
+            String location = cfg.getRevisionLocation(latestRevision);
             response.sendRedirect(location);
             return;
         }
         if (!cfg.getEnv().isGenerateHtml()) {
+            cfg.evaluateMatchOffset();
             /*
              * Economy mode is on and failed to get the last revision
              * (presumably running with history turned off).  Use dummy
              * revision string so that xref can be generated from the resource
              * file directly.
              */
-            location = cfg.getRevisionLocation(DUMMY_REVISION);
+            String location = cfg.getRevisionLocation(DUMMY_REVISION);
+            response.sendRedirect(location);
+            return;
+        }
+
+        if (cfg.evaluateMatchOffset()) {
+            /*
+             * If after calling, a match offset has been translated to a
+             * fragment identifier (specifying a line#), then redirect to self.
+             * This block will not be activated again the second time.
+             */
+            String location = cfg.getRevisionLocation(""); // empty
             response.sendRedirect(location);
             return;
         }
@@ -267,12 +281,12 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                     }
                 } finally {
                     if (r != null) {
-                        try { r.close(); bin = null; }
-                        catch (Exception e) { /* ignore */ }
+                        IOUtils.close(r);
+                        bin = null;
                     }
                     if (bin != null) {
-                        try { bin.close(); }
-                        catch (Exception e) { /* ignore */ }
+                        IOUtils.close(bin);
+                        bin = null;
                     }
                 }
 
@@ -393,15 +407,15 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             }
                         }
                     } catch (IOException e) {
-                        error = e.getMessage();
+                        LOGGER.log(Level.SEVERE, "Failed xref on-the-fly", e);
                     } finally {
                         if (r != null) {
-                            try { r.close(); in = null;}
-                            catch (Exception e) { /* ignore */ }
+                            IOUtils.close(r);
+                            in = null;
                         }
                         if (in != null) {
-                            try { in.close(); }
-                            catch (Exception e) { /* ignore */ }
+                            IOUtils.close(in);
+                            in = null;
                         }
                         if (tempf != null) {
                             tempf.delete();

@@ -1094,6 +1094,7 @@
                          * Modified for OpenGrok in 2017.
                          */
                         if (isOnSearchPage()) {
+                            $('#xrd').val("1"); // no redirect
                             $('#sbox').submit();
                         }
                     })

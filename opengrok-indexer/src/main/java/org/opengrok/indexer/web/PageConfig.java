@@ -65,6 +65,7 @@ import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
+import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -78,6 +79,7 @@ import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
@@ -131,6 +133,7 @@ public final class PageConfig {
     private String pageTitle;
     private String dtag;
     private String rev;
+    private String fragmentIdentifier; // Also settable via match offset translation
     private Boolean hasAnnotation;
     private Boolean annotate;
     private Annotation annotation;
@@ -309,7 +312,7 @@ public final class PageConfig {
                         while ((line = br.readLine()) != null) {
                             lines.add(line);
                         }
-                        data.file[i] = lines.toArray(new String[lines.size()]);
+                        data.file[i] = lines.toArray(new String[0]);
                         lines.clear();
                     }
                     in[i] = null;
@@ -358,7 +361,7 @@ public final class PageConfig {
      * @see DiffType#toString()
      */
     public DiffType getDiffType() {
-        DiffType d = DiffType.get(req.getParameter("format"));
+        DiffType d = DiffType.get(req.getParameter(QueryParameters.FORMAT_PARAM));
         return d == null ? DiffType.SIDEBYSIDE : d;
     }
 
@@ -536,7 +539,7 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (NumberFormatException e) {
-                LOGGER.log(Level.INFO, "Failed to parse integer " + s, e);
+                LOGGER.log(Level.INFO, "Failed to parse " + name + " integer " + s, e);
             }
         }
         return ret;
@@ -720,7 +723,7 @@ public final class PageConfig {
     public boolean annotate() {
         if (annotate == null) {
             annotate = hasAnnotations()
-                    && Boolean.parseBoolean(req.getParameter("a"));
+                    && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
         }
         return annotate;
     }
@@ -746,15 +749,6 @@ public final class PageConfig {
             /* ignore */
         }
         return annotation;
-    }
-
-    /**
-     * Get the name which should be show as "Crossfile".
-     *
-     * @return the name of the related file or directory.
-     */
-    public String getCrossFilename() {
-        return getResourceFile().getName();
     }
 
     /**
@@ -1334,15 +1328,11 @@ public final class PageConfig {
 
     /**
      * Get the location of cross reference for given file containing the given revision.
-     * @param revStr revision string
-     * @return location to redirect to or null if revision string is empty
+     * @param revStr defined revision string
+     * @return location to redirect to
      */
     public String getRevisionLocation(String revStr) {
         StringBuilder sb = new StringBuilder();
-
-        if (revStr == null) {
-            return null;
-        }
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
@@ -1354,6 +1344,23 @@ public final class PageConfig {
         if (req.getQueryString() != null) {
             sb.append("&");
             sb.append(req.getQueryString());
+        }
+        if (fragmentIdentifier != null) {
+            String anchor = Util.URIEncode(fragmentIdentifier);
+
+            String reqFrag = req.getParameter(QueryParameters.FRAGMENT_IDENTIFIER_PARAM);
+            if (reqFrag == null || reqFrag.isEmpty()) {
+                /*
+                 * We've determined that the fragmentIdentifier field must have
+                 * been set to augment request parameters. Now include it
+                 * explicitly in the next request parameters.
+                 */
+                sb.append("&");
+                sb.append(QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ);
+                sb.append(anchor);
+            }
+            sb.append("#");
+            sb.append(anchor);
         }
 
         return sb.toString();
@@ -1517,9 +1524,11 @@ public final class PageConfig {
         // jel: this should be IMHO a config param since not only core dependend
         sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
         sh.isCrossRefSearch = getPrefix() == Prefix.SEARCH_R;
-        sh.compressed = env.isCompressXref();
+        sh.isGuiSearch = sh.isCrossRefSearch || getPrefix() == Prefix.SEARCH_P;
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
+        String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
+        sh.noRedirect = xrValue != null && !xrValue.isEmpty();
         return sh;
     }
 
@@ -1546,6 +1555,7 @@ public final class PageConfig {
         this.req = req;
         this.authFramework = RuntimeEnvironment.getInstance().getAuthorizationFramework();
         this.executor = RuntimeEnvironment.getInstance().getRevisionExecutor();
+        this.fragmentIdentifier = req.getParameter(QueryParameters.FRAGMENT_IDENTIFIER_PARAM);
     }
 
     /**
@@ -1780,5 +1790,31 @@ public final class PageConfig {
      */
     public static String getRelativePath(String root, String path) {
         return Paths.get(root).relativize(Paths.get(path)).toString();
+    }
+
+    public boolean evaluateMatchOffset() {
+        if (fragmentIdentifier == null) {
+            int matchOffset = getIntParam(QueryParameters.MATCH_OFFSET_PARAM, -1);
+            if (matchOffset >= 0) {
+                File resourceFile = getResourceFile();
+                if (resourceFile.isFile()) {
+                    LineBreaker breaker = new LineBreaker();
+                    StreamSource streamSource = StreamSource.fromFile(resourceFile);
+                    try {
+                        breaker.reset(streamSource);
+                        int matchLine = breaker.findLineIndex(matchOffset);
+                        if (matchLine >= 0) {
+                            // Convert to 1-based offset to accord with OpenGrok line number.
+                            fragmentIdentifier = String.valueOf(matchLine + 1);
+                            return true;
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to evaluate match offset for " +
+                                resourceFile, e);
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

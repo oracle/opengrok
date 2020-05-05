@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
-import java.io.IOException;
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.StreamSource;
@@ -46,7 +47,10 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("");
         brkr.reset(src);
         assertEquals("split count", 1, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+
+        assertEquals("split find-index", 0, brkr.findLineIndex(0));
+        assertEquals("split find-index", -1, brkr.findLineIndex(1));
     }
 
     @Test
@@ -54,9 +58,9 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("abc\ndef\n");
         brkr.reset(src);
         assertEquals("split count", 3, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 4, brkr.getPosition(1));
-        assertEquals("split position", 8, brkr.getPosition(2));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 4, brkr.getOffset(1));
+        assertEquals("split offset", 8, brkr.getOffset(2));
     }
 
     @Test
@@ -64,8 +68,9 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString("abc\r\ndef");
         brkr.reset(src);
         assertEquals("split count", 2, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 5, brkr.getPosition(1));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 5, brkr.getOffset(1));
+        assertEquals("split offset", 8, brkr.getOffset(2));
     }
 
     @Test
@@ -77,10 +82,39 @@ public class LineBreakerTest {
 
         brkr.reset(src);
         assertEquals("split count", 5, brkr.count());
-        assertEquals("split position", 0, brkr.getPosition(0));
-        assertEquals("split position", 4, brkr.getPosition(1));
-        assertEquals("split position", 9, brkr.getPosition(2));
-        assertEquals("split position", 15, brkr.getPosition(3));
-        assertEquals("split position", 20, brkr.getPosition(4));
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 4, brkr.getOffset(1));
+        assertEquals("split offset", 9, brkr.getOffset(2));
+        assertEquals("split offset", 15, brkr.getOffset(3));
+        assertEquals("split offset", 20, brkr.getOffset(4));
+
+        assertEquals("split find-index", 3, brkr.findLineIndex(19));
+        assertEquals("split find-index", 4, brkr.findLineIndex(20));
+        assertEquals("split find-index", 4, brkr.findLineIndex(21));
+    }
+
+    @Test
+    public void shouldHandleInterspersedLineEndings() throws IOException {
+        //                                    0                0
+        //                    0- -- -5 - -- - 1 - - - -5 -- - -2--
+        //                    0  1  2    3  4 5   6 7  8 9    0
+        //                                                    1
+        final String INPUT = "a\rb\nc\r\nd\r\r\r\n\re\n\rf\r\nghij";
+        StreamSource src = StreamSource.fromString(INPUT);
+
+        brkr.reset(src);
+        assertEquals("split count", 11, brkr.count());
+        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals("split offset", 2, brkr.getOffset(1));
+        assertEquals("split offset", 4, brkr.getOffset(2));
+        assertEquals("split offset", 7, brkr.getOffset(3));
+        assertEquals("split offset", 9, brkr.getOffset(4));
+        assertEquals("split offset", 10, brkr.getOffset(5));
+        assertEquals("split offset", 12, brkr.getOffset(6));
+        assertEquals("split offset", 13, brkr.getOffset(7));
+        assertEquals("split offset", 15, brkr.getOffset(8));
+        assertEquals("split offset", 16, brkr.getOffset(9));
+        assertEquals("split offset", 19, brkr.getOffset(10));
+        assertEquals("split offset", 23, brkr.getOffset(11));
     }
 }

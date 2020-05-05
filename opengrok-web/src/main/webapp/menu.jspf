@@ -230,7 +230,8 @@ document.domReady.push(function() { domReadyMenu(); });
     </tbody>
 </table>
 <div id="form-controls">
-    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
+    <input tabindex="9" class="submit btn" onclick="$('#xrd').val(''); $('#sbox').submit()"
+           type="button" value="Search"/>
     <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
     <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
@@ -240,6 +241,8 @@ document.domReady.push(function() { domReadyMenu(); });
 <div id="ltbl">
     <!-- filled with javascript -->
 </div>
+<input type="hidden" id="<%= QueryParameters.NO_REDIRECT_PARAM %>"
+       name="<%= QueryParameters.NO_REDIRECT_PARAM %>" value=""/>
 </form>
 <div class="clearfix"></div>
 <%

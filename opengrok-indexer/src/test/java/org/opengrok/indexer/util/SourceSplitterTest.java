@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
-import java.io.IOException;
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.StreamSource;
 
@@ -38,11 +39,11 @@ public class SourceSplitterTest {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("");
         assertEquals("split count", 1, splitter.count());
-        assertEquals("split position", 0, splitter.getPosition(0));
-        assertEquals("split position", 0, splitter.getPosition(1));
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 0, splitter.getOffset(1));
 
-        assertEquals("split find-offset", 0, splitter.findLineOffset(0));
-        assertEquals("split find-offset", -1, splitter.findLineOffset(1));
+        assertEquals("split find-index", 0, splitter.findLineIndex(0));
+        assertEquals("split find-index", -1, splitter.findLineIndex(1));
     }
 
     @Test
@@ -50,10 +51,10 @@ public class SourceSplitterTest {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("abc\ndef\n");
         assertEquals("split count", 3, splitter.count());
-        assertEquals("split position", 0, splitter.getPosition(0));
-        assertEquals("split position", 4, splitter.getPosition(1));
-        assertEquals("split position", 8, splitter.getPosition(2));
-        assertEquals("split position", 8, splitter.getPosition(3));
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 4, splitter.getOffset(1));
+        assertEquals("split offset", 8, splitter.getOffset(2));
+        assertEquals("split offset", 8, splitter.getOffset(3));
     }
 
     @Test
@@ -61,15 +62,15 @@ public class SourceSplitterTest {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset("abc\r\ndef");
         assertEquals("split count", 2, splitter.count());
-        assertEquals("split position", 0, splitter.getPosition(0));
-        assertEquals("split position", 5, splitter.getPosition(1));
-        assertEquals("split position", 8, splitter.getPosition(2));
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 5, splitter.getOffset(1));
+        assertEquals("split offset", 8, splitter.getOffset(2));
 
-        assertEquals("split find-offset", 0, splitter.findLineOffset(0));
-        assertEquals("split find-offset", 0, splitter.findLineOffset(1));
-        assertEquals("split find-offset", 0, splitter.findLineOffset(4));
-        assertEquals("split find-offset", 1, splitter.findLineOffset(5));
-        assertEquals("split find-offset", 1, splitter.findLineOffset(6));
+        assertEquals("split find-index", 0, splitter.findLineIndex(0));
+        assertEquals("split find-index", 0, splitter.findLineIndex(1));
+        assertEquals("split find-index", 0, splitter.findLineIndex(4));
+        assertEquals("split find-index", 1, splitter.findLineIndex(5));
+        assertEquals("split find-index", 1, splitter.findLineIndex(6));
     }
 
     @Test
@@ -81,24 +82,24 @@ public class SourceSplitterTest {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset(INPUT);
         assertEquals("split count", 5, splitter.count());
-        assertEquals("split position", 0, splitter.getPosition(0));
-        assertEquals("split position", 4, splitter.getPosition(1));
-        assertEquals("split position", 9, splitter.getPosition(2));
-        assertEquals("split position", 15, splitter.getPosition(3));
-        assertEquals("split position", 20, splitter.getPosition(4));
-        assertEquals("split position", 22, splitter.getPosition(5));
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 4, splitter.getOffset(1));
+        assertEquals("split offset", 9, splitter.getOffset(2));
+        assertEquals("split offset", 15, splitter.getOffset(3));
+        assertEquals("split offset", 20, splitter.getOffset(4));
+        assertEquals("split offset", 22, splitter.getOffset(5));
 
         /*
-         * Test findLineOffset() for every character with an alternate
-         * computation that counts every LFs.
+         * Test findLineIndex() for every character with an alternate
+         * computation that counts every LF.
          */
         for (int i = 0; i < splitter.originalLength(); ++i) {
             char c = INPUT.charAt(i);
-            int off = splitter.findLineOffset(i);
+            int li = splitter.findLineIndex(i);
             long numLF = INPUT.substring(0, i + 1).chars().filter(ch ->
                 ch == '\n').count();
             long exp = numLF - (c == '\n' ? 1 : 0);
-            assertEquals("split find-offset of " + i, exp, off);
+            assertEquals("split find-index of " + i, exp, li);
         }
     }
 
@@ -112,24 +113,50 @@ public class SourceSplitterTest {
         SourceSplitter splitter = new SourceSplitter();
         splitter.reset(src);
         assertEquals("split count", 5, splitter.count());
-        assertEquals("split position", 0, splitter.getPosition(0));
-        assertEquals("split position", 4, splitter.getPosition(1));
-        assertEquals("split position", 9, splitter.getPosition(2));
-        assertEquals("split position", 15, splitter.getPosition(3));
-        assertEquals("split position", 20, splitter.getPosition(4));
-        assertEquals("split position", 22, splitter.getPosition(5));
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 4, splitter.getOffset(1));
+        assertEquals("split offset", 9, splitter.getOffset(2));
+        assertEquals("split offset", 15, splitter.getOffset(3));
+        assertEquals("split offset", 20, splitter.getOffset(4));
+        assertEquals("split offset", 22, splitter.getOffset(5));
 
         /*
-         * Test findLineOffset() for every character with an alternate
-         * computation that counts every LFs.
+         * Test findLineIndex() for every character with an alternate
+         * computation that counts every LF.
          */
         for (int i = 0; i < splitter.originalLength(); ++i) {
             char c = INPUT.charAt(i);
-            int off = splitter.findLineOffset(i);
+            int li = splitter.findLineIndex(i);
             long numLF = INPUT.substring(0, i + 1).chars().filter(ch ->
                 ch == '\n').count();
             long exp = numLF - (c == '\n' ? 1 : 0);
-            assertEquals("split find-offset of " + i, exp, off);
+            assertEquals("split find-index of " + i, exp, li);
         }
+    }
+
+    @Test
+    public void shouldHandleInterspersedLineEndings() throws IOException {
+        //                                    0                0
+        //                    0- -- -5 - -- - 1 - - - -5 -- - -2--
+        //                    0  1  2    3  4 5   6 7  8 9    0
+        //                                                    1
+        final String INPUT = "a\rb\nc\r\nd\r\r\r\n\re\n\rf\r\nghij";
+        StreamSource src = StreamSource.fromString(INPUT);
+
+        SourceSplitter splitter = new SourceSplitter();
+        splitter.reset(src);
+        assertEquals("split count", 11, splitter.count());
+        assertEquals("split offset", 0, splitter.getOffset(0));
+        assertEquals("split offset", 2, splitter.getOffset(1));
+        assertEquals("split offset", 4, splitter.getOffset(2));
+        assertEquals("split offset", 7, splitter.getOffset(3));
+        assertEquals("split offset", 9, splitter.getOffset(4));
+        assertEquals("split offset", 10, splitter.getOffset(5));
+        assertEquals("split offset", 12, splitter.getOffset(6));
+        assertEquals("split offset", 13, splitter.getOffset(7));
+        assertEquals("split offset", 15, splitter.getOffset(8));
+        assertEquals("split offset", 16, splitter.getOffset(9));
+        assertEquals("split offset", 19, splitter.getOffset(10));
+        assertEquals("split offset", 23, splitter.getOffset(11));
     }
 }

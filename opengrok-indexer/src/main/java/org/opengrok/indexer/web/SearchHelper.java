@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -42,21 +42,29 @@ import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Matches;
+import org.apache.lucene.search.MatchesIterator;
+import org.apache.lucene.search.MatchesUtils;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
+import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import org.opengrok.indexer.analysis.Definitions;
@@ -99,11 +107,6 @@ public class SearchHelper {
      */
     public String contextPath;
     /**
-     * piggyback: if {@code true}, files in opengrok's data directory are
-     * gzipped compressed.
-     */
-    public boolean compressed;
-    /**
      * piggyback: the source root directory.
      */
     public File sourceRoot;
@@ -138,11 +141,21 @@ public class SearchHelper {
      */
     public boolean isCrossRefSearch;
     /**
+     * As with {@link #isCrossRefSearch}, but here indicating either a
+     * cross-reference search or a "full blown search".
+     */
+    public boolean isGuiSearch;
+    /**
      * if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
      * set via {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
      */
     public String redirect;
+    /**
+     * A value indicating if redirection should be short-circuited when state or
+     * query result would have indicated otherwise.
+     */
+    public boolean noRedirect;
     /**
      * if not {@code null}, the UI should show this error message and stop
      * processing the search. Automatically set via
@@ -377,41 +390,93 @@ public class SearchHelper {
             TopFieldDocs fdocs = searcher.search(query, start + maxItems, sort);
             totalHits = fdocs.totalHits.value;
             hits = fdocs.scoreDocs;
-            // Bug #3900: Check if this is a search for a single term, and that
-            // term is a definition. If that's the case, and we only have one match,
-            // we'll generate a direct link instead of a listing.
-            boolean isSingleDefinitionSearch
-                    = (query instanceof TermQuery) && (builder.getDefs() != null);
 
-            // Attempt to create a direct link to the definition if we search for
-            // one single definition term AND we have exactly one match AND there
-            // is only one definition of that symbol in the document that matches.
-            boolean uniqueDefinition = false;
-            if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
-                Document doc = searcher.doc(hits[0].doc);
-                if (doc.getField(QueryBuilder.TAGS) != null) {
-                    byte[] rawTags = doc.getField(QueryBuilder.TAGS).binaryValue().bytes;
-                    Definitions tags = Definitions.deserialize(rawTags);
-                    String symbol = ((TermQuery) query).getTerm().text();
-                    if (tags.occurrences(symbol) == 1) {
-                        uniqueDefinition = true;
-                    }
+            /*
+             * Determine if possibly a single-result redirect to xref is
+             * eligible and applicable. If history query is active, then nope.
+             */
+            if (!noRedirect && hits != null && hits.length == 1 && builder.getHist() == null) {
+                int docID = hits[0].doc;
+                if (isCrossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
+                    maybeRedirectToDefinition(docID, (TermQuery) query);
+                } else if (isGuiSearch) {
+                    maybeRedirectToMatchOffset(docID, builder.getContextFields());
                 }
             }
-            // @TODO fix me. I should try to figure out where the exact hit is
-            // instead of returning a page with just _one_ entry in....
-            if (uniqueDefinition && hits != null && hits.length > 0 && isCrossRefSearch) {
-                redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(searcher.doc(hits[0].doc).get(QueryBuilder.PATH))
-                        + '#' + Util.URIEncode(((TermQuery) query).getTerm().text());
-            }
-        } catch (BooleanQuery.TooManyClauses e) {
-            errorMsg = "Too many results for wildcard!";
         } catch (IOException | ClassNotFoundException e) {
             errorMsg = e.getMessage();
         }
         return this;
     }
+
+    private void maybeRedirectToDefinition(int docID, TermQuery termQuery)
+            throws IOException, ClassNotFoundException {
+        // Bug #3900: Check if this is a search for a single term, and that
+        // term is a definition. If that's the case, and we only have one match,
+        // we'll generate a direct link instead of a listing.
+        //
+        // Attempt to create a direct link to the definition if we search for
+        // one single definition term AND we have exactly one match AND there
+        // is only one definition of that symbol in the document that matches.
+        Document doc = searcher.doc(docID);
+        IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+        if (tagsField != null) {
+            byte[] rawTags = tagsField.binaryValue().bytes;
+            Definitions tags = Definitions.deserialize(rawTags);
+            String symbol = termQuery.getTerm().text();
+            if (tags.occurrences(symbol) == 1) {
+                String anchor = Util.URIEncode(symbol);
+                redirect = contextPath + Prefix.XREF_P
+                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + '?' + QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ + anchor
+                        + '#' + anchor;
+            }
+        }
+    }
+
+    private void maybeRedirectToMatchOffset(int docID, List<String> contextFields)
+            throws IOException {
+        /*
+         * Only PLAIN files might redirect to a file offset, since an offset
+         * must be subsequently converted to a line number and that is tractable
+         * only from plain text.
+         */
+        Document doc = searcher.doc(docID);
+        String genre = doc.get(QueryBuilder.T);
+        if (!AbstractAnalyzer.Genre.PLAIN.typeName().equals(genre)) {
+            return;
+        }
+
+        List<LeafReaderContext> leaves = reader.leaves();
+        int subIndex = ReaderUtil.subIndex(docID, leaves);
+        LeafReaderContext leaf = leaves.get(subIndex);
+
+        Query rewritten = query.rewrite(reader);
+        Weight weight = rewritten.createWeight(searcher, ScoreMode.COMPLETE_NO_SCORES, 1);
+        Matches matches = weight.matches(leaf, docID - leaf.docBase); // Adjust docID
+        if (matches != null && matches != MatchesUtils.MATCH_WITH_NO_TERMS) {
+            int matchCount = 0;
+            int offset = -1;
+            for (String field : contextFields) {
+                MatchesIterator matchesIterator = matches.getMatches(field);
+                while (matchesIterator.next()) {
+                    if (matchesIterator.startOffset() >= 0) {
+                        // Abort if there is more than a single match offset.
+                        if (++matchCount > 1) {
+                            return;
+                        }
+                        offset = matchesIterator.startOffset();
+                    }
+                }
+            }
+            if (offset >= 0) {
+                redirect = contextPath + Prefix.XREF_P
+                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset;
+            }
+        }
+    }
+
     private static final Pattern TABSPACE = Pattern.compile("[\t ]+");
 
     private void getSuggestion(Term term, IndexReader ir,
@@ -477,19 +542,19 @@ public class SearchHelper {
                         && !builder.getFreetext().isEmpty()) {
                     t = new Term(QueryBuilder.FULL, builder.getFreetext());
                     getSuggestion(t, ir, dummy);
-                    s.freetext = dummy.toArray(new String[dummy.size()]);
+                    s.freetext = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 if (builder.getRefs() != null && !builder.getRefs().isEmpty()) {
                     t = new Term(QueryBuilder.REFS, builder.getRefs());
                     getSuggestion(t, ir, dummy);
-                    s.refs = dummy.toArray(new String[dummy.size()]);
+                    s.refs = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 if (builder.getDefs() != null && !builder.getDefs().isEmpty()) {
                     t = new Term(QueryBuilder.DEFS, builder.getDefs());
                     getSuggestion(t, ir, dummy);
-                    s.defs = dummy.toArray(new String[dummy.size()]);
+                    s.defs = dummy.toArray(new String[0]);
                     dummy.clear();
                 }
                 //TODO suggest also for path and history?

@@ -18,16 +18,13 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.opengrok.indexer.analysis.StreamSource;
@@ -40,6 +37,7 @@ import org.opengrok.indexer.analysis.StreamSource;
 public class LineBreaker {
 
     private int length;
+    private int count;
     private int[] lineOffsets;
 
     /**
@@ -65,64 +63,19 @@ public class LineBreaker {
             throw new IllegalArgumentException("`src' is null");
         }
 
-        length = 0;
-        lineOffsets = null;
-
-        try (InputStream in = src.getStream();
-            Reader rdr = IOUtils.createBOMStrippedReader(in,
-                StandardCharsets.UTF_8.name())) {
-            Reader intermediate = null;
-            if (wrapper != null) {
-                intermediate = wrapper.get(rdr);
-            }
-
-            try (BufferedReader brdr = new BufferedReader(
-                    intermediate != null ? intermediate : rdr)) {
-                reset(brdr);
-            } finally {
-                if (intermediate != null) {
-                    intermediate.close();
-                }
-            }
-        }
+        SplitterUtil.reset(this::reset, src, wrapper);
     }
 
     private void reset(Reader reader) throws IOException {
-        List<Integer> newOffsets = new ArrayList<>();
-        newOffsets.add(0);
+        length = 0;
+        lineOffsets = null;
 
-        int c;
-        while ((c = reader.read()) != -1) {
-            ++length;
-            switch (c) {
-                case '\r':
-                    c = reader.read();
-                    if (c == -1) {
-                        newOffsets.add(length);
-                        break;
-                    } else {
-                        ++length;
-                        switch (c) {
-                            case '\n':
-                                newOffsets.add(length);
-                                break;
-                            case '\r':
-                                newOffsets.add(length - 1);
-                                newOffsets.add(length);
-                                break;
-                            default:
-                                newOffsets.add(length - 1);
-                                break;
-                        }
-                    }
-                    break;
-                case '\n':
-                    newOffsets.add(length);
-                    break;
-                default:
-                    break;
-            }
-        }
+        List<Integer> newOffsets = new ArrayList<>();
+        LineBreakerScanner scanner = new LineBreakerScanner(reader);
+        scanner.setTarget(newOffsets);
+        scanner.consume();
+        length = scanner.getLength();
+        count = newOffsets.size() - 1;
 
         lineOffsets = new int[newOffsets.size()];
         for (int i = 0; i < lineOffsets.length; ++i) {
@@ -139,28 +92,44 @@ public class LineBreaker {
     }
 
     /**
-     * Gets the number of broken lines.
-     * @return value
+     * Gets the number of split lines.
      */
     public int count() {
         if (lineOffsets == null) {
             throw new IllegalStateException("reset() did not succeed");
         }
-        return lineOffsets.length;
+        return count;
     }
 
     /**
-     * Gets the starting document character position of the line at the
-     * specified offset.
-     * @param offset greater than or equal to zero and less than or equal to
+     * Gets the starting document character offset of the line at the
+     * specified index in the lines list.
+     * @param index greater than or equal to zero and less than or equal to
      * {@link #count()}
-     * @return line length, including the end-of-line token
-     * @throws IllegalArgumentException if {@code offset} is out of bounds
+     * @return line starting offset
+     * @throws IllegalArgumentException if {@code index} is out of bounds
      */
-    public int getPosition(int offset) {
-        if (offset < 0 || lineOffsets == null || offset >= lineOffsets.length) {
-            throw new IllegalArgumentException("`offset' is out of bounds");
+    public int getOffset(int index) {
+        if (lineOffsets == null) {
+            throw new IllegalStateException("reset() did not succeed");
         }
-        return lineOffsets[offset];
+        if (index < 0 || index >= lineOffsets.length) {
+            throw new IllegalArgumentException("index is out of bounds");
+        }
+        return lineOffsets[index];
+    }
+
+    /**
+     * Find the line index for the specified document offset.
+     * @param offset greater than or equal to zero and less than
+     * {@link #originalLength()}.
+     * @return -1 if {@code offset} is beyond the document bounds; otherwise,
+     * a valid index
+     */
+    public int findLineIndex(int offset) {
+        if (lineOffsets == null) {
+            throw new IllegalStateException("reset() did not succeed");
+        }
+        return SplitterUtil.findLineIndex(length, lineOffsets, offset);
     }
 }

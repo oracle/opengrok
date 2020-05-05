@@ -151,8 +151,7 @@ public final class Results {
      * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#summarizer} (if sourceContext is not
-     * {@code null})</li> <li>{@link SearchHelper#compressed} (if sourceContext
-     * is not {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
+     * {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
      * sourceContext or historyContext is not {@code null})</li> </ul>
      *
      * @param out write destination
@@ -232,7 +231,7 @@ public final class Results {
                     AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(
                             doc.get(QueryBuilder.T));
                     if (AbstractAnalyzer.Genre.XREFABLE == genre && sh.summarizer != null) {
-                        String xtags = getTags(xrefDataDir, rpath, sh.compressed);
+                        String xtags = getTags(xrefDataDir, rpath, env.isCompressXref());
                         // FIXME use Highlighter from lucene contrib here,
                         // instead of summarizer, we'd also get rid of
                         // apache lucene in whole source ...

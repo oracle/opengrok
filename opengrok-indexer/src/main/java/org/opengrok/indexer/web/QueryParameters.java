@@ -78,6 +78,16 @@ public class QueryParameters {
     public static final String FORMAT_PARAM_EQ = FORMAT_PARAM + "=";
 
     /**
+     * Parameter name to specify a mediated fragment identifier.
+     */
+    public static final String FRAGMENT_IDENTIFIER_PARAM = "fi";
+
+    /**
+     * {@link #FRAGMENT_IDENTIFIER_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String FRAGMENT_IDENTIFIER_PARAM_EQ = FRAGMENT_IDENTIFIER_PARAM + "=";
+
+    /**
      * Parameter name to specify an OpenGrok full search.
      */
     public static final String FULL_SEARCH_PARAM = "full";
@@ -96,6 +106,23 @@ public class QueryParameters {
      * {@link #HIST_SEARCH_PARAM} concatenated with {@code "=" }.
      */
     public static final String HIST_SEARCH_PARAM_EQ = HIST_SEARCH_PARAM + "=";
+
+    /**
+     * Parameter name to specify a match offset.
+     */
+    public static final String MATCH_OFFSET_PARAM = "mo";
+
+    /**
+     * {@link #MATCH_OFFSET_PARAM} concatenated with {@code "=" }.
+     */
+    public static final String MATCH_OFFSET_PARAM_EQ = MATCH_OFFSET_PARAM + "=";
+
+    /**
+     * Parameter name to specify a value indicating if redirection should be
+     * short-circuited when state or query result would have an indicated
+     * otherwise.
+     */
+    public static final String NO_REDIRECT_PARAM = "xrd";
 
     /**
      * Parameter name to specify an OpenGrok search of paths.

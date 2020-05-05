@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
@@ -56,15 +56,14 @@ import org.opengrok.indexer.web.Util;
  */
 public class Context {
 
+    static final int MAXFILEREAD = 1024 * 1024;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
-    static final int MAXFILEREAD = 1024 * 1024;
-    private char[] buffer;
-    PlainLineTokenizer tokens;
-    String queryAsURI;
+    private final String queryAsURI;
 
     /**
      * Map whose keys tell which fields to look for in the source file, and
@@ -96,10 +95,9 @@ public class Context {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, TOKEN_FIELDS);
         if (m != null) {
-            buildQueryAsURI(qbuilder.getQueries());
-            //System.err.println("Found Matchers = "+ m.length + " for " + query);
-            buffer = new char[MAXFILEREAD];
-            tokens = new PlainLineTokenizer((Reader) null);
+            queryAsURI = buildQueryAsURI(qbuilder.getQueries());
+        } else {
+            queryAsURI = "";
         }
     }
 
@@ -212,7 +210,7 @@ public class Context {
 
         try {
             List<String> fieldList = qbuilder.getContextFields();
-            String[] fields = fieldList.toArray(new String[fieldList.size()]);
+            String[] fields = fieldList.toArray(new String[0]);
 
             String res = uhi.highlightFieldsUnion(fields, query, docId,
                 linelimit);
@@ -236,10 +234,9 @@ public class Context {
      *
      * @param subqueries a map containing the query text for each field
      */
-    private void buildQueryAsURI(Map<String, String> subqueries) {
+    private String buildQueryAsURI(Map<String, String> subqueries) {
         if (subqueries.isEmpty()) {
-            queryAsURI = "";
-            return;
+            return "";
         }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
@@ -249,7 +246,7 @@ public class Context {
                 .append('&');
         }
         sb.setLength(sb.length() - 1);
-        queryAsURI = sb.toString();
+        return sb.toString();
     }
 
     private boolean alt = true;
@@ -298,7 +295,8 @@ public class Context {
                             if (scopes != null) {
                                 Scope scp = scopes.getScope(tag.line);
                                 scope = scp.getName() + "()";
-                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.getLineFrom()) + "\">" + scope + "</a>";
+                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" +
+                                        scp.getLineFrom() + "\">" + scope + "</a>";
                             }
 
                             /* desc[0] is matched symbol
@@ -367,9 +365,9 @@ public class Context {
         if (in == null) {
             return anything;
         }
-        int charsRead = 0;
-        boolean truncated = false;
 
+        PlainLineTokenizer tokens = new PlainLineTokenizer(null);
+        boolean truncated = false;
         boolean lim = limit;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (!env.isQuickContextScan()) {
@@ -377,6 +375,8 @@ public class Context {
         }
 
         if (lim) {
+            char[] buffer = new char[MAXFILEREAD];
+            int charsRead;
             try {
                 charsRead = in.read(buffer);
                 if (charsRead == MAXFILEREAD) {

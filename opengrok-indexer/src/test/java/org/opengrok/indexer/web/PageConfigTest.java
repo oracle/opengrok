@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
 
@@ -332,9 +333,6 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req2);
         String rev = cfg.getLatestRevision();
         assertNull(rev);
-
-        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
-        assertNull(location);
     }
 
     @Test
