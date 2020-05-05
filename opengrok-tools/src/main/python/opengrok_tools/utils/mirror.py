@@ -54,6 +54,7 @@ IGNORED_REPOS_PROPERTY = 'ignored_repos'
 PROXY_PROPERTY = 'proxy'
 COMMANDS_PROPERTY = 'commands'
 DISABLED_PROPERTY = 'disabled'
+DISABLED_REASON_PROPERTY = 'disabled-reason'
 HOOKDIR_PROPERTY = 'hookdir'
 HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
@@ -378,9 +379,9 @@ def mirror_project(config, project_name, check_changes, uri,
 
     # We want this to be logged to the log file (if any).
     if project_config:
-        disabled_value = project_config.get(DISABLED_PROPERTY)
-        if disabled_value:
-            handle_disabled_project(config, project_name, disabled_value)
+        if project_config.get(DISABLED_PROPERTY):
+            handle_disabled_project(config, project_name,
+                                    project_config.get(DISABLED_REASON_PROPERTY))
             logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL
@@ -446,7 +447,8 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     # Quick sanity check.
     known_project_tunables = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
-                              IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY]
+                              IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
+                              DISABLED_REASON_PROPERTY]
 
     if not multiple_project_config:
         return True

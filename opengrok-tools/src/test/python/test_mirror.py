@@ -39,7 +39,7 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
-    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY
+    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY
 import opengrok_tools.mirror
 from opengrok_tools.utils.exitvals import (
     CONTINUE_EXITVAL, FAILURE_EXITVAL
@@ -232,7 +232,9 @@ def test_disabled_command_api_text_append(monkeypatch):
                       {COMMAND_PROPERTY:
                            ["http://localhost:8080/source/api/v1/foo",
                             "POST", data]},
-                  PROJECTS_PROPERTY: {project_name: {DISABLED_PROPERTY: text_to_append}}}
+                  PROJECTS_PROPERTY: {project_name:
+                                          {DISABLED_REASON_PROPERTY: text_to_append,
+                                           DISABLED_PROPERTY: True}}}
 
         mirror_project(config, project_name, False, None, None)
 
