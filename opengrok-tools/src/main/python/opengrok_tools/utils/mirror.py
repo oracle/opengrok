@@ -322,7 +322,8 @@ def handle_disabled_project(config, project_name, disabled_msg):
             if type(data) is dict:
                 text = data.get("text")
             if text and uri.find("/api/v1/") > 0 and type(disabled_msg) is str:
-                logger.debug("Appending text to message: {}".format(disabled_msg))
+                logger.debug("Appending text to message: {}".
+                             format(disabled_msg))
                 command_args[2]["text"] = text + ": " + disabled_msg
 
             r = call_rest_api(disabled_command, PROJECT_SUBST, project_name)
@@ -381,7 +382,8 @@ def mirror_project(config, project_name, check_changes, uri,
     if project_config:
         if project_config.get(DISABLED_PROPERTY):
             handle_disabled_project(config, project_name,
-                                    project_config.get(DISABLED_REASON_PROPERTY))
+                                    project_config.
+                                    get(DISABLED_REASON_PROPERTY))
             logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL

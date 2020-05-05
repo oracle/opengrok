@@ -226,15 +226,17 @@ def test_disabled_command_api_text_append(monkeypatch):
                   mock_call_rest_api)
 
         project_name = "foo"
-        data = {'messageLevel': 'info', 'duration': 'PT5M', 'tags': ['%PROJECT%'],
+        data = {'messageLevel': 'info', 'duration': 'PT5M',
+                'tags': ['%PROJECT%'],
                 'text': 'disabled project'}
         config = {DISABLED_CMD_PROPERTY:
-                      {COMMAND_PROPERTY:
-                           ["http://localhost:8080/source/api/v1/foo",
-                            "POST", data]},
+                  {COMMAND_PROPERTY:
+                   ["http://localhost:8080/source/api/v1/foo",
+                    "POST", data]},
                   PROJECTS_PROPERTY: {project_name:
-                                          {DISABLED_REASON_PROPERTY: text_to_append,
-                                           DISABLED_PROPERTY: True}}}
+                                      {DISABLED_REASON_PROPERTY:
+                                       text_to_append,
+                                       DISABLED_PROPERTY: True}}}
 
         mirror_project(config, project_name, False, None, None)
 
