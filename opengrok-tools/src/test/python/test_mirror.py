@@ -39,7 +39,7 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
-    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY
+    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY
 import opengrok_tools.mirror
 from opengrok_tools.utils.exitvals import (
     CONTINUE_EXITVAL, FAILURE_EXITVAL
@@ -181,6 +181,10 @@ def test_empty_project_config():
 
 
 def test_disabled_command_api():
+    """
+    Test that mirror_project() calls call_rest_api() if API
+    call is specified in the configuration for disabled project.
+    """
     with patch(opengrok_tools.utils.mirror.call_rest_api,
                lambda a, b, c: mock(spec=requests.Response)):
         project_name = "foo"
@@ -195,6 +199,46 @@ def test_disabled_command_api():
         verify(opengrok_tools.utils.mirror). \
             call_rest_api(config.get(DISABLED_CMD_PROPERTY),
                           PROJECT_SUBST, project_name)
+
+
+def test_disabled_command_api_text_append(monkeypatch):
+    """
+    Test that message text is appended if DISABLED_PROPERTY is a string.
+    """
+
+    text_to_append = "foo bar"
+
+    def mock_call_rest_api(command, b, c):
+        disabled_command = config.get(DISABLED_CMD_PROPERTY)
+        assert disabled_command
+        command_args = disabled_command.get(COMMAND_PROPERTY)
+        assert command_args
+        data = command_args[2]
+        assert data
+        text = data.get("text")
+        assert text
+        assert text.find(text_to_append)
+
+        return mock(spec=requests.Response)
+
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.mirror.call_rest_api",
+                  mock_call_rest_api)
+
+        project_name = "foo"
+        data = {'messageLevel': 'info', 'duration': 'PT5M',
+                'tags': ['%PROJECT%'],
+                'text': 'disabled project'}
+        config = {DISABLED_CMD_PROPERTY:
+                  {COMMAND_PROPERTY:
+                   ["http://localhost:8080/source/api/v1/foo",
+                    "POST", data]},
+                  PROJECTS_PROPERTY: {project_name:
+                                      {DISABLED_REASON_PROPERTY:
+                                       text_to_append,
+                                       DISABLED_PROPERTY: True}}}
+
+        mirror_project(config, project_name, False, None, None)
 
 
 def test_disabled_command_run():
