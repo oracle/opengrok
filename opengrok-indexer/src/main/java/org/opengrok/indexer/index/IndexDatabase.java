@@ -523,6 +523,13 @@ public class IndexDatabase {
                         }
                     }
 
+                    /*
+                     * Since we are avoiding an IndexAnalysisSettings bump to
+                     * store needed state related to #Lines/LOC, we need to
+                     * ensure that at least one D-document gets saved. Record
+                     * zeroes for a .foo under sourceRoot to do this.
+                     */
+                    countsAggregator.register(new NumLinesLOC("/.foo", 0, 0));
                     NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
                     countsAccessor.store(writer, reader, countsAggregator,
                             isWithDirectoryCounts && isCountingDeltas);
