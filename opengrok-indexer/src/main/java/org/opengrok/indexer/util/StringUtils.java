@@ -110,17 +110,18 @@ public final class StringUtils {
     static final Pattern javaClassPattern =
         Pattern.compile("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
     /**
-     * Returns true if the string is possibly a full java class name.
+     * Returns true if the string is possibly a Java class name, and only
+     * matching a subset of possible class names to prevent false positives.
+     * <p><ul>
+     *     <li>class must be qualified with a package name</li>
+     *     <li>package name must contain only letters and start lower case</li>
+     *     <li>class name must be in CamelCase and start upper case</li>
+     * </ul>
      *
      * @param s the string to be checked
      * @return true if string could be a java class name
     */
     public static boolean isPossiblyJavaClass(String s) {
-        // Only match a small subset of possible class names to prevent false
-        // positives:
-        //    - class must be qualified with a package name
-        //    - only letters in package name, starting with lower case
-        //    - class name must be in CamelCase, starting with upper case
         return javaClassPattern.matcher(s).matches();
     }
 
