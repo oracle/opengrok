@@ -381,7 +381,7 @@ public class LdapFacade extends AbstractLdapProvider {
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (NamingException ex) {
             LOGGER.log(Level.SEVERE, String.format("An arbitrary LDAP error occurred on server %s " +
-                    "when searching for '%s'",  getSearchDescription(dn, filter, attributes), server), ex);
+                    "when searching for '%s'", server, getSearchDescription(dn, filter, attributes)), ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
