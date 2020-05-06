@@ -413,8 +413,6 @@ public class IndexDatabase {
         uidIter = null;
         postsIter = null;
         indexedSymlinks.clear();
-        isWithDirectoryCounts = false;
-        isCountingDeltas = false;
 
         IOException finishingException = null;
         try {
@@ -480,6 +478,9 @@ public class IndexDatabase {
                             LOGGER.info("Forcing reindexing to fully compute directory counts");
                         }
                     }
+                } else {
+                    isWithDirectoryCounts = false;
+                    isCountingDeltas = false;
                 }
 
                 try {

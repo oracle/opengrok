@@ -159,8 +159,8 @@ class NumLinesLOCAccessor {
 
         File pathFile = new File(aggregate.getPath());
         String parent = pathFile.getParent();
-        if (parent == null || parent.length() < 1) {
-            return;
+        if (parent == null) {
+            parent = "";
         }
 
         String normalizedPath = QueryBuilder.normalizeDirPath(parent);

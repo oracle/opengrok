@@ -159,9 +159,9 @@ public class IndexDatabaseTest {
 
         /*
          * Initially was 6, then IndexAnalysisSettings added 1, then
-         * NumLinesLOCAggregator added 2.
+         * NumLinesLOCAggregator added 3.
          */
-        Assert.assertEquals("Lucene number of documents", 9, origNumFiles);
+        Assert.assertEquals("Lucene number of documents", 10, origNumFiles);
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
