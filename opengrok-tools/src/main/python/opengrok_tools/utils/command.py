@@ -380,19 +380,19 @@ class Command:
             self.set_resource_limit(name, value)
 
     def getretcode(self):
-        if self.state is not Command.FINISHED:
+        if self.state != Command.FINISHED:
             return None
         else:
             return self.returncode
 
     def getoutputstr(self):
-        if self.state is Command.FINISHED:
+        if self.state != Command.FINISHED:
             return "".join(self.out).strip()
         else:
             return None
 
     def getoutput(self):
-        if self.state is Command.FINISHED:
+        if self.state != Command.FINISHED:
             return self.out
         else:
             return None
