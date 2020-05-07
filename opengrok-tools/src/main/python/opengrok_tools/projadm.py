@@ -27,7 +27,6 @@
 """
 
 import argparse
-import io
 import os
 import shutil
 import sys
