@@ -311,8 +311,8 @@ def main():
         sys.exit(FAILURE_EXITVAL)
     logger.debug("web application URI = {}".format(uri))
 
-    lock = FileLock(os.path.join(tempfile.gettempdir(),
-                                 os.path.basename(sys.argv[0]) + ".lock"))
+    lock = FileLock(path.join(tempfile.gettempdir(),
+                                 path.basename(sys.argv[0]) + ".lock"))
     try:
         with lock.acquire(timeout=0):
             if args.add:
