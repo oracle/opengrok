@@ -66,7 +66,7 @@ def exec_command(doit, logger, cmd, msg):
         logger.info(cmd)
         return
     cmd.execute()
-    if cmd.getstate() is not Command.FINISHED \
+    if cmd.getstate() != Command.FINISHED \
             or cmd.getretcode() != SUCCESS_EXITVAL:
         logger.error(msg)
         logger.error("Standard output: {}".format(cmd.getoutput()))
