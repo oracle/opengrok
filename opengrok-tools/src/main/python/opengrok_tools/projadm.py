@@ -27,7 +27,7 @@
 """
 
 import argparse
-import os
+import io
 import shutil
 import sys
 import tempfile
