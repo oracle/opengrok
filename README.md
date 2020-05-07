@@ -6,6 +6,7 @@ Copyright (c) 2006, 2019 Oracle and/or its affiliates. All rights reserved.
 [![Travis status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
 [![Coverage status](https://coveralls.io/repos/oracle/opengrok/badge.svg?branch=master)](https://coveralls.io/r/oracle/opengrok?branch=master)
 [![SonarQube status](https://sonarcloud.io/api/project_badges/measure?project=org.opengrok%3Aopengrok-top&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.opengrok%3Aopengrok-top)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/oracle/opengrok.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/oracle/opengrok/alerts/)
 [![License](https://img.shields.io/badge/License-CDDL%201.0-blue.svg)](https://opensource.org/licenses/CDDL-1.0)
 
 - [OpenGrok - a wicked fast source browser](#opengrok---a-wicked-fast-source-browser)
