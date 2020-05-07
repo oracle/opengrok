@@ -312,7 +312,7 @@ def main():
     logger.debug("web application URI = {}".format(uri))
 
     lock = FileLock(path.join(tempfile.gettempdir(),
-                                 path.basename(sys.argv[0]) + ".lock"))
+                              path.basename(sys.argv[0]) + ".lock"))
     try:
         with lock.acquire(timeout=0):
             if args.add:
