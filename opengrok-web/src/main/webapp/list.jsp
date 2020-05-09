@@ -239,7 +239,7 @@ document.pageReady.push(function() { pageReadyList();});
             if (cfg.annotate()) {
                 // annotate
                 BufferedInputStream bin =
-                    new BufferedInputStream(new FileInputStream(resourceFile));
+                        new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
                     AnalyzerFactory a = AnalyzerGuru.find(basename);
                     AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
@@ -310,13 +310,12 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 File tempf = null;
                 try {
                     if (rev.equals(DUMMY_REVISION)) {
-                        in = new FileInputStream(resourceFile);
+                        in = new BufferedInputStream(new FileInputStream(resourceFile));
                     } else {
                         tempf = File.createTempFile("ogtags", basename);
                         if (HistoryGuru.getInstance().getRevision(tempf,
                                 resourceFile.getParent(), basename, rev)) {
-                            in = new BufferedInputStream(
-                                    new FileInputStream(tempf));
+                            in = new BufferedInputStream(new FileInputStream(tempf));
                         } else {
                             tempf.delete();
                             tempf = null;
