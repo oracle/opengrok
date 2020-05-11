@@ -91,13 +91,14 @@ indexer via the -R option.
                     <void property="flag">
                         <string>REQUISITE</string>
                     </void>
-                </object>
-    	        <void property="setup">
-                    <void method="put">
-                        <string>objectclass</string>
-                        <string>posixAccount</string>
+
+    	              <void property="setup">
+                        <void method="put">
+                            <string>objectclass</string>
+                            <string>posixAccount</string>
+                        </void>
                     </void>
-                </void>
+                </object>
             </void>
 
             <!-- Authorization stacks follow -->
