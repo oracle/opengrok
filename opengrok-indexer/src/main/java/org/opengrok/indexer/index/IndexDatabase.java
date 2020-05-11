@@ -525,12 +525,20 @@ public class IndexDatabase {
                     }
 
                     /*
-                     * Since we are avoiding an IndexAnalysisSettings bump to
-                     * store needed state related to #Lines/LOC, we need to
-                     * ensure that at least one D-document gets saved. Record
-                     * zeroes for a .foo under sourceRoot to do this.
+                     * As a signifier that #Lines/LOC are comprehensively
+                     * stored so that later calculation is in deltas mode, we
+                     * need at least one D-document saved. For a repo with only
+                     * non-code files, however, no true #Lines/LOC will have
+                     * been saved. Subsequent re-indexing will do more work
+                     * than necessary (until a source code file is placed). We
+                     * can record zeroes for a fake file under the root to get
+                     * a D-document even for this special repo situation.
+                     *
+                     * Metrics are aggregated for directories up to the root,
+                     * so it suffices to put the fake directly under the root.
                      */
-                    countsAggregator.register(new NumLinesLOC("/.foo", 0, 0));
+                    final String ROOT_FAKE_FILE = "/.foo";
+                    countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
                     NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
                     countsAccessor.store(writer, reader, countsAggregator,
                             isWithDirectoryCounts && isCountingDeltas);
