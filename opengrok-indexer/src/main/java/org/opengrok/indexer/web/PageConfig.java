@@ -618,12 +618,12 @@ public final class PageConfig {
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
             queryBuilder = new QueryBuilder().
-                    setFreetext(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.FULL)))
-                    .setDefs(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.DEFS)))
-                    .setRefs(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.REFS)))
-                    .setPath(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.PATH)))
-                    .setHist(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.HIST)))
-                    .setType(LaunderUtil.luceneQuery(req.getParameter(QueryBuilder.TYPE)));
+                    setFreetext(Laundromat.launderQuery(req.getParameter(QueryBuilder.FULL)))
+                    .setDefs(Laundromat.launderQuery(req.getParameter(QueryBuilder.DEFS)))
+                    .setRefs(Laundromat.launderQuery(req.getParameter(QueryBuilder.REFS)))
+                    .setPath(Laundromat.launderQuery(req.getParameter(QueryBuilder.PATH)))
+                    .setHist(Laundromat.launderQuery(req.getParameter(QueryBuilder.HIST)))
+                    .setType(Laundromat.launderQuery(req.getParameter(QueryBuilder.TYPE)));
         }
 
         return queryBuilder;
@@ -684,7 +684,8 @@ public final class PageConfig {
      */
     public String getRequestedRevision() {
         if (rev == null) {
-            String tmp = LaunderUtil.userInput(req.getParameter(QueryParameters.REVISION_PARAM));
+            String tmp = Laundromat.launderInput(
+                    req.getParameter(QueryParameters.REVISION_PARAM));
             rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
@@ -1101,7 +1102,8 @@ public final class PageConfig {
      */
     public String getPath() {
         if (path == null) {
-            path = Util.getCanonicalPath(LaunderUtil.userInput(req.getPathInfo()), PATH_SEPARATOR);
+            path = Util.getCanonicalPath(Laundromat.launderInput(
+                    req.getPathInfo()), PATH_SEPARATOR);
             if (PATH_SEPARATOR_STRING.equals(path)) {
                 path = "";
             }

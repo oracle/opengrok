@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
-import org.opengrok.indexer.web.LaunderUtil;
+import org.opengrok.indexer.web.Laundromat;
 
 /**
  * Decode Oracle SSO specific headers.
@@ -54,10 +54,10 @@ public class OSSOHeaderDecoder implements IUserDecoder {
         Date cookieTimestamp = null;
 
         // Avoid classification as a taint bug.
-        username = LaunderUtil.userInput(request.getHeader(OSSO_USER_DN_HEADER));
-        timeouted = LaunderUtil.userInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
-        timestamp = LaunderUtil.userInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
-        userguid = LaunderUtil.userInput(request.getHeader(OSSO_USER_GUID_HEADER));
+        username = Laundromat.launderInput(request.getHeader(OSSO_USER_DN_HEADER));
+        timeouted = Laundromat.launderInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
+        timestamp = Laundromat.launderInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
+        userguid = Laundromat.launderInput(request.getHeader(OSSO_USER_GUID_HEADER));
         
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,

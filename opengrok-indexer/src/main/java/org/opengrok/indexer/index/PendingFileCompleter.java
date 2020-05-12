@@ -554,6 +554,7 @@ class PendingFileCompleter {
 
     /**
      * Counts segments arising from {@code File.separatorChar} or '\\'.
+     * @param path a defined instance
      * @return a natural number
      */
     private static int countPathSegments(String path) {

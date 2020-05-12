@@ -61,7 +61,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
-import org.opengrok.indexer.web.LaunderUtil;
+import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 @Path("/projects")
@@ -78,7 +78,7 @@ public class ProjectsController {
     @Consumes(MediaType.TEXT_PLAIN)
     public Response addProject(String projectName) {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         File srcRoot = env.getSourceRootFile();
         File projDir = new File(srcRoot, projectName);
@@ -154,7 +154,7 @@ public class ProjectsController {
     public void deleteProject(@PathParam("project") String projectName)
             throws HistoryException {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
@@ -185,7 +185,7 @@ public class ProjectsController {
     @Path("/{project}/data")
     public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
@@ -210,7 +210,7 @@ public class ProjectsController {
     @Path("/{project}/historycache")
     public void deleteHistoryCache(@PathParam("project") String projectName) throws HistoryException {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
@@ -245,7 +245,7 @@ public class ProjectsController {
     @Consumes(MediaType.TEXT_PLAIN)
     public void markIndexed(@PathParam("project") String projectName) throws Exception {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -285,8 +285,8 @@ public class ProjectsController {
             final String value
     ) throws Exception {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
-        field = LaunderUtil.userInput(field);
+        projectName = Laundromat.launderInput(projectName);
+        field = Laundromat.launderInput(field);
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -314,8 +314,8 @@ public class ProjectsController {
     public Object get(@PathParam("project") String projectName, @PathParam("field") String field)
             throws IOException {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
-        field = LaunderUtil.userInput(field);
+        projectName = Laundromat.launderInput(projectName);
+        field = Laundromat.launderInput(field);
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
@@ -346,7 +346,7 @@ public class ProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> getRepositories(@PathParam("project") String projectName) {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -366,7 +366,7 @@ public class ProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<String> getRepositoriesType(@PathParam("project") String projectName) {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -385,7 +385,7 @@ public class ProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<String> getProjectIndexFiles(@PathParam("project") String projectName) throws IOException {
         // Avoid classification as a taint bug.
-        projectName = LaunderUtil.userInput(projectName);
+        projectName = Laundromat.launderInput(projectName);
 
         return IndexDatabase.getAllFiles(Collections.singletonList("/" + projectName));
     }

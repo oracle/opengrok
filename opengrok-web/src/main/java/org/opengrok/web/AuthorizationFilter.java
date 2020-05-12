@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
-import org.opengrok.indexer.web.LaunderUtil;
+import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.web.api.v1.RestApp;
 
 public class AuthorizationFilter implements Filter {
@@ -59,7 +59,7 @@ public class AuthorizationFilter implements Filter {
         if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
-                        new Object[] {LaunderUtil.logging(httpReq.getServletPath()),
+                        new Object[] {Laundromat.launderLog(httpReq.getServletPath()),
                                 AuthorizationFilter.class.getName()});
             }
             fc.doFilter(sr, sr1);
@@ -74,11 +74,11 @@ public class AuthorizationFilter implements Filter {
             if (LOGGER.isLoggable(Level.INFO)) {
                 if (httpReq.getRemoteUser() != null) {
                     LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
-                            new Object[] {LaunderUtil.logging(httpReq.getRemoteUser()),
-                                    LaunderUtil.logging(httpReq.getRequestURI())});
+                            new Object[] {Laundromat.launderLog(httpReq.getRemoteUser()),
+                                    Laundromat.launderLog(httpReq.getRequestURI())});
                 } else {
                     LOGGER.log(Level.INFO, "Access denied for URI: {0}",
-                            LaunderUtil.logging(httpReq.getRequestURI()));
+                            Laundromat.launderLog(httpReq.getRequestURI()));
                 }
             }
 

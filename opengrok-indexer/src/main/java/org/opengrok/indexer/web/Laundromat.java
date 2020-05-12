@@ -25,12 +25,16 @@ package org.opengrok.indexer.web;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Represents a container for sanitizing methods for avoiding classifications as
  * taint bugs.
  */
-public class LaunderUtil {
+public class Laundromat {
+
+    private static final String ESC_N_R_T_F = "[\\n\\r\\t\\f]";
+    private static final String ESG_N_R_T_F__1_n = ESC_N_R_T_F + "+";
 
     /**
      * Sanitize {@code value} where it will be used in subsequent OpenGrok
@@ -38,24 +42,18 @@ public class LaunderUtil {
      * @return {@code null} if null or else {@code value} with "pattern-breaking
      * characters" (tabs, CR, LF, FF) replaced as underscores (one for one)
      */
-    public static String userInput(String value) {
-        if (value == null) {
-            return null;
-        }
-        return value.replaceAll("[\\n\\r\\t\\f]", "_");
+    public static String launderInput(String value) {
+        return replaceAll(value, ESC_N_R_T_F, "_");
     }
 
     /**
-     * Sanitize {@code query} where it will be used in a Lucene query.
-     * @return {@code null} if null or else {@code query} with "pattern-breaking
+     * Sanitize {@code value} where it will be used in a Lucene query.
+     * @return {@code null} if null or else {@code value} with "pattern-breaking
      * characters" (tabs, CR, LF, FF) replaced as spaces. Contiguous matches are
      * replaced with one space.
      */
-    public static String luceneQuery(String query) {
-        if (query == null) {
-            return null;
-        }
-        return query.replaceAll("[\\n\\r\\t\\f]+", " ");
+    public static String launderQuery(String value) {
+        return replaceAll(value, ESG_N_R_T_F__1_n, " ");
     }
 
     /**
@@ -64,7 +62,7 @@ public class LaunderUtil {
      * characters" tabs, CR, LF, and FF replaced as {@code "<TAB>"},
      * {@code "<CR>"}, {@code "<LF>"}, and {@code "<FF>"} resp.
      */
-    public static String logging(String value) {
+    public static String launderLog(String value) {
         if (value == null) {
             return null;
         }
@@ -77,31 +75,39 @@ public class LaunderUtil {
     /**
      * Sanitize {@code map} where it will be used in a log message only.
      * @return {@code null} if null or else {@code map} with keys and values
-     * sanitized with {@link #logging(String)}. If the sanitizing causes key
+     * sanitized with {@link #launderLog(String)}. If the sanitizing causes key
      * collisions, the colliding keys' values are combined.
      */
-    public static Map<String, String[]> logging(Map<String, String[]> map) {
+    public static Map<String, String[]> launderLog(Map<String, String[]> map) {
         if (map == null) {
             return null;
         }
 
         HashMap<String, String[]> safes = new HashMap<>();
-        for (Map.Entry<String, String[]> entry : map.entrySet()) {
-            String k = logging(entry.getKey());
-            String[] safeValues = safes.get(k);
+        for (Map.Entry<String, String[]> entry : map.entrySet().stream().sorted(
+                Map.Entry.comparingByKey()).collect(Collectors.toList())) {
+            String key = launderLog(entry.getKey());
+            String[] safeValues = safes.get(key);
             String[] fullySafe = mergeLogArrays(entry.getValue(), safeValues);
-            safes.put(k, fullySafe);
+            safes.put(key, fullySafe);
         }
         return safes;
     }
 
     private static String[] mergeLogArrays(String[] values, String[] safeValues) {
-        int n = values.length + (safeValues != null ? safeValues.length : 0);
+        if (values == null && safeValues == null) {
+            return null;
+        }
+
+        int n = (values != null ? values.length : 0) +
+                (safeValues != null ? safeValues.length : 0);
         String[] result = new String[n];
 
-        int i;
-        for (i = 0; i < values.length; ++i) {
-            result[i] = logging(values[i]);
+        int i = 0;
+        if (values != null) {
+            for (; i < values.length; ++i) {
+                result[i] = launderLog(values[i]);
+            }
         }
         if (safeValues != null) {
             System.arraycopy(safeValues, 0, result, i, safeValues.length);
@@ -109,7 +115,14 @@ public class LaunderUtil {
         return result;
     }
 
+    private static String replaceAll(String value, String regex, String replacement) {
+        if (value == null) {
+            return null;
+        }
+        return value.replaceAll(regex, replacement);
+    }
+
     /* private to enforce static */
-    private LaunderUtil() {
+    private Laundromat() {
     }
 }

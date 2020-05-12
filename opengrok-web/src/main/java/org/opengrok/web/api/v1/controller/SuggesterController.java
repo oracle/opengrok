@@ -27,7 +27,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.indexer.web.LaunderUtil;
+import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.SuggesterUtils;
@@ -294,8 +294,8 @@ public final class SuggesterController {
             throw new WebApplicationException("field is invalid", Response.Status.BAD_REQUEST);
         }
         // Avoid classification as a taint bug.
-        project = LaunderUtil.userInput(project);
-        field = LaunderUtil.userInput(field);
+        project = Laundromat.launderInput(project);
+        field = Laundromat.launderInput(field);
 
         List<Entry<BytesRef, Integer>> data;
         if (all) {
