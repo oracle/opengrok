@@ -214,6 +214,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(scanningDepth, Configuration::setScanningDepth);
     }
 
+    public int getNestingMaximum() {
+        return syncReadConfiguration(Configuration::getNestingMaximum);
+    }
+
+    public void setNestingMaximum(int nestingMaximum) {
+        syncWriteConfiguration(nestingMaximum, Configuration::setNestingMaximum);
+    }
+
     public int getCommandTimeout() {
         return syncReadConfiguration(Configuration::getCommandTimeout);
     }

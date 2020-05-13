@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -206,6 +206,7 @@ public final class Configuration {
     private boolean lastEditedDisplayMode;
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
+    private int nestingMaximum;
     private Set<String> allowedSymlinks;
     private Set<String> canonicalRoots;
     private boolean obfuscatingEMailAddresses;
@@ -356,6 +357,26 @@ public final class Configuration {
         this.scanningDepth = scanningDepth;
     }
 
+    /**
+     * Gets the nesting maximum of repositories. Default is 1.
+     */
+    public int getNestingMaximum() {
+        return nestingMaximum;
+    }
+
+    /**
+     * Sets the nesting maximum of repositories to a specified value.
+     * @param nestingMaximum the new value
+     * @throws IllegalArgumentException if {@code nestingMaximum} is negative
+     */
+    public void setNestingMaximum(int nestingMaximum) throws IllegalArgumentException {
+        if (nestingMaximum < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "nestingMaximum", nestingMaximum));
+        }
+        this.nestingMaximum = nestingMaximum;
+    }
+
     public int getCommandTimeout() {
         return commandTimeout;
     }
@@ -487,6 +508,7 @@ public final class Configuration {
         setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
+        setNestingMaximum(1);
         setOptimizeDatabase(true);
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));

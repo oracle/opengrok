@@ -599,6 +599,10 @@ public final class Indexer {
                     "files), but process all other command line options.").Do(v ->
                     runIndex = false);
 
+            parser.on("--nestingMaximum", "=number",
+                    "Maximum of nested repositories. Default is 1.").Do(v ->
+                    cfg.setNestingMaximum((Integer) v));
+
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                     "Turn on/off the optimization of the index database as part of the",
                     "indexing step. Default is on.").
