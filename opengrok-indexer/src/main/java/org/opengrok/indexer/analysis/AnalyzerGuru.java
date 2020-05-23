@@ -622,9 +622,9 @@ public class AnalyzerGuru {
 
         if (AbstractAnalyzer.Genre.PLAIN.equals(fac.getGenre()) &&
                 file.length() >= RuntimeEnvironment.getInstance().getHugeTextThresholdBytes()) {
+            String origFileTypeName = fac.getAnalyzer().getFileTypeName();
             fac = HugeTextAnalyzerFactory.DEFAULT_INSTANCE;
             if (logHugeText && LOGGER.isLoggable(Level.WARNING)) {
-                String origFileTypeName = fac.getAnalyzer().getFileTypeName();
                 LOGGER.log(Level.WARNING, "{0} is huge text: {1}",
                         new Object[]{origFileTypeName, path});
             }
