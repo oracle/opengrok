@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 /**
@@ -2169,7 +2169,7 @@ function clearSearchFrom() {
     $("#sbox input[type='text']").each(function () {
         $(this).val("");
     });
-    $("#type :selected").prop("selected", false);
+    $("#type").searchableOptionList().selectRadio("");
 }
 
 function getSelectedProjectNames() {
