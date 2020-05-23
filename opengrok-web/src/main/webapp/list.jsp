@@ -242,9 +242,9 @@ document.pageReady.push(function() { pageReadyList();});
                 BufferedInputStream bin =
                         new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
-                    AnalyzerFactory a = AnalyzerGuru.getAnalyzerFactory(
+                    AnalyzerFactory fac = AnalyzerGuru.getAnalyzerFactory(
                             resourceFile, basename, true);
-                    genre = AnalyzerGuru.getGenre(a);
+                    genre = AnalyzerGuru.getGenre(fac);
                     if (genre == Genre.IMAGE) {
 %>
 <div id="src">
@@ -269,7 +269,7 @@ document.pageReady.push(function() { pageReadyList();});
                         // SRCROOT is read with UTF-8 as a default.
                         r = IOUtils.createBOMStrippedReader(bin,
                             StandardCharsets.UTF_8.name());
-                        AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
+                        AnalyzerGuru.writeDumpedXref(request.getContextPath(), fac,
                                 r, out, defs, annotation, project);
     %></pre>
 </div><%
@@ -301,7 +301,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         } else {
             // requesting a previous revision or needed to generate xref on the fly (economy mode).
 
-            AnalyzerFactory a = rev.equals(DUMMY_REVISION) ? AnalyzerGuru.getAnalyzerFactory(
+            AnalyzerFactory fac = rev.equals(DUMMY_REVISION) ? AnalyzerGuru.getAnalyzerFactory(
                     resourceFile, path, true) : AnalyzerGuru.find(basename);
             if (genre == null) {
                 prepareExec(cfg);
@@ -310,7 +310,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 }
             }
             if (genre == null) {
-                genre = AnalyzerGuru.getGenre(a);
+                genre = AnalyzerGuru.getGenre(fac);
             }
             String error = null;
             if (genre == Genre.PLAIN || genre == Genre.HTML || genre == null) {
@@ -339,9 +339,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 }
                 if (in != null) {
                     try {
-                        if (genre == null) {
-                            a = AnalyzerGuru.getAnalyzerFactory(in, basename);
-                            genre = AnalyzerGuru.getGenre(a);
+                        if (fac == null || genre == null) {
+                            fac = AnalyzerGuru.getAnalyzerFactory(in, basename);
+                            genre = AnalyzerGuru.getGenre(fac);
                         }
                         if (genre == Genre.DATA || genre == Genre.XREFABLE || genre == null) {
     %>
@@ -385,12 +385,10 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 Annotation annotation = cfg.getAnnotation();
                                 //not needed yet
                                 //annotation.writeTooltipMap(out);
-                                // SRCROOT is read with UTF-8 as a default.
+                                // sourceRoot is read with UTF-8 as a default.
                                 r = IOUtils.createBOMStrippedReader(in,
-                                    StandardCharsets.UTF_8.name());
-                                AnalyzerGuru.writeDumpedXref(
-                                        request.getContextPath(),
-                                        a, r, out,
+                                        StandardCharsets.UTF_8.name());
+                                AnalyzerGuru.writeDumpedXref(request.getContextPath(), fac, r, out,
                                         defs, annotation, project);
                             } else if (genre == Genre.IMAGE) {
         %></pre>
