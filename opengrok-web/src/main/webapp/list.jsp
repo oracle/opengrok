@@ -395,17 +395,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"/>
         <pre><%
                             } else if (genre == Genre.HTML) {
-                                /**
-                                 * For backward compatibility, read the
-                                 * OpenGrok-produced document using the system
-                                 * default charset.
-                                 */
-                                r = new InputStreamReader(in);
-                                /**
-                                 * dumpXref() is also useful here for
-                                 * translating links.
-                                 */
-                                Util.dumpXref(out, r, request.getContextPath());
+                                // sourceRoot is read with UTF-8 as a default.
+                                r = IOUtils.createBOMStrippedReader(in,
+                                        StandardCharsets.UTF_8.name());
+                                AnalyzerGuru.writeDumpedXref(request.getContextPath(), fac, r, out,
+                                        null, null, project);
                             } else {
         %>Download file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
 <%= Util.URIEncode(rev) %>"><%= basename %></a><%
