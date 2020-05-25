@@ -29,7 +29,7 @@ image based on the official one.
 ## Additional info about the image
 
 * Tomcat 9
-* JRE 8 (Required for Opengrok 1.0+)
+* JRE 11
 * Configurable mirroring/reindexing (default every 10 min)
 
 The mirroring step works by going through all projects and attempting to
