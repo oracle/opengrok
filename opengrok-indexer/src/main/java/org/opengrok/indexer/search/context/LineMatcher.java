@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -30,7 +30,6 @@ import java.util.Locale;
  * Base class for matching a line against terms.
  */
 public abstract class LineMatcher {
-    public static String tagBegin, tagEnd;
     public static final int NOT_MATCHED = 0;
     public static final int MATCHED = 1;
     public static final int WAIT = 2;

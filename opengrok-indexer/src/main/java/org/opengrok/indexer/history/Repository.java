@@ -610,8 +610,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     static class HistoryRevResult {
-        public boolean success;
-        public int iterations;
+        boolean success;
+        int iterations;
     }
 
     private class RepositoryDateFormat extends DateFormat {

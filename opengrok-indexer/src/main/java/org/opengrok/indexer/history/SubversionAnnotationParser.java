@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -70,9 +72,11 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = null;
+        SAXParser saxParser;
         try {
             saxParser = factory.newSAXParser();
+            saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
+            saxParser.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
         } catch (ParserConfigurationException | SAXException ex) {
             IOException err = new IOException("Failed to create SAX parser", ex);
             throw err;

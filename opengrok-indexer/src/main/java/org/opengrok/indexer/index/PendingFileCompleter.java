@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -199,7 +199,6 @@ class PendingFileCompleter {
      * Attempts to rename all the tracked elements, catching any failures, and
      * throwing an exception if any failed.
      * @return the number of successful renamings
-     * @throws java.io.IOException
      */
     private int completeRenamings() throws IOException {
         int numPending = renames.size();
@@ -249,7 +248,6 @@ class PendingFileCompleter {
      * Attempts to delete all the tracked elements, catching any failures, and
      * throwing an exception if any failed.
      * @return the number of successful deletions
-     * @throws java.io.IOException
      */
     private int completeDeletions() throws IOException {
         int numPending = deletions.size();
@@ -269,13 +267,8 @@ class PendingFileCompleter {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
                                 progress.increment();
-                                try {
-                                    doDelete(x);
-                                    return true;
-                                } catch (IOException e) {
-                                    x.exception = e;
-                                    return false;
-                                }
+                                doDelete(x);
+                                return true;
                             }));
         }
         deletions.clear();
@@ -348,7 +341,7 @@ class PendingFileCompleter {
         return numPending - numFailures;
     }
 
-    private void doDelete(PendingFileDeletionExec del) throws IOException {
+    private void doDelete(PendingFileDeletionExec del) {
         File f = new File(TandemPath.join(del.absolutePath, PENDING_EXTENSION));
         File parent = f.getParentFile();
         del.absoluteParent = parent;
@@ -561,7 +554,7 @@ class PendingFileCompleter {
 
     /**
      * Counts segments arising from {@code File.separatorChar} or '\\'.
-     * @param path
+     * @param path a defined instance
      * @return a natural number
      */
     private static int countPathSegments(String path) {
@@ -575,29 +568,29 @@ class PendingFileCompleter {
         return n;
     }
 
-    private class PendingFileDeletionExec {
-        public String absolutePath;
-        public File absoluteParent;
-        public IOException exception;
+    private static class PendingFileDeletionExec {
+        String absolutePath;
+        File absoluteParent;
+        IOException exception;
         PendingFileDeletionExec(String absolutePath) {
             this.absolutePath = absolutePath;
         }
     }
 
-    private class PendingFileRenamingExec {
-        public String source;
-        public String target;
-        public IOException exception;
+    private static class PendingFileRenamingExec {
+        String source;
+        String target;
+        IOException exception;
         PendingFileRenamingExec(String source, String target) {
             this.source = source;
             this.target = target;
         }
     }
 
-    private class PendingSymlinkageExec {
-        public String source;
-        public String targetRel;
-        public IOException exception;
+    private static class PendingSymlinkageExec {
+        String source;
+        String targetRel;
+        IOException exception;
         PendingSymlinkageExec(String source, String relTarget) {
             this.source = source;
             this.targetRel = relTarget;
@@ -608,12 +601,11 @@ class PendingFileCompleter {
      * Represents a collection of file-less directories which should also be
      * deleted for cleanliness.
      */
-    private class SkeletonDirs {
-        public boolean ineligible; // a flag used during recursion
-        public final Set<File> childDirs = new TreeSet<>(
-            DESC_PATHLEN_COMPARATOR);
+    private static class SkeletonDirs {
+        boolean ineligible; // a flag used during recursion
+        final Set<File> childDirs = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
 
-        public void reset() {
+        void reset() {
             ineligible = false;
             childDirs.clear();
         }

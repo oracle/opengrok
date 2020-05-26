@@ -48,7 +48,7 @@ import java.util.Set;
  */
 public class CustomPhraseQuery extends Query {
 
-    public int offset;
+    private int offset;
 
     private final int slop;
     private final String field;
@@ -82,6 +82,14 @@ public class CustomPhraseQuery extends Query {
         this.terms = terms;
         this.positions = positions;
         this.field = terms.length == 0 ? null : terms[0].field();
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
     private static int[] incrementalPositions(int length) {

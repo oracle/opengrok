@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package opengrok.auth.plugin.decoders;
 
@@ -29,6 +30,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
+import org.opengrok.indexer.web.Laundromat;
 
 /**
  * Decode Oracle SSO specific headers.
@@ -50,11 +52,12 @@ public class OSSOHeaderDecoder implements IUserDecoder {
     public User fromRequest(HttpServletRequest request) {
         String username, userguid, timeouted, timestamp;
         Date cookieTimestamp = null;
-        
-        username = request.getHeader(OSSO_USER_DN_HEADER);
-        timeouted = request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER);
-        timestamp = request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER);
-        userguid = request.getHeader(OSSO_USER_GUID_HEADER);
+
+        // Avoid classification as a taint bug.
+        username = Laundromat.launderInput(request.getHeader(OSSO_USER_DN_HEADER));
+        timeouted = Laundromat.launderInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
+        timestamp = Laundromat.launderInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
+        userguid = Laundromat.launderInput(request.getHeader(OSSO_USER_GUID_HEADER));
         
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,

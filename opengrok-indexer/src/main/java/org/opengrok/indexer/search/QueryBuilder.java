@@ -32,6 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -73,7 +74,8 @@ public class QueryBuilder {
     public static final String OBJSER = "objser"; // object serialized
     public static final String OBJVER = "objver"; // object version
 
-    public static final List<String> searchFields = Arrays.asList(FULL, DEFS, REFS, PATH, HIST);
+    protected static final List<String> searchFields = Arrays.asList(FULL, DEFS, REFS, PATH, HIST);
+    private static final HashSet<String> searchFieldsSet = new HashSet<>(searchFields);
 
     /** Used for paths, so SHA-1 is completely sufficient. */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
@@ -85,6 +87,18 @@ public class QueryBuilder {
      * platforms and it would be harder to test.)
      */
     private final Map<String, String> queries = new TreeMap<>();
+
+    public static List<String> getSearchFields() {
+        return Collections.unmodifiableList(searchFields);
+    }
+
+    /**
+     * Gets a value indicating if the specified {@code fieldName} is a valid
+     * search field.
+     */
+    public static boolean isSearchField(String fieldName) {
+        return searchFieldsSet.contains(fieldName);
+    }
 
     /**
      * Sets the instance to the state of {@code other}.

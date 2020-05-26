@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -26,6 +27,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.SuggesterUtils;
@@ -197,7 +199,7 @@ public final class SuggesterController {
 
                 List<String> projects = params.get("project");
 
-                for (String field : QueryBuilder.searchFields) {
+                for (String field : QueryBuilder.getSearchFields()) {
 
                     List<String> fieldQueryText = params.get(field);
                     if (fieldQueryText == null || fieldQueryText.isEmpty()) {
@@ -282,12 +284,19 @@ public final class SuggesterController {
     @Path("/popularity/{project}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Entry<String, Integer>> getPopularityDataPaged(
-            @PathParam("project") final String project,
-            @QueryParam("field") @DefaultValue(QueryBuilder.FULL) final String field,
+            @PathParam("project") String project,
+            @QueryParam("field") @DefaultValue(QueryBuilder.FULL) String field,
             @QueryParam("page") @DefaultValue("" + 0) final int page,
             @QueryParam("pageSize") @DefaultValue("" + POPULARITY_DEFAULT_PAGE_SIZE) final int pageSize,
             @QueryParam("all") final boolean all
     ) {
+        if (!QueryBuilder.isSearchField(field)) {
+            throw new WebApplicationException("field is invalid", Response.Status.BAD_REQUEST);
+        }
+        // Avoid classification as a taint bug.
+        project = Laundromat.launderInput(project);
+        field = Laundromat.launderInput(field);
+
         List<Entry<BytesRef, Integer>> data;
         if (all) {
             data = suggester.getPopularityData(project, field, 0, Integer.MAX_VALUE);

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest.query;
 
@@ -94,13 +95,13 @@ public class SuggesterPhraseQuery extends Query {
 
         if (p == SuggestPosition.START) {
             phraseQuery = new CustomPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
-            phraseQuery.offset = -1;
+            phraseQuery.setOffset(-1);
         } else if (p == SuggestPosition.MIDDLE) {
             phraseQuery = new CustomPhraseQuery(slop, terms.toArray(new Term[0]), positions.stream().mapToInt(in -> in).toArray());
-            phraseQuery.offset = pos;
+            phraseQuery.setOffset(pos);
         } else {
             phraseQuery = new CustomPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
-            phraseQuery.offset = tokens.size() - 1;
+            phraseQuery.setOffset(tokens.size() - 1);
         }
 
         suggesterQuery = new SuggesterPrefixQuery(new Term(field, prefix));
