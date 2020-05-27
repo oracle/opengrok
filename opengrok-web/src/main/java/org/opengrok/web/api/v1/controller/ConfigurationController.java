@@ -19,10 +19,13 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;
@@ -64,22 +67,13 @@ public class ConfigurationController {
     @Path("/{field}")
     @Produces(MediaType.APPLICATION_JSON)
     public Object getField(@PathParam("field") final String field) {
-        try {
-            return env.getConfigurationValueException(field);
-        } catch (IOException e) {
-            throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
-        }
+        return getConfigurationValueException(field);
     }
 
     @PUT
     @Path("/{field}")
     public void setField(@PathParam("field") final String field, final String value) {
-        try {
-            env.setConfigurationValueException(field, value);
-        } catch (IOException e) {
-            throw new WebApplicationException(e, Response.Status.BAD_REQUEST);
-        }
-
+        setConfigurationValueException(field, value);
         // apply the configuration - let the environment reload the configuration if necessary
         env.applyConfig(false, true);
         suggesterService.refresh();
@@ -91,4 +85,37 @@ public class ConfigurationController {
         env.getAuthorizationFramework().reload();
     }
 
+    private Object getConfigurationValueException(String fieldName) throws WebApplicationException {
+        final IOException[] capture = new IOException[1];
+        final int IOE_INDEX = 0;
+        Object result = env.syncReadConfiguration(configuration -> {
+            try {
+                return ClassUtil.getFieldValue(configuration, fieldName);
+            } catch (IOException ex) {
+                capture[IOE_INDEX] = ex;
+                return null;
+            }
+        });
+        if (capture[IOE_INDEX] != null) {
+            throw new WebApplicationException(capture[IOE_INDEX], Response.Status.BAD_REQUEST);
+        }
+        return result;
+    }
+
+    private void setConfigurationValueException(String fieldName, String value)
+            throws WebApplicationException {
+
+        final IOException[] capture = new IOException[1];
+        final int IOE_INDEX = 0;
+        env.syncWriteConfiguration(value, (configuration, v) -> {
+            try {
+                ClassUtil.setFieldValue(configuration, fieldName, v);
+            } catch (IOException ex) {
+                capture[IOE_INDEX] = ex;
+            }
+        });
+        if (capture[IOE_INDEX] != null) {
+            throw new WebApplicationException(capture[IOE_INDEX], Response.Status.BAD_REQUEST);
+        }
+    }
 }

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -333,9 +333,8 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 assertEquals(test, instance.getBugPattern());
-            } catch (IOException ex) {
+            } catch (IllegalArgumentException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
-
             }
         }
     }
@@ -355,7 +354,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (IOException ex) {
+            } catch (IllegalArgumentException ignored) {
             }
         }
     }
@@ -382,9 +381,8 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setReviewPattern(test);
                 assertEquals(test, instance.getReviewPattern());
-            } catch (IOException ex) {
+            } catch (IllegalArgumentException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
-
             }
         }
     }
@@ -404,7 +402,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setReviewPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (IOException ex) {
+            } catch (IllegalArgumentException ignored) {
             }
         }
     }

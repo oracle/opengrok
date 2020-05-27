@@ -19,13 +19,11 @@
 
  /*
   * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
-  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+  * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
   */
 package org.opengrok.indexer.configuration;
 
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
-import static org.opengrok.indexer.util.ClassUtil.getFieldValue;
-import static org.opengrok.indexer.util.ClassUtil.setFieldValue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,8 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -70,10 +67,12 @@ import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.CloseableReentrantReadWriteLock;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
+import org.opengrok.indexer.util.ResourceLock;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Statistics;
 import org.opengrok.indexer.web.Util;
@@ -92,7 +91,7 @@ public final class RuntimeEnvironment {
     private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
-    private final ReentrantReadWriteLock configLock;
+    private final CloseableReentrantReadWriteLock configLock;
     private final LazilyInstantiate<IndexerParallelizer> lzIndexerParallelizer;
     private final LazilyInstantiate<ExecutorService> lzSearchExecutor;
     private final LazilyInstantiate<ExecutorService> lzRevisionExecutor;
@@ -103,7 +102,7 @@ public final class RuntimeEnvironment {
 
     private String configURI;
     private Statistics statistics = new Statistics();
-    public IncludeFiles includeFiles = new IncludeFiles();
+    IncludeFiles includeFiles = new IncludeFiles();
     private final MessagesContainer messagesContainer = new MessagesContainer();
 
     private static final IndexTimestamp indexTime = new IndexTimestamp();
@@ -134,7 +133,7 @@ public final class RuntimeEnvironment {
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
-        configLock = new ReentrantReadWriteLock();
+        configLock = new CloseableReentrantReadWriteLock();
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
@@ -207,131 +206,37 @@ public final class RuntimeEnvironment {
         }
     }
 
-    /**
-     * Get value of configuration field.
-     * @param fieldName name of the field
-     * @return object value
-     */
-    public Object getConfigurationValue(String fieldName) {
-        try {
-            configLock.readLock().lock();
-            return getFieldValue(configuration, fieldName);
-        } catch (IOException e) {
-            return null;
-        } finally {
-            configLock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Get value of configuration field.
-     * @param fieldName name of the field
-     * @return object value
-     * @throws IOException I/O
-     */
-    public Object getConfigurationValueException(String fieldName) throws IOException {
-        try {
-            configLock.readLock().lock();
-            return getFieldValue(configuration, fieldName);
-        } catch (IOException e) {
-            throw new IOException("getter", e);
-        } finally {
-            configLock.readLock().unlock();
-        }
-    }
-
-    /**
-     * Set configuration value.
-     * @param fieldName name of the field
-     * @param value string value
-     */
-    public void setConfigurationValue(String fieldName, String value) {
-        try {
-            configLock.writeLock().lock();
-            setFieldValue(configuration, fieldName, value);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
-        } finally {
-            configLock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Set configuration value.
-     * @param fieldName name of the field
-     * @param value value
-     */
-    public void setConfigurationValue(String fieldName, Object value) {
-        try {
-            configLock.writeLock().lock();
-            setFieldValue(configuration, fieldName, value);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
-        } finally {
-            configLock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Set configuration value.
-     * @param fieldName name of the field
-     * @param value value
-     * @throws IOException I/O exception
-     */
-    public void setConfigurationValueException(String fieldName, Object value) throws IOException {
-        try {
-            configLock.writeLock().lock();
-            setFieldValue(configuration, fieldName, value);
-        } finally {
-            configLock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Set configuration value.
-     * @param fieldName name of the field
-     * @param value string value
-     * @throws IOException I/O exception
-     */
-    public void setConfigurationValueException(String fieldName, String value) throws IOException {
-        try {
-            configLock.writeLock().lock();
-            setFieldValue(configuration, fieldName, value);
-        } finally {
-            configLock.writeLock().unlock();
-        }
-    }
-
     public int getScanningDepth() {
-        return (int) getConfigurationValue("scanningDepth");
+        return syncReadConfiguration(Configuration::getScanningDepth);
     }
 
     public void setScanningDepth(int scanningDepth) {
-        setConfigurationValue("scanningDepth", scanningDepth);
+        syncWriteConfiguration(scanningDepth, Configuration::setScanningDepth);
     }
 
     public int getCommandTimeout() {
-        return (int) getConfigurationValue("commandTimeout");
+        return syncReadConfiguration(Configuration::getCommandTimeout);
     }
 
-    public void setCommandTimeout(int timeout) {
-        setConfigurationValue("commandTimeout", timeout);
+    public void setCommandTimeout(int commandTimeout) {
+        syncWriteConfiguration(commandTimeout, Configuration::setCommandTimeout);
     }
 
     public int getInteractiveCommandTimeout() {
-        return (int) getConfigurationValue("interactiveCommandTimeout");
+        return syncReadConfiguration(Configuration::getInteractiveCommandTimeout);
     }
 
-    public void setInteractiveCommandTimeout(int timeout) {
-        setConfigurationValue("interactiveCommandTimeout", timeout);
+    public void setInteractiveCommandTimeout(int interactiveCommandTimeout) {
+        syncWriteConfiguration(interactiveCommandTimeout,
+                Configuration::setInteractiveCommandTimeout);
     }
 
     public long getCtagsTimeout() {
-        return (long) getConfigurationValue("ctagsTimeout");
+        return syncReadConfiguration(Configuration::getCtagsTimeout);
     }
 
-    public void setCtagsTimeout(long timeout) {
-        setConfigurationValue("ctagsTimeout", timeout);
+    public void setCtagsTimeout(long ctagsTimeout) {
+        syncWriteConfiguration(ctagsTimeout, Configuration::setCtagsTimeout);
     }
     
     public Statistics getStatistics() {
@@ -343,11 +248,11 @@ public final class RuntimeEnvironment {
     }
 
     public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
-        setConfigurationValue("lastEditedDisplayMode", lastEditedDisplayMode);
+        syncWriteConfiguration(lastEditedDisplayMode, Configuration::setLastEditedDisplayMode);
     }
 
     public boolean isLastEditedDisplayMode() {
-        return (boolean) getConfigurationValue("lastEditedDisplayMode");
+        return syncReadConfiguration(Configuration::isLastEditedDisplayMode);
     }
 
     /**
@@ -356,7 +261,7 @@ public final class RuntimeEnvironment {
      * @return the path to the web application include files
      */
     public String getIncludeRootPath() {
-        return (String) getConfigurationValue("includeRoot");
+        return syncReadConfiguration(Configuration::getIncludeRoot);
     }
 
     /**
@@ -364,7 +269,7 @@ public final class RuntimeEnvironment {
      * @param includeRoot path
      */
     public void setIncludeRoot(String includeRoot) {
-        setConfigurationValue("includeRoot", getCanonicalPath(includeRoot));
+        syncWriteConfiguration(getCanonicalPath(includeRoot), Configuration::setIncludeRoot);
     }
 
     /**
@@ -373,7 +278,7 @@ public final class RuntimeEnvironment {
      * @return the path to the index database
      */
     public String getDataRootPath() {
-        return (String) getConfigurationValue("dataRoot");
+        return syncReadConfiguration(Configuration::getDataRoot);
     }
 
     /**
@@ -397,7 +302,7 @@ public final class RuntimeEnvironment {
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
-        setConfigurationValue("dataRoot", getCanonicalPath(dataRoot));
+        syncWriteConfiguration(getCanonicalPath(dataRoot), Configuration::setDataRoot);
     }
 
     /**
@@ -406,7 +311,7 @@ public final class RuntimeEnvironment {
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return (String) getConfigurationValue("sourceRoot");
+        return syncReadConfiguration(Configuration::getSourceRoot);
     }
 
     /**
@@ -430,7 +335,7 @@ public final class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        setConfigurationValue("sourceRoot", getCanonicalPath(sourceRoot));
+        syncWriteConfiguration(getCanonicalPath(sourceRoot), Configuration::setSourceRoot);
     }
 
     /**
@@ -493,9 +398,8 @@ public final class RuntimeEnvironment {
      *
      * @return a Map with all of the projects
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Project> getProjects() {
-        return (Map<String, Project>) getConfigurationValue("projects");
+        return syncReadConfiguration(Configuration::getProjects);
     }
 
     /**
@@ -513,15 +417,12 @@ public final class RuntimeEnvironment {
      * @param projects the map of projects to use
      */
     public void setProjects(Map<String, Project> projects) {
-        try {
-            configLock.writeLock().lock();
-            if (projects != null) {
-                populateGroups(getGroups(), new TreeSet<>(projects.values()));
+        syncWriteConfiguration(projects, (c, p) -> {
+            if (p != null) {
+                populateGroups(getGroups(), new TreeSet<>(p.values()));
             }
-            setConfigurationValue("projects", projects);
-        } finally {
-            configLock.writeLock().unlock();
-        }
+            c.setProjects(p);
+        });
     }
 
     /**
@@ -538,9 +439,8 @@ public final class RuntimeEnvironment {
      *
      * @return a set containing all of the groups (may be null)
      */
-    @SuppressWarnings("unchecked")
     public Set<Group> getGroups() {
-        return (Set<Group>) getConfigurationValue("groups");
+        return syncReadConfiguration(Configuration::getGroups);
     }
 
     /**
@@ -549,8 +449,10 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
-        populateGroups(groups, new TreeSet<>(getProjects().values()));
-        setConfigurationValue("groups", groups);
+        syncWriteConfiguration(groups, (c, g) -> {
+            populateGroups(g, new TreeSet<>(getProjects().values()));
+            c.setGroups(g);
+        });
     }
 
     /**
@@ -581,9 +483,12 @@ public final class RuntimeEnvironment {
      * @return a defined value
      */
     public String getCtags() {
-        String value;
-        return ctags != null ? ctags :
-                (value = (String) getConfigurationValue("ctags")) != null ? value :
+        if (ctags != null) {
+            return ctags;
+        }
+
+        String value = syncReadConfiguration(Configuration::getCtags);
+        return value != null ? value :
                 System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY, "ctags");
     }
 
@@ -610,10 +515,13 @@ public final class RuntimeEnvironment {
      * @return a defined instance or {@code null}
      */
     public String getMandoc() {
-        String value;
-        return mandoc != null ? mandoc : (value =
-                (String) getConfigurationValue("mandoc")) != null ? value :
-            System.getProperty("org.opengrok.indexer.analysis.Mandoc");
+        if (mandoc != null) {
+            return mandoc;
+        }
+
+        String value = syncReadConfiguration(Configuration::getMandoc);
+        return value != null ? value :
+                System.getProperty("org.opengrok.indexer.analysis.Mandoc");
     }
 
     /**
@@ -631,19 +539,19 @@ public final class RuntimeEnvironment {
     }
 
     public int getCachePages() {
-        return (int) getConfigurationValue("cachePages");
+        return syncReadConfiguration(Configuration::getCachePages);
     }
 
     public void setCachePages(int cachePages) {
-        setConfigurationValue("cachePages", cachePages);
+        syncWriteConfiguration(cachePages, Configuration::setCachePages);
     }
 
     public int getHitsPerPage() {
-        return (int) getConfigurationValue("hitsPerPage");
+        return syncReadConfiguration(Configuration::getHitsPerPage);
     }
 
     public void setHitsPerPage(int hitsPerPage) {
-        setConfigurationValue("hitsPerPage", hitsPerPage);
+        syncWriteConfiguration(hitsPerPage, Configuration::setHitsPerPage);
     }
 
     /**
@@ -654,8 +562,9 @@ public final class RuntimeEnvironment {
     public boolean validateUniversalCtags() {
         if (ctagsFound == null) {
             String ctagsBinary = getCtags();
-            configLock.writeLock().lock();
-            try {
+            try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
+                //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
+                assert resourceLock != null;
                 if (ctagsFound == null) {
                     ctagsFound = CtagsUtil.validate(ctagsBinary);
                     if (ctagsFound) {
@@ -665,8 +574,6 @@ public final class RuntimeEnvironment {
                         }
                     }
                 }
-            } finally {
-                configLock.writeLock().unlock();
             }
         }
         return ctagsFound;
@@ -688,17 +595,17 @@ public final class RuntimeEnvironment {
      * @return the max time
      */
     public int getHistoryReaderTimeLimit() {
-        return (int) getConfigurationValue("historyCacheTime");
+        return syncReadConfiguration(Configuration::getHistoryCacheTime);
     }
 
     /**
      * Specify the maximum time a SCM operation should take before it will be
      * cached (in ms).
      *
-     * @param historyReaderTimeLimit the max time in ms before it is cached
+     * @param historyCacheTime the max time in ms before it is cached
      */
-    public void setHistoryReaderTimeLimit(int historyReaderTimeLimit) {
-        setConfigurationValue("historyCacheTime", historyReaderTimeLimit);
+    public void setHistoryReaderTimeLimit(int historyCacheTime) {
+        syncWriteConfiguration(historyCacheTime, Configuration::setHistoryCacheTime);
     }
 
     /**
@@ -707,7 +614,7 @@ public final class RuntimeEnvironment {
      * @return true if history cache is enabled
      */
     public boolean useHistoryCache() {
-        return (boolean) getConfigurationValue("historyCache");
+        return syncReadConfiguration(Configuration::isHistoryCache);
     }
 
     /**
@@ -716,7 +623,7 @@ public final class RuntimeEnvironment {
      * @param useHistoryCache set false if you do not want to use history cache
      */
     public void setUseHistoryCache(boolean useHistoryCache) {
-        setConfigurationValue("historyCache", useHistoryCache);
+        syncWriteConfiguration(useHistoryCache, Configuration::setHistoryCache);
     }
 
     /**
@@ -725,7 +632,7 @@ public final class RuntimeEnvironment {
      * @return true if HTML should be generated during the indexing phase
      */
     public boolean isGenerateHtml() {
-        return (boolean) getConfigurationValue("generateHtml");
+        return syncReadConfiguration(Configuration::isGenerateHtml);
     }
 
     /**
@@ -734,7 +641,7 @@ public final class RuntimeEnvironment {
      * @param generateHtml set this to true to pregenerate HTML
      */
     public void setGenerateHtml(boolean generateHtml) {
-        setConfigurationValue("generateHtml", generateHtml);
+        syncWriteConfiguration(generateHtml, Configuration::setGenerateHtml);
     }
 
     /**
@@ -744,7 +651,7 @@ public final class RuntimeEnvironment {
      * compressed
      */
     public void setCompressXref(boolean compressXref) {
-        setConfigurationValue("compressXref", compressXref);
+        syncWriteConfiguration(compressXref, Configuration::setCompressXref);
     }
 
     /**
@@ -753,20 +660,19 @@ public final class RuntimeEnvironment {
      * @return {@code true} if the html-files should be compressed.
      */
     public boolean isCompressXref() {
-        return (boolean) getConfigurationValue("compressXref");
+        return syncReadConfiguration(Configuration::isCompressXref);
     }
 
     public boolean isQuickContextScan() {
-        return (boolean) getConfigurationValue("quickContextScan");
+        return syncReadConfiguration(Configuration::isQuickContextScan);
     }
 
     public void setQuickContextScan(boolean quickContextScan) {
-        setConfigurationValue("quickContextScan", quickContextScan);
+        syncWriteConfiguration(quickContextScan, Configuration::setQuickContextScan);
     }
 
-    @SuppressWarnings("unchecked")
     public List<RepositoryInfo> getRepositories() {
-        return (List<RepositoryInfo>) getConfigurationValue("repositories");
+        return syncReadConfiguration(Configuration::getRepositories);
     }
 
     /**
@@ -775,16 +681,11 @@ public final class RuntimeEnvironment {
      * @param repositories the repositories to use
      */
     public void setRepositories(List<RepositoryInfo> repositories) {
-        setConfigurationValue("repositories", repositories);
+        syncWriteConfiguration(repositories, Configuration::setRepositories);
     }
     
     public void removeRepositories() {
-        try {
-            configLock.writeLock().lock();
-            configuration.setRepositories(null);
-        } finally {
-            configLock.writeLock().unlock();
-        }
+        syncWriteConfiguration(null, Configuration::setRepositories);
     }
     
     /**
@@ -796,8 +697,8 @@ public final class RuntimeEnvironment {
     public void setRepositories(String... dir) {
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
                 addRepositories(Arrays.stream(dir).map(File::new).toArray(File[]::new),
-                    RuntimeEnvironment.getInstance().getIgnoredNames()));
-        RuntimeEnvironment.getInstance().setRepositories(repos);
+                        getIgnoredNames()));
+        setRepositories(repos);
     }
 
     /**
@@ -805,13 +706,7 @@ public final class RuntimeEnvironment {
      * @param repositories list of repositories
      */
     public void addRepositories(List<RepositoryInfo> repositories) {
-        Lock writeLock = configLock.writeLock();
-        try {
-            writeLock.lock();
-            configuration.addRepositories(repositories);
-        } finally {
-            writeLock.unlock();
-        }
+        syncWriteConfiguration(repositories, Configuration::addRepositories);
     }
 
     /**
@@ -851,7 +746,7 @@ public final class RuntimeEnvironment {
      * @param defaultProjects The default project to use
      */
     public void setDefaultProjects(Set<Project> defaultProjects) {
-        setConfigurationValue("defaultProjects", defaultProjects);
+        syncWriteConfiguration(defaultProjects, Configuration::setDefaultProjects);
     }
 
     /**
@@ -861,9 +756,8 @@ public final class RuntimeEnvironment {
      *
      * @return the default projects (may be null if not specified)
      */
-    @SuppressWarnings("unchecked")
     public Set<Project> getDefaultProjects() {
-        Set<Project> projects = (Set<Project>) getConfigurationValue("defaultProjects");
+        Set<Project> projects = syncReadConfiguration(Configuration::getDefaultProjects);
         if (projects == null) {
             return null;
         }
@@ -875,7 +769,7 @@ public final class RuntimeEnvironment {
      * @return at what size (in MB) we should flush the buffer
      */
     public double getRamBufferSize() {
-        return (double) getConfigurationValue("ramBufferSize");
+        return syncReadConfiguration(Configuration::getRamBufferSize);
     }
 
     /**
@@ -886,31 +780,32 @@ public final class RuntimeEnvironment {
      * @param ramBufferSize the size(in MB) when we should flush the docs
      */
     public void setRamBufferSize(double ramBufferSize) {
-        setConfigurationValue("ramBufferSize", ramBufferSize);
+        syncWriteConfiguration(ramBufferSize, Configuration::setRamBufferSize);
     }
 
     public void setPluginDirectory(String pluginDirectory) {
-        setConfigurationValue("pluginDirectory", pluginDirectory);
+        syncWriteConfiguration(pluginDirectory, Configuration::setPluginDirectory);
     }
 
     public String getPluginDirectory() {
-        return (String) getConfigurationValue("pluginDirectory");
+        return syncReadConfiguration(Configuration::getPluginDirectory);
     }
 
     public boolean isAuthorizationWatchdog() {
-        return (boolean) getConfigurationValue("authorizationWatchdogEnabled");
+        return syncReadConfiguration(Configuration::isAuthorizationWatchdogEnabled);
     }
 
     public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
-        setConfigurationValue("authorizationWatchdogEnabled", authorizationWatchdogEnabled);
+        syncWriteConfiguration(authorizationWatchdogEnabled,
+                Configuration::setAuthorizationWatchdogEnabled);
     }
 
     public AuthorizationStack getPluginStack() {
-        return (AuthorizationStack) getConfigurationValue("pluginStack");
+        return syncReadConfiguration(Configuration::getPluginStack);
     }
 
     public void setPluginStack(AuthorizationStack pluginStack) {
-        setConfigurationValue("pluginStack", pluginStack);
+        syncWriteConfiguration(pluginStack, Configuration::setPluginStack);
     }
 
     /**
@@ -919,7 +814,7 @@ public final class RuntimeEnvironment {
      * @return true if we can print per project progress %
      */
     public boolean isPrintProgress() {
-        return (boolean) getConfigurationValue("printProgress");
+        return syncReadConfiguration(Configuration::isPrintProgress);
     }
 
     /**
@@ -928,7 +823,7 @@ public final class RuntimeEnvironment {
      * @param printProgress new value
      */
     public void setPrintProgress(boolean printProgress) {
-        setConfigurationValue("printProgress", printProgress);
+        syncWriteConfiguration(printProgress, Configuration::setPrintProgress);
     }
 
     /**
@@ -939,7 +834,7 @@ public final class RuntimeEnvironment {
      * @param allowLeadingWildcard set to true to activate (disabled by default)
      */
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
-        setConfigurationValue("allowLeadingWildcard", allowLeadingWildcard);
+        syncWriteConfiguration(allowLeadingWildcard, Configuration::setAllowLeadingWildcard);
     }
 
     /**
@@ -948,23 +843,23 @@ public final class RuntimeEnvironment {
      * @return true if a search may start with a wildcard
      */
     public boolean isAllowLeadingWildcard() {
-        return (boolean) getConfigurationValue("allowLeadingWildcard");
+        return syncReadConfiguration(Configuration::isAllowLeadingWildcard);
     }
 
     public IgnoredNames getIgnoredNames() {
-        return (IgnoredNames) getConfigurationValue("ignoredNames");
+        return syncReadConfiguration(Configuration::getIgnoredNames);
     }
 
     public void setIgnoredNames(IgnoredNames ignoredNames) {
-        setConfigurationValue("ignoredNames", ignoredNames);
+        syncWriteConfiguration(ignoredNames, Configuration::setIgnoredNames);
     }
 
     public Filter getIncludedNames() {
-        return (Filter) getConfigurationValue("includedNames");
+        return syncReadConfiguration(Configuration::getIncludedNames);
     }
 
     public void setIncludedNames(Filter includedNames) {
-        setConfigurationValue("includedNames", includedNames);
+        syncWriteConfiguration(includedNames, Configuration::setIncludedNames);
     }
 
     /**
@@ -973,7 +868,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the username
      */
     public String getUserPage() {
-        return (String) getConfigurationValue("userPage");
+        return syncReadConfiguration(Configuration::getUserPage);
     }
 
     /**
@@ -984,16 +879,7 @@ public final class RuntimeEnvironment {
      * @return {@code null} if not yet set, the client command otherwise.
      */
     public String getRepoCmd(String clazzName) {
-        Lock readLock = configLock.readLock();
-        String cmd = null;
-        try {
-            readLock.lock();
-            cmd = configuration.getRepoCmd(clazzName);
-        } finally {
-            readLock.unlock();
-        }
-
-        return cmd;
+        return syncReadConfiguration(c -> c.getRepoCmd(clazzName));
     }
 
     /**
@@ -1007,25 +893,12 @@ public final class RuntimeEnvironment {
      * @return the client command previously set, which might be {@code null}.
      */
     public String setRepoCmd(String clazzName, String cmd) {
-        Lock writeLock = configLock.writeLock();
-        try {
-            writeLock.lock();
-            configuration.setRepoCmd(clazzName, cmd);
-        } finally {
-            writeLock.unlock();
-        }
-
+        syncWriteConfiguration(null, (c, ignored) -> c.setRepoCmd(clazzName, cmd));
         return cmd;
     }
 
     public void setRepoCmds(Map<String, String> cmds) {
-        Lock writeLock = configLock.writeLock();
-        writeLock.lock();
-        try {
-            configuration.setCmds(cmds);
-        } finally {
-            writeLock.unlock();
-        }
+        syncWriteConfiguration(cmds, Configuration::setCmds);
     }
 
     /**
@@ -1034,7 +907,7 @@ public final class RuntimeEnvironment {
      * @param userPage the URL fragment preceeding the username from history
      */
     public void setUserPage(String userPage) {
-        setConfigurationValue("userPage", userPage);
+        syncWriteConfiguration(userPage, Configuration::setUserPage);
     }
 
     /**
@@ -1043,7 +916,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment following the username
      */
     public String getUserPageSuffix() {
-        return (String) getConfigurationValue("userPageSuffix");
+        return syncReadConfiguration(Configuration::getUserPageSuffix);
     }
 
     /**
@@ -1053,7 +926,7 @@ public final class RuntimeEnvironment {
      * history
      */
     public void setUserPageSuffix(String userPageSuffix) {
-        setConfigurationValue("userPageSuffix", userPageSuffix);
+        syncWriteConfiguration(userPageSuffix, Configuration::setUserPageSuffix);
     }
 
     /**
@@ -1062,7 +935,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the bug ID
      */
     public String getBugPage() {
-        return (String) getConfigurationValue("bugPage");
+        return syncReadConfiguration(Configuration::getBugPage);
     }
 
     /**
@@ -1071,7 +944,7 @@ public final class RuntimeEnvironment {
      * @param bugPage the URL fragment preceeding the bug ID
      */
     public void setBugPage(String bugPage) {
-        setConfigurationValue("bugPage", bugPage);
+        syncWriteConfiguration(bugPage, Configuration::setBugPage);
     }
 
     /**
@@ -1080,17 +953,16 @@ public final class RuntimeEnvironment {
      * @return the regex that is looked for in history comments
      */
     public String getBugPattern() {
-        return (String) getConfigurationValue("bugPattern");
+        return syncReadConfiguration(Configuration::getBugPattern);
     }
 
     /**
      * Sets the bug regex for the history listing.
      *
      * @param bugPattern the regex to search history comments
-     * @throws IOException I/O
      */
-    public void setBugPattern(String bugPattern) throws IOException {
-        setConfigurationValueException("bugPattern", bugPattern);
+    public void setBugPattern(String bugPattern) {
+        syncWriteConfiguration(bugPattern, Configuration::setBugPattern);
     }
 
     /**
@@ -1099,7 +971,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the review page ID
      */
     public String getReviewPage() {
-        return (String) getConfigurationValue("reviewPage");
+        return syncReadConfiguration(Configuration::getReviewPage);
     }
 
     /**
@@ -1108,7 +980,7 @@ public final class RuntimeEnvironment {
      * @param reviewPage the URL fragment preceeding the review page ID
      */
     public void setReviewPage(String reviewPage) {
-        setConfigurationValue("reviewPage", reviewPage);
+        syncWriteConfiguration(reviewPage, Configuration::setReviewPage);
     }
 
     /**
@@ -1117,25 +989,24 @@ public final class RuntimeEnvironment {
      * @return the regex that is looked for in history comments
      */
     public String getReviewPattern() {
-        return (String) getConfigurationValue("reviewPattern");
+        return syncReadConfiguration(Configuration::getReviewPattern);
     }
 
     /**
      * Sets the review(ARC) regex for the history listing.
      *
      * @param reviewPattern the regex to search history comments
-     * @throws IOException I/O
      */
-    public void setReviewPattern(String reviewPattern) throws IOException {
-        setConfigurationValueException("reviewPattern", reviewPattern);
+    public void setReviewPattern(String reviewPattern) {
+        syncWriteConfiguration(reviewPattern, Configuration::setReviewPattern);
     }
 
     public String getWebappLAF() {
-        return (String) getConfigurationValue("webappLAF");
+        return syncReadConfiguration(Configuration::getWebappLAF);
     }
 
-    public void setWebappLAF(String laf) {
-        setConfigurationValue("webappLAF", laf);
+    public void setWebappLAF(String webappLAF) {
+        syncWriteConfiguration(webappLAF, Configuration::setWebappLAF);
     }
 
     /**
@@ -1143,35 +1014,35 @@ public final class RuntimeEnvironment {
      * @return the value of {@link Configuration#isWebappCtags()}
      */
     public boolean isWebappCtags() {
-        return (boolean) getConfigurationValue("webappCtags");
+        return syncReadConfiguration(Configuration::isWebappCtags);
     }
 
     public Configuration.RemoteSCM getRemoteScmSupported() {
-        return (Configuration.RemoteSCM) getConfigurationValue("remoteScmSupported");
+        return syncReadConfiguration(Configuration::getRemoteScmSupported);
     }
 
-    public void setRemoteScmSupported(Configuration.RemoteSCM supported) {
-        setConfigurationValue("remoteScmSupported", supported);
+    public void setRemoteScmSupported(Configuration.RemoteSCM remoteScmSupported) {
+        syncWriteConfiguration(remoteScmSupported, Configuration::setRemoteScmSupported);
     }
 
     public boolean isOptimizeDatabase() {
-        return (boolean) getConfigurationValue("optimizeDatabase");
+        return syncReadConfiguration(Configuration::isOptimizeDatabase);
     }
 
     public void setOptimizeDatabase(boolean optimizeDatabase) {
-        setConfigurationValue("optimizeDatabase", optimizeDatabase);
+        syncWriteConfiguration(optimizeDatabase, Configuration::setOptimizeDatabase);
     }
 
     public LuceneLockName getLuceneLocking() {
-        return (LuceneLockName) getConfigurationValue("luceneLocking");
+        return syncReadConfiguration(Configuration::getLuceneLocking);
     }
 
     public boolean isIndexVersionedFilesOnly() {
-        return (boolean) getConfigurationValue("indexVersionedFilesOnly");
+        return syncReadConfiguration(Configuration::isIndexVersionedFilesOnly);
     }
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
-        setConfigurationValue("indexVersionedFilesOnly", indexVersionedFilesOnly);
+        syncWriteConfiguration(indexVersionedFilesOnly, Configuration::setIndexVersionedFilesOnly);
     }
 
     /**
@@ -1180,9 +1051,9 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getIndexingParallelism() {
-        int parallelism = (int) getConfigurationValue("indexingParallelism");
+        int parallelism = syncReadConfiguration(Configuration::getIndexingParallelism);
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
-            parallelism;
+                parallelism;
     }
 
     /**
@@ -1191,9 +1062,9 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryParallelism() {
-        int parallelism = (int) getConfigurationValue("historyParallelism");
+        int parallelism = syncReadConfiguration(Configuration::getHistoryParallelism);
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
-            parallelism;
+                parallelism;
     }
 
     /**
@@ -1202,41 +1073,41 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryRenamedParallelism() {
-        int parallelism = (int) getConfigurationValue("historyRenamedParallelism");
+        int parallelism = syncReadConfiguration(Configuration::getHistoryRenamedParallelism);
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
-            parallelism;
+                parallelism;
     }
 
     public boolean isTagsEnabled() {
-        return (boolean) getConfigurationValue("tagsEnabled");
+        return syncReadConfiguration(Configuration::isTagsEnabled);
     }
 
     public void setTagsEnabled(boolean tagsEnabled) {
-        setConfigurationValue("tagsEnabled", tagsEnabled);
+        syncWriteConfiguration(tagsEnabled, Configuration::setTagsEnabled);
     }
 
     public boolean isScopesEnabled() {
-        return (boolean) getConfigurationValue("scopesEnabled");
+        return syncReadConfiguration(Configuration::isScopesEnabled);
     }
 
     public void setScopesEnabled(boolean scopesEnabled) {
-        setConfigurationValue("scopesEnabled", scopesEnabled);
+        syncWriteConfiguration(scopesEnabled, Configuration::setScopesEnabled);
     }
 
     public boolean isProjectsEnabled() {
-        return (boolean) getConfigurationValue("projectsEnabled");
+        return syncReadConfiguration(Configuration::isProjectsEnabled);
     }
 
     public void setProjectsEnabled(boolean projectsEnabled) {
-        setConfigurationValue("projectsEnabled", projectsEnabled);
+        syncWriteConfiguration(projectsEnabled, Configuration::setProjectsEnabled);
     }
 
     public boolean isFoldingEnabled() {
-        return (boolean) getConfigurationValue("foldingEnabled");
+        return syncReadConfiguration(Configuration::isFoldingEnabled);
     }
 
     public void setFoldingEnabled(boolean foldingEnabled) {
-        setConfigurationValue("foldingEnabled", foldingEnabled);
+        syncWriteConfiguration(foldingEnabled, Configuration::setFoldingEnabled);
     }
 
     public Date getDateForLastIndexRun() {
@@ -1244,29 +1115,27 @@ public final class RuntimeEnvironment {
     }
 
     public String getCTagsExtraOptionsFile() {
-        return (String) getConfigurationValue("CTagsExtraOptionsFile");
+        return syncReadConfiguration(Configuration::getCTagsExtraOptionsFile);
     }
 
-    public void setCTagsExtraOptionsFile(String filename) {
-        setConfigurationValue("CTagsExtraOptionsFile", filename);
+    public void setCTagsExtraOptionsFile(String ctagsExtraOptionsFile) {
+        syncWriteConfiguration(ctagsExtraOptionsFile, Configuration::setCTagsExtraOptionsFile);
     }
 
-    @SuppressWarnings("unchecked")
     public Set<String> getAllowedSymlinks() {
-        return (Set<String>) getConfigurationValue("allowedSymlinks");
+        return syncReadConfiguration(Configuration::getAllowedSymlinks);
     }
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
-        setConfigurationValue("allowedSymlinks", allowedSymlinks);
+        syncWriteConfiguration(allowedSymlinks, Configuration::setAllowedSymlinks);
     }
 
-    @SuppressWarnings("unchecked")
     public Set<String> getCanonicalRoots() {
-        return (Set<String>) getConfigurationValue("canonicalRoots");
+        return syncReadConfiguration(Configuration::getCanonicalRoots);
     }
 
     public void setCanonicalRoots(Set<String> canonicalRoots) {
-        setConfigurationValue("canonicalRoots", canonicalRoots);
+        syncWriteConfiguration(canonicalRoots, Configuration::setCanonicalRoots);
     }
 
     /**
@@ -1274,15 +1143,16 @@ public final class RuntimeEnvironment {
      * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
-        return (boolean) getConfigurationValue("obfuscatingEMailAddresses");
+        return syncReadConfiguration(Configuration::isObfuscatingEMailAddresses);
     }
 
     /**
      * Set whether e-mail addresses should be obfuscated in the xref.
-     * @param obfuscate should we obfuscate emails?
+     * @param obfuscatingEMailAddresses should we obfuscate emails?
      */
-    public void setObfuscatingEMailAddresses(boolean obfuscate) {
-        setConfigurationValue("obfuscatingEMailAddresses", obfuscate);
+    public void setObfuscatingEMailAddresses(boolean obfuscatingEMailAddresses) {
+        syncWriteConfiguration(obfuscatingEMailAddresses,
+                Configuration::setObfuscatingEMailAddresses);
     }
 
     /**
@@ -1292,81 +1162,85 @@ public final class RuntimeEnvironment {
      * {@code false} otherwise
      */
     public boolean isChattyStatusPage() {
-        return (boolean) getConfigurationValue("chattyStatusPage");
+        return syncReadConfiguration(Configuration::isChattyStatusPage);
     }
 
     /**
      * Set whether status.jsp should print internal settings.
      *
-     * @param chatty {@code true} if internal settings should be printed,
+     * @param chattyStatusPage {@code true} if internal settings should be printed,
      * {@code false} otherwise
      */
-    public void setChattyStatusPage(boolean chatty) {
-        setConfigurationValue("chattyStatusPage", chatty);
+    public void setChattyStatusPage(boolean chattyStatusPage) {
+        syncWriteConfiguration(chattyStatusPage, Configuration::setChattyStatusPage);
     }
 
-    public void setFetchHistoryWhenNotInCache(boolean nofetch) {
-        setConfigurationValue("fetchHistoryWhenNotInCache", nofetch);
+    public void setFetchHistoryWhenNotInCache(boolean fetchHistoryWhenNotInCache) {
+        syncWriteConfiguration(fetchHistoryWhenNotInCache,
+                Configuration::setFetchHistoryWhenNotInCache);
     }
 
     public boolean isFetchHistoryWhenNotInCache() {
-        return (boolean) getConfigurationValue("fetchHistoryWhenNotInCache");
+        return syncReadConfiguration(Configuration::isFetchHistoryWhenNotInCache);
     }
 
     public boolean isHistoryCache() {
-        return (boolean) getConfigurationValue("historyCache");
+        return syncReadConfiguration(Configuration::isHistoryCache);
     }
 
-    public void setHandleHistoryOfRenamedFiles(boolean enable) {
-        setConfigurationValue("handleHistoryOfRenamedFiles", enable);
+    public void setHandleHistoryOfRenamedFiles(boolean handleHistoryOfRenamedFiles) {
+        syncWriteConfiguration(handleHistoryOfRenamedFiles,
+                Configuration::setHandleHistoryOfRenamedFiles);
     }
 
     public boolean isHandleHistoryOfRenamedFiles() {
-        return (boolean) getConfigurationValue("handleHistoryOfRenamedFiles");
+        return syncReadConfiguration(Configuration::isHandleHistoryOfRenamedFiles);
     }
 
-    public void setNavigateWindowEnabled(boolean enable) {
-        setConfigurationValue("navigateWindowEnabled", enable);
+    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+        syncWriteConfiguration(navigateWindowEnabled, Configuration::setNavigateWindowEnabled);
     }
 
     public boolean isNavigateWindowEnabled() {
-        return (boolean) getConfigurationValue("navigateWindowEnabled");
+        return syncReadConfiguration(Configuration::isNavigateWindowEnabled);
     }
 
-    public void setRevisionMessageCollapseThreshold(int threshold) {
-        setConfigurationValue("revisionMessageCollapseThreshold", threshold);
+    public void setRevisionMessageCollapseThreshold(int revisionMessageCollapseThreshold) {
+        syncWriteConfiguration(revisionMessageCollapseThreshold,
+                Configuration::setRevisionMessageCollapseThreshold);
     }
 
     public int getRevisionMessageCollapseThreshold() {
-        return (int) getConfigurationValue("revisionMessageCollapseThreshold");
+        return syncReadConfiguration(Configuration::getRevisionMessageCollapseThreshold);
     }
 
-    public void setMaxSearchThreadCount(int count) {
-        setConfigurationValue("maxSearchThreadCount", count);
+    public void setMaxSearchThreadCount(int maxSearchThreadCount) {
+        syncWriteConfiguration(maxSearchThreadCount, Configuration::setMaxSearchThreadCount);
     }
 
     public int getMaxSearchThreadCount() {
-        return (int) getConfigurationValue("maxSearchThreadCount");
+        return syncReadConfiguration(Configuration::getMaxSearchThreadCount);
     }
 
-    public void setMaxRevisionThreadCount(int count) {
-        setConfigurationValue("maxRevisionThreadCount", count);
+    public void setMaxRevisionThreadCount(int maxRevisionThreadCount) {
+        syncWriteConfiguration(maxRevisionThreadCount, Configuration::setMaxRevisionThreadCount);
     }
 
     public int getMaxRevisionThreadCount() {
-        return (int) getConfigurationValue("maxRevisionThreadCount");
+        return syncReadConfiguration(Configuration::getMaxRevisionThreadCount);
     }
 
     public int getCurrentIndexedCollapseThreshold() {
-        return (int) getConfigurationValue("currentIndexedCollapseThreshold");
+        return syncReadConfiguration(Configuration::getCurrentIndexedCollapseThreshold);
     }
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
-        setConfigurationValue("currentIndexedCollapseThreshold", currentIndexedCollapseThreshold);
+        syncWriteConfiguration(currentIndexedCollapseThreshold,
+                Configuration::setCurrentIndexedCollapseThreshold);
     }
 
     public int getGroupsCollapseThreshold() {
-        return (int) getConfigurationValue("groupsCollapseThreshold");
+        return syncReadConfiguration(Configuration::getGroupsCollapseThreshold);
     }
 
     // The URI is not necessary to be present in the configuration
@@ -1381,35 +1255,35 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isHistoryEnabled() {
-        return (boolean) getConfigurationValue("historyEnabled");
+        return syncReadConfiguration(Configuration::isHistoryEnabled);
     }
 
-    public void setHistoryEnabled(boolean flag) {
-        setConfigurationValue("historyEnabled", flag);
+    public void setHistoryEnabled(boolean historyEnabled) {
+        syncWriteConfiguration(historyEnabled, Configuration::setHistoryEnabled);
     }
 
     public boolean getDisplayRepositories() {
-        return (boolean) getConfigurationValue("displayRepositories");
+        return syncReadConfiguration(Configuration::getDisplayRepositories);
     }
 
-    public void setDisplayRepositories(boolean flag) {
-        setConfigurationValue("displayRepositories", flag);
+    public void setDisplayRepositories(boolean displayRepositories) {
+        syncWriteConfiguration(displayRepositories, Configuration::setDisplayRepositories);
     }
 
     public boolean getListDirsFirst() {
-        return (boolean) getConfigurationValue("listDirsFirst");
+        return syncReadConfiguration(Configuration::getListDirsFirst);
     }
 
-    public void setListDirsFirst(boolean flag) {
-        setConfigurationValue("listDirsFirst", flag);
+    public void setListDirsFirst(boolean listDirsFirst) {
+        syncWriteConfiguration(listDirsFirst, Configuration::setListDirsFirst);
     }
 
-    public void setTabSize(int size) {
-        setConfigurationValue("tabSize", size);
+    public void setTabSize(int tabSize) {
+        syncWriteConfiguration(tabSize, Configuration::setTabSize);
     }
 
     public int getTabSize() {
-        return (int) getConfigurationValue("tabSize");
+        return syncReadConfiguration(Configuration::getTabSize);
     }
 
     /**
@@ -1417,7 +1291,7 @@ public final class RuntimeEnvironment {
      * @return a value greater than zero
      */
     public short getContextLimit() {
-        return (short) getConfigurationValue("contextLimit");
+        return syncReadConfiguration(Configuration::getContextLimit);
     }
 
     /**
@@ -1425,16 +1299,15 @@ public final class RuntimeEnvironment {
      * @return a value greater than or equal to zero
      */
     public short getContextSurround() {
-        return (short) getConfigurationValue("contextSurround");
+        return syncReadConfiguration(Configuration::getContextSurround);
     }
 
-    @SuppressWarnings("unchecked")
     public Set<String> getDisabledRepositories() {
-        return (Set<String>) getConfigurationValue("disabledRepositories");
+        return syncReadConfiguration(Configuration::getDisabledRepositories);
     }
 
     public void setDisabledRepositories(Set<String> disabledRepositories) {
-        setConfigurationValue("disabledRepositories", disabledRepositories);
+        syncWriteConfiguration(disabledRepositories, Configuration::setDisabledRepositories);
     }
 
     /**
@@ -1444,6 +1317,7 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void readConfiguration(File file) throws IOException {
+        // The following method handles the locking.
         setConfiguration(Configuration.read(file));
     }
 
@@ -1454,6 +1328,7 @@ public final class RuntimeEnvironment {
      * @throws IOException I/O
      */
     public void readConfiguration(File file, boolean interactive) throws IOException {
+        // The following method handles the locking.
         setConfiguration(Configuration.read(file), null, interactive);
     }
 
@@ -1464,25 +1339,15 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(File file) throws IOException {
-        Lock readLock = configLock.readLock();
-        try {
-            readLock.lock();
-
+        try (ResourceLock resourceLock = configLock.readLockAsResource()) {
+            //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
+            assert resourceLock != null;
             configuration.write(file);
-        } finally {
-            readLock.unlock();
         }
     }
 
     public String getConfigurationXML() {
-        String configXML;
-        try {
-            configLock.readLock().lock();
-            configXML = configuration.getXMLRepresentationAsString();
-        } finally {
-            configLock.readLock().unlock();
-        }
-        return configXML;
+        return syncReadConfiguration(Configuration::getXMLRepresentationAsString);
     }
 
     /**
@@ -1492,13 +1357,7 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(String host) throws IOException {
-        String configXML;
-        try {
-            configLock.readLock().lock();
-            configXML = configuration.getXMLRepresentationAsString();
-        } finally {
-            configLock.readLock().unlock();
-        }
+        String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
         Response r = ClientBuilder.newClient()
                 .target(host)
@@ -1637,11 +1496,10 @@ public final class RuntimeEnvironment {
      * @param interactive   true if in interactive mode
      */
     public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
-        try {
-            configLock.writeLock().lock();
+        try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
+            //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
+            assert resourceLock != null;
             this.configuration = configuration;
-        } finally {
-            configLock.writeLock().unlock();
         }
 
         // HistoryGuru constructor needs environment properties so no locking is done here.
@@ -1678,11 +1536,11 @@ public final class RuntimeEnvironment {
     }
 
     public String getStatisticsFilePath() {
-        return (String) getConfigurationValue("statisticsFilePath");
+        return syncReadConfiguration(Configuration::getStatisticsFilePath);
     }
 
-    public void setStatisticsFilePath(String path) {
-        setConfigurationValue("statisticsFilePath", path);
+    public void setStatisticsFilePath(String statisticsFilePath) {
+        syncWriteConfiguration(statisticsFilePath, Configuration::setStatisticsFilePath);
     }
 
     /**
@@ -1896,7 +1754,7 @@ public final class RuntimeEnvironment {
         // TODO might need to rewrite to Project instead of String, need changes in projects.jspf too.
         for (String proj : projects) {
             try {
-                SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                SuperIndexSearcher searcher = getIndexSearcher(proj);
                 subreaders[ii++] = searcher.getIndexReader();
                 searcherList.add(searcher);
             } catch (IOException | NullPointerException ex) {
@@ -1916,7 +1774,7 @@ public final class RuntimeEnvironment {
     }
 
     public void startExpirationTimer() {
-        messagesContainer.setMessageLimit((int) getConfigurationValue("messageLimit"));
+        messagesContainer.setMessageLimit(getMessageLimit());
         messagesContainer.startExpirationTimer();
     }
 
@@ -1970,14 +1828,7 @@ public final class RuntimeEnvironment {
     }
 
     public Path getDtagsEftarPath() {
-        Path path;
-        try {
-            configLock.readLock().lock();
-            path = configuration.getDtagsEftarPath();
-        } finally {
-            configLock.readLock().unlock();
-        }
-        return path;
+        return syncReadConfiguration(Configuration::getDtagsEftarPath);
     }
 
     /**
@@ -1996,14 +1847,45 @@ public final class RuntimeEnvironment {
     }
 
     public SuggesterConfig getSuggesterConfig() {
-        return (SuggesterConfig) getConfigurationValue("suggesterConfig");
+        return syncReadConfiguration(Configuration::getSuggesterConfig);
     }
 
-    public void setSuggesterConfig(SuggesterConfig config) {
-        setConfigurationValue("suggesterConfig", config);
+    public void setSuggesterConfig(SuggesterConfig suggesterConfig) {
+        syncWriteConfiguration(suggesterConfig, Configuration::setSuggesterConfig);
     }
 
-    public int getMessageLimit() {
-        return (int) getConfigurationValue("messageLimit");
+    /**
+     * Applies the specified function to the runtime configuration, after having
+     * obtained the configuration read-lock (and releasing afterward).
+     * @param function a defined function
+     * @param <R> the type of the result of the function
+     * @return the function result
+     */
+    public <R> R syncReadConfiguration(Function<Configuration, R> function) {
+        try (ResourceLock resourceLock = configLock.readLockAsResource()) {
+            //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
+            assert resourceLock != null;
+            return function.apply(configuration);
+        }
+    }
+
+    /**
+     * Performs the specified operation which is provided the runtime
+     * configuration and the specified argument, after first having obtained the
+     * configuration write-lock (and releasing afterward).
+     * @param <V> the type of the input to the operation
+     * @param v the input argument
+     * @param consumer a defined consumer
+     */
+    public <V> void syncWriteConfiguration(V v, ConfigurationValueConsumer<V> consumer) {
+        try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
+            //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
+            assert resourceLock != null;
+            consumer.accept(configuration, v);
+        }
+    }
+
+    private int getMessageLimit() {
+        return syncReadConfiguration(Configuration::getMessageLimit);
     }
 }

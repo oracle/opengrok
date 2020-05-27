@@ -33,7 +33,8 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
         |Summary\.java|OGKUnifiedHighlighter\.java|ResponseHeaderFilter\.java|BoundedBlockingObjectPool\.java|
         |ObjectPool\.java|ObjectValidator\.java|ObjectFactory\.java|AbstractObjectPool\.java|
         |BlockingObjectPool\.java|OGKTextVecField\.java|OGKTextField\.java|
-        |LazilyInstantiate\.java|PortChecker\.java" />
+        |LazilyInstantiate\.java|PortChecker\.java|CloseableReentrantReadWriteLock\.java|
+        |ResourceLock\.java" />
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
