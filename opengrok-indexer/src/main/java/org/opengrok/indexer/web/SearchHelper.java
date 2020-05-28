@@ -400,7 +400,11 @@ public class SearchHelper {
                 if (isCrossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
                     maybeRedirectToDefinition(docID, (TermQuery) query);
                 } else if (isGuiSearch) {
-                    maybeRedirectToMatchOffset(docID, builder.getContextFields());
+                    if (builder.isPathSearch()) {
+                        redirectToFile(docID);
+                    } else {
+                        maybeRedirectToMatchOffset(docID, builder.getContextFields());
+                    }
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -475,6 +479,11 @@ public class SearchHelper {
                         + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset;
             }
         }
+    }
+
+    private void redirectToFile(int docID) throws IOException {
+        Document doc = searcher.doc(docID);
+        redirect = contextPath + Prefix.XREF_P + Util.URIEncodePath(doc.get(QueryBuilder.PATH));
     }
 
     private static final Pattern TABSPACE = Pattern.compile("[\t ]+");

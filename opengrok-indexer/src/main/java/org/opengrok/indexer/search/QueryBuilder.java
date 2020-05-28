@@ -347,6 +347,19 @@ public class QueryBuilder {
     }
 
     /**
+     * Gets a value indicating if this search only has defined the {@link #PATH}
+     * query field.
+     */
+    public boolean isPathSearch() {
+        return ((getQueryText(FULL) == null)
+                && (getQueryText(REFS) == null)
+                && (getQueryText(PATH) != null)
+                && (getQueryText(HIST) == null)
+                && (getQueryText(DIRPATH) == null)
+                && (getQueryText(DEFS) == null));
+    }
+
+    /**
      * Build a new query based on the query text that has been passed in to this
      * builder.
      *
