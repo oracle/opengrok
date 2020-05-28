@@ -5,10 +5,29 @@ if [ -z "$REINDEX" ]; then
 	REINDEX=10
 fi
 
+if [ "${OPENGROK_WEBAPP_CONTEXT}" = "/" ]; then
+	WAR_NAME="ROOT.war"
+else
+	WAR_NAME="${OPENGROK_WEBAPP_CONTEXT#/}.war"
+fi
+
+if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
+	date +"%F %T Deployment path changed. Redeploying..."
+
+	# Delete old deployment and (re)deploy
+	rm -rf /usr/local/tomcat/webapps/*
+	opengrok-deploy -c /opengrok/etc/configuration.xml \
+            /opengrok/lib/source.war /usr/local/tomcat/webapps/${WAR_NAME}
+
+	# Set up redirect from /source
+	mkdir "/usr/local/tomcat/webapps/source"
+	echo "<% response.sendRedirect(\"${OPENGROK_WEBAPP_CONTEXT}\"); %>" > "/usr/local/tomcat/webapps/source/index.jsp"
+fi
+
 indexer(){
 	# Wait for Tomcat startup.
 	date +"%F %T Waiting for Tomcat startup..."
-	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null 'http://localhost:8080/'`" == "000" ]; do
+	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null 'http://localhost:8080/${OPENGROK_WEBAPP_CONTEXT#/}'`" == "000" ]; do
 		sleep 1;
 	done
 	date +"%F %T Startup finished"

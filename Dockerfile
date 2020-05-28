@@ -69,13 +69,6 @@ ENV CATALINA_TMPDIR /usr/local/tomcat/temp
 ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 
-# custom deployment to / with redirect from /source
-RUN rm -rf /usr/local/tomcat/webapps/* && \
-    opengrok-deploy -c /opengrok/etc/configuration.xml \
-        /opengrok/lib/source.war /usr/local/tomcat/webapps/ROOT.war && \
-    mkdir "/usr/local/tomcat/webapps/source" && \
-    echo '<% response.sendRedirect("/"); %>' > "/usr/local/tomcat/webapps/source/index.jsp"
-
 # disable all file logging
 ADD docker/logging.properties /usr/local/tomcat/conf/logging.properties
 RUN sed -i -e 's/Valve/Disabled/' /usr/local/tomcat/conf/server.xml
