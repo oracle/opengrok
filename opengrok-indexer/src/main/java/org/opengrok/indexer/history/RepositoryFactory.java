@@ -106,16 +106,30 @@ public final class RepositoryFactory {
      * @return a list that contains non-{@code null} values only
      */
     public static List<Class<? extends Repository>> getRepositoryClasses() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
         ArrayList<Class<? extends Repository>> list = new ArrayList<>(repositories.length);
         for (int i = repositories.length - 1; i >= 0; i--) {
             Class<? extends Repository> clazz = repositories[i].getClass();
-            if (isEnabled(clazz, env)) {
+            if (isEnabled(clazz)) {
                 list.add(clazz);
             }
         }
-        
+
+        return list;
+    }
+
+    /**
+     * Gets a list of all disabled repository handlers.
+     * @return a list that contains non-{@code null} values only
+     */
+    public static List<Class<? extends Repository>> getDisabledRepositoryClasses() {
+        ArrayList<Class<? extends Repository>> list = new ArrayList<>();
+        for (int i = repositories.length - 1; i >= 0; i--) {
+            Class<? extends Repository> clazz = repositories[i].getClass();
+            if (!isEnabled(clazz)) {
+                list.add(clazz);
+            }
+        }
+
         return list;
     }
 
@@ -169,7 +183,7 @@ public final class RepositoryFactory {
         for (Repository referenceRepo : repositories) {
             Class<? extends Repository> clazz = referenceRepo.getClass();
 
-            if ((!isNested || referenceRepo.isNestable()) && isEnabled(clazz, env) &&
+            if ((!isNested || referenceRepo.isNestable()) && isEnabled(clazz) &&
                     referenceRepo.isRepositoryFor(file, interactive)) {
                 repo = clazz.getDeclaredConstructor().newInstance();
 
@@ -274,7 +288,7 @@ public final class RepositoryFactory {
     public static void initializeIgnoredNames(RuntimeEnvironment env) {
         IgnoredNames ignoredNames = env.getIgnoredNames();
         for (Repository repo : repositories) {
-            if (isEnabled(repo.getClass(), env)) {
+            if (isEnabled(repo.getClass())) {
                 for (String file : repo.getIgnoredFiles()) {
                     ignoredNames.add("f:" + file);
                 }
@@ -299,8 +313,8 @@ public final class RepositoryFactory {
         return null;
     }
 
-    private static boolean isEnabled(Class<? extends Repository> clazz, RuntimeEnvironment env) {
-        Set<String> disabledRepos = env.getDisabledRepositories();
+    private static boolean isEnabled(Class<? extends Repository> clazz) {
+        Set<String> disabledRepos = RuntimeEnvironment.getInstance().getDisabledRepositories();
         return disabledRepos == null || !disabledRepos.contains(clazz.getSimpleName());
     }
 }

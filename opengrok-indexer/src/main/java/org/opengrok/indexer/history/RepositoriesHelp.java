@@ -37,8 +37,27 @@ public class RepositoriesHelp {
         builder.append("Enabled repositories:");
         builder.append(System.lineSeparator());
         builder.append(System.lineSeparator());
-
         List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
+        appendClassesHelp(builder, clazzes);
+
+        List<Class<? extends Repository>> disabledClazzes =
+                RepositoryFactory.getDisabledRepositoryClasses();
+        if (!disabledClazzes.isEmpty()) {
+            if (!clazzes.isEmpty()) {
+                builder.append(System.lineSeparator());
+            }
+            builder.append("Disabled repositories:");
+            builder.append(System.lineSeparator());
+            builder.append(System.lineSeparator());
+            appendClassesHelp(builder, disabledClazzes);
+        }
+
+        return builder.toString();
+    }
+
+    private static void appendClassesHelp(
+            StringBuilder builder, List<Class<? extends Repository>> clazzes) {
+
         clazzes.sort((o1, o2) -> o1.getSimpleName().compareToIgnoreCase(o2.getSimpleName()));
         for (Class<?> clazz : clazzes) {
             String simpleName = clazz.getSimpleName();
@@ -49,7 +68,6 @@ public class RepositoriesHelp {
             }
             builder.append(System.lineSeparator());
         }
-        return builder.toString();
     }
 
     private static boolean toAka(StringBuilder builder, String repoSimpleName) {

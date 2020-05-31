@@ -154,6 +154,17 @@ public final class Indexer {
 
         try {
             argv = parseOptions(argv);
+
+            /*
+             * Attend to disabledRepositories here in case exitWithHelp() will
+             * need to report about repos.
+             */
+            disabledRepositories.addAll(cfg.getDisabledRepositories());
+            cfg.setDisabledRepositories(disabledRepositories);
+            for (String repoName : disabledRepositories) {
+                LOGGER.log(Level.FINEST, "Disabled {0}", repoName);
+            }
+
             if (help) {
                 exitWithHelp();
             }
@@ -162,12 +173,6 @@ public final class Indexer {
 
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
-            }
-
-            disabledRepositories.addAll(cfg.getDisabledRepositories());
-            cfg.setDisabledRepositories(disabledRepositories);
-            for (String repoName : disabledRepositories) {
-                LOGGER.log(Level.FINEST, "Disabled {0}", repoName);
             }
 
             env = RuntimeEnvironment.getInstance();
@@ -410,11 +415,13 @@ public final class Indexer {
         OptionParser configure = OptionParser.scan(parser ->
                 parser.on("-R configPath").Do(cfgFile -> {
             try {
-                if (!preHelp) {
-                    cfg = Configuration.read(new File((String) cfgFile));
-                }
+                cfg = Configuration.read(new File((String) cfgFile));
             } catch (IOException e) {
-                die(e.getMessage());
+                if (!preHelp) {
+                    die(e.getMessage());
+                } else {
+                    System.err.println(String.format("Warning: failed to read -R %s", cfgFile));
+                }
             }
         }));
 
@@ -1131,6 +1138,11 @@ public final class Indexer {
                 helpStream.print(ConfigurationHelp.getSamples());
                 break;
             case CTAGS:
+                /*
+                 * Force the environment's ctags, because this method is called
+                 * before main() does the heavyweight setConfiguration().
+                 */
+                env.setCtags(cfg.getCtags());
                 helpStream.println("Ctags command-line:");
                 helpStream.println();
                 helpStream.println(getCtagsCommand());
@@ -1140,6 +1152,10 @@ public final class Indexer {
                 helpStream.println(AnalyzerGuruHelp.getUsage());
                 break;
             case REPOS:
+                /*
+                 * Force the environment's disabledRepositories (as above).
+                 */
+                env.setDisabledRepositories(cfg.getDisabledRepositories());
                 helpStream.println(RepositoriesHelp.getText());
                 break;
             default:
