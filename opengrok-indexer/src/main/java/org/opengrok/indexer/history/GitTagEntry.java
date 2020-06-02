@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -26,15 +27,15 @@ import java.util.Date;
 
 /**
  * Git specific tag class with ability to compare itself with generic
- * HistoryEntry.
+ * {@link HistoryEntry}.
  *
  * @author Stanislav Kozina
  */
-public class GitTagEntry extends TagEntry {
+class GitTagEntry extends TagEntry {
 
-    private final String hash;
+    final String hash;
 
-    public GitTagEntry(String hash, Date date, String tags) {
+    GitTagEntry(String hash, Date date, String tags) {
         super(date, tags);
         this.hash = hash;
     }
