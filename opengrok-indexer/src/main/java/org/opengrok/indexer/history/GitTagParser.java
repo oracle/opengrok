@@ -19,72 +19,106 @@
 
 /*
  * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
 /**
  * handles parsing the output of the {@code git log} command
  * into a set of tag entries.
  */
-public class GitTagParser implements Executor.StreamHandler {
+class GitTagParser implements Executor.StreamHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitTagParser.class);
+
     /**
-     * Store tag entries created by {@link processStream()}.
+     * E.g. as follows and producing a single capture, $1, for a tag name.
+     * <p>506e0a1ddf50341a0603af27ecc254ccb72d7dcb:1473681887:tag: 0.12.1.6, origin/0.12-stable:
+     * <p>d305482d0acf552ccd290d6133a52547b8da16be:1427209918:tag: 0.12.1.5:
      */
-    private final TreeSet<TagEntry> entries = new TreeSet<>();
-    
-    private final String tags;
-    
-    GitTagParser(String tags) {
-        this.tags = tags;
-    }
-    
+    private static final Pattern PRETTY_TAG_MATCHER =
+            Pattern.compile("tag:\\s+(\\S[^,:]+)(?:,\\s+|:)");
+
     /**
-     * Returns the set of entries that has been created.
-     *
-     * @return entries a set of tag entries
+     * Stores the externally provided set.
      */
-    public TreeSet<TagEntry> getEntries() {
-        return entries;
+    private final TreeSet<TagEntry> entries;
+
+    GitTagParser(TreeSet<TagEntry> entries) {
+        this.entries = entries;
     }
     
     @Override
     public void processStream(InputStream input) throws IOException {
-        String hash = null;
-        Date date = null;
-        
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
+        ArrayList<String> tagNames = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(GitRepository.newLogReader(input))) {
             String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("commit")) {
-                    String[] parts = line.split(":");
-                    if (parts.length < 2) {
-                        throw new IOException("Tag line contains more than 2 columns: " + line);
-                    }
-                    hash = parts[1];
+            while ((line = reader.readLine()) != null) {
+                String originalLine = line;
+                String hash;
+                Date date;
+                int i;
+
+                /*
+                 * E.g.
+                 * 506e0a1ddf50341a0603af27ecc254ccb72d7dcb:1473681887:tag: 0.12.1.6, origin/0.12-stable:
+                 * d305482d0acf552ccd290d6133a52547b8da16be:1427209918:tag: 0.12.1.5:
+                 */
+                if ((i = line.indexOf(":")) == -1) {
+                    LOGGER.log(Level.WARNING, "Bad tags log for %H: {0}", originalLine);
+                    continue;
                 }
-                if (line.startsWith("Date")) {
-                    String[] parts = line.split(":");
-                    if (parts.length < 2) {
-                        throw new IOException("Tag line contains more than 2 columns: " + line);
-                    }
-                    date = new Date((long) (Integer.parseInt(parts[1])) * 1000);
+                hash = line.substring(0, i);
+                line = line.substring(i + 1);
+
+                if ((i = line.indexOf(":")) == -1) {
+                    LOGGER.log(Level.WARNING, "Bad tags log for %at: {0}", originalLine);
+                    continue;
+                }
+                String timestamp = line.substring(0, i);
+                line = line.substring(i + 1);
+                date = new Date((long) (Integer.parseInt(timestamp)) * 1000);
+
+                /*
+                 * GitHub's louie0817 identified a problem where multiple tags
+                 * for the same Git commit were not recognized since OpenGrok's
+                 * TagEntry equals() compares solely the date when the "repo
+                 * does not use linear numbering," and formerly OpenGrok was
+                 * parsing individual tags as separate entries. With
+                 * louie0817's suggested bulk command, the tag names appear on
+                 * the same line and can therefore be attached to the same
+                 * entry before inserting to the map.
+                 */
+                tagNames.clear();
+                Matcher m = PRETTY_TAG_MATCHER.matcher(line);
+                while (m.find()) {
+                    tagNames.add(m.group(1)); // $1
+                }
+                if (!tagNames.isEmpty()) {
+                    /*
+                     * See Repository assignTagsInHistory() where multiple
+                     * identified tags are joined with comma-space.
+                     */
+                    String joinedTagNames = String.join(", ", tagNames);
+                    GitTagEntry tagEntry = new GitTagEntry(hash, date, joinedTagNames);
+                    entries.add(tagEntry);
                 }
             }
         }
-
-        // Git can have tags not pointing to any commit, but tree instead
-        // Lets use Unix timestamp of 0 for such commits
-        if (date == null) {
-            date = new Date(0);
-        }
-        entries.add(new GitTagEntry(hash, date, tags));
     }
 }

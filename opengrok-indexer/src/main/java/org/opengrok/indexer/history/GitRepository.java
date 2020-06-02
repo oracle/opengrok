@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
@@ -36,7 +36,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -345,8 +344,7 @@ public class GitRepository extends Repository {
         int status = executor.exec();
 
         String originalFile = null;
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(executor.getOutputStream()))) {
+        try (BufferedReader in = new BufferedReader(newLogReader(executor.getOutputStream()))) {
             String line;
             String rev = null;
             Matcher m;
@@ -385,7 +383,7 @@ public class GitRepository extends Repository {
      * Get first revision of given file without following renames.
      * @param fullpath file path to get first revision of
      */
-    private String getFirstRevision(String fullpath) throws IOException {
+    private String getFirstRevision(String fullpath) {
         String[] argv = {
                 ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
                 "rev-list",
@@ -568,68 +566,74 @@ public class GitRepository extends Repository {
         return true;
     }
 
-    private TagEntry buildTagEntry(File directory, String tag, boolean interactive) {
+    @Override
+    protected void buildTagList(File directory, boolean interactive) {
+        this.tagList = new TreeSet<>();
+
+        /*
+         * Bulk log-tags command courtesy of GitHub's louie0817.
+         */
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("log");
-        argv.add("--format=commit:%H%nDate:%at");
-        argv.add("-n");
-        argv.add("1");
-        argv.add(tag);
-        argv.add("--");
-        
+        argv.add("--tags");
+        argv.add("--simplify-by-decoration");
+        argv.add("--pretty=%H:%at:%D:");
+
         Executor executor = new Executor(argv, directory, interactive ?
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
                 RuntimeEnvironment.getInstance().getCommandTimeout());
-        GitTagParser parser = new GitTagParser(tag);
-        executor.exec(true, parser);
-        return parser.getEntries().first();
-    }
-
-    @Override
-    protected void buildTagList(File directory, boolean interactive) {
-        this.tagList = new TreeSet<>();
-        ArrayList<String> argv = new ArrayList<>();
-        LinkedList<String> tagsList = new LinkedList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(RepoCommand);
-        argv.add("tag");
-        
-        Executor executor = new Executor(argv, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
-        int status = executor.exec();
-
-        try {
-            // First we have to obtain list of all tags, and put it aside
-            // Otherwise we can't use git to get date & hash for each tag
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                    executor.getOutputStream()))) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    tagsList.add(line);
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to read tag list: {0}", e.getMessage());
-            this.tagList = null;
+        int status = executor.exec(true, new GitTagParser(this.tagList));
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
+                    new Object[] {tagList.size(), directory});
         }
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
                 "Failed to get tags for: \"{0}\" Exit code: {1}",
                     new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
-            this.tagList = null;
+            // In case of partial success, do not null-out tagList here.
         }
-        
-        // Now get hash & date for each tag.
-        for (String tag : tagsList) {
-            TagEntry tagEntry = buildTagEntry(directory, tag, interactive);
-            // Reverse the order of the list
-            this.tagList.add(tagEntry);
-        }
+
+        /*
+         * Note that the former algorithm ran `git tag` first. `git tag` lists
+         * tags in lexicographic order, so the former algorithm with its final
+         * reverse() would have produced a result that was reverse-
+         * lexicographically ordered.
+         *
+         * Repository technically relies on the tag list to be reverse-ancestor
+         * ordered.
+         *
+         * This algorithm by using `git log --tags` results in reverse-ancestor
+         * order. But there is also a technicality that Repository
+         * searches ancestry by using TagEntry.compareTo(HistoryEntry). For
+         * an SCM that uses "linear revision numbering" (e.g. SVN or Mercurial),
+         * the search is reliable.
+         *
+         * For GitTagEntry.compareTo(HistoryEntry) that compares by date, the
+         * search can technically terminate too early if ancestor-order is not
+         * monotonic by date (which Git allows with no complaint).
+         *
+         * Linus Torvalds: [When asking] "'can commit X be an ancestor of
+         * commit Y' (as a way to basically limit certain algorithms from
+         * having to walk all the way down). We've used commit dates for it,
+         * and realistically it really has worked very well. But it was always
+         * a broken heuristic."
+         *
+         * "I think the lack of [generation numbers] is literally the only real
+         * design mistake we have [in Git]."
+         *
+         * "We discussed adding generation numbers about 6 years ago [in 2005].
+         * We clearly *should* have done it. Instead, we went with the hacky
+         * `let's use commit time', that everybody really knew was technically
+         * wrong, and was a hack, but avoided the need."
+         *
+         * If Git ever gets standard generation numbers,
+         * GitTagEntry.compareTo() should be revised to work reliably akin to
+         * an SCM that uses "linear revision numbering."
+         */
     }
 
     @Override

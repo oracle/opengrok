@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -93,7 +93,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         }
 
         if (this.revision != NOREV) {
-            return ((Integer) this.revision).compareTo(that.revision);
+            return Integer.compare(this.revision, that.revision);
         }
         assert this.date != null : "date == null";
         return this.date.compareTo(that.date);
