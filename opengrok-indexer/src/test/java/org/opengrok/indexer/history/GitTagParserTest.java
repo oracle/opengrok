@@ -230,4 +230,21 @@ public class GitTagParserTest {
         assertEquals("tags should equal", t2.tags, floor2.tags);
         assertEquals("hashes should equal", t2.hash, ((GitTagEntry) floor2).hash);
     }
+
+    @Test
+    public void shouldParseOneCharacterTags() throws IOException {
+        final String LOG =
+                "c6963a7ea2753672325502d342e653700be550a8:1377876557:tag: z:\n" +
+                "c23e82b612acd5e947c164114377578116f6d298:1163621273::";
+        final byte[] LOG_BYTES = LOG.getBytes(StandardCharsets.UTF_8);
+        ByteArrayInputStream bytesIn = new ByteArrayInputStream(LOG_BYTES);
+
+        TreeSet<TagEntry> tagList = new TreeSet<>();
+        GitTagParser parser = new GitTagParser(tagList);
+        parser.processStream(bytesIn);
+
+        // See comment about LF count in shouldParseOpenGrokTagsLog().
+        long countLF = LOG.chars().filter(ch -> ch == '\n').count();
+        assertEquals("size should == LF count", countLF, tagList.size());
+    }
 }
