@@ -51,7 +51,7 @@ class GitTagParser implements Executor.StreamHandler {
      * <p>d305482d0acf552ccd290d6133a52547b8da16be:1427209918:tag: 0.12.1.5:
      */
     private static final Pattern PRETTY_TAG_MATCHER =
-            Pattern.compile("tag:\\s+(\\S[^,:]+)(?:,\\s+|:)");
+            Pattern.compile("tag:\\s+(\\S[^,:]*)(?:,\\s+|:)");
 
     /**
      * Stores the externally provided set.
