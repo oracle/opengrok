@@ -598,23 +598,19 @@ public class GitRepository extends Repository {
         }
 
         /*
-         * Note that the former algorithm ran `git tag` first. `git tag` lists
-         * tags in lexicographic order, so the former algorithm with its final
-         * reverse() would have produced a result that was reverse-
-         * lexicographically ordered.
-         *
-         * Repository technically relies on the tag list to be reverse-ancestor
+         * Repository technically relies on the tag list to be ancestor
          * ordered.
          *
-         * This algorithm by using `git log --tags` results in reverse-ancestor
-         * order. But there is also a technicality that Repository
-         * searches ancestry by using TagEntry.compareTo(HistoryEntry). For
-         * an SCM that uses "linear revision numbering" (e.g. SVN or Mercurial),
-         * the search is reliable.
+         * For an SCM that uses "linear revision numbering" (e.g. Subversion or
+         * Mercurial), the natural ordering in the TreeSet is by ancestor order
+         * and so TagEntry.compareTo(HistoryEntry) always determines the
+         * correct tag.
          *
-         * For GitTagEntry.compareTo(HistoryEntry) that compares by date, the
-         * search can technically terminate too early if ancestor-order is not
-         * monotonic by date (which Git allows with no complaint).
+         * For GitTagEntry that does not use linear revision numbering, the
+         * TreeSet will be ordered by date. That does not necessarily align
+         * with ancestor order. In that case,
+         * GitTagEntry.compareTo(HistoryEntry) that compares by date can find
+         * the wrong tag.
          *
          * Linus Torvalds: [When asking] "'can commit X be an ancestor of
          * commit Y' (as a way to basically limit certain algorithms from
@@ -631,8 +627,9 @@ public class GitRepository extends Repository {
          * wrong, and was a hack, but avoided the need."
          *
          * If Git ever gets standard generation numbers,
-         * GitTagEntry.compareTo() should be revised to work reliably akin to
-         * an SCM that uses "linear revision numbering."
+         * GitTagEntry.compareTo(HistoryEntry) should be revised to work
+         * reliably in all cases akin to an SCM that uses "linear revision
+         * numbering."
          */
     }
 
