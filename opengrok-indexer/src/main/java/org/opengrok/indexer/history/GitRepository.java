@@ -566,6 +566,37 @@ public class GitRepository extends Repository {
         return true;
     }
 
+    /**
+     * Builds a Git tag list by querying Git commit hash, commit time, and tag
+     * names.
+     * <p>Repository technically relies on the tag list to be ancestor ordered.
+     * <p>For a version control system that uses "linear revision numbering"
+     * (e.g. Subversion or Mercurial), the natural ordering in the
+     * {@link TreeSet} is by ancestor order and so
+     * {@link TagEntry#compareTo(HistoryEntry)} always determines the correct
+     * tag.
+     * <p>For {@link GitTagEntry} that does not use linear revision numbering,
+     * the {@link TreeSet} will be ordered by date. That does not necessarily
+     * align with ancestor order. In that case,
+     * {@link GitTagEntry#compareTo(HistoryEntry)} that compares by date can
+     * find the wrong tag.
+     * <p>Linus Torvalds: [When asking] "'can commit X be an ancestor of commit
+     * Y' (as a way to basically limit certain algorithms from having to walk
+     * all the way down). We've used commit dates for it, and realistically it
+     * really has worked very well. But it was always a broken heuristic."
+     * <p>"I think the lack of [generation numbers] is literally the only real
+     * design mistake we have [in Git]."
+     * <p>"We discussed adding generation numbers about 6 years ago [in 2005].
+     * We clearly *should* have done it. Instead, we went with the hacky `let's
+     * use commit time', that everybody really knew was technically wrong, and
+     * was a hack, but avoided the need."
+     * <p>If Git ever gets standard generation numbers,
+     * {@link GitTagEntry#compareTo(HistoryEntry)} should be revised to work
+     * reliably in all cases akin to a version control system that uses "linear
+     * revision numbering."
+     * @param directory a defined directory of the repository
+     * @param interactive true if in interactive mode
+     */
     @Override
     protected void buildTagList(File directory, boolean interactive) {
         this.tagList = new TreeSet<>();
@@ -596,41 +627,6 @@ public class GitRepository extends Repository {
                     new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
             // In case of partial success, do not null-out tagList here.
         }
-
-        /*
-         * Repository technically relies on the tag list to be ancestor
-         * ordered.
-         *
-         * For an SCM that uses "linear revision numbering" (e.g. Subversion or
-         * Mercurial), the natural ordering in the TreeSet is by ancestor order
-         * and so TagEntry.compareTo(HistoryEntry) always determines the
-         * correct tag.
-         *
-         * For GitTagEntry that does not use linear revision numbering, the
-         * TreeSet will be ordered by date. That does not necessarily align
-         * with ancestor order. In that case,
-         * GitTagEntry.compareTo(HistoryEntry) that compares by date can find
-         * the wrong tag.
-         *
-         * Linus Torvalds: [When asking] "'can commit X be an ancestor of
-         * commit Y' (as a way to basically limit certain algorithms from
-         * having to walk all the way down). We've used commit dates for it,
-         * and realistically it really has worked very well. But it was always
-         * a broken heuristic."
-         *
-         * "I think the lack of [generation numbers] is literally the only real
-         * design mistake we have [in Git]."
-         *
-         * "We discussed adding generation numbers about 6 years ago [in 2005].
-         * We clearly *should* have done it. Instead, we went with the hacky
-         * `let's use commit time', that everybody really knew was technically
-         * wrong, and was a hack, but avoided the need."
-         *
-         * If Git ever gets standard generation numbers,
-         * GitTagEntry.compareTo(HistoryEntry) should be revised to work
-         * reliably in all cases akin to an SCM that uses "linear revision
-         * numbering."
-         */
     }
 
     @Override
