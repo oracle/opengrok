@@ -33,11 +33,18 @@ import java.util.Date;
  */
 class GitTagEntry extends TagEntry {
 
-    final String hash;
+    private final String hash;
 
     GitTagEntry(String hash, Date date, String tags) {
         super(date, tags);
         this.hash = hash;
+    }
+
+    /**
+     * Gets the immutable, initialized Git hash value.
+     */
+    String getHash() {
+        return hash;
     }
 
     @Override

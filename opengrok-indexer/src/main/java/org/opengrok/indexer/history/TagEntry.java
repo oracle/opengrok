@@ -26,29 +26,34 @@ package org.opengrok.indexer.history;
 import java.util.Date;
 
 /**
- * Class representing tag as Pair&lt;revision, tag string&gt;. Has overloaded
- * equals() using only revision string.
+ * Represents an identifier for a version control "commit" (also known as a
+ * "changeset") where the version control system uses either monotonic, linear
+ * revision numbering; or alternatively where OpenGrok uses "commit time" as a
+ * proxy for ancestry.
  *
  * @author Stanislav Kozina
  */
 public abstract class TagEntry implements Comparable<TagEntry> {
 
-    protected int revision;
     /**
      * If repo uses linear revision numbering.
      */
-    protected Date date;
+    protected final int revision;
     /**
      * If repo does not use linear numbering.
      */
-    protected String tags;
+    protected final Date date;
     /**
      * Tag of the revision.
+     */
+    protected String tags;
+    /**
+     * Sentinel value for a repo that does not use linear numbering.
      */
     protected static final int NOREV = -1;
 
     /**
-     * Revision number not present.
+     * Initializes an instance for a repo where revision number is present.
      *
      * @param revision revision number
      * @param tags string representing tags
@@ -59,6 +64,14 @@ public abstract class TagEntry implements Comparable<TagEntry> {
         this.tags = tags;
     }
 
+    /**
+     * Initializes an instance for a repo where revision number is not present
+     * and {@code date} is used instead.
+     *
+     * @param date revision date
+     * @param tags string representing tags
+     * @throws IllegalArgumentException if {@code date} is null
+     */
     public TagEntry(Date date, String tags) {
         if (date == null) {
             throw new IllegalArgumentException("`date' is null");

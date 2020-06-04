@@ -191,7 +191,7 @@ public class GitTagParserTest {
             "61172cb46e108f65a356772860ac577141fdf8e8:1385651730:tag: untagged-2d067cc3eab919a1b8d1:\n" +
             "17d2cbd8d550eac92cd13955d63de4298303e4e0:1382628329:tag: 0.12-rc2:\n" +
             "c6963a7ea2753672325502d342e653700be550a8:1377876557:tag: 0.12-rc1:\n" +
-            "c23e82b612acd5e947c164114377578116f6d298:1163621273::";
+            "c23e82b612acd5e947c164114377578116f6d298:1163621273::\n";
 
     @Test
     public void shouldParseOpenGrokTagsLog() throws IOException {
@@ -202,13 +202,8 @@ public class GitTagParserTest {
         GitTagParser parser = new GitTagParser(tagList);
         parser.processStream(bytesIn);
 
-        /*
-         * The following comparison works because there is no trailing space in
-         * the sample, and the last line does not have a tag name. So the
-         * expected number of tag entries should match the number of LFs.
-         */
         long countLF = OGK_LOG.chars().filter(ch -> ch == '\n').count();
-        assertEquals("size should == LF count", countLF, tagList.size());
+        assertEquals("size should == LF count - 1", countLF - 1, tagList.size());
 
         // c6963a7ea2753672325502d342e653700be550a8:1377876557:tag: 0.12-rc1:
         GitTagEntry t1 = new GitTagEntry("c6963a7ea2753672325502d342e653700be550a8",
@@ -218,7 +213,7 @@ public class GitTagParserTest {
         TagEntry floor1 = tagList.floor(t1);
         assertNotNull("should find floor() given contains() is true", floor1);
         assertEquals("tags should equal", t1.tags, floor1.tags);
-        assertEquals("hashes should equal", t1.hash, ((GitTagEntry) floor1).hash);
+        assertEquals("hashes should equal", t1.getHash(), ((GitTagEntry) floor1).getHash());
 
         // 6d454cfc137241865a8639a2b1ed64dea81a448b:1538750353:tag: 1.1-rc45, tag: 1.1-rc44:
         GitTagEntry t2 = new GitTagEntry("6d454cfc137241865a8639a2b1ed64dea81a448b",
@@ -228,14 +223,14 @@ public class GitTagParserTest {
         TagEntry floor2 = tagList.floor(t2);
         assertNotNull("should find floor() given contains() is true", floor2);
         assertEquals("tags should equal", t2.tags, floor2.tags);
-        assertEquals("hashes should equal", t2.hash, ((GitTagEntry) floor2).hash);
+        assertEquals("hashes should equal", t2.getHash(), ((GitTagEntry) floor2).getHash());
     }
 
     @Test
     public void shouldParseOneCharacterTags() throws IOException {
         final String LOG =
                 "c6963a7ea2753672325502d342e653700be550a8:1377876557:tag: z:\n" +
-                "c23e82b612acd5e947c164114377578116f6d298:1163621273::";
+                "c23e82b612acd5e947c164114377578116f6d298:1163621273::\n";
         final byte[] LOG_BYTES = LOG.getBytes(StandardCharsets.UTF_8);
         ByteArrayInputStream bytesIn = new ByteArrayInputStream(LOG_BYTES);
 
@@ -243,8 +238,7 @@ public class GitTagParserTest {
         GitTagParser parser = new GitTagParser(tagList);
         parser.processStream(bytesIn);
 
-        // See comment about LF count in shouldParseOpenGrokTagsLog().
         long countLF = LOG.chars().filter(ch -> ch == '\n').count();
-        assertEquals("size should == LF count", countLF, tagList.size());
+        assertEquals("size should == LF count - 1", countLF - 1, tagList.size());
     }
 }
