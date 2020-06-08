@@ -5,6 +5,11 @@ if [ -z "$REINDEX" ]; then
 	REINDEX=10
 fi
 
+if [[ -z "${OPENGROK_WEBAPP_CONTEXT}" || "${OPENGROK_WEBAPP_CONTEXT}" = *" "* ]]; then
+	date +"%F %T Deployment path is empty or contains spaces. Deploying to root..."
+	export OPENGROK_WEBAPP_CONTEXT="/"
+fi
+
 if [ "${OPENGROK_WEBAPP_CONTEXT}" = "/" ]; then
 	WAR_NAME="ROOT.war"
 else
