@@ -5,15 +5,19 @@ if [ -z "$REINDEX" ]; then
 	REINDEX=10
 fi
 
-if [[ -z "${OPENGROK_WEBAPP_CONTEXT}" || "${OPENGROK_WEBAPP_CONTEXT}" = *" "* ]]; then
-	date +"%F %T Deployment path is empty or contains spaces. Deploying to root..."
+if [[ "${OPENGROK_WEBAPP_CONTEXT}" = *" "* ]]; then
+	date +"%F %T Deployment path contains spaces. Deploying to root..."
 	export OPENGROK_WEBAPP_CONTEXT="/"
 fi
 
-if [ "${OPENGROK_WEBAPP_CONTEXT}" = "/" ]; then
+# Remove leading and trailing slashes
+OPENGROK_WEBAPP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT#/}"
+OPENGROK_WEBAPP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT%/}"
+
+if [ "${OPENGROK_WEBAPP_CONTEXT}" = "" ]; then
 	WAR_NAME="ROOT.war"
 else
-	WAR_NAME="${OPENGROK_WEBAPP_CONTEXT#/}.war"
+	WAR_NAME="${OPENGROK_WEBAPP_CONTEXT//\//#}.war"
 fi
 
 if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
@@ -26,7 +30,7 @@ if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
 
 	# Set up redirect from /source
 	mkdir "/usr/local/tomcat/webapps/source"
-	echo "<% response.sendRedirect(\"${OPENGROK_WEBAPP_CONTEXT}\"); %>" > "/usr/local/tomcat/webapps/source/index.jsp"
+	echo "<% response.sendRedirect(\"/${OPENGROK_WEBAPP_CONTEXT}\"); %>" > "/usr/local/tomcat/webapps/source/index.jsp"
 fi
 
 indexer(){
