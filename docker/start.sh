@@ -17,7 +17,7 @@ if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
 	# Delete old deployment and (re)deploy
 	rm -rf /usr/local/tomcat/webapps/*
 	opengrok-deploy -c /opengrok/etc/configuration.xml \
-            /opengrok/lib/source.war /usr/local/tomcat/webapps/${WAR_NAME}
+            /opengrok/lib/source.war "/usr/local/tomcat/webapps/${WAR_NAME}"
 
 	# Set up redirect from /source
 	mkdir "/usr/local/tomcat/webapps/source"
