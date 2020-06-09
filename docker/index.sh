@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOCKFILE=/var/run/opengrok-indexer
-URI="http://localhost:8080/${OPENGROK_WEBAPP_CONTEXT#/}"
+URI="http://localhost:8080/${URL_ROOT#/}"
 # $OPS can be overwritten by environment variable
 OPS=${INDEXER_FLAGS:='-H -P -S -G'}
 
