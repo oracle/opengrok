@@ -5,19 +5,19 @@ if [ -z "$REINDEX" ]; then
 	REINDEX=10
 fi
 
-if [[ "${OPENGROK_WEBAPP_CONTEXT}" = *" "* ]]; then
+if [[ "${URL_ROOT}" = *" "* ]]; then
 	date +"%F %T Deployment path contains spaces. Deploying to root..."
-	export OPENGROK_WEBAPP_CONTEXT="/"
+	export URL_ROOT="/"
 fi
 
 # Remove leading and trailing slashes
-OPENGROK_WEBAPP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT#/}"
-OPENGROK_WEBAPP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT%/}"
+URL_ROOT="${URL_ROOT#/}"
+URL_ROOT="${URL_ROOT%/}"
 
-if [ "${OPENGROK_WEBAPP_CONTEXT}" = "" ]; then
+if [ "${URL_ROOT}" = "" ]; then
 	WAR_NAME="ROOT.war"
 else
-	WAR_NAME="${OPENGROK_WEBAPP_CONTEXT//\//#}.war"
+	WAR_NAME="${URL_ROOT//\//#}.war"
 fi
 
 if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
@@ -30,13 +30,13 @@ if [ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]; then
 
 	# Set up redirect from /source
 	mkdir "/usr/local/tomcat/webapps/source"
-	echo "<% response.sendRedirect(\"/${OPENGROK_WEBAPP_CONTEXT}\"); %>" > "/usr/local/tomcat/webapps/source/index.jsp"
+	echo "<% response.sendRedirect(\"/${URL_ROOT}\"); %>" > "/usr/local/tomcat/webapps/source/index.jsp"
 fi
 
 indexer(){
 	# Wait for Tomcat startup.
 	date +"%F %T Waiting for Tomcat startup..."
-	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null 'http://localhost:8080/${OPENGROK_WEBAPP_CONTEXT#/}'`" == "000" ]; do
+	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null 'http://localhost:8080/${URL_ROOT}'`" == "000" ]; do
 		sleep 1;
 	done
 	date +"%F %T Startup finished"

@@ -58,8 +58,7 @@ RUN python3 -m pip install /opengrok/tools/opengrok-tools*
 # environment variables
 ENV SRC_ROOT /opengrok/src
 ENV DATA_ROOT /opengrok/data
-ENV OPENGROK_WEBAPP_CONTEXT /
-ENV OPENGROK_TOMCAT_BASE /usr/local/tomcat
+ENV URL_ROOT /
 ENV CATALINA_HOME /usr/local/tomcat
 ENV CATALINA_BASE /usr/local/tomcat
 ENV CATALINA_TMPDIR /usr/local/tomcat/temp
