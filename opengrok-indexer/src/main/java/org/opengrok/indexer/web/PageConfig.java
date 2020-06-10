@@ -925,10 +925,6 @@ public final class PageConfig {
         TreeSet<String> projectNames = new TreeSet<>();
         List<Project> projects = getEnv().getProjectList();
 
-        if (projects == null) {
-            return projectNames;
-        }
-
         if (Boolean.parseBoolean(req.getParameter(searchAllParamName))) {
             return getProjectHelper()
                     .getAllProjects()
@@ -975,7 +971,7 @@ public final class PageConfig {
         }
 
         // Add projects based on cookie.
-        if (projectNames.isEmpty()) {
+        if (projectNames.isEmpty() && getIntParam(QueryParameters.NUM_SELECTED_PARAM, -1) != 0) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
                 Project x = Project.getByName(s);

@@ -1045,6 +1045,9 @@
 
         _addSelectionDisplayItem: function ($changedItem) {
             this.numSelected = 1 + this.numSelected;
+            if (this.config.numSelectedItem) {
+                this.config.numSelectedItem.val(this.numSelected);
+            }
 
             if (this.config.maxShow !== 0 && this.numSelected > this.config.maxShow) {
                 if (this.valMap == null) {
@@ -1057,6 +1060,7 @@
 
         _buildSelectionDisplayItem: function ($changedItem) {
             var solOptionItem = $changedItem.data('sol-item'),
+                self = this,
                 $existingDisplayItem,
                 $displayItemText;
 
@@ -1093,9 +1097,14 @@
                         /*
                          * Modified for OpenGrok in 2017.
                          */
-                        if (isOnSearchPage()) {
-                            $('#xrd').val("1"); // no redirect
-                            $('#sbox').submit();
+                        if (self.config.quickDeleteForm) {
+                            if (self.config.quickDeletePermit) {
+                                if (self.config.quickDeletePermit()) {
+                                    self.config.quickDeleteForm.submit();
+                                }
+                            } else {
+                                self.config.quickDeleteForm.submit();
+                            }
                         }
                     })
                     .prependTo($existingDisplayItem);
@@ -1110,6 +1119,9 @@
 
             var wasExceeding = this.config.maxShow !== 0 && this.numSelected > this.config.maxShow;
             this.numSelected = this.numSelected - 1;
+            if (this.config.numSelectedItem) {
+                this.config.numSelectedItem.val(this.numSelected);
+            }
 
             if ($myDisplayItem) {
                 $myDisplayItem.remove();
@@ -1294,7 +1306,7 @@
                             .prop('checked', false)
                             .trigger('change', true);
 
-                this.options.closeOnClick && this.close();
+                this.config.closeOnClick && this.close();
 
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $changedInputs);
