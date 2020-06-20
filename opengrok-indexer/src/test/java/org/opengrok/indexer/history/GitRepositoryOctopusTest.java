@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -35,11 +35,13 @@ import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 import java.io.File;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * @author austvik
@@ -178,20 +180,21 @@ public class GitRepositoryOctopusTest {
 
         SortedSet<String> allFiles = new TreeSet<>();
         for (HistoryEntry entry : entries) {
-            allFiles.addAll(entry.getFiles());
+            allFiles.addAll(entry.getFiles().stream().map(Util::fixPathIfWindows).
+                    collect(Collectors.toList()));
         }
 
-        assertTrue("contains /git-octopus/d", allFiles.contains("/git-octopus/d"));
-        assertTrue("contains /git-octopus/c", allFiles.contains("/git-octopus/c"));
-        assertTrue("contains /git-octopus/b", allFiles.contains("/git-octopus/b"));
-        assertTrue("contains /git-octopus/a", allFiles.contains("/git-octopus/a"));
-        assertEquals("git-octopus four files from log", 4, allFiles.size());
+        assertTrue("should contain /git-octopus/d", allFiles.contains("/git-octopus/d"));
+        assertTrue("should contain /git-octopus/c", allFiles.contains("/git-octopus/c"));
+        assertTrue("should contain /git-octopus/b", allFiles.contains("/git-octopus/b"));
+        assertTrue("should contain /git-octopus/a", allFiles.contains("/git-octopus/a"));
+        assertEquals("git-octopus files from log", 4, allFiles.size());
 
         HistoryEntry first = entries.get(0);
         assertEquals("should be merge commit hash", "206f862b", first.getRevision());
         assertEquals("should be merge commit message",
                 "Merge branches 'file_a', 'file_b' and 'file_c' into master, and add d",
                 first.getMessage());
-        assertEquals("git-octopus four files for merge", 4, first.getFiles().size());
+        assertEquals("git-octopus files for merge", 4, first.getFiles().size());
     }
 }

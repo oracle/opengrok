@@ -842,10 +842,15 @@ public final class Util {
         return url.substring(0, url.lastIndexOf(PATH_SEPARATOR)); // remove date from end
     }
 
+    /**
+     * Sanitizes Windows path delimiters (if {@link PlatformUtils#isWindows()}
+     * is {@code true}) as
+     * {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR} in order not
+     * to conflict with the Lucene escape character and also so {@code path}
+     * appears as a correctly formed URI in search results.
+     */
     public static String fixPathIfWindows(String path) {
-        if (PlatformUtils.isWindows()) {
-            // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
-            // and also so the path appears as correctly formed URI in the search results.
+        if (path != null && PlatformUtils.isWindows()) {
             return path.replace(File.separatorChar, PATH_SEPARATOR);
         }
         return path;
