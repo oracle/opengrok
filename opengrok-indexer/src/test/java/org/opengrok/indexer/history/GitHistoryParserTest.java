@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -41,6 +41,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 /**
  * @author austvik
@@ -114,7 +115,7 @@ public class GitHistoryParserTest {
 
         SortedSet<String> f0 = e0.getFiles();
         assertEquals("e[0] files size", 1, f0.size());
-        assertEquals("e[0] files[0]", "/contrib/serf/STATUS", f0.first());
+        assertEquals("e[0] files[0]", "/contrib/serf/STATUS", Util.fixPathIfWindows(f0.first()));
     }
 
     /**
