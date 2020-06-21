@@ -25,6 +25,7 @@ package org.opengrok.indexer.index;
 
 import org.opengrok.indexer.analysis.AccumulatedNumLinesLOC;
 import org.opengrok.indexer.analysis.NumLinesLOC;
+import org.opengrok.indexer.web.Util;
 
 import java.io.File;
 import java.util.HashMap;
@@ -59,10 +60,11 @@ public class NumLinesLOCAggregator {
         if (directory != null) {
             synchronized (syncRoot) {
                 do {
-                    DeltaData extantDelta = registeredDeltas.get(directory.getPath());
+                    String dirPath = Util.fixPathIfWindows(directory.getPath());
+                    DeltaData extantDelta = registeredDeltas.get(dirPath);
                     if (extantDelta == null) {
                         extantDelta = new DeltaData();
-                        registeredDeltas.put(directory.getPath(), extantDelta);
+                        registeredDeltas.put(dirPath, extantDelta);
                     }
                     extantDelta.numLines += counts.getNumLines();
                     extantDelta.loc += counts.getLOC();
