@@ -42,7 +42,7 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
     <suppress checks="FileLength" files="RuntimeEnvironment\.java" />
 
-    <suppress checks="MethodLength" files="Indexer\.java" />
+    <suppress checks="MethodLength" files="Indexer\.java|IndexDatabase\.java" />
 
     <suppress checks="JavadocStyle" files="MellonHeaderDecoder\.java|CustomSloppyPhraseScorer\.java|
         |PhrasePositions\.java" />

@@ -537,8 +537,10 @@ public class IndexDatabase {
                      * Metrics are aggregated for directories up to the root,
                      * so it suffices to put the fake directly under the root.
                      */
-                    final String ROOT_FAKE_FILE = "/.foo";
-                    countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
+                    if (!isWithDirectoryCounts) {
+                        final String ROOT_FAKE_FILE = "/.foo";
+                        countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
+                    }
                     NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
                     countsAccessor.store(writer, reader, countsAggregator,
                             isWithDirectoryCounts && isCountingDeltas);
