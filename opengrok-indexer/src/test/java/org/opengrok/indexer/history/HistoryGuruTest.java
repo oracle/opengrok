@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -58,14 +59,18 @@ public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
     private static final List<File> FILES = new ArrayList<>();
+    private static RuntimeEnvironment env;
+
+    private static int savedNestingMaximum;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        
+        env = RuntimeEnvironment.getInstance();
+        savedNestingMaximum = env.getNestingMaximum();
+
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
@@ -94,6 +99,11 @@ public class HistoryGuruTest {
     @AfterClass
     public static void tearDownClass() {
         repository.destroy();
+    }
+
+    @After
+    public void tearDown() {
+        env.setNestingMaximum(savedNestingMaximum);
     }
 
     @Test
@@ -147,7 +157,6 @@ public class HistoryGuruTest {
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         final int numReposOrig = instance.getRepositories().size();
         
         // Try to add non-existent repository.
@@ -175,7 +184,6 @@ public class HistoryGuruTest {
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testAddSubRepositoryNotNestable() {
         HistoryGuru instance = HistoryGuru.getInstance();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Check out CVS underneath a Git repository.
         File cvsRoot = new File(repository.getSourceRoot(), "cvs_test");
@@ -197,7 +205,6 @@ public class HistoryGuruTest {
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testAddSubRepository() {
         HistoryGuru instance = HistoryGuru.getInstance();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Clone a Mercurial repository underneath a Mercurial repository.
         File hgRoot = new File(repository.getSourceRoot(), "mercurial");
@@ -210,5 +217,40 @@ public class HistoryGuruTest {
                 addRepositories(Collections.singleton(Paths.get(repository.getSourceRoot(), "mercurial").toString()),
                         env.getIgnoredNames());
         assertEquals(2, addedRepos.size());
+    }
+
+    @Test
+    public void testNestingMaximum() throws IOException {
+        // Just fake a nesting of Repo -> Git -> Git.
+        File repoRoot = new File(repository.getSourceRoot(), "repoRoot");
+        certainlyMkdirs(repoRoot);
+        File repo0 = new File(repoRoot, ".repo");
+        certainlyMkdirs(repo0);
+        File sub1 = new File(repoRoot, "sub1");
+        certainlyMkdirs(sub1);
+        File repo1 = new File(sub1, ".git");
+        certainlyMkdirs(repo1);
+        File sub2 = new File(sub1, "sub2");
+        certainlyMkdirs(sub2);
+        File repo2 = new File(sub2, ".git");
+        certainlyMkdirs(repo2);
+
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Collection<RepositoryInfo> addedRepos = instance.addRepositories(
+                Collections.singleton(Paths.get(repository.getSourceRoot(),
+                        "repoRoot").toString()), env.getIgnoredNames());
+        assertEquals("should add to default nesting maximum", 2, addedRepos.size());
+
+        env.setNestingMaximum(2);
+        addedRepos = instance.addRepositories(
+                Collections.singleton(Paths.get(repository.getSourceRoot(),
+                        "repoRoot").toString()), env.getIgnoredNames());
+        assertEquals("should get one more repo", 3, addedRepos.size());
+    }
+
+    private static void certainlyMkdirs(File file) throws IOException {
+        if (!file.mkdirs()) {
+            throw new IOException("Couldn't mkdirs " + file);
+        }
     }
 }

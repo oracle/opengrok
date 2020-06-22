@@ -78,13 +78,13 @@ public final class HistoryGuru {
     /**
      * Map of repositories, with {@code DirectoryName} as key.
      */
-    private Map<String, Repository> repositories = new ConcurrentHashMap<>();
+    private final Map<String, Repository> repositories = new ConcurrentHashMap<>();
 
     /**
      * Set of repository roots (using ConcurrentHashMap but a throwaway value)
      * with parent of {@code DirectoryName} as key.
      */
-    private Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
+    private final Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
     private final int scanningDepth;
 
@@ -388,7 +388,7 @@ public final class HistoryGuru {
      *
      * @param files list of files to check if they contain a repository
      * @param ignoredNames what files to ignore
-     * @param recursiveSearch whether to use recursive search
+     * @param allowedNesting number of levels of nested repos to allow
      * @param depth current depth - using global scanningDepth - one can limit
      * this to improve scanning performance
      * @param isNested a value indicating if a parent {@link Repository} was
@@ -396,7 +396,7 @@ public final class HistoryGuru {
      * @return collection of added repositories
      */
     private Collection<RepositoryInfo> addRepositories(File[] files,
-            IgnoredNames ignoredNames, boolean recursiveSearch, int depth,
+            IgnoredNames ignoredNames, int allowedNesting, int depth,
             boolean isNested) {
 
         List<RepositoryInfo> repoList = new ArrayList<>();
@@ -436,7 +436,7 @@ public final class HistoryGuru {
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
                             repoList.addAll(addRepositories(subFiles, ignoredNames,
-                                    recursiveSearch, depth + 1, isNested));
+                                    allowedNesting, depth + 1, isNested));
                         }
                     }
                 } else {
@@ -446,17 +446,17 @@ public final class HistoryGuru {
                     repoList.add(new RepositoryInfo(repository));
                     putRepository(repository);
 
-                    if (recursiveSearch && repository.supportsSubRepositories()) {
+                    if (allowedNesting > 0 && repository.supportsSubRepositories()) {
                         File[] subFiles = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            // Search only one level down - if not: too much
+                            // Search down to a limit -- if not: too much
                             // stat'ing for huge Mercurial repositories
                             repoList.addAll(addRepositories(subFiles, ignoredNames,
-                                    false, depth + 1, true));
+                                    allowedNesting - 1, depth + 1, true));
                         }
                     }
                 }
@@ -482,7 +482,7 @@ public final class HistoryGuru {
     public Collection<RepositoryInfo> addRepositories(File[] files,
             IgnoredNames ignoredNames) {
 
-        return addRepositories(files, ignoredNames, true, 0, false);
+        return addRepositories(files, ignoredNames, env.getNestingMaximum(), 0, false);
     }
 
     /**
@@ -633,11 +633,9 @@ public final class HistoryGuru {
      *
      * @param repositories list of repository paths relative to source root
      * @return list of repository paths that were found and their history data removed
-     * @throws HistoryException if history cannot be retrieved
      */
-    public List<String> clearCache(Collection<String> repositories) throws HistoryException {
+    public List<String> clearCache(Collection<String> repositories) {
         List<String> clearedRepos = new ArrayList<>();
-        HistoryCache cache = historyCache;
 
         if (!useCache()) {
             return clearedRepos;
@@ -645,7 +643,7 @@ public final class HistoryGuru {
 
         for (Repository r : getReposFromString(repositories)) {
             try {
-                cache.clear(r);
+                historyCache.clear(r);
                 clearedRepos.add(r.getDirectoryName());
                 LOGGER.log(Level.INFO,
                         "History cache for {0} cleared.", r.getDirectoryName());
@@ -676,9 +674,8 @@ public final class HistoryGuru {
      * successfully cleared are removed from the internal list of repositories.
      *
      * @param repositories list of repository paths relative to source root
-     * @throws HistoryException if history cannot be retrieved
      */
-    public void removeCache(Collection<String> repositories) throws HistoryException {
+    public void removeCache(Collection<String> repositories) {
         if (!useCache()) {
             return;
         }
