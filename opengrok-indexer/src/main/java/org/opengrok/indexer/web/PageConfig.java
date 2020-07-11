@@ -1800,7 +1800,7 @@ public final class PageConfig {
                     LineBreaker breaker = new LineBreaker();
                     StreamSource streamSource = StreamSource.fromFile(resourceFile);
                     try {
-                        breaker.reset(streamSource);
+                        breaker.reset(streamSource, in -> ExpandTabsReader.wrap(in, getProject()));
                         int matchLine = breaker.findLineIndex(matchOffset);
                         if (matchLine >= 0) {
                             // Convert to 1-based offset to accord with OpenGrok line number.
