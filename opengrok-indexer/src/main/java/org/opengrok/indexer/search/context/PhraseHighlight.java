@@ -34,23 +34,23 @@ public class PhraseHighlight {
      * start to a value w.r.t. line start -- or -1 if not beginning this
      * line
      */
-    private final int lineStart;
+    private final long lineStart;
     /**
      * a value that has been translated from start offset w.r.t. document
      * start to a value w.r.t. line start -- or {@link Integer#MAX_VALUE} if
      * not ending this line
      */
-    private final int lineEnd;
+    private final long lineEnd;
 
-    public static PhraseHighlight create(int start, int end) {
+    public static PhraseHighlight create(long start, long end) {
         return new PhraseHighlight(start, end);
     }
 
-    public static PhraseHighlight createStarter(int start) {
+    public static PhraseHighlight createStarter(long start) {
         return new PhraseHighlight(start, Integer.MAX_VALUE);
     }
 
-    public static PhraseHighlight createEnder(int end) {
+    public static PhraseHighlight createEnder(long end) {
         return new PhraseHighlight(-1, end);
     }
 
@@ -64,7 +64,7 @@ public class PhraseHighlight {
      * line.
      * @return offset
      */
-    public int getLineStart() {
+    public long getLineStart() {
         return lineStart;
     }
 
@@ -74,7 +74,7 @@ public class PhraseHighlight {
      * not ending this line.
      * @return offset
      */
-    public int getLineEnd() {
+    public long getLineEnd() {
         return lineEnd;
     }
 
@@ -97,13 +97,13 @@ public class PhraseHighlight {
      * @return a defined instance
      */
     public PhraseHighlight merge(PhraseHighlight other) {
-        int mergeStart = Math.min(lineStart, other.lineStart);
-        int mergeEnd = Math.max(lineEnd, other.lineEnd);
+        long mergeStart = Math.min(lineStart, other.lineStart);
+        long mergeEnd = Math.max(lineEnd, other.lineEnd);
         return PhraseHighlight.create(mergeStart, mergeEnd);
     }
 
     /** Private to enforce static create() methods. */
-    private PhraseHighlight(int start, int end) {
+    private PhraseHighlight(long start, long end) {
         this.lineStart = start;
         this.lineEnd = end;
     }

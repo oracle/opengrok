@@ -27,7 +27,7 @@
      * @return yychar
      */
     @Override
-    public int getYYCHAR() { return yychar; }
+    public long getYYCHAR() { return yychar; }
 
     /**
      * Gets the YYEOF value.

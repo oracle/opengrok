@@ -36,9 +36,9 @@ import org.opengrok.indexer.analysis.StreamSource;
  */
 public class LineBreaker {
 
-    private int length;
+    private long length;
     private int count;
-    private int[] lineOffsets;
+    private long[] lineOffsets;
 
     /**
      * Calls
@@ -70,14 +70,14 @@ public class LineBreaker {
         length = 0;
         lineOffsets = null;
 
-        List<Integer> newOffsets = new ArrayList<>();
+        List<Long> newOffsets = new ArrayList<>();
         LineBreakerScanner scanner = new LineBreakerScanner(reader);
         scanner.setTarget(newOffsets);
         scanner.consume();
         length = scanner.getLength();
         count = newOffsets.size() - 1;
 
-        lineOffsets = new int[newOffsets.size()];
+        lineOffsets = new long[newOffsets.size()];
         for (int i = 0; i < lineOffsets.length; ++i) {
             lineOffsets[i] = newOffsets.get(i);
         }
@@ -87,7 +87,7 @@ public class LineBreaker {
      * Gets the number of characters in the original source document.
      * @return value
      */
-    public int originalLength() {
+    public long originalLength() {
         return length;
     }
 
@@ -109,7 +109,7 @@ public class LineBreaker {
      * @return line starting offset
      * @throws IllegalArgumentException if {@code index} is out of bounds
      */
-    public int getOffset(int index) {
+    public long getOffset(int index) {
         if (lineOffsets == null) {
             throw new IllegalStateException("reset() did not succeed");
         }

@@ -37,14 +37,14 @@ import org.opengrok.indexer.analysis.StreamSource;
  */
 public class SourceSplitter {
 
-    private int length;
+    private long length;
     private String[] lines;
-    private int[] lineOffsets;
+    private long[] lineOffsets;
 
     /**
      * Gets the number of characters in the original source document.
      */
-    public int originalLength() {
+    public long originalLength() {
         return length;
     }
 
@@ -83,7 +83,7 @@ public class SourceSplitter {
      * @return line starting offset
      * @throws IllegalArgumentException if {@code index} is out of bounds
      */
-    public int getOffset(int index) {
+    public long getOffset(int index) {
         if (lineOffsets == null) {
             throw new IllegalStateException("reset() did not succeed");
         }
@@ -100,7 +100,7 @@ public class SourceSplitter {
      * @return -1 if {@code offset} is beyond the document bounds; otherwise,
      * a valid index
      */
-    public int findLineIndex(int offset) {
+    public int findLineIndex(long offset) {
         if (lineOffsets == null) {
             throw new IllegalStateException("reset() did not succeed");
         }
@@ -173,7 +173,7 @@ public class SourceSplitter {
          * Add one more entry for lineOffsets so that findLineIndex() can
          * easily work on the last line.
          */
-        lineOffsets = new int[lines.length + 1];
+        lineOffsets = new long[lines.length + 1];
         int offset = 0;
         for (int i = 0; i < lineOffsets.length; ++i) {
             lineOffsets[i] = offset;

@@ -32,8 +32,8 @@ public class ScopeChangedEvent {
     private final Object source;
     private final ScopeAction action;
     private final String str;
-    private final int start;
-    private final int end;
+    private final long start;
+    private final long end;
 
     /**
      * Initializes an immutable instance of {@link ScopeChangedEvent}.
@@ -44,7 +44,7 @@ public class ScopeChangedEvent {
      * @param end the text end position
      */
     public ScopeChangedEvent(Object source, ScopeAction action, String str,
-        int start, int end) {
+        long start, long end) {
         this.source = source;
         this.action = action;
         this.str = str;
@@ -80,7 +80,7 @@ public class ScopeChangedEvent {
      * Gets the text start position.
      * @return the initial value
      */
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -88,7 +88,7 @@ public class ScopeChangedEvent {
      * Gets the text end position.
      * @return the initial value
      */
-    public int getEnd() {
+    public long getEnd() {
         return end;
     }
 }

@@ -169,7 +169,7 @@ public class HistoryContext {
                 tokens.reInit(line);
                 String token;
                 int matchState;
-                int start = -1;
+                long start = -1;
                 while ((token = tokens.next()) != null) {
                     for (LineMatcher lineMatcher : m) {
                         matchState = lineMatcher.match(token);
@@ -177,7 +177,7 @@ public class HistoryContext {
                             if (start < 0) {
                                 start = tokens.getMatchStart();
                             }
-                            int end = tokens.getMatchEnd();
+                            long end = tokens.getMatchEnd();
                             if (out == null) {
                                 StringBuilder sb = new StringBuilder();
                                 writeMatch(sb, line, start, end, true, path, wcontext, nrev, rev);
@@ -219,13 +219,13 @@ public class HistoryContext {
      * @throws IOException IO exception
      */
     protected static void writeMatch(Appendable out, String line,
-                            int start, int end, boolean flatten, String path,
+                            long start, long end, boolean flatten, String path,
                             String wcontext, String nrev, String rev)
             throws IOException {
 
-        String prefix = line.substring(0, start);
-        String match = line.substring(start, end);
-        String suffix = line.substring(end);
+        String prefix = line.substring(0, (int) start);
+        String match = line.substring((int) start, (int) end);
+        String suffix = line.substring((int) end);
 
         if (wcontext != null && nrev != null && !wcontext.isEmpty()) {
             out.append("<a href=\"");

@@ -29,14 +29,14 @@ package org.opengrok.indexer.analysis;
 public class SourceCodeSeenEvent {
 
     private final Object source;
-    private final int position;
+    private final long position;
 
     /**
      * Initializes an immutable instance of {@link SourceCodeSeenEvent}.
      * @param source the event source
      * @param position the text position
      */
-    public SourceCodeSeenEvent(Object source, int position) {
+    public SourceCodeSeenEvent(Object source, long position) {
         this.source = source;
         this.position = position;
     }
@@ -53,7 +53,7 @@ public class SourceCodeSeenEvent {
      * Gets the text position.
      * @return the initial value
      */
-    public int getPosition() {
+    public long getPosition() {
         return position;
     }
 }

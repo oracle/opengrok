@@ -31,7 +31,7 @@ public class DisjointSpanChangedEvent {
 
     private final Object source;
     private final String className;
-    private final int position;
+    private final long position;
 
     /**
      * Initializes an immutable instance of {@link DisjointSpanChangedEvent}.
@@ -40,7 +40,7 @@ public class DisjointSpanChangedEvent {
      * @param position the span position
      */
     public DisjointSpanChangedEvent(Object source, String className,
-        int position) {
+        long position) {
         this.source = source;
         this.className = className;
         this.position = position;
@@ -66,7 +66,7 @@ public class DisjointSpanChangedEvent {
      * Gets the span position.
      * @return the initial value
      */
-    public int getPosition() {
+    public long getPosition() {
         return position;
     }
 }

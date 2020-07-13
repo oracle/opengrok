@@ -44,11 +44,11 @@ import java.util.List;
     length = yychar;
 %eof}
 %{
-    private int length;
+    private long length;
 
-    private List<Integer> offsets;
+    private List<Long> offsets;
 
-    public int getLength() {
+    public long getLength() {
         return length;
     }
 
@@ -56,10 +56,10 @@ import java.util.List;
      * Sets the required target to write, and adds a first offset of 0.
      * @param offsets a required instance
      */
-    public void setTarget(List<Integer> offsets) {
+    public void setTarget(List<Long> offsets) {
         this.length = 0;
         this.offsets = offsets;
-        offsets.add(0);
+        offsets.add(0L);
     }
 
     /**

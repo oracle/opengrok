@@ -86,12 +86,12 @@ stopset.add( "1.0");
   }
 
   /** Return the position of the first character in the current token. */
-  int getMatchStart() {
+  long getMatchStart() {
       return yychar;
   }
 
   /** Return the position of the first character after the current token. */
-  int getMatchEnd() {
+  long getMatchEnd() {
       return yychar + yylength();
   }
 %}

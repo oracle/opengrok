@@ -365,8 +365,8 @@ public class CtagsReader {
      * Adds a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, int lineno, String symbol,
-            String type, String text, String namespace, String signature,
-            int lineStart, int lineEnd) {
+                        String type, String text, String namespace, String signature,
+                        long lineStart, long lineEnd) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
@@ -391,9 +391,9 @@ public class CtagsReader {
         String origWhole = whole;
 
         int t = tabSize;
-        int s, e;
+        long s, e;
 
-        int woff = strictIndexOf(whole, str);
+        long woff = strictIndexOf(whole, str);
         if (woff < 0) {
             /*
              * When a splitter is available, search the entire line.
@@ -450,7 +450,7 @@ public class CtagsReader {
         }
 
         int t = tabSize;
-        int s, e;
+        long s, e;
 
         // First search arg as-is in the current `whole' -- strict then lax.
         int woff = strictIndexOf(whole, arg);
@@ -648,32 +648,32 @@ public class CtagsReader {
      */
     private CpatIndex bestLineOfMatch(int lineno, PatResult pr, String cut) {
         // (N.b. use 0-based indexing vs ctags's 1-based.)
-        int lineOff = splitter.getOffset(lineno - 1);
-        int mOff = lineOff + pr.start;
+        long lineOff = splitter.getOffset(lineno - 1);
+        long mOff = lineOff + pr.start;
         int mIndex = splitter.findLineIndex(mOff);
-        int zOff = lineOff + pr.end - 1;
+        long zOff = lineOff + pr.end - 1;
         int zIndex = splitter.findLineIndex(zOff);
 
         int t = tabSize;
         int resIndex = mIndex;
-        int contentLength = 0;
+        long contentLength = 0;
         /**
          * Initialize the following just to silence warnings but with values
          * that will be detected as "bad fuzzy" later.
          */
         String whole = "";
-        int s = 0;
-        int e = 1;
+        long s = 0;
+        long e = 1;
         /*
          * Iterate to determine the length of the portion of cut that is
          * contained within each line.
          */
         for (int lIndex = mIndex; lIndex <= zIndex; ++lIndex) {
             String iwhole = splitter.getLine(lIndex);
-            int lOff = splitter.getOffset(lIndex);
-            int lOffZ = lOff + iwhole.length();
-            int offStart = Math.max(pr.start + lineOff, lOff);
-            int offEnd = Math.min(pr.end + lineOff, lOffZ);
+            long lOff = splitter.getOffset(lIndex);
+            long lOffZ = lOff + iwhole.length();
+            long offStart = Math.max(pr.start + lineOff, lOff);
+            long offEnd = Math.min(pr.end + lineOff, lOffZ);
             if (offEnd - offStart > contentLength) {
                 contentLength = offEnd - offStart;
                 resIndex = lIndex;
@@ -773,18 +773,18 @@ public class CtagsReader {
      */
     private static class CpatIndex {
         public final int lineno;
-        public final int lineStart;
-        public final int lineEnd;
+        public final long lineStart;
+        public final long lineEnd;
         public final boolean imprecise;
 
-        CpatIndex(int lineno, int lineStart, int lineEnd) {
+        CpatIndex(int lineno, long lineStart, long lineEnd) {
             this.lineno = lineno;
             this.lineStart = lineStart;
             this.lineEnd = lineEnd;
             this.imprecise = false;
         }
 
-        CpatIndex(int lineno, int lineStart, int lineEnd, boolean imprecise) {
+        CpatIndex(int lineno, long lineStart, long lineEnd, boolean imprecise) {
             this.lineno = lineno;
             this.lineStart = lineStart;
             this.lineEnd = lineEnd;

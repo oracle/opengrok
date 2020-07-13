@@ -33,8 +33,8 @@ import java.util.Objects;
 public class PendingToken {
 
     public final String str;
-    public final int start;
-    public final int end;
+    public final long start;
+    public final long end;
     /**
      * When tokenizers allow overlapping tokens, the following field is set to
      * {@code true} for tokens that should not increment the position attribute.
@@ -48,7 +48,7 @@ public class PendingToken {
      * @param start start offset
      * @param end end offset
      */
-    public PendingToken(String str, int start, int end) {
+    public PendingToken(String str, long start, long end) {
         this.str = str;
         this.start = start;
         this.end = end;

@@ -50,7 +50,7 @@ public interface JFlexStackingLexer extends JFlexLexer {
     /**
      * Gets the yychar value.
      */
-    int getYYCHAR();
+    long getYYCHAR();
 
     /**
      * Gets the YYEOF value.

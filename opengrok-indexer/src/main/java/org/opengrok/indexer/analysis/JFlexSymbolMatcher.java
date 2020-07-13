@@ -82,7 +82,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Gets the class name value from the last call to
-     * {@link #onDisjointSpanChanged(java.lang.String, int)}.
+     * {@link #onDisjointSpanChanged(java.lang.String, long)}.
      * @return a defined value or null
      */
     protected String getDisjointSpanClassName() {
@@ -96,7 +96,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the symbol string
      * @param start the symbol start position
      */
-    protected void onSymbolMatched(String str, int start) {
+    protected void onSymbolMatched(String str, long start) {
         SymbolMatchedListener l = symbolListener;
         if (l != null) {
             SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
@@ -111,7 +111,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * for all subscribed listeners in turn.
      * @param start the source code start position
      */
-    protected void onSourceCodeSeen(int start) {
+    protected void onSourceCodeSeen(long start) {
         SymbolMatchedListener l = symbolListener;
         if (l != null) {
             SourceCodeSeenEvent evt = new SourceCodeSeenEvent(this, start);
@@ -120,12 +120,12 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     }
 
     /**
-     * Calls {@link #onNonSymbolMatched(java.lang.String, int)} with the
+     * Calls {@link #onNonSymbolMatched(java.lang.String, long)} with the
      * {@link String#valueOf(char)} {@code c} and {@code start}.
      * @param c the text character
      * @param start the text start position
      */
-    protected void onNonSymbolMatched(char c, int start) {
+    protected void onNonSymbolMatched(char c, long start) {
         onNonSymbolMatched(String.valueOf(c), start);
     }
 
@@ -136,7 +136,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onNonSymbolMatched(String str, int start) {
+    protected void onNonSymbolMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
@@ -154,7 +154,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param start the text start position
      */
     protected void onNonSymbolMatched(String str, EmphasisHint hint,
-        int start) {
+        long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, hint, start,
@@ -170,7 +170,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onKeywordMatched(String str, int start) {
+    protected void onKeywordMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
@@ -188,7 +188,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onEndOfLineMatched(String str, int start) {
+    protected void onEndOfLineMatched(String str, long start) {
         setLineNumber(getLineNumber() + countLFs(str));
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
@@ -205,7 +205,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param className the text string
      * @param position the text position
      */
-    protected void onDisjointSpanChanged(String className, int position) {
+    protected void onDisjointSpanChanged(String className, long position) {
         disjointSpanClassName = className;
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
@@ -217,12 +217,12 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Calls
-     * {@link #onUriMatched(java.lang.String, int, java.util.regex.Pattern)}
+     * {@link #onUriMatched(java.lang.String, long, java.util.regex.Pattern)}
      * with {@code uri}, {@code start}, and {@code null}.
      * @param uri the URI string
      * @param start the URI start position
      */
-    protected void onUriMatched(String uri, int start) {
+    protected void onUriMatched(String uri, long start) {
         onUriMatched(uri, start, null);
     }
 
@@ -246,7 +246,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * may have been captured as valid URI characters but in a particular
      * context should mark the start of a pushback
      */
-    protected void onUriMatched(String uri, int start, Pattern collateralCapture) {
+    protected void onUriMatched(String uri, long start, Pattern collateralCapture) {
         UriUtils.TrimUriResult result = UriUtils.trimUri(uri, true, collateralCapture);
         if (result.getPushBackCount() > 0) {
             yypushback(result.getPushBackCount());
@@ -268,7 +268,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onFilelikeMatched(String str, int start) {
+    protected void onFilelikeMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -288,7 +288,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param start the text start position
      */
     protected void onPathlikeMatched(String str, char sep,
-        boolean canonicalize, int start) {
+        boolean canonicalize, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             PathlikeMatchedEvent  evt = new PathlikeMatchedEvent(this, str,
@@ -304,7 +304,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onEmailAddressMatched(String str, int start) {
+    protected void onEmailAddressMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -321,7 +321,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param start the text start position
      * @param lstr the text link string
      */
-    protected void onLabelMatched(String str, int start, String lstr) {
+    protected void onLabelMatched(String str, long start, String lstr) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -337,7 +337,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string (literal capture)
      * @param start the text start position
      */
-    protected void onLabelDefMatched(String str, int start) {
+    protected void onLabelDefMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -353,7 +353,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onQueryTermMatched(String str, int start) {
+    protected void onQueryTermMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -369,7 +369,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onRefsTermMatched(String str, int start) {
+    protected void onRefsTermMatched(String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
@@ -386,7 +386,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param start the text start position
      */
-    protected void onScopeChanged(ScopeAction action, String str, int start) {
+    protected void onScopeChanged(ScopeAction action, String str, long start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             ScopeChangedEvent evt = new ScopeChangedEvent(this, action, str,
@@ -397,7 +397,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Calls
-     * {@link #onFilteredSymbolMatched(java.lang.String, int, java.util.Set, boolean)}
+     * {@link #onFilteredSymbolMatched(java.lang.String, long, java.util.Set, boolean)}
      * with {@code str}, {@code start}, {@code keywords}, and {@code true}.
      * @param str the text string
      * @param start the text start position
@@ -406,16 +406,16 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @return true if the {@code str} was not in {@code keywords} or if
      * {@code keywords} was null
      */
-    protected boolean onFilteredSymbolMatched(String str, int start,
+    protected boolean onFilteredSymbolMatched(String str, long start,
         Set<String> keywords) {
         return onFilteredSymbolMatched(str, start, keywords, true);
     }
 
     /**
-     * Raises {@link #onKeywordMatched(java.lang.String, int)} if
+     * Raises {@link #onKeywordMatched(java.lang.String, long)} if
      * {@code keywords} is not null and {@code str} is found as a member (in a
      * case-sensitive or case-less search per {@code caseSensitive}); otherwise
-     * raises {@link #onSymbolMatched(java.lang.String, int)}.
+     * raises {@link #onSymbolMatched(java.lang.String, long)}.
      * @param str the text string
      * @param start the text start position
      * @param keywords an optional set to search for {@code str} as a member to
@@ -426,7 +426,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @return true if the {@code str} was not in {@code keywords} or if
      * {@code keywords} was null
      */
-    protected boolean onFilteredSymbolMatched(String str, int start,
+    protected boolean onFilteredSymbolMatched(String str, long start,
         Set<String> keywords, boolean caseSensitive) {
 
         if (keywords != null) {

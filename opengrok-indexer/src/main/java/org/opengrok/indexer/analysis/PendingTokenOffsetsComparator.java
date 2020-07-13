@@ -40,12 +40,12 @@ public class PendingTokenOffsetsComparator implements Comparator<PendingToken> {
     @Override
     public int compare(PendingToken o1, PendingToken o2) {
         // ASC by starting offset.
-        int cmp = Integer.compare(o1.start, o2.start);
+        int cmp = Long.compare(o1.start, o2.start);
         if (cmp != 0) {
             return cmp;
         }
         // ASC by ending offset
-        cmp = Integer.compare(o1.end, o2.end);
+        cmp = Long.compare(o1.end, o2.end);
         return cmp;
     }
 

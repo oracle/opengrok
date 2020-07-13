@@ -57,12 +57,12 @@ public class PhraseHighlightComparator implements Comparator<PhraseHighlight> {
         } else if (o2.getLineStart() < 0) {
             return 1;
         } else {
-            cmp = Integer.compare(o1.getLineStart(), o2.getLineStart());
+            cmp = Long.compare(o1.getLineStart(), o2.getLineStart());
         }
         if (cmp != 0) {
             return cmp;
         }
-        cmp = Integer.compare(o2.getLineEnd(), o1.getLineEnd());
+        cmp = Long.compare(o2.getLineEnd(), o1.getLineEnd());
         return cmp;
     }
 

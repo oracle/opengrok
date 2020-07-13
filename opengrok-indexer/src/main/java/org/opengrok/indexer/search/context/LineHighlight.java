@@ -38,9 +38,9 @@ public class LineHighlight {
     private final int lineno;
     private List<PhraseHighlight> markups;
     /** Offset of elided left part. */
-    private int lelide;
+    private long lelide;
     /** Offset of elide right part. */
-    private int relide;
+    private long relide;
 
     private boolean didLelide;
     private boolean didRelide;
@@ -116,7 +116,7 @@ public class LineHighlight {
      * Gets the left elide value.
      * @return zero or greater
      */
-    public int getLelide() {
+    public long getLelide() {
         return lelide;
     }
 
@@ -124,7 +124,7 @@ public class LineHighlight {
      * Sets the left elide value.
      * @param value integer value
      */
-    public void setLelide(int value) {
+    public void setLelide(long value) {
         if (value < 0) {
             throw new IllegalArgumentException("value is negative");
         }
@@ -135,7 +135,7 @@ public class LineHighlight {
      * Gets the right elide value.
      * @return zero or greater
      */
-    public int getRelide() {
+    public long getRelide() {
         return relide;
     }
 
@@ -161,7 +161,7 @@ public class LineHighlight {
      * @param end end offset
      * @throws IOException I/O
      */
-    public void hsub(Appendable dest, String line, int start, int end)
+    public void hsub(Appendable dest, String line, long start, long end)
             throws IOException {
         boolean lell = false;
         boolean rell = false;
@@ -181,7 +181,7 @@ public class LineHighlight {
                 end = relide;
             }
         }
-        String str = line.substring(start, end);
+        String str = line.substring((int) start, (int) end);
         if (lell && !didLelide) {
             dest.append(HtmlConsts.HELLIP);
             didLelide = true;
@@ -194,7 +194,7 @@ public class LineHighlight {
     }
 
     /**
-     * Calls {@link #hsub(java.lang.Appendable, java.lang.String, int, int)}
+     * Calls {@link #hsub(java.lang.Appendable, java.lang.String, long, long)}
      * with {@code dest}, {@code line}, {@code loff}, and {@code line}
      * {@link String#length()}.
      * @param dest appendable object

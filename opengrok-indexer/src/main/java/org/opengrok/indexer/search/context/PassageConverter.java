@@ -102,14 +102,14 @@ public class PassageConverter {
                 int nn = splitter.findLineIndex(mend - 1);
                 if (mstart < mend && mm >= m && mm <= n && nn >= m && nn <= n) {
                     if (mm == nn) {
-                        int lbeg = splitter.getOffset(mm);
-                        int lstart = mstart - lbeg;
-                        int lend = mend - lbeg;
+                        long lbeg = splitter.getOffset(mm);
+                        long lstart = mstart - lbeg;
+                        long lend = mend - lbeg;
                         LineHighlight lhigh = res.get(mm);
                         lhigh.addMarkup(PhraseHighlight.create(lstart, lend));
                     } else {
-                        int lbeg = splitter.getOffset(mm);
-                        int loff = mstart - lbeg;
+                        long lbeg = splitter.getOffset(mm);
+                        long loff = mstart - lbeg;
                         LineHighlight lhigh = res.get(mm);
                         lhigh.addMarkup(PhraseHighlight.createStarter(loff));
 
@@ -188,7 +188,7 @@ public class PassageConverter {
         /*
          * Find the width of bounds of markups.
          */
-        int lbound = -1, rbound = -1;
+        long lbound = -1, rbound = -1;
         if (lhi.countMarkups() > 0) {
             PhraseHighlight phi = lhi.getMarkup(0);
             lbound = phi.getLineStart();
@@ -214,7 +214,7 @@ public class PassageConverter {
              * First use a rough estimate of three-quarters of a context-width
              * before the midpoint of lbound and rbound.
              */
-            int calcLeft = Math.max(0, (lbound + rbound) / 2 -
+            long calcLeft = Math.max(0, (lbound + rbound) / 2 -
                 args.getContextWidth() * 3 / 4 - 1);
             // If past the lbound, then snap it left.
             if (calcLeft > lbound) {
@@ -225,7 +225,7 @@ public class PassageConverter {
                 if (lhi.getLelide() < 1) {
                     ++excess;
                 }
-                int leftAdj = Math.min(calcLeft - lhi.getLelide(), excess);
+                long leftAdj = Math.min(calcLeft - lhi.getLelide(), excess);
                 excess -= leftAdj;
                 lhi.setLelide(lhi.getLelide() + leftAdj);
             }

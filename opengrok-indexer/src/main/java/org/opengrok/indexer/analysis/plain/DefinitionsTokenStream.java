@@ -108,7 +108,7 @@ public class DefinitionsTokenStream extends TokenStream {
         this.posIncrAtt.setPositionIncrement(tok.nonpos ? 0 : 1);
         this.termAtt.setEmpty();
         this.termAtt.append(tok.str);
-        this.offsetAtt.setOffset(tok.start, tok.end);
+        this.offsetAtt.setOffset((int) tok.start, (int) tok.end);
     }
 
     private void createTokens(Definitions defs, LineBreaker brk) {
@@ -118,7 +118,7 @@ public class DefinitionsTokenStream extends TokenStream {
 
             if (lineno >= 0 && lineno < brk.count() && tag.symbol != null &&
                     tag.text != null) {
-                int lineoff = brk.getOffset(lineno);
+                long lineoff = brk.getOffset(lineno);
                 if (tag.lineStart >= 0) {
                     PendingToken tok = new PendingToken(tag.symbol, lineoff +
                         tag.lineStart, lineoff + tag.lineEnd);

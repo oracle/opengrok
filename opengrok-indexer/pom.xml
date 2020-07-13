@@ -199,11 +199,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
     <build>
         <plugins>
-<!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
+            <!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
-                <version>1.7.0</version>
+                <version>1.8.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -308,19 +308,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                               ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/json/JsonSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
                           </filesToInclude>
                           <replacements>
-                              <!--
-                              needed for HTML 5 compliance (javadoc in JDK 11)
-                              workaround for https://github.com/jflex-de/jflex/issues/534
-                              -->
-                              <replacement>
-                                  <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
-                                  <valueFile>${basedir}/jflex-code.txt</valueFile>
-                              </replacement>
-                              <replacement>
-                                  <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
-                                  <valueFile>${basedir}/jflex-code-end.txt</valueFile>
-                              </replacement>
-
                               <replacement>
                                   <token>private static final int ZZ_BUFFERSIZE =</token>
                                   <value>private int ZZ_BUFFERSIZE =</value>
@@ -347,34 +334,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                               <regexFlag>DOTALL</regexFlag>
                           </regexFlags>
                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <!--
-                        needed for HTML 5 compliance (javadoc in JDK 11)
-                        workaround for https://github.com/jflex-de/jflex/issues/534
-                        -->
-                        <id>replace-tt-with-code-in-jflex-sources</id>
-                        <phase>generate-sources</phase>
-
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <filesToInclude>
-                                ${basedir}/target/generated-sources/jflex/**/*.java
-                            </filesToInclude>
-                            <replacements>
-                                <replacement>
-                                    <tokenFile>${basedir}/jflex-tt.txt</tokenFile>
-                                    <valueFile>${basedir}/jflex-code.txt</valueFile>
-                                </replacement>
-                                <replacement>
-                                    <tokenFile>${basedir}/jflex-tt-end.txt</tokenFile>
-                                    <valueFile>${basedir}/jflex-code-end.txt</valueFile>
-                                </replacement>
-                            </replacements>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

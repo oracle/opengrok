@@ -102,7 +102,7 @@ public class ExpandTabsReader extends FilterReader {
      * @throws IllegalArgumentException if {@code column} is invalid for
      * {@code line}
      */
-    public static int translate(String line, int column, int tabSize) {
+    public static long translate(String line, long column, int tabSize) {
         if (column < 0) {
             throw new IllegalArgumentException("`column' is negative");
         }

@@ -48,7 +48,7 @@ class SplitterUtil {
      * @return -1 if {@code offset} is beyond the document bounds; otherwise,
      * a valid index
      */
-    static int findLineIndex(int length, int[] lineOffsets, int offset) {
+    static int findLineIndex(long length, long[] lineOffsets, long offset) {
         if (lineOffsets == null) {
             throw new IllegalArgumentException("lineOffsets");
         }
@@ -61,7 +61,7 @@ class SplitterUtil {
         int mid;
         while (lo <= hi) {
             mid = lo + (hi - lo) / 2;
-            int lineLength = (mid + 1 < lineOffsets.length ? lineOffsets[mid + 1] : length) -
+            long lineLength = (mid + 1 < lineOffsets.length ? lineOffsets[mid + 1] : length) -
                     lineOffsets[mid];
             if (offset < lineOffsets[mid]) {
                 hi = mid - 1;

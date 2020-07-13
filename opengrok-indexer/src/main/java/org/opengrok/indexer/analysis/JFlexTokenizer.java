@@ -100,7 +100,7 @@ public class JFlexTokenizer extends Tokenizer
     }
 
     /**
-     * Calls {@link #setAttribs(java.lang.String, int, int)} on the publishing
+     * Calls {@link #setAttribs(java.lang.String, long, long)} on the publishing
      * of a {@link SymbolMatchedEvent}.
      * @param evt the event raised
      */
@@ -124,13 +124,13 @@ public class JFlexTokenizer extends Tokenizer
      * @param start the match start position
      * @param end the match end position
      */
-    protected void setAttribs(String str, int start, int end) {
+    protected void setAttribs(String str, long start, long end) {
         clearAttributes();
         //FIXME increasing below by one(default) might be tricky, need more analysis
         // after lucene upgrade to 3.5 below is most probably not even needed        
         this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setEmpty();
         this.termAtt.append(str);
-        this.offsetAtt.setOffset(start, end);
+        this.offsetAtt.setOffset((int) start, (int) end);
     }
 }

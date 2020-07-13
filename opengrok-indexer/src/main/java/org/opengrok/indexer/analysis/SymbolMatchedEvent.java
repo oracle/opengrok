@@ -36,8 +36,8 @@ public class SymbolMatchedEvent {
 
     private final Object source;
     private final String str;
-    private final int start;
-    private final int end;
+    private final long start;
+    private final long end;
 
     /**
      * Initializes an immutable instance of {@link SymbolMatchedEvent}.
@@ -46,7 +46,7 @@ public class SymbolMatchedEvent {
      * @param start the symbol start position
      * @param end the symbol end position
      */
-    public SymbolMatchedEvent(Object source, String str, int start, int end) {
+    public SymbolMatchedEvent(Object source, String str, long start, long end) {
         this.source = source;
         this.str = str;
         this.start = start;
@@ -73,7 +73,7 @@ public class SymbolMatchedEvent {
      * Gets the symbol start position.
      * @return the initial value
      */
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -81,7 +81,7 @@ public class SymbolMatchedEvent {
      * Gets the symbol end position.
      * @return the initial value
      */
-    public int getEnd() {
+    public long getEnd() {
         return end;
     }
 }

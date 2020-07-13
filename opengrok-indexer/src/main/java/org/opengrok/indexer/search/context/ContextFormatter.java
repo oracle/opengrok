@@ -245,8 +245,8 @@ public class ContextFormatter extends PassageFormatter {
                      */
                     if (phi.getLineStart() >= 0 &&
                             phi.getLineEnd() <= line.length()) {
-                        marks.add(line.substring(phi.getLineStart(),
-                                phi.getLineEnd()));
+                        marks.add(line.substring((int) phi.getLineStart(),
+                                (int) phi.getLineEnd()));
                     }
 
                     // Append any line text preceding the phrase highlight ...

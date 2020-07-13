@@ -217,12 +217,12 @@ public class Definitions implements Serializable {
          * The starting offset (possibly approximate) of {@link #symbol} from
          * the start of the line.
          */
-        public final int lineStart;
+        public final long lineStart;
         /**
          * The ending offset (possibly approximate) of {@link #symbol} from
          * the start of the line.
          */
-        public final int lineEnd;
+        public final long lineEnd;
 
         /**
          * A non-serialized marker for marking a tag to avoid its reuse.
@@ -230,8 +230,8 @@ public class Definitions implements Serializable {
         public transient boolean used;
 
         protected Tag(int line, String symbol, String type, String text,
-                String namespace, String signature, int lineStart,
-                int lineEnd) {
+                String namespace, String signature, long lineStart,
+                long lineEnd) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
@@ -249,7 +249,7 @@ public class Definitions implements Serializable {
     }
 
     public void addTag(int line, String symbol, String type, String text,
-            String namespace, String signature, int lineStart, int lineEnd) {
+                       String namespace, String signature, long lineStart, long lineEnd) {
         Tag new_tag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
         tags.add(new_tag);

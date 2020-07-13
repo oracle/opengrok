@@ -32,8 +32,8 @@ public class TextMatchedEvent {
     private final Object source;
     private final String str;
     private final EmphasisHint hint;
-    private final int start;
-    private final int end;
+    private final long start;
+    private final long end;
 
     /**
      * Initializes an immutable instance of {@link TextMatchedEvent}.
@@ -42,7 +42,7 @@ public class TextMatchedEvent {
      * @param start the text start position
      * @param end the text end position
      */
-    public TextMatchedEvent(Object source, String str, int start, int end) {
+    public TextMatchedEvent(Object source, String str, long start, long end) {
         this(source, str, EmphasisHint.NONE, start, end);
     }
 
@@ -55,7 +55,7 @@ public class TextMatchedEvent {
      * @param end the text end position
      */
     public TextMatchedEvent(Object source, String str, EmphasisHint hint,
-        int start, int end) {
+        long start, long end) {
         this.source = source;
         this.str = str;
         this.hint = hint;
@@ -83,7 +83,7 @@ public class TextMatchedEvent {
      * Gets the text start position.
      * @return the initial value
      */
-    public int getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -91,7 +91,7 @@ public class TextMatchedEvent {
      * Gets the text end position.
      * @return the initial value
      */
-    public int getEnd() {
+    public long getEnd() {
         return end;
     }
 
