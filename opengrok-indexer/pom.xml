@@ -213,6 +213,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                             <lexDefinitions>
                                 <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
                             </lexDefinitions>
+                            <encodingName>${project.build.sourceEncoding}</encodingName>
                         </configuration>
                     </execution>
                 </executions>
