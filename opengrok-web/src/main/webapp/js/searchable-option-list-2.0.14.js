@@ -1317,6 +1317,19 @@
             }
         },
 
+        selectRadio: function(val) {
+            this.$selectionContainer.find('input[type="radio"]')
+                .each(function (index, item) {
+                    var $currentOptionItem = $(item);
+                    if ($currentOptionItem.val() === val) {
+                        if (!$currentOptionItem.is(':checked')) {
+                            $currentOptionItem.prop("checked", true).trigger('change', true);
+                        }
+                        return false;
+                    }
+                });
+        },
+
         getSelection: function () {
             return this.$selection.find('input:checked');
         }
