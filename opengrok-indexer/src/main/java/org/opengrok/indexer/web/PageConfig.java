@@ -1791,6 +1791,13 @@ public final class PageConfig {
         return Paths.get(root).relativize(Paths.get(path)).toString();
     }
 
+    /**
+     * Determines whether a match offset from a search result has been
+     * indicated, and if so tries to calculate a translated xref fragment
+     * identifier.
+     * @return {@code true} if an xref fragment identifier was calculated by
+     * the call to this method
+     */
     public boolean evaluateMatchOffset() {
         if (fragmentIdentifier == null) {
             int matchOffset = getIntParam(QueryParameters.MATCH_OFFSET_PARAM, -1);
