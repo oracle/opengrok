@@ -26,6 +26,7 @@ import logging
 from .cvs import CVSRepository
 from .git import GitRepository
 from .mercurial import MercurialRepository
+from .perforce import PerforceRepository
 from .repo import RepoRepository
 from .svn import SubversionRepository
 from .teamware import TeamwareRepository
@@ -74,6 +75,10 @@ def get_repository(path, repo_type, project,
         return GitRepository(logger, path, project,
                              commands.get("git"),
                              env, hooks, timeout)
+    elif repo_lower == "perforce":
+        return PerforceRepository(logger, path, project,
+                                  commands.get("perforce"),
+                                  env, hooks, timeout)
     elif repo_lower == "repo":
         return RepoRepository(logger, path, project,
                               commands.get("repo"),
