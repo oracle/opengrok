@@ -20,6 +20,7 @@
 #
 # Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
+# Portions Copyright 2020 Robert Williams
 
 from ..utils.command import Command
 from .repository import Repository, RepositoryException
