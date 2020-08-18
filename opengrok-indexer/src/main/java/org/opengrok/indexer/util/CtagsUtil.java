@@ -114,8 +114,9 @@ public class CtagsUtil {
         });
 
         for (File file : files) {
-            System.out.println(file);
-            Files.deleteIfExists(file.toPath());
+            if (file.isFile()) {
+                Files.deleteIfExists(file.toPath());
+            }
         }
     }
 
