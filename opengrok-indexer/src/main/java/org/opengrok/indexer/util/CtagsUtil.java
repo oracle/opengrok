@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
@@ -29,10 +29,15 @@ import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CtagsUtil {
 
@@ -84,6 +89,34 @@ public class CtagsUtil {
             }
         }
         return result;
+    }
+
+    public static void deleteTempFiles() throws IOException {
+        String[] dirs = {System.getProperty("java.io.tmpdir"),
+                System.getenv("TMPDIR"), System.getenv("TMP")};
+
+        for (String dir : dirs) {
+            deleteTempFiles(dir);
+        }
+    }
+
+    private static void deleteTempFiles(String directoryName) throws IOException {
+        final Pattern pattern = Pattern.compile("tags\\.\\S{6}"); // ctags uses this pattern to call mkstemp()
+
+        if (directoryName == null) {
+            return;
+        }
+
+        File dir = new File(directoryName);
+        File[] files = dir.listFiles((dir1, name) -> {
+            Matcher matcher = pattern.matcher(name);
+            return matcher.find();
+        });
+
+        for (File file : files) {
+            System.out.println(file);
+            Files.deleteIfExists(file.toPath());
+        }
     }
 
     /**
