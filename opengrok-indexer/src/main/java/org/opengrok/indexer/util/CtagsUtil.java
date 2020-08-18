@@ -91,7 +91,7 @@ public class CtagsUtil {
         return result;
     }
 
-    public static void deleteTempFiles() throws IOException {
+    public static void deleteTempFiles() {
         String[] dirs = {System.getProperty("java.io.tmpdir"),
                 System.getenv("TMPDIR"), System.getenv("TMP")};
 
@@ -100,7 +100,7 @@ public class CtagsUtil {
         }
     }
 
-    private static void deleteTempFiles(String directoryName) throws IOException {
+    private static void deleteTempFiles(String directoryName) {
         final Pattern pattern = Pattern.compile("tags\\.\\S{6}"); // ctags uses this pattern to call mkstemp()
 
         if (directoryName == null) {
@@ -115,7 +115,11 @@ public class CtagsUtil {
 
         for (File file : files) {
             if (file.isFile()) {
-                Files.deleteIfExists(file.toPath());
+                try {
+                    Files.deleteIfExists(file.toPath());
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "cannot delete file", e);
+                }
             }
         }
     }
