@@ -91,6 +91,10 @@ public class CtagsUtil {
         return result;
     }
 
+    /**
+     * Deletes ctags temporary files left over after terminating ctags processes
+     * in case of timeout, {@see Ctags#doCtags}.
+     */
     public static void deleteTempFiles() {
         String[] dirs = {System.getProperty("java.io.tmpdir"),
                 System.getenv("TMPDIR"), System.getenv("TMP")};
