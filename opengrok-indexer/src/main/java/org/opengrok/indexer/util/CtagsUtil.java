@@ -118,12 +118,8 @@ public class CtagsUtil {
         });
 
         for (File file : files) {
-            if (file.isFile()) {
-                try {
-                    Files.deleteIfExists(file.toPath());
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "cannot delete file", e);
-                }
+            if (file.isFile() && !file.delete()) {
+                LOGGER.log(Level.WARNING, "cannot delete file {0}", file);
             }
         }
     }
