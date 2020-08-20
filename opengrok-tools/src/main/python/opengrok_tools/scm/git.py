@@ -46,7 +46,7 @@ class GitRepository(Repository):
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform pull")
+            cmd.log_error("failed to configure git pull.ff")
 
     def reposync(self):
         git_command = [self.command, "pull", "--ff-only"]
