@@ -160,6 +160,13 @@ def test_incoming_retval(monkeypatch):
 
         # Clone a Git repository so that it can pull.
         repo = Repo.init(repo_path)
+        new_file_path = os.path.join(repo_path, 'foo')
+        with open(new_file_path, 'w'):
+            pass
+        assert os.path.isfile(new_file_path)
+        index = repo.index
+        index.add([new_file_path])
+        index.commit("add file")
         repo.clone(cloned_repo_path)
 
         with monkeypatch.context() as m:

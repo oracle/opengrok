@@ -39,6 +39,15 @@ class GitRepository(Repository):
         if not self.command:
             raise RepositoryException("Cannot get git command")
 
+        # The incoming() check relies on empty output so configure
+        # the repository first to avoid getting extra output.
+        git_command = [self.command, "config", "--local", "pull.ff", "only"]
+        cmd = self.getCommand(git_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
+        cmd.execute()
+        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+            cmd.log_error("failed to configure git pull.ff")
+
     def reposync(self):
         git_command = [self.command, "pull", "--ff-only"]
         cmd = self.getCommand(git_command, work_dir=self.path,
@@ -58,7 +67,6 @@ class GitRepository(Repository):
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info("output of {}:".format(git_command))
-        self.logger.info(cmd.geterroutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform pull")
             raise RepositoryException('failed to check for incoming in '
