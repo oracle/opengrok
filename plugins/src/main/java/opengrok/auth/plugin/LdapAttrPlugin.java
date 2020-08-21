@@ -135,7 +135,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
         if ((ldapUser = (LdapUser) req.getSession().
                 getAttribute(LdapUserPlugin.getSessionAttrName(ldapUserInstance))) == null) {
-            LOGGER.log(Level.WARNING, "cannot get {0} attribute", LdapUserPlugin.SESSION_ATTR);
+            LOGGER.log(Level.WARNING, "cannot get {0} attribute from {1}",
+                    new Object[]{LdapUserPlugin.SESSION_ATTR, user});
             return;
         }
 
@@ -152,14 +153,14 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
                     AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
                     if ((res = ldapProvider.lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
                         LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} on {2})",
-                                new Object[]{ldapAttr, user, ldapProvider});
+                                new Object[]{ldapAttr, ldapUser, ldapProvider});
                         return;
                     }
 
                     records = res.getAttrs();
                 } else {
                     LOGGER.log(Level.FINE, "no DN for user {0} on {1}",
-                            new Object[]{user, ldapProvider});
+                            new Object[]{ldapUser, ldapProvider});
                 }
             } catch (LdapException ex) {
                 throw new AuthorizationException(ex);
@@ -167,7 +168,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
             if (records == null || records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
                 LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1} on {2}",
-                        new Object[]{ldapAttr, user, ldapProvider});
+                        new Object[]{ldapAttr, ldapUser, ldapProvider});
                 return;
             }
 
