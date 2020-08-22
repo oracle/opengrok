@@ -285,15 +285,15 @@ public class AuthorizationStack extends AuthorizationEntity {
         }
         Duration duration = Duration.between(start, Instant.now());
 
-        Metrics.getInstance()
+        Metrics.getRegistry()
                 .timer(String.format("authorization_in_stack_%s_%s", getName(),
                         overallDecision ? "positive" : "negative"))
                 .record(duration);
-        Metrics.getInstance()
+        Metrics.getRegistry()
                 .timer(String.format("authorization_in_stack_%s_%s_of_%s", getName(),
                         overallDecision ? "positive" : "negative", entity.getName()))
                 .record(duration);
-        Metrics.getInstance()
+        Metrics.getRegistry()
                 .timer(String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName()))
                 .record(duration);
 

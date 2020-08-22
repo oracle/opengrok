@@ -44,11 +44,11 @@ public class StatisticsFilter implements Filter {
 
     static final String REQUESTS_METRIC = "requests";
 
-    private final DistributionSummary requests = Metrics.getInstance().summary(REQUESTS_METRIC);
+    private final DistributionSummary requests = Metrics.getRegistry().summary(REQUESTS_METRIC);
 
-    private final Timer genericTimer = Metrics.getInstance().timer("*");
-    private final Timer emptySearch = Metrics.getInstance().timer("empty_search");
-    private final Timer successfulSearch = Metrics.getInstance().timer("successful_search");
+    private final Timer genericTimer = Metrics.getRegistry().timer("*");
+    private final Timer emptySearch = Metrics.getRegistry().timer("empty_search");
+    private final Timer successfulSearch = Metrics.getRegistry().timer("successful_search");
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -83,11 +83,11 @@ public class StatisticsFilter implements Filter {
         requests.record(1);
         genericTimer.record(duration);
 
-        Metrics.getInstance().timer(category).record(duration);
+        Metrics.getRegistry().timer(category).record(duration);
 
         /* supplementary categories */
         if (config.getProject() != null) {
-            Metrics.getInstance()
+            Metrics.getRegistry()
                     .timer("viewing_of_" + config.getProject().getName())
                     .record(duration);
         }

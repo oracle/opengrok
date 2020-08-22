@@ -55,14 +55,14 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
 
-    private final Counter authStackReloadCounter = Metrics.getInstance().counter("authorization_stack_reload");
-    private final Counter authCacheHits = Metrics.getInstance().counter("authorization_cache_hits");
-    private final Counter authCacheMisses = Metrics.getInstance().counter("authorization_cache_misses");
-    private final Counter authSessionsInvalidated = Metrics.getInstance().counter("authorization_sessions_invalidated");
+    private final Counter authStackReloadCounter = Metrics.getRegistry().counter("authorization_stack_reload");
+    private final Counter authCacheHits = Metrics.getRegistry().counter("authorization_cache_hits");
+    private final Counter authCacheMisses = Metrics.getRegistry().counter("authorization_cache_misses");
+    private final Counter authSessionsInvalidated = Metrics.getRegistry().counter("authorization_sessions_invalidated");
 
-    private final Timer authTimer = Metrics.getInstance().timer("authorization");
-    private final Timer authPositiveTimer = Metrics.getInstance().timer("authorization_positive");
-    private final Timer authNegativeTimer = Metrics.getInstance().timer("authorization_negative");
+    private final Timer authTimer = Metrics.getRegistry().timer("authorization");
+    private final Timer authPositiveTimer = Metrics.getRegistry().timer("authorization_positive");
+    private final Timer authNegativeTimer = Metrics.getRegistry().timer("authorization_negative");
 
     /**
      * Stack of available plugins/stacks in the order of the execution.
@@ -542,8 +542,8 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         } else {
             authNegativeTimer.record(duration);
         }
-        Metrics.getInstance().timer(String.format("authorization_of_%s", entity.getName())).record(duration);
-        Metrics.getInstance()
+        Metrics.getRegistry().timer(String.format("authorization_of_%s", entity.getName())).record(duration);
+        Metrics.getRegistry()
                 .timer(String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()))
                 .record(duration);
 
