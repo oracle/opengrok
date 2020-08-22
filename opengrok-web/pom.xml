@@ -19,7 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -48,6 +48,13 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             <groupId>${project.groupId}</groupId>
             <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opengrok</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -107,13 +114,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
             <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
