@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -34,8 +34,8 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Group;
@@ -391,7 +391,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             lock.writeLock().unlock();
         }
 
-        authStackReloadCounter.inc();
+        authStackReloadCounter.increment();
 
         // clean the old stack
         removeAll(oldStack);
@@ -509,11 +509,11 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             m = new TreeMap<>();
         } else if ((val = m.get(entity.getName())) != null) {
             // cache hit
-            authCacheHits.inc();
+            authCacheHits.increment();
             return val;
         }
 
-        authCacheMisses.inc();
+        authCacheMisses.increment();
 
         Duration duration;
         boolean overallDecision;
@@ -524,7 +524,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             HttpSession session;
             if (((session = request.getSession(false)) != null) && isSessionInvalid(session)) {
                 session.invalidate();
-                authSessionsInvalidated.inc();
+                authSessionsInvalidated.increment();
             }
             request.getSession().setAttribute(SESSION_VERSION, getPluginVersion());
 
@@ -536,16 +536,16 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             lock.readLock().unlock();
         }
 
-        authTimer.update(duration);
+        authTimer.record(duration);
         if (overallDecision) {
-            authPositiveTimer.update(duration);
+            authPositiveTimer.record(duration);
         } else {
-            authNegativeTimer.update(duration);
+            authNegativeTimer.record(duration);
         }
-        Metrics.getInstance().timer(String.format("authorization_of_%s", entity.getName())).update(duration);
+        Metrics.getInstance().timer(String.format("authorization_of_%s", entity.getName())).record(duration);
         Metrics.getInstance()
                 .timer(String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()))
-                .update(duration);
+                .record(duration);
 
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);

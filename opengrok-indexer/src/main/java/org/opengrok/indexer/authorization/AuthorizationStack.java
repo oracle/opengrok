@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -288,14 +288,14 @@ public class AuthorizationStack extends AuthorizationEntity {
         Metrics.getInstance()
                 .timer(String.format("authorization_in_stack_%s_%s", getName(),
                         overallDecision ? "positive" : "negative"))
-                .update(duration);
+                .record(duration);
         Metrics.getInstance()
                 .timer(String.format("authorization_in_stack_%s_%s_of_%s", getName(),
                         overallDecision ? "positive" : "negative", entity.getName()))
-                .update(duration);
+                .record(duration);
         Metrics.getInstance()
                 .timer(String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName()))
-                .update(duration);
+                .record(duration);
 
         return overallDecision;
     }

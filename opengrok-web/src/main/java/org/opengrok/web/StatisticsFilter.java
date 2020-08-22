@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -33,8 +33,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
@@ -44,7 +44,7 @@ public class StatisticsFilter implements Filter {
 
     static final String REQUESTS_METRIC = "requests";
 
-    private final Meter requests = Metrics.getInstance().meter(REQUESTS_METRIC);
+    private final DistributionSummary requests = Metrics.getInstance().summary(REQUESTS_METRIC);
 
     private final Timer genericTimer = Metrics.getInstance().timer("*");
     private final Timer emptySearch = Metrics.getInstance().timer("empty_search");
@@ -80,26 +80,26 @@ public class StatisticsFilter implements Filter {
          * Add the request to the statistics. Be aware of the colliding call in
          * {@code AuthorizationFilter#doFilter}.
          */
-        requests.mark();
-        genericTimer.update(duration);
+        requests.record(1);
+        genericTimer.record(duration);
 
-        Metrics.getInstance().timer(category).update(duration);
+        Metrics.getInstance().timer(category).record(duration);
 
         /* supplementary categories */
         if (config.getProject() != null) {
             Metrics.getInstance()
                     .timer("viewing_of_" + config.getProject().getName())
-                    .update(duration);
+                    .record(duration);
         }
 
         SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
         if (helper != null) {
             if (helper.hits == null || helper.hits.length == 0) {
                 // empty search
-                emptySearch.update(duration);
+                emptySearch.record(duration);
             } else {
                 // successful search
-                successfulSearch.update(duration);
+                successfulSearch.record(duration);
             }
         }
     }
