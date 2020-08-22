@@ -18,12 +18,14 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
@@ -35,8 +37,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -48,11 +50,11 @@ public class AuthorizationFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
-    private final Meter requests = Metrics.getInstance().meter(StatisticsFilter.REQUESTS_METRIC);
+    private final DistributionSummary requests = Metrics.getInstance().summary(StatisticsFilter.REQUESTS_METRIC);
     private final Timer requestsForbidden = Metrics.getInstance().timer("requests_forbidden");
 
     @Override
-    public void init(FilterConfig fc) throws ServletException {
+    public void init(FilterConfig fc) {
     }
 
     @Override
@@ -75,10 +77,10 @@ public class AuthorizationFilter implements Filter {
 
         PageConfig config = PageConfig.get(httpReq);
 
-        Timer.Context timerCtx = requestsForbidden.time();
-        try {
-            Project p = config.getProject();
-            if (p != null && !config.isAllowed(p)) {
+        Project p = config.getProject();
+        if (p != null && !config.isAllowed(p)) {
+            Instant start = Instant.now();
+            try {
                 if (LOGGER.isLoggable(Level.INFO)) {
                     if (httpReq.getRemoteUser() != null) {
                         LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
@@ -98,7 +100,7 @@ public class AuthorizationFilter implements Filter {
                  * In this branch of the if statement the filter processing stopped
                  * and does not follow to the StatisticsFilter.
                  */
-                requests.mark();
+                requests.record(1);
 
                 if (!config.getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false).isEmpty()) {
                     sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
@@ -107,9 +109,9 @@ public class AuthorizationFilter implements Filter {
 
                 httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
                 return;
+            } finally {
+                requestsForbidden.record(Duration.between(start, Instant.now()));
             }
-        } finally {
-            timerCtx.stop();
         }
         fc.doFilter(sr, sr1);
     }

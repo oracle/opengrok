@@ -18,20 +18,21 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer;
 
-import com.codahale.metrics.MetricRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 
-public class Metrics {
+public final class Metrics {
 
-    private static final MetricRegistry instance = new MetricRegistry();
+    private static final PrometheusMeterRegistry instance = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
     private Metrics() {
     }
 
-    public static MetricRegistry getInstance() {
+    public static PrometheusMeterRegistry getInstance() {
         return instance;
     }
 

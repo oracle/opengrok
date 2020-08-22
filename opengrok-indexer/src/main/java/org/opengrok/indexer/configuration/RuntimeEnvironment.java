@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
   */
 package org.opengrok.indexer.configuration;
@@ -1535,14 +1535,6 @@ public final class RuntimeEnvironment {
 
     public IncludeFiles getIncludeFiles() {
         return includeFiles;
-    }
-
-    public String getStatisticsFilePath() {
-        return syncReadConfiguration(Configuration::getStatisticsFilePath);
-    }
-
-    public void setStatisticsFilePath(String statisticsFilePath) {
-        syncWriteConfiguration(statisticsFilePath, Configuration::setStatisticsFilePath);
     }
 
     /**

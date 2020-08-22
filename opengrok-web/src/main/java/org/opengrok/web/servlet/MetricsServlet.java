@@ -18,19 +18,26 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.web.servlet;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.servlets.MetricsServlet;
 import org.opengrok.indexer.Metrics;
 
-public class MetricsServletContextListener extends MetricsServlet.ContextListener {
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+@WebServlet("/metrics/prometheus")
+public class MetricsServlet extends HttpServlet {
 
     @Override
-    protected MetricRegistry getMetricRegistry() {
-        return Metrics.getInstance();
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+        try (PrintWriter pw = resp.getWriter()) {
+            pw.print(Metrics.getInstance().scrape());
+        }
     }
-
 }

@@ -74,6 +74,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <junit.version>5.4.2</junit.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <apache-commons-lang3.version>3.9</apache-commons-lang3.version>
+        <micrometer.version>1.5.4</micrometer.version>
     </properties>
 
     <dependencyManagement>

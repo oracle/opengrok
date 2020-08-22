@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -146,7 +146,7 @@ public class AuthorizationFrameworkReloadTest {
         }
 
         // Double check that at least one reload() was done.
-        long reloads = Metrics.getInstance().counter("authorization_stack_reload").getCount();
+        long reloads = (long) Metrics.getInstance().counter("authorization_stack_reload").count();
         assertTrue(reloads > 0);
     }
 
