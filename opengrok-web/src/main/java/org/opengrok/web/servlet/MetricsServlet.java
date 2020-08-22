@@ -37,7 +37,7 @@ public class MetricsServlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
         try (PrintWriter pw = resp.getWriter()) {
-            pw.print(Metrics.getInstance().scrape());
+            pw.print(Metrics.getRegistry().scrape());
         }
     }
 }

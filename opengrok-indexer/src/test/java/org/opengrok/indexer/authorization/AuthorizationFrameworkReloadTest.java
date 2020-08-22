@@ -146,7 +146,7 @@ public class AuthorizationFrameworkReloadTest {
         }
 
         // Double check that at least one reload() was done.
-        long reloads = (long) Metrics.getInstance().counter("authorization_stack_reload").count();
+        long reloads = (long) Metrics.getRegistry().counter("authorization_stack_reload").count();
         assertTrue(reloads > 0);
     }
 
