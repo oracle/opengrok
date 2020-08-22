@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package opengrok.auth.plugin;
@@ -43,7 +44,7 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
     private static final String className = UserWhiteListPlugin.class.getName();
     private static final Logger LOGGER = Logger.getLogger(className);
 
-    private static final String FILE_PARAM = "file";
+    static final String FILE_PARAM = "file";
 
     private final Set<String> whitelist = new TreeSet<>();
 
@@ -52,7 +53,7 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
         String filePath;
 
         if ((filePath = (String) parameters.get(FILE_PARAM)) == null) {
-            throw new NullPointerException("Missing parameter [" + FILE_PARAM + "] in the configuration");
+            throw new IllegalArgumentException("Missing parameter [" + FILE_PARAM + "] in the configuration");
         }
 
         // Load whitelist from file to memory.
