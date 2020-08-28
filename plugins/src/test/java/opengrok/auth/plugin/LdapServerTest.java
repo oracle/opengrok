@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,7 +76,7 @@ public class LdapServerTest {
         //  There is still a tiny window between when the latch unblocks and the server actually starts accept().
         //  We can make the server loop for connections and connect here with a timeout to make sure it is up.
         thread.start();
-        startLatch.await();
+        startLatch.await(3, TimeUnit.SECONDS);
 
         // Mock getAddresses() to return single localhost IP address.
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
