@@ -1,0 +1,47 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
+ */
+
+MaybeWhsp     = {WhspChar}*
+
+Identifier = (\p{L} {idchar}* | "." [{idchar}--{decimal}] {idchar}*)
+idchar = [\p{L}{decimal}\._]
+
+Number = ({Numeric_literal} | {Fractional_literal} | {Hex_literal}) [Li]?
+Numeric_literal = {decimal}+ ("." {decimal}+)? ({expmark} {decimal}+)?
+Fractional_literal = "." {decimal}+ ({expmark} {decimal}+)?
+Hex_literal = 0[Xx]{hexdigit}+ ("." {hexdigit}+)? ([Pp] [-+]? {decimal}+)?
+decimal = [0-9]
+expmark = [eE] [\+\-]?
+hexdigit = [0-9a-fA-F]
+
+FileExt = [Rr] ([Dd][Aa][Tt][Aa] | [Dd][AaSs])?
+File = [a-zA-Z]{FNameChar}* "." {FileExt}
+
+/*
+ * YYINITIAL : base scanning state
+ * SCOMMENT : single-line comment
+ * QSTRING: literal string expression delimited by apostrophes
+ * STRING: literal string expression delimited by quotation marks
+ */
+%state SCOMMENT QSTRING STRING
