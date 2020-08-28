@@ -374,7 +374,7 @@ public class LdapFacade extends AbstractLdapProvider {
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (CommunicationException ex) {
-            LOGGER.log(Level.INFO, String.format("Communication error received on server %s, " +
+            LOGGER.log(Level.WARNING, String.format("Communication error received on server %s, " +
                     "reconnecting to next server.", server), ex);
             closeActualServer();
             actualServer = getNextServer();
