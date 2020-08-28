@@ -189,7 +189,7 @@ public class LdapFacade extends AbstractLdapProvider {
     /**
      * Go through all servers in the pool and record the first working.
      */
-    private void prepareServers() {
+    void prepareServers() {
         for (int i = 0; i < servers.size(); i++) {
             LdapServer server = servers.get(i);
             if (server.isWorking() && actualServer == -1) {

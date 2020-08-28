@@ -1,18 +1,23 @@
-package opengrok.auth.plugin;
+package opengrok.auth.plugin.ldap;
 
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.ldap.LdapServer;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.naming.directory.SearchControls;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 
 public class LdapFacadeTest {
     @Test
@@ -51,5 +56,24 @@ public class LdapFacadeTest {
         LdapFacade facade = new LdapFacade(config);
         assertEquals("{servers=http://foo.foo,http://bar.bar, searchBase=dc=foo,dc=com}",
                 facade.toString());
+    }
+
+    @Test
+    public void testPrepareServersNegative() throws UnknownHostException {
+        Configuration config = new Configuration();
+
+        LdapServer server1 = new LdapServer("ldap://foo.com");
+        LdapServer serverSpy1 = Mockito.spy(server1);
+        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
+        Mockito.when(serverSpy1.isReachable()).thenReturn(false);
+
+        LdapServer server2 = new LdapServer("ldap://bar.com");
+        LdapServer serverSpy2 = Mockito.spy(server2);
+        Mockito.when(serverSpy2.getAddresses(any())).thenReturn(new InetAddress[]{});
+
+        config.setServers(Arrays.asList(serverSpy1, serverSpy2));
+        LdapFacade facade = new LdapFacade(config);
+        facade.prepareServers();
+        assertFalse(facade.isConfigured());
     }
 }
