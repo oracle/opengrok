@@ -138,7 +138,7 @@ public class LdapServer implements Serializable {
      * This method converts the scheme from URI to port number.
      * It is limited to the ldap/ldaps schemes.
      * The method could be static however then it cannot be easily mocked in testing.
-     * @return port number
+     * @return port number or -1 if the scheme in given URI is not known
      * @throws URISyntaxException if the URI is not valid
      */
     public int getPort() throws URISyntaxException {
