@@ -192,7 +192,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private void prepareServers() {
         for (int i = 0; i < servers.size(); i++) {
             LdapServer server = servers.get(i);
-            if (server.isWorking() && actualServer != -1) {
+            if (server.isWorking() && actualServer == -1) {
                 actualServer = i;
             }
         }
