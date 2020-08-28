@@ -183,7 +183,7 @@ public class LdapServer implements Serializable {
         try {
             InetAddress[] addresses = getAddresses(urlToHostname(getUrl()));
             if (addresses.length == 0) {
-                LOGGER.log(Level.WARNING, "LDAP server {0} does not resolve to any IP address",this);
+                LOGGER.log(Level.WARNING, "LDAP server {0} does not resolve to any IP address", this);
                 return false;
             }
 
