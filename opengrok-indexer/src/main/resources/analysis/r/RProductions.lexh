@@ -1,0 +1,171 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
+ */
+
+<YYINITIAL> {
+    ^ "#line" / {WhspChar}    {
+        chkLOC();
+        offerKeyword(yytext());
+    }
+
+    // Special infix operators with only letters
+    "%in%" | "%o%" | "%x%" | "%" \p{L}+ "%"    {
+        offer("%");
+        offerKeyword(yytext().substring(1, yylength() - 1));
+        offer("%");
+    }
+
+    // Special infix operators otherwise
+    "%%" | "%*%" | "%/%" | "%" [\p{L}\p{M}\p{N}\p{P}\p{S}--[\%]]+ "%"    {
+        offer(yytext());
+    }
+
+    // Special identifiers starting with a dot
+    "..." | ".." [1-9] {decimal}*    {
+        offer(yytext());
+    }
+
+    {Identifier}    {
+        chkLOC();
+        if (offerSymbol(yytext(), 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Number}    {
+        chkLOC();
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar + yylength());
+    }
+
+    \'    {
+        chkLOC();
+        yypush(QSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    \"    {
+        chkLOC();
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+    }
+
+    "#"    {
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
+    }
+}
+
+<QSTRING> {
+    \'    {
+        chkLOC();
+        offer(yytext());
+        yypop();
+        onDisjointSpanChanged(null, yychar + yylength());
+    }
+}
+
+<STRING> {
+    \"    {
+        chkLOC();
+        offer(yytext());
+        yypop();
+        onDisjointSpanChanged(null, yychar + yylength());
+    }
+}
+
+<QSTRING, STRING> {
+    \\[\'\"\\]    {
+        chkLOC();
+        offer(yytext());
+    }
+
+    {MaybeWhsp}{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    }
+}
+
+<SCOMMENT> {
+    {MaybeWhsp}{EOL}    {
+        yypushback(yylength());
+        yypop();
+        onDisjointSpanChanged(null, yychar);
+    }
+}
+
+<YYINITIAL> {
+    {MaybeWhsp}{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
+    }
+}
+
+<YYINITIAL, SCOMMENT, QSTRING, STRING> {
+    // Only one whitespace char at a time.
+    {WhspChar} | [[\s]--[\n\r]]    {
+        offer(yytext());
+    }
+
+    // Only one char at a time.
+    [^\n\r]    {
+        chkLOC();
+        offer(yytext());
+    }
+}
+
+// "string links" and "comment links"
+<SCOMMENT, QSTRING, STRING> {
+    {FPath}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onPathlikeMatched(yytext(), '/', false, yychar);
+        }
+    }
+
+    {File}    {
+        chkLOC();
+        if (takeAllContent()) {
+            String path = yytext();
+            onFilelikeMatched(path, yychar);
+        }
+    }
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
+        if (takeAllContent()) {
+            onEmailAddressMatched(yytext(), yychar);
+        }
+    }
+
+    {BrowseableURI}    {
+        chkLOC();
+        if (takeAllContent()) {
+            onUriMatched(yytext(), yychar, null);
+        }
+    }
+}

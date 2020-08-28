@@ -1,0 +1,32 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/6ca23b5/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_PATTERN_LENGTH_LIMIT	180	/0 for no limit/
+join_cols	grok.r	/^join_cols <- function(x_names, y_names, by = NULL, suffix = c(".x", ".y"), keep = FALSE) {$/;"	function	line:26	signature:(x_names, y_names, by = NULL, suffix = c (".x", ".y"), keep = FALSE)
+x_by	grok.r	/^  x_by <- set_names(match(by$x, x_names), by$x)$/;"	functionVar	line:33	function:join_cols
+y_by	grok.r	/^  y_by <- set_names(match(by$y, y_names), by$x)$/;"	functionVar	line:34	function:join_cols
+x_loc	grok.r	/^  x_loc <- seq_along(x_names)$/;"	functionVar	line:36	function:join_cols
+y_aux	grok.r	/^    y_aux <- setdiff(y_names, c(by$x, if (!keep) by$y))$/;"	functionVar	line:41	function:join_cols
+x_is_aux	grok.r	/^    x_is_aux <- !x_names %in% by$x$/;"	functionVar	line:42	function:join_cols
+y_loc	grok.r	/^  y_loc <- seq_along(y_names)$/;"	functionVar	line:50	function:join_cols
+standardise_join_by	grok.r	/^standardise_join_by <- function(by, x_names, y_names) {$/;"	function	line:64	signature:(by, x_names, y_names)
+by_quoted	grok.r	/^    by_quoted <- encodeString(by, quote = '"')$/;"	functionVar	line:73	function:standardise_join_by
+by_code	grok.r	/^      by_code <- by_quoted$/;"	functionVar	line:75	function:standardise_join_by
+by_x	grok.r	/^    by_x <- names(by) %||% by$/;"	functionVar	line:83	function:standardise_join_by
+by_y	grok.r	/^    by_y <- unname(by)$/;"	functionVar	line:84	function:standardise_join_by
+check_join_vars	grok.r	/^check_join_vars <- function(vars, names) {$/;"	function	line:103	signature:(vars, names)
+na	grok.r	/^  na <- is.na(vars)$/;"	functionVar	line:108	function:check_join_vars
+dup	grok.r	/^  dup <- duplicated(vars)$/;"	functionVar	line:116	function:check_join_vars
+missing	grok.r	/^  missing <- setdiff(vars, names)$/;"	functionVar	line:124	function:check_join_vars
+check_duplicate_vars	grok.r	/^check_duplicate_vars <- function(vars, input) {$/;"	function	line:133	signature:(vars, input)
+dup	grok.r	/^  dup <- duplicated(vars)$/;"	functionVar	line:134	function:check_duplicate_vars
+standardise_join_suffix	grok.r	/^standardise_join_suffix <- function(x) {$/;"	function	line:143	signature:(x)
+add_suffixes	grok.r	/^add_suffixes <- function(x, y, suffix) {$/;"	function	line:158	signature:(x, y, suffix)
+out	grok.r	/^  out <- rep_along(x, na_chr)$/;"	functionVar	line:163	function:add_suffixes
+i	grok.r	/^  for (i in seq_along(x)) {$/;"	functionVar	line:164	function:add_suffixes
+nm	grok.r	/^    nm <- x[[i]]$/;"	functionVar	line:165	function:add_suffixes
