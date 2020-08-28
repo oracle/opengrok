@@ -49,6 +49,7 @@ public class LdapServerTest {
                 startLatch.countDown();
                 Socket client = socket.accept();
                 client.close();
+                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -71,5 +72,9 @@ public class LdapServerTest {
         thread.join(5000);
         thread.interrupt();
         assertTrue(reachable);
+
+        // Test non-reachability.
+        reachable = serverSpy.isReachable();
+        assertFalse(reachable);
     }
 }
