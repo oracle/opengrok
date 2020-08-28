@@ -12,8 +12,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -24,6 +23,15 @@ public class LdapServerTest {
     public void testInvalidURI() {
         LdapServer server = new LdapServer("foo:/\\/\\foo.bar");
         assertFalse(server.isReachable());
+    }
+
+    @Test
+    public void testGetPort() throws URISyntaxException {
+        LdapServer server = new LdapServer("ldaps://foo.bar");
+        assertEquals(636, server.getPort());
+
+        server = new LdapServer("ldap://foo.bar");
+        assertEquals(389, server.getPort());
     }
 
     @Test
@@ -54,7 +62,7 @@ public class LdapServerTest {
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
         LdapServer serverSpy = Mockito.spy(server);
         Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
-        doReturn(testPort).when(serverSpy).getPort(anyString());
+        doReturn(testPort).when(serverSpy).getPort();
 
         // Test reachability.
         boolean reachable = serverSpy.isReachable();
