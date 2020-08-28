@@ -160,7 +160,6 @@ public class LdapServer implements Serializable {
             }
             return true;
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("LDAP server %s is not reachable", this), e);
             return false;
         }
     }
