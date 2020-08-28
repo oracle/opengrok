@@ -37,6 +37,22 @@ public class LdapServerTest {
     }
 
     @Test
+    public void testSetGetUsername() {
+        LdapServer server = new LdapServer();
+
+        assertNull(server.getUsername());
+        assertNull(server.getPassword());
+
+        final String testUsername = "foo";
+        server.setUsername(testUsername);
+        assertEquals(testUsername, server.getUsername());
+
+        final String testPassword = "bar";
+        server.setPassword(testPassword);
+        assertEquals(testPassword, server.getPassword());
+    }
+
+    @Test
     public void testIsReachable() throws UnknownHostException, InterruptedException, URISyntaxException {
         // Start simple TCP server on port 6336. It has to be > 1024 to avoid BindException
         // due to permission denied.
