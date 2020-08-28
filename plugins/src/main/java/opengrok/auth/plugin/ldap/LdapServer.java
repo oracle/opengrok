@@ -181,7 +181,13 @@ public class LdapServer implements Serializable {
      */
     public boolean isReachable() {
         try {
-            for (InetAddress addr : getAddresses(urlToHostname(getUrl()))) {
+            InetAddress[] addresses = getAddresses(urlToHostname(getUrl()));
+            if (addresses.length == 0) {
+                LOGGER.log(Level.WARNING, "LDAP server {0} does not resolve to any IP address",this);
+                return false;
+            }
+
+            for (InetAddress addr : addresses) {
                 // InetAddr.isReachable() is not sufficient as it can only check ICMP and TCP echo.
                 int port = getPort();
                 if (!isReachable(addr, port, getConnectTimeout())) {
