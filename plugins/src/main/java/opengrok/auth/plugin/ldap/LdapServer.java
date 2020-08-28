@@ -22,7 +22,14 @@
  */
 package opengrok.auth.plugin.ldap;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,12 +71,12 @@ public class LdapServer implements Serializable {
 
     public LdapServer(String server) {
         this(prepareEnv());
-        this.url = server;
+        setName(server);
     }
 
     public LdapServer(String server, String username, String password) {
         this(prepareEnv());
-        this.url = server;
+        setName(server);
         this.username = username;
         this.password = password;
     }
@@ -122,13 +129,95 @@ public class LdapServer implements Serializable {
         this.interval = interval;
     }
 
+    private String urlToHostname(String urlStr) throws URISyntaxException {
+        URI uri = new URI(urlStr);
+        return uri.getHost();
+    }
+
     /**
-     * The LDAP server is working only when its connection is not null. This
-     * tries to establish the connection if it is not established already.
+     * This method converts the scheme from URI to port number.
+     * It is limited to the ldap/ldaps schemes.
+     * The method could be static however then it cannot be easily mocked in testing.
+     * @return port number or -1 if the scheme in given URI is not known
+     * @throws URISyntaxException if the URI is not valid
+     */
+    public int getPort() throws URISyntaxException {
+        URI uri = new URI(getUrl());
+        switch (uri.getScheme()) {
+            case "ldaps":
+                return 636;
+            case "ldap":
+                return 389;
+        }
+
+        return -1;
+    }
+
+    private boolean isReachable(InetAddress addr, int port, int timeOutMillis) {
+        try {
+            try (Socket soc = new Socket()) {
+                soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Wraps InetAddress.getAllByName() so that it can be mocked in testing.
+     * (mocking static methods is not really possible with Mockito)
+     * @param hostname hostname string
+     * @return array of InetAddress objects
+     * @throws UnknownHostException if the host cannot be resolved to any IP address
+     */
+    public InetAddress[] getAddresses(String hostname) throws UnknownHostException {
+        return InetAddress.getAllByName(hostname);
+    }
+
+    /**
+     * Go through all IP addresses and find out if they are reachable.
+     * @return true if all IP addresses are reachable, false otherwise
+     */
+    public boolean isReachable() {
+        try {
+            InetAddress[] addresses = getAddresses(urlToHostname(getUrl()));
+            if (addresses.length == 0) {
+                LOGGER.log(Level.WARNING, "LDAP server {0} does not resolve to any IP address", this);
+                return false;
+            }
+
+            for (InetAddress addr : addresses) {
+                // InetAddr.isReachable() is not sufficient as it can only check ICMP and TCP echo.
+                int port = getPort();
+                if (!isReachable(addr, port, getConnectTimeout())) {
+                    LOGGER.log(Level.WARNING, "LDAP server {0} is not reachable on {1}:{2}",
+                            new Object[]{this, addr, Integer.toString(port)});
+                    return false;
+                }
+            }
+        } catch (UnknownHostException e) {
+            LOGGER.log(Level.SEVERE, String.format("cannot get IP addresses for LDAP server %s", this), e);
+            return false;
+        } catch (URISyntaxException e) {
+            LOGGER.log(Level.SEVERE, String.format("not a valid URI: %s", getUrl()), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * The LDAP server is working only when it is reachable and its connection is not null.
+     * This method tries to establish the connection if it is not established already.
      *
      * @return true if it is working
      */
     public synchronized boolean isWorking() {
+        if (!isReachable()) {
+            return false;
+        }
+
         if (ctx == null) {
             ctx = connect();
         }
@@ -144,7 +233,7 @@ public class LdapServer implements Serializable {
         LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this.toString());
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
-            LOGGER.log(Level.INFO, "LDAP server {0} is down", this.url);
+            LOGGER.log(Level.WARNING, "LDAP server {0} is down", this.url);
             close();
             return null;
         }
@@ -169,7 +258,7 @@ public class LdapServer implements Serializable {
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this.toString());
                 errorTimestamp = 0;
             } catch (NamingException ex) {
-                LOGGER.log(Level.INFO, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
+                LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
                 errorTimestamp = System.currentTimeMillis();
                 close();
                 return ctx = null;
@@ -194,7 +283,7 @@ public class LdapServer implements Serializable {
     }
 
     /**
-     * Lookups the LDAP server.
+     * Perform LDAP search.
      *
      * @param name base dn for the search
      * @param filter LDAP filter
