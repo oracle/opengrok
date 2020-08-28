@@ -94,4 +94,12 @@ public class LdapServerTest {
         reachable = serverSpy.isReachable();
         assertFalse(reachable);
     }
+
+    @Test
+    public void testEmptyAddressArray() throws UnknownHostException {
+        LdapServer server = new LdapServer("ldaps://foo.bar.com");
+        LdapServer serverSpy = Mockito.spy(server);
+        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{});
+        assertFalse(serverSpy.isReachable());
+    }
 }
