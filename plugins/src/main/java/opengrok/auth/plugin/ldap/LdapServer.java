@@ -26,11 +26,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.logging.Level;
@@ -136,6 +134,13 @@ public class LdapServer implements Serializable {
         return uri.getHost();
     }
 
+    /**
+     * This method converts the scheme from URI to port number.
+     * It is limited to the ldap/ldaps schemes.
+     * @param urlStr URI
+     * @return port number
+     * @throws URISyntaxException if the URI is not valid
+     */
     private static int getPort(String urlStr) throws URISyntaxException {
         URI uri = new URI(urlStr);
         switch (uri.getScheme()) {
@@ -161,12 +166,23 @@ public class LdapServer implements Serializable {
     }
 
     /**
+     * Wraps InetAddress.getAllByName() so that it can be mocked in testing.
+     * (mocking static methods is not really possible with Mockito)
+     * @param hostname hostname string
+     * @return array of InetAddress objects
+     * @throws UnknownHostException if the host cannot be resolved to any IP address
+     */
+    public InetAddress[] getAddresses(String hostname) throws UnknownHostException {
+        return InetAddress.getAllByName(hostname);
+    }
+
+    /**
      * Go through all IP addresses and find out if they are reachable.
      * @return true if all IP addresses are reachable, false otherwise
      */
     public boolean isReachable() {
         try {
-            for (InetAddress addr : InetAddress.getAllByName(urlToHostname(getUrl()))) {
+            for (InetAddress addr : getAddresses(urlToHostname(getUrl()))) {
                 // InetAddr.isReachable() is not sufficient as it can only check ICMP and TCP echo.
                 if (!isReachable(addr, getPort(getUrl()), getConnectTimeout())) {
                     LOGGER.log(Level.WARNING, "LDAP server {0} is not reachable on {1}",
