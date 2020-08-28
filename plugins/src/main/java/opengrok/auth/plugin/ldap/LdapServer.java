@@ -22,7 +22,16 @@
  */
 package opengrok.auth.plugin.ldap;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,12 +73,12 @@ public class LdapServer implements Serializable {
 
     public LdapServer(String server) {
         this(prepareEnv());
-        this.url = server;
+        setName(server);
     }
 
     public LdapServer(String server, String username, String password) {
         this(prepareEnv());
-        this.url = server;
+        setName(server);
         this.username = username;
         this.password = password;
     }
@@ -122,13 +131,71 @@ public class LdapServer implements Serializable {
         this.interval = interval;
     }
 
+    private String urlToHostname(String urlStr) throws URISyntaxException {
+        URI uri = new URI(urlStr);
+        return uri.getHost();
+    }
+
+    private static int getPort(String urlStr) throws URISyntaxException {
+        URI uri = new URI(urlStr);
+        switch (uri.getScheme()) {
+            case "ldaps":
+                return 636;
+            case "ldap":
+                return 389;
+        }
+
+        return -1;
+    }
+
+    private boolean isReachable(InetAddress addr, int port, int timeOutMillis) {
+        try {
+            try (Socket soc = new Socket()) {
+                soc.connect(new InetSocketAddress(addr, port), timeOutMillis);
+            }
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, String.format("LDAP server %s is not reachable", this), e);
+            return false;
+        }
+    }
+
     /**
-     * The LDAP server is working only when its connection is not null. This
-     * tries to establish the connection if it is not established already.
+     * Go through all IP addresses and find out if they are reachable.
+     * @return true if all IP addresses are reachable, false otherwise
+     */
+    public boolean isReachable() {
+        try {
+            for (InetAddress addr : InetAddress.getAllByName(urlToHostname(getUrl()))) {
+                // InetAddr.isReachable() is not sufficient as it can only check ICMP and TCP echo.
+                if (!isReachable(addr, getPort(getUrl()), getConnectTimeout())) {
+                    LOGGER.log(Level.WARNING, "LDAP server {0} is not reachable on {1}",
+                            new Object[]{this, addr});
+                    return false;
+                }
+            }
+        } catch (UnknownHostException e) {
+            LOGGER.log(Level.SEVERE, String.format("cannot get IP addresses for LDAP server %s", this), e);
+            return false;
+        } catch (URISyntaxException e) {
+            LOGGER.log(Level.SEVERE, String.format("not a valid URI: %s", getUrl()), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * The LDAP server is working only when it is reachable and its connection is not null.
+     * This method tries to establish the connection if it is not established already.
      *
      * @return true if it is working
      */
     public synchronized boolean isWorking() {
+        if (!isReachable()) {
+            return false;
+        }
+
         if (ctx == null) {
             ctx = connect();
         }
@@ -144,7 +211,7 @@ public class LdapServer implements Serializable {
         LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this.toString());
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
-            LOGGER.log(Level.INFO, "LDAP server {0} is down", this.url);
+            LOGGER.log(Level.WARNING, "LDAP server {0} is down", this.url);
             close();
             return null;
         }
@@ -169,7 +236,7 @@ public class LdapServer implements Serializable {
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this.toString());
                 errorTimestamp = 0;
             } catch (NamingException ex) {
-                LOGGER.log(Level.INFO, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
+                LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
                 errorTimestamp = System.currentTimeMillis();
                 close();
                 return ctx = null;
@@ -194,7 +261,7 @@ public class LdapServer implements Serializable {
     }
 
     /**
-     * Lookups the LDAP server.
+     * Perform LDAP search.
      *
      * @param name base dn for the search
      * @param filter LDAP filter

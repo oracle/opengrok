@@ -100,7 +100,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private WebHooks webHooks;
 
     private SearchControls controls;
-    private int actualServer = 0;
+    private int actualServer = -1;
     private long errorTimestamp = 0;
     private boolean reported = false;
 
@@ -187,14 +187,13 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Finds first working server in the pool.
+     * Go through all servers in the pool and record the first working.
      */
     private void prepareServers() {
         for (int i = 0; i < servers.size(); i++) {
             LdapServer server = servers.get(i);
-            if (server.isWorking()) {
+            if (server.isWorking() && actualServer != -1) {
                 actualServer = i;
-                return;
             }
         }
     }
@@ -245,7 +244,7 @@ public class LdapFacade extends AbstractLdapProvider {
 
     @Override
     public boolean isConfigured() {
-        return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null;
+        return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null && actualServer != -1;
     }
 
     /**
