@@ -137,11 +137,12 @@ public class LdapServer implements Serializable {
     /**
      * This method converts the scheme from URI to port number.
      * It is limited to the ldap/ldaps schemes.
+     * The method could be static however then it cannot be easily mocked in testing.
      * @param urlStr URI
      * @return port number
      * @throws URISyntaxException if the URI is not valid
      */
-    private static int getPort(String urlStr) throws URISyntaxException {
+    public int getPort(String urlStr) throws URISyntaxException {
         URI uri = new URI(urlStr);
         switch (uri.getScheme()) {
             case "ldaps":
@@ -184,9 +185,10 @@ public class LdapServer implements Serializable {
         try {
             for (InetAddress addr : getAddresses(urlToHostname(getUrl()))) {
                 // InetAddr.isReachable() is not sufficient as it can only check ICMP and TCP echo.
-                if (!isReachable(addr, getPort(getUrl()), getConnectTimeout())) {
-                    LOGGER.log(Level.WARNING, "LDAP server {0} is not reachable on {1}",
-                            new Object[]{this, addr});
+                int port = getPort(getUrl());
+                if (!isReachable(addr, port, getConnectTimeout())) {
+                    LOGGER.log(Level.WARNING, "LDAP server {0} is not reachable on {1}:{2}",
+                            new Object[]{this, addr, Integer.toString(port)});
                     return false;
                 }
             }
