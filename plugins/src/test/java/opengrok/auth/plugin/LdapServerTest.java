@@ -31,6 +31,9 @@ public class LdapServerTest {
 
         server = new LdapServer("ldap://foo.bar");
         assertEquals(389, server.getPort());
+
+        server = new LdapServer("crumble://foo.bar");
+        assertEquals(-1, server.getPort());
     }
 
     @Test
