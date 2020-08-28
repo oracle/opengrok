@@ -10,8 +10,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,29 +52,35 @@ public class LdapServerTest {
     }
 
     @Test
-    public void testIsReachable() throws UnknownHostException, InterruptedException, URISyntaxException {
+    public void testIsReachable() throws IOException, InterruptedException, URISyntaxException {
         // Start simple TCP server on port 6336. It has to be > 1024 to avoid BindException
         // due to permission denied.
         int testPort = 6336;
         InetAddress localhostAddr = InetAddress.getLocalHost();
-        final CountDownLatch startLatch = new CountDownLatch(1);
+        ServerSocket serverSocket = new ServerSocket(testPort, 1, localhostAddr);
         Thread thread = new Thread(() -> {
             try {
-                ServerSocket socket = new ServerSocket(testPort, 1, localhostAddr);
-                startLatch.countDown();
-                Socket client = socket.accept();
-                client.close();
-                socket.close();
+                while (true) {
+                    Socket client = serverSocket.accept();
+                    client.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
-        // TODO:
-        //  There is still a tiny window between when the latch unblocks and the server actually starts accept().
-        //  We can make the server loop for connections and connect here with a timeout to make sure it is up.
         thread.start();
-        startLatch.await(3, TimeUnit.SECONDS);
+        Socket socket = null;
+        for (int i = 0; i < 3; i++) {
+            try {
+                socket = new Socket(localhostAddr, testPort);
+            } catch (IOException e) {
+                Thread.sleep(1000);
+            }
+        }
+
+        assertNotNull(socket);
+        assertTrue(socket.isConnected());
 
         // Mock getAddresses() to return single localhost IP address.
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
@@ -86,6 +90,7 @@ public class LdapServerTest {
 
         // Test reachability.
         boolean reachable = serverSpy.isReachable();
+        serverSocket.close();
         thread.join(5000);
         thread.interrupt();
         assertTrue(reachable);
