@@ -55,6 +55,7 @@ import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.CanonicalRootValidator;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
@@ -241,7 +242,7 @@ public final class Indexer {
             }
 
             // Set updated configuration in RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesList, false);
+            env.setConfiguration(cfg, subFilesList, CommandTimeoutType.INDEXER);
 
             // Check version of index(es) versus current Lucene version and exit
             // with return code upon failure.

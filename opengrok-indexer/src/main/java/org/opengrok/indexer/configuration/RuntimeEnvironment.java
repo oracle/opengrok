@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -170,7 +171,7 @@ public final class RuntimeEnvironment {
 
     public void shutdownRevisionExecutor() throws InterruptedException {
         getRevisionExecutor().shutdownNow();
-        getRevisionExecutor().awaitTermination(getCommandTimeout(), TimeUnit.SECONDS);
+        getRevisionExecutor().awaitTermination(getIndexerCommandTimeout(), TimeUnit.SECONDS);
     }
 
     /**
@@ -225,29 +226,59 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(nestingMaximum, Configuration::setNestingMaximum);
     }
 
-    public int getCommandTimeout() {
-        return syncReadConfiguration(Configuration::getCommandTimeout);
+    public int getCommandTimeout(CommandTimeoutType cmdType) {
+        switch (cmdType) {
+            case INDEXER:
+                return getIndexerCommandTimeout();
+            case INTERACTIVE:
+                return getInteractiveCommandTimeout();
+            case WEBAPP_START:
+                return getWebappStartCommandTimeout();
+            case RESTFUL:
+                return getRestfulCommandTimeout();
+        }
+
+        throw new InvalidParameterException("invalid command timeout type");
     }
 
-    public void setCommandTimeout(int commandTimeout) {
-        syncWriteConfiguration(commandTimeout, Configuration::setCommandTimeout);
+    public int getRestfulCommandTimeout() {
+        return syncReadConfiguration(Configuration::getRestfulCommandTimeout);
+    }
+
+    public void setRestfulCommandTimeout(int timeout) {
+        syncWriteConfiguration(timeout, Configuration::setWebappStartCommandTimeout);
+    }
+
+    public int getWebappStartCommandTimeout() {
+        return syncReadConfiguration(Configuration::getWebappStartCommandTimeout);
+    }
+
+    public void setWebappStartCommandTimeout(int timeout) {
+        syncWriteConfiguration(timeout, Configuration::setWebappStartCommandTimeout);
+    }
+
+    public int getIndexerCommandTimeout() {
+        return syncReadConfiguration(Configuration::getIndexerCommandTimeout);
+    }
+
+    public void setIndexerCommandTimeout(int timeout) {
+        syncWriteConfiguration(timeout, Configuration::setIndexerCommandTimeout);
     }
 
     public int getInteractiveCommandTimeout() {
         return syncReadConfiguration(Configuration::getInteractiveCommandTimeout);
     }
 
-    public void setInteractiveCommandTimeout(int interactiveCommandTimeout) {
-        syncWriteConfiguration(interactiveCommandTimeout,
-                Configuration::setInteractiveCommandTimeout);
+    public void setInteractiveCommandTimeout(int timeout) {
+        syncWriteConfiguration(timeout, Configuration::setInteractiveCommandTimeout);
     }
 
     public long getCtagsTimeout() {
         return syncReadConfiguration(Configuration::getCtagsTimeout);
     }
 
-    public void setCtagsTimeout(long ctagsTimeout) {
-        syncWriteConfiguration(ctagsTimeout, Configuration::setCtagsTimeout);
+    public void setCtagsTimeout(long timeout) {
+        syncWriteConfiguration(timeout, Configuration::setCtagsTimeout);
     }
 
     public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
@@ -1326,12 +1357,12 @@ public final class RuntimeEnvironment {
     /**
      * Read configuration from a file and put it into effect.
      * @param file the file to read
-     * @param interactive true if run in interactive mode
+     * @param cmdType command timeout type
      * @throws IOException I/O
      */
-    public void readConfiguration(File file, boolean interactive) throws IOException {
+    public void readConfiguration(File file, CommandTimeoutType cmdType) throws IOException {
         // The following method handles the locking.
-        setConfiguration(Configuration.read(file), null, interactive);
+        setConfiguration(Configuration.read(file), null, cmdType);
     }
 
     /**
@@ -1478,16 +1509,16 @@ public final class RuntimeEnvironment {
      * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
-        setConfiguration(configuration, null, false);
+        setConfiguration(configuration, null, CommandTimeoutType.INDEXER);
     }
 
     /**
      * Sets the configuration and performs necessary actions.
      * @param configuration new configuration
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      */
-    public void setConfiguration(Configuration configuration, boolean interactive) {
-        setConfiguration(configuration, null, interactive);
+    public void setConfiguration(Configuration configuration, CommandTimeoutType cmdType) {
+        setConfiguration(configuration, null, cmdType);
     }
 
     /**
@@ -1495,9 +1526,9 @@ public final class RuntimeEnvironment {
      *
      * @param configuration new configuration
      * @param subFileList   list of repositories
-     * @param interactive   true if in interactive mode
+     * @param cmdType       command timeout type
      */
-    public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
+    public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, CommandTimeoutType cmdType) {
         try (ResourceLock resourceLock = configLock.writeLockAsResource()) {
             //noinspection ConstantConditions to avoid warning of no reference to auto-closeable
             assert resourceLock != null;
@@ -1509,11 +1540,9 @@ public final class RuntimeEnvironment {
 
         // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
-            histGuru.invalidateRepositories(
-                    getRepositories(), subFileList, interactive);
+            histGuru.invalidateRepositories(getRepositories(), subFileList, cmdType);
         } else {
-            histGuru.invalidateRepositories(getRepositories(),
-                    interactive);
+            histGuru.invalidateRepositories(getRepositories(), cmdType);
         }
 
         // The invalidation of repositories above might have excluded some
@@ -1569,10 +1598,10 @@ public final class RuntimeEnvironment {
     /**
      * Re-apply the configuration.
      * @param reindex is the message result of reindex
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      */
-    public void applyConfig(boolean reindex, boolean interactive) {
-        applyConfig(configuration, reindex, interactive);
+    public void applyConfig(boolean reindex, CommandTimeoutType cmdType) {
+        applyConfig(configuration, reindex, cmdType);
     }
 
     /**
@@ -1582,11 +1611,11 @@ public final class RuntimeEnvironment {
      *
      * @param configuration XML configuration
      * @param reindex is the message result of reindex
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
-     * boolean, boolean) applyConfig(config, reindex, interactive)
+     * boolean, CommandTimeoutType) applyConfig(config, reindex, cmdType)
      */
-    public void applyConfig(String configuration, boolean reindex, boolean interactive) {
+    public void applyConfig(String configuration, boolean reindex, CommandTimeoutType cmdType) {
         Configuration config;
         try {
             config = makeXMLStringAsConfiguration(configuration);
@@ -1595,7 +1624,7 @@ public final class RuntimeEnvironment {
             return;
         }
 
-        applyConfig(config, reindex, interactive);
+        applyConfig(config, reindex, cmdType);
     }
 
     /**
@@ -1605,10 +1634,10 @@ public final class RuntimeEnvironment {
      *
      * @param config the incoming configuration
      * @param reindex is the message result of reindex
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      */
-    public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
-        setConfiguration(config, interactive);
+    public void applyConfig(Configuration config, boolean reindex, CommandTimeoutType cmdType) {
+        setConfiguration(config, cmdType);
         LOGGER.log(Level.INFO, "Configuration updated");
 
         if (reindex) {

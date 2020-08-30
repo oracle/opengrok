@@ -57,6 +57,7 @@ import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -232,7 +233,7 @@ public class IndexerTest {
         Repository r = null;
         for (RepositoryInfo ri : repos) {
             if (ri.getDirectoryName().equals(repository.getSourceRoot() + "/rfe2575")) {
-                r = RepositoryFactory.getRepository(ri, false);
+                r = RepositoryFactory.getRepository(ri, CommandTimeoutType.INDEXER);
                 break;
             }
         }

@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
@@ -93,7 +94,7 @@ class PerforceHistoryParser {
      */
     History parse(File file, String sinceRevision) throws HistoryException {
 
-        if (!repo.isInP4Depot(file, false)) {
+        if (!repo.isInP4Depot(file, CommandTimeoutType.INDEXER)) {
             return null;
         }
 

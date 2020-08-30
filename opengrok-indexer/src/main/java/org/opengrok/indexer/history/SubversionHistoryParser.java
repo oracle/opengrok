@@ -41,6 +41,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -176,7 +177,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @return object representing the file's history
      */
     History parse(File file, SubversionRepository repos, String sinceRevision,
-            int numEntries, boolean interactive)
+            int numEntries, CommandTimeoutType cmdType)
             throws HistoryException {
 
         initSaxParser();
@@ -187,7 +188,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         Executor executor;
         try {
             executor = repos.getHistoryLogExecutor(file, sinceRevision,
-                    numEntries, interactive);
+                    numEntries, cmdType);
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\"", e);

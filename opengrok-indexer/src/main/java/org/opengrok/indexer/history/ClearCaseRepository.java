@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -194,7 +196,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         // if the parent contains a file named "[.]view.dat" or
         // the parent is named "vobs" or the canonical path
         // is found in "cleartool lsvob -s"
@@ -221,7 +223,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 
@@ -272,12 +274,12 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 }

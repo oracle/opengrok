@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -177,7 +179,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File f = new File(file, ".bzr");
             return f.exists() && f.isDirectory();
@@ -225,16 +227,15 @@ public class BazaarRepository extends Repository {
      * @param directory Directory where we list tags
      */
     @Override
-    protected void buildTagList(File directory, boolean interactive) {
+    protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = new TreeSet<>();
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tags");
 
-        Executor executor = new Executor(argv, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         final BazaarTagParser parser = new BazaarTagParser();
         int status = executor.exec(true, parser);
         if (status != 0) {
@@ -247,7 +248,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
@@ -255,9 +256,8 @@ public class BazaarRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("config");
         cmd.add("parent_location");
-        Executor executor = new Executor(cmd, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -266,12 +266,12 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -146,10 +147,10 @@ public class PerforceRepository extends Repository {
      * Check if a given file is in the depot.
      *
      * @param file The file to test
-     * @param interactive interactive mode flag
+     * @param cmdType command timeout type
      * @return true if the given file is in the depot, false otherwise
      */
-    boolean isInP4Depot(File file, boolean interactive) {
+    boolean isInP4Depot(File file, CommandTimeoutType cmdType) {
         boolean status = false;
         if (isWorking()) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -162,8 +163,7 @@ public class PerforceRepository extends Repository {
                 cmd.add(RepoCommand);
                 cmd.add("dirs");
                 cmd.add(name);
-                Executor executor = new Executor(cmd, dir, interactive ?
-                        env.getInteractiveCommandTimeout() : env.getCommandTimeout());
+                Executor executor = new Executor(cmd, dir, env.getCommandTimeout(cmdType));
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
@@ -180,8 +180,7 @@ public class PerforceRepository extends Repository {
                 cmd.add(RepoCommand);
                 cmd.add("files");
                 cmd.add(name);
-                Executor executor = new Executor(cmd, dir, interactive ?
-                        env.getInteractiveCommandTimeout() : env.getCommandTimeout());
+                Executor executor = new Executor(cmd, dir, env.getCommandTimeout(cmdType));
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
@@ -198,8 +197,8 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
-        return isInP4Depot(file, interactive);
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
+        return isInP4Depot(file, cmdType);
     }
 
     @Override
@@ -229,12 +228,12 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) {
+    String determineParent(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
     /**
@@ -274,7 +273,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         File directory = new File(getDirectoryName());
         List<String> cmd = new ArrayList<>();
 
@@ -286,9 +285,8 @@ public class PerforceRepository extends Repository {
         cmd.add("1");
         cmd.add("...#have");
 
-        Executor executor = new Executor(cmd, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }

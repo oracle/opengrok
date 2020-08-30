@@ -50,6 +50,7 @@ import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -187,7 +188,7 @@ public class ConcurrentConfigurationControllerTest extends OGKJerseyTest {
          */
         for (int i = 0; i < TASK_COUNT; i++) {
             futures.add(threadPool.submit(() -> {
-                env.applyConfig(false, false);
+                env.applyConfig(false, CommandTimeoutType.RESTFUL);
                 assertTestedProjects();
             }));
         }

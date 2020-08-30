@@ -36,6 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -117,15 +119,14 @@ public class MercurialRepository extends Repository {
      * Return name of the branch or "default".
      */
     @Override
-    String determineBranch(boolean interactive) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) throws IOException {
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("branch");
 
         Executor executor = new Executor(cmd, new File(getDirectoryName()),
-                interactive ? RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                        RuntimeEnvironment.getInstance().getCommandTimeout());
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -452,7 +453,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File f = new File(file, ".hg");
             return f.exists() && f.isDirectory();
@@ -531,16 +532,15 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    protected void buildTagList(File directory, boolean interactive) {
+    protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = new TreeSet<>();
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tags");
 
-        Executor executor = new Executor(argv, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         MercurialTagParser parser = new MercurialTagParser();
         int status = executor.exec(true, parser);
         if (status != 0) {
@@ -553,7 +553,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
@@ -561,9 +561,8 @@ public class MercurialRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("paths");
         cmd.add("default");
-        Executor executor = new Executor(cmd, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -572,7 +571,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion(boolean interactive) throws IOException {
+    public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         String line = null;
         File directory = new File(getDirectoryName());
 
@@ -585,9 +584,8 @@ public class MercurialRepository extends Repository {
         cmd.add("--template");
         cmd.add("{date|isodate} {node|short} {author} {desc|strip}");
 
-        Executor executor = new Executor(cmd, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }

@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -191,10 +193,11 @@ public class SubversionRepository extends Repository {
      *                      revision we want, or {@code null} to fetch the entire
      *                      history
      * @param numEntries number of entries to return. If 0, return all.
+     * @param cmdType command timeout type
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision,
-            int numEntries, boolean interactive) throws IOException {
+            int numEntries, CommandTimeoutType cmdType) throws IOException {
 
         String filename = getRepoRelativePath(file);
 
@@ -221,13 +224,8 @@ public class SubversionRepository extends Repository {
             cmd.add(escapeFileName(filename));
         }
 
-        if (interactive) {
-            return new Executor(cmd, new File(getDirectoryName()),
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        } else {
-            return new Executor(cmd, new File(getDirectoryName()),
-                    sinceRevision != null || numEntries > 0);
-        }
+        return new Executor(cmd, new File(getDirectoryName()),
+                    RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
     }
 
     @Override
@@ -278,19 +276,19 @@ public class SubversionRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return getHistory(file, null, 0, false);
+        return getHistory(file, null, 0, CommandTimeoutType.INDEXER);
     }
 
     @Override
     History getHistory(File file, String sinceRevision) throws HistoryException {
-        return getHistory(file, sinceRevision, 0, false);
+        return getHistory(file, sinceRevision, 0, CommandTimeoutType.INDEXER);
     }
 
     private History getHistory(File file, String sinceRevision, int numEntries,
-            boolean interactive)
+            CommandTimeoutType cmdType)
             throws HistoryException {
         return new SubversionHistoryParser().parse(file, this, sinceRevision,
-                numEntries, interactive);
+                numEntries, cmdType);
     }
 
     private String escapeFileName(String name) {
@@ -343,7 +341,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File f = new File(file, ".svn");
             return f.exists() && f.isDirectory();
@@ -376,7 +374,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) {
+    String determineParent(CommandTimeoutType cmdType) {
         String part = null;
         Document document = getInfoDocument();
 
@@ -388,7 +386,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineBranch(boolean interactive) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) throws IOException {
         String branch = null;
         Document document = getInfoDocument();
 
@@ -405,11 +403,11 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion(boolean interactive) throws IOException {
+    public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         String curVersion = null;
 
         try {
-            History hist = getHistory(new File(getDirectoryName()), null, 1, interactive);
+            History hist = getHistory(new File(getDirectoryName()), null, 1, cmdType);
             if (hist != null) {
                 List<HistoryEntry> hlist = hist.getHistoryEntries();
                 if (hlist != null && hlist.size() > 0) {

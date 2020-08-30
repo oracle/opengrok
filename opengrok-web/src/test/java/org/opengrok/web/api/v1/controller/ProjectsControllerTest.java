@@ -34,6 +34,7 @@ import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -304,7 +305,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         // For per project reindex this is called from setConfiguration() because
         // of the -R option is present.
         HistoryGuru.getInstance().invalidateRepositories(
-                env.getRepositories(), null, false);
+                env.getRepositories(), null, CommandTimeoutType.INDEXER);
         env.setHistoryEnabled(true);
         Indexer.getInstance().prepareIndexer(
                 env,
@@ -514,7 +515,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             assertNotNull(riList);
             for (RepositoryInfo ri : riList) {
-                Repository repo = getRepository(ri, false);
+                Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
                 assertFalse(repo.isHandleRenamedFiles());
             }
         }

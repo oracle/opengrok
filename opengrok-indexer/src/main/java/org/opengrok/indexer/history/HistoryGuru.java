@@ -45,6 +45,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -411,7 +413,7 @@ public final class HistoryGuru {
 
                 Repository repository = null;
                 try {
-                    repository = RepositoryFactory.getRepository(file, false, isNested);
+                    repository = RepositoryFactory.getRepository(file, CommandTimeoutType.INDEXER, isNested);
                 } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', could not instantiate the repository.", e);
@@ -804,9 +806,9 @@ public final class HistoryGuru {
      * Set list of known repositories which match the list of directories.
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
-     * @param interactive interactive mode flag
+     * @param cmdType command timeout type
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, boolean interactive) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, CommandTimeoutType cmdType) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
             List<RepositoryInfo> newrepos = new ArrayList<>();
             for (RepositoryInfo i : repos) {
@@ -821,7 +823,7 @@ public final class HistoryGuru {
             repos = newrepos;
         }
 
-        invalidateRepositories(repos, interactive);
+        invalidateRepositories(repos, cmdType);
     }
 
     /**
@@ -837,9 +839,9 @@ public final class HistoryGuru {
      *
      * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
-     * @param interactive interactive mode flag
+     * @param cmdType command timeout type
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, boolean interactive) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, CommandTimeoutType cmdType) {
         if (repos == null || repos.isEmpty()) {
             repositoryRoots.clear();
             repositories.clear();
@@ -874,7 +876,7 @@ public final class HistoryGuru {
                 @Override
                 public void run() {
                     try {
-                        Repository r = RepositoryFactory.getRepository(rinfo, interactive);
+                        Repository r = RepositoryFactory.getRepository(rinfo, cmdType);
                         if (r == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to instantiate internal repository data for {0} in {1}",

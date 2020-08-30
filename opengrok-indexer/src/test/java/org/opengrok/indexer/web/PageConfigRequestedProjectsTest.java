@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -59,7 +60,7 @@ public class PageConfigRequestedProjectsTest {
         env.setProjectsEnabled(true);
         env.setPluginStack(null);
 
-        env.applyConfig(false, false);
+        env.applyConfig(false, CommandTimeoutType.INDEXER);
     }
 
     @After

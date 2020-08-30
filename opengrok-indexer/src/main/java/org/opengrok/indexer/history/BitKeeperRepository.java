@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.util.BufferSink;
 import org.suigeneris.jrcs.rcs.InvalidVersionNumberException;
 import org.suigeneris.jrcs.rcs.Version;
@@ -132,7 +133,7 @@ public class BitKeeperRepository extends Repository {
      * @return ret a boolean denoting whether it is or not
      */
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             final File f = new File(file, ".bk");
             return f.exists() && f.isDirectory();
@@ -167,7 +168,7 @@ public class BitKeeperRepository extends Repository {
      * @return null
      */
     @Override
-    String determineBranch(boolean interactive) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 
@@ -177,7 +178,7 @@ public class BitKeeperRepository extends Repository {
      * @return parent a string denoting the parent, or null.
      */
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         final File directory = new File(getDirectoryName());
 
         final ArrayList<String> argv = new ArrayList<String>();
@@ -186,9 +187,8 @@ public class BitKeeperRepository extends Repository {
         argv.add("parent");
         argv.add("-1il");
 
-        final Executor executor = new Executor(argv, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        final Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         final int rc = executor.exec(false);
         final String parent = executor.getOutputString().trim();
         if (rc == 0) {
@@ -413,19 +413,17 @@ public class BitKeeperRepository extends Repository {
      * Constructs a set of tags up front.
      *
      * @param directory the repository directory
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      */
     @Override
-    public void buildTagList(File directory, boolean interactive) {
+    public void buildTagList(File directory, CommandTimeoutType cmdType) {
         final ArrayList<String> argv = new ArrayList<>();
         argv.add("bk");
         argv.add("tags");
         argv.add("-d" + getTagDspec());
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        final Executor executor = new Executor(argv, directory,
-                interactive ? env.getInteractiveCommandTimeout() :
-                        env.getCommandTimeout());
+        final Executor executor = new Executor(argv, directory, env.getCommandTimeout(cmdType));
         final BitKeeperTagParser parser = new BitKeeperTagParser(datePatterns[0]);
         int status = executor.exec(true, parser);
         if (status != 0) {
@@ -438,7 +436,7 @@ public class BitKeeperRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 }
