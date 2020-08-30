@@ -44,6 +44,8 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -321,9 +323,9 @@ public abstract class Repository extends RepositoryInfo {
      * Create internal list of all tags in this repository.
      *
      * @param directory directory of the repository
-     * @param interactive true if in interactive mode
+     * @param cmdType command timeout type
      */
-    protected void buildTagList(File directory, boolean interactive) {
+    protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = null;
     }
     
@@ -409,7 +411,7 @@ public abstract class Repository extends RepositoryInfo {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
-            this.buildTagList(new File(this.getDirectoryName()), false);
+            this.buildTagList(new File(this.getDirectoryName()), CommandTimeoutType.INDEXER);
         }
 
         if (history != null) {
@@ -421,19 +423,19 @@ public abstract class Repository extends RepositoryInfo {
      * Check if this it the right repository type for the given file.
      *
      * @param file File to check if this is a repository for.
-     * @param interactive is this run from interactive mode
+     * @param cmdType command timeout type
      * @return true if this is the correct repository for this file/directory.
      */
-    abstract boolean isRepositoryFor(File file, boolean interactive);
+    abstract boolean isRepositoryFor(File file, CommandTimeoutType cmdType);
     
     public final boolean isRepositoryFor(File file) {
-        return isRepositoryFor(file, false);
+        return isRepositoryFor(file, CommandTimeoutType.INDEXER);
     }
 
     /**
      * Determine parent of this repository.
      */
-    abstract String determineParent(boolean interactive) throws IOException;
+    abstract String determineParent(CommandTimeoutType cmdType) throws IOException;
     
     /**
      * Determine parent of this repository.
@@ -441,13 +443,13 @@ public abstract class Repository extends RepositoryInfo {
      * @throws java.io.IOException I/O exception
      */
     public final String determineParent() throws IOException {
-        return determineParent(false);
+        return determineParent(CommandTimeoutType.INDEXER);
     }
 
     /**
      * Determine branch of this repository.
      */
-    abstract String determineBranch(boolean interactive) throws IOException;
+    abstract String determineBranch(CommandTimeoutType cmdType) throws IOException;
 
     /**
      * Determine branch of this repository.
@@ -455,7 +457,7 @@ public abstract class Repository extends RepositoryInfo {
      * @throws java.io.IOException I/O exception
      */
     public final String determineBranch() throws IOException {
-        return determineBranch(false);
+        return determineBranch(CommandTimeoutType.INDEXER);
     }
     
     /**
@@ -480,14 +482,14 @@ public abstract class Repository extends RepositoryInfo {
      * This operation is consider "heavy" so this function should not be
      * called on every web request.
      *
-     * @param interactive true if interactive mode
+     * @param cmdType command timeout type
      * @return the version
      * @throws IOException if I/O exception occurred
      */
-    abstract String determineCurrentVersion(boolean interactive) throws IOException;
+    abstract String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException;
     
     public final String determineCurrentVersion() throws IOException {
-        return determineCurrentVersion(false);
+        return determineCurrentVersion(CommandTimeoutType.INDEXER);
     }
 
     /**

@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -258,7 +260,7 @@ public class AccuRevRepository extends Repository {
      *   below 'Server time' will be missing when current working directory
      *   is not within a known AccuRev workspace/repository.
      */
-    private boolean getAccuRevInfo(File wsPath, boolean interactive) {
+    private boolean getAccuRevInfo(File wsPath, CommandTimeoutType cmdType) {
     
         ArrayList<String> cmd = new ArrayList<>();
         boolean status  = false;
@@ -279,8 +281,7 @@ public class AccuRevRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("info");
 
-        Executor executor = new Executor(cmd, realWsPath.toFile(), interactive ?
-                env.getInteractiveCommandTimeout() : env.getCommandTimeout());
+        Executor executor = new Executor(cmd, realWsPath.toFile(), env.getCommandTimeout(cmdType));
         executor.exec();
 
         try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
@@ -372,13 +373,13 @@ public class AccuRevRepository extends Repository {
      * @param wsPath The presumed path to an AccuRev workspace directory.
      * @return true if the given path is in the depot, false otherwise
      */
-    private boolean isInAccuRevDepot(File wsPath, boolean interactive) {
+    private boolean isInAccuRevDepot(File wsPath, CommandTimeoutType cmdType) {
 
         // Once depot name is determined, always assume inside depot.
         boolean status = (depotName != null);
 
         if (!status && isWorking()) {
-            status = getAccuRevInfo(wsPath, interactive);
+            status = getAccuRevInfo(wsPath, cmdType);
         }
 
         return status;
@@ -429,10 +430,10 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File sourceHome, boolean interactive) {
+    boolean isRepositoryFor(File sourceHome, CommandTimeoutType cmdType) {
 
         if (sourceHome.isDirectory()) {
-            return isInAccuRevDepot(sourceHome, interactive);
+            return isInAccuRevDepot(sourceHome, cmdType);
         }
 
         return false;
@@ -442,7 +443,6 @@ public class AccuRevRepository extends Repository {
     public boolean isWorking() {
 
         if (working == null) {
-
             working = checkCmd(RepoCommand, "info");
         }
 
@@ -460,18 +460,18 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
-        getAccuRevInfo(new File(getDirectoryName()), interactive);
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
+        getAccuRevInfo(new File(getDirectoryName()), cmdType);
         return parentInfo;
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 }

@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -162,7 +164,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         File f = new File(file, "_MTN");
         return f.exists() && f.isDirectory();
     }
@@ -208,7 +210,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         String parent = null;
         File directory = new File(getDirectoryName());
 
@@ -218,9 +220,8 @@ public class MonotoneRepository extends Repository {
         cmd.add("ls");
         cmd.add("vars");
         cmd.add("database");
-        Executor executor = new Executor(cmd, directory, interactive ?
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
-                RuntimeEnvironment.getInstance().getCommandTimeout());
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
         executor.exec();
 
         try (BufferedReader in = new BufferedReader(executor.getOutputReader())) {
@@ -242,12 +243,12 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 }

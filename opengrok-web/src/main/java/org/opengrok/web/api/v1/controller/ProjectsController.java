@@ -49,6 +49,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -255,7 +257,7 @@ public class ProjectsController {
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             if (riList != null) {
                 for (RepositoryInfo ri : riList) {
-                    Repository repo = getRepository(ri, false);
+                    Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
                     if (repo != null && repo.getCurrentVersion() != null && repo.getCurrentVersion().length() > 0) {
                         // getRepository() always creates fresh instance
@@ -297,7 +299,7 @@ public class ProjectsController {
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             if (riList != null) {
                 for (RepositoryInfo ri : riList) {
-                    Repository repo = getRepository(ri, false);
+                    Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
                     // set the property
                     ClassUtil.setFieldValue(repo, field, value);

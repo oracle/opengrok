@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
@@ -133,7 +135,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    public boolean isRepositoryFor(File file, boolean interactive) {
+    public boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File cvsDir = new File(file, "CVS");
             return cvsDir.isDirectory();
@@ -142,7 +144,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    String determineBranch(boolean interactive) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) throws IOException {
         String branch = null;
 
         File tagFile = new File(getDirectoryName(), "CVS/Tag");
@@ -282,7 +284,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         File rootFile = new File(getDirectoryName() + File.separator + "CVS"
                 + File.separator + "Root");
         String parent = null;

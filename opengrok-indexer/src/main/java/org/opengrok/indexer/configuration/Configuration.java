@@ -211,8 +211,10 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
-    private int commandTimeout; // in seconds
+    private int indexerCommandTimeout; // in seconds
     private int interactiveCommandTimeout; // in seconds
+    private int webappStartCommandTimeout; // in seconds
+    private int restfulCommandTimeout; // in seconds
     private long ctagsTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
@@ -375,22 +377,58 @@ public final class Configuration {
         this.nestingMaximum = nestingMaximum;
     }
 
-    public int getCommandTimeout() {
-        return commandTimeout;
+    public int getIndexerCommandTimeout() {
+        return indexerCommandTimeout;
     }
 
     /**
      * Set the command timeout to a new value.
      *
-     * @param commandTimeout the new value
+     * @param timeout the new value
      * @throws IllegalArgumentException when the timeout is negative
      */
-    public void setCommandTimeout(int commandTimeout) throws IllegalArgumentException {
-        if (commandTimeout < 0) {
+    public void setIndexerCommandTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
             throw new IllegalArgumentException(
-                    String.format(NEGATIVE_NUMBER_ERROR, "commandTimeout", commandTimeout));
+                    String.format(NEGATIVE_NUMBER_ERROR, "commandTimeout", timeout));
         }
-        this.commandTimeout = commandTimeout;
+        this.indexerCommandTimeout = timeout;
+    }
+
+    public int getRestfulCommandTimeout() {
+        return restfulCommandTimeout;
+    }
+
+    /**
+     * Set the command timeout to a new value.
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setRestfulCommandTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "restfulCommandTimeout", timeout));
+        }
+        this.restfulCommandTimeout = timeout;
+    }
+
+    public int getWebappStartCommandTimeout() {
+        return webappStartCommandTimeout;
+    }
+
+    /**
+     * Set the command timeout to a new value.
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setWebappStartCommandTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "webappStartCommandTimeout", timeout));
+        }
+        this.webappStartCommandTimeout = timeout;
     }
 
     public int getInteractiveCommandTimeout() {
@@ -400,15 +438,15 @@ public final class Configuration {
     /**
      * Set the interactive command timeout to a new value.
      *
-     * @param commandTimeout the new value
+     * @param timeout the new value
      * @throws IllegalArgumentException when the timeout is negative
      */
-    public void setInteractiveCommandTimeout(int commandTimeout) throws IllegalArgumentException {
-        if (commandTimeout < 0) {
+    public void setInteractiveCommandTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
             throw new IllegalArgumentException(
-                    String.format(NEGATIVE_NUMBER_ERROR, "interactiveCommandTimeout", commandTimeout));
+                    String.format(NEGATIVE_NUMBER_ERROR, "interactiveCommandTimeout", timeout));
         }
-        this.interactiveCommandTimeout = commandTimeout;
+        this.interactiveCommandTimeout = timeout;
     }
 
     public long getCtagsTimeout() {
@@ -422,7 +460,7 @@ public final class Configuration {
      * @throws IllegalArgumentException when the timeout is negative
      */
     public void setCtagsTimeout(long timeout) throws IllegalArgumentException {
-        if (commandTimeout < 0) {
+        if (timeout < 0) {
             throw new IllegalArgumentException(
                     String.format(NEGATIVE_NUMBER_ERROR, "ctagsTimeout", timeout));
         }
@@ -476,8 +514,10 @@ public final class Configuration {
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCanonicalRoots(new HashSet<>());
-        setCommandTimeout(600); // 10 minutes
+        setIndexerCommandTimeout(600); // 10 minutes
+        setRestfulCommandTimeout(60);
         setInteractiveCommandTimeout(30);
+        setWebappStartCommandTimeout(5);
         setCompressXref(true);
         setContextLimit((short) 10);
         //contextSurround is default(short)

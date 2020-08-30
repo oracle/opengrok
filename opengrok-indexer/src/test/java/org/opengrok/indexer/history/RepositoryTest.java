@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.util.BufferSink;
 
 /**
@@ -174,22 +175,22 @@ public class RepositoryTest {
         }
 
         @Override
-        public boolean isRepositoryFor(File file, boolean interactive) {
+        public boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
             return false;
         }
 
         @Override
-        public String determineParent(boolean interactive) throws IOException {
+        public String determineParent(CommandTimeoutType cmdType) throws IOException {
             return "";
         }
 
         @Override
-        public String determineBranch(boolean interactive) throws IOException {
+        public String determineBranch(CommandTimeoutType cmdType) throws IOException {
             return "";
         }
 
         @Override
-        String determineCurrentVersion(boolean interactive) throws IOException {
+        String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
             return null;
         }
     }

@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
@@ -149,7 +151,7 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file, boolean interactive) {
+    boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File f = new File(file, CODEMGR_WSDATA.toLowerCase()); // OK no ROOT
             if (f.isDirectory()) {
@@ -187,7 +189,7 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    String determineParent(boolean interactive) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) throws IOException {
         File parentFile = Paths.get(getDirectoryName(), CODEMGR_WSDATA, "parent").toFile();
         String parent = null;
 
@@ -217,12 +219,12 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    String determineBranch(boolean interactive) {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineCurrentVersion(boolean interactive) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         return null;
     }
 }

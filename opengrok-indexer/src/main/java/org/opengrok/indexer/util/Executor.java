@@ -90,7 +90,7 @@ public class Executor {
     public Executor(List<String> cmdList, File workingDirectory) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
-        this.timeout = RuntimeEnvironment.getInstance().getCommandTimeout() * 1000;
+        this.timeout = RuntimeEnvironment.getInstance().getIndexerCommandTimeout() * 1000;
     }
 
     /**

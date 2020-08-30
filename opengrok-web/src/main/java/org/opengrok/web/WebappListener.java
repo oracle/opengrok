@@ -26,6 +26,7 @@ package org.opengrok.web;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
@@ -71,7 +72,7 @@ public final class WebappListener
             throw new Error("CONFIGURATION parameter missing in the web.xml file");
         } else {
             try {
-                env.readConfiguration(new File(config), true);
+                env.readConfiguration(new File(config), CommandTimeoutType.WEBAPP_START);
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Configuration error. Failed to read config file: ", ex);
             }
