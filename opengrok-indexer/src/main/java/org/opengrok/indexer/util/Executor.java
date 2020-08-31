@@ -186,6 +186,7 @@ public class Executor {
 
         Process process = null;
         try {
+            Statistics stat = new Statistics();
             process = processBuilder.start();
             final Process proc = process;
 
@@ -230,7 +231,9 @@ public class Executor {
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
-            
+
+            stat.report(LOGGER, Level.FINE, String.format("Finished command [%s] in directory %s with exit code %d",
+                    cmd_str, dir_str, ret));
             LOGGER.log(Level.FINE,
                 "Finished command [{0}] in directory {1} with exit code {2}",
                 new Object[] {cmd_str, dir_str, ret});

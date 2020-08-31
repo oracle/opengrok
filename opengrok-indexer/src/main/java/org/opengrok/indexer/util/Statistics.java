@@ -28,28 +28,47 @@ import java.util.logging.Logger;
 import static org.opengrok.indexer.util.StringUtils.getReadableTime;
 
 public class Statistics {
-        
-  private final long startTime;  
 
-  public Statistics() {
+    private final long startTime;
+
+    public Statistics() {
       startTime = System.currentTimeMillis();    
   }
 
-  public void report(Logger log, String msg) {
-      long stopTime = System.currentTimeMillis();
-      String time_str = StringUtils.getReadableTime(stopTime - startTime);
-      log.log(Level.INFO, msg + " (took {0})", time_str);
-  }
+    /**
+     * log a message along with how much time it took since the constructor was called.
+     * @param logger logger instance
+     * @param logLevel log level
+     * @param msg message string
+     */
+    public void report(Logger logger, Level logLevel, String msg) {
+        long stopTime = System.currentTimeMillis();
+        String time_str = StringUtils.getReadableTime(stopTime - startTime);
+        logger.log(Level.INFO, msg + " (took {0})", time_str);
+    }
 
-  public void report(Logger log) {
-    long stopTime = System.currentTimeMillis() - startTime;
-    log.log(Level.INFO, "Total time: {0}", getReadableTime(stopTime));
+    /**
+     * log a message along with how much time it took since the constructor was called.
+     * The log level is Level.INFO.
+     * @param logger logger instance
+     * @param msg message string
+     */
+    public void report(Logger logger, String msg) {
+        report(logger, Level.INFO, msg);
+    }
 
-    System.gc();
-    Runtime r = Runtime.getRuntime();
-    long mb = 1024L * 1024;
-    log.log(Level.INFO, "Final Memory: {0}M/{1}M", 
-            new Object[]{(r.totalMemory() - r.freeMemory()) / 
-                    mb, r.totalMemory() / mb});    
-  }    
+    /**
+     * log a message along with how much time and memory it took since the constructor was called.
+     * @param logger
+     */
+    public void report(Logger logger) {
+        long stopTime = System.currentTimeMillis() - startTime;
+        logger.log(Level.INFO, "Total time: {0}", getReadableTime(stopTime));
+
+        System.gc();
+        Runtime r = Runtime.getRuntime();
+        long mb = 1024L * 1024;
+        logger.log(Level.INFO, "Final Memory: {0}M/{1}M",
+                new Object[]{(r.totalMemory() - r.freeMemory()) / mb, r.totalMemory() / mb});
+    }
 }
