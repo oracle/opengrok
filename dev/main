@@ -36,7 +36,7 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 fi
 
 ret=0
-./mvnw -B -V verify $extra_args || ret=1
+./mvnw -D java.util.logging.config.file=dev/logging.properties -B -V verify $extra_args || ret=1
 
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	echo "Checking Apiary blueprint format"
