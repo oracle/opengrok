@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -153,17 +153,24 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             return;
         }
 
-        String expandedFilter = null;
         String dn = null;
         if (useDN) {
             dn = user.getUsername();
+            LOGGER.log(Level.FINEST, "using DN ''{0}'' for user {1}",
+                    new Object[]{dn, user});
         }
+
+        String expandedFilter = null;
         if (ldapFilter != null) {
             expandedFilter = expandFilter(user);
+            LOGGER.log(Level.FINEST, "expanded filter for user {0} into ''{1}''",
+                    new Object[]{user, expandedFilter});
         }
+
+        AbstractLdapProvider ldapProvider = getLdapProvider();
         try {
             AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
-            if ((res = getLdapProvider().lookupLdapContent(dn, expandedFilter,
+            if ((res = ldapProvider.lookupLdapContent(dn, expandedFilter,
                     attributes.toArray(new String[0]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}'' from LDAP provider {3}",
@@ -174,21 +181,23 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             records = res.getAttrs();
             if (!useDN) {
                 dn = res.getDN();
+                LOGGER.log(Level.FINEST, "got DN ''{0}'' for user {1} on {2}",
+                        new Object[]{dn, user});
             }
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
         }
 
         if (records.isEmpty()) {
-            LOGGER.log(Level.WARNING, "LDAP records for user {0} are empty",
-                    user);
+            LOGGER.log(Level.WARNING, "LDAP records for user {0} are empty on {1}",
+                    new Object[]{user, ldapProvider});
             return;
         }
 
         for (String attrName : attributes) {
             if (!records.containsKey(attrName) || records.get(attrName) == null || records.get(attrName).isEmpty()) {
-                LOGGER.log(Level.WARNING, "''{0}'' record for user {1} is not present or empty (LDAP provider: {2})",
-                        new Object[]{attrName, user, getLdapProvider()});
+                LOGGER.log(Level.WARNING, "''{0}'' record for user {1} is not present or empty on {2}",
+                        new Object[]{attrName, user, ldapProvider});
             }
         }
 
@@ -197,7 +206,8 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             attrSet.put(attrName, records.get(attrName));
         }
 
-        LOGGER.log(Level.FINEST, "DN for user {0}: {1}", new Object[]{user, dn});
+        LOGGER.log(Level.FINEST, "DN for user {0} is ''{1}'' on {2}",
+                new Object[]{user, dn, ldapProvider});
         updateSession(req, new LdapUser(dn, attrSet));
     }
 

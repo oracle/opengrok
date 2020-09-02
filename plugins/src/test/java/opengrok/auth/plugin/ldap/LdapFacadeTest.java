@@ -54,7 +54,7 @@ public class LdapFacadeTest {
         int timeoutValue = 42;
         config.setConnectTimeout(timeoutValue);
         LdapFacade facade = new LdapFacade(config);
-        assertEquals("{servers=http://foo.foo,http://bar.bar, searchBase=dc=foo,dc=com}",
+        assertEquals("{server=no active server, searchBase=dc=foo,dc=com}",
                 facade.toString());
     }
 
