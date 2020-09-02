@@ -1245,6 +1245,7 @@ public class IndexDatabase {
                     int tries = 0;
                     Ctags pctags = null;
                     boolean ret;
+                    Statistics stats = new Statistics();
                     while (true) {
                         try {
                             if (alreadyClosedCounter.get() > 0) {
@@ -1284,6 +1285,8 @@ public class IndexDatabase {
                         }
 
                         progress.increment();
+                        stats.report(LOGGER, Level.FINEST,
+                                String.format("file ''%s'' %s", x.file, ret ? "indexed" : "failed indexing"));
                         return ret;
                     }
                 }))).get();
