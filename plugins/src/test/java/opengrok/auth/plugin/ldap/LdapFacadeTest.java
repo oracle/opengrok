@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.naming.directory.SearchControls;
+import javax.naming.ldap.LdapContext;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -45,16 +46,35 @@ public class LdapFacadeTest {
     }
 
     @Test
-    public void testToString() {
+    public void testToStringNegative() throws UnknownHostException {
         Configuration config = new Configuration();
-        config.setServers(Arrays.asList(new LdapServer("http://foo.foo"),
-                new LdapServer("http://bar.bar",
-                        "cn=FOOBAR,l=amer,dc=example,dc=com", "MySecretPassword")));
+        LdapServer server1 = new LdapServer("ldap://foo.com");
+        LdapServer serverSpy1 = Mockito.spy(server1);
+        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
+        Mockito.when(serverSpy1.isReachable()).thenReturn(false);
+
+        config.setServers(Collections.singletonList(serverSpy1));
         config.setSearchBase("dc=foo,dc=com");
-        int timeoutValue = 42;
+        int timeoutValue = 3;
         config.setConnectTimeout(timeoutValue);
         LdapFacade facade = new LdapFacade(config);
         assertEquals("{server=no active server, searchBase=dc=foo,dc=com}",
+                facade.toString());
+    }
+
+    @Test
+    public void testToStringPositive() throws UnknownHostException {
+        Configuration config = new Configuration();
+        LdapServer server1 = new LdapServer("ldap://foo.com");
+        LdapServer serverSpy1 = Mockito.spy(server1);
+        Mockito.doReturn(true).when(serverSpy1).isWorking();
+
+        config.setServers(Collections.singletonList(serverSpy1));
+        config.setSearchBase("dc=foo,dc=com");
+        int timeoutValue = 3;
+        config.setConnectTimeout(timeoutValue);
+        LdapFacade facade = new LdapFacade(config);
+        assertEquals("{server=ldap://foo.com timeout: 3, searchBase=dc=foo,dc=com}",
                 facade.toString());
     }
 
