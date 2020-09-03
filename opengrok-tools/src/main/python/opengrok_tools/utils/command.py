@@ -333,6 +333,7 @@ class Command:
         newcmd = []
         subst_done = -1
         for i, cmdarg in enumerate(self.cmd):
+            cmdarg = str(cmdarg)
             if args_subst:
                 for pattern in args_subst.keys():
                     if pattern in cmdarg:
