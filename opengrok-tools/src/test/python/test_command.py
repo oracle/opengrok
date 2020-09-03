@@ -34,10 +34,10 @@ from opengrok_tools.utils.command import Command
 
 
 def test_subst_append_default():
-    cmd = Command(['foo', '=ARG=', 'bar'],
+    cmd = Command(['foo', '=ARG=', 33, 'bar'],
                   args_subst={"ARG": "blah"},
                   args_append=["1", "2"])
-    assert cmd.cmd == ['foo', '=blah=', 'bar', '1', '2']
+    assert cmd.cmd == ['foo', '=blah=', 33, 'bar', '1', '2']
 
 
 def test_subst_append_exclsubst():
