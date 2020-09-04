@@ -62,8 +62,8 @@ import org.opengrok.indexer.util.TandemPath;
  * <p>
  * No methods are thread-safe between each other. E.g.,
  * {@link #complete()} should only be called by a single thread after all
- * additions of {@link PendingFileDeletion}s and {@link PendingFileRenaming}s
- * are indicated.
+ * additions of {@link PendingSymlinkage}s, {@link PendingFileDeletion}s, and
+ * {@link PendingFileRenaming}s are indicated.
  * <p>
  * {@link #add(org.opengrok.indexer.index.PendingSymlinkage)} should only
  * be called in serial from a single thread in an isolated stage.
@@ -87,6 +87,8 @@ class PendingFileCompleter {
         LoggerFactory.getLogger(PendingFileCompleter.class);
 
     private final Object INSTANCE_LOCK = new Object();
+
+    private volatile boolean completing;
 
     /**
      * Descending path segment length comparator.
@@ -121,8 +123,12 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
+     * @throws IllegalStateException if {@link #complete()} is running
      */
     public boolean add(PendingFileDeletion e) {
+        if (completing) {
+            throw new IllegalStateException("complete() is running");
+        }
         return deletions.add(e);
     }
 
@@ -132,8 +138,12 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
+     * @throws IllegalStateException if {@link #complete()} is running
      */
     public boolean add(PendingSymlinkage e) {
+        if (completing) {
+            throw new IllegalStateException("complete() is running");
+        }
         return linkages.add(e);
     }
 
@@ -145,8 +155,12 @@ class PendingFileCompleter {
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
+     * @throws IllegalStateException if {@link #complete()} is running
      */
     public boolean add(PendingFileRenaming e) {
+        if (completing) {
+            throw new IllegalStateException("complete() is running");
+        }
         synchronized (INSTANCE_LOCK) {
             boolean rc = renames.add(e);
             deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
@@ -156,7 +170,7 @@ class PendingFileCompleter {
 
     /**
      * Complete all the tracked file operations: first in a stage for pending
-     * deletions next in a stage for pending renamings, and finally in a stage
+     * deletions, next in a stage for pending renamings, and finally in a stage
      * for pending symbolic linkages.
      * <p>
      * All operations in each stage are tried in parallel, and any failure is
@@ -171,6 +185,15 @@ class PendingFileCompleter {
      * @throws java.io.IOException if an I/O error occurs
      */
     public int complete() throws IOException {
+        completing = true;
+        try {
+            return completeInner();
+        } finally {
+            completing = false;
+        }
+    }
+
+    private int completeInner() throws IOException {
         Instant start = Instant.now();
         int numDeletions = completeDeletions();
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -346,8 +369,7 @@ class PendingFileCompleter {
 
     private void doDelete(PendingFileDeletionExec del) {
         File f = new File(TandemPath.join(del.absolutePath, PENDING_EXTENSION));
-        File parent = f.getParentFile();
-        del.absoluteParent = parent;
+        del.absoluteParent = f.getParentFile();
 
         doDelete(f);
         f = new File(del.absolutePath);
@@ -436,10 +458,7 @@ class PendingFileCompleter {
             return true;
         }
         // not needed if source's canonical matches re-resolved target canonical
-        if (tgtCanonical.equals(srcCanonical)) {
-            return false;
-        }
-        return true;
+        return !tgtCanonical.equals(srcCanonical);
     }
 
     /**
@@ -488,9 +507,7 @@ class PendingFileCompleter {
         for (File dir : parents) {
             skels.reset();
             findFilelessChildren(skels, dir);
-            skels.childDirs.forEach((childDir) -> {
-                tryDeleteDirectory(childDir);
-            });
+            skels.childDirs.forEach(this::tryDeleteDirectory);
             tryDeleteDirectory(dir);
         }
     }
@@ -572,7 +589,7 @@ class PendingFileCompleter {
     }
 
     private static class PendingFileDeletionExec {
-        String absolutePath;
+        final String absolutePath;
         File absoluteParent;
         IOException exception;
         PendingFileDeletionExec(String absolutePath) {
@@ -581,8 +598,8 @@ class PendingFileCompleter {
     }
 
     private static class PendingFileRenamingExec {
-        String source;
-        String target;
+        final String source;
+        final String target;
         IOException exception;
         PendingFileRenamingExec(String source, String target) {
             this.source = source;
@@ -591,8 +608,8 @@ class PendingFileCompleter {
     }
 
     private static class PendingSymlinkageExec {
-        String source;
-        String targetRel;
+        final String source;
+        final String targetRel;
         IOException exception;
         PendingSymlinkageExec(String source, String relTarget) {
             this.source = source;
