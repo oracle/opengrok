@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -211,13 +212,15 @@ class PendingFileCompleter {
             return 0;
         }
 
-        List<PendingFileRenamingExec> pendingExecs = renames.
+        Set<PendingFileRenaming> renamesConcurrentSet = ConcurrentHashMap.newKeySet(renames.size());
+        renamesConcurrentSet.addAll(renames);
+        List<PendingFileRenamingExec> pendingExecs = renamesConcurrentSet.
             parallelStream().map(f ->
             new PendingFileRenamingExec(f.getTransientPath(),
                 f.getAbsolutePath())).collect(
             Collectors.toList());
-        Map<Boolean, List<PendingFileRenamingExec>> bySuccess;
 
+        Map<Boolean, List<PendingFileRenamingExec>> bySuccess;
         try (Progress progress = new Progress(LOGGER, "pending renames", numPending)) {
             bySuccess = pendingExecs.parallelStream().collect(
                             Collectors.groupingByConcurrent((x) -> {
@@ -260,7 +263,9 @@ class PendingFileCompleter {
             return 0;
         }
 
-        List<PendingFileDeletionExec> pendingExecs = deletions.
+        Set<PendingFileDeletion> concurrentDeletionsSet = ConcurrentHashMap.newKeySet(deletions.size());
+        concurrentDeletionsSet.addAll(deletions);
+        List<PendingFileDeletionExec> pendingExecs = concurrentDeletionsSet.
             parallelStream().map(f ->
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
             Collectors.toList());
@@ -309,8 +314,10 @@ class PendingFileCompleter {
             return 0;
         }
 
+        Set<PendingSymlinkage> concurrentLinkagesSet = ConcurrentHashMap.newKeySet(linkages.size());
+        concurrentLinkagesSet.addAll(linkages);
         List<PendingSymlinkageExec> pendingExecs =
-            linkages.parallelStream().map(f ->
+            concurrentLinkagesSet.parallelStream().map(f ->
                 new PendingSymlinkageExec(f.getSourcePath(),
                         f.getTargetRelPath())).collect(Collectors.toList());
 
