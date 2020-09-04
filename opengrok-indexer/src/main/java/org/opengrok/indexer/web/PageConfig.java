@@ -763,7 +763,6 @@ public final class PageConfig {
      * current path is the "/" directory, otherwise set to an empty string.
      */
     public String[] getSearchOnlyIn() {
-        String path = getPath();
         if (isDir()) {
             return path.length() == 0
                     ? new String[]{"/", "this directory", "disabled=\"\""}
