@@ -764,12 +764,12 @@ public final class PageConfig {
      */
     public String[] getSearchOnlyIn() {
         if (isDir()) {
-            return path.length() == 0
+            return getPath().length() == 0
                     ? new String[]{"/", "this directory", "disabled=\"\""}
                     : new String[]{getPath(), "this directory", ""};
         }
         String[] res = new String[3];
-        res[0] = getPath().substring(0, path.lastIndexOf(PATH_SEPARATOR) + 1);
+        res[0] = getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR) + 1);
         res[1] = res[0];
         res[2] = "";
         return res;
