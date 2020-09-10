@@ -37,7 +37,7 @@ LABEL maintainer="opengrok-dev@yahoogroups.com"
 
 # install dependencies and Python tools
 RUN apt-get update && \
-    apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv
+    apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv ca-certificates
 
 # compile and install universal-ctags
 RUN apt-get install -y pkg-config autoconf build-essential && \
