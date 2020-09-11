@@ -223,7 +223,7 @@ public final class PageConfig {
      */
     public DiffData getDiffData() {
         DiffData data = new DiffData();
-        data.path = getPath().substring(0, path.lastIndexOf(PATH_SEPARATOR));
+        data.path = getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR));
         data.filename = Util.htmlize(getResourceFile().getName());
 
         String srcRoot = getSourceRootPath();
@@ -511,9 +511,9 @@ public final class PageConfig {
         }
         String[] val = req.getParameterValues("also");
         if (val == null || val.length == 0) {
-            return path;
+            return getPath();
         }
-        StringBuilder paths = new StringBuilder(path);
+        StringBuilder paths = new StringBuilder(getPath());
         for (String val1 : val) {
             paths.append(' ').append(val1);
         }
@@ -764,12 +764,12 @@ public final class PageConfig {
      */
     public String[] getSearchOnlyIn() {
         if (isDir()) {
-            return path.length() == 0
+            return getPath().length() == 0
                     ? new String[]{"/", "this directory", "disabled=\"\""}
-                    : new String[]{path, "this directory", ""};
+                    : new String[]{getPath(), "this directory", ""};
         }
         String[] res = new String[3];
-        res[0] = path.substring(0, path.lastIndexOf(PATH_SEPARATOR) + 1);
+        res[0] = getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR) + 1);
         res[1] = res[0];
         res[2] = "";
         return res;
@@ -1257,7 +1257,7 @@ public final class PageConfig {
             return new File[0];
         }
         File[] res = new File[filenames.size()];
-        File dir = new File(getEnv().getDataRootPath() + Prefix.XREF_P + path);
+        File dir = new File(getEnv().getDataRootPath() + Prefix.XREF_P + getPath());
         if (dir.exists() && dir.isDirectory()) {
             getResourceFile();
             boolean compressed = getEnv().isCompressXref();
@@ -1279,7 +1279,7 @@ public final class PageConfig {
      */
     public File findDataFile() {
         return checkFile(new File(getEnv().getDataRootPath() + Prefix.XREF_P),
-                path, env.isCompressXref());
+                getPath(), env.isCompressXref());
     }
 
     public String getLatestRevision() {
@@ -1335,7 +1335,7 @@ public final class PageConfig {
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
-        sb.append(Util.URIEncodePath(path));
+        sb.append(Util.URIEncodePath(getPath()));
         sb.append("?");
         sb.append(QueryParameters.REVISION_PARAM_EQ);
         sb.append(Util.URIEncode(revStr));
@@ -1383,7 +1383,7 @@ public final class PageConfig {
                 return req.getContextPath() + Prefix.XREF_P + '/';
             }
 
-            if (path.length() == 0) {
+            if (getPath().length() == 0) {
                 // => /
                 return null;
             }
@@ -1392,9 +1392,9 @@ public final class PageConfig {
                     && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
                 return req.getContextPath() + Prefix.XREF_P
-                        + getUriEncodedPath() + trailingSlash(path);
+                        + getUriEncodedPath() + trailingSlash(getPath());
             }
-            String ts = trailingSlash(path);
+            String ts = trailingSlash(getPath());
             if (ts.length() != 0) {
                 return req.getContextPath() + prefix + getUriEncodedPath() + ts;
             }
@@ -1678,11 +1678,13 @@ public final class PageConfig {
      * @return string used for setting page title of search view
      */
     public String getHistoryTitle() {
+        String path = getPath();
         return Util.htmlize(getShortPath(path) +
                 " - OpenGrok history log for " + path);
     }
 
     public String getPathTitle() {
+        String path = getPath();
         String title = getShortPath(path);
         if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
             title += " (revision " + getRequestedRevision() + ")";
