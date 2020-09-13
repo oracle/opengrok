@@ -34,6 +34,8 @@ import java.io.PrintWriter;
 @WebServlet("/metrics/prometheus")
 public class MetricsServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 0L;
+
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
         try (PrintWriter pw = resp.getWriter()) {
