@@ -23,8 +23,6 @@
  */
 package org.opengrok.indexer.authorization;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,7 +31,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -224,8 +221,6 @@ public class AuthorizationStack extends AuthorizationEntity {
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate) {
 
-        Instant start = Instant.now();
-
         boolean overallDecision = true;
         for (AuthorizationEntity authEntity : getStack()) {
 
@@ -283,19 +278,6 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             }
         }
-        Duration duration = Duration.between(start, Instant.now());
-
-        Metrics.getRegistry()
-                .timer(String.format("authorization_in_stack_%s_%s", getName(),
-                        overallDecision ? "positive" : "negative"))
-                .record(duration);
-        Metrics.getRegistry()
-                .timer(String.format("authorization_in_stack_%s_%s_of_%s", getName(),
-                        overallDecision ? "positive" : "negative", entity.getName()))
-                .record(duration);
-        Metrics.getRegistry()
-                .timer(String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName()))
-                .record(duration);
 
         return overallDecision;
     }
