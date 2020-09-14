@@ -434,47 +434,6 @@ The repository path is relative to source root.
                 }]
               }
 
-## Statistics [/stats]
-
-### returns statistics [GET]
-
-+ Response 200 (application/json)
-  + Body
-  
-            {"requests_per_minute_max":2,"timing":{"authorization":9,"authorization_in_stack_default stack_of_OpenGrok":0,
-             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":9,
-             "authorization_positive_of_OpenGrok":9,"root":1109,"*":1109,"authorization_in_stack_default stack_positive_of_OpenGrok":0,
-             "authorization_positive":9},"minutes":1,"timing_min":{"authorization":0,"authorization_in_stack_default stack_of_OpenGrok":0,
-             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":0,
-             "authorization_positive_of_OpenGrok":0,"root":4,"*":4,"authorization_in_stack_default stack_positive_of_OpenGrok":0,
-             "authorization_positive":0},"timing_avg":{"authorization":4.5,"authorization_in_stack_default stack_of_OpenGrok":0.0,
-             "authorization_in_stack_default stack_positive":0.0,"authorization_of_OpenGrok":4.5,
-             "authorization_positive_of_OpenGrok":4.5,"root":554.5,"*":554.5,
-             "authorization_in_stack_default stack_positive_of_OpenGrok":0.0,"authorization_positive":4.5},
-             "request_categories":{"authorization":2,"authorization_in_stack_default stack_of_OpenGrok":2,
-             "authorization_in_stack_default stack_positive":2,"authorization_cache_misses":2,
-             "authorization_of_OpenGrok":2,"authorization_cache_hits":4,
-             "authorization_positive_of_OpenGrok":2,"root":2,"*":2,
-             "authorization_in_stack_default stack_positive_of_OpenGrok":2,
-             "authorization_positive":2},
-             "day_histogram":[0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0],"requests":2,
-             "requests_per_minute_min":1,"requests_per_minute":2,"requests_per_minute_avg":2.0,
-             "month_histogram":[0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-             "timing_max":{"authorization":9,"authorization_in_stack_default stack_of_OpenGrok":0,
-             "authorization_in_stack_default stack_positive":0,"authorization_of_OpenGrok":9,
-             "authorization_positive_of_OpenGrok":9,"root":1105,"*":1105,
-             "authorization_in_stack_default stack_positive_of_OpenGrok":0,"authorization_positive":9}}
-
-### deletes statistics [DELETE]
-
-+ Response 204
-
-## Statistics reload [/stats/reload]
-
-### reloads statistics (useful when configuration path to statistics changed) [PUT]
-
-+ Response 204
-
 ## Suggester [/suggest{?projects,field,caret,full,defs,refs,path,hist,type}]
 
 ### returns suggestions [GET]
