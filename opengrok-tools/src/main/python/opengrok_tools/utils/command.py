@@ -59,7 +59,7 @@ class Command:
         if isinstance(doprint, list):
             doprint = doprint[0]
 
-        self.cmd = cmd
+        self.cmd = list(map(str, cmd))
         self.state = "notrun"
         self.excl_subst = excl_subst
         self.work_dir = work_dir
@@ -70,6 +70,7 @@ class Command:
         self.limits = resource_limits
         self.doprint = doprint
         self.err = None
+        self.returncode = None
 
         self.logger = logger or logging.getLogger(__name__)
 
@@ -333,7 +334,6 @@ class Command:
         newcmd = []
         subst_done = -1
         for i, cmdarg in enumerate(self.cmd):
-            cmdarg = str(cmdarg)
             if args_subst:
                 for pattern in args_subst.keys():
                     if pattern in cmdarg:
