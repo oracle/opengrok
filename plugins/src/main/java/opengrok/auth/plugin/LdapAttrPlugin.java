@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -70,6 +70,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
     private Integer ldapUserInstance;
+    private String filePath;
 
     public LdapAttrPlugin() {
         sessionAllowed += "-" + nextId++;
@@ -94,7 +95,6 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             throw new NullPointerException("Missing param [" + ATTR_PARAM + "] in the setup");
         }
 
-        String filePath;
         if ((filePath = (String) parameters.get(FILE_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILE_PARAM + "] in the setup");
         }
@@ -142,38 +142,41 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
         // Check attributes cached in LDAP user object first, then query LDAP server
         // (and if found, cache the result in the LDAP user object).
         attributeValues = ldapUser.getAttribute(ldapAttr);
-        if (attributeValues != null) {
-            sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
-        } else {
+        if (attributeValues == null) {
+            AbstractLdapProvider ldapProvider = getLdapProvider();
             try {
                 String dn = ldapUser.getDn();
                 if (dn != null) {
-                    LOGGER.log(Level.FINEST, "searching with dn={0}", dn);
+                    LOGGER.log(Level.FINEST, "searching with dn={0} on {1}",
+                            new Object[]{dn, ldapProvider});
                     AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
-                    if ((res = getLdapProvider().lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
-                        LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} (LDAP provider: {2})",
-                                new Object[]{ldapAttr, user, getLdapProvider()});
+                    if ((res = ldapProvider.lookupLdapContent(dn, new String[]{ldapAttr})) == null) {
+                        LOGGER.log(Level.WARNING, "cannot lookup attributes {0} for user {1} on {2})",
+                                new Object[]{ldapAttr, user, ldapProvider});
                         return;
                     }
 
                     records = res.getAttrs();
                 } else {
-                    LOGGER.log(Level.FINE, "no DN for user {0}", user);
+                    LOGGER.log(Level.FINE, "no DN for user {0} on {1}",
+                            new Object[]{user, ldapProvider});
                 }
             } catch (LdapException ex) {
                 throw new AuthorizationException(ex);
             }
 
             if (records == null || records.isEmpty() || (attributeValues = records.get(ldapAttr)) == null) {
-                LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1}",
-                        new Object[]{ldapAttr, user});
+                LOGGER.log(Level.WARNING, "empty records or attribute values {0} for user {1} on {2}",
+                        new Object[]{ldapAttr, user, ldapProvider});
                 return;
             }
 
             ldapUser.setAttribute(ldapAttr, attributeValues);
-            sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
         }
 
+        sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
+        LOGGER.log(Level.FINEST, "LDAP user {0} {1} against {2}",
+                new Object[]{ldapUser, sessionAllowed ? "allowed" : "denied", filePath});
         updateSession(req, sessionAllowed);
     }
 

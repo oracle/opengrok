@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.naming.CommunicationException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -431,8 +430,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     public String toString() {
-        return "{servers=" + String.join(",",
-                getServers().stream().map(LdapServer::getUrl).collect(Collectors.toList())) +
+        return "{server=" + (actualServer != -1 ? servers.get(actualServer) : "no active server") +
                 ", searchBase=" + getSearchBase() + "}";
     }
 }

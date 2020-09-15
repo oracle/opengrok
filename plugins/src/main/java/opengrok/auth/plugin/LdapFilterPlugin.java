@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -32,6 +32,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
+import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
 import opengrok.auth.plugin.util.FilterUtil;
 import org.opengrok.indexer.authorization.AuthorizationException;
@@ -122,22 +123,28 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         updateSession(req, false);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(getSessionAttr())) == null) {
-            LOGGER.log(Level.FINER, "failed to get LDAP attribute " + LdapUserPlugin.SESSION_ATTR);
+            LOGGER.log(Level.WARNING, "failed to get LDAP attribute ''{0}'' from session for user {1}",
+                    new Object[]{LdapUserPlugin.SESSION_ATTR, user});
             return;
         }
 
         String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
-        LOGGER.log(Level.FINER, "expanded filter for user {0} and LDAP user {1} into ''{2}''",
+        LOGGER.log(Level.FINEST, "expanded filter for user {0} and LDAP user {1} into ''{2}''",
                 new Object[]{user, ldapUser, expandedFilter});
+        AbstractLdapProvider ldapProvider = getLdapProvider();
         try {
-            if ((getLdapProvider().lookupLdapContent(null, expandedFilter)) == null) {
-                LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
+            if ((ldapProvider.lookupLdapContent(null, expandedFilter)) == null) {
+                LOGGER.log(Level.WARNING,
+                        "failed to get content for LDAP user {0} with filter {1} on {2}",
+                        new Object[]{ldapUser, expandedFilter, ldapProvider});
                 return;
             }
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
         }
 
+        LOGGER.log(Level.FINEST, "LDAP user {0} allowed on {2}",
+                new Object[]{ldapUser, ldapProvider});
         updateSession(req, true);
     }
 
