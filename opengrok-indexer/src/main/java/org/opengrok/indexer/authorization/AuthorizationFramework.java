@@ -536,16 +536,13 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
             lock.readLock().unlock();
         }
 
+        // Update the timers.
         authTimer.record(duration);
         if (overallDecision) {
             authPositiveTimer.record(duration);
         } else {
             authNegativeTimer.record(duration);
         }
-        Metrics.getRegistry().timer(String.format("authorization_of_%s", entity.getName())).record(duration);
-        Metrics.getRegistry()
-                .timer(String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()))
-                .record(duration);
 
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);
