@@ -22,6 +22,8 @@
  */
 package opengrok.auth.plugin.ldap;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +43,11 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import io.micrometer.core.instrument.Timer;
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
+import org.opengrok.indexer.Metrics;
 
 public class LdapFacade extends AbstractLdapProvider {
 
@@ -102,6 +106,10 @@ public class LdapFacade extends AbstractLdapProvider {
     private int actualServer = -1;
     private long errorTimestamp = 0;
     private boolean reported = false;
+
+    private final Timer ldapLookupTimer = Timer.builder("ldap.latency").
+            description("LDAP lookup latency").
+            register(Metrics.getRegistry());
 
     /**
      * Interface for converting LDAP results into user defined types.
@@ -290,7 +298,10 @@ public class LdapFacade extends AbstractLdapProvider {
      * @return results transformed with mapper
      */
     private <T> LdapSearchResult<T> lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper) throws LdapException {
-        return lookup(dn, filter, attributes, mapper, 0);
+        Instant start = Instant.now();
+        LdapSearchResult<T> res = lookup(dn, filter, attributes, mapper, 0);
+        ldapLookupTimer.record(Duration.between(start, Instant.now()));
+        return res;
     }
 
     private String getSearchDescription(String dn, String filter, String[] attributes) {
