@@ -55,14 +55,27 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
 
-    private final Counter authStackReloadCounter = Metrics.getRegistry().counter("authorization_stack_reload");
-    private final Counter authCacheHits = Metrics.getRegistry().counter("authorization_cache_hits");
-    private final Counter authCacheMisses = Metrics.getRegistry().counter("authorization_cache_misses");
-    private final Counter authSessionsInvalidated = Metrics.getRegistry().counter("authorization_sessions_invalidated");
+    private final Counter authStackReloadCounter = Metrics.getRegistry().
+            counter("authorization.stack.reload");
+    private final Counter authCacheHits = Counter.builder("authorization.cache").
+            description("authorization cache hits").
+            tag("what", "hits").
+            register(Metrics.getRegistry());
+    private final Counter authCacheMisses = Counter.builder("authorization.cache").
+            description("authorization cache misses").
+            tag("what", "misses").
+            register(Metrics.getRegistry());
+    private final Counter authSessionsInvalidated = Metrics.getRegistry().
+            counter("authorization.sessions.invalidated");
 
-    private final Timer authTimer = Metrics.getRegistry().timer("authorization");
-    private final Timer authPositiveTimer = Metrics.getRegistry().timer("authorization_positive");
-    private final Timer authNegativeTimer = Metrics.getRegistry().timer("authorization_negative");
+    private final Timer authTimerPositive = Timer.builder("authorization.latency").
+            description("authorization latency").
+            tag("outcome", "positive").
+            register(Metrics.getRegistry());
+    private final Timer authTimerNegative = Timer.builder("authorization.latency").
+            description("authorization latency").
+            tag("outcome", "negative").
+            register(Metrics.getRegistry());
 
     /**
      * Stack of available plugins/stacks in the order of the execution.
@@ -537,11 +550,10 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         }
 
         // Update the timers.
-        authTimer.record(duration);
         if (overallDecision) {
-            authPositiveTimer.record(duration);
+            authTimerPositive.record(duration);
         } else {
-            authNegativeTimer.record(duration);
+            authTimerNegative.record(duration);
         }
 
         m.put(entity.getName(), overallDecision);
