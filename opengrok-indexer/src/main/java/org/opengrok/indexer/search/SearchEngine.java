@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -73,9 +73,8 @@ import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.ProjectHelper;
 
 /**
- * This is an encapsulation of the details on how to search in the index
- * database.
- * This is used for searching from the command line tool and also via the JSON interface.
+ * This is an encapsulation of the details on how to search in the index database.
+ * This is used for searching via the REST API.
  *
  * @author Trond Norbye 2005
  * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
