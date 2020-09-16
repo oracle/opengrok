@@ -141,6 +141,6 @@ public class WatchDogService {
                 LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
             }
         }
-        LOGGER.log(Level.INFO, "Watchdog stoped");
+        LOGGER.log(Level.INFO, "Watchdog stopped");
     }
 }
