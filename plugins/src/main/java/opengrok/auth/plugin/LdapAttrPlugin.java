@@ -128,9 +128,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     public void fillSession(HttpServletRequest req, User user) {
         updateSession(req, false);
 
-        LdapUser ldapUser;
-        if ((ldapUser = (LdapUser) req.getSession().
-                getAttribute(LdapUserPlugin.getSessionAttrName(ldapUserInstance))) == null) {
+        LdapUser ldapUser = (LdapUser) req.getSession().                getAttribute(LdapUserPlugin.getSessionAttrName(ldapUserInstance));
+        if (ldapUser == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute from {1}",
                     new Object[]{LdapUserPlugin.SESSION_ATTR, user});
             return;
