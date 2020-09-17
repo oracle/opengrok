@@ -43,8 +43,8 @@ public class Statistics {
      */
     public void report(Logger logger, Level logLevel, String msg) {
         long stopTime = System.currentTimeMillis();
-        String time_str = StringUtils.getReadableTime(stopTime - startTime);
-        logger.log(Level.INFO, msg + " (took {0})", time_str);
+        String timeStr = StringUtils.getReadableTime(stopTime - startTime);
+        logger.log(Level.INFO, msg + " (took {0})", timeStr);
     }
 
     /**
