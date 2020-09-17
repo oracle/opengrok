@@ -42,8 +42,6 @@
           <includes>
             <include>README*</include>
             <include>LICENSE*</include>
-            <include>CHANGES*</include>
-            <include>paths.tsv</include>
             <include>logging.properties</include>
           </includes>
         </fileSet>
