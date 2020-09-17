@@ -159,7 +159,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
                     records = res.getAttrs();
                 } else {
-                    LOGGER.log(Level.FINE, "no DN for user {0} on {1}",
+                    LOGGER.log(Level.FINE, "no DN for LDAP user {0} on {1}",
                             new Object[]{ldapUser, ldapProvider});
                 }
             } catch (LdapException ex) {
