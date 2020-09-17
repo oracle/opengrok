@@ -23,16 +23,18 @@
 
 package org.opengrok.indexer.util;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.opengrok.indexer.util.StringUtils.getReadableTime;
 
 public class Statistics {
 
-    private final long startTime;
+    private final Instant startTime;
 
     public Statistics() {
-      startTime = System.currentTimeMillis();    
+      startTime = Instant.now();
   }
 
     /**
@@ -42,14 +44,13 @@ public class Statistics {
      * @param msg message string
      */
     public void report(Logger logger, Level logLevel, String msg) {
-        long stopTime = System.currentTimeMillis();
-        String timeStr = StringUtils.getReadableTime(stopTime - startTime);
-        logger.log(Level.INFO, msg + " (took {0})", timeStr);
+        String timeStr = StringUtils.getReadableTime(Duration.between(startTime, Instant.now()).toMillis());
+        logger.log(logLevel, msg + " (took {0})", timeStr);
     }
 
     /**
      * log a message along with how much time it took since the constructor was called.
-     * The log level is Level.INFO.
+     * The log level is {@code INFO}.
      * @param logger logger instance
      * @param msg message string
      */
@@ -59,11 +60,12 @@ public class Statistics {
 
     /**
      * log a message along with how much time and memory it took since the constructor was called.
-     * @param logger
+     * The message will be logged with the {@code INFO} level.
+     * @param logger logger instance
      */
     public void report(Logger logger) {
-        long stopTime = System.currentTimeMillis() - startTime;
-        logger.log(Level.INFO, "Total time: {0}", getReadableTime(stopTime));
+        logger.log(Level.INFO, "Total time: {0}",
+                getReadableTime(Duration.between(startTime, Instant.now()).toMillis()));
 
         System.gc();
         Runtime r = Runtime.getRuntime();
