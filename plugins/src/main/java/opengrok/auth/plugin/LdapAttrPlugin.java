@@ -126,13 +126,9 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     @Override
     public void fillSession(HttpServletRequest req, User user) {
-        boolean sessionAllowed;
-        LdapUser ldapUser;
-        Map<String, Set<String>> records = null;
-        Set<String> attributeValues;
-
         updateSession(req, false);
 
+        LdapUser ldapUser;
         if ((ldapUser = (LdapUser) req.getSession().
                 getAttribute(LdapUserPlugin.getSessionAttrName(ldapUserInstance))) == null) {
             LOGGER.log(Level.WARNING, "cannot get {0} attribute from {1}",
@@ -142,8 +138,9 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
 
         // Check attributes cached in LDAP user object first, then query LDAP server
         // (and if found, cache the result in the LDAP user object).
-        attributeValues = ldapUser.getAttribute(ldapAttr);
+        Set<String> attributeValues = ldapUser.getAttribute(ldapAttr);
         if (attributeValues == null) {
+            Map<String, Set<String>> records = null;
             AbstractLdapProvider ldapProvider = getLdapProvider();
             try {
                 String dn = ldapUser.getDn();
@@ -175,7 +172,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
             ldapUser.setAttribute(ldapAttr, attributeValues);
         }
 
-        sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
+        boolean sessionAllowed = attributeValues.stream().anyMatch(whitelist::contains);
         LOGGER.log(Level.FINEST, "LDAP user {0} {1} against {2}",
                 new Object[]{ldapUser, sessionAllowed ? "allowed" : "denied", filePath});
         updateSession(req, sessionAllowed);
