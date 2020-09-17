@@ -30,6 +30,7 @@ import com.cronutils.parser.CronParser;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
@@ -316,7 +317,8 @@ public class SuggesterServiceImpl implements SuggesterService {
                 env.isProjectsEnabled(),
                 suggesterConfig.getAllowedFields(),
                 suggesterConfig.getTimeThreshold(),
-                rebuildParalleismLevel);
+                rebuildParalleismLevel,
+                Metrics.getRegistry());
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());
