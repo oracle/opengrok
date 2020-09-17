@@ -100,8 +100,6 @@ public final class Suggester implements Closeable {
 
     private final CountDownLatch initDone = new CountDownLatch(1);
 
-    private final MeterRegistry registry;
-
     private final Counter suggesterRebuildCounter;
     private final Timer suggesterRebuildTimer;
     private final Timer suggesterInitTimer;
@@ -153,17 +151,16 @@ public final class Suggester implements Closeable {
         this.allowedFields = new HashSet<>(allowedFields);
         this.timeThreshold = timeThreshold;
         this.rebuildParallelismLevel = rebuildParallelismLevel;
-        this.registry = registry;
 
         suggesterRebuildCounter = Counter.builder("suggester.rebuild").
                 description("suggester rebuild count").
-                register(this.registry);
+                register(registry);
         suggesterRebuildTimer = Timer.builder("suggester.rebuild.latency").
                 description("suggester rebuild latency").
-                register(this.registry);
+                register(registry);
         suggesterInitTimer = Timer.builder("suggester.init.latency").
                 description("suggester initialization latency").
-                register(this.registry);
+                register(registry);
     }
 
     /**
