@@ -22,6 +22,9 @@
  */
 package org.opengrok.suggest;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -97,6 +100,12 @@ public final class Suggester implements Closeable {
 
     private final CountDownLatch initDone = new CountDownLatch(1);
 
+    private final MeterRegistry registry;
+
+    private final Counter suggesterRebuildCounter;
+    private final Timer suggesterRebuildTimer;
+    private final Timer suggesterInitTimer;
+
     // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
     private final ExecutorService executorService = Executors.newFixedThreadPool(
             Runtime.getRuntime().availableProcessors(),
@@ -115,6 +124,7 @@ public final class Suggester implements Closeable {
      * @param allowedFields fields for which should the suggester be enabled,
      * if {@code null} then enabled for all fields
      * @param timeThreshold time in milliseconds after which the suggestions requests should time out
+     * @param registry
      */
     public Suggester(
             final File suggesterDir,
@@ -124,8 +134,8 @@ public final class Suggester implements Closeable {
             final boolean projectsEnabled,
             final Set<String> allowedFields,
             final int timeThreshold,
-            final int rebuildParallelismLevel
-    ) {
+            final int rebuildParallelismLevel,
+            MeterRegistry registry) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
         }
@@ -143,6 +153,17 @@ public final class Suggester implements Closeable {
         this.allowedFields = new HashSet<>(allowedFields);
         this.timeThreshold = timeThreshold;
         this.rebuildParallelismLevel = rebuildParallelismLevel;
+        this.registry = registry;
+
+        suggesterRebuildCounter = Counter.builder("suggester.rebuild").
+                description("suggester rebuild count").
+                register(this.registry);
+        suggesterRebuildTimer = Timer.builder("suggester.rebuild.latency").
+                description("suggester rebuild latency").
+                register(this.registry);
+        suggesterInitTimer = Timer.builder("suggester.init.latency").
+                description("suggester initialization latency").
+                register(this.registry);
     }
 
     /**
@@ -168,7 +189,9 @@ public final class Suggester implements Closeable {
                 submitInitIfIndexExists(executor, indexDir);
             }
 
-            shutdownAndAwaitTermination(executor, start, "Suggester successfully initialized");
+            Duration duration = Duration.between(start, Instant.now());
+            suggesterInitTimer.record(duration);
+            shutdownAndAwaitTermination(executor, duration, "Suggester successfully initialized");
             initDone.countDown();
         }
     }
@@ -232,12 +255,12 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService, Instant start, final String logMessageOnSuccess) {
+    private void shutdownAndAwaitTermination(final ExecutorService executorService, Duration duration, final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
             logger.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
-                    DurationFormatUtils.formatDurationWords(Duration.between(start, Instant.now()).toMillis(),
+                    DurationFormatUtils.formatDurationWords(duration.toMillis(),
                             true, true)});
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
@@ -261,6 +284,7 @@ public final class Suggester implements Closeable {
 
         synchronized (lock) {
             Instant start = Instant.now();
+            suggesterRebuildCounter.increment();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -274,7 +298,9 @@ public final class Suggester implements Closeable {
                 }
             }
 
-            shutdownAndAwaitTermination(executor, start, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            Duration duration = Duration.between(start, Instant.now());
+            suggesterRebuildTimer.record(duration);
+            shutdownAndAwaitTermination(executor, duration, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
 
         rebuildLock.lock();
