@@ -240,7 +240,7 @@ public final class RuntimeEnvironment {
                 return getRestfulCommandTimeout();
         }
 
-        throw new InvalidParameterException("invalid command timeout type");
+        throw new IllegalArgumentException("invalid command timeout type");
     }
 
     public int getRestfulCommandTimeout() {
