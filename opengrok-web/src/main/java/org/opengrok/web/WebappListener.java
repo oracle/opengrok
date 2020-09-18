@@ -57,7 +57,7 @@ public final class WebappListener
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
 
-    private static final String TIMER_ATTR_NAME = "request_start";
+    private static final String TIMER_ATTR_NAME = WebappListener.class.getName() + ".request_start";
     private Timer requestTimer;
 
     /**
