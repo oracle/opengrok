@@ -14,6 +14,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,14 +36,31 @@ public class LdapFacadeTest {
         assertEquals(countLimit, controls.getCountLimit());
     }
 
+    private LdapServer getSpyLdapServer(String name) throws UnknownHostException {
+        LdapServer server1 = new LdapServer(name);
+        LdapServer serverSpy1 = Mockito.spy(server1);
+        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
+        Mockito.when(serverSpy1.isWorking()).thenReturn(true);
+        return serverSpy1;
+    }
+
     @Test
-    public void testConnectTimeoutInheritance() {
+    public void testConnectTimeoutInheritance() throws UnknownHostException {
         Configuration config = new Configuration();
-        config.setServers(Collections.singletonList(new LdapServer("http://foo.bar")));
-        int timeoutValue = 42;
-        config.setConnectTimeout(timeoutValue);
+
+        LdapServer[] servers = {getSpyLdapServer("ldap://foo.com"), getSpyLdapServer("ldap://bar.com")};
+        config.setServers(Arrays.asList(servers));
+
+        int connectTimeoutValue = 42;
+        config.setConnectTimeout(connectTimeoutValue);
+        int readTimeoutValue = 24;
+        config.setReadTimeout(readTimeoutValue);
+
         LdapFacade facade = new LdapFacade(config);
-        assertTrue(facade.getServers().stream().anyMatch(s -> s.getConnectTimeout() == timeoutValue));
+        assertEquals(Collections.singleton(connectTimeoutValue),
+                facade.getServers().stream().map(s -> s.getConnectTimeout()).collect(Collectors.toSet()));
+        assertEquals(Collections.singleton(readTimeoutValue),
+                facade.getServers().stream().map(s -> s.getReadTimeout()).collect(Collectors.toSet()));
     }
 
     @Test
@@ -74,7 +92,7 @@ public class LdapFacadeTest {
         int timeoutValue = 3;
         config.setConnectTimeout(timeoutValue);
         LdapFacade facade = new LdapFacade(config);
-        assertEquals("{server=ldap://foo.com timeout: 3, searchBase=dc=foo,dc=com}",
+        assertEquals("{server=ldap://foo.com, connect timeout: 3, searchBase=dc=foo,dc=com}",
                 facade.toString());
     }
 
