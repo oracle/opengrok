@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -48,17 +48,20 @@ public class LdapServer implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(LdapServer.class.getName());
 
-    private static final String LDAP_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.connect.connectTimeout";
+    private static final String LDAP_CONNECT_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.connect.timeout";
+    private static final String LDAP_READ_TIMEOUT_PARAMETER = "com.sun.jndi.ldap.read.timeout";
     private static final String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
-    /**
-     * Default connectTimeout for connecting.
-     */
-    private static final int LDAP_CONNECT_TIMEOUT = 5000; // ms
+
+    // default connectTimeout value in milliseconds
+    private static final int LDAP_CONNECT_TIMEOUT = 5000;
+    // default readTimeout value in milliseconds
+    private static final int LDAP_READ_TIMEOUT = 3000;
 
     private String url;
     private String username;
     private String password;
     private int connectTimeout;
+    private int readTimeout;
     private int interval = 10 * 1000;
 
     private Hashtable<String, String> env;
@@ -118,6 +121,15 @@ public class LdapServer implements Serializable {
 
     public LdapServer setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+    public int getReadTimeout() {
+        return readTimeout;
+    }
+
+    public LdapServer setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
         return this;
     }
 
@@ -248,7 +260,10 @@ public class LdapServer implements Serializable {
                 env.put(Context.SECURITY_CREDENTIALS, this.password);
             }
             if (this.connectTimeout > 0) {
-                env.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(this.connectTimeout));
+                env.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(this.connectTimeout));
+            }
+            if (this.readTimeout > 0) {
+                env.put(LDAP_READ_TIMEOUT_PARAMETER, Integer.toString(this.readTimeout));
             }
 
             try {
@@ -341,7 +356,8 @@ public class LdapServer implements Serializable {
         Hashtable<String, String> e = new Hashtable<String, String>();
 
         e.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
-        e.put(LDAP_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));
+        e.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));
+        e.put(LDAP_READ_TIMEOUT_PARAMETER, Integer.toString(LDAP_READ_TIMEOUT));
 
         return e;
     }
@@ -353,12 +369,16 @@ public class LdapServer implements Serializable {
         sb.append(getUrl());
 
         if (getConnectTimeout() > 0) {
-            sb.append(" timeout: ");
+            sb.append(", connect timeout: ");
             sb.append(getConnectTimeout());
+        }
+        if (getReadTimeout() > 0) {
+            sb.append(", read timeout: ");
+            sb.append(getReadTimeout());
         }
 
         if (getUsername() != null && !getUsername().isEmpty()) {
-            sb.append(" username: ");
+            sb.append(", username: ");
             sb.append(getUsername());
         }
 

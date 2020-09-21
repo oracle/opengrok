@@ -179,7 +179,7 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     public LdapFacade(Configuration cfg) {
-        setServers(cfg.getServers(), cfg.getConnectTimeout());
+        setServers(cfg.getServers(), cfg.getConnectTimeout(), cfg.getReadTimeout());
         setInterval(cfg.getInterval());
         setSearchBase(cfg.getSearchBase());
         setWebHooks(cfg.getWebHooks());
@@ -219,12 +219,15 @@ public class LdapFacade extends AbstractLdapProvider {
         return servers;
     }
 
-    public LdapFacade setServers(List<LdapServer> servers, int timeout) {
+    public LdapFacade setServers(List<LdapServer> servers, int connectTimeout, int readTimeout) {
         this.servers = servers;
-        // Inherit connect timeout from server pool configuration.
+        // Inherit timeout values from server pool configuration.
         for (LdapServer server : servers) {
-            if (server.getConnectTimeout() == 0 && timeout != 0) {
-                server.setConnectTimeout(timeout);
+            if (server.getConnectTimeout() == 0 && connectTimeout != 0) {
+                server.setConnectTimeout(connectTimeout);
+            }
+            if (server.getReadTimeout() == 0 && readTimeout != 0) {
+                server.setReadTimeout(readTimeout);
             }
         }
         return this;

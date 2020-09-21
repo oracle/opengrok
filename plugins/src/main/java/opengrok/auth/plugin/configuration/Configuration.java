@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
@@ -39,6 +39,9 @@ import java.util.List;
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHooks;
 
+/**
+ * Encapsulates configuration for LDAP plugins.
+ */
 public class Configuration implements Serializable {
 
     private static final long serialVersionUID = -1;
@@ -49,6 +52,7 @@ public class Configuration implements Serializable {
     private WebHooks webHooks;
     private int searchTimeout;
     private int connectTimeout;
+    private int readTimeout;
     private int countLimit;
 
     public void setServers(List<LdapServer> servers) {
@@ -89,6 +93,14 @@ public class Configuration implements Serializable {
 
     public void setConnectTimeout(int timeout) {
         this.connectTimeout = timeout;
+    }
+
+    public int getReadTimeout() {
+        return this.readTimeout;
+    }
+
+    public void setReadTimeout(int timeout) {
+        this.readTimeout = timeout;
     }
 
     public int getCountLimit() {

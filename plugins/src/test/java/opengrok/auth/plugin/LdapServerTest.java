@@ -107,4 +107,13 @@ public class LdapServerTest {
         Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{});
         assertFalse(serverSpy.isReachable());
     }
+
+    @Test
+    public void testToString() {
+        LdapServer server = new LdapServer("ldaps://foo.bar.com", "foo", "bar");
+        server.setConnectTimeout(2000);
+        server.setReadTimeout(1000);
+        assertEquals("ldaps://foo.bar.com, connect timeout: 2000, read timeout: 1000, username: foo",
+                server.toString());
+    }
 }
