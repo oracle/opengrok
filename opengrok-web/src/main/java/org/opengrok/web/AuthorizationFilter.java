@@ -24,8 +24,6 @@
 package org.opengrok.web;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
@@ -37,9 +35,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.Timer;
-import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
@@ -50,9 +45,6 @@ public class AuthorizationFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
-    private final DistributionSummary requests = Metrics.getRegistry().summary(StatisticsFilter.REQUESTS_METRIC);
-    private final Timer requestsForbidden = Metrics.getRegistry().timer("requests.forbidden");
-
     @Override
     public void init(FilterConfig fc) {
     }
@@ -62,7 +54,7 @@ public class AuthorizationFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
-        // All RESTful API requests are allowed for now (also see LocalhostFilter).
+        // All RESTful API requests are allowed here for now because they go through LocalhostFilter.
         // The /search endpoint will go through authorization via SearchEngine.search()
         // so does not have to be exempted here.
         if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
@@ -79,39 +71,24 @@ public class AuthorizationFilter implements Filter {
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
-            Instant start = Instant.now();
-            try {
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    if (httpReq.getRemoteUser() != null) {
-                        LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
-                                new Object[] {Laundromat.launderLog(httpReq.getRemoteUser()),
-                                        Laundromat.launderLog(httpReq.getRequestURI())});
-                    } else {
-                        LOGGER.log(Level.INFO, "Access denied for URI: {0}",
-                                Laundromat.launderLog(httpReq.getRequestURI()));
-                    }
+            if (LOGGER.isLoggable(Level.INFO)) {
+                if (httpReq.getRemoteUser() != null) {
+                    LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
+                            new Object[] {Laundromat.launderLog(httpReq.getRemoteUser()),
+                                    Laundromat.launderLog(httpReq.getRequestURI())});
+                } else {
+                    LOGGER.log(Level.INFO, "Access denied for URI: {0}",
+                            Laundromat.launderLog(httpReq.getRequestURI()));
                 }
-
-                /*
-                 * Add the request to the statistics. This is called just once for a
-                 * single request otherwise the next filter will count the same
-                 * request twice ({@link StatisticsFilter#collectStats}).
-                 *
-                 * In this branch of the if statement the filter processing stopped
-                 * and does not follow to the StatisticsFilter.
-                 */
-                requests.record(1);
-
-                if (!config.getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false).isEmpty()) {
-                    sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
-                    return;
-                }
-
-                httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
-                return;
-            } finally {
-                requestsForbidden.record(Duration.between(start, Instant.now()));
             }
+
+            if (!config.getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false).isEmpty()) {
+                sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
+                return;
+            }
+
+            httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
+            return;
         }
         fc.doFilter(sr, sr1);
     }
