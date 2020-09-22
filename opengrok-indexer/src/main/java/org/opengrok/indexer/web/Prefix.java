@@ -74,11 +74,11 @@ public enum Prefix {
     NOT_FOUND("/enoent"),
     /** Misc error occurred. */
     ERROR("/error"),
-    /** RESTful API */
+    /** RESTful API. */
     REST_API("/api"),
-    /** Monitoring */
+    /** Monitoring. */
     METRICS("/metrics"),
-    /** CSS and images */
+    /** CSS and images. */
     STATIC("/default");
 
     private final String prefix;
