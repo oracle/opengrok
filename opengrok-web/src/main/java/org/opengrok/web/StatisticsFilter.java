@@ -85,7 +85,10 @@ public class StatisticsFilter implements Filter {
          */
         requests.record(1);
 
-        Metrics.getRegistry().timer(category).record(duration);
+        Timer categoryTimer = Timer.builder("requests.latency.category").
+                tags("category", category).
+                register(Metrics.getRegistry());
+        categoryTimer.record(duration);
 
         SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
         if (helper != null) {
