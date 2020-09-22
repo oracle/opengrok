@@ -46,9 +46,12 @@ public class StatisticsFilter implements Filter {
 
     private final DistributionSummary requests = Metrics.getRegistry().summary(REQUESTS_METRIC);
 
-    private final Timer genericTimer = Metrics.getRegistry().timer("*");
-    private final Timer emptySearch = Metrics.getRegistry().timer("empty_search");
-    private final Timer successfulSearch = Metrics.getRegistry().timer("successful_search");
+    private final Timer emptySearch = Timer.builder("search.latency").
+            tags("outcome", "empty").
+            register(Metrics.getRegistry());
+    private final Timer successfulSearch = Timer.builder("search.latency").
+            tags("outcome", "success").
+            register(Metrics.getRegistry());
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -81,7 +84,6 @@ public class StatisticsFilter implements Filter {
          * {@code AuthorizationFilter#doFilter}.
          */
         requests.record(1);
-        genericTimer.record(duration);
 
         Metrics.getRegistry().timer(category).record(duration);
 
