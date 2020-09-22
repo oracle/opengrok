@@ -60,6 +60,12 @@ public class StatisticsFilter implements Filter {
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc)
             throws IOException, ServletException {
+        /*
+         * Add the request to the statistics. Be aware of the colliding call in
+         * {@code AuthorizationFilter#doFilter}.
+         */
+        requests.record(1);
+
         HttpServletRequest httpReq = (HttpServletRequest) sr;
 
         Instant start = Instant.now();
@@ -79,13 +85,7 @@ public class StatisticsFilter implements Filter {
             return;
         }
 
-        /*
-         * Add the request to the statistics. Be aware of the colliding call in
-         * {@code AuthorizationFilter#doFilter}.
-         */
-        requests.record(1);
-
-        Timer categoryTimer = Timer.builder("requests.latency.category").
+        Timer categoryTimer = Timer.builder("requests.latency").
                 tags("category", category).
                 register(Metrics.getRegistry());
         categoryTimer.record(duration);

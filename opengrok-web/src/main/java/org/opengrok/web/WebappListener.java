@@ -57,9 +57,6 @@ public final class WebappListener
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
 
-    private static final String TIMER_ATTR_NAME = WebappListener.class.getName() + ".request_start";
-    private Timer requestTimer;
-
     /**
      * {@inheritDoc}
      */
@@ -67,9 +64,6 @@ public final class WebappListener
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        requestTimer = Timer.builder("request.latency").
-                description("web application request latency").
-                register(Metrics.getRegistry());
 
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
@@ -130,7 +124,7 @@ public final class WebappListener
      */
     @Override
     public void requestInitialized(ServletRequestEvent e) {
-        e.getServletRequest().setAttribute(TIMER_ATTR_NAME, Instant.now());
+        // pass
     }
 
     /**
@@ -138,12 +132,6 @@ public final class WebappListener
      */
     @Override
     public void requestDestroyed(ServletRequestEvent e) {
-        Instant start = (Instant) e.getServletRequest().getAttribute(TIMER_ATTR_NAME);
-        if (start != null) {
-            Duration duration = Duration.between(start, Instant.now());
-            requestTimer.record(duration);
-        }
-
         PageConfig.cleanup(e.getServletRequest());
         SearchHelper sh = (SearchHelper) e.getServletRequest().getAttribute(SearchHelper.REQUEST_ATTR);
         if (sh != null) {
