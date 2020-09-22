@@ -32,12 +32,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.web.PageConfig;
-import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 
 public class StatisticsFilter implements Filter {
@@ -58,24 +58,24 @@ public class StatisticsFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc)
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain fc)
             throws IOException, ServletException {
-        /*
-         * Add the request to the statistics. Be aware of the colliding call in
-         * {@code AuthorizationFilter#doFilter}.
-         */
+
         requests.record(1);
 
-        HttpServletRequest httpReq = (HttpServletRequest) sr;
+        HttpServletRequest httpReq = (HttpServletRequest) servletRequest;
 
         Instant start = Instant.now();
 
         PageConfig config = PageConfig.get(httpReq);
 
-        fc.doFilter(sr, sr1);
+        fc.doFilter(servletRequest, servletResponse);
 
-        Duration duration = Duration.between(start, Instant.now());
+        measure((HttpServletResponse) servletResponse, httpReq, Duration.between(start, Instant.now()), config);
+    }
 
+    private void measure(HttpServletResponse httpResponse, HttpServletRequest httpReq,
+                         Duration duration, PageConfig config) {
         String category;
         if (isRoot(httpReq)) {
             category = "root";
@@ -84,17 +84,15 @@ public class StatisticsFilter implements Filter {
         }
 
         Timer categoryTimer = Timer.builder("requests.latency").
-                tags("category", category).
+                tags("category", category, "code", String.valueOf(httpResponse.getStatus())).
                 register(Metrics.getRegistry());
         categoryTimer.record(duration);
 
         SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
         if (helper != null) {
             if (helper.hits == null || helper.hits.length == 0) {
-                // empty search
                 emptySearch.record(duration);
             } else {
-                // successful search
                 successfulSearch.record(duration);
             }
         }
