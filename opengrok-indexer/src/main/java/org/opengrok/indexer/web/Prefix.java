@@ -79,7 +79,9 @@ public enum Prefix {
     /** Monitoring. */
     METRICS("/metrics"),
     /** CSS and images. */
-    STATIC("/default");
+    STATIC("/default"),
+    /** JavaScript. */
+    JS("/js");
 
     private final String prefix;
     Prefix(String prefix) {

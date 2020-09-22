@@ -80,7 +80,12 @@ public class StatisticsFilter implements Filter {
         if (isRoot(httpReq)) {
             category = "root";
         } else {
-            category = config.getPrefix().toString().substring(1);
+            String prefix = config.getPrefix().toString();
+            if (prefix.isEmpty()) {
+                category = "unknown";
+            } else {
+                category = prefix.substring(1);
+            }
         }
 
         Timer categoryTimer = Timer.builder("requests.latency").
