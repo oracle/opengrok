@@ -85,13 +85,6 @@ public class StatisticsFilter implements Filter {
 
         Metrics.getRegistry().timer(category).record(duration);
 
-        /* supplementary categories */
-        if (config.getProject() != null) {
-            Metrics.getRegistry()
-                    .timer("viewing_of_" + config.getProject().getName())
-                    .record(duration);
-        }
-
         SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
         if (helper != null) {
             if (helper.hits == null || helper.hits.length == 0) {
