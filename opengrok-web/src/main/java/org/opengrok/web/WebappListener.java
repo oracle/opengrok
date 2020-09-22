@@ -129,6 +129,14 @@ public final class WebappListener
      * {@inheritDoc}
      */
     @Override
+    public void requestInitialized(ServletRequestEvent e) {
+        e.getServletRequest().setAttribute(TIMER_ATTR_NAME, Instant.now());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void requestDestroyed(ServletRequestEvent e) {
         Instant start = (Instant) e.getServletRequest().getAttribute(TIMER_ATTR_NAME);
         if (start != null) {
@@ -143,13 +151,5 @@ public final class WebappListener
         }
 
         AnalyzerGuru.returnAnalyzers();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void requestInitialized(ServletRequestEvent e) {
-        e.getServletRequest().setAttribute(TIMER_ATTR_NAME, Instant.now());
     }
 }
