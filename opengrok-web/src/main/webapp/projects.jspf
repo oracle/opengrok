@@ -39,8 +39,7 @@ org.opengrok.indexer.web.PageConfig
 
     String projects = cfg.getRequestedProjectsAsString();
     if (projects.length() != 0) {
-        Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, "utf-8"));
-        response.addCookie(cookie);
+        PageConfig.addCookie(response, PageConfig.OPENGROK_PROJECT_COOKIE_NAME, URLEncoder.encode(projects, "utf-8"));
     }
 }
 /* ---------------------- projects.jspf end --------------------- */

@@ -155,10 +155,9 @@ document.pageReady.push(function() { pageReadyList();});
                 // update cookie
                 cookieValue = cookieValue.length() == 0 ? projectName :
                         projectName + ',' + cookieValue;
-                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
-                cookie.setPath(request.getContextPath() + '/');
-                response.addCookie(cookie);
+                PageConfig.addCookie(response, PageConfig.OPENGROK_PROJECT_COOKIE_NAME,
+                        URLEncoder.encode(cookieValue, "utf-8") + "; " + request.getContextPath() + '/');
             }
         }
         // requesting a directory listing

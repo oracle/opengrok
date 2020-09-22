@@ -24,7 +24,7 @@
  */
 package org.opengrok.indexer.web;
 
-import static org.opengrok.indexer.web.PageConfig.OPEN_GROK_PROJECT;
+import static org.opengrok.indexer.web.PageConfig.OPENGROK_PROJECT_COOKIE_NAME;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -454,7 +454,7 @@ public final class ProjectHelper {
      * @return true if it is favourite
      */
     public boolean isFavourite(Project project) {
-        return cfg.getCookieVals(OPEN_GROK_PROJECT).contains(project.getName());
+        return cfg.getCookieVals(OPENGROK_PROJECT_COOKIE_NAME).contains(project.getName());
     }
 
     /**
