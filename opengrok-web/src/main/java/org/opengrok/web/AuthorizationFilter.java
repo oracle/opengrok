@@ -51,7 +51,7 @@ public class AuthorizationFilter implements Filter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
     private final DistributionSummary requests = Metrics.getRegistry().summary(StatisticsFilter.REQUESTS_METRIC);
-    private final Timer requestsForbidden = Metrics.getRegistry().timer("requests_forbidden");
+    private final Timer requestsForbidden = Metrics.getRegistry().timer("requests.forbidden");
 
     @Override
     public void init(FilterConfig fc) {
