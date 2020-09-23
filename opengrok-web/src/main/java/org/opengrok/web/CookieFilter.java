@@ -29,7 +29,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Enumeration;
 
 /**
@@ -37,8 +39,6 @@ import java.util.Enumeration;
  */
 public class CookieFilter implements Filter {
     FilterConfig fc;
-
-    private final static String SET_COOKIE_HEADER_NAME = "Set-cookie";
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
@@ -49,23 +49,34 @@ public class CookieFilter implements Filter {
         chain.doFilter(req, response);
 
         // Change the existing cookies to use the attributes and values from the configuration.
-        if (response.containsHeader(SET_COOKIE_HEADER_NAME)) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(response.getHeader(SET_COOKIE_HEADER_NAME));
-            for (Enumeration<String> e = fc.getInitParameterNames(); e.hasMoreElements();) {
-                String attributeName = e.nextElement();
-                if (sb.length() > 0) {
-                    sb.append("; ");
-                }
-                sb.append(attributeName);
-                String attributeValue = fc.getInitParameter(attributeName);
-                if (!attributeValue.isEmpty()) {
-                    sb.append("=");
-                    sb.append(attributeValue);
-                }
+        Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+        boolean firstHeader = true;
+        for (String header : headers) { // there can be multiple Set-Cookie attributes
+            if (firstHeader) {
+                response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix(response)));
+                firstHeader = false;
+                continue;
             }
-            response.setHeader(SET_COOKIE_HEADER_NAME, sb.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix(response)));
         }
+    }
+
+    private String getSuffix(HttpServletResponse response) {
+        StringBuilder sb = new StringBuilder();
+
+        for (Enumeration<String> e = fc.getInitParameterNames(); e.hasMoreElements();) {
+            String attributeName = e.nextElement();
+            if (sb.length() > 0) {
+                sb.append("; ");
+            }
+            sb.append(attributeName);
+            String attributeValue = fc.getInitParameter(attributeName);
+            if (!attributeValue.isEmpty()) {
+                sb.append("=");
+                sb.append(attributeValue);
+            }
+        }
+        return sb.toString();
     }
 
     @Override
