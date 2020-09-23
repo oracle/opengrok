@@ -83,9 +83,4 @@ public class CookieFilter implements Filter {
     public void init(FilterConfig filterConfig) {
         this.fc = filterConfig;
     }
-
-    @Override
-    public void destroy() {
-        this.fc = null;
-    }
 }
