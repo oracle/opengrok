@@ -195,6 +195,7 @@ public class MercurialRepository extends Repository {
         }
 
         if (!filename.isEmpty()) {
+            cmd.add("--");
             cmd.add(filename);
         }
 
