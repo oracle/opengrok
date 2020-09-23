@@ -38,7 +38,7 @@ import java.util.Enumeration;
  * Makes sure that all cookies originating from the web application have the Same-site attribute set.
  */
 public class CookieFilter implements Filter {
-    FilterConfig fc;
+    private FilterConfig fc;
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
