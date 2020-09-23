@@ -61,7 +61,7 @@ public class CookieFilter implements Filter {
         }
     }
 
-    private String getSuffix(HttpServletResponse response) {
+    private String getSuffix() {
         StringBuilder sb = new StringBuilder();
 
         for (Enumeration<String> e = fc.getInitParameterNames(); e.hasMoreElements();) {
