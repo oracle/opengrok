@@ -123,6 +123,12 @@ public final class RuntimeEnvironment {
 
     public WatchDogService watchDog;
 
+    public ArrayList<String> getSubFiles() {
+        return subFiles;
+    }
+
+    private ArrayList<String> subFiles = new ArrayList<>();
+
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
      * singleton anti-pattern.
@@ -140,6 +146,16 @@ public final class RuntimeEnvironment {
     // Instance of authorization framework and its lock.
     private AuthorizationFramework authFramework;
     private final Object authFrameworkLock = new Object();
+
+    private boolean indexer;
+
+    public boolean isIndexer() {
+        return indexer;
+    }
+
+    public void setIndexer(boolean indexer) {
+        this.indexer = indexer;
+    }
 
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
@@ -1874,6 +1890,14 @@ public final class RuntimeEnvironment {
 
     public void setSuggesterConfig(SuggesterConfig suggesterConfig) {
         syncWriteConfiguration(suggesterConfig, Configuration::setSuggesterConfig);
+    }
+
+    public StatsdConfig getStatsdConfig() {
+        return syncReadConfiguration(Configuration::getStatsdConfig);
+    }
+
+    public void setStatsdConfig(StatsdConfig statsdConfig) {
+        syncWriteConfiguration(statsdConfig, Configuration::setStatsdConfig);
     }
 
     /**

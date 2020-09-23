@@ -618,7 +618,7 @@ public final class HistoryGuru {
             LOGGER.log(Level.WARNING,
                     "Failed optimizing the history cache database", he);
         }
-        elapsed.report(LOGGER, "Done historycache for all repositories");
+        elapsed.report(LOGGER, "Done history cache for all repositories", "indexer.history.cache");
         historyCache.setHistoryIndexDone();
     }
 
@@ -884,7 +884,8 @@ public final class HistoryGuru {
         repositories.clear();
         newrepos.forEach((_key, repo) -> putRepository(repo));
 
-        elapsed.report(LOGGER, String.format("done invalidating %d repositories", newrepos.size()));
+        elapsed.report(LOGGER, String.format("done invalidating %d repositories", newrepos.size()),
+                "history.repositories.invalidate");
     }
 
     /**

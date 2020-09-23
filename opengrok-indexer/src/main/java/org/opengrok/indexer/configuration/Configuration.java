@@ -299,6 +299,8 @@ public final class Configuration {
 
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
+    private StatsdConfig statsdConfig = new StatsdConfig();
+
     private Set<String> disabledRepositories;
 
     /*
@@ -1313,6 +1315,17 @@ public final class Configuration {
             throw new IllegalArgumentException("Cannot set Suggester configuration to null");
         }
         this.suggesterConfig = config;
+    }
+
+    public StatsdConfig getStatsdConfig() {
+        return statsdConfig;
+    }
+
+    public void setStatsdConfig(final StatsdConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("Cannot set Statsd configuration to null");
+        }
+        this.statsdConfig = config;
     }
 
     public Set<String> getDisabledRepositories() {

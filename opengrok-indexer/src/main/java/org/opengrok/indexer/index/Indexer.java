@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -148,7 +149,7 @@ public final class Indexer {
         boolean update = true;
 
         Executor.registerErrorHandler();
-        ArrayList<String> subFiles = new ArrayList<>();
+        ArrayList<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
         ArrayList<String> subFilesList = new ArrayList<>();
 
         boolean createDict = false;
@@ -177,6 +178,7 @@ public final class Indexer {
             }
 
             env = RuntimeEnvironment.getInstance();
+            env.setIndexer(true);
 
             // Complete the configuration of repository types.
             List<Class<? extends Repository>> repositoryClasses
@@ -385,7 +387,7 @@ public final class Indexer {
             System.err.println("Exception: " + e.getLocalizedMessage());
             System.exit(1);
         } finally {
-            stats.report(LOGGER);
+            stats.report(LOGGER, "Indexer finished", "indexer.total");
         }
     }
 
@@ -990,7 +992,7 @@ public final class Indexer {
             Statistics stats = new Statistics();
             env.setRepositories(searchPaths.toArray(new String[0]));
             stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
-                    env.getRepositories().size()));
+                    env.getRepositories().size()), "indexer.repository.scan");
         }
 
         if (createHistoryCache) {
@@ -1102,7 +1104,7 @@ public final class Indexer {
             LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
                     " for executor to finish", exp);
         }
-        elapsed.report(LOGGER, "Done indexing data of all repositories");
+        elapsed.report(LOGGER, "Done indexing data of all repositories", "indexer.repository.indexing");
 
         CtagsUtil.deleteTempFiles();
     }

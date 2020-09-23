@@ -57,7 +57,7 @@ public final class WebappListener
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
     private Timer startupTimer = Timer.builder("webapp.startup.latency").
                 description("web application startup latency").
-                register(Metrics.getRegistry());
+                register(Metrics.getPrometheusRegistry());
 
     /**
      * {@inheritDoc}
