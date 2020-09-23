@@ -94,8 +94,7 @@ include file="projects.jspf"
     } else {
         cfg.setTitle(cfg.getSearchTitle());
     }
-    PageConfig.addCookie(response, PageConfig.OPENGROK_SORTING_COOKIE_NAME,
-            URLEncoder.encode(searchHelper.order.toString(), "utf-8"));
+    response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
 }
 %><%@
 

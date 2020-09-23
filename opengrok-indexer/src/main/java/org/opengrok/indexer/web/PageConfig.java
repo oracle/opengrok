@@ -108,9 +108,8 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
-    // cookie names
-    public static final String OPENGROK_PROJECT_COOKIE_NAME = "OpenGrokProject";
-    public static final String OPENGROK_SORTING_COOKIE_NAME = "OpenGrokSorting";
+    // cookie name
+    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
 
     // query parameters
     protected static final String ALL_PROJECT_SEARCH = "searchall";
@@ -597,7 +596,7 @@ public final class PageConfig {
             }
         }
         if (sort.isEmpty()) {
-            vals = getCookieVals(OPENGROK_SORTING_COOKIE_NAME);
+            vals = getCookieVals("OpenGrokSorting");
             for (String s : vals) {
                 SortOrder so = SortOrder.get(s);
                 if (so != null) {
@@ -838,12 +837,12 @@ public final class PageConfig {
      * @see #ALL_PROJECT_SEARCH
      * @see #PROJECT_PARAM_NAME
      * @see #GROUP_PARAM_NAME
-     * @see #OPENGROK_PROJECT_COOKIE_NAME
+     * @see #OPEN_GROK_PROJECT
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects(ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPENGROK_PROJECT_COOKIE_NAME);
+                    = getRequestedProjects(ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
@@ -860,16 +859,6 @@ public final class PageConfig {
                 result.add(p1);
             }
         }
-    }
-
-    /**
-     * Add cookie header to the response along with extra attributes.
-     * @param response servlet response
-     * @param name name of the cookie
-     * @param value value of the cookie
-     */
-    public static void addCookie(HttpServletResponse response, String name, String value) {
-        response.addHeader("Set-cookie", name + "=" + value + "; SameSite=Strict; Secure");
     }
 
     /**

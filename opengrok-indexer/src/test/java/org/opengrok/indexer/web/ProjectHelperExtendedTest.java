@@ -71,7 +71,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
             @Override
             public Cookie[] getCookies() {
                 Cookie[] ret = new Cookie[1];
-                ret[0] = new Cookie(PageConfig.OPENGROK_PROJECT_COOKIE_NAME, cookie);
+                ret[0] = new Cookie("OpenGrokProject", cookie);
                 return ret;
             }
         });
