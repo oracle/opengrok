@@ -102,38 +102,32 @@ class FileHistoryCache implements HistoryCache {
             Repository repository, File srcFile, File root, boolean renamed)
             throws HistoryException {
 
-        History hist = null;
+        File file = new File(root, filename);
+        // Only store directory history for the top-level directory.
+        if (file.isDirectory() && !filename.equals(repository.getDirectoryName())) {
+            LOGGER.log(Level.FINE, "Not storing history cache for {0}: not top level directory", file);
+            return;
+        }
 
         /*
          * If the file was renamed (in the changesets that are being indexed),
          * its history is not stored in the historyEntries so it needs to be acquired
          * directly from the repository.
-         * This ensures that complete history of the file (across renames)
-         * will be saved.
+         * This ensures that complete history of the file (across renames) will be saved.
          */
+        History hist;
         if (renamed) {
             hist = repository.getHistory(srcFile);
+        } else {
+            hist = new History(historyEntries);
         }
 
-        File file = new File(root, filename);
-
-        if (hist == null) {
-            hist = new History();
-
-            // File based history cache does not store files for individual
-            // changesets so strip them unless it is history for the repository.
-            for (HistoryEntry ent : historyEntries) {
-                if (file.isDirectory() && filename.equals(repository.getDirectoryName())) {
-                    ent.stripTags();
-                } else {
-                    ent.strip();
-                }
-            }
-
-            // add all history entries
-            hist.setHistoryEntries(historyEntries);
-        } else {
-            for (HistoryEntry ent : hist.getHistoryEntries()) {
+        // File based history cache does not store files for individual
+        // changesets so strip them unless it is history for the repository.
+        for (HistoryEntry ent : hist.getHistoryEntries()) {
+            if (file.isDirectory()) {
+                ent.stripTags();
+            } else {
                 ent.strip();
             }
         }
@@ -143,10 +137,7 @@ class FileHistoryCache implements HistoryCache {
             repository.assignTagsInHistory(hist);
         }
 
-        // Only store directory history for the top-level.
-        if (!file.isDirectory() || filename.equals(repository.getDirectoryName())) {
-            storeFile(hist, file, repository, !renamed);
-        }
+        storeFile(hist, file, repository, !renamed);
     }
 
     private boolean isRenamedFile(String filename, Repository repository, History history)
@@ -462,15 +453,8 @@ class FileHistoryCache implements HistoryCache {
                     list = new ArrayList<>();
                     map.put(s, list);
                 }
-                /*
-                 * We need to do deep copy in order to have different tags
-                 * per each commit.
-                 */
-                if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
-                    list.add(new HistoryEntry(e));
-                } else {
-                    list.add(e);
-                }
+
+                list.add(e);
             }
         }
 
