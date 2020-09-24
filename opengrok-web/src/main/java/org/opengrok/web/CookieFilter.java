@@ -53,11 +53,11 @@ public class CookieFilter implements Filter {
         boolean firstHeader = true;
         for (String header : headers) { // there can be multiple Set-Cookie attributes
             if (firstHeader) {
-                response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix(response)));
+                response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix()));
                 firstHeader = false;
                 continue;
             }
-            response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix(response)));
+            response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix()));
         }
     }
 
