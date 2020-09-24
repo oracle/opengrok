@@ -276,24 +276,25 @@ public abstract class Repository extends RepositoryInfo {
      * tags to changesets which actually exist in the history of given file.
      * Must be implemented repository-specific.
      *
-     * @see getTagList
-     * @param hist History we want to assign tags to.
+     * @see #getTagList
+     * @param hist History object we want to assign tags to.
      */
     void assignTagsInHistory(History hist) {
         if (hist == null) {
             return;
         }
+
         if (this.getTagList() == null) {
             throw new IllegalStateException("getTagList() is null");
         }
+
         Iterator<TagEntry> it = this.getTagList().descendingIterator();
         TagEntry lastTagEntry = null;
-        // Go through all commits of given file
         for (HistoryEntry ent : hist.getHistoryEntries()) {
             // Assign all tags created since the last revision
-            // Revision in this HistoryEntry must be already specified!
-            // TODO is there better way to do this? We need to "repeat"
-            // last element returned by call to next()
+            // Revision in this HistoryEntry must be already specified !
+            // TODO: is there better way to do this? We need to "repeat"
+            //   last element returned by call to next()
             while (lastTagEntry != null || it.hasNext()) {
                 if (lastTagEntry == null) {
                     lastTagEntry = it.next();
