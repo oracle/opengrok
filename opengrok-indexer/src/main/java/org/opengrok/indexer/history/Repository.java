@@ -51,6 +51,8 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * An interface for an external repository.
  *
@@ -95,6 +97,7 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @return {@code true} if the repository can get history for directories
      */
+    @NotNull
     abstract boolean hasHistoryForDirectories();
 
     /**
