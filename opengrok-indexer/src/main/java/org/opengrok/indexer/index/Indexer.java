@@ -739,8 +739,20 @@ public final class Indexer {
 
             parser.on("-T", "--threads", "=number", Integer.class,
                     "The number of threads to use for index generation. By default the number",
-                    "of threads will be set to the number of available CPUs.").Do(threadCount ->
+                    "of threads will be set to the number of available CPUs. This influences the number",
+                    "of spawned ctags processes as well.").Do(threadCount ->
                     cfg.setIndexingParallelism((Integer) threadCount));
+
+            parser.on("--historyThreads", "=number", Integer.class,
+                    "The number of threads to use for history cache generation. By default the number",
+                    "of threads will be set to the number of available CPUs. Assumes -H/--history.").Do(threadCount ->
+                    cfg.setHistoryParallelism((Integer) threadCount));
+
+            parser.on("--historyRenamedThreads", "=number", Integer.class,
+                    "The number of threads to use for history cache generation when dealing with renamed files.",
+                    "By default the number of threads will be set to the number of available CPUs.",
+                    "Assumes --renamedHistory=on").Do(threadCount ->
+                    cfg.setHistoryRenamedParallelism((Integer) threadCount));
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
                 "Default tab size to use (number of spaces per tab character).")
