@@ -49,15 +49,20 @@ public class CookieFilter implements Filter {
         chain.doFilter(req, response);
 
         // Change the existing cookies to use the attributes and values from the configuration.
-        Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+        String cookieName = HttpHeaders.SET_COOKIE;
+        Collection<String> headers = response.getHeaders(cookieName);
+        if (headers == null) {
+            return;
+        }
         boolean firstHeader = true;
+        String suffix = getSuffix();
         for (String header : headers) { // there can be multiple Set-Cookie attributes
             if (firstHeader) {
-                response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix()));
+                response.setHeader(cookieName, String.format("%s; %s", header, suffix));
                 firstHeader = false;
                 continue;
             }
-            response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, getSuffix()));
+            response.addHeader(cookieName, String.format("%s; %s", header, suffix));
         }
     }
 
