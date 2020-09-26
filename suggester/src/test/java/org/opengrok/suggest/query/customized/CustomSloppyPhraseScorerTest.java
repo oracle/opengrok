@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest.query.customized;
@@ -52,7 +52,6 @@ import static org.junit.Assert.assertThat;
 
 public class CustomSloppyPhraseScorerTest {
 
-    @SuppressWarnings("unchecked") // for contains()
     public static void test(
             final int slop,
             final int offset,

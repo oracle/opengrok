@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package opengrok.auth.plugin.util;
@@ -26,6 +26,7 @@ package opengrok.auth.plugin.util;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,10 +42,10 @@ public class FilterUtilTest {
 
     @Test
     public void testTransformsUTF() throws UnsupportedEncodingException {
-        assertEquals(new String("ČUČKAŘ".getBytes("UTF-8"), "UTF-8"),
-                doTransform(new String("čučkař".getBytes("UTF-8"), "UTF-8"), "toUpperCase"));
-        assertEquals(new String("čučkař".getBytes("UTF-8"), "UTF-8"),
-                doTransform(new String("ČUČKAŘ".getBytes("UTF-8"), "UTF-8"), "toLowerCase"));
+        assertEquals(new String("ČUČKAŘ".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
+                doTransform(new String("čučkař".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), "toUpperCase"));
+        assertEquals(new String("čučkař".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
+                doTransform(new String("ČUČKAŘ".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), "toLowerCase"));
     }
 
     @Test(expected = UnsupportedOperationException.class)

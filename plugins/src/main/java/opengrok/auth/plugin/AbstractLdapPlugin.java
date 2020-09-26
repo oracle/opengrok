@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -221,7 +221,6 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      *
      * @param req the HTTP request
      */
-    @SuppressWarnings("unchecked")
     private void ensureSessionExists(HttpServletRequest req) {
         if (req.getSession() == null) {
             // old/invalid request (should not happen)

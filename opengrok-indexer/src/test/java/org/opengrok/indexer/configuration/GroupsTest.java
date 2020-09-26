@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -51,7 +51,6 @@ public class GroupsTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testDeleteGroup() {
         Set<Group> groups = cfg.getGroups();
 
@@ -75,12 +74,9 @@ public class GroupsTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testAddGroup() {
         Set<Group> groups = cfg.getGroups();
-        Group grp;
-
-        grp = findGroup(groups, "new fantastic group");
+        Group grp = findGroup(groups, "new fantastic group");
         Assert.assertNull(grp);
 
         invokeMethod("modifyGroup",
@@ -96,12 +92,9 @@ public class GroupsTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testAddGroupToParent() {
         Set<Group> groups = cfg.getGroups();
-        Group grp;
-
-        grp = findGroup(groups, "apache");
+        Group grp = findGroup(groups, "apache");
         Assert.assertNotNull(grp);
 
         grp = findGroup(groups, "new fantastic group");
@@ -126,12 +119,9 @@ public class GroupsTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testModifyGroup() {
         Set<Group> groups = cfg.getGroups();
-        Group grp;
-
-        grp = findGroup(groups, "apache");
+        Group grp = findGroup(groups, "apache");
         Assert.assertNotNull(grp);
         Assert.assertEquals(grp.getName(), "apache");
         Assert.assertEquals(grp.getPattern(), "apache-.*");
@@ -165,7 +155,6 @@ public class GroupsTest {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     private void testSingleMatch(Set<Group> groups, int expectedlines, String match) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(os);
@@ -182,8 +171,7 @@ public class GroupsTest {
         );
     }
 
-    @SuppressWarnings("rawtypes")
-    private void invokeMethod(String name, Class[] params, Object[] values) {
+    private void invokeMethod(String name, Class<?>[] params, Object[] values) {
         try {
             Method method = Groups.class.getDeclaredMethod(name, params);
             method.setAccessible(true);

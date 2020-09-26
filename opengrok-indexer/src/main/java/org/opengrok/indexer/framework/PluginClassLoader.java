@@ -25,7 +25,6 @@ package org.opengrok.indexer.framework;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -44,8 +43,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
  */
 public class PluginClassLoader extends ClassLoader {
 
-    @SuppressWarnings("rawtypes")
-    private final Map<String, Class> cache = new HashMap<>();
+    private final Map<String, Class<?>> cache = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginClassLoader.class);
     private static final String[] CLASS_WHITELIST = new String[]{
@@ -76,14 +74,8 @@ public class PluginClassLoader extends ClassLoader {
         this.directory = directory;
     }
 
-    @SuppressWarnings("rawtypes")
-    private Class loadClassFromJar(String classname) throws ClassNotFoundException {
-        File[] jars = directory.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".jar");
-            }
-        });
+    private Class<?> loadClassFromJar(String classname) throws ClassNotFoundException {
+        File[] jars = directory.listFiles((dir, name) -> name.endsWith(".jar"));
 
         if (jars == null) {
             throw new ClassNotFoundException(
@@ -99,7 +91,7 @@ public class PluginClassLoader extends ClassLoader {
                 if (entry != null && entry.getName().endsWith(".class")) {
                     try (InputStream is = jar.getInputStream(entry)) {
                         byte[] bytes = loadBytes(is);
-                        Class c = defineClass(classname, bytes, 0, bytes.length);
+                        Class<?> c = defineClass(classname, bytes, 0, bytes.length);
                         LOGGER.log(Level.FINE, "Class \"{0}\" found in file \"{1}\"",
                                 new Object[]{
                                         classname,
@@ -117,15 +109,14 @@ public class PluginClassLoader extends ClassLoader {
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
     }
 
-    @SuppressWarnings("rawtypes")
-    private Class loadClassFromFile(String classname) throws ClassNotFoundException {
+    private Class<?> loadClassFromFile(String classname) throws ClassNotFoundException {
         try {
             String filename = classname.replace('.', File.separatorChar) + ".class";
             File f = new File(directory, filename);
             try (FileInputStream in = new FileInputStream(f)) {
                 byte[] bytes = loadBytes(in);
 
-                Class c = defineClass(classname, bytes, 0, bytes.length);
+                Class<?> c = defineClass(classname, bytes, 0, bytes.length);
                 LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
                         new Object[]{
                                 classname,
@@ -147,8 +138,7 @@ public class PluginClassLoader extends ClassLoader {
     }
 
     private boolean checkWhiteList(String name) {
-        for (int i = 0; i < CLASS_WHITELIST.length; i++) {
-            String pattern = CLASS_WHITELIST[i];
+        for (String pattern : CLASS_WHITELIST) {
             pattern = pattern.replaceAll("\\.", "\\\\.");
             pattern = pattern.replaceAll("\\*", ".*");
             if (name.matches(pattern)) {
@@ -168,11 +158,11 @@ public class PluginClassLoader extends ClassLoader {
     }
 
     private void checkPackage(String name) throws SecurityException {
-        for (int i = 0; i < PACKAGE_BLACKLIST.length; i++) {
-            if (name.startsWith(PACKAGE_BLACKLIST[i] + ".")) {
+        for (String s : PACKAGE_BLACKLIST) {
+            if (name.startsWith(s + ".")) {
                 throw new SecurityException("Tried to load a class \"" + name
                         + "\" to a blacklisted package "
-                        + "\"" + PACKAGE_BLACKLIST[i] + "\"\n"
+                        + "\"" + s + "\"\n"
                         + "Disabled packages are: "
                         + Arrays.toString(PACKAGE_BLACKLIST));
             }
@@ -224,11 +214,10 @@ public class PluginClassLoader extends ClassLoader {
      * @throws SecurityException      if the loader cannot access the class
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public Class loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
-        Class c;
+    public Class<?> loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
+        Class<?> c = cache.get(name);
 
-        if ((c = cache.get(name)) != null) {
+        if (c != null) {
             if (resolveIt) {
                 resolveClass(c);
             }

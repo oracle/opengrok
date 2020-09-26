@@ -138,8 +138,8 @@ public class DocumentMatcher implements Matcher {
         int numLines = 0;
         String line;
         while ((line = rdr.readLine()) != null) {
-            for (int i = 0; i < lineStarters.length; ++i) {
-                if (line.startsWith(lineStarters[i])) {
+            for (String lineStarter : lineStarters) {
+                if (line.startsWith(lineStarter)) {
                     in.reset();
                     return factory;
                 }

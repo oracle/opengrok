@@ -29,9 +29,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.ArrayList;
@@ -77,15 +79,13 @@ import java.util.regex.Pattern;
 public class OptionParser {
 
     // Used to hold data type converters
-    @SuppressWarnings("rawtypes")
-    private static HashMap<Class, DataParser> converters = new HashMap<>();
+    private static Map<Class<?>, DataParser> converters = new HashMap<>();
 
-    @SuppressWarnings("rawtypes")
     static class DataParser {
-        Class dataType;
+        Class<?> dataType;
         Function<String, Object> converter;
         
-        DataParser(Class cls, Function<String, Object> converter) {
+        DataParser(Class<?> cls, Function<String, Object> converter) {
             this.dataType = cls;
             this.converter = converter;
         }
@@ -101,7 +101,7 @@ public class OptionParser {
     }
     
     // Option object referenced by its name(s)
-    private final HashMap<String, Option> options;
+    private final Map<String, Option> options;
     
     // List of options in order of declaration
     private final List<Option> optionList;
@@ -177,7 +177,7 @@ public class OptionParser {
          * parser encounters the associated named option in its
          * argument list.
          */
-        public void Do(Consumer<Object> action) {
+        public void execute(Consumer<Object> action) {
             this.action = action;
         }
         
@@ -216,7 +216,7 @@ public class OptionParser {
      *     .
      *   parser.prologue = "Usage: program [options] [file [...]]
      *      
-     *   parser.on("-?", "--help", "Display this usage.").Do( v -&gt; {
+     *   parser.on("-?", "--help", "Display this usage.").execute( v -&gt; {
      *       parser.help();
      *   });
      */
@@ -232,7 +232,7 @@ public class OptionParser {
     
     private static Boolean parseVerity(String text) {
         Matcher m = VERITY.matcher(text);
-        Boolean veracity = false;
+        boolean veracity;
         
         if (m.matches()) {
             veracity = true;
@@ -259,8 +259,7 @@ public class OptionParser {
      * @param parser is the conversion code that will take the given
      * option value string and produce the named data type.
      */
-    @SuppressWarnings("rawtypes")
-    public static void accept(Class type, Function<String, Object> parser) {
+    public static void accept(Class<?> type, Function<String, Object> parser) {
         converters.put(type, new DataParser(type, parser));
     }
     
@@ -270,12 +269,12 @@ public class OptionParser {
      * As an example:
      *
      * <code>
-     *   OptionParser opts = OptionParser.Do(parser -&gt; {
+     *   OptionParser opts = OptionParser.execute(parser -&gt; {
      *
      *      parser.prologue = 
      *          String.format("\nUsage: %s [options] [subDir1 [...]]\n", program);
      *      
-     *      parser.on("-?", "--help", "Display this usage.").Do( v -&gt; {
+     *      parser.on("-?", "--help", "Display this usage.").execute( v -&gt; {
      *          parser.help();
      *      });
      * 
@@ -286,7 +285,7 @@ public class OptionParser {
      * @param parser consumer
      * @return OptionParser object
      */
-    public static OptionParser Do(Consumer<OptionParser> parser) {
+    public static OptionParser execute(Consumer<OptionParser> parser) {
         OptionParser me = new OptionParser();
         parser.accept(me);
         return me;
@@ -449,7 +448,7 @@ public class OptionParser {
         return opt;
     }
     
-    private String argValue(String arg, Boolean mandatory) {
+    private String argValue(String arg, boolean mandatory) {
         // Initially assume that the given argument is going
         // to be the option's value. Note that if the argument
         // is actually another option (starts with '-') then
@@ -708,12 +707,12 @@ public class OptionParser {
      * 
      * Example usage:
      * <code>
-     *  OptionParser opts = OptionParser.Do( parser -&gt; {
+     *  OptionParser opts = OptionParser.execute( parser -&gt; {
      *   
      *    parser.prologue = String.format("Usage: %s [options] bubba smith", program);
      *    parser.separator("");
      * 
-     *    parser.on("-y value", "--why me", "This is a description").Do( v -&gt; {
+     *    parser.on("-y value", "--why me", "This is a description").execute( v -&gt; {
      *        System.out.println("got " + v);
      *    });
      *       
@@ -798,7 +797,7 @@ public class OptionParser {
         StringWriter wrt = new StringWriter();
         PrintWriter out = new PrintWriter(wrt);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                     getClass().getResourceAsStream("/manpage/opengrok.xml"), "US-ASCII"))) {
+                     getClass().getResourceAsStream("/manpage/opengrok.xml"), StandardCharsets.US_ASCII))) {
             spool(reader, out, "___INSERT_DATE___");
             out.print("<refmiscinfo class=\"date\">");
             out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));

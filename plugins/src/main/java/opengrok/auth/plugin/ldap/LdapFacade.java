@@ -254,7 +254,7 @@ public class LdapFacade extends AbstractLdapProvider {
 
     @Override
     public boolean isConfigured() {
-        return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null && actualServer != -1;
+        return servers != null && !servers.isEmpty() && searchBase != null && actualServer != -1;
     }
 
     /**
@@ -443,6 +443,7 @@ public class LdapFacade extends AbstractLdapProvider {
         return null;
     }
 
+    @Override
     public String toString() {
         return "{server=" + (actualServer != -1 ? servers.get(actualServer) : "no active server") +
                 ", searchBase=" + getSearchBase() + "}";

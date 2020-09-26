@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        List<HistoryEntry> entries = new ArrayList<>();
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
@@ -103,10 +104,10 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
                 entry.setRevision(s);
             }
 
-            StringBuffer message = new StringBuffer();
+            StringBuilder message = new StringBuilder();
             String glue = "";
             while ((s = in.readLine()) != null && !".".equals(s)) {
-                if ("".equals(s)) {
+                if (s.isEmpty()) {
                     // avoid empty lines in comments
                     continue;
                 }
@@ -130,7 +131,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
+        processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return history;
     }
 }

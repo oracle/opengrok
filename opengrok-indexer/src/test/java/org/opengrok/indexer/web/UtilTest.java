@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -295,7 +296,7 @@ public class UtilTest {
         // Verify that the output is well-formed.
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + s;
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-                new ByteArrayInputStream(xml.getBytes("UTF-8")));
+                new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
