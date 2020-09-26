@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -198,7 +199,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     History parse(String buffer) throws IOException {
         myDir = File.separator;
-        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
+        processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return new History(entries);
     }
 }

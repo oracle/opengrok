@@ -68,7 +68,7 @@ public class OptionParserTest {
         String configPath = "/the/config/path";
         
         OptionParser scanner = OptionParser.scan( parser -> {
-            parser.on("-R configPath").Do( v-> {
+            parser.on("-R configPath").execute( v-> {
                 assertEquals(v,configPath);
                 actionCounter++;
             });
@@ -90,9 +90,9 @@ public class OptionParserTest {
     @Test
     public void optionNameAliases() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("-?", "--help").Do( v -> {
+            parser.on("-?", "--help").execute( v -> {
                 assertEquals(v,"");
                 actionCounter++;
             });
@@ -118,9 +118,9 @@ public class OptionParserTest {
     @Test
     public void unrecognizedOption() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("-?", "--help").Do(v -> { });
+            parser.on("-?", "--help").execute(v -> { });
         });
         
         try {
@@ -138,9 +138,9 @@ public class OptionParserTest {
     @Test
     public void missingOptionValue() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("-a=VALUE").Do(v -> { });
+            parser.on("-a=VALUE").execute(v -> { });
         });
         
         try {
@@ -160,9 +160,9 @@ public class OptionParserTest {
     @Test
     public void shortOptionValue() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("-a=VALUE").Do( v -> {
+            parser.on("-a=VALUE").execute( v -> {
                 assertEquals(v,"3");
                 actionCounter++;
             });
@@ -188,34 +188,34 @@ public class OptionParserTest {
     @Test
     public void testSupportedDataCoercion() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("--int=VALUE", Integer.class).Do( v -> {
+            parser.on("--int=VALUE", Integer.class).execute( v -> {
                 assertEquals(v,3);
                 actionCounter++;
             });
             
-            parser.on("--float=VALUE", Float.class).Do( v -> {
+            parser.on("--float=VALUE", Float.class).execute( v -> {
                 assertEquals(v,(float)3.23);
                 actionCounter++;
             });
             
-            parser.on("--double=VALUE", Double.class).Do( v -> {
+            parser.on("--double=VALUE", Double.class).execute( v -> {
                 assertEquals(v,3.23);
                 actionCounter++;
             });
             
-            parser.on("-t", "--truth", "=VALUE", Boolean.class).Do( v -> {
+            parser.on("-t", "--truth", "=VALUE", Boolean.class).execute( v -> {
                 assertTrue((Boolean)v);
                 actionCounter++;
             });
             
-            parser.on("-f VALUE", Boolean.class).Do( v -> {
+            parser.on("-f VALUE", Boolean.class).execute( v -> {
                 assertFalse((Boolean)v);
                 actionCounter++;
             });
             
-            parser.on("-a array", String[].class).Do( v -> {
+            parser.on("-a array", String[].class).execute( v -> {
                 String [] x = {"a","b","c"};
                 assertArrayEquals(x,(String[])v);
                 actionCounter++;
@@ -268,9 +268,9 @@ public class OptionParserTest {
     @Test
     public void specificOptionValues() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             String[] onOff = {"on","off"};
-            parser.on("--setTest on/off", onOff ).Do( v -> {
+            parser.on("--setTest on/off", onOff ).execute( v -> {
                 actionCounter++;
             });
         });
@@ -298,9 +298,9 @@ public class OptionParserTest {
     @Test
     public void optionValuePatternMatch() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
 
-            parser.on("--pattern PERCENT", "/[0-9]+%?/" ).Do( v -> {
+            parser.on("--pattern PERCENT", "/[0-9]+%?/" ).execute( v -> {
                 actionCounter++;
             });
         });
@@ -333,9 +333,9 @@ public class OptionParserTest {
     @Test
     public void missingValueOnOptionAllowed() {
 
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
 
-            parser.on("--value=[optional]" ).Do( v -> {
+            parser.on("--value=[optional]" ).execute( v -> {
                 actionCounter++;
                 if (v.equals("")) {
                     assertEquals(v,"");
@@ -343,7 +343,7 @@ public class OptionParserTest {
                     assertEquals(v,"hasOne");
                 }
             });
-            parser.on("-o[=optional]" ).Do( v -> {
+            parser.on("-o[=optional]" ).execute( v -> {
                 actionCounter++;
                 if (v.equals("")) {
                     assertEquals(v,"");
@@ -351,7 +351,7 @@ public class OptionParserTest {
                     assertEquals(v,"hasOne");
                 }
             });
-            parser.on("-v[optional]" ).Do( v -> {
+            parser.on("-v[optional]" ).execute( v -> {
                 actionCounter++;
                 if (v.equals("")) {
                     assertEquals(v,"");
@@ -400,9 +400,9 @@ public class OptionParserTest {
     @Test
     public void defaultOptionSummary() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("--help").Do(v -> { 
+            parser.on("--help").execute(v -> {
                 String summary = parser.getUsage();
                 // assertTrue(summary.startsWith("Usage: JUnitTestRunner [options]"));  // fails on travis
                 assertTrue(summary.matches("(?s)Usage: \\w+ \\[options\\].*"));
@@ -426,7 +426,7 @@ public class OptionParserTest {
     @Test
     public void catchAmbigousOptions() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
             parser.on("--help");
             parser.on("--help-me-out");
@@ -447,9 +447,9 @@ public class OptionParserTest {
     @Test
     public void allowInitialSubstringOptionNames() {
         
-         OptionParser opts = OptionParser.Do( parser -> {
+         OptionParser opts = OptionParser.execute( parser -> {
             
-            parser.on("--help-me-out").Do( v-> {
+            parser.on("--help-me-out").execute( v-> {
                 actionCounter++;
             });
         });
@@ -469,7 +469,7 @@ public class OptionParserTest {
     @Test
     public void testInitialSubstringOptionNames() {
         
-         OptionParser opts = OptionParser.Do( parser -> {
+         OptionParser opts = OptionParser.execute( parser -> {
             
             parser.on("--help-me-out");
             parser.on("--longOption");
@@ -491,7 +491,7 @@ public class OptionParserTest {
     public void catchDuplicateOptionNames() {
         
         try {
-            OptionParser opts = OptionParser.Do( parser -> {
+            OptionParser opts = OptionParser.execute( parser -> {
             
                 parser.on("--duplicate");
                 parser.on("--duplicate");
@@ -507,7 +507,7 @@ public class OptionParserTest {
     @Test
     public void catchNamelessOption() {
         
-        OptionParser opts = OptionParser.Do( parser -> {
+        OptionParser opts = OptionParser.execute( parser -> {
             
             parser.on("--help-me-out");
         });
@@ -544,7 +544,7 @@ public class OptionParserTest {
             }
             
             // This just tests that the description is actually null.
-            op = OptionParser.Do( parser -> {
+            op = OptionParser.execute( parser -> {
                 parser.on("--help-me-out");
             });
             

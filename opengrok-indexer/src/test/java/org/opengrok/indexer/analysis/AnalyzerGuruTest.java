@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -29,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -68,7 +68,7 @@ public class AnalyzerGuruTest {
     @Test
     public void testFileNameSameAsExtension() throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "#!/bin/sh\nexec /usr/bin/zip \"$@\"\n".getBytes("US-ASCII"));
+                "#!/bin/sh\nexec /usr/bin/zip \"$@\"\n".getBytes(StandardCharsets.US_ASCII));
         String file = "/dummy/path/to/source/zip";
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, file);
         assertSame(ShAnalyzer.class, fa.getClass());
@@ -193,7 +193,7 @@ public class AnalyzerGuruTest {
     @Test
     public void testPlainText() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "This is a plain text file.".getBytes("US-ASCII"));
+                "This is a plain text file.".getBytes(StandardCharsets.US_ASCII));
         assertSame(PlainAnalyzer.class,
                    AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -212,19 +212,16 @@ public class AnalyzerGuruTest {
         AnalyzerFactory f2 = AnalyzerGuru.find("main.cc");
         assertNotNull(f2);
         assertNotSame(f1.getClass(), f2.getClass());
-
     }
 
     /**
      * Test that matching of full names works. Bug #859.
      */
     @Test
-    @SuppressWarnings("rawtypes")
     public void matchesFullName() {
         String s = File.separator;  // so test works on Unix and Windows
         String path = s+"path"+s+"to"+s+"Makefile";
         AnalyzerFactory faf = AnalyzerGuru.find(path);
-        Class c = faf.getClass();
         assertSame(ShAnalyzerFactory.class, faf.getClass());
         faf = AnalyzerGuru.find("GNUMakefile");
         assertSame(ShAnalyzerFactory.class, faf.getClass());
@@ -240,16 +237,15 @@ public class AnalyzerGuruTest {
      *  language + "AnalyzerFactory"
      */
     @Test
-    @SuppressWarnings("rawtypes")
     public void getAnalyzerFactoryClass() {
-        Class fc_forSh = AnalyzerGuru.getFactoryClass("Sh");
-        Class fc_forShAnalyzer = AnalyzerGuru.getFactoryClass("ShAnalyzer");
-        Class fc_simpleName = AnalyzerGuru.getFactoryClass("ShAnalyzerFactory");
-        assertEquals(ShAnalyzerFactory.class, fc_forSh);
-        assertEquals(ShAnalyzerFactory.class,fc_forShAnalyzer);
-        assertEquals(ShAnalyzerFactory.class,fc_simpleName);
+        Class<?> fcForSh = AnalyzerGuru.getFactoryClass("Sh");
+        Class<?> fcForShAnalyzer = AnalyzerGuru.getFactoryClass("ShAnalyzer");
+        Class<?> fcSimpleName = AnalyzerGuru.getFactoryClass("ShAnalyzerFactory");
+        assertEquals(ShAnalyzerFactory.class, fcForSh);
+        assertEquals(ShAnalyzerFactory.class, fcForShAnalyzer);
+        assertEquals(ShAnalyzerFactory.class, fcSimpleName);
         
-        Class fc = AnalyzerGuru.getFactoryClass("UnknownAnalyzerFactory");
+        Class<?> fc = AnalyzerGuru.getFactoryClass("UnknownAnalyzerFactory");
         assertNull(fc);
     }
 
@@ -265,7 +261,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldMatchPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "#!/usr/bin/perl -w".getBytes("US-ASCII"));
+                "#!/usr/bin/perl -w".getBytes(StandardCharsets.US_ASCII));
         assertSame("despite Perl hashbang,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -273,7 +269,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldMatchPerlHashbangSpaced() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "\n\t #!  /usr/bin/perl -w".getBytes("US-ASCII"));
+                "\n\t #!  /usr/bin/perl -w".getBytes(StandardCharsets.US_ASCII));
         assertSame("despite Perl hashbang,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -281,7 +277,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldMatchEnvPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "#!/usr/bin/env perl -w".getBytes("US-ASCII"));
+                "#!/usr/bin/env perl -w".getBytes(StandardCharsets.US_ASCII));
         assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -289,7 +285,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldMatchEnvPerlHashbangSpaced() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "\n\t #!  /usr/bin/env\t perl -w".getBytes("US-ASCII"));
+                "\n\t #!  /usr/bin/env\t perl -w".getBytes(StandardCharsets.US_ASCII));
         assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -297,7 +293,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldNotMatchEnvLFPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
-                "#!/usr/bin/env\nperl".getBytes("US-ASCII"));
+                "#!/usr/bin/env\nperl".getBytes(StandardCharsets.US_ASCII));
         assertNotSame("despite env hashbang LF,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
@@ -316,7 +312,7 @@ public class AnalyzerGuruTest {
     public void shouldMatchJavaClassMagic() throws Exception {
         String oldMagic = "\312\376\272\276";      // cafebabe?
         String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
-            (byte) 0xBA, (byte) 0xBE}, Charset.forName("UTF-8"));
+            (byte) 0xBA, (byte) 0xBE}, StandardCharsets.UTF_8);
         assertNotEquals("despite octal string, escape it as unicode,", oldMagic, newMagic);
 
         // 0xCAFEBABE (4), minor (2), major (2)

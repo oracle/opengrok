@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -33,6 +33,7 @@ import java.io.CharArrayReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -393,7 +394,7 @@ public class ContextTest {
      */
     private Document parseXML(String document) throws Exception {
         ByteArrayInputStream in
-                = new ByteArrayInputStream(document.getBytes("UTF-8"));
+                = new ByteArrayInputStream(document.getBytes(StandardCharsets.UTF_8));
         return DocumentBuilderFactory.newInstance().
                 newDocumentBuilder().parse(in);
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -28,20 +28,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
 /**
  * Parse a stream of CVS log comments.
  */
 class CVSHistoryParser implements Executor.StreamHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CVSHistoryParser.class);
 
     private enum ParseState {
         NAMES, TAG, REVISION, METADATA, COMMENT
@@ -59,7 +56,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        ArrayList<HistoryEntry> entries = new ArrayList<>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
 
@@ -200,7 +197,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
+        processStream(new ByteArrayInputStream(buffer.getBytes(StandardCharsets.UTF_8)));
         return history;
     }
 }

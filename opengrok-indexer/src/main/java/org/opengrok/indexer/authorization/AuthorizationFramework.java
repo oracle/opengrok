@@ -374,7 +374,6 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      * @see IAuthorizationPlugin#unload()
      * @see Configuration#getPluginDirectory()
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     protected void afterReload() {
         if (stack == null) {

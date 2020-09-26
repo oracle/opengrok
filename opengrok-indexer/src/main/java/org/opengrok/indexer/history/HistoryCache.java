@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -51,7 +51,6 @@ interface HistoryCache {
      * parsing the history information in the repository.
      *
      * @param file The file to retrieve history for
-     * @param parserClass The class that implements the parser to use
      * @param repository The external repository to read the history from (can
      * be <code>null</code>)
      * @param withFiles A flag saying whether or not the returned history

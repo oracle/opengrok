@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.framework;
 
@@ -204,7 +204,7 @@ public abstract class PluginFramework<PluginType> {
      * @throws NoSuchMethodException     when the class does not have no-argument constructor
      * @throws InvocationTargetException if the underlying constructor of the class throws an exception
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     private PluginType loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
@@ -215,7 +215,7 @@ public abstract class PluginFramework<PluginType> {
         Class<?> c = loader.loadClass(classname);
 
         // check for implemented interfaces or extended superclasses
-        for (Class intf1 : getSuperclassesAndInterfaces(c)) {
+        for (Class<?> intf1 : getSuperclassesAndInterfaces(c)) {
             if (intf1.getCanonicalName().equals(classType.getCanonicalName())
                     && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
@@ -232,10 +232,9 @@ public abstract class PluginFramework<PluginType> {
      * @param clazz class
      * @return list of interfaces or superclasses of the class clazz
      */
-    @SuppressWarnings("rawtypes")
-    protected List<Class> getSuperclassesAndInterfaces(Class clazz) {
-        List<Class> types = new LinkedList<>();
-        Class self = clazz;
+    protected List<Class<?>> getSuperclassesAndInterfaces(Class<?> clazz) {
+        List<Class<?>> types = new LinkedList<>();
+        Class<?> self = clazz;
         while (self != null && self != classType && !types.contains(classType)) {
             types.add(self);
             types.addAll(Arrays.asList(self.getInterfaces()));
@@ -350,7 +349,6 @@ public abstract class PluginFramework<PluginType> {
      * <p>
      * Plugins are taken from the pluginDirectory.</p>
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public final void reload() {
         if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
             LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
@@ -362,7 +360,7 @@ public abstract class PluginFramework<PluginType> {
 
         // trashing out the old instance of the loaded enables us
         // to reload the stack at runtime
-        loader = (PluginClassLoader) AccessController.doPrivileged((PrivilegedAction) () -> new PluginClassLoader(pluginDirectory));
+        loader = AccessController.doPrivileged((PrivilegedAction<PluginClassLoader>) () -> new PluginClassLoader(pluginDirectory));
 
         // notify the implementing class that the reload is about to begin
         beforeReload();

@@ -18,16 +18,14 @@
  */
 
 /*
- * Copyright (c) 2012, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -82,23 +80,16 @@ public class LuceneCompatibilityTest extends TestCase {
      * Set up the test environment with repositories and a cache instance.
      */
     @Override
-    @SuppressWarnings("rawtypes")
     protected void setUp() throws Exception {
         guru = new AnalyzerGuru();
         Class<?> c = Class.forName(LUCENE_TEST_CLASS);
         //testC = c.newInstance(); //this is static call
-        Class[] argTypes = new Class[]{TokenStream.class, String[].class, int[].class, int[].class, String[].class, int[].class, int[].class, Integer.class, boolean.class};
+        Class<?>[] argTypes = {TokenStream.class, String[].class, int[].class, int[].class, String[].class, int[].class, int[].class, Integer.class, boolean.class};
         testM = c.getDeclaredMethod(LUCENE_TEST_METHOD, argTypes);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testCompatibility() throws Exception, IOException, IllegalAccessException, IllegalArgumentException {
-        for (Iterator it = guru.getAnalyzerFactories().iterator(); it.hasNext();) {
-            AnalyzerFactory fa = (AnalyzerFactory) it.next();
+    public void testCompatibility() throws Exception {
+        for (AnalyzerFactory fa : guru.getAnalyzerFactories()) {
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();

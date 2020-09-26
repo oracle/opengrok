@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -58,17 +58,15 @@ public class ClassUtil {
      *
      * @param targetClass the class
      */
-    @SuppressWarnings("rawtypes")
-    public static void remarkTransientFields(Class targetClass) {
+    public static void remarkTransientFields(Class<?> targetClass) {
         try {
-            BeanInfo info;
-            info = Introspector.getBeanInfo(targetClass);
+            BeanInfo info = Introspector.getBeanInfo(targetClass);
             PropertyDescriptor[] propertyDescriptors = info.getPropertyDescriptors();
             for (Field f : targetClass.getDeclaredFields()) {
                 if (Modifier.isTransient(f.getModifiers())) {
-                    for (int i = 0; i < propertyDescriptors.length; ++i) {
-                        if (propertyDescriptors[i].getName().equals(f.getName())) {
-                            propertyDescriptors[i].setValue("transient", Boolean.TRUE);
+                    for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                        if (propertyDescriptor.getName().equals(f.getName())) {
+                            propertyDescriptor.setValue("transient", Boolean.TRUE);
                         }
                     }
                 }
@@ -78,8 +76,7 @@ public class ClassUtil {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static Object stringToObject(String fieldName, Class c, String value) throws IOException {
+    private static Object stringToObject(String fieldName, Class<?> c, String value) throws IOException {
         Object v;
         String paramClass = c.getName();
 
@@ -95,7 +92,7 @@ public class ClassUtil {
                                     + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
                             paramClass, value));
                 }
-                Boolean boolValue = Boolean.valueOf(value);
+                boolean boolValue = Boolean.parseBoolean(value);
                 if (!boolValue) {
                     /*
                      * The Boolean.valueOf() returns true only for "true" case
@@ -103,7 +100,7 @@ public class ClassUtil {
                      * "on" or "1". These are convenient shortcuts for "on", "1"
                      * to be interpreted as booleans.
                      */
-                    boolValue = boolValue || value.equalsIgnoreCase("on");
+                    boolValue = value.equalsIgnoreCase("on");
                     boolValue = boolValue || value.equals("1");
                 }
                 v = boolValue;

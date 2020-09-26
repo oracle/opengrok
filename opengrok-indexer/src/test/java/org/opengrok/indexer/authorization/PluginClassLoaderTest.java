@@ -32,13 +32,16 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.framework.PluginClassLoader;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class PluginClassLoaderTest {
 
     private final File pluginDirectory;
 
     public PluginClassLoaderTest() throws URISyntaxException {
         pluginDirectory = Paths.get(getClass().getResource("/authorization/plugins/testplugins.jar").toURI()).toFile().getParentFile();
-        Assert.assertTrue(pluginDirectory.isDirectory());
+        assertTrue(pluginDirectory.isDirectory());
     }
 
     @Test
@@ -136,57 +139,42 @@ public class PluginClassLoaderTest {
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testNonExistingPlugin() {
-        PluginClassLoader instance
-                = new PluginClassLoader(pluginDirectory);
+        PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
         loadClass(instance, "org.sample.plugin.NoPlugin", true);
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testFalsePlugin() {
-        PluginClassLoader instance
-                = new PluginClassLoader(pluginDirectory);
+        PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
+        Class<?> clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
         Group g = new Group("group1");
         Project p = new Project("project1");
 
-        Assert.assertFalse(
-                plugin.isAllowed(new DummyHttpServletRequest(), g)
-        );
-        Assert.assertFalse(
-                plugin.isAllowed(new DummyHttpServletRequest(), p)
-        );
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), g));
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), p));
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void testTruePlugin() {
-        PluginClassLoader instance
-                = new PluginClassLoader(pluginDirectory);
+        PluginClassLoader instance = new PluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");
+        Class<?> clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
         Group g = new Group("group1");
         Project p = new Project("project1");
 
-        Assert.assertTrue(
-                plugin.isAllowed(new DummyHttpServletRequest(), g)
-        );
-        Assert.assertTrue(
-                plugin.isAllowed(new DummyHttpServletRequest(), p)
-        );
+        assertTrue(plugin.isAllowed(new DummyHttpServletRequest(), g));
+        assertTrue(plugin.isAllowed(new DummyHttpServletRequest(), p));
     }
 
-    @SuppressWarnings("rawtypes")
     private IAuthorizationPlugin getNewInstance(Class<?> c) {
         IAuthorizationPlugin plugin = null;
         try {
@@ -201,14 +189,12 @@ public class PluginClassLoaderTest {
         return plugin;
     }
 
-    @SuppressWarnings("rawtypes")
-    private Class loadClass(PluginClassLoader loader, String name) {
+    private Class<?> loadClass(PluginClassLoader loader, String name) {
         return loadClass(loader, name, false);
     }
 
-    @SuppressWarnings("rawtypes")
-    private Class loadClass(PluginClassLoader loader, String name, boolean shouldFail) {
-        Class clazz = null;
+    private Class<?> loadClass(PluginClassLoader loader, String name, boolean shouldFail) {
+        Class<?> clazz = null;
         try {
             clazz = loader.loadClass(name);
             if (shouldFail) {

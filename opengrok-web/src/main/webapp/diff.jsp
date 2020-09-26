@@ -24,6 +24,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 java.io.ByteArrayInputStream,
 java.io.OutputStream,
 java.io.InputStream,
+java.nio.charset.StandardCharsets,
 
 org.suigeneris.jrcs.diff.delta.Chunk,
 org.suigeneris.jrcs.diff.delta.Delta,
@@ -64,7 +65,7 @@ private String getAnnotateRevision(DiffData data) {
         try (OutputStream o = response.getOutputStream()) {
             for (int i = 0; i < data.revision.size(); i++) {
                 Delta d = data.revision.getDelta(i);
-                try (InputStream in = new ByteArrayInputStream(d.toString().getBytes("UTF-8"))) {
+                try (InputStream in = new ByteArrayInputStream(d.toString().getBytes(StandardCharsets.UTF_8))) {
                     response.setHeader("content-disposition", "attachment; filename="
                             + cfg.getResourceFile().getName() + "@" + data.rev[0]
                             + "-" + data.rev[1] + ".diff");
