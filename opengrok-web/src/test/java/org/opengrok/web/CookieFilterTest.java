@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -250,6 +251,20 @@ public class CookieFilterTest {
         public Locale getLocale() {
             return null;
         }
+    }
+
+    @Test
+    public void testNoHeaders() throws IOException, ServletException {
+        CookieFilter filter = new CookieFilter();
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = new DummyHttpServletResponse();
+
+        FilterChain chain = mock(FilterChain.class);
+        FilterConfig filterConfig = mock(FilterConfig.class);
+        filter.init(filterConfig);
+        filter.doFilter(request, response, chain);
+
+        assertNull(response.getHeaders(HttpHeaders.SET_COOKIE));
     }
 
     @Test
