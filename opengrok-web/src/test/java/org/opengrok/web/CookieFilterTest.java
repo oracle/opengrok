@@ -265,7 +265,7 @@ public class CookieFilterTest {
 
         FilterChain chain = mock(FilterChain.class);
         FilterConfig filterConfig = spy(FilterConfig.class);
-        Map<String,String> m = new HashMap<>();
+        Map<String, String> m = new HashMap<>();
         m.put("Bonnie", "Clyde");
         m.put("Porgy", "Bess");
         m.put("Empty", "");
