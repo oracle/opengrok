@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -310,6 +310,21 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>2.9</version>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>6.0.2</version>
+                <configuration>
+                    <skipSystemScope>true</skipSystemScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
