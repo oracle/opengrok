@@ -317,6 +317,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <version>6.0.2</version>
                 <configuration>
                     <skipSystemScope>true</skipSystemScope>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                 </configuration>
                 <executions>
                     <execution>
