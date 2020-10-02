@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,15 +89,12 @@ public final class HistoryGuru {
      */
     private final Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
-    private final int scanningDepth;
-
     /**
      * Creates a new instance of HistoryGuru, and try to set the default source
      * control system.
      */
     private HistoryGuru() {
         env = RuntimeEnvironment.getInstance();
-        scanningDepth = env.getScanningDepth();
 
         HistoryCache cache = null;
         if (env.useHistoryCache()) {
@@ -435,7 +433,7 @@ public final class HistoryGuru {
                                     "Failed to get sub directories for ''{0}'', " +
                                     "check access permissions.",
                                     file.getAbsolutePath());
-                        } else if (depth <= scanningDepth) {
+                        } else if (depth <= env.getScanningDepth()) {
                             repoList.addAll(addRepositories(subFiles,
                                     allowedNesting, depth + 1, isNested));
                         }
@@ -453,7 +451,7 @@ public final class HistoryGuru {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
-                        } else if (depth <= scanningDepth) {
+                        } else if (depth <= env.getScanningDepth()) {
                             // Search down to a limit -- if not: too much
                             // stat'ing for huge Mercurial repositories
                             repoList.addAll(addRepositories(subFiles,
@@ -480,7 +478,25 @@ public final class HistoryGuru {
      * @return collection of added repositories
      */
     public Collection<RepositoryInfo> addRepositories(File[] files) {
-        return addRepositories(files, env.getNestingMaximum(), 0, false);
+        ExecutorService executor = env.getIndexerParallelizer().getRepositorySearchExecutor();
+        List<Future<Collection<RepositoryInfo>>> futures = new ArrayList<>();
+        for (File file: files) {
+            futures.add(executor.submit(() -> addRepositories(new File[]{file},
+                    env.getNestingMaximum(), 0, false)));
+        }
+
+        List<RepositoryInfo> repoList = new ArrayList<>();
+        futures.forEach(future -> {
+            try {
+                repoList.addAll(future.get());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "failed to get results of repository scan");
+            }
+        });
+
+        env.getIndexerParallelizer().bounceRepositorySearchExecutor();
+
+        return repoList;
     }
 
     /**
