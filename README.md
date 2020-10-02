@@ -31,6 +31,14 @@ Official page of the project is on:
 
 See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
+### 2. 1. Updating
+
+OpenGrok uses [semantic versioning](https://semver.org/) and the version components further tells more details about updating to newer version. The version scheme is x.y.z and change in any component is interpreted as:
+
+ - x - major backwards incompatibile update
+ - y - full clean reindex of your repositories is needed (e. g. index format has changed)
+ - z - redeployment of the web application is necessary
+
 ## 3. Information for developers
 
 See https://github.com/oracle/opengrok/wiki/Developer-intro and https://github.com/oracle/opengrok/wiki/Developers
