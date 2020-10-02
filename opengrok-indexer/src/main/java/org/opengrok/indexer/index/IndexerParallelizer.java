@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.index;
@@ -61,6 +62,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
     private LazilyInstantiate<ExecutorService> lzHistoryRenamedExecutor;
     private LazilyInstantiate<ExecutorService> lzCtagsWatcherExecutor;
+    private LazilyInstantiate<ExecutorService> lzRepositorySearchExecutor;
 
     /**
      * Initializes a new instance using settings from the specified environment
@@ -84,6 +86,7 @@ public class IndexerParallelizer implements AutoCloseable {
         createLazyHistoryExecutor();
         createLazyHistoryRenamedExecutor();
         createLazyCtagsWatcherExecutor();
+        createLazyRepositorySearchExecutor();
     }
 
     /**
@@ -129,6 +132,13 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     /**
+     * @return the ExecutorService used for repository scan
+     */
+    public ExecutorService getRepositorySearchExecutor() {
+        return lzRepositorySearchExecutor.get();
+    }
+
+    /**
      * Calls {@link #bounce()}, which prepares for -- but does not start -- new
      * pools.
      */
@@ -154,40 +164,72 @@ public class IndexerParallelizer implements AutoCloseable {
      * call this method satisfactorily too.
      */
     public void bounce() {
+        bounceForkJoinPool();
+        bounceFixedExecutor();
+        bounceCtagsPool();
+        bounceHistoryExecutor();
+        bounceHistoryRenamedExecutor();
+        bounceCtagsWatcherExecutor();
+        bounceRepositorySearchExecutor();
+    }
+
+    private void bounceForkJoinPool() {
         if (lzForkJoinPool.isActive()) {
             ForkJoinPool formerForkJoinPool = lzForkJoinPool.get();
             createLazyForkJoinPool();
             formerForkJoinPool.shutdown();
         }
+    }
 
+    private void bounceFixedExecutor() {
         if (lzFixedExecutor.isActive()) {
             ExecutorService formerFixedExecutor = lzFixedExecutor.get();
             createLazyFixedExecutor();
             formerFixedExecutor.shutdown();
         }
+    }
 
+    private void bounceCtagsPool() {
         if (lzCtagsPool.isActive()) {
             ObjectPool<Ctags> formerCtagsPool = lzCtagsPool.get();
             createLazyCtagsPool();
             formerCtagsPool.shutdown();
         }
+    }
 
+    private void bounceHistoryExecutor() {
         if (lzHistoryExecutor.isActive()) {
             ExecutorService formerHistoryExecutor = lzHistoryExecutor.get();
             createLazyHistoryExecutor();
             formerHistoryExecutor.shutdown();
         }
+    }
 
+    private void bounceHistoryRenamedExecutor() {
         if (lzHistoryRenamedExecutor.isActive()) {
             ExecutorService formerHistoryRenamedExecutor = lzHistoryRenamedExecutor.get();
             createLazyHistoryRenamedExecutor();
             formerHistoryRenamedExecutor.shutdown();
         }
+    }
 
+    private void bounceCtagsWatcherExecutor() {
         if (lzCtagsWatcherExecutor.isActive()) {
             ExecutorService formerCtagsWatcherExecutor = lzCtagsWatcherExecutor.get();
             createLazyCtagsWatcherExecutor();
             formerCtagsWatcherExecutor.shutdown();
+        }
+    }
+
+    /**
+     * Shutdown the executor used for repository search.
+     * @see #bounce()
+     */
+    public void bounceRepositorySearchExecutor() {
+        if (lzRepositorySearchExecutor.isActive()) {
+            ExecutorService formerRepositorySearchExecutor = lzRepositorySearchExecutor.get();
+            createLazyRepositorySearchExecutor();
+            formerRepositorySearchExecutor.shutdown();
         }
     }
 
@@ -224,6 +266,11 @@ public class IndexerParallelizer implements AutoCloseable {
     private void createLazyHistoryRenamedExecutor() {
         lzHistoryRenamedExecutor = LazilyInstantiate.using(() ->
                 Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
+    }
+
+    private void createLazyRepositorySearchExecutor() {
+        lzRepositorySearchExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(env.getRepositorySearchParallelism()));
     }
 
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {

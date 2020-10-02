@@ -195,6 +195,7 @@ public final class Configuration {
     private int indexingParallelism;
     private int historyParallelism;
     private int historyRenamedParallelism;
+    private int repositorySearchParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -238,9 +239,9 @@ public final class Configuration {
      * The directory hierarchy depth to limit the scanning for repositories.
      * E.g. if the /mercurial/ directory (relative to source root) is a repository
      * and /mercurial/usr/closed/ is sub-repository, the latter will be discovered
-     * only if the depth is set to 3 or greater.
+     * only if the depth is set to 2 or greater.
      */
-    public static final int defaultScanningDepth = 3;
+    public static final int defaultScanningDepth = 2;
 
     /**
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
@@ -1143,6 +1144,14 @@ public final class Configuration {
 
     public void setHistoryRenamedParallelism(int value) {
         this.historyRenamedParallelism = value > 0 ? value : 0;
+    }
+
+    public int getRepositorySearchParallelism() {
+        return repositorySearchParallelism;
+    }
+
+    public void setRepositorySearchParallelism(int value) {
+        this.repositorySearchParallelism = value > 0 ? value : 0;
     }
 
     public boolean isTagsEnabled() {

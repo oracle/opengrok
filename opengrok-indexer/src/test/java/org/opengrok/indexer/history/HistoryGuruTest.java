@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -251,5 +252,38 @@ public class HistoryGuruTest {
         if (!file.mkdirs()) {
             throw new IOException("Couldn't mkdirs " + file);
         }
+    }
+
+    @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    public void testScanningDepth() throws IOException {
+        String topLevelDirName = "scanDepthTest";
+        File repoRoot = new File(repository.getSourceRoot(), topLevelDirName);
+        certainlyMkdirs(repoRoot);
+        File repo0 = new File(repoRoot, ".git");
+        certainlyMkdirs(repo0);
+        File sub1 = new File(repoRoot, "sub1");
+        certainlyMkdirs(sub1);
+        File sub2 = new File(sub1, "sub2");
+        certainlyMkdirs(sub2);
+        File sub3 = new File(sub2, ".git");
+        certainlyMkdirs(sub3);
+
+        int originalScanDepth = env.getScanningDepth();
+        env.setScanningDepth(0);
+
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Collection<RepositoryInfo> addedRepos = instance.addRepositories(
+                Collections.singleton(Paths.get(repository.getSourceRoot(),topLevelDirName).toString()));
+        assertEquals("should add to max depth", 1, addedRepos.size());
+
+        env.setScanningDepth(1);
+        List<String> repoDirs = addedRepos.stream().map(RepositoryInfo::getDirectoryName).collect(Collectors.toList());
+        instance.removeRepositories(repoDirs);
+        addedRepos = instance.addRepositories(
+                Collections.singleton(Paths.get(repository.getSourceRoot(),topLevelDirName).toString()));
+        assertEquals("should add to increased max depth", 2, addedRepos.size());
+
+        env.setScanningDepth(originalScanDepth);
     }
 }

@@ -336,12 +336,16 @@ public final class Indexer {
             // Create history cache first.
             if (searchRepositories) {
                 if (searchPaths.isEmpty()) {
-                    searchPaths.add(env.getSourceRootPath());
-                } else {
-                    searchPaths = searchPaths.stream().
-                            map(t -> Paths.get(env.getSourceRootPath(), t).toString()).
-                            collect(Collectors.toSet());
+                    String[] dirs = env.getSourceRootFile().
+                            list((f, name) -> f.isDirectory() && env.getPathAccepter().accept(f));
+                    if (dirs != null) {
+                        searchPaths.addAll(Arrays.asList(dirs));
+                    }
                 }
+
+                searchPaths = searchPaths.stream().
+                        map(t -> Paths.get(env.getSourceRootPath(), t).toString()).
+                        collect(Collectors.toSet());
             }
             getInstance().prepareIndexer(env, searchPaths, addProjects,
                     createDict, runIndex, subFiles, new ArrayList<>(repositories));
@@ -609,7 +613,7 @@ public final class Indexer {
                     runIndex = false);
 
             parser.on("--nestingMaximum", "=number",
-                    "Maximum of nested repositories. Default is 1.").execute(v ->
+                    "Maximum depth of nested repositories. Default is 1.").execute(v ->
                     cfg.setNestingMaximum((Integer) v));
 
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
@@ -739,10 +743,13 @@ public final class Indexer {
                     cfg.setWebappLAF((String) stylePath));
 
             parser.on("-T", "--threads", "=number", Integer.class,
-                    "The number of threads to use for index generation. By default the number",
-                    "of threads will be set to the number of available CPUs. This influences the number",
-                    "of spawned ctags processes as well.").execute(threadCount ->
-                    cfg.setIndexingParallelism((Integer) threadCount));
+                    "The number of threads to use for index generation and repository scan.",
+                    "By default the number of threads will be set to the number of available",
+                    "CPUs. This influences the number of spawned ctags processes as well.").
+                    execute(threadCount -> {
+                        cfg.setIndexingParallelism((Integer) threadCount);
+                        cfg.setRepositorySearchParallelism((Integer) threadCount);
+                    });
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
                 "Default tab size to use (number of spaces per tab character).")
