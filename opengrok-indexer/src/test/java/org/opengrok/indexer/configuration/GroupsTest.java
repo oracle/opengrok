@@ -55,19 +55,19 @@ public class GroupsTest {
         Set<Group> groups = cfg.getGroups();
 
         invokeMethod("deleteGroup",
-                new Class[]{Set.class, String.class},
+                new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "random not existing group"});
 
         Assert.assertEquals(6, cfg.getGroups().size());
 
         invokeMethod("deleteGroup",
-                new Class[]{Set.class, String.class},
+                new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "apache"});
 
         Assert.assertEquals(5, cfg.getGroups().size());
 
         invokeMethod("deleteGroup",
-                new Class[]{Set.class, String.class},
+                new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "ctags"});
 
         Assert.assertEquals(1, cfg.getGroups().size());
@@ -80,7 +80,7 @@ public class GroupsTest {
         Assert.assertNull(grp);
 
         invokeMethod("modifyGroup",
-                new Class[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", null});
 
         Assert.assertEquals(7, groups.size());
@@ -101,7 +101,7 @@ public class GroupsTest {
         Assert.assertNull(grp);
 
         invokeMethod("modifyGroup",
-                new Class[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", "apache"});
 
         Assert.assertEquals(7, groups.size());
@@ -127,7 +127,7 @@ public class GroupsTest {
         Assert.assertEquals(grp.getPattern(), "apache-.*");
 
         invokeMethod("modifyGroup",
-                new Class[]{Set.class, String.class, String.class, String.class},
+                new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "apache", "different pattern", null});
 
         grp = findGroup(groups, "apache");
@@ -159,7 +159,7 @@ public class GroupsTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(os);
         invokeMethod("matchGroups",
-                new Class[]{PrintStream.class, Set.class, String.class},
+                new Class<?>[]{PrintStream.class, Set.class, String.class},
                 new Object[]{out, groups, match});
 
         String output = os.toString();
