@@ -147,7 +147,6 @@ admin_password
 admin_password
 os_profile_linux_config
 disable_password_authentication
-false
 resource
 depends_on		# 154:  depends_on = [
 azurerm_virtual_machine

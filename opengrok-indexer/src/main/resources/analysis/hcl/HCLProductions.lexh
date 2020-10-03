@@ -44,7 +44,7 @@
 
     {Identifier}    {
         chkLOC();
-        if (offerSymbol(yytext(), 0, true)) {
+        if (offerSymbol(yytext(), 0, false)) {
             yypush(POST_IDENTIFIER);
             if (returnOnSymbol()) {
                 return yystate();
