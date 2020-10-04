@@ -34,16 +34,11 @@ APPLICATION_JSON = 'application/json'   # default
 
 
 def do_api_call(uri, verb, headers=None, data=None):
-    verbs = {
-        'GET': requests.get,
-        'PUT': requests.put,
-        'POST': requests.post,
-        'DELETE': requests.delete
-    }
-    handler = verbs.get(verb)
-    if handler is not None:
-        return handler(uri, data=data, headers=headers, proxies=get_proxies())
-    raise Exception('Unknown HTTP verb: {}'.format(verb))
+    handler = getattr(requests, verb.lower())
+    if handler is None or not isinstance(handler, function):
+        raise Exception('Unknown HTTP verb: {}'.format(verb))
+
+    return handler(uri, data=data, headers=headers, proxies=get_proxies())
 
 
 def call_rest_api(command, pattern, name):
