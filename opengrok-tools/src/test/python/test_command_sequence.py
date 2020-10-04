@@ -180,4 +180,3 @@ def test_restful_fail(monkeypatch):
                   mock_response)
         commands.run()
         assert commands.check([]) == 1
-
