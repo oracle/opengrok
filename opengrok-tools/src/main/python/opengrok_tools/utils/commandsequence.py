@@ -64,9 +64,8 @@ class CommandSequenceBase:
 
     def get_cmd_output(self, cmd, indent=""):
         str = ""
-        if self.outputs.get(cmd):
-            for line in self.outputs[cmd]:
-                str += '{}{}'.format(indent, line)
+        for line in self.outputs.get(cmd, []):
+            str += '{}{}'.format(indent, line)
 
         return str
 
