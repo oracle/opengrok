@@ -171,8 +171,9 @@ def test_restful_fail(monkeypatch):
     def mock_response(uri, verb, headers, data):
         return MockResponse()
 
-    commands = CommandSequence(CommandSequenceBase("test-cleanup-list",
-                                                   [{'command': ['http://foo', 'PUT', 'data']}]))
+    commands = CommandSequence(
+        CommandSequenceBase("test-cleanup-list",
+                            [{'command': ['http://foo', 'PUT', 'data']}]))
     assert commands is not None
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.restful.do_api_call",
