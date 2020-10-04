@@ -38,7 +38,7 @@ def do_api_call(uri, verb, headers=None, data=None):
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    return handler(uri, data=data, headers=headers, proxies=get_proxies())
+    return handler(uri, data=data, headers=headers, proxies=get_proxies(uri))
 
 
 def call_rest_api(command, pattern, name):
