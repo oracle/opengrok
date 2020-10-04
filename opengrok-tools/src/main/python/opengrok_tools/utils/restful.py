@@ -35,7 +35,7 @@ APPLICATION_JSON = 'application/json'   # default
 
 def do_api_call(uri, verb, headers=None, data=None):
     handler = getattr(requests, verb.lower())
-    if handler is None or not isinstance(handler, function):
+    if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
     return handler(uri, data=data, headers=headers, proxies=get_proxies())
