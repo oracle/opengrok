@@ -23,8 +23,9 @@
 
 import logging
 import json
+import requests
 
-from .webutil import put, post, delete
+from .webutil import get_proxies
 from .patterns import COMMAND_PROPERTY
 
 
@@ -32,17 +33,17 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(command, uri, verb, headers, data):
+def do_api_call(uri, verb, headers=None, data=None):
     verbs = {
-        'PUT': put,
-        'POST': post,
-        'DELETE': delete
+        'GET': requests.get,
+        'PUT': requests.put,
+        'POST': requests.post,
+        'DELETE': requests.delete
     }
     handler = verbs.get(verb)
     if handler is not None:
-        logger = logging.getLogger(__name__)
-        return handler(logger, uri, headers=headers, data=data)
-    raise Exception('Unknown HTTP verb in command {}'.format(command))
+        return handler(uri, data=data, headers=headers, proxies=get_proxies())
+    raise Exception('Unknown HTTP verb: {}'.format(verb))
 
 
 def call_rest_api(command, pattern, name):
@@ -66,7 +67,7 @@ def call_rest_api(command, pattern, name):
     command = command[COMMAND_PROPERTY]
 
     uri, verb, data, *_ = command
-    if verb not in ['PUT', 'POST', 'DELETE']:
+    if verb not in ['GET', 'PUT', 'POST', 'DELETE']:
         raise Exception("unsupported verb: {}".format(verb))
     try:
         headers = command[3]
@@ -102,7 +103,7 @@ def call_rest_api(command, pattern, name):
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
-    r = do_api_call(command, uri, verb, headers, data)
+    r = do_api_call(uri, verb, headers=headers, data=data)
     if r:
         r.raise_for_status()
     return r

@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019-2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pytest
@@ -43,11 +43,11 @@ def test_replacement(monkeypatch):
             self.status_code = okay_status
             self.raise_for_status = self.p
 
-    def mock_response(command, uri, verb, headers, json_data):
+    def mock_response(uri, verb, headers, data):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"
-        assert json_data == '"fooBARbar"'
+        assert data == '"fooBARbar"'
 
         return MockResponse()
 
@@ -77,17 +77,17 @@ def test_headers(monkeypatch):
     Test HTTP header handling.
     """
     for verb in ["PUT", "POST", "DELETE"]:
-        TEXT_PLAIN = {'Content-type': 'text/plain'}
-        for headers in [TEXT_PLAIN, None]:
+        text_plain_header = {CONTENT_TYPE: 'text/plain'}
+        for header_arg in [text_plain_header, None]:
             command = {"command": ["http://localhost:8080/source/api/v1/foo",
-                                   verb, "data", headers]}
+                                   verb, "data", header_arg]}
 
-            def mock_response(command, uri, verb, headers_arg, data):
-                if headers:
-                    assert TEXT_PLAIN.items() <= headers_arg.items()
+            def mock_response(uri, verb, headers, data):
+                if header_arg:
+                    assert text_plain_header.items() <= headers.items()
                 else:
                     assert {CONTENT_TYPE: APPLICATION_JSON}.items() \
-                        <= headers_arg.items()
+                        <= headers.items()
 
             with monkeypatch.context() as m:
                 m.setattr("opengrok_tools.utils.restful.do_api_call",

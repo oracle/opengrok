@@ -37,11 +37,10 @@ from .exitvals import (
 )
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
 from .utils import is_exe, check_create_dir, get_int, is_web_uri
-from .webutil import get
 from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
 from .command import Command
-from .restful import call_rest_api
+from .restful import call_rest_api, do_api_call
 
 from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
@@ -254,10 +253,9 @@ def process_changes(repos, project_name, uri):
 
     # check if the project is a new project - full index is necessary
     try:
-        r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
-                                urllib.parse.quote_plus(project_name),
-                                'property', 'indexed'))
-        r.raise_for_status()
+        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects',
+                        urllib.parse.quote_plus(project_name),
+                        'property', 'indexed'), 'GET')
         if not bool(r.json()):
             changes_detected = True
             logger.info('Project {} has not been indexed yet'
