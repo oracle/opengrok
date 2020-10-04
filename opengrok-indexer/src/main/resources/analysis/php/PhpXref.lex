@@ -44,9 +44,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %ignorecase
 %int
 %char
-%init{
-    yyline = 1;
-%init}
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{

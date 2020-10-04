@@ -32,9 +32,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %class TroffFullTokenizer
 %extends JFlexSymbolMatcher
 %unicode
-%init{
-    yyline = 1;
-%init}
 %int
 %include CommonLexer.lexh
 %caseless

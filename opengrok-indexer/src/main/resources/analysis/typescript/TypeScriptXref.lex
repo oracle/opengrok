@@ -40,9 +40,6 @@ import java.util.Set;
 %buffer 32766
 %int
 %char
-%init{
-    yyline = 1;
-%init}
 %include CommonLexer.lexh
 %include CommonXref.lexh
 %{

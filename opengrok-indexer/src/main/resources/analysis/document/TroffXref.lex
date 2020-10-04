@@ -38,6 +38,10 @@ import org.opengrok.indexer.web.Util;
 %int
 %char
 %init{
+    /*
+     * Keep this antiquated management of yyline for a JFlexNonXref subclass.
+     * Hopefully JFlexNonXref will be retired before too long.
+     */
     yyline = 1;
 %init}
 %include CommonLexer.lexh
@@ -64,7 +68,7 @@ import org.opengrok.indexer.web.Util;
   public void startNewLine() throws IOException {
       // *DO NOT CALL super method*
 
-      ++yyline;
+      setLineNumber(++yyline);
       if (didSeePhysicalLOC) {
           ++loc;
           didSeePhysicalLOC = false;

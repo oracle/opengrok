@@ -25,6 +25,7 @@ package org.opengrok.indexer.analysis;
 
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.UriUtils;
@@ -188,7 +189,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param start the text start position
      */
     protected void onEndOfLineMatched(String str, long start) {
-        setLineNumber(getLineNumber() + countLFs(str));
+        setLineNumber(getLineNumber() + countEOLs(str));
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
@@ -437,13 +438,11 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         return true;
     }
 
-    private static int countLFs(String str) {
+    private static int countEOLs(String str) {
+        Matcher m = StringUtils.STANDARD_EOL.matcher(str);
         int n = 0;
-        for (int i = 0; i < str.length(); ++i) {
-            char c = str.charAt(i);
-            if (c == '\n') {
-                ++n;
-            }
+        while (m.find()) {
+            ++n;
         }
         return n;
     }
