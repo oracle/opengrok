@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -18,27 +18,26 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.plain;
 
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
-%%
-%public
-%class PlainSymbolTokenizer
-%extends JFlexSymbolMatcher
-%unicode
-%buffer 32766
-%int
-%include CommonLexer.lexh
-%char
+import org.junit.Test;
+import org.opengrok.indexer.analysis.XrefTestBase;
 
-%%
-[a-zA-Z_] [a-zA-Z0-9_]* {
-    onSymbolMatched(yytext(), yychar);
-    return yystate();
+import java.io.IOException;
+
+/**
+ * Represents a container for tests of old Mac newlines.
+ */
+public class OldMacNLXrefTest extends XrefTestBase {
+
+    @Test
+    public void shouldCountMultipleLinesForOldMacFile() throws IOException {
+        writeAndCompare(PlainAnalyzerFactory.DEFAULT_INSTANCE,
+                "analysis/plain/ErrorList.r.txt",
+                "analysis/plain/ErrorList_r_xref.html", null, 67);
+    }
 }
-
-[^]    {}

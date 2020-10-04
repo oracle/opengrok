@@ -31,9 +31,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %class VerilogXref
 %extends VerilogLexer
 %char
-%init{
-    yyline = 1;
-%init}
 %unicode
 %int
 %include CommonLexer.lexh

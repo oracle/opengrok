@@ -33,9 +33,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %ignorecase
 %int
 %char
-%init{
-    yyline = 1;
-%init}
 %include CommonLexer.lexh
 %include CommonXref.lexh
 

@@ -35,9 +35,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %extends JFlexSymbolMatcher
 %unicode
 %buffer 32766
-%init{
-    yyline = 1;
-%init}
 %int
 %include CommonLexer.lexh
 %char

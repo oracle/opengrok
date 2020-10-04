@@ -39,9 +39,6 @@ import java.io.IOException;
 %buffer 32766
 %int
 %char
-%init{
-    yyline = 1;
-%init}
 %include CommonLexer.lexh
 %{
     private String lastSymbol;

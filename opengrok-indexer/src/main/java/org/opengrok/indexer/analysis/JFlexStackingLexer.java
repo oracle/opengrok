@@ -58,7 +58,7 @@ public interface JFlexStackingLexer extends JFlexLexer {
     int getYYEOF();
 
     /**
-     * Gets the yyline value.
+     * Gets the line number.
      */
     int getLineNumber();
 

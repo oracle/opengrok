@@ -31,9 +31,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %class EiffelXref
 %extends EiffelLexer
 %char
-%init{
-    yyline = 1;
-%init}
 %unicode
 %ignorecase
 %int

@@ -30,9 +30,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %public
 %class EiffelSymbolTokenizer
 %extends EiffelLexer
-%init{
-    yyline = 1;
-%init}
 %unicode
 %ignorecase
 %int

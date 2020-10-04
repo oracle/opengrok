@@ -41,6 +41,7 @@ import org.opengrok.indexer.analysis.Scopes.Scope;
 
 %public
 %class PlainLineTokenizer
+// This tokenizer relies on JFlex line-counting.
 %line
 %unicode
 %type String 

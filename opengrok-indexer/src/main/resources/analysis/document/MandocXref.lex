@@ -40,6 +40,10 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 %int
 %char
 %init{
+    /*
+     * Keep this antiquated management of yyline for a JFlexNonXref subclass.
+     * Hopefully JFlexNonXref will be retired before too long.
+     */
     yyline = 1;
 %init}
 %include CommonLexer.lexh

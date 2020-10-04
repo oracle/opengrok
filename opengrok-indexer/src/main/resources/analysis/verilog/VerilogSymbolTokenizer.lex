@@ -29,9 +29,6 @@ import org.opengrok.indexer.web.HtmlConsts;
 %public
 %class VerilogSymbolTokenizer
 %extends VerilogLexer
-%init{
-    yyline = 1;
-%init}
 %unicode
 %int
 %char

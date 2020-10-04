@@ -33,9 +33,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %public
 %class ScalaSymbolTokenizer
 %extends JFlexSymbolMatcher
-%init{
-    yyline = 1;
-%init}
 %unicode
 %int
 %include CommonLexer.lexh

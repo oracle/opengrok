@@ -34,9 +34,6 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %public
 %class RustSymbolTokenizer
 %extends JFlexSymbolMatcher
-%init{
-    yyline = 1;
-%init}
 %unicode
 %int
 %include CommonLexer.lexh
