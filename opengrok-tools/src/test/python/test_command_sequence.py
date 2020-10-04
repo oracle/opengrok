@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -28,6 +28,8 @@ import sys
 
 import pytest
 import tempfile
+
+from requests.exceptions import HTTPError
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
     CommandSequenceBase
@@ -155,3 +157,26 @@ def test_cleanup():
         assert list(commands.retcodes.values()) == [1]
         assert os.path.isfile(file_foo)
         assert os.path.isfile(file_bar)
+
+
+def test_restful_fail(monkeypatch):
+    class MockResponse:
+        def p(self):
+            raise HTTPError("foo")
+
+        def __init__(self):
+            self.status_code = 500
+            self.raise_for_status = self.p
+
+    def mock_response(command, uri, verb, headers, json_data):
+        return MockResponse()
+
+    commands = CommandSequence(CommandSequenceBase("test-cleanup-list",
+                                                   [{'command': ['http://foo', 'PUT', 'data']}]))
+    assert commands is not None
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.restful.do_api_call",
+                  mock_response)
+        commands.run()
+        assert commands.check([]) == 1
+

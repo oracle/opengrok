@@ -326,13 +326,12 @@ def handle_disabled_project(config, project_name, disabled_msg):
                              format(disabled_msg))
                 command_args[2]["text"] = text + ": " + disabled_msg
 
-            r = call_rest_api(disabled_command, PROJECT_SUBST, project_name)
             try:
-                r.raise_for_status()
-            except HTTPError:
+                call_rest_api(disabled_command, PROJECT_SUBST, project_name)
+            except HTTPError as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
-                             format(project_name, r))
+                             format(project_name, e))
         else:
             args = [project_name]
             if disabled_msg and type(disabled_msg) is str:

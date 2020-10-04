@@ -27,45 +27,23 @@ from urllib.parse import urlparse
 
 
 def get(logger, uri, params=None, headers=None):
-    try:
-        proxies = get_proxies(uri)
-        return requests.get(uri, params=params, proxies=proxies)
-    except Exception:
-        logger.debug(traceback.format_exc())
-        return None
+    proxies = get_proxies(uri)
+    return requests.get(uri, params=params, proxies=proxies)
 
 
 def delete(logger, uri, params=None, headers=None, data=None):
-    try:
-        proxies = get_proxies(uri)
-        return requests.delete(uri, data=data, params=params, proxies=proxies)
-    except Exception:
-        logger.debug(traceback.format_exc())
-        return None
+    proxies = get_proxies(uri)
+    return requests.delete(uri, data=data, params=params, proxies=proxies)
 
 
 def post(logger, uri, headers=None, data=None):
-    rv = None
-    try:
-        proxies = get_proxies(uri)
-        rv = requests.post(uri, data=data, headers=headers, proxies=proxies)
-    except Exception:
-        logger.debug(traceback.format_exc())
-        return None
-
-    return rv
+    proxies = get_proxies(uri)
+    return requests.post(uri, data=data, headers=headers, proxies=proxies)
 
 
 def put(logger, uri, headers=None, data=None):
-    rv = None
-    try:
-        proxies = get_proxies(uri)
-        rv = requests.put(uri, data=data, headers=headers, proxies=proxies)
-    except Exception:
-        logger.debug(traceback.format_exc())
-        return None
-
-    return rv
+    proxies = get_proxies(uri)
+    return requests.put(uri, data=data, headers=headers, proxies=proxies)
 
 
 def get_uri(*uri_parts):

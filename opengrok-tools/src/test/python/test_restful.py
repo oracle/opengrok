@@ -36,8 +36,12 @@ def test_replacement(monkeypatch):
     okay_status = 200
 
     class MockResponse:
+        def p(self):
+            pass
+
         def __init__(self):
             self.status_code = okay_status
+            self.raise_for_status = self.p
 
     def mock_response(command, uri, verb, headers, json_data):
         # Spying on mocked function is maybe too much so verify

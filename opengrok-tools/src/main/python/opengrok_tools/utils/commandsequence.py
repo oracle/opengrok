@@ -18,15 +18,19 @@
 #
 
 #
-# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
+
+from requests.exceptions import HTTPError
+
 from .command import Command
 from .utils import is_web_uri
 from .exitvals import (
     CONTINUE_EXITVAL,
-    SUCCESS_EXITVAL
+    SUCCESS_EXITVAL,
+    FAILURE_EXITVAL
 )
 from .restful import call_rest_api
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
@@ -60,7 +64,7 @@ class CommandSequenceBase:
 
     def get_cmd_output(self, cmd, indent=""):
         str = ""
-        if self.outputs[cmd]:
+        if self.outputs.get(cmd):
             for line in self.outputs[cmd]:
                 str += '{}{}'.format(indent, line)
 
@@ -106,12 +110,18 @@ class CommandSequence(CommandSequenceBase):
         argument list of the command.
 
         Any command entry that is a URI, will be used to submit RESTful API
-        request. Return codes for these requests are not checked.
+        request.
         """
 
         for command in self.commands:
             if is_web_uri(command.get(COMMAND_PROPERTY)[0]):
-                call_rest_api(command, PROJECT_SUBST, self.name)
+                try:
+                    call_rest_api(command, PROJECT_SUBST, self.name)
+                except HTTPError as e:
+                    self.logger.error("RESTful command {} failed: {}".
+                                      format(command, e))
+                    self.failed = True
+                    self.retcodes[str(command)] = FAILURE_EXITVAL
             else:
                 command_args = command.get(COMMAND_PROPERTY)
                 command = Command(command_args,
@@ -156,7 +166,11 @@ class CommandSequence(CommandSequenceBase):
 
         for cleanup_cmd in self.cleanup:
             if is_web_uri(cleanup_cmd.get(COMMAND_PROPERTY)[0]):
-                call_rest_api(cleanup_cmd, PROJECT_SUBST, self.name)
+                try:
+                    call_rest_api(cleanup_cmd, PROJECT_SUBST, self.name)
+                except HTTPError as e:
+                    self.logger.error("RESTful command {} failed: {}".
+                                      format(cleanup_cmd, e))
             else:
                 command_args = cleanup_cmd.get(COMMAND_PROPERTY)
                 self.logger.debug("Running cleanup command '{}'".

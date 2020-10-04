@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -67,7 +67,7 @@ def call_rest_api(command, pattern, name):
 
     uri, verb, data, *_ = command
     if verb not in ['PUT', 'POST', 'DELETE']:
-        raise Exception("invalid verb: {}".format(verb))
+        raise Exception("unsupported verb: {}".format(verb))
     try:
         headers = command[3]
         if headers and not isinstance(headers, dict):
@@ -102,4 +102,7 @@ def call_rest_api(command, pattern, name):
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
-    return do_api_call(command, uri, verb, headers, data)
+    r = do_api_call(command, uri, verb, headers, data)
+    if r:
+        r.raise_for_status()
+    return r
