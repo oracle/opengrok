@@ -37,7 +37,8 @@ def get_repos(logger, project, uri):
 
     try:
         r = do_api_call(get_uri(uri, 'api', 'v1', 'projects',
-                        urllib.parse.quote_plus(project), 'repositories'), 'GET')
+                        urllib.parse.quote_plus(project), 'repositories'),
+                        'GET')
     except Exception:
         logger.error('could not get repositories for ' + project)
         return None
@@ -113,7 +114,8 @@ def set_configuration(logger, configuration, uri):
 
 def list_indexed_projects(logger, uri):
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects', 'indexed'), 'GET')
+        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
+                        'GET')
     except Exception:
         logger.error('could not list indexed projects from web application '
                      'on {}'.format(uri))
@@ -124,7 +126,8 @@ def list_indexed_projects(logger, uri):
 
 def add_project(logger, project, uri):
     try:
-        do_api_call(get_uri(uri, 'api', 'v1', 'projects'), 'POST', data=project)
+        do_api_call(get_uri(uri, 'api', 'v1', 'projects'),
+                    'POST', data=project)
     except Exception:
         logger.error('could not add project {} for web application on {}'.
                      format(project, uri))
