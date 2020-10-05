@@ -730,9 +730,7 @@ public final class HistoryGuru {
 
     /**
      * Ensure that we have a directory in the cache. If it's not there, fetch
-     * its history and populate the cache. If it's already there, and the cache
-     * is able to tell how recent it is, attempt to update it to the most recent
-     * revision.
+     * its history and populate the cache.
      *
      * @param file the root path to test
      * @throws HistoryException if an error occurs while accessing the history
@@ -745,24 +743,15 @@ public final class HistoryGuru {
 
         Repository repository = getRepository(file);
         if (repository == null) {
-            // no repository -> no history :(
+            // no repository -> no history
             return;
         }
 
-        String sinceRevision = null;
-
         if (historyCache.hasCacheForDirectory(file, repository)) {
-            sinceRevision = historyCache.getLatestCachedRevision(repository);
-            if (sinceRevision == null) {
-                // Cache already exists, but we don't know how recent it is,
-                // so don't do anything.
-                return;
-            }
+            return;
         }
 
-        // Create cache from the beginning if it doesn't exist, or update it
-        // incrementally otherwise.
-        createCache(repository, sinceRevision);
+        createCache(repository, null);
     }
 
     protected Repository getRepository(File path) {
