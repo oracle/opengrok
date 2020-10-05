@@ -747,7 +747,8 @@ public final class HistoryGuru {
             return;
         }
 
-        if (historyCache.hasCacheForDirectory(file, repository)) {
+        if (!repository.hasHistoryForDirectories() ||
+                historyCache.hasCacheForDirectory(file, repository)) {
             return;
         }
 
