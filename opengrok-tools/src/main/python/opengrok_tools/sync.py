@@ -112,7 +112,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                 cmds.fill(cmds_base.retcodes, cmds_base.outputs,
                           cmds_base.failed)
                 r = cmds.check(ignore_errors)
-                if r != 0:
+                if r != SUCCESS_EXITVAL:
                     retval = FAILURE_EXITVAL
 
     return retval
