@@ -36,9 +36,9 @@ def get_repos(logger, project, uri):
     """
 
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects',
-                        urllib.parse.quote_plus(project), 'repositories'),
-                        'GET')
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
+                                       urllib.parse.quote_plus(project),
+                                       'repositories'))
     except Exception:
         logger.error('could not get repositories for ' + project)
         return None
@@ -57,8 +57,8 @@ def get_config_value(logger, name, uri):
     Return string with the result on success, None on failure.
     """
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'configuration',
-                        urllib.parse.quote_plus(name)), 'GET')
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
+                                       urllib.parse.quote_plus(name)))
     except Exception:
         logger.error("Cannot get the '{}' config value from the web "
                      "application on {}".format(name, uri))
@@ -76,8 +76,8 @@ def get_repo_type(logger, repository, uri):
     payload = {'repository': repository}
 
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'repositories', 'property',
-                        'type'), 'GET', data=payload)
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
+                                       'property', 'type'), data=payload)
     except Exception:
         logger.error('could not get repository type for {} from web'
                      'application on {}'.format(repository, uri))
@@ -91,7 +91,7 @@ def get_repo_type(logger, repository, uri):
 
 def get_configuration(logger, uri):
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'configuration'), 'GET')
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'))
     except Exception:
         logger.error('could not get configuration from web application on {}'.
                      format(uri))
@@ -102,7 +102,7 @@ def get_configuration(logger, uri):
 
 def set_configuration(logger, configuration, uri):
     try:
-        do_api_call(get_uri(uri, 'api', 'v1', 'configuration'), 'PUT',
+        do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration'),
                     data=configuration)
     except Exception:
         logger.error('could not set configuration for web application on {}'.
@@ -114,8 +114,8 @@ def set_configuration(logger, configuration, uri):
 
 def list_indexed_projects(logger, uri):
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
-                        'GET')
+        r = do_api_call('GET',
+                        get_uri(uri, 'api', 'v1', 'projects', 'indexed'))
     except Exception:
         logger.error('could not list indexed projects from web application '
                      'on {}'.format(uri))
@@ -126,8 +126,8 @@ def list_indexed_projects(logger, uri):
 
 def add_project(logger, project, uri):
     try:
-        do_api_call(get_uri(uri, 'api', 'v1', 'projects'),
-                    'POST', data=project)
+        do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
+                    data=project)
     except Exception:
         logger.error('could not add project {} for web application on {}'.
                      format(project, uri))
@@ -138,8 +138,8 @@ def add_project(logger, project, uri):
 
 def delete_project(logger, project, uri):
     try:
-        do_api_call(get_uri(uri, 'api', 'v1', 'projects',
-                    urllib.parse.quote_plus(project)), 'DELETE')
+        do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
+                                      urllib.parse.quote_plus(project)))
     except Exception:
         logger.error('could not delete project {} in web application on {}'.
                      format(project, uri))

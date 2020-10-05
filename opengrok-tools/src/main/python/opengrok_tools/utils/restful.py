@@ -33,7 +33,7 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(uri, verb, headers=None, data=None):
+def do_api_call(verb, uri, headers=None, data=None):
     handler = getattr(requests, verb.lower())
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
@@ -96,7 +96,7 @@ def call_rest_api(command, pattern, name):
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
-    r = do_api_call(uri, verb, headers=headers, data=data)
+    r = do_api_call(verb, uri, headers=headers, data=data)
     if r is not None:
         logger.debug("API call result: {}".format(r))
         r.raise_for_status()

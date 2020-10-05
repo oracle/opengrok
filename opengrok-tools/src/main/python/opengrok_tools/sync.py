@@ -215,8 +215,8 @@ def main():
                                      "opengrok-sync.lock"))
         try:
             with lock.acquire(timeout=0):
-                r= do_sync(args, commands, config, directory, dirs_to_process,
-                           ignore_errors, logger, uri)
+                r = do_sync(args, commands, config, directory, dirs_to_process,
+                            ignore_errors, logger, uri)
         except Timeout:
             logger.warning("Already running, exiting.")
             sys.exit(FAILURE_EXITVAL)

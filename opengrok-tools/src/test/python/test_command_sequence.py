@@ -168,7 +168,7 @@ def test_restful_fail(monkeypatch):
             self.status_code = 500
             self.raise_for_status = self.p
 
-    def mock_response(uri, verb, headers, data):
+    def mock_response(verb, uri, headers, data):
         return MockResponse()
 
     commands = CommandSequence(

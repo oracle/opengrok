@@ -253,9 +253,9 @@ def process_changes(repos, project_name, uri):
 
     # check if the project is a new project - full index is necessary
     try:
-        r = do_api_call(get_uri(uri, 'api', 'v1', 'projects',
-                        urllib.parse.quote_plus(project_name),
-                        'property', 'indexed'), 'GET')
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
+                                       urllib.parse.quote_plus(project_name),
+                                       'property', 'indexed'))
         if not bool(r.json()):
             changes_detected = True
             logger.info('Project {} has not been indexed yet'
