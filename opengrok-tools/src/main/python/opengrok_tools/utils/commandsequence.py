@@ -121,6 +121,8 @@ class CommandSequence(CommandSequenceBase):
                                       format(command, e))
                     self.failed = True
                     self.retcodes[str(command)] = FAILURE_EXITVAL
+
+                    break
             else:
                 command_args = command.get(COMMAND_PROPERTY)
                 command = Command(command_args,
