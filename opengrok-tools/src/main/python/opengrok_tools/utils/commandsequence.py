@@ -179,9 +179,9 @@ class CommandSequence(CommandSequenceBase):
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != SUCCESS_EXITVAL:
-                    self.logger.info("cleanup command '{}' failed with "
-                                     "code {}".
-                                     format(cmd.cmd, cmd.getretcode()))
+                    self.logger.error("cleanup command '{}' failed with "
+                                      "code {}".
+                                      format(cmd.cmd, cmd.getretcode()))
                     self.logger.info('output: {}'.format(cmd.getoutputstr()))
 
     def check(self, ignore_errors):
