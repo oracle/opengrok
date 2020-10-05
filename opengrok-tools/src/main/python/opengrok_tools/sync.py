@@ -44,6 +44,7 @@ from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
 from .utils.exitvals import (
     FAILURE_EXITVAL,
+    SUCCESS_EXITVAL
 )
 
 major_version = sys.version_info[0]
@@ -51,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.8"
+__version__ = "0.9"
 
 
 def worker(base):
@@ -97,6 +98,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                                        args.driveon)
         cmds_base.append(cmd_base)
     # Map the commands into pool of workers so they can be processed.
+    retval = SUCCESS_EXITVAL
     with Pool(processes=int(args.workers)) as pool:
         try:
             cmds_base_results = pool.map(worker, cmds_base, 1)
@@ -109,7 +111,11 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                 cmds = CommandSequence(cmds_base)
                 cmds.fill(cmds_base.retcodes, cmds_base.outputs,
                           cmds_base.failed)
-                cmds.check(ignore_errors)
+                r = cmds.check(ignore_errors)
+                if r != SUCCESS_EXITVAL:
+                    retval = FAILURE_EXITVAL
+
+    return retval
 
 
 def main():
@@ -202,18 +208,20 @@ def main():
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
     if args.nolock:
-        do_sync(args, commands, config, directory, dirs_to_process,
-                ignore_errors, logger, uri)
+        r = do_sync(args, commands, config, directory, dirs_to_process,
+                    ignore_errors, logger, uri)
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
                                      "opengrok-sync.lock"))
         try:
             with lock.acquire(timeout=0):
-                do_sync(args, commands, config, directory, dirs_to_process,
-                        ignore_errors, logger, uri)
+                r = do_sync(args, commands, config, directory, dirs_to_process,
+                            ignore_errors, logger, uri)
         except Timeout:
             logger.warning("Already running, exiting.")
             sys.exit(FAILURE_EXITVAL)
+
+    sys.exit(r)
 
 
 if __name__ == '__main__':

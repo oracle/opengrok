@@ -178,7 +178,7 @@ def test_incoming_retval(monkeypatch):
                       lambda x, y, z: source_root)
             m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
                       mock_get_repos)
-            m.setattr("opengrok_tools.utils.mirror.get", mock_get)
+            m.setattr("opengrok_tools.utils.mirror.do_api_call", mock_get)
 
             assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
 

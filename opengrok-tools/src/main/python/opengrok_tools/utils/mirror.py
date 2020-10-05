@@ -37,11 +37,10 @@ from .exitvals import (
 )
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
 from .utils import is_exe, check_create_dir, get_int, is_web_uri
-from .webutil import get
 from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
 from .command import Command
-from .restful import call_rest_api
+from .restful import call_rest_api, do_api_call
 
 from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
@@ -254,10 +253,9 @@ def process_changes(repos, project_name, uri):
 
     # check if the project is a new project - full index is necessary
     try:
-        r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
-                                urllib.parse.quote_plus(project_name),
-                                'property', 'indexed'))
-        r.raise_for_status()
+        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
+                                       urllib.parse.quote_plus(project_name),
+                                       'property', 'indexed'))
         if not bool(r.json()):
             changes_detected = True
             logger.info('Project {} has not been indexed yet'
@@ -326,13 +324,12 @@ def handle_disabled_project(config, project_name, disabled_msg):
                              format(disabled_msg))
                 command_args[2]["text"] = text + ": " + disabled_msg
 
-            r = call_rest_api(disabled_command, PROJECT_SUBST, project_name)
             try:
-                r.raise_for_status()
-            except HTTPError:
+                call_rest_api(disabled_command, PROJECT_SUBST, project_name)
+            except HTTPError as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
-                             format(project_name, r))
+                             format(project_name, e))
         else:
             args = [project_name]
             if disabled_msg and type(disabled_msg) is str:

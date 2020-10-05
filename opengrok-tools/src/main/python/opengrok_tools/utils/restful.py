@@ -18,13 +18,14 @@
 #
 
 #
-# Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 import json
+import requests
 
-from .webutil import put, post, delete
+from .webutil import get_proxies
 from .patterns import COMMAND_PROPERTY
 
 
@@ -32,17 +33,12 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(command, uri, verb, headers, data):
-    verbs = {
-        'PUT': put,
-        'POST': post,
-        'DELETE': delete
-    }
-    handler = verbs.get(verb)
-    if handler is not None:
-        logger = logging.getLogger(__name__)
-        return handler(logger, uri, headers=headers, data=data)
-    raise Exception('Unknown HTTP verb in command {}'.format(command))
+def do_api_call(verb, uri, headers=None, data=None):
+    handler = getattr(requests, verb.lower())
+    if handler is None or not callable(handler):
+        raise Exception('Unknown HTTP verb: {}'.format(verb))
+
+    return handler(uri, data=data, headers=headers, proxies=get_proxies(uri))
 
 
 def call_rest_api(command, pattern, name):
@@ -66,8 +62,6 @@ def call_rest_api(command, pattern, name):
     command = command[COMMAND_PROPERTY]
 
     uri, verb, data, *_ = command
-    if verb not in ['PUT', 'POST', 'DELETE']:
-        raise Exception("invalid verb: {}".format(verb))
     try:
         headers = command[3]
         if headers and not isinstance(headers, dict):
@@ -102,4 +96,8 @@ def call_rest_api(command, pattern, name):
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
-    return do_api_call(command, uri, verb, headers, data)
+    r = do_api_call(verb, uri, headers=headers, data=data)
+    if r is not None:
+        logger.debug("API call result: {}".format(r))
+        r.raise_for_status()
+    return r
