@@ -62,8 +62,6 @@ def call_rest_api(command, pattern, name):
     command = command[COMMAND_PROPERTY]
 
     uri, verb, data, *_ = command
-    if verb not in ['GET', 'PUT', 'POST', 'DELETE']:
-        raise Exception("unsupported verb: {}".format(verb))
     try:
         headers = command[3]
         if headers and not isinstance(headers, dict):
