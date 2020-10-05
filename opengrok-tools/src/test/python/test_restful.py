@@ -24,6 +24,9 @@
 #
 
 import pytest
+
+from requests.exceptions import HTTPError
+
 from opengrok_tools.utils.restful import call_rest_api,\
     CONTENT_TYPE, APPLICATION_JSON
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY
@@ -93,6 +96,26 @@ def test_headers(monkeypatch):
                 m.setattr("opengrok_tools.utils.restful.do_api_call",
                           mock_response)
                 call_rest_api(command, None, None)
+
+
+def test_restful_fail(monkeypatch):
+    class MockResponse:
+        def p(self):
+            raise HTTPError("foo")
+
+        def __init__(self):
+            self.status_code = 400
+            self.raise_for_status = self.p
+
+    def mock_response(uri, verb, headers, data):
+        return MockResponse()
+
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.restful.do_api_call",
+                  mock_response)
+        with pytest.raises(HTTPError):
+            call_rest_api({'command': ['http://foo', 'PUT', 'data']},
+                          None, None)
 
 
 def test_invalid_command_negative():

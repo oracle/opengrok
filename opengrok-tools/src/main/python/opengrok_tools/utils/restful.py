@@ -97,6 +97,7 @@ def call_rest_api(command, pattern, name):
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
     r = do_api_call(uri, verb, headers=headers, data=data)
-    if r:
+    if r is not None:
+        logger.debug("API call result: {}".format(r))
         r.raise_for_status()
     return r
