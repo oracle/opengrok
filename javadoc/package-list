@@ -34,6 +34,7 @@ org.opengrok.indexer.analysis.php
 org.opengrok.indexer.analysis.plain
 org.opengrok.indexer.analysis.powershell
 org.opengrok.indexer.analysis.python
+org.opengrok.indexer.analysis.r
 org.opengrok.indexer.analysis.ruby
 org.opengrok.indexer.analysis.rust
 org.opengrok.indexer.analysis.scala
