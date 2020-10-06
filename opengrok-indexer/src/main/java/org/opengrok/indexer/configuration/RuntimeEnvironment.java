@@ -1110,17 +1110,6 @@ public final class RuntimeEnvironment {
                 parallelism;
     }
 
-    /**
-     * Gets the value of {@link Configuration#getRepositorySearchParallelism()} -- or
-     * if zero, then as a default gets the number of available processors.
-     * @return a natural number &gt;= 1
-     */
-    public int getRepositorySearchParallelism() {
-        int parallelism = syncReadConfiguration(Configuration::getRepositorySearchParallelism);
-        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
-                parallelism;
-    }
-
     public boolean isTagsEnabled() {
         return syncReadConfiguration(Configuration::isTagsEnabled);
     }

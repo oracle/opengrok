@@ -746,10 +746,7 @@ public final class Indexer {
                     "The number of threads to use for index generation and repository scan.",
                     "By default the number of threads will be set to the number of available",
                     "CPUs. This influences the number of spawned ctags processes as well.").
-                    execute(threadCount -> {
-                        cfg.setIndexingParallelism((Integer) threadCount);
-                        cfg.setRepositorySearchParallelism((Integer) threadCount);
-                    });
+                    execute(threadCount -> cfg.setIndexingParallelism((Integer) threadCount));
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
                 "Default tab size to use (number of spaces per tab character).")

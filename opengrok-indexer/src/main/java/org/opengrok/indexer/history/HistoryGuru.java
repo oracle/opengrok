@@ -478,7 +478,7 @@ public final class HistoryGuru {
      * @return collection of added repositories
      */
     public Collection<RepositoryInfo> addRepositories(File[] files) {
-        ExecutorService executor = env.getIndexerParallelizer().getRepositorySearchExecutor();
+        ExecutorService executor = env.getIndexerParallelizer().getFixedExecutor();
         List<Future<Collection<RepositoryInfo>>> futures = new ArrayList<>();
         for (File file: files) {
             futures.add(executor.submit(() -> addRepositories(new File[]{file},
@@ -493,8 +493,6 @@ public final class HistoryGuru {
                 LOGGER.log(Level.WARNING, "failed to get results of repository scan");
             }
         });
-
-        env.getIndexerParallelizer().bounceRepositorySearchExecutor();
 
         return repoList;
     }
