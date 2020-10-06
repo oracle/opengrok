@@ -36,7 +36,7 @@ OpenGrok uses [semantic versioning](https://semver.org/) and the version compone
 
  - x - major backwards incompatible update
  - y - full clean reindex of your repositories is needed (e. g. index format has changed)
- - z - redeployment of the web application is necessary
+ - z - redeploy web application
 
 ## 3. Information for developers
 
