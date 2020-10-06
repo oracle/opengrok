@@ -6,7 +6,7 @@
 # build unnecessarily.
 #
 extra_args=""
-if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" && "x$TRAVIS_BRANCH" == "xmaster" ]; then
+if [[ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" && "x$TRAVIS_BRANCH" == "xmaster" ]]; then
 	echo "Enabling Coveralls"
 	extra_args="jacoco:report coveralls:report"
 
