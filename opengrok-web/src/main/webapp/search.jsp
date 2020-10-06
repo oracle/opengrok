@@ -76,7 +76,6 @@ include file="projects.jspf"
     // WebappListener.requestDestroyed() on presence of the following
     // REQUEST_ATTR.
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
-    request.setAttribute("search.jsp-query-start-time", starttime);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     // notify suggester that query was searched
     SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
@@ -148,7 +147,6 @@ include file="menu.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
-    Long starttime = (Long) request.getAttribute("search.jsp-query-start-time");
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
