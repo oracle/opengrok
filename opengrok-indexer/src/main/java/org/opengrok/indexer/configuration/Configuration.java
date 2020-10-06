@@ -195,7 +195,6 @@ public final class Configuration {
     private int indexingParallelism;
     private int historyParallelism;
     private int historyRenamedParallelism;
-    private int repositorySearchParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -1144,14 +1143,6 @@ public final class Configuration {
 
     public void setHistoryRenamedParallelism(int value) {
         this.historyRenamedParallelism = value > 0 ? value : 0;
-    }
-
-    public int getRepositorySearchParallelism() {
-        return repositorySearchParallelism;
-    }
-
-    public void setRepositorySearchParallelism(int value) {
-        this.repositorySearchParallelism = value > 0 ? value : 0;
     }
 
     public boolean isTagsEnabled() {
