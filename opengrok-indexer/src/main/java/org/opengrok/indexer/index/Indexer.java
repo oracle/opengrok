@@ -593,16 +593,6 @@ public final class Indexer {
                     "Please increase JVM heap accordingly too.").execute(memSize ->
                     cfg.setRamBufferSize((Double) memSize));
 
-            parser.on("--man", "Generate OpenGrok XML manual page.").execute(v -> {
-                try {
-                    System.out.print(parser.getManPage());
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                    status = 1;
-                }
-                System.exit(status);
-            });
-
             parser.on("--mandoc", "=/path/to/mandoc", "Path to mandoc(1) binary.")
                     .execute(mandocPath -> cfg.setMandoc((String) mandocPath));
 

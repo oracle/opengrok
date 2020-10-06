@@ -69,30 +69,6 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.6.0</version>
-            <executions>
-              <execution>
-                <id>man-page</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <executable>java</executable>
-              <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
-              <arguments>
-                <argument>-classpath</argument>
-                <argument>${project.build.directory}/dist/opengrok-${project.version}.jar</argument>
-                <argument>org.opengrok.indexer.index.Indexer</argument>
-                <argument>--man</argument>
-              </arguments>
-            </configuration>
-          </plugin>
-          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.1.0</version>
             <configuration>
