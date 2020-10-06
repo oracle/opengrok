@@ -71,14 +71,11 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
 
-    long starttime = System.currentTimeMillis();
-
     SearchHelper searchHelper = cfg.prepareSearch();
     // N.b. searchHelper.destroy() is called via
     // WebappListener.requestDestroyed() on presence of the following
     // REQUEST_ATTR.
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
-    request.setAttribute("search.jsp-query-start-time", starttime);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     // notify suggester that query was searched
     SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
@@ -150,7 +147,6 @@ include file="menu.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
-    Long starttime = (Long) request.getAttribute("search.jsp-query-start-time");
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
@@ -207,8 +203,6 @@ include file="menu.jspf"
             <li>Try more general keywords.</li>
             <li>Use 'wil*' cards if you are looking for partial match.</li>
         </ul>
-        <p><b>Completed in <%= System.currentTimeMillis() - starttime
-            %> milliseconds</b></p>
 	<%
     } else {
         int start = searchHelper.start;
@@ -232,8 +226,7 @@ include file="menu.jspf"
         Results.prettyPrint(out, searchHelper, start, start + thispage);
         %>
         </table>
-        <p><b>Completed in <%= System.currentTimeMillis() - starttime
-            %> milliseconds</b></p><%
+        <%
         if (slider.length() > 0) {
         %>
         <p class="slider"><%= slider %></p><%
