@@ -71,8 +71,6 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
 
-    long starttime = System.currentTimeMillis();
-
     SearchHelper searchHelper = cfg.prepareSearch();
     // N.b. searchHelper.destroy() is called via
     // WebappListener.requestDestroyed() on presence of the following
@@ -207,8 +205,6 @@ include file="menu.jspf"
             <li>Try more general keywords.</li>
             <li>Use 'wil*' cards if you are looking for partial match.</li>
         </ul>
-        <p><b>Completed in <%= System.currentTimeMillis() - starttime
-            %> milliseconds</b></p>
 	<%
     } else {
         int start = searchHelper.start;
@@ -232,8 +228,7 @@ include file="menu.jspf"
         Results.prettyPrint(out, searchHelper, start, start + thispage);
         %>
         </table>
-        <p><b>Completed in <%= System.currentTimeMillis() - starttime
-            %> milliseconds</b></p><%
+        <%
         if (slider.length() > 0) {
         %>
         <p class="slider"><%= slider %></p><%
