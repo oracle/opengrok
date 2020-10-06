@@ -31,7 +31,7 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	export PATH=${PATH}:${JAVA_HOME}
 
 	# needs to be before the default Python 2
-	export PATH=/c/Python38:${PATH}
+	export PATH=/c/Python39:${PATH}
 
 	extra_args="$extra_args -Dorg.opengrok.indexer.analysis.Ctags=c:\\ProgramData\\chocolatey\\lib\\universal-ctags\\tools\\ctags.exe"
 fi
