@@ -27,10 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +35,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -786,59 +782,7 @@ public class OptionParser {
             out.println(line);
         }
     }
-    
-    /**
-     * Generate XML manual page
-     * This requires the template file <code>opengrok.xml</code> as input.
-     * @return String containing generated XML manual page
-     * @throws IOException I/O exception
-     */
-    public String getManPage() throws IOException {
-        StringWriter wrt = new StringWriter();
-        PrintWriter out = new PrintWriter(wrt);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                     getClass().getResourceAsStream("/manpage/opengrok.xml"), StandardCharsets.US_ASCII))) {
-            spool(reader, out, "___INSERT_DATE___");
-            out.print("<refmiscinfo class=\"date\">");
-            out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
-            out.println("</refmiscinfo>");
 
-            spool(reader, out, "___INSERT_USAGE___");
-            for (Option o: optionList) {
-                String sep = "";
-                out.println("<optional><option>");
-                for (String option : o.names) {
-                    out.print(sep + option);
-                    sep = ", ";
-                }
-                if (o.argument != null) {
-                    out.print(" <replaceable>");
-                    out.print(o.argument);
-                    out.print("</replaceable>");
-                }
-                out.println("</option></optional>");
-            }
-
-            spool(reader, out, "___INSERT_OPTIONS___");
-            for (Option o: optionList) {
-                String sep = "";
-                out.print("<varlistentry><term><option>");
-                for (String option : o.names) {
-                    out.print(sep + option);
-                    sep = ", ";
-                }
-                out.print("</option></term><listitem><para>");
-                out.print(o.description);
-                out.println("</para></listitem></varlistentry>");
-            }
-
-            spool(reader, out, "___END_OF_FILE___");
-            out.flush();
-        }
-
-        return wrt.toString();
-    }
-    
     protected List<Option> getOptionList() {
         return optionList;
     }
