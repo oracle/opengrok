@@ -125,7 +125,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator-core</artifactId>
-            <version>0.30</version>
+            <version>0.46</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
