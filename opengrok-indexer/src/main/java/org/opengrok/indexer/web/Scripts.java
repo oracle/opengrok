@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -31,6 +31,8 @@ import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.webjars.WebJarAssetLocator;
+
 /**
  * A list-like container for javascripts in the page.
  *
@@ -39,6 +41,7 @@ import java.util.TreeSet;
 public class Scripts implements Iterable<Scripts.Script> {
 
     private static final String DEBUG_SUFFIX = "-debug";
+    private static final String WEBJAR_PATH_PREFIX = "META-INF/resources/";
 
     enum Type {
         MINIFIED, DEBUG
@@ -86,18 +89,18 @@ public class Scripts implements Iterable<Scripts.Script> {
 
         @Override
         public String toHtml() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("\t<script type=\"text/javascript\" src=\"");
-            builder.append(this.getScriptData());
-            builder.append("\" data-priority=\"");
-            builder.append(this.getPriority());
-            builder.append("\"></script>\n");
-            return builder.toString();
+            return "\t<script type=\"text/javascript\" src=\"" +
+                    this.getScriptData() +
+                    "\" data-priority=\"" +
+                    this.getPriority() +
+                    "\"></script>\n";
         }
 
     }
 
     protected static final Map<String, Script> SCRIPTS = new TreeMap<>();
+
+    private static final WebJarAssetLocator assetLocator = new WebJarAssetLocator();
 
     /**
      * Aliases for the page scripts. The path in the FileScript is relatively to
@@ -106,7 +109,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @see HttpServletRequest#getContextPath()
      */
     static {
-        putjs("jquery", "js/jquery-3.4.1", 10);
+        putFromWebJar("jquery", "jquery.min.js", 10);
         putjs("jquery-ui", "js/jquery-ui-1.12.1-custom", 11);
         putjs("jquery-tablesorter", "js/jquery-tablesorter-2.31.3", 12);
         putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.2", 13, true);
@@ -126,6 +129,14 @@ public class Scripts implements Iterable<Scripts.Script> {
         if (debug) {
             SCRIPTS.put(key + DEBUG_SUFFIX, new FileScript(pathPrefix + ".js", priority));
         }
+    }
+
+    private static void putFromWebJar(String key, String fileName, int priority) {
+        String path = assetLocator.getFullPath(fileName);
+        if (path.startsWith(WEBJAR_PATH_PREFIX)) {
+            path = path.substring(WEBJAR_PATH_PREFIX.length());
+        }
+        SCRIPTS.put(key, new FileScript(path, priority));
     }
 
     private static final Comparator<Script> SCRIPTS_COMPARATOR = Comparator
