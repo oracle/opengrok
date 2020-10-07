@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.messages;
 
@@ -80,6 +80,7 @@ public class Message implements Comparable<Message>, JSONable {
             return messageLevelString;
         }
 
+        @SuppressWarnings("rawtypes")
         public static final Comparator<MessageLevel> VALUE_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
     }
 
