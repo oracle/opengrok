@@ -580,7 +580,7 @@ public final class Indexer {
 
             parser.on("--hugeCharacters", "=number", Integer.class,
                     "Limit for number of characters to read and index from a Huge Text data",
-                    "Assumes --renamedHistory=on").execute(value ->
+                    "file. Default is 5_000_000.").execute(value ->
                     cfg.setHugeTextLimitCharacters((int) value));
 
             parser.on("-I", "--include", "=pattern",
