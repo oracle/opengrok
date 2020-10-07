@@ -51,6 +51,7 @@
         <filter-name>ExpiresOneDayFilter</filter-name>
         <url-pattern>/default/*</url-pattern>
         <url-pattern>/js/*</url-pattern>
+        <url-pattern>/webjars/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <filter-mapping>
