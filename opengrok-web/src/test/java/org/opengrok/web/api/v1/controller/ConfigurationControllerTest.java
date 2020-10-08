@@ -41,7 +41,7 @@ import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
-import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 public class ConfigurationControllerTest extends OGKJerseyTest {

@@ -30,7 +30,7 @@ After include you are here: /body/div#page/div#content/
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.opengrok.indexer.web.messages.MessagesContainer"%>
 <%@ page session="false" errorPage="error.jsp" import="
-org.opengrok.indexer.web.PageConfig,
+org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.Util"%>
 <%@ page import="org.opengrok.indexer.web.messages.MessagesUtils" %>

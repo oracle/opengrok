@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
 
 import javax.servlet.http.HttpServlet;

@@ -24,7 +24,7 @@ java.util.Date,
 java.util.EnumSet,
 
 org.opengrok.indexer.Info,
-org.opengrok.indexer.web.PageConfig,
+org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix"
 %>
 <%!
