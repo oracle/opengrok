@@ -93,7 +93,6 @@ import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -438,19 +437,6 @@ public class IndexDatabase {
                     sourceRoot = env.getSourceRootFile();
                 } else {
                     sourceRoot = new File(env.getSourceRootFile(), dir);
-                }
-
-                if (env.isHistoryEnabled()) {
-                    try {
-                        HistoryGuru.getInstance().ensureHistoryCacheExists(
-                            sourceRoot);
-                    } catch (HistoryException ex) {
-                        String exmsg = String.format(
-                            "Failed to ensureHistoryCacheExists() for %s",
-                            sourceRoot);
-                        LOGGER.log(Level.SEVERE, exmsg, ex);
-                        continue;
-                    }
                 }
 
                 dir = Util.fixPathIfWindows(dir);

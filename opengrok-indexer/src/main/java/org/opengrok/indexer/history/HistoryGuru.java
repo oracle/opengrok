@@ -728,33 +728,6 @@ public final class HistoryGuru {
         return repos;
     }
 
-    /**
-     * Ensure that we have a directory in the cache. If it's not there, fetch
-     * its history and populate the cache.
-     *
-     * @param file the root path to test
-     * @throws HistoryException if an error occurs while accessing the history
-     * cache
-     */
-    public void ensureHistoryCacheExists(File file) throws HistoryException {
-        if (!useCache()) {
-            return;
-        }
-
-        Repository repository = getRepository(file);
-        if (repository == null) {
-            // no repository -> no history
-            return;
-        }
-
-        if (!repository.hasHistoryForDirectories() ||
-                historyCache.hasCacheForDirectory(file, repository)) {
-            return;
-        }
-
-        createCache(repository, null);
-    }
-
     protected Repository getRepository(File path) {
         File file = path;
         Set<String> rootKeys = repositoryRoots.keySet();
