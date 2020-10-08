@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
-import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.SearchHelper;
 
 public class StatisticsFilter implements Filter {

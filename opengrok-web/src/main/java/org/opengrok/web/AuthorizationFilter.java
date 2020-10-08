@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.web.api.v1.RestApp;
 

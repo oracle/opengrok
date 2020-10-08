@@ -1,4 +1,4 @@
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import java.util.Arrays;
 import java.util.HashSet;

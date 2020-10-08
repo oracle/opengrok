@@ -22,9 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
-package org.opengrok.indexer.web;
-
-import static org.opengrok.indexer.web.PageConfig.OPEN_GROK_PROJECT;
+package org.opengrok.web;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,6 +37,8 @@ import java.util.stream.Collectors;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.history.RepositoryInfo;
+
+import static org.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
 
 /**
  * Preprocessing of projects, repositories and groups for the UI.

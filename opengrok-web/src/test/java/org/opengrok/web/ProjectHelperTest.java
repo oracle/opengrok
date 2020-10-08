@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.util.ArrayList;

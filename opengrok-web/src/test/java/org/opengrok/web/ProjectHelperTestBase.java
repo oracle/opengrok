@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -44,6 +44,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepoRepository;
 import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 public class ProjectHelperTestBase {
 

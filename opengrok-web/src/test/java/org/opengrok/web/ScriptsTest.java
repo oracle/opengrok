@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.indexer.web.Scripts.Script;
+import org.opengrok.web.Scripts.Script;
 
 /**
  *
