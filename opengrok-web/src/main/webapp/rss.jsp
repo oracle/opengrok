@@ -33,7 +33,7 @@ org.opengrok.indexer.history.HistoryEntry,
 org.opengrok.indexer.history.HistoryGuru,
 org.opengrok.indexer.web.Util,
 org.opengrok.indexer.web.Prefix,
-org.opengrok.indexer.web.PageConfig"
+org.opengrok.web.PageConfig"
 %><%@ page session="false" errorPage="error.jsp"%><%
 /* ---------------------- rss.jsp start --------------------- */
 {

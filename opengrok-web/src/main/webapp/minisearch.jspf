@@ -21,7 +21,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
 org.opengrok.indexer.configuration.Project,
-org.opengrok.indexer.web.PageConfig,
+org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.Util"%><%

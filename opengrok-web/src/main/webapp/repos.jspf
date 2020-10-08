@@ -31,8 +31,8 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <%@page import="org.opengrok.indexer.configuration.Group"%>
 <%@page import="org.opengrok.indexer.configuration.Project"%>
 <%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
-<%@page import="org.opengrok.indexer.web.PageConfig"%>
-<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@page import="org.opengrok.web.PageConfig"%>
+<%@page import="org.opengrok.web.ProjectHelper"%>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
 <%

@@ -22,7 +22,7 @@
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR_STRING;
@@ -81,6 +81,15 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
+import org.opengrok.indexer.web.DiffData;
+import org.opengrok.indexer.web.DiffType;
+import org.opengrok.indexer.web.EftarFileReader;
+import org.opengrok.indexer.web.Laundromat;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.QueryParameters;
+import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.indexer.web.SortOrder;
+import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;

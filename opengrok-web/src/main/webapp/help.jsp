@@ -23,7 +23,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="
 org.opengrok.indexer.search.SearchEngine,
-org.opengrok.indexer.web.PageConfig,
+org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.QueryParameters"
 %>
 <%

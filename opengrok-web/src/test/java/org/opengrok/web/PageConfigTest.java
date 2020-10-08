@@ -21,7 +21,7 @@
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,6 +57,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 /**
  * Unit tests for the {@code PageConfig} class.

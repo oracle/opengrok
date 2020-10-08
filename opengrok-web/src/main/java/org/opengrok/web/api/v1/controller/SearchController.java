@@ -24,9 +24,11 @@
 package org.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.search.Query;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.web.QueryParameters;
+import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path(SearchController.PATH)
@@ -126,10 +129,13 @@ public class SearchController {
                 final int startDocIndex,
                 final int maxResults
         ) {
+            Set<Project> allProjects = PageConfig.get(req).getProjectHelper().getAllProjects();
             if (projects == null || projects.isEmpty()) {
-                numResults = engine.search(req);
+                numResults = engine.search(new ArrayList<>(allProjects));
             } else {
-                numResults = engine.search(req, projects.toArray(new String[0]));
+                numResults = engine.search(allProjects.stream()
+                        .filter(p -> projects.contains(p.getName()))
+                        .collect(Collectors.toList()));
             }
 
             if (startDocIndex > numResults) {

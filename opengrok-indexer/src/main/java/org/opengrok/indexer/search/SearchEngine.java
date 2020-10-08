@@ -34,13 +34,11 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -68,9 +66,7 @@ import org.opengrok.indexer.search.Summary.Fragment;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
 import org.opengrok.indexer.util.TandemPath;
-import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.Prefix;
-import org.opengrok.indexer.web.ProjectHelper;
 
 /**
  * This is an encapsulation of the details on how to search in the index database.
@@ -276,49 +272,11 @@ public class SearchEngine {
      * Call to search() must be eventually followed by call to destroy()
      * so that IndexSearcher objects are properly freed.
      *
-     * @param req request
-     * @param projectNames names of the projects
+     * @param projects projects to search
      * @return The number of hits
-     * @see ProjectHelper#getAllProjects()
      */
-    public int search(HttpServletRequest req, String... projectNames) {
-        ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
-        Set<Project> allProjects = pHelper.getAllProjects();
-        List<Project> filteredProjects = new ArrayList<>();
-        for (Project project: allProjects) {
-            for (String name : projectNames) {
-                if (project.getName().equalsIgnoreCase(name)) {
-                    filteredProjects.add(project);
-                }
-            }
-        }
-        return search(
-                filteredProjects,
-                new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
-    }
-
-    /**
-     * Execute a search aware of current request.
-     *
-     * This filters out all projects which are not allowed for the current request.
-     *
-     * Before calling this function,
-     * you must set the appropriate search criteria with the set-functions. Note
-     * that this search will return the first cachePages of hitsPerPage, for
-     * more you need to call more.
-     *
-     * Call to search() must be eventually followed by call to destroy()
-     * so that IndexSearcher objects are properly freed.
-     *
-     * @param req request
-     * @return The number of hits
-     * @see ProjectHelper#getAllProjects()
-     */
-    public int search(HttpServletRequest req) {
-        ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
-        return search(
-                new ArrayList<Project>(pHelper.getAllProjects()),
-                new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
+    public int search(List<Project> projects) {
+        return search(projects, new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 
     /**
