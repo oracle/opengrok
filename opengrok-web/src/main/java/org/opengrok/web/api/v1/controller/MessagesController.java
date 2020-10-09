@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.web.messages.Message;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+import org.opengrok.web.messages.Message;
+import org.opengrok.web.messages.MessagesContainer;
+import org.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -43,12 +43,12 @@ import java.util.Set;
 @Path("/messages")
 public class MessagesController {
 
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final MessagesContainer container = MessagesContainer.getInstance();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addMessage(@Valid final Message message) {
-        env.addMessage(message);
+        container.addMessage(message);
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -59,16 +59,16 @@ public class MessagesController {
         if (tag == null) {
             throw new WebApplicationException("Message tag has to be specified", Response.Status.BAD_REQUEST);
         }
-        env.removeAnyMessage(Collections.singleton(tag), text);
+        container.removeAnyMessage(Collections.singleton(tag), text);
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Set<AcceptedMessage> getMessages(@QueryParam("tag") final String tag) {
         if (tag != null) {
-            return env.getMessages(tag);
+            return container.getMessages(tag);
         } else {
-            return env.getAllMessages();
+            return container.getAllMessages();
         }
     }
 

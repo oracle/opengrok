@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -73,9 +74,6 @@ import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
-import org.opengrok.indexer.web.messages.Message;
-import org.opengrok.indexer.web.messages.MessagesContainer;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -99,7 +97,6 @@ public final class RuntimeEnvironment {
 
     private String configURI;
     IncludeFiles includeFiles = new IncludeFiles();
-    private final MessagesContainer messagesContainer = new MessagesContainer();
 
     private static final IndexTimestamp indexTime = new IndexTimestamp();
 
@@ -122,6 +119,8 @@ public final class RuntimeEnvironment {
     private final transient Set<String> ctagsLanguages = new HashSet<>();
 
     public WatchDogService watchDog;
+
+    private final Set<OnConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
 
     public List<String> getSubFiles() {
         return subFiles;
@@ -1677,7 +1676,9 @@ public final class RuntimeEnvironment {
         getAuthorizationFramework().setStack(getPluginStack());
         getAuthorizationFramework().reload();
 
-        messagesContainer.setMessageLimit(getMessageLimit());
+        for (OnConfigurationChangedListener l : listeners) {
+            l.onConfigurationChanged();
+        }
     }
 
     public void setIndexTimestamp() throws IOException {
@@ -1811,60 +1812,6 @@ public final class RuntimeEnvironment {
         return multiReader;
     }
 
-    public void startExpirationTimer() {
-        messagesContainer.setMessageLimit(getMessageLimit());
-        messagesContainer.startExpirationTimer();
-    }
-
-    public void stopExpirationTimer() {
-        messagesContainer.stopExpirationTimer();
-    }
-
-    /**
-     * Get the default set of messages for the main tag.
-     *
-     * @return set of messages
-     */
-    public SortedSet<AcceptedMessage> getMessages() {
-        return messagesContainer.getMessages();
-    }
-
-    /**
-     * Get the set of messages for the arbitrary tag.
-     *
-     * @param tag the message tag
-     * @return set of messages
-     */
-    public SortedSet<AcceptedMessage> getMessages(final String tag) {
-        return messagesContainer.getMessages(tag);
-    }
-
-    /**
-     * Add a message to the application.
-     * Also schedules a expiration timer to remove this message after its expiration.
-     *
-     * @param message the message
-     */
-    public void addMessage(final Message message) {
-        messagesContainer.addMessage(message);
-    }
-
-    /**
-     * Remove all messages containing at least one of the tags.
-     * @param tags set of tags
-     * @param text message text (can be null, empty)
-     */
-    public void removeAnyMessage(final Set<String> tags, final String text) {
-        messagesContainer.removeAnyMessage(tags, text);
-    }
-
-    /**
-     * @return all messages regardless their tag
-     */
-    public Set<AcceptedMessage> getAllMessages() {
-        return messagesContainer.getAllMessages();
-    }
-
     public Path getDtagsEftarPath() {
         return syncReadConfiguration(Configuration::getDtagsEftarPath);
     }
@@ -1931,7 +1878,11 @@ public final class RuntimeEnvironment {
         }
     }
 
-    private int getMessageLimit() {
+    public int getMessageLimit() {
         return syncReadConfiguration(Configuration::getMessageLimit);
+    }
+
+    public void registerListener(OnConfigurationChangedListener listener) {
+        listeners.add(listener);
     }
 }

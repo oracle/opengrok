@@ -18,15 +18,16 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -39,15 +40,17 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
+import static org.opengrok.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
 
     private MessagesContainer container;
 
     @Before
-    public void setUp() {
-        container = new MessagesContainer();
+    public void setUp() throws Exception {
+        Constructor<MessagesContainer> constructor = MessagesContainer.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        container = constructor.newInstance();
         container.startExpirationTimer();
     }
 

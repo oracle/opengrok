@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -25,7 +25,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 <%@page import="javax.servlet.http.HttpServletResponse"%>
 <%@page session="false" errorPage="error.jsp" import="
 org.apache.lucene.queryparser.classic.QueryParser,
-org.opengrok.indexer.search.Results,
+org.opengrok.web.search.Results,
 org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory,
 org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.SearchHelper,

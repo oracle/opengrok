@@ -29,7 +29,7 @@ import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.web.messages.JSONable;
+import org.opengrok.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
 

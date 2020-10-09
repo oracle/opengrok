@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.api.constraints;
+package org.opengrok.web.api.constraints;
 
 import org.junit.Test;
 

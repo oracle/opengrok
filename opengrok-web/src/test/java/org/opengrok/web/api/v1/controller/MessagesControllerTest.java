@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -37,10 +37,9 @@ import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.web.messages.Message;
-import org.opengrok.indexer.web.messages.MessagesContainer;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+import org.opengrok.web.messages.Message;
+import org.opengrok.web.messages.MessagesContainer;
+import org.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
@@ -57,7 +56,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -70,8 +71,6 @@ public class MessagesControllerTest extends OGKJerseyTest {
     private static final GenericType<List<AcceptedMessageModel>> messagesType =
             new GenericType<List<AcceptedMessageModel>>() {
             };
-
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static class AcceptedMessageModel {
         public String created;
@@ -148,30 +147,29 @@ public class MessagesControllerTest extends OGKJerseyTest {
         return new CustomGrizzlyTestContainerFactory();
     }
 
+    private MessagesContainer container = MessagesContainer.getInstance();
+
+    @SuppressWarnings("unchecked")
     @Before
     public void setupMessageListener() throws Exception {
-        setMessageContainer(env, new MessagesContainer());
-        env.startExpirationTimer();
+        Field messagesField = MessagesContainer.class.getDeclaredField("tagMessages");
+        messagesField.setAccessible(true);
+        ((Map<String, SortedSet<AcceptedMessage>>) messagesField.get(container)).clear();
+        container.startExpirationTimer();
     }
 
     @After
     public void tearDownMessageListener() {
-        env.stopExpirationTimer();
-    }
-
-    private void setMessageContainer(RuntimeEnvironment env, MessagesContainer container) throws Exception {
-        Field f = RuntimeEnvironment.class.getDeclaredField("messagesContainer");
-        f.setAccessible(true);
-        f.set(env, container);
+        container.stopExpirationTimer();
     }
 
     @Test
     public void addMessageTest() {
         addMessage("test message");
 
-        assertFalse(env.getMessages().isEmpty());
+        assertFalse(container.getMessages().isEmpty());
 
-        AcceptedMessage msg = env.getMessages().first();
+        AcceptedMessage msg = container.getMessages().first();
 
         assertEquals("test&nbsp;message", msg.getMessage().getText());
     }
@@ -198,7 +196,7 @@ public class MessagesControllerTest extends OGKJerseyTest {
                 .post(Entity.json(msgAsString));
 
         assertEquals(0,
-                env.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
+                container.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
@@ -220,18 +218,18 @@ public class MessagesControllerTest extends OGKJerseyTest {
 
     @Test
     public void removeMessageTest() {
-        env.addMessage(new Message(
+        container.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
                 Message.MessageLevel.INFO,
                 Duration.ofMinutes(10)
         ));
 
-        assertFalse(env.getMessages().isEmpty());
+        assertFalse(container.getMessages().isEmpty());
 
         removeMessages(MessagesContainer.MESSAGES_MAIN_PAGE_TAG);
 
-        assertTrue(env.getMessages().isEmpty());
+        assertTrue(container.getMessages().isEmpty());
     }
 
     private void removeMessages(final String tag) {
@@ -255,11 +253,11 @@ public class MessagesControllerTest extends OGKJerseyTest {
         addMessage("test", "test");
         addMessage("test", "test");
 
-        assertEquals(2, env.getMessages("test").size());
+        assertEquals(2, container.getMessages("test").size());
 
         removeMessages("test");
 
-        assertTrue(env.getMessages("test").isEmpty());
+        assertTrue(container.getMessages("test").isEmpty());
     }
 
     @Test
@@ -268,16 +266,16 @@ public class MessagesControllerTest extends OGKJerseyTest {
         final String text = "text";
 
         addMessage(text, tag);
-        assertEquals(1, env.getMessages(tag).size());
+        assertEquals(1, container.getMessages(tag).size());
 
         removeMessages(tag + "bar", text);
-        assertEquals(1, env.getMessages(tag).size());
+        assertEquals(1, container.getMessages(tag).size());
 
         removeMessages(tag, text + "bar");
-        assertEquals(1, env.getMessages(tag).size());
+        assertEquals(1, container.getMessages(tag).size());
 
         removeMessages(tag, text);
-        assertTrue(env.getMessages(tag).isEmpty());
+        assertTrue(container.getMessages(tag).isEmpty());
     }
 
     @Test
@@ -285,17 +283,17 @@ public class MessagesControllerTest extends OGKJerseyTest {
         addMessage("test", "tag1");
         addMessage("test", "tag2");
 
-        assertEquals(1, env.getMessages("tag1").size());
-        assertEquals(1, env.getMessages("tag2").size());
+        assertEquals(1, container.getMessages("tag1").size());
+        assertEquals(1, container.getMessages("tag2").size());
 
         removeMessages("tag1");
 
-        assertEquals(0, env.getMessages("tag1").size());
-        assertEquals(1, env.getMessages("tag2").size());
+        assertEquals(0, container.getMessages("tag1").size());
+        assertEquals(1, container.getMessages("tag2").size());
 
         removeMessages("tag2");
 
-        assertTrue(env.getMessages("tag2").isEmpty());
+        assertTrue(container.getMessages("tag2").isEmpty());
     }
 
     @Test

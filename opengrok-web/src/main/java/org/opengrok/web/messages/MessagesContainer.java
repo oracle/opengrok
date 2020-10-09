@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +28,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.opengrok.indexer.configuration.OnConfigurationChangedListener;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import javax.validation.constraints.NotBlank;
@@ -51,13 +53,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class MessagesContainer {
+public class MessagesContainer implements OnConfigurationChangedListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagesContainer.class);
 
     public static final String MESSAGES_MAIN_PAGE_TAG = "main";
 
     private static final int DEFAULT_MESSAGE_LIMIT = 100;
+
+    private static final MessagesContainer instance = new MessagesContainer();
 
     private final Map<String, SortedSet<AcceptedMessage>> tagMessages = new HashMap<>();
 
@@ -68,6 +72,14 @@ public class MessagesContainer {
     private Timer expirationTimer;
 
     private final Object lock = new Object();
+
+    private MessagesContainer() {
+        RuntimeEnvironment.getInstance().registerListener(this);
+    }
+
+    public static MessagesContainer getInstance() {
+        return instance;
+    }
 
     /**
      * @return all messages regardless their tag
@@ -222,6 +234,7 @@ public class MessagesContainer {
     }
 
     public void startExpirationTimer() {
+        setMessageLimit(RuntimeEnvironment.getInstance().getMessageLimit());
         if (expirationTimer != null) {
             stopExpirationTimer();
         }
@@ -241,6 +254,11 @@ public class MessagesContainer {
 
     private static SortedSet<AcceptedMessage> emptyMessageSet(SortedSet<AcceptedMessage> toRet) {
         return toRet == null ? new TreeSet<>() : toRet;
+    }
+
+    @Override
+    public void onConfigurationChanged() {
+        setMessageLimit(RuntimeEnvironment.getInstance().getMessageLimit());
     }
 
     public static class AcceptedMessage implements Comparable<AcceptedMessage>, JSONable {

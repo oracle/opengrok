@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import org.opengrok.indexer.web.Util;
-import org.opengrok.indexer.web.api.constraints.PositiveDuration;
+import org.opengrok.web.api.constraints.PositiveDuration;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -45,7 +45,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
+import static org.opengrok.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 public class Message implements Comparable<Message>, JSONable {
 

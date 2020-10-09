@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.indexer.search;
+package org.opengrok.web.search;
 
-import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
+import static org.opengrok.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,12 +56,13 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.Util;
-import org.opengrok.indexer.web.messages.MessagesUtils;
+import org.opengrok.web.messages.MessagesUtils;
 
 /**
  * @author Chandan slightly rewritten by Lubos Kosco

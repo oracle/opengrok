@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -33,6 +33,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
+import org.opengrok.web.messages.MessagesContainer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -100,7 +101,7 @@ public final class WebappListener
             env.watchDog.start(new File(pluginDirectory));
         }
 
-        env.startExpirationTimer();
+        MessagesContainer.getInstance().startExpirationTimer();
         startupTimer.record(Duration.between(start, Instant.now()));
     }
 
@@ -112,7 +113,7 @@ public final class WebappListener
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.getIndexerParallelizer().bounce();
         env.watchDog.stop();
-        env.stopExpirationTimer();
+        MessagesContainer.getInstance().stopExpirationTimer();
         try {
             env.shutdownRevisionExecutor();
         } catch (InterruptedException e) {

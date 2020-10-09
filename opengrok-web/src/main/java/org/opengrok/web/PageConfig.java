@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -90,7 +90,8 @@ import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.SortOrder;
 import org.opengrok.indexer.web.Util;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+import org.opengrok.web.messages.MessagesContainer;
+import org.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 
@@ -1608,13 +1609,12 @@ public final class PageConfig {
         return this.authFramework.isAllowed(this.req, g);
     }
 
-    
     public SortedSet<AcceptedMessage> getMessages() {
-        return env.getMessages();
+        return MessagesContainer.getInstance().getMessages();
     }
-    
+
     public SortedSet<AcceptedMessage> getMessages(String tag) {
-        return env.getMessages(tag);
+        return MessagesContainer.getInstance().getMessages(tag);
     }
 
     /**
@@ -1728,7 +1728,7 @@ public final class PageConfig {
      * </ol>
      *
      * @return the sorted set of messages according to the accept time
-     * @see org.opengrok.indexer.web.messages.MessagesContainer#MESSAGES_MAIN_PAGE_TAG
+     * @see MessagesContainer#MESSAGES_MAIN_PAGE_TAG
      */
     private SortedSet<AcceptedMessage> getProjectMessages() {
         SortedSet<AcceptedMessage> messages = getMessages();

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
-import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
+import static org.opengrok.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessageTest {
 

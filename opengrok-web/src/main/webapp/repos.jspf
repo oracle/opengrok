@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="opengrok" %>
@@ -33,8 +33,8 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
 <%@page import="org.opengrok.web.PageConfig"%>
 <%@page import="org.opengrok.web.ProjectHelper"%>
-<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
-<%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.messagesToJson" %>
+<%@page import="static org.opengrok.web.messages.MessagesUtils.printMessages" %>
+<%@page import="static org.opengrok.web.messages.MessagesUtils.messagesToJson" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);

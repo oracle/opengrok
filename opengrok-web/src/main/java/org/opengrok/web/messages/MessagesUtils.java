@@ -18,16 +18,15 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Util;
 
@@ -147,7 +146,7 @@ public final class MessagesUtils {
         Set<TaggedMessagesContainer> messages = new HashSet<>();
 
         for (String tag : tags) {
-            SortedSet<MessagesContainer.AcceptedMessage> messagesWithTag = RuntimeEnvironment.getInstance().getMessages(tag);
+            SortedSet<MessagesContainer.AcceptedMessage> messagesWithTag = MessagesContainer.getInstance().getMessages(tag);
             if (messagesWithTag.isEmpty()) {
                 continue;
             }
@@ -251,10 +250,9 @@ public final class MessagesUtils {
      */
     public static String getMessageLevel(String... tags) {
         Set<MessagesContainer.AcceptedMessage> messages;
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         messages = Arrays.stream(tags).
-                map(env::getMessages).
+                map(MessagesContainer.getInstance()::getMessages).
                 flatMap(Collection::stream).
                 collect(Collectors.toSet());
 

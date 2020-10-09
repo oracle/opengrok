@@ -16,13 +16,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@ tag import="org.apache.commons.lang3.ObjectUtils" %>
 <%@ tag import="org.opengrok.indexer.web.Prefix" %>
 <%@ tag import="org.opengrok.indexer.web.Util" %>
-<%@ tag import="org.opengrok.indexer.web.messages.MessagesUtils" %>
+<%@ tag import="org.opengrok.web.messages.MessagesUtils" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.indexer.web.messages;
+package org.opengrok.web.messages;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,11 +29,15 @@ import org.junit.Test;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,18 +46,24 @@ import static org.junit.Assert.assertNull;
 public class MessagesUtilsTest {
     RuntimeEnvironment env;
 
-    private MessagesContainer container;
+    private MessagesContainer container = MessagesContainer.getInstance();
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        Constructor<MessagesContainer> constructor = MessagesContainer.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        container = constructor.newInstance();
         container.stopExpirationTimer();
     }
 
+    @SuppressWarnings("unchecked")
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
-        container = new MessagesContainer();
+        Field messagesField = MessagesContainer.class.getDeclaredField("tagMessages");
+        messagesField.setAccessible(true);
+        ((Map<String, SortedSet<MessagesContainer.AcceptedMessage>>) messagesField.get(container)).clear();
         container.startExpirationTimer();
     }
 
@@ -107,7 +117,7 @@ public class MessagesUtilsTest {
                     Collections.singleton(tag),
                     tagLevels.get(tag),
                     Duration.ofMinutes(10));
-            env.addMessage(m);
+            container.addMessage(m);
         }
 
         assertEquals(Message.MessageLevel.ERROR.toString(),
