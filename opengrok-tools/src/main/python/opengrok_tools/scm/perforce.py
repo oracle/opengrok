@@ -22,20 +22,17 @@
 #
 # Portions Copyright 2020 Robert Williams
 
-from ..utils.command import Command
-from .repository import Repository, RepositoryException
 from shutil import which
+
+from .repository import Repository, RepositoryException
+from ..utils.command import Command
 
 
 class PerforceRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
-
         super().__init__(logger, path, project, command, env, hooks, timeout)
 
-        if command:
-            self.command = command
-        else:
-            self.command = which("p4")
+        self.command = self._repository_command(command, default=lambda: which('p4'))
 
         if not self.command:
             raise RepositoryException("Cannot get perforce command")

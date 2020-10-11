@@ -21,20 +21,17 @@
 # Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
-from ..utils.command import Command
-from .repository import Repository, RepositoryException
 from shutil import which
+
+from .repository import Repository, RepositoryException
+from ..utils.command import Command
 
 
 class RepoRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
-
         super().__init__(logger, path, project, command, env, hooks, timeout)
 
-        if command:
-            self.command = command
-        else:
-            self.command = which("repo")
+        self.command = self._repository_command(command, default=lambda: which('repo'))
 
         if not self.command:
             raise RepositoryException("Cannot get repo command")
@@ -52,7 +49,7 @@ class RepoRepository(Repository):
 
         return 0
 
-    def incoming(self):
+    def incoming_check(self):
         repo_command = [self.command, "sync", "-n"]
         cmd = self.getCommand(repo_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
