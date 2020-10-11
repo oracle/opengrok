@@ -77,7 +77,7 @@ def get_repo_type(logger, repository, uri):
 
     try:
         r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
-                                       'property', 'type'), data=payload)
+                                       'property', 'type'), params=payload)
     except Exception:
         logger.error('could not get repository type for {} from web'
                      'application on {}'.format(repository, uri))
