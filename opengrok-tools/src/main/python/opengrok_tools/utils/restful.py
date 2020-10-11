@@ -33,12 +33,12 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(verb, uri, headers=None, data=None):
+def do_api_call(verb, uri, params=None, headers=None, data=None):
     handler = getattr(requests, verb.lower())
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    return handler(uri, data=data, headers=headers, proxies=get_proxies(uri))
+    return handler(uri, data=data, params=params, headers=headers, proxies=get_proxies(uri))
 
 
 def call_rest_api(command, pattern, name):
