@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -84,7 +85,7 @@ public class GitRepository extends Repository {
 
     /**
      * All git commands that emit date that needs to be parsed by
-     * {@code getDateFormat()} should use this option.
+     * {@link #getDateFormat()} should use this option.
      */
     private static final String GIT_DATE_OPT = "--date=iso8601-strict";
 
@@ -244,7 +245,7 @@ public class GitRepository extends Repository {
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(sink, fullpath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -547,22 +548,46 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    HistoryEnumeration getHistory(File file) throws HistoryException {
         return getHistory(file, null);
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
+    HistoryEnumeration getHistory(File file, String sinceRevision)
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        History result = new GitHistoryParser(isHandleRenamedFiles()).parse(file, this, sinceRevision);
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
+        Consumer<History> tagger = null;
         if (env.isTagsEnabled()) {
-            assignTagsInHistory(result);
+            tagger = this::assignTagsInHistory;
         }
-        return result;
+
+        GitHistoryParser parser = new GitHistoryParser(isHandleRenamedFiles());
+        return parser.startParse(file, this, sinceRevision, tagger);
+    }
+
+    /**
+     * Expunge entries which have revisions (i.e. commit hashes) identical to
+     * their immediately preceding neighbor's to accommodate `git log -m`
+     * returning an entry for each commit of a merge (possibly with distinct
+     * file lists).
+     */
+    @Override
+    void deduplicateRevisions(History history) {
+        HistoryEntry last = null;
+        for (int i = 0; i < history.count(); ++i) {
+            HistoryEntry entry = history.getHistoryEntry(i);
+            if (last == null || last.getRevision() == null ||
+                    !last.getRevision().equals(entry.getRevision())) {
+                last = entry;
+            } else {
+                last.merge(entry);
+                history.removeHistoryEntry(i);
+                --i;
+            }
+        }
     }
 
     @Override

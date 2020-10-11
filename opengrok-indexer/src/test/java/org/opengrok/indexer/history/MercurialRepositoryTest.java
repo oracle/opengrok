@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -104,7 +104,7 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History hist = mr.getHistory(root);
+        History hist = HistoryUtil.union(mr.getHistory(root));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length, entries.size());
         for (int i = 0; i < entries.size(); i++) {
@@ -128,7 +128,7 @@ public class MercurialRepositoryTest {
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
-        History hist = mr.getHistory(new File(root, "subdir"));
+        History hist = HistoryUtil.union(mr.getHistory(new File(root, "subdir")));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(1, entries.size());
     }
@@ -136,8 +136,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that subset of changesets can be extracted based on penultimate
      * revision number. This works for directories only.
-     *
-     * @throws Exception
      */
     @Test
     public void testGetHistoryPartial() throws Exception {
@@ -146,7 +144,7 @@ public class MercurialRepositoryTest {
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
         // Get all but the oldest revision.
-        History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
+        History hist = HistoryUtil.union(mr.getHistory(root, REVISIONS[REVISIONS.length - 1]));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length - 1, entries.size());
         for (int i = 0; i < entries.size(); i++) {
@@ -185,8 +183,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that history of branched repository contains changesets of the
      * default branch as well.
-     *
-     * @throws Exception
      */
     @Test
     public void testGetHistoryBranch() throws Exception {
@@ -205,13 +201,13 @@ public class MercurialRepositoryTest {
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Get all revisions.
-        History hist = mr.getHistory(root);
+        History hist = HistoryUtil.union(mr.getHistory(root));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         List<String> both = new ArrayList<>(REVISIONS.length
                 + REVISIONS_extra_branch.length);
         Collections.addAll(both, REVISIONS_extra_branch);
         Collections.addAll(both, REVISIONS);
-        String revs[] = both.toArray(new String[both.size()]);
+        String[] revs = both.toArray(new String[0]);
         assertEquals(revs.length, entries.size());
         // Ideally we should check that the last revision is branched but
         // there is currently no provision for that in HistoryEntry object.
@@ -225,7 +221,7 @@ public class MercurialRepositoryTest {
         }
 
         // Get revisions starting with given changeset before the repo was branched.
-        hist = mr.getHistory(root, "8:6a8c423f5624");
+        hist = HistoryUtil.union(mr.getHistory(root, "8:6a8c423f5624"));
         entries = hist.getHistoryEntries();
         assertEquals(2, entries.size());
         assertEquals(REVISIONS_extra_branch[0], entries.get(0).getRevision());
@@ -234,8 +230,6 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that contents of last revision of a text file match expected content.
-     *
-     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryGet() throws Exception {
@@ -267,8 +261,6 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that it is possible to get contents of multiple revisions of a file.
-     * 
-     * @throws java.lang.Exception
      */
     @Test
     public void testgetHistoryGetForAll() throws Exception {
@@ -287,8 +279,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that {@code getHistoryGet()} returns historical contents of renamed
      * file.
-     *
-     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryGetRenamed() throws Exception {
@@ -315,8 +305,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that {@code getHistory()} throws an exception if the revision
      * argument doesn't match any of the revisions in the history.
-     *
-     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryWithNoSuchRevision() throws Exception {

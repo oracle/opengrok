@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2019-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
@@ -122,7 +122,7 @@ public class PerforceRepositoryTest {
 
         for (File f : files) {
             if (instance.fileHasHistory(f)) {
-                History history = instance.getHistory(f);
+                History history = HistoryUtil.union(instance.getHistory(f));
                 assertNotNull("Failed to get history for: " + f.getAbsolutePath(), history);
 
                 for (HistoryEntry entry : history.getHistoryEntries()) {

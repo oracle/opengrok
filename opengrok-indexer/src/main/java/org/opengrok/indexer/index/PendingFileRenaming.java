@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.index;
@@ -26,11 +26,11 @@ package org.opengrok.indexer.index;
 /**
  * Represents the metadata for a pending file renaming.
  */
-public final class PendingFileRenaming {
+final class PendingFileRenaming {
     private final String absolutePath;
     private final String transientPath;
 
-    public PendingFileRenaming(String absolutePath, String transientPath) {
+    PendingFileRenaming(String absolutePath, String transientPath) {
         this.absolutePath = absolutePath;
         this.transientPath = transientPath;
     }
@@ -45,7 +45,7 @@ public final class PendingFileRenaming {
     /**
      * @return the transient, absolute path
      */
-    public String getTransientPath() {
+    String getTransientPath() {
         return transientPath;
     }
 
@@ -64,6 +64,9 @@ public final class PendingFileRenaming {
         return this.absolutePath.equals(other.absolutePath);
     }
 
+    /**
+     * Gets the hash code of the final, absolute path.
+     */
     @Override
     public int hashCode() {
         return this.absolutePath.hashCode();

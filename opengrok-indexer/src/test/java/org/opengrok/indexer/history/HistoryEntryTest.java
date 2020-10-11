@@ -19,21 +19,24 @@
 
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.SortedSet;
 import java.util.TreeSet;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
- *
  * @author austvik
  */
 public class HistoryEntryTest {
@@ -44,25 +47,10 @@ public class HistoryEntryTest {
     private String historyAuthor = "test author";
     private String historyMessage = "history entry message";
  
-    public HistoryEntryTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
     @Before
     public void setUp() {
         instance = new HistoryEntry(historyRevision, historyDate,
             historyAuthor, null, historyMessage, true);
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -256,4 +244,44 @@ public class HistoryEntryTest {
         assertEquals(null, instance.getTags());
     }
 
+    @Test
+    public void shouldMergeSimplest() {
+        HistoryEntry a = new HistoryEntry();
+        HistoryEntry b = new HistoryEntry();
+
+        a.merge(b);
+        assertEquals("a getFiles() size",0, a.getFiles().size());
+        assertNull("a getTags()", a.getTags());
+    }
+
+    @Test
+    public void shouldMergeFiles() {
+        HistoryEntry a = new HistoryEntry();
+        a.setFiles(new TreeSet<>(Arrays.asList("a,b".split(","))));
+
+        HistoryEntry b = new HistoryEntry();
+        b.setFiles(new TreeSet<>(Arrays.asList("b,c".split(","))));
+
+        a.merge(b);
+        SortedSet<String> aFiles = a.getFiles();
+        assertEquals("a getFiles() size",3, aFiles.size());
+        assertTrue("contains 'a'", aFiles.contains("a"));
+        assertTrue("contains 'b'", aFiles.contains("b"));
+        assertTrue("contains 'c'", aFiles.contains("c"));
+
+        assertNull("a getTags()", a.getTags());
+    }
+
+    @Test
+    public void shouldMergeTags() {
+        HistoryEntry a = new HistoryEntry();
+        a.setTags("a, b");
+
+        HistoryEntry b = new HistoryEntry();
+        b.setTags("c, b");
+
+        a.merge(b);
+        assertEquals("a getFiles() size",0, a.getFiles().size());
+        assertEquals("a getTags()", "a, b, c", a.getTags());
+    }
 }

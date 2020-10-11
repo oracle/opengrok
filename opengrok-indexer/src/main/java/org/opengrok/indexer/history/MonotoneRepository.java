@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -184,14 +184,14 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    HistoryEnumeration getHistory(File file) throws HistoryException {
         return getHistory(file, null);
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
+    HistoryEnumeration getHistory(File file, String sinceRevision)
             throws HistoryException {
-        return new MonotoneHistoryParser(this).parse(file, sinceRevision);
+        return new SingleHistory(new MonotoneHistoryParser(this).parse(file, sinceRevision));
     }
 
     private String getQuietOption() {
@@ -202,7 +202,7 @@ public class MonotoneRepository extends Repository {
         }
     }
 
-    public static final String DEPRECATED_KEY
+    private static final String DEPRECATED_KEY
             = "org.opengrok.indexer.history.monotone.deprecated";
 
     private boolean useDeprecated() {
@@ -248,7 +248,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

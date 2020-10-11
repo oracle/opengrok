@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -93,7 +94,7 @@ public class RCSRepositoryTest {
     public void testGetHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
-        History hist = repo.getHistory(new File(root, "Makefile"));
+        History hist = HistoryUtil.union(repo.getHistory(new File(root, "Makefile")));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length, entries.size());
         for (int i = 0; i < entries.size(); i++) {

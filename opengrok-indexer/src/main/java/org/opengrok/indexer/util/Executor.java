@@ -36,6 +36,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -59,8 +60,8 @@ public class Executor {
     private static final Pattern ARG_UNIX_QUOTING = Pattern.compile("[^-:.+=%a-zA-Z0-9_/]");
     private static final Pattern ARG_GNU_STYLE_EQ = Pattern.compile("^--[-.a-zA-Z0-9_]+=");
 
-    private List<String> cmdList;
-    private File workingDirectory;
+    private final List<String> cmdList;
+    private final File workingDirectory;
     private byte[] stdout;
     private byte[] stderr;
     private int timeout; // in seconds, 0 means no timeout
@@ -154,140 +155,222 @@ public class Executor {
      */
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
-        ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
-        final String cmd_str = escapeForShell(processBuilder.command(), false,
-                PlatformUtils.isWindows());
-        final String dir_str;
-        Timer timer = null; // timer for timing out the process
-
-        if (workingDirectory != null) {
-            processBuilder.directory(workingDirectory);
-            if (processBuilder.environment().containsKey("PWD")) {
-                processBuilder.environment().put("PWD",
-                    workingDirectory.getAbsolutePath());
-            }
-        }
-
-        File cwd = processBuilder.directory();
-        if (cwd == null) {
-            dir_str = System.getProperty("user.dir");
-        } else {
-            dir_str = cwd.toString();
-        }
-
-        String env_str = "";
-        if (LOGGER.isLoggable(Level.FINER)) {
-            Map<String, String> env_map = processBuilder.environment();
-            env_str = " with environment: " + env_map.toString();
-        }
-        LOGGER.log(Level.FINE,
-                "Executing command [{0}] in directory {1}{2}",
-                new Object[] {cmd_str, dir_str, env_str});
-
-        Process process = null;
+        stdout = null;
+        stderr = null;
+        ExecutorProcess ep = null;
+        byte[] errBytes = null;
         try {
             Statistics stat = new Statistics();
-            process = processBuilder.start();
-            final Process proc = process;
+            ep = startExec(reportExceptions);
+            handler.processStream(ep.process.getInputStream());
+            ret = ep.process.waitFor();
 
-            final InputStream errorStream = process.getErrorStream();
-            final SpoolHandler err = new SpoolHandler();
-            Thread thread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        err.processStream(errorStream);
-                    } catch (IOException ex) {
-                        if (reportExceptions) {
-                            LOGGER.log(Level.SEVERE,
-                                    "Error while executing command [{0}] in directory {1}",
-                                    new Object[] {cmd_str, dir_str});
-                            LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
-                        }
-                    }
-                }
-            });
-            thread.start();
-
-            int timeout = this.timeout;
-            /*
-             * Setup timer so if the process get stuck we can terminate it and
-             * make progress instead of hanging the whole operation.
-             */
-            if (timeout != 0) {
-                // invoking the constructor starts the background thread
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override public void run() {
-                        LOGGER.log(Level.WARNING,
-                            String.format("Terminating process of command [%s] in directory %s " +
-                            "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
-                        proc.destroy();
-                    }
-                }, timeout);
-            }
-
-            handler.processStream(process.getInputStream());
-
-            ret = process.waitFor();
-
-            stat.report(LOGGER, Level.FINE, String.format("Finished command [%s] in directory %s with exit code %d",
-                    cmd_str, dir_str, ret));
-            LOGGER.log(Level.FINE,
-                "Finished command [{0}] in directory {1} with exit code {2}",
-                new Object[] {cmd_str, dir_str, ret});
+            stat.report(LOGGER, Level.FINE,
+                    String.format("Finished command [%s] in directory %s with exit code %d",
+                            ep.cmd_str, ep.dir_str, ret));
 
             // Wait for the stderr read-out thread to finish the processing and
             // only after that read the data.
-            thread.join();
-            stderr = err.getBytes();
+            ep.err_thread.join();
+            errBytes = ep.err.getBytes();
+            stderr = errBytes;
         } catch (IOException e) {
             if (reportExceptions) {
-                LOGGER.log(Level.SEVERE,
-                        "Failed to read from process: " + cmdList.get(0), e);
+                LOGGER.log(Level.SEVERE, "Failed to read from process: " +
+                        cmdList.get(0), e);
+            }
+            if (ep == null) {
+                return ret;
             }
         } catch (InterruptedException e) {
             if (reportExceptions) {
-                LOGGER.log(Level.SEVERE,
-                        "Waiting for process interrupted: " + cmdList.get(0), e);
+                LOGGER.log(Level.SEVERE, "Waiting for process interrupted: " +
+                        cmdList.get(0), e);
             }
         } finally {
-            // Stop timer thread if the instance exists.
-            if (timer != null) {
-                timer.cancel();
-            }
-            try {
-                if (process != null) {
-                    IOUtils.close(process.getOutputStream());
-                    IOUtils.close(process.getInputStream());
-                    IOUtils.close(process.getErrorStream());
-                    ret = process.exitValue();
-                }
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (ep != null) {
+                ret = ep.finish();
             }
         }
 
         if (ret != 0 && reportExceptions) {
-            int MAX_MSG_SZ = 512; /* limit to avoid flooding the logs */
-            StringBuilder msg = new StringBuilder("Non-zero exit status ")
-                    .append(ret).append(" from command [")
-                    .append(cmd_str)
-                    .append("] in directory ")
-                    .append(dir_str);
-            if (stderr != null && stderr.length > 0) {
-                    msg.append(": ");
-                    if (stderr.length > MAX_MSG_SZ) {
-                            msg.append(new String(stderr, 0, MAX_MSG_SZ)).append("...");
-                    } else {
-                            msg.append(new String(stderr));
-                    }
-            }
-            LOGGER.log(Level.WARNING, msg.toString());
+            logErrBytes(ret, ep.cmd_str, ep.dir_str, errBytes);
         }
 
         return ret;
+    }
+
+    /**
+     * Starts a command execution, and produces an iterable.
+     *
+     * @param reportExceptions Should exceptions be added to the log or not
+     * @param handler The handler to handle data from standard output
+     * @return a defined instance to wrap the execution
+     * @throws IOException if an execution cannot be started
+     */
+    public ObjectCloseableEnumeration startExec(boolean reportExceptions,
+            ObjectStreamHandler handler) throws IOException {
+
+        if (handler == null) {
+            throw new IllegalArgumentException("handler is null");
+        }
+
+        stdout = null;
+        stderr = null;
+        final ExecutorProcess ep;
+        try {
+            ep = startExec(reportExceptions);
+        } catch (IOException e) {
+            if (reportExceptions) {
+                LOGGER.log(Level.SEVERE, "Failed to read from process: " + cmdList.get(0), e);
+            }
+            throw e;
+        }
+
+        final String arg0 = cmdList.get(0);
+        handler.initializeObjectStream(ep.process.getInputStream());
+        Object firstObject = handler.readObject();
+
+        return new ObjectCloseableEnumeration() {
+
+            Object nextObject = firstObject;
+            boolean hadProcessError;
+            int exitValue = -1;
+
+            @Override
+            public int exitValue() {
+                return exitValue;
+            }
+
+            @Override
+            public void close() throws IOException {
+                nextObject = null;
+
+                exitValue = ep.finish();
+                if (hadProcessError) {
+                    throw new IOException("Failed to execute: " + arg0);
+                }
+            }
+
+            @Override
+            public boolean hasMoreElements() {
+                return nextObject != null;
+            }
+
+            @Override
+            public Object nextElement() {
+                if (nextObject == null) {
+                    throw new NoSuchElementException();
+                }
+                Object res = nextObject;
+                nextObject = null;
+                try {
+                    nextObject = handler.readObject();
+                } catch (IOException e) {
+                    hadProcessError = true;
+                    if (reportExceptions) {
+                        LOGGER.log(Level.SEVERE, "Failed to read from process: " + arg0, e);
+                    }
+                }
+
+                if (!hadProcessError && nextObject == null) {
+                    try {
+                        exitValue = ep.process.waitFor();
+                        ep.err_thread.join();
+                    } catch (InterruptedException e) {
+                        hadProcessError = true;
+                        if (reportExceptions) {
+                            LOGGER.log(Level.SEVERE, "Waiting for process interrupted: " +
+                                    arg0, e);
+                        }
+                    }
+
+                    LOGGER.log(Level.FINE, "Finished command {0} in directory {1}",
+                            new Object[] {ep.cmd_str, ep.dir_str});
+
+                    final byte[] errBytes = ep.err.getBytes();
+                    stderr = errBytes;
+                    if (exitValue != 0 && reportExceptions) {
+                        // Limit to avoid flooding the logs.
+                        logErrBytes(exitValue, ep.cmd_str, ep.dir_str, errBytes);
+                    }
+                }
+                return res;
+            }
+        };
+    }
+
+    /**
+     * Executes the command for its further processing as an active program.
+     *
+     * @param reportExceptions Should exceptions be added to the log or not
+     * @return a defined, started instance
+     */
+    private ExecutorProcess startExec(final boolean reportExceptions) throws IOException {
+
+        final ExecutorProcess ep = new ExecutorProcess();
+        ep.process_builder = new ProcessBuilder(cmdList);
+        ep.cmd_str = escapeForShell(ep.process_builder.command(), false,
+                PlatformUtils.isWindows());
+
+        if (workingDirectory != null) {
+            ep.process_builder.directory(workingDirectory);
+            if (ep.process_builder.environment().containsKey("PWD")) {
+                ep.process_builder.environment().put("PWD", workingDirectory.getAbsolutePath());
+            }
+        }
+
+        File cwd = ep.process_builder.directory();
+        if (cwd == null) {
+            ep.dir_str = System.getProperty("user.dir");
+        } else {
+            ep.dir_str = cwd.toString();
+        }
+
+        String env_str = "";
+        if (LOGGER.isLoggable(Level.FINER)) {
+            Map<String, String> env_map = ep.process_builder.environment();
+            env_str = " with environment: " + env_map.toString();
+        }
+        LOGGER.log(Level.FINE, "Executing command [{0}] in directory {1}{2}",
+                new Object[] {ep.cmd_str, ep.dir_str, env_str});
+
+        final Process proc = ep.process_builder.start();
+        ep.process = proc;
+
+        final InputStream errorStream = proc.getErrorStream();
+        ep.err_thread = new Thread(() -> {
+            try {
+                ep.err.processStream(errorStream);
+            } catch (IOException ex) {
+                if (reportExceptions) {
+                    LOGGER.log(Level.SEVERE,
+                            "Error while executing command [{0}] in directory {1}",
+                            new Object[] {ep.cmd_str, ep.dir_str});
+                    LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
+                }
+            }
+        });
+        ep.err_thread.start();
+
+        final int timeout = this.timeout;
+        /*
+         * Setup timer so if the process get stuck we can terminate it and
+         * make progress instead of hanging the whole operation.
+         */
+        if (timeout != 0) {
+            // invoking the constructor starts the background thread
+            ep.timer = new Timer();
+            ep.timer.schedule(new TimerTask() {
+                @Override public void run() {
+                    LOGGER.log(Level.WARNING,
+                            String.format("Terminating process of command [%s] in directory %s " +
+                            "due to timeout %d seconds", ep.cmd_str, ep.dir_str, timeout / 1000));
+                    proc.destroy();
+                }
+            }, timeout);
+        }
+        return ep;
     }
 
     /**
@@ -393,7 +476,24 @@ public class Executor {
             }
         }
     }
-    
+
+    private static void logErrBytes(int exitValue, String cmdStr, String dirStr, byte[] errBytes) {
+        final int MAX_MSG_SZ = 256;
+
+        StringBuilder msg = new StringBuilder().append("Non-zero exit status ").append(exitValue).
+                append(" from command ").append(cmdStr).append(" in directory ").append(dirStr);
+
+        if (errBytes != null && errBytes.length > 0) {
+            msg.append(": ");
+            if (errBytes.length > MAX_MSG_SZ) {
+                msg.append(new String(errBytes, 0, MAX_MSG_SZ)).append("...");
+            } else {
+                msg.append(new String(errBytes));
+            }
+        }
+        LOGGER.log(Level.WARNING, msg.toString());
+    }
+
     public static void registerErrorHandler() {
         UncaughtExceptionHandler dueh =
             Thread.getDefaultUncaughtExceptionHandler();
@@ -483,5 +583,33 @@ public class Executor {
                 replace("\f", "`f").
                 replace("\u0011", "`v").
                 replace("\t", "`t");
+    }
+
+    private static class ExecutorProcess {
+        final SpoolHandler err = new SpoolHandler();
+        String cmd_str;
+        String dir_str;
+        ProcessBuilder process_builder;
+        Process process;
+        Timer timer;
+        Thread err_thread;
+
+        int finish() {
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
+            if (process != null) {
+                try {
+                    IOUtils.close(process.getOutputStream());
+                    IOUtils.close(process.getInputStream());
+                    IOUtils.close(process.getErrorStream());
+                    return process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    process.destroy();
+                }
+            }
+            return -1;
+        }
     }
 }

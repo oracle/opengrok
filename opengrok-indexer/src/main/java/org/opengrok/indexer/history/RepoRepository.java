@@ -20,12 +20,11 @@
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.util.BufferSink;
@@ -86,7 +85,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) {
+    HistoryEnumeration getHistory(File file) {
         throw new UnsupportedOperationException("Should never be called!");
     }
 
@@ -107,7 +106,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    String determineParent(CommandTimeoutType cmdType) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) {
         return null;
     }
 
@@ -117,7 +116,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

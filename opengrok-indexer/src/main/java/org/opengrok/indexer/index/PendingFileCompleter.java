@@ -52,11 +52,11 @@ import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.TandemPath;
 
 /**
- * Represents a tracker of pending file deletions and renamings that can later
- * be executed.
+ * Represents a tracker of pending file deletions, renamings, and linkages that
+ * can later be executed.
  * <p>
  * {@link PendingFileCompleter} is not generally thread-safe, as only
- * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)} is expected
+ * {@link #add(PendingFileRenaming)} is expected
  * to be run in parallel; that method is thread-safe -- but only among other
  * callers of the same method.
  * <p>
@@ -65,13 +65,13 @@ import org.opengrok.indexer.util.TandemPath;
  * additions of {@link PendingSymlinkage}s, {@link PendingFileDeletion}s, and
  * {@link PendingFileRenaming}s are indicated.
  * <p>
- * {@link #add(org.opengrok.indexer.index.PendingSymlinkage)} should only
+ * {@link #add(PendingSymlinkage)} should only
  * be called in serial from a single thread in an isolated stage.
  * <p>
- * {@link #add(org.opengrok.indexer.index.PendingFileDeletion)} should only
+ * {@link #add(PendingFileDeletion)} should only
  * be called in serial from a single thread in an isolated stage.
  * <p>
- * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)}, as noted,
+ * {@link #add(PendingFileRenaming)}, as noted,
  * can be called in parallel in an isolated stage.
  */
 class PendingFileCompleter {
@@ -81,7 +81,7 @@ class PendingFileCompleter {
      * {@link PendingFileRenaming} actions.
      * <p>Value is {@code ".org_opengrok"}.
      */
-    public static final String PENDING_EXTENSION = ".org_opengrok";
+    static final String PENDING_EXTENSION = ".org_opengrok";
 
     private static final Logger LOGGER =
         LoggerFactory.getLogger(PendingFileCompleter.class);
@@ -622,8 +622,8 @@ class PendingFileCompleter {
      * deleted for cleanliness.
      */
     private static class SkeletonDirs {
-        boolean ineligible; // a flag used during recursion
         final Set<File> childDirs = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
+        boolean ineligible; // a flag used during recursion
 
         void reset() {
             ineligible = false;

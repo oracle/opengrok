@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
@@ -216,15 +216,15 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    HistoryEnumeration getHistory(File file) throws HistoryException {
         PerforceHistoryParser parser = new PerforceHistoryParser(this);
-        return parser.parse(file);
+        return new SingleHistory(parser.parse(file));
     }
 
     @Override
-    History getHistory(File file, String sinceRevision) throws HistoryException {
+    HistoryEnumeration getHistory(File file, String sinceRevision) throws HistoryException {
         PerforceHistoryParser parser = new PerforceHistoryParser(this);
-        return parser.parse(file, sinceRevision);
+        return new SingleHistory(parser.parse(file, sinceRevision));
     }
 
     @Override

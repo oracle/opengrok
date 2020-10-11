@@ -294,7 +294,7 @@ public class IndexerTest {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File f = new File(env.getDataRootPath(),
                         TandemPath.join("historycache" + path, ".gz"));
-                Assert.assertTrue("history cache file should be preserved", f.exists());
+                Assert.assertTrue("historycache file should be preserved", f.exists());
             }
             removedFiles.add(path);
         }

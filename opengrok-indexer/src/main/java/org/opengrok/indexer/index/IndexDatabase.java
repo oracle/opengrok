@@ -1703,8 +1703,7 @@ public class IndexDatabase {
             if (hasPendingCommit) {
                 writer.rollback();
             }
-            LOGGER.log(Level.WARNING,
-                "An error occurred while finishing writer and completer", e);
+            LOGGER.log(Level.WARNING, "Error while finishing writer and completer", e);
             throw e;
         }
     }

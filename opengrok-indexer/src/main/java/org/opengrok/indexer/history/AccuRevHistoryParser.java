@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -49,9 +50,8 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
      * @param file the file to parse history for
      * @param repos Pointer to the {@code AccuRevRepository}
      * @return object representing the file's history
-     * @throws HistoryException if a problem occurs while executing p4 command
      */
-    History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) {
 
         repository = (AccuRevRepository) repos;
 
@@ -68,7 +68,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         
         if (relPath.equals(rootRelativePath)) {
 
-            List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            List<HistoryEntry> entries = new ArrayList<>();
 
             entries.add(new HistoryEntry(
                     "", new Date(), "OpenGrok", null, "Workspace Root", true));
@@ -76,18 +76,11 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
             history = new History(entries);
 
         } else {
-            try {
-                /*
-                 * Errors will be logged, so not bothering to add to the output.
-                 */
-                Executor executor = repository.getHistoryLogExecutor(file);
-                executor.exec(true, this);
-
-            } catch (IOException e) {
-                throw new HistoryException(
-                        "Failed to get history for: \""
-                        + file.getAbsolutePath() + "\"" + e);
-            }
+            /*
+             * Errors will be logged, so not bothering to add to the output.
+             */
+            Executor executor = repository.getHistoryLogExecutor(file);
+            executor.exec(true, this);
         }
 
         return history;
@@ -96,7 +89,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        List<HistoryEntry> entries = new ArrayList<>();
         String line;
         String user;
         Date date;

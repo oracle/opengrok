@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
@@ -93,7 +93,7 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    Annotation annotate(File file, String revision) throws IOException {
+    Annotation annotate(File file, String revision) {
         List<String> argv = new ArrayList<>();
         ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
 
@@ -118,9 +118,7 @@ public class RCSRepository extends Repository {
      */
     static IOException wrapInIOException(String message, Throwable t) {
         // IOException's constructor takes a Throwable, but only in JDK 6
-        IOException ioe = new IOException(message + ": " + t.getMessage());
-        ioe.initCause(t);
-        return ioe;
+        return new IOException(message + ": " + t.getMessage(), t);
     }
 
     @Override
@@ -166,22 +164,22 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return new RCSHistoryParser().parse(file, this);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(new RCSHistoryParser().parse(file, this));
     }
 
     @Override
-    String determineParent(CommandTimeoutType cmdType) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineBranch(CommandTimeoutType cmdType) throws IOException {
+    String determineBranch(CommandTimeoutType cmdType) {
         return null;
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

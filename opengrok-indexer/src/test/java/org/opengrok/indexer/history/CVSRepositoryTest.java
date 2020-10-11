@@ -28,14 +28,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
@@ -106,9 +106,7 @@ public class CVSRepositoryTest {
         List<String> cmdargs = new ArrayList<>();
         CVSRepository repo = new CVSRepository();
         cmdargs.add(repo.getRepoCommand());
-        for (String arg: args) {
-            cmdargs.add(arg);
-        }
+        Collections.addAll(cmdargs, args);
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
@@ -122,7 +120,6 @@ public class CVSRepositoryTest {
     /**
      * Get the CVS repository, test that getBranch() returns null if there is
      * no branch.
-     * @throws Exception
      */
     @Test
     public void testGetBranchNoBranch() throws Exception {
@@ -130,7 +127,7 @@ public class CVSRepositoryTest {
         File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
         CVSRepository cvsrepo
                 = (CVSRepository) RepositoryFactory.getRepository(root);
-        assertEquals(null, cvsrepo.getBranch());
+        assertNull("getBranch()", cvsrepo.getBranch());
     }
 
     /**
@@ -139,7 +136,6 @@ public class CVSRepositoryTest {
      * with branch revision numbers.
      * Last, check that history entries of the file follow through before the
      * branch was created.
-     * @throws Exception
      */
     @Test
     public void testNewBranch() throws Exception {
@@ -172,7 +168,7 @@ public class CVSRepositoryTest {
         Annotation annotation = cvsrepo.annotate(mainC, null);
         assertEquals("1.2.2.1", annotation.getRevision(1));
 
-        History mainCHistory = cvsrepo.getHistory(mainC);
+        History mainCHistory = HistoryUtil.union(cvsrepo.getHistory(mainC));
         assertEquals(3, mainCHistory.getHistoryEntries().size());
         assertEquals("1.2.2.1", mainCHistory.getHistoryEntries().get(0).getRevision());
         assertEquals("1.2", mainCHistory.getHistoryEntries().get(1).getRevision());
@@ -199,7 +195,6 @@ public class CVSRepositoryTest {
 
     /**
      * Test of parseAnnotation method, of class CVSRepository.
-     * @throws java.lang.Exception
      */
     @Test
     public void testParseAnnotation() throws Exception {
@@ -222,7 +217,7 @@ public class CVSRepositoryTest {
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {
-            assertEquals(true, result.isEnabled(i));
+            assertTrue("isEnabled()", result.isEnabled(i));
         }
         assertEquals(revId1, result.getRevision(1));
         assertEquals(revId2, result.getRevision(2));

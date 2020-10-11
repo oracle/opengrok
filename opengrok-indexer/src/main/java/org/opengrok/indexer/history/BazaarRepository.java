@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -77,7 +77,7 @@ public class BazaarRepository extends Repository {
             throws IOException {
         String filename = getRepoRelativePath(file);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("log");
@@ -202,7 +202,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file, String sinceRevision) throws HistoryException {
+    HistoryEnumeration getHistory(File file, String sinceRevision) throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         History result = new BazaarHistoryParser(this).parse(file, sinceRevision);
         // Assign tags to changesets they represent
@@ -210,11 +210,11 @@ public class BazaarRepository extends Repository {
         if (env.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
-        return result;
+        return new SingleHistory(result);
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    HistoryEnumeration getHistory(File file) throws HistoryException {
         return getHistory(file, null);
     }
 
@@ -271,7 +271,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

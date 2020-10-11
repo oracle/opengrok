@@ -19,18 +19,19 @@
 
 /*
  * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
- */
-/*
  * Copyright 2006 Trond Norbye.  All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -44,21 +45,21 @@ public class HistoryEntry {
     static final String TAGS_SEPARATOR = ", ";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
+    private static final String TAGS_SEP_ESC = Pattern.quote(TAGS_SEPARATOR);
 
     private String revision;
     private Date date;
     private String author;
     private String tags;
 
-    @SuppressWarnings("PMD.AvoidStringBufferField")
-    private final StringBuffer message;
+    private final StringBuilder message;
 
     private boolean active;
     private SortedSet<String> files;
 
     /** Creates a new instance of HistoryEntry. */
     public HistoryEntry() {
-        message = new StringBuffer();
+        message = new StringBuilder();
         files = new TreeSet<>();
     }
     
@@ -82,7 +83,7 @@ public class HistoryEntry {
         setDate(date);
         this.author = author;
         this.tags = tags;
-        this.message = new StringBuffer(message);
+        this.message = new StringBuilder(message);
         this.active = active;
         this.files = new TreeSet<>();
     }
@@ -209,5 +210,44 @@ public class HistoryEntry {
      */
     public void stripTags() {
         tags = null;
+    }
+
+    public void merge(HistoryEntry other) {
+        // Merge files if necessary.
+        if (other.files != null) {
+            if (files == null) {
+                files = other.files;
+                other.files = null;
+            } else {
+                files.addAll(other.files);
+            }
+        }
+        // Merge tags if necessary.
+        if (other.tags != null) {
+            if (tags == null) {
+                tags = other.tags;
+                other.tags = null;
+            } else {
+                tags = mergeTags(tags, other.tags);
+            }
+        }
+    }
+
+    private static String mergeTags(String l, String r) {
+        Set<String> distinct = new TreeSet<>();
+        distinct.addAll(Arrays.asList(l.split(TAGS_SEP_ESC)));
+        distinct.addAll(Arrays.asList(r.split(TAGS_SEP_ESC)));
+
+        StringBuilder merged = new StringBuilder();
+        for (String rev : distinct) {
+            merged.append(rev);
+            merged.append(TAGS_SEPARATOR);
+        }
+        if (merged.length() > 0) {
+            // Remove last trailing separator.
+            merged.setLength(merged.length() - TAGS_SEPARATOR.length());
+        }
+
+        return merged.toString();
     }
 }

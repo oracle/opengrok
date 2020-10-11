@@ -167,16 +167,17 @@ public class GitRepositoryOctopusTest {
         File root = new File(repository.getSourceRoot(), "git-octopus");
         GitRepository gitRepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitRepo.getHistory(root);
+        History history = HistoryUtil.union(gitRepo.getHistory(root));
         assertNotNull("git-octopus getHistory()", history);
 
         List<HistoryEntry> entries = history.getHistoryEntries();
         assertNotNull("git-octopus getHistoryEntries()", entries);
 
         /*
-         * git-octopus has four-way merge, but GitHistoryParser condenses.
+         * git-octopus has four-way merge, so there are three more history
+         * entries with `git log -m`
          */
-        assertEquals("git-octopus log entries", 4, entries.size());
+        assertEquals("git-octopus log entries", 7, entries.size());
 
         SortedSet<String> allFiles = new TreeSet<>();
         for (HistoryEntry entry : entries) {

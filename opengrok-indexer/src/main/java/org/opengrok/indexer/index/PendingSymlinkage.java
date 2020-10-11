@@ -18,18 +18,18 @@
  */
 
 /*
- * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 /**
  * Represents the metadata for a pending symbolic linkage.
  */
-public final class PendingSymlinkage {
+final class PendingSymlinkage {
     private final String sourcePath;
     private final String targetRelPath;
 
-    public PendingSymlinkage(String sourcePath, String targetRelPath) {
+    PendingSymlinkage(String sourcePath, String targetRelPath) {
         this.sourcePath = sourcePath;
         this.targetRelPath = targetRelPath;
     }
@@ -37,14 +37,14 @@ public final class PendingSymlinkage {
     /**
      * @return the source, absolute path
      */
-    public String getSourcePath() {
+    String getSourcePath() {
         return sourcePath;
     }
 
     /**
      * @return the target, relative path
      */
-    public String getTargetRelPath() {
+    String getTargetRelPath() {
         return targetRelPath;
     }
 
@@ -63,6 +63,9 @@ public final class PendingSymlinkage {
         return this.sourcePath.equals(other.sourcePath);
     }
 
+    /**
+     * Gets the hash code of the source, absolute path.
+     */
     @Override
     public int hashCode() {
         return this.sourcePath.hashCode();

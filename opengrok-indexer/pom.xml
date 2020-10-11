@@ -210,7 +210,25 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <artifactId>micrometer-registry-prometheus</artifactId>
             <version>${micrometer.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.oath.halodb</groupId>
+            <artifactId>halodb</artifactId>
+            <version>0.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.26</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>yahoo-bintray</id>
+            <name>yahoo-bintray</name>
+            <url>https://yahoo.bintray.com/maven</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

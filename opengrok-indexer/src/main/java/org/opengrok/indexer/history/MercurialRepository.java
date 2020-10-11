@@ -66,13 +66,13 @@ public class MercurialRepository extends Repository {
      * The boolean property and environment variable name to indicate whether
      * forest-extension in Mercurial adds repositories inside the repositories.
      */
-    public static final String NOFOREST_PROPERTY_KEY
+    private static final String NOFOREST_PROPERTY_KEY
             = "org.opengrok.indexer.history.mercurial.disableForest";
 
     static final String CHANGESET = "changeset: ";
     static final String USER = "user: ";
     static final String DATE = "date: ";
-    static final String DESCRIPTION = "description: ";
+    private static final String DESCRIPTION = "description: ";
     static final String FILE_COPIES = "file_copies: ";
     static final String FILES = "files: ";
     static final String END_OF_ENTRY
@@ -147,7 +147,6 @@ public class MercurialRepository extends Repository {
     Executor getHistoryLogExecutor(File file, String sinceRevision)
             throws HistoryException, IOException {
         String filename = getRepoRelativePath(file);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -250,7 +249,7 @@ public class MercurialRepository extends Repository {
      * @param fullpath file path
      * @param full_rev_to_find revision number (in the form of
      * {rev}:{node|short})
-     * @returns original filename
+     * @return original filename
      */
     private String findOriginalName(String fullpath, String full_rev_to_find)
             throws IOException {
@@ -354,7 +353,7 @@ public class MercurialRepository extends Repository {
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(sink, fullpath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -384,10 +383,9 @@ public class MercurialRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
-     * @throws java.io.IOException if I/O exception occurred
      */
     @Override
-    public Annotation annotate(File file, String revision) throws IOException {
+    public Annotation annotate(File file, String revision) {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
@@ -494,12 +492,12 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    HistoryEnumeration getHistory(File file) throws HistoryException {
         return getHistory(file, null);
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
+    HistoryEnumeration getHistory(File file, String sinceRevision)
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // Note that the filtering of revisions based on sinceRevision is done
@@ -518,7 +516,7 @@ public class MercurialRepository extends Repository {
         if (env.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
-        return result;
+        return new SingleHistory(result);
     }
 
     /**
@@ -573,7 +571,6 @@ public class MercurialRepository extends Repository {
 
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
-        String line = null;
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();

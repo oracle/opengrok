@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -108,7 +108,7 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    public Annotation annotate(File file, String rev) throws IOException {
+    public Annotation annotate(File file, String rev) {
 
         ArrayList<String> cmd = new ArrayList<>();
 
@@ -141,7 +141,7 @@ public class AccuRevRepository extends Repository {
      * @param file file for which history is to be retrieved.
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(File file) throws IOException {
+    Executor getHistoryLogExecutor(File file) {
 
         // Do not use absolute paths because symbolic links will cause havoc.
         String path = getDepotRelativePath( file );
@@ -455,12 +455,12 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return new AccuRevHistoryParser().parse(file, this);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(new AccuRevHistoryParser().parse(file, this));
     }
 
     @Override
-    String determineParent(CommandTimeoutType cmdType) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) {
         getAccuRevInfo(new File(getDirectoryName()), cmdType);
         return parentInfo;
     }
@@ -471,7 +471,7 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 }

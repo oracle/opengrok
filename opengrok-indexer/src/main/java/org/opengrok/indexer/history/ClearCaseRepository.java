@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -143,10 +143,9 @@ public class ClearCaseRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
-     * @throws java.io.IOException if I/O exception occurred
      */
     @Override
-    public Annotation annotate(File file, String revision) throws IOException {
+    public Annotation annotate(File file, String revision) {
         ArrayList<String> argv = new ArrayList<>();
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -223,7 +222,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
+    String determineCurrentVersion(CommandTimeoutType cmdType) {
         return null;
     }
 
@@ -269,12 +268,12 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
-        return new ClearCaseHistoryParser().parse(file, this);
+    HistoryEnumeration getHistory(File file) throws HistoryException {
+        return new SingleHistory(new ClearCaseHistoryParser().parse(file, this));
     }
 
     @Override
-    String determineParent(CommandTimeoutType cmdType) throws IOException {
+    String determineParent(CommandTimeoutType cmdType) {
         return null;
     }
 
