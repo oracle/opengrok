@@ -21,14 +21,14 @@
 # Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 
-from ..utils.command import Command
-from .repository import Repository, RepositoryException
 import os
+
+from .repository import Repository, RepositoryException
+from ..utils.command import Command
 
 
 class TeamwareRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
-
         super().__init__(logger, path, project, command, env, hooks, timeout)
 
         #
@@ -39,6 +39,7 @@ class TeamwareRepository(Repository):
         # argument contains the path to the directory that contains
         # the binaries.
         #
+        command = self._repository_command(command)
         if command:
             if not os.path.isdir(command):
                 raise RepositoryException("Cannot construct Teamware "
