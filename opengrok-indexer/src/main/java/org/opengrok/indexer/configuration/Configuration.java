@@ -586,7 +586,7 @@ public final class Configuration {
     }
 
     /**
-     * @see org.opengrok.indexer.web.messages.MessagesContainer
+     * Returns maximum number of messages that can be kept in the system.
      *
      * @return int the current message limit
      */
@@ -595,7 +595,7 @@ public final class Configuration {
     }
 
     /**
-     * @see org.opengrok.indexer.web.messages.MessagesContainer
+     * Sets maximum number of messages that can be kept in the system.
      *
      * @param messageLimit the limit
      * @throws IllegalArgumentException when the limit is negative

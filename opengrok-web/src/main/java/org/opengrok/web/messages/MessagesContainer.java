@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.opengrok.indexer.configuration.OnConfigurationChangedListener;
+import org.opengrok.indexer.configuration.ConfigurationChangedListener;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -53,13 +53,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class MessagesContainer implements OnConfigurationChangedListener {
+public class MessagesContainer implements ConfigurationChangedListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagesContainer.class);
 
     public static final String MESSAGES_MAIN_PAGE_TAG = "main";
-
-    private static final int DEFAULT_MESSAGE_LIMIT = 100;
 
     private static final MessagesContainer instance = new MessagesContainer();
 
@@ -67,7 +65,7 @@ public class MessagesContainer implements OnConfigurationChangedListener {
 
     private int messagesInTheSystem = 0;
 
-    private int messageLimit = DEFAULT_MESSAGE_LIMIT;
+    private int messageLimit = RuntimeEnvironment.getInstance().getMessageLimit();
 
     private Timer expirationTimer;
 
@@ -234,7 +232,6 @@ public class MessagesContainer implements OnConfigurationChangedListener {
     }
 
     public void startExpirationTimer() {
-        setMessageLimit(RuntimeEnvironment.getInstance().getMessageLimit());
         if (expirationTimer != null) {
             stopExpirationTimer();
         }

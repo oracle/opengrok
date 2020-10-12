@@ -22,7 +22,10 @@
  */
 package org.opengrok.indexer.configuration;
 
-public interface OnConfigurationChangedListener {
+/**
+ * Callback that is called when configuration is changed.
+ */
+public interface ConfigurationChangedListener {
 
     void onConfigurationChanged();
 

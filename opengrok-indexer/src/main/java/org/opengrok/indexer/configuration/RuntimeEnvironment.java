@@ -120,7 +120,7 @@ public final class RuntimeEnvironment {
 
     public WatchDogService watchDog;
 
-    private final Set<OnConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
+    private final Set<ConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
 
     public List<String> getSubFiles() {
         return subFiles;
@@ -1676,7 +1676,7 @@ public final class RuntimeEnvironment {
         getAuthorizationFramework().setStack(getPluginStack());
         getAuthorizationFramework().reload();
 
-        for (OnConfigurationChangedListener l : listeners) {
+        for (ConfigurationChangedListener l : listeners) {
             l.onConfigurationChanged();
         }
     }
@@ -1882,7 +1882,7 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::getMessageLimit);
     }
 
-    public void registerListener(OnConfigurationChangedListener listener) {
+    public void registerListener(ConfigurationChangedListener listener) {
         listeners.add(listener);
     }
 }
