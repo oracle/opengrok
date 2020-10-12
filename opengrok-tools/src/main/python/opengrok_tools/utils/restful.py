@@ -21,13 +21,13 @@
 # Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
-import logging
 import json
+import logging
+
 import requests
 
-from .webutil import get_proxies
 from .patterns import COMMAND_PROPERTY
-
+from .webutil import get_proxies
 
 CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
@@ -38,7 +38,13 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    return handler(uri, data=data, params=params, headers=headers, proxies=get_proxies(uri))
+    return handler(
+        uri,
+        data=data,
+        params=params,
+        headers=headers,
+        proxies=get_proxies(uri)
+    )
 
 
 def call_rest_api(command, pattern, name):
