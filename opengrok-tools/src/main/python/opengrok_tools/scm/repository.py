@@ -62,7 +62,7 @@ class Repository:
     def sync(self):
         # Eventually, there might be per-repository hooks added here.
         if isinstance(self.configured_commands, dict) and self.configured_commands.get('sync'):
-            return self._run_command(self.listify(self.configured_commands['sync']))
+            return self._run_custom_sync_command(self.listify(self.configured_commands['sync']))
         return self.reposync()
 
     @abc.abstractmethod
@@ -82,7 +82,7 @@ class Repository:
         Return True if so, False otherwise.
         """
         if isinstance(self.configured_commands, dict) and self.configured_commands.get('incoming'):
-            return self._run_command(self.listify(self.configured_commands['incoming'])) != 0
+            return self._run_custom_incoming_command(self.listify(self.configured_commands['incoming']))
         return self.incoming_check()
 
     def incoming_check(self):
@@ -93,27 +93,51 @@ class Repository:
         """
         return True
 
+    def _run_custom_sync_command(self, command):
+        """
+        Execute the custom sync command.
+
+        :param command: the command
+        :return: 0 on success execution, 1 otherwise
+        """
+        status, output = self._run_command(command)
+        logging_handler = self.logger.info if status == 0 else self.logger.warning
+        logging_handler("output of '{}':".format(command))
+        logging_handler(output)
+        return status
+
+    def _run_custom_incoming_command(self, command):
+        """
+        Execute the custom incoming command.
+
+        :param command: the command
+        :return: true when there are changes, false otherwise
+        """
+        status, output = self._run_command(command)
+        if status != 0:
+            self.logger.error("output of '{}':".format(command))
+            self.logger.error(output)
+            raise RepositoryException('failed to check for incoming in repository {}'.format(self))
+        return len(output.strip()) > 0
+
     def _run_command(self, command):
         """
         Execute the command.
 
         :param command: the command
-        :return: 0 on success execution, 1 otherwise
+        :return: tuple of (status, output)
+                    - status: 0 on success execution, non-zero otherwise
+                    - output: command output as string
         """
         cmd = self.getCommand(command, work_dir=self.path, env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.debug("output of '{}':".format(cmd))
-            if cmd.getoutputstr():
-                self.logger.debug(cmd.getoutputstr())
-            if cmd.geterroutputstr():
-                self.logger.debug(cmd.geterroutputstr())
             cmd.log_error("failed to perform command")
-            return 1
-        if cmd.getoutputstr():
-            self.logger.debug("output of '{}':".format(cmd))
-            self.logger.debug(cmd.getoutputstr())
-        return 0
+            status = cmd.getretcode()
+            if status == 0 and cmd.getstate() != Command.FINISHED:
+                status = 1
+            return status, '\n'.join(filter(None, [cmd.getoutputstr(), cmd.geterroutputstr()]))
+        return 0, cmd.getoutputstr()
 
     @staticmethod
     def _repository_command(configured_commands, default=lambda: None):
