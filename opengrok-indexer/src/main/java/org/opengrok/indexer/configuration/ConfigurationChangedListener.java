@@ -23,7 +23,10 @@
 package org.opengrok.indexer.configuration;
 
 /**
- * Callback that is called when configuration is changed.
+ * Callback that is called when configuration is changed. Use {@link RuntimeEnvironment} to get the actual
+ * configuration values.
+ *
+ * @see Configuration
  */
 public interface ConfigurationChangedListener {
 
