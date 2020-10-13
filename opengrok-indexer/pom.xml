@@ -118,11 +118,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator-core</artifactId>
-            <version>0.46</version>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
@@ -136,12 +131,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
             <version>2.0.0.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -242,7 +231,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.commit.id</includeOnlyProperty>
                     </includeOnlyProperties>
-		    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
                 </configuration>
                 <executions>
                     <execution>

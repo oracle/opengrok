@@ -117,6 +117,11 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator-core</artifactId>
+            <version>0.46</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
             <version>3.5.1</version>
         </dependency>
