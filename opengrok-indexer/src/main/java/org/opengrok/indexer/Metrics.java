@@ -88,18 +88,7 @@ public final class Metrics {
 
         if (RuntimeEnvironment.getInstance().getStatsdConfig().isEnabled()) {
             LOGGER.log(Level.INFO, "configuring StatsdRegistry");
-
             statsdRegistry = new StatsdMeterRegistry(statsdConfig, Clock.SYSTEM);
-
-            // Add tag for per-project reindex.
-            List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
-            if (!subFiles.isEmpty()) {
-                String projects = subFiles.stream().
-                        map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
-                        collect(Collectors.joining(","));
-                statsdRegistry.config().commonTags(Collections.singleton(Tag.of("projects", projects)));
-            }
-
             registry = statsdRegistry;
         } else if (!RuntimeEnvironment.getInstance().isIndexer()) {
             LOGGER.log(Level.INFO, "configuring PrometheusRegistry");
@@ -117,6 +106,19 @@ public final class Metrics {
     }
 
     private Metrics() {
+    }
+
+    public static void updateSubFiles(List<String> subFiles) {
+        // Add tag for per-project reindex.
+        if (statsdRegistry != null &&
+                RuntimeEnvironment.getInstance().getStatsdConfig().isEnabled() && !subFiles.isEmpty()) {
+            String projects = subFiles.stream().
+                    map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
+                    collect(Collectors.joining(","));
+            Tag commonTag = Tag.of("projects", projects);
+            LOGGER.log(Level.FINE, "updating statsdRegistry with common tag: {}", commonTag);
+            statsdRegistry.config().commonTags(Collections.singleton(commonTag));
+        }
     }
 
     public static PrometheusMeterRegistry getPrometheusRegistry() {

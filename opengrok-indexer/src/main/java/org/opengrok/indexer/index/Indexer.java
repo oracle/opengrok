@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.opengrok.indexer.Info;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
 import org.opengrok.indexer.analysis.Ctags;
@@ -317,6 +318,8 @@ public final class Indexer {
                 System.err.println("None of the paths were added, exiting");
                 System.exit(1);
             }
+
+            Metrics.updateSubFiles(subFiles);
 
             // If the webapp is running with a config that does not contain
             // 'projectsEnabled' property (case of upgrade or transition
