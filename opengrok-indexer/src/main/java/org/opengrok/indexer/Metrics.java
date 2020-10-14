@@ -145,9 +145,9 @@ public final class Metrics {
      */
     public static MeterRegistry getRegistry() {
         if (RuntimeEnvironment.getInstance().isIndexer()) {
-            return Metrics.getStatsdRegistry();
+            return getStatsdRegistry();
         } else {
-            return Metrics.getPrometheusRegistry();
+            return getPrometheusRegistry();
         }
     }
 }
