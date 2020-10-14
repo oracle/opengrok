@@ -114,7 +114,7 @@ public final class Metrics {
             }
 
             registry = statsdRegistry;
-        } else {
+        } else if (!RuntimeEnvironment.getInstance().isIndexer()) {
             LOGGER.log(Level.INFO, "configuring PrometheusRegistry");
             prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
             registry = prometheusRegistry;
