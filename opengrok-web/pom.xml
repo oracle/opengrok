@@ -121,6 +121,11 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <version>3.5.1</version>
         </dependency>
         <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>showdown</artifactId>
+            <version>1.9.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
             <version>${jersey.version}</version>
