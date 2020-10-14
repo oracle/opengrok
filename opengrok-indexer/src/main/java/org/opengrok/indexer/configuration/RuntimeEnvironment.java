@@ -127,7 +127,7 @@ public final class RuntimeEnvironment {
         return subFiles;
     }
 
-    private ArrayList<String> subFiles = new ArrayList<>();
+    private List<String> subFiles = new ArrayList<>();
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
