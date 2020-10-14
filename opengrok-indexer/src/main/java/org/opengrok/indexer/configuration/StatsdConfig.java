@@ -57,7 +57,7 @@ public class StatsdConfig {
     }
 
     public boolean isEnabled() {
-        return port != 0 && host != null && !host.isEmpty() && !flavor.isEmpty();
+        return port != 0 && host != null && !host.isEmpty() && flavor != null && !flavor.isEmpty();
     }
 
     /**
