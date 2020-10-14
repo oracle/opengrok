@@ -114,7 +114,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         putjs("jquery-tablesorter", "js/jquery-tablesorter-2.31.3", 12);
         putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.2", 13, true);
         putjs("searchable-option-list", "js/searchable-option-list-2.0.14", 14);
-        putjs("utils", "js/utils-0.0.37", 15, true);
+        putjs("utils", "js/utils-0.0.38", 15, true);
         putjs("repos", "js/repos-0.0.2", 20, true);
         putjs("diff", "js/diff-0.0.4", 20, true);
         putjs("jquery-caret", "js/jquery.caret-1.5.2", 25);
