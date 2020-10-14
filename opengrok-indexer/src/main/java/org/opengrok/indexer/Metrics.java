@@ -97,7 +97,7 @@ public final class Metrics {
     private static StatsdMeterRegistry statsdRegistry;
 
     static {
-        MeterRegistry registry;
+        MeterRegistry registry = null;
 
         if (RuntimeEnvironment.getInstance().getStatsdConfig().isEnabled()) {
             LOGGER.log(Level.INFO, "configuring StatsdRegistry");
@@ -120,11 +120,13 @@ public final class Metrics {
             registry = prometheusRegistry;
         }
 
-        new ClassLoaderMetrics().bindTo(registry);
-        new JvmMemoryMetrics().bindTo(registry);
-        new JvmGcMetrics().bindTo(registry);
-        new ProcessorMetrics().bindTo(registry);
-        new JvmThreadMetrics().bindTo(registry);
+        if (registry != null) {
+            new ClassLoaderMetrics().bindTo(registry);
+            new JvmMemoryMetrics().bindTo(registry);
+            new JvmGcMetrics().bindTo(registry);
+            new ProcessorMetrics().bindTo(registry);
+            new JvmThreadMetrics().bindTo(registry);
+        }
     }
 
     private Metrics() {
