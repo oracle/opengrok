@@ -110,8 +110,7 @@ public final class Metrics {
 
     public static void updateSubFiles(List<String> subFiles) {
         // Add tag for per-project reindex.
-        if (statsdRegistry != null &&
-                RuntimeEnvironment.getInstance().getStatsdConfig().isEnabled() && !subFiles.isEmpty()) {
+        if (statsdRegistry != null && !subFiles.isEmpty()) {
             String projects = subFiles.stream().
                     map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
                     collect(Collectors.joining(","));
