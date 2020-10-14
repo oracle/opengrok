@@ -62,19 +62,7 @@ public final class Metrics {
 
         @Override
         public StatsdFlavor flavor() {
-            String flavor = RuntimeEnvironment.getInstance().getStatsdConfig().getFlavor().toLowerCase();
-            switch (flavor) {
-                case "etsy":
-                    return StatsdFlavor.ETSY;
-                case "datadog":
-                    return StatsdFlavor.DATADOG;
-                case "sysdig":
-                    return StatsdFlavor.SYSDIG;
-                case "telegraf":
-                    return StatsdFlavor.TELEGRAF;
-            }
-
-            return null;
+            return RuntimeEnvironment.getInstance().getStatsdConfig().getFlavor();
         }
 
         @Override
