@@ -105,7 +105,7 @@ public final class Metrics {
             statsdRegistry = new StatsdMeterRegistry(statsdConfig, Clock.SYSTEM);
 
             // Add tag for per-project reindex.
-            ArrayList<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
+            List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
             if (!subFiles.isEmpty()) {
                 List<String> sList = subFiles.stream().
                         map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).

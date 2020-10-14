@@ -149,7 +149,7 @@ public final class Indexer {
         boolean update = true;
 
         Executor.registerErrorHandler();
-        ArrayList<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
+        List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
         ArrayList<String> subFilesList = new ArrayList<>();
 
         boolean createDict = false;
