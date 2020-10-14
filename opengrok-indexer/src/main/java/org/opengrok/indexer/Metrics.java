@@ -106,7 +106,7 @@ public final class Metrics {
 
             // Add tag for per-project reindex.
             ArrayList<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
-            if (subFiles.size() > 0) {
+            if (!subFiles.isEmpty()) {
                 List<String> sList = subFiles.stream().
                         map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
                         collect(Collectors.toList());
