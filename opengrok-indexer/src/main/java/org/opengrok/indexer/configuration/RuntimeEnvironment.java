@@ -123,7 +123,7 @@ public final class RuntimeEnvironment {
 
     public WatchDogService watchDog;
 
-    public ArrayList<String> getSubFiles() {
+    public List<String> getSubFiles() {
         return subFiles;
     }
 
