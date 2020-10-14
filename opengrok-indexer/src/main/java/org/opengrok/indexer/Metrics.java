@@ -107,11 +107,10 @@ public final class Metrics {
             // Add tag for per-project reindex.
             List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
             if (!subFiles.isEmpty()) {
-                List<String> sList = subFiles.stream().
+                String projects = subFiles.stream().
                         map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
-                        collect(Collectors.toList());
-                statsdRegistry.config().commonTags(Collections.singleton(Tag.of("projects",
-                        String.join(",", sList))));
+                        collect(Collectors.joining(","));
+                statsdRegistry.config().commonTags(Collections.singleton(Tag.of("projects", projects)));
             }
 
             registry = statsdRegistry;
