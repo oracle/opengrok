@@ -183,6 +183,8 @@ public class ConfigurationHelp {
             return null;
         } else if (paramType == SuggesterConfig.class) {
             return SuggesterConfig.getForHelp();
+        } else if (paramType == StatsdConfig.class) {
+            return StatsdConfig.getForHelp();
         } else {
             throw new UnsupportedOperationException("getSampleValue() for " +
                 paramType + ", " + genType);
