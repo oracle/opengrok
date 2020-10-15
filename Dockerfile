@@ -33,7 +33,7 @@ RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
 RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
 FROM tomcat:9-jdk11
-LABEL maintainer="opengrok-dev@yahoogroups.com"
+LABEL maintainer="https://github.com/oracle/opengrok"
 
 # install dependencies and Python tools
 RUN apt-get update && \
