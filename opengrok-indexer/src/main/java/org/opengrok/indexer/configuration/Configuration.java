@@ -300,6 +300,7 @@ public final class Configuration {
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
     private StatsdConfig statsdConfig = new StatsdConfig();
+    private GraphiteConfig graphiteConfig = new GraphiteConfig();
 
     private Set<String> disabledRepositories;
 
@@ -314,6 +315,15 @@ public final class Configuration {
     public enum RemoteSCM {
         ON, OFF, DIRBASED, UIONLY
     }
+
+    public enum MeterRegistryType {
+        PROMETHEUS,
+        GRAPHITE,
+        STATSD
+    };
+
+    private MeterRegistryType webAppMeterRegistryType;
+    private MeterRegistryType indexerMeterRegistryType;
 
     /**
      * Get the default tab size (number of space characters per tab character)
@@ -564,6 +574,8 @@ public final class Configuration {
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
+        setWebAppMeterRegistryType(MeterRegistryType.PROMETHEUS);
+        setIndexerMeterRegistryType(MeterRegistryType.STATSD);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -1326,6 +1338,36 @@ public final class Configuration {
             throw new IllegalArgumentException("Cannot set Statsd configuration to null");
         }
         this.statsdConfig = config;
+    }
+
+    public GraphiteConfig getGraphiteConfig() {
+        return graphiteConfig;
+    }
+
+    public void setGraphiteConfig(GraphiteConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("Cannot set Statsd configuration to null");
+        }
+        this.graphiteConfig = config;
+    }
+
+    public MeterRegistryType getWebAppMeterRegistryType() {
+        return webAppMeterRegistryType;
+    }
+
+    public void setWebAppMeterRegistryType(MeterRegistryType registryType) {
+        this.webAppMeterRegistryType = registryType;
+    }
+
+    public MeterRegistryType getIndexerMeterRegistryType() {
+        return indexerMeterRegistryType;
+    }
+
+    public void setIndexerMeterRegistryType(MeterRegistryType registryType) {
+        if (registryType == MeterRegistryType.PROMETHEUS) {
+            throw new IllegalArgumentException("unsupported registry type");
+        }
+        this.indexerMeterRegistryType = registryType;
     }
 
     public Set<String> getDisabledRepositories() {

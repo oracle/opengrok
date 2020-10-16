@@ -147,16 +147,6 @@ public final class RuntimeEnvironment {
     private AuthorizationFramework authFramework;
     private final Object authFrameworkLock = new Object();
 
-    private boolean indexer;
-
-    public boolean isIndexer() {
-        return indexer;
-    }
-
-    public void setIndexer(boolean indexer) {
-        this.indexer = indexer;
-    }
-
     /** Gets the thread pool used for multi-project searches. */
     public ExecutorService getSearchExecutor() {
         return lzSearchExecutor.get();
@@ -1898,6 +1888,30 @@ public final class RuntimeEnvironment {
 
     public void setStatsdConfig(StatsdConfig statsdConfig) {
         syncWriteConfiguration(statsdConfig, Configuration::setStatsdConfig);
+    }
+
+    public GraphiteConfig getGraphiteConfig() {
+        return syncReadConfiguration(Configuration::getGraphiteConfig);
+    }
+
+    public void setGraphiteConfig(GraphiteConfig graphiteConfig) {
+        syncWriteConfiguration(graphiteConfig, Configuration::setGraphiteConfig);
+    }
+
+    public Configuration.MeterRegistryType getWebAppMeterRegistryType() {
+        return syncReadConfiguration(Configuration::getWebAppMeterRegistryType);
+    }
+
+    public void setWebAppMeterRegistryType(Configuration.MeterRegistryType registryType) {
+        syncWriteConfiguration(registryType, Configuration::setWebAppMeterRegistryType);
+    }
+
+    public Configuration.MeterRegistryType getIndexerMeterRegistryType() {
+        return syncReadConfiguration(Configuration::getIndexerMeterRegistryType);
+    }
+
+    public void setIndexerAppMeterRegistryType(Configuration.MeterRegistryType registryType) {
+        syncWriteConfiguration(registryType, Configuration::setIndexerMeterRegistryType);
     }
 
     /**
