@@ -1482,7 +1482,7 @@ function init_markdown_converter() {
     var converter = null;
     $('[data-markdown]').each(function () {
         var $that = $(this);
-        $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
+        $.script.loadScript('webjars/xss/1.0.8/dist/xss.min.js').done(function () {
             $.script.loadScript('webjars/showdown/1.9.1/dist/showdown.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
                     var $dataMarkdownDownloadEl = $(this);

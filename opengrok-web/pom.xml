@@ -145,6 +145,18 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>xss</artifactId>
+            <version>1.0.8</version>
+            <!-- dependencies not required -->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
             <version>${jersey.version}</version>
