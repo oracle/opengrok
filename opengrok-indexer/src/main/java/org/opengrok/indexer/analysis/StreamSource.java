@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -53,6 +53,11 @@ public abstract class StreamSource {
     public abstract InputStream getStream() throws IOException;
 
     /**
+     * Gets a reportable identifier of the source.
+     */
+    public abstract String getSourceIdentifier();
+
+    /**
      * Helper method that creates a {@code StreamSource} instance that
      * reads data from a file.
      *
@@ -64,6 +69,11 @@ public abstract class StreamSource {
             @Override
             public InputStream getStream() throws IOException {
                 return new BufferedInputStream(new FileInputStream(file));
+            }
+
+            @Override
+            public String getSourceIdentifier() {
+                return file.getAbsolutePath();
             }
         };
     }
@@ -81,6 +91,11 @@ public abstract class StreamSource {
             @Override
             public InputStream getStream() throws IOException {
                 return new ByteArrayInputStream(sbuf);
+            }
+
+            @Override
+            public String getSourceIdentifier() {
+                return "String";
             }
         };
     }

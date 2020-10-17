@@ -1,6 +1,4 @@
 <%--
-$Id$
-
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -61,13 +59,12 @@ org.opengrok.indexer.web.Util"
         String primePath = path;
         Project project = cfg.getProject();
         if (project != null) {
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
             /*
              * N.b. searchHelper.destroy() is called via
-             * WebappListener.requestDestroyed() on presence of the following
-             * REQUEST_ATTR.
+             * WebappListener.requestDestroyed() on presence of an attribute,
+             * REQUEST_ATTR, set by the following.
              */
-            request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+            SearchHelper searchHelper = cfg.prepareInternalSearch();
             searchHelper.prepareExec(project);
 
             try {
@@ -112,7 +109,7 @@ include file="httpheader.jspf"
 <body>
 <script type="text/javascript">/* <![CDATA[ */
     document.rev = function() { return getParameter("<%= QueryParameters.REVISION_PARAM %>"); };
-    document.annotate = <%= PageConfig.get(request).annotate() %>;
+    document.annotate = <%= PageConfig.get(request).shouldAnnotate() %>;
     document.domReady.push(function() { domReadyMast(); });
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>

@@ -71,11 +71,12 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
 
+    /*
+     * N.b. searchHelper.destroy() is called via
+     * WebappListener.requestDestroyed() on presence of an attribute,
+     * REQUEST_ATTR, set by the following.
+     */
     SearchHelper searchHelper = cfg.prepareSearch();
-    // N.b. searchHelper.destroy() is called via
-    // WebappListener.requestDestroyed() on presence of the following
-    // REQUEST_ATTR.
-    request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     // notify suggester that query was searched
     SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);

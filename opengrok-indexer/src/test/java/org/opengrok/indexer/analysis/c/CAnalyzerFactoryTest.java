@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.c;
 
@@ -59,15 +59,6 @@ public class CAnalyzerFactoryTest {
     private static Ctags ctags;
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
-
-    private static StreamSource getStreamSource(final String fname) {
-        return new StreamSource() {
-            @Override
-            public InputStream getStream() throws IOException {
-                return new FileInputStream(fname);
-            }
-        };
-    }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -110,7 +101,7 @@ public class CAnalyzerFactoryTest {
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
-        analyzer.analyze(doc, getStreamSource(path), xrefOut);
+        analyzer.analyze(doc, StreamSource.fromFile(f), xrefOut);
 
         IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
         assertNotNull(scopesField);

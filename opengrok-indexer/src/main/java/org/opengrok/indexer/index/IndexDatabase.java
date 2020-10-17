@@ -23,14 +23,11 @@
  */
 package org.opengrok.indexer.index;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -118,6 +115,7 @@ public class IndexDatabase {
         (File p1, File p2) -> p1.getName().compareTo(p2.getName());
 
     private static final Set<String> CHECK_FIELDS;
+    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private final Object INSTANCE_LOCK = new Object();
 
@@ -129,7 +127,7 @@ public class IndexDatabase {
     private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
             Comparator.comparingInt(String::length).thenComparing(o -> o));
 
-    private Project project;
+    private final Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
@@ -138,7 +136,6 @@ public class IndexDatabase {
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
     private PathAccepter pathAccepter;
-    private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
     private CopyOnWriteArrayList<IndexChangedListener> listeners;
@@ -191,7 +188,7 @@ public class IndexDatabase {
      */
     static CountDownLatch updateAll(IndexChangedListener listener)
             throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
@@ -202,8 +199,7 @@ public class IndexDatabase {
             dbs.add(new IndexDatabase());
         }
 
-        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         CountDownLatch latch = new CountDownLatch(dbs.size());
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
@@ -236,7 +232,6 @@ public class IndexDatabase {
      * @param paths list of paths to be indexed
      */
     public static void update(IndexChangedListener listener, List<String> paths) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -291,7 +286,6 @@ public class IndexDatabase {
     @SuppressWarnings("PMD.CollapsibleIfStatements")
     private void initialize() throws IOException {
         synchronized (INSTANCE_LOCK) {
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
             if (project != null) {
                 indexDir = new File(indexDir, project.getPath());
@@ -307,7 +301,6 @@ public class IndexDatabase {
             lockfact = pickLockFactory(env);
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
             pathAccepter = env.getPathAccepter();
-            analyzerGuru = new AnalyzerGuru();
             xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
@@ -332,7 +325,7 @@ public class IndexDatabase {
         } else if (directory.charAt(0) != '/') {
             directory = "/" + directory;
         }
-        File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), directory);
+        File file = new File(env.getSourceRootFile(), directory);
         if (file.exists()) {
             directories.add(directory);
             return true;
@@ -341,15 +334,13 @@ public class IndexDatabase {
     }
 
     private void showFileCount(String dir, IndexDownArgs args) {
-        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+        if (env.isPrintProgress()) {
             LOGGER.log(Level.INFO, String.format("Need to process: %d files for %s",
                     args.cur_count, dir));
         }
     }
 
     private void markProjectIndexed(Project project) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
         // Successfully indexed the project. The message is sent even if
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
@@ -390,8 +381,6 @@ public class IndexDatabase {
             running = true;
             interrupted = false;
         }
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         reader = null;
         writer = null;
@@ -535,7 +524,6 @@ public class IndexDatabase {
      */
     static CountDownLatch optimizeAll() throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         if (env.hasProjects()) {
             for (Project project : env.getProjectList()) {
@@ -658,7 +646,6 @@ public class IndexDatabase {
      * @param path path to file under source root
      */
     private void removeXrefFile(String path) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File xrefFile = whatXrefFile(path, env.isCompressXref());
         PendingFileDeletion pending = new PendingFileDeletion(
             xrefFile.getAbsolutePath());
@@ -708,8 +695,7 @@ public class IndexDatabase {
     private void addFile(File file, String path, Ctags ctags)
             throws IOException, InterruptedException {
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        AbstractAnalyzer fa = getAnalyzerFor(file, path);
+        AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(file, path, true);
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -726,7 +712,7 @@ public class IndexDatabase {
 
         Document doc = new Document();
         try (Writer xrefOut = newXrefWriter(fa, path)) {
-            analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+            AnalyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
                 new Object[]{path, e.getMessage()});
@@ -757,14 +743,6 @@ public class IndexDatabase {
         setDirty();
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());
-        }
-    }
-
-    private AbstractAnalyzer getAnalyzerFor(File file, String path)
-            throws IOException {
-        try (InputStream in = new BufferedInputStream(
-                new FileInputStream(file))) {
-            return AnalyzerGuru.getAnalyzer(in, path);
         }
     }
 
@@ -849,7 +827,6 @@ public class IndexDatabase {
         }
 
         // this is an unversioned file, check if it should be indexed
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean res = !env.isIndexVersionedFilesOnly();
         if (!res) {
             LOGGER.log(Level.FINER, "not accepting unversioned {0}",
@@ -918,7 +895,6 @@ public class IndexDatabase {
         String absolute1 = absolute.toString();
         String canonical1 = canonical.getPath();
         boolean isCanonicalDir = canonical.isDirectory();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexedSymlink indexed1;
         String absolute0;
 
@@ -1072,7 +1048,6 @@ public class IndexDatabase {
      * @return true if the file is local to the current repository
      */
     private boolean isLocal(String path) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String srcRoot = env.getSourceRootPath();
 
         if (path.startsWith(srcRoot + File.separator)) {
@@ -1219,8 +1194,7 @@ public class IndexDatabase {
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
         AtomicInteger alreadyClosedCounter = new AtomicInteger();
-        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer();
+        IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
@@ -1342,7 +1316,6 @@ public class IndexDatabase {
      */
     public static Set<String> getAllFiles(List<String> subFiles) throws IOException {
         Set<String> files = new HashSet<>();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
@@ -1442,7 +1415,6 @@ public class IndexDatabase {
     static void listFrequentTokens(List<String> subFiles) throws IOException {
         final int limit = 4;
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
                 for (Project project : env.getProjectList()) {
@@ -1508,8 +1480,6 @@ public class IndexDatabase {
      */
     public static IndexReader getIndexReader(String path) {
         IndexReader ret = null;
-
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
 
         if (env.hasProjects()) {
@@ -1565,7 +1535,7 @@ public class IndexDatabase {
      */
     public static Document getDocument(File file)
             throws IOException, ParseException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         String path;
         try {
             path = env.getPathRelativeToSourceRoot(file);
@@ -1639,7 +1609,7 @@ public class IndexDatabase {
      */
     private Writer newXrefWriter(AbstractAnalyzer fa, String path)
             throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         if (env.isGenerateHtml() && isXrefWriter(fa)) {
             boolean compressed = env.isCompressXref();
             File xrefFile = whatXrefFile(path, compressed);
@@ -1710,16 +1680,15 @@ public class IndexDatabase {
     }
 
     /**
-     * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
-     * or return a value to indicate mismatch.
+     * Verify TABSIZE, validate AnalyzerGuru version together with Analyzer
+     * version, and recheck huge text file constraint -- or return a value to
+     * indicate mismatch.
      * @param file the source file object
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean checkSettings(File file,
-                                  String path) throws IOException {
+    private boolean checkSettings(File file, String path) throws IOException {
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean outIsXrefWriter = false;
         int reqTabSize = project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0;
@@ -1761,8 +1730,7 @@ public class IndexDatabase {
                     break;
                 }
 
-                AnalyzerFactory fac =
-                        AnalyzerGuru.findByFileTypeName(fileTypeName);
+                AnalyzerFactory fac = AnalyzerGuru.findByFileTypeName(fileTypeName);
                 if (fac != null) {
                     fa = fac.getAnalyzer();
                 }
@@ -1774,7 +1742,7 @@ public class IndexDatabase {
                  */
                 LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
 
-                fa = getAnalyzerFor(file, path);
+                fa = AnalyzerGuru.getAnalyzer(file, path, false);
                 fileTypeName = fa.getFileTypeName();
                 String oldTypeName = doc.get(QueryBuilder.TYPE);
                 if (!fileTypeName.equals(oldTypeName)) {
@@ -1797,7 +1765,27 @@ public class IndexDatabase {
                 return false;
             }
 
+            // If it is a Huge Text file, re-check constraints.
+            if (AnalyzerGuru.getHugeTextFileTypeName().equals(fileTypeName) &&
+                    file.length() < env.getHugeTextThresholdBytes()) {
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, "{0} no longer qualifies: {1}",
+                            new Object[]{fileTypeName, path});
+                }
+                return false;
+            }
+
             if (fa != null) {
+                // If the Genre is PLAIN, re-check Huge Text file constraints.
+                if (AbstractAnalyzer.Genre.PLAIN.equals(fa.getGenre()) &&
+                        file.length() >= env.getHugeTextThresholdBytes()) {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.log(Level.WARNING, "{0} is now huge text: {1}",
+                                new Object[]{fileTypeName, path});
+                    }
+                    return false;
+                }
+
                 outIsXrefWriter = isXrefWriter(fa);
             }
 
@@ -1840,7 +1828,6 @@ public class IndexDatabase {
     }
 
     private boolean xrefExistsFor(String path) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File xrefFile = whatXrefFile(path, env.isCompressXref());
         if (!xrefFile.exists()) {
             LOGGER.log(Level.FINEST, "Missing {0}", xrefFile);

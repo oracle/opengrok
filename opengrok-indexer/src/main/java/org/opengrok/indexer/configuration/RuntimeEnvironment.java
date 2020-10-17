@@ -1359,6 +1359,38 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Gets the configured number of bytes at which a plain-text file will be
+     * analyzed as a huge text data file and be ineligible for xref.
+     */
+    public int getHugeTextThresholdBytes() {
+        return syncReadConfiguration(Configuration::getHugeTextThresholdBytes);
+    }
+
+    /**
+     * Sets the configured number of bytes at which a plain-text file will be
+     * analyzed as a huge text data file and be ineligible for xref.
+     */
+    public void setHugeTextThresholdBytes(int hugeTextThresholdBytes) {
+        syncWriteConfiguration(hugeTextThresholdBytes, Configuration::setHugeTextThresholdBytes);
+    }
+
+    /**
+     * Gets the configured number of characters to analyze from a huge text
+     * data file.
+     */
+    public int getHugeTextLimitCharacters() {
+        return syncReadConfiguration(Configuration::getHugeTextLimitCharacters);
+    }
+
+    /**
+     * Sets the configured number of characters to analyze from a huge text
+     * data file.
+     */
+    public void setHugeTextLimitCharacters(int hugeTextLimitCharacters) {
+        syncWriteConfiguration(hugeTextLimitCharacters, Configuration::setHugeTextLimitCharacters);
+    }
+
+    /**
      * Read an configuration file and set it as the current configuration.
      *
      * @param file the file to read

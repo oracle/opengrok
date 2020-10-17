@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.archive;
@@ -47,7 +47,7 @@ public class ZipAnalyzerFactoryTest {
         assertNotNull("zip.bin should be available,", res);
 
         // assert that it is matched
-        AnalyzerFactory fac = AnalyzerGuru.find(res);
+        AnalyzerFactory fac = AnalyzerGuru.getAnalyzerFactory(res, AnalyzerGuru.ANONYMOUS_NAME);
         assertNotNull("zip.bin should have factory", fac);
         assertSame("should be ZipAnalyzerFactory", fac.getClass(),
             ZipAnalyzerFactory.class);

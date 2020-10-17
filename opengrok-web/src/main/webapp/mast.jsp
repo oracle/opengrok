@@ -1,6 +1,4 @@
 <%--
-$Id$
-
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -20,12 +18,9 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
-
---%><%--
+Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
 After include you are here: /body/div#page/div#content/
-
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.opengrok.indexer.web.messages.MessagesContainer"%>
@@ -71,7 +66,7 @@ include file="httpheader.jspf"
         %><body>
 <script type="text/javascript">/* <![CDATA[ */
     document.rev = function() { return getParameter("r"); };
-    document.annotate = <%= PageConfig.get(request).annotate() %>;
+    document.annotate = <%= PageConfig.get(request).shouldAnnotate() %>;
     document.domReady.push(function() { domReadyMast(); });
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>

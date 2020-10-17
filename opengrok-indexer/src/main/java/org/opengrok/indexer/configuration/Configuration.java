@@ -76,6 +76,8 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
     public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
+    public static final int HUGE_TEXT_THRESHOLD_BYTES_DEFAULT = 1_000_000;
+    public static final int HUGE_TEXT_LIMIT_CHARACTERS_DEFAULT = 5_000_000;
 
     /**
      * A check if a pattern contains at least one pair of parentheses meaning
@@ -303,6 +305,9 @@ public final class Configuration {
 
     private Set<String> disabledRepositories;
 
+    private int hugeTextThresholdBytes;
+    private int hugeTextLimitCharacters;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -528,6 +533,8 @@ public final class Configuration {
         setHistoryCacheTime(30);
         setHistoryEnabled(true);
         setHitsPerPage(25);
+        setHugeTextLimitCharacters(HUGE_TEXT_LIMIT_CHARACTERS_DEFAULT);
+        setHugeTextThresholdBytes(HUGE_TEXT_THRESHOLD_BYTES_DEFAULT);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
         setIndexVersionedFilesOnly(false);
@@ -1334,6 +1341,37 @@ public final class Configuration {
 
     public void setDisabledRepositories(Set<String> disabledRepositories) {
         this.disabledRepositories = disabledRepositories;
+    }
+
+    /**
+     * Gets the number of bytes at which a plain-text file will be analyzed
+     * as a huge text data file and be ineligible for xref. Default is 1_000_000.
+     */
+    public int getHugeTextThresholdBytes() {
+        return hugeTextThresholdBytes;
+    }
+
+    /**
+     * Sets the number of bytes at which a plain-text file will be analyzed
+     * as a huge text data file and be ineligible for xref.
+     */
+    public void setHugeTextThresholdBytes(int value) {
+        hugeTextThresholdBytes = Math.max(value, 0);
+    }
+
+    /**
+     * Gets the number of characters to analyze from a huge text data file.
+     * Default is 5_000_000.
+     */
+    public int getHugeTextLimitCharacters() {
+        return hugeTextLimitCharacters;
+    }
+
+    /**
+     * Sets the number of characters to analyze from a huge text data file.
+     */
+    public void setHugeTextLimitCharacters(int value) {
+        hugeTextLimitCharacters = Math.max(value, 0);
     }
 
     /**

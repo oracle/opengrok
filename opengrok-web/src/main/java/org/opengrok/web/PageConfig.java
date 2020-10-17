@@ -266,7 +266,7 @@ public final class PageConfig {
                     + getUriEncodedPath() + "\">history</a>";
             return data;
         }
-        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
+        data.genre = AnalyzerGuru.getGenre(getResourceFile(), getResourceFile().getName());
 
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
@@ -298,14 +298,11 @@ public final class PageConfig {
                  * version.
                  */
                 for (int i = 0; i < 2 && data.genre == null; i++) {
-                    try {
-                        data.genre = AnalyzerGuru.getGenre(in[i]);
-                    } catch (IOException e) {
-                        data.errorMsg = "Unable to determine the file type: "
-                                + Util.htmlize(e.getMessage());
-                    }
+                    data.genre = AnalyzerGuru.getGenre(in[i], getResourceFile().getName());
                 }
-
+                if (data.genre == null) {
+                    data.errorMsg = "Unable to determine the file type.";
+                }
                 if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
                     return data;
                 }
@@ -731,12 +728,19 @@ public final class PageConfig {
      *
      * @return {@code true} if annotation is desired and available.
      */
-    public boolean annotate() {
+    public boolean shouldAnnotate() {
         if (annotate == null) {
-            annotate = hasAnnotations()
-                    && Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
+            annotate = wantsAnnotation() && hasAnnotations();
         }
         return annotate;
+    }
+
+    /**
+     * Gets a value indicating if the user submitted an affirmative value for
+     * the {@link QueryParameters#ANNOTATION_PARAM}.
+     */
+    public boolean wantsAnnotation() {
+        return Boolean.parseBoolean(req.getParameter(QueryParameters.ANNOTATION_PARAM));
     }
 
     /**
@@ -746,7 +750,7 @@ public final class PageConfig {
      * the cached annotation otherwise.
      */
     public Annotation getAnnotation() {
-        if (isDir() || getResourcePath().equals("/") || !annotate()) {
+        if (isDir() || getResourcePath().equals("/") || !shouldAnnotate()) {
             return null;
         }
         if (annotation != null) {
@@ -1488,6 +1492,11 @@ public final class PageConfig {
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
+     * <p>
+     * The result is stored as a request attribute keyed to
+     * {@link SearchHelper#REQUEST_ATTR} for later cleanup via
+     * {@link SearchHelper#destroy()}. Any object already set will have
+     * {@link SearchHelper#destroy()} called.
      *
      * @return a search helper.
      */
@@ -1519,9 +1528,21 @@ public final class PageConfig {
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
+     * <p>
+     * The result is stored as a request attribute keyed to
+     * {@link SearchHelper#REQUEST_ATTR} for later cleanup via
+     * {@link SearchHelper#destroy()}. Any object already set will have
+     * {@link SearchHelper#destroy()} called.
+     *
      * @return a search helper.
      */
     public SearchHelper prepareInternalSearch() {
+        Object cached = req.getAttribute(SearchHelper.REQUEST_ATTR);
+        if (cached != null) {
+            req.setAttribute(SearchHelper.REQUEST_ATTR, null);
+            ((SearchHelper) cached).destroy();
+        }
+
         SearchHelper sh = new SearchHelper();
         sh.dataRoot = getDataRoot(); // throws Exception if none-existent
         sh.order = SortOrder.RELEVANCY;
@@ -1537,6 +1558,13 @@ public final class PageConfig {
         sh.sourceRoot = new File(getSourceRootPath());
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
         sh.noRedirect = xrValue != null && !xrValue.isEmpty();
+
+        /*
+         * N.b. searchHelper.destroy() is called via
+         * WebappListener.requestDestroyed() on presence of the following
+         * REQUEST_ATTR.
+         */
+        req.setAttribute(SearchHelper.REQUEST_ATTR, sh);
         return sh;
     }
 
@@ -1776,7 +1804,9 @@ public final class PageConfig {
                         // last timestamp value
                         getEnv().getDateForLastIndexRun() != null ? getEnv().getDateForLastIndexRun().getTime() : 0,
                         // OpenGrok version has changed since the last time
-                        Info.getVersion()
+                        Info.getVersion(),
+                        // Whether the user indicated to annotate
+                        wantsAnnotation()
                 )
         );
 

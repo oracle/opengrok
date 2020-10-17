@@ -27,14 +27,16 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
@@ -43,17 +45,9 @@ import org.opengrok.indexer.search.QueryBuilder;
  * Created on September 22, 2005
  * @author Chandan
  */
-public class BZip2Analyzer extends FileAnalyzer {
+public class BZip2Analyzer extends CompressedAnalyzer {
 
-    private Genre g;
-
-    @Override
-    public Genre getGenre() {
-        if (g != null) {
-            return g;
-        }
-        return super.getGenre();
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(BZip2Analyzer.class);
 
     protected BZip2Analyzer(AnalyzerFactory factory) {
         super(factory);
@@ -71,11 +65,11 @@ public class BZip2Analyzer extends FileAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180111_00
+     * @return 20200417_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180111_00; // Edit comment above too!
+        return 20200417_00; // Edit comment above too!
     }
 
     @Override
@@ -92,20 +86,12 @@ public class BZip2Analyzer extends FileAnalyzer {
             try (InputStream in = bzSrc.getStream()) {
                 fa = AnalyzerGuru.getAnalyzer(in, newname);
             }
-            if (!(fa instanceof BZip2Analyzer)) {
-                if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-                    this.g = Genre.XREFABLE;
-                } else {
-                    this.g = Genre.DATA;
-                }
-                fa.analyze(doc, bzSrc, xrefOut);
-                if (doc.get(QueryBuilder.T) != null) {
-                    doc.removeField(QueryBuilder.T);
-                    if (g == Genre.XREFABLE) {
-                        doc.add(new Field(QueryBuilder.T, g.typeName(),
-                                AnalyzerGuru.string_ft_stored_nanalyzed_norms));
-                    }
-                }
+            if (fa == null) {
+                this.g = Genre.DATA;
+                LOGGER.log(Level.WARNING, "Did not analyze {0} detected as data.", newname);
+                //TODO we could probably wrap tar analyzer here, need to do research on reader coming from gzis ...
+            } else if (!(fa instanceof BZip2Analyzer)) {
+                analyzeUncompressed(doc, xrefOut, fa, bzSrc);
             }
         }
     }
@@ -125,6 +111,11 @@ public class BZip2Analyzer extends FileAnalyzer {
                 } else {
                     throw new IOException("Not BZIP2 format");
                 }
+            }
+
+            @Override
+            public String getSourceIdentifier() {
+                return src.getSourceIdentifier();
             }
         };
     }    
