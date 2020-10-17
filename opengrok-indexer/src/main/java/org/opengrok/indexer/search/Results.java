@@ -45,7 +45,6 @@ import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
@@ -82,12 +81,10 @@ public final class Results {
      * @param startIdx the index of the first hit to check
      * @param stopIdx the index of the last hit to check
      * @return a (directory, hitDocument) hashmap
-     * @throws CorruptIndexException
-     * @throws IOException
      */
     private static Map<String, ArrayList<Integer>> createMap(
         IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
-            throws CorruptIndexException, IOException {
+            throws IOException {
 
         LinkedHashMap<String, ArrayList<Integer>> dirHash =
                 new LinkedHashMap<>();
@@ -201,7 +198,7 @@ public final class Results {
             }
 
             int tabSize = sh.getTabSize(p);
-            PrintPlainFinalArgs fargs = new PrintPlainFinalArgs(out, sh, env,
+            PrintPlainFinalArgs fargs = new PrintPlainFinalArgs(out, sh,
                 xrefPrefix, tabSize, morePrefix);
 
             out.write("</td></tr>");
@@ -272,7 +269,7 @@ public final class Results {
 
         fargs.shelp.sourceContext.toggleAlt();
 
-        boolean didPresentNew = fargs.shelp.sourceContext.getContext2(fargs.env,
+        boolean didPresentNew = fargs.shelp.sourceContext.getContext2(
             fargs.shelp.searcher, docId, fargs.out, fargs.xrefPrefix,
             fargs.morePrefix, true, fargs.tabSize);
 
@@ -321,17 +318,15 @@ public final class Results {
     private static class PrintPlainFinalArgs {
         final Writer out;
         final SearchHelper shelp;
-        final RuntimeEnvironment env;
         final String xrefPrefix;
         final String morePrefix;
         final int tabSize;
 
         PrintPlainFinalArgs(Writer out, SearchHelper shelp,
-                RuntimeEnvironment env, String xrefPrefix, int tabSize,
+                String xrefPrefix, int tabSize,
                 String morePrefix) {
             this.out = out;
             this.shelp = shelp;
-            this.env = env;
             this.xrefPrefix = xrefPrefix;
             this.morePrefix = morePrefix;
             this.tabSize = tabSize;

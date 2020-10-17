@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
@@ -45,6 +45,7 @@ import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
@@ -53,7 +54,7 @@ import org.opengrok.indexer.web.Util;
  * Represents a subclass of {@link UnifiedHighlighter} with customizations for
  * OpenGrok.
  */
-public class OGKUnifiedHighlighter extends UnifiedHighlighter {
+class OGKUnifiedHighlighter extends UnifiedHighlighter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         OGKUnifiedHighlighter.class);
@@ -67,21 +68,14 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     /**
      * Initializes an instance with
      * {@link UnifiedHighlighter#UnifiedHighlighter(org.apache.lucene.search.IndexSearcher, org.apache.lucene.analysis.Analyzer)}
-     * for the specified {@code indexSearcher} and {@code indexAnalyzer}, and
-     * stores the {@code env} for later use.
-     * @param env a required instance
+     * for the specified {@code indexSearcher} and {@code indexAnalyzer}.
      * @param indexSearcher a required instance
      * @param indexAnalyzer a required instance
      * @throws IllegalArgumentException if any argument is null
      */
-    public OGKUnifiedHighlighter(RuntimeEnvironment env,
-            IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
+    OGKUnifiedHighlighter(IndexSearcher indexSearcher, Analyzer indexAnalyzer) {
         super(indexSearcher, indexAnalyzer);
-
-        if (env == null) {
-            throw new IllegalArgumentException("env is null");
-        }
-        this.env = env;
+        env = RuntimeEnvironment.getInstance();
     }
 
     /**
@@ -109,9 +103,10 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     }
 
     /**
-     * Transiently arranges that {@link #getIndexAnalyzer()} returns a file type
-     * name-specific analyzer during a subsequent call of
-     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int, int)}.
+     * Calls
+     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int, int)}
+     * after first transiently arranging that {@link #getIndexAnalyzer()}
+     * returns a file type name-specific analyzer the call.
      * @param fields a defined instance
      * @param query a defined instance
      * @param docId a valid document ID
@@ -119,18 +114,31 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * @return a defined instance or else {@code null} if there are no results
      * @throws IOException if accessing the Lucene document fails
      */
-    public String highlightFieldsUnion(String[] fields, Query query,
+    String highlightFieldsUnion(String[] fields, Query query,
             int docId, int lineLimit) throws IOException {
-        /**
-         * Setting fileTypeName has to happen before getFieldHighlighter() is
-         * called by highlightFieldsAsObjects() so that the result of
-         * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
-         * influenced by fileTypeName.
-         */
-        Document doc = searcher.doc(docId);
-        fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
+        prepareToGetFieldHighlighter(docId);
         try {
             return highlightFieldsUnionWork(fields, query, docId, lineLimit);
+        } finally {
+            fileTypeName = null;
+        }
+    }
+
+    /**
+     * Calls
+     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int, int)}
+     * after first transiently arranging that {@link #getIndexAnalyzer()}
+     * returns a file type name-specific analyzer the call.
+     * @param fields a defined instance
+     * @param query a defined instance
+     * @param docId a valid document ID
+     * @return a defined instance or else {@code null} if there are no results
+     * @throws IOException if accessing the Lucene document fails
+     */
+    List<Hit> highlightFieldHits(String[] fields, Query query, int docId) throws IOException {
+        prepareToGetFieldHighlighter(docId);
+        try {
+            return highlightFieldHitsWork(fields, query, docId);
         } finally {
             fileTypeName = null;
         }
@@ -185,6 +193,41 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             }
         }
         return res.toString();
+    }
+
+    private List<Hit> highlightFieldHitsWork(String[] fields, Query query, int docId)
+            throws IOException {
+
+        int[] maxPassagesCopy = new int[fields.length];
+        // Effectively unlimited.
+        Arrays.fill(maxPassagesCopy, Short.MAX_VALUE);
+
+        List<Hit> res = null;
+        Map<String, Object[]> mappedRes = highlightFieldsAsObjects(fields, query,
+                new int[] {docId}, maxPassagesCopy);
+        for (Object[] hitsObjs : mappedRes.values()) {
+            for (Object obj : hitsObjs) {
+                /*
+                 * Empirical testing showed that the passage could be null if
+                 * the original source text is not available to the highlighter.
+                 */
+                if (obj != null) {
+                    if (!(obj instanceof List<?>)) {
+                        return res;
+                    }
+
+                    if (res == null) {
+                        res = new ArrayList<>();
+                    }
+                    for (Object element : (List<?>) obj) {
+                        if (element instanceof Hit) {
+                            res.add((Hit) element);
+                        }
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     /**
@@ -325,5 +368,16 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             StandardCharsets.UTF_8.name());
         BufferedReader bufrdr = new BufferedReader(bsrdr);
         return ExpandTabsReader.wrap(bufrdr, tabSize);
+    }
+
+    /**
+     * Setting fileTypeName has to happen before getFieldHighlighter() is
+     * called by highlightFieldsAsObjects() so that the result of
+     * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
+     * influenced by fileTypeName.
+     */
+    private void prepareToGetFieldHighlighter(int docId) throws IOException {
+        Document doc = searcher.doc(docId);
+        fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
     }
 }

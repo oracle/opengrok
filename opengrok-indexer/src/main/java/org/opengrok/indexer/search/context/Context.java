@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
@@ -46,6 +46,7 @@ import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.search.HitFormatter;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.Util;
@@ -60,6 +61,7 @@ public class Context {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
+    private final RuntimeEnvironment env;
     private final Query query;
     private final QueryBuilder qbuilder;
     private final LineMatcher[] m;
@@ -70,8 +72,7 @@ public class Context {
      * whose values tell if the field is case insensitive (true for
      * insensitivity, false for sensitivity).
      */
-    private static final Map<String, Boolean> TOKEN_FIELDS =
-            new HashMap<String, Boolean>();
+    private static final Map<String, Boolean> TOKEN_FIELDS = new HashMap<>();
     static {
         TOKEN_FIELDS.put(QueryBuilder.FULL, Boolean.TRUE);
         TOKEN_FIELDS.put(QueryBuilder.REFS, Boolean.FALSE);
@@ -90,6 +91,7 @@ public class Context {
             throw new IllegalArgumentException("qbuilder is null");
         }
 
+        this.env = RuntimeEnvironment.getInstance();
         this.query = query;
         this.qbuilder = qbuilder;
         QueryMatchers qm = new QueryMatchers();
@@ -115,7 +117,6 @@ public class Context {
     /**
      * Look for context for this instance's initialized query in a search result
      * {@link Document}, and output according to the parameters.
-     * @param env required environment
      * @param searcher required search that produced the document
      * @param docId document ID for producing context
      * @param dest required target to write
@@ -132,7 +133,7 @@ public class Context {
      * re-indexing
      * @return Did it get any matching context?
      */
-    public boolean getContext2(RuntimeEnvironment env, IndexSearcher searcher,
+    public boolean getContext2(IndexSearcher searcher,
         int docId, Appendable dest, String urlPrefix, String morePrefix,
         boolean limit, int tabSize) {
 
@@ -188,7 +189,7 @@ public class Context {
 
         ContextArgs args = new ContextArgs(env.getContextSurround(),
             env.getContextLimit());
-        /**
+        /*
          * Lucene adds to the following value in FieldHighlighter, so avoid
          * integer overflow by not using Integer.MAX_VALUE -- Short is good
          * enough.
@@ -202,9 +203,8 @@ public class Context {
         formatter.setMoreUrl(moreURL);
         formatter.setMoreLimit(linelimit);
 
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-            searcher, anz);
-        uhi.setBreakIterator(() -> new StrictLineBreakIterator());
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(searcher, anz);
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(tabSize);
 
@@ -226,6 +226,72 @@ public class Context {
             throw e;
         }
         return false;
+    }
+
+    /**
+     * Look for context for this instance's initialized query in a search result
+     * {@link Document}, and output according to the parameters.
+     * @param searcher required search that produced the document
+     * @param docId document ID for producing context
+     * @param tabSize optional positive tab size that must accord with the value
+     * used when indexing or else postings may be wrongly shifted until
+     * re-indexing
+     * @param filename the source document filename
+     * @return a defined instance if hits are found or {@code null}
+     */
+    public List<Hit> getHits(IndexSearcher searcher, int docId, int tabSize, String filename) {
+
+        if (isEmpty()) {
+            return null;
+        }
+
+        Document doc;
+        try {
+            doc = searcher.doc(docId);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR getting searcher doc(int)", e);
+            return null;
+        }
+
+        Definitions tags = null;
+        try {
+            IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+            if (tagsField != null) {
+                tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+            }
+        } catch (ClassNotFoundException | IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR Definitions.deserialize(...)", e);
+            return null;
+        }
+
+        /*
+         * UnifiedHighlighter demands an analyzer "even if in some
+         * circumstances it isn't used"; here it is not meant to be used.
+         */
+        PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
+        AbstractAnalyzer anz = fac.getAnalyzer();
+
+        HitFormatter formatter = new HitFormatter();
+        formatter.setDefs(tags);
+        formatter.setFilename(filename);
+
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(searcher, anz);
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
+        uhi.setFormatter(formatter);
+        uhi.setTabSize(tabSize);
+
+        try {
+            List<String> fieldList = qbuilder.getContextFields();
+            String[] fields = fieldList.toArray(new String[0]);
+            return uhi.highlightFieldHits(fields, query, docId);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "ERROR highlightFieldHits(...)", e);
+            // Continue below.
+        } catch (Throwable e) {
+            LOGGER.log(Level.SEVERE, "ERROR highlightFieldHits(...)", e);
+            throw e;
+        }
+        return null;
     }
 
     /**
@@ -251,11 +317,15 @@ public class Context {
 
     private boolean alt = true;
 
-    public boolean getContext(Reader in, Writer out, String urlPrefix,
+    /**
+     * This method exists only for testing.
+     */
+    boolean getContext(Reader in, Writer out, String urlPrefix,
         String morePrefix, String path, Definitions tags,
         boolean limit, boolean isDefSearch, List<Hit> hits) {
         return getContext(in, out, urlPrefix, morePrefix, path, tags, limit, isDefSearch, hits, null);
     }
+
     /**
      * ???.
      * Closes the given <var>in</var> reader on return.
@@ -285,11 +355,11 @@ public class Context {
                 (urlPrefix == null) ? "" : Util.URIEncodePath(urlPrefix);
         String pathE = Util.URIEncodePath(path);
         if (tags != null) {
-            matchingTags = new TreeMap<Integer, String[]>();
+            matchingTags = new TreeMap<>();
             try {
                 for (Definitions.Tag tag : tags.getTags()) {
-                    for (int i = 0; i < m.length; i++) {
-                        if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
+                    for (LineMatcher lineMatcher : m) {
+                        if (lineMatcher.match(tag.symbol) == LineMatcher.MATCHED) {
                             String scope = null;
                             String scopeUrl = null;
                             if (scopes != null) {
@@ -359,7 +429,7 @@ public class Context {
                 }
             }
         }
-        /**
+        /*
          * Just to get the matching tag send a null in
          */
         if (in == null) {
@@ -369,7 +439,6 @@ public class Context {
         PlainLineTokenizer tokens = new PlainLineTokenizer(null);
         boolean truncated = false;
         boolean lim = limit;
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (!env.isQuickContextScan()) {
             lim = false;
         }
@@ -419,8 +488,8 @@ public class Context {
             int matchedLines = 0;
             while ((token = tokens.yylex()) != null && (!lim ||
                     matchedLines < limit_max_lines)) {
-                for (int i = 0; i < m.length; i++) {
-                    matchState = m[i].match(token);
+                for (LineMatcher lineMatcher : m) {
+                    matchState = lineMatcher.match(token);
                     if (matchState == LineMatcher.MATCHED) {
                         if (!isDefSearch) {
                             tokens.printContext();

@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
@@ -31,7 +31,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -91,6 +90,9 @@ public class SearchEngine {
      */
     public static final Version LUCENE_VERSION = Version.LATEST;
     public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major + "_" + LUCENE_VERSION.minor + "_" + LUCENE_VERSION.bugfix;
+
+    private final RuntimeEnvironment env;
+
     /**
      * Holds value of property definition.
      */
@@ -129,20 +131,25 @@ public class SearchEngine {
     private final char[] content = new char[1024 * 8];
     private String source;
     private String data;
-    int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
-    int cachePages = RuntimeEnvironment.getInstance().getCachePages();
-    int totalHits = 0;
+    private int hitsPerPage;
+    private int cachePages;
+    private int totalHits;
     private ScoreDoc[] hits;
     private TopScoreDocCollector collector;
+    private IndexReader reader;
+    private SettingsHelper settingsHelper;
     private IndexSearcher searcher;
-    boolean allCollected;
+    private boolean allCollected;
     private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
 
     /**
      * Creates a new instance of SearchEngine.
      */
     public SearchEngine() {
+        env = RuntimeEnvironment.getInstance();
         docs = new ArrayList<>();
+        hitsPerPage = env.getHitsPerPage();
+        cachePages = env.getCachePages();
     }
 
     /**
@@ -178,12 +185,12 @@ public class SearchEngine {
      * @param paging whether to use paging (if yes, first X pages will load
      * faster)
      * @param root which db to search
-     * @throws IOException
      */
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
-        IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
-        searcher = new IndexSearcher(ireader);
-        searchIndex(searcher, paging);
+        reader = DirectoryReader.open(FSDirectory.open(root.toPath()));
+        settingsHelper = new SettingsHelper(reader);
+        searcher = new IndexSearcher(reader);
+        searchReader(paging);
     }
 
     /**
@@ -191,7 +198,6 @@ public class SearchEngine {
      * @param paging whether to use paging (if yes, first X pages will load
      * faster)
      * @param root list of projects to search
-     * @throws IOException
      */
     private void searchMultiDatabase(List<Project> root, boolean paging) throws IOException {
         SortedSet<String> projects = new TreeSet<>();
@@ -202,13 +208,14 @@ public class SearchEngine {
         // We use MultiReader even for single project. This should
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
-        MultiReader searchables = RuntimeEnvironment.getInstance().
-            getMultiReader(projects, searcherList);
+        MultiReader searchables = env.getMultiReader(projects, searcherList);
+        reader = searchables;
+        settingsHelper = new SettingsHelper(reader);
         searcher = new IndexSearcher(searchables);
-        searchIndex(searcher, paging);
+        searchReader(paging);
     }
 
-    private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
+    private void searchReader(boolean paging) throws IOException {
         collector = TopScoreDocCollector.create(hitsPerPage * cachePages, Short.MAX_VALUE);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
@@ -276,7 +283,7 @@ public class SearchEngine {
      * @return The number of hits
      */
     public int search(List<Project> projects) {
-        return search(projects, new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
+        return search(projects, new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 
     /**
@@ -293,7 +300,6 @@ public class SearchEngine {
      * @return The number of hits
      */
     public int search() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         return search(
                 env.hasProjects() ? env.getProjectList() : new ArrayList<>(),
                 new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
@@ -311,8 +317,8 @@ public class SearchEngine {
      * @return The number of hits
      */
     private int search(List<Project> projects, File root) {
-        source = RuntimeEnvironment.getInstance().getSourceRootPath();
-        data = RuntimeEnvironment.getInstance().getDataRootPath();
+        source = env.getSourceRootPath();
+        data = env.getDataRootPath();
         docs.clear();
 
         QueryBuilder newBuilder = createQueryBuilder();
@@ -422,61 +428,55 @@ public class SearchEngine {
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
             hits = collector.topDocs().scoreDocs;
-            Document d = null;
             for (int i = start; i < hits.length; i++) {
                 int docId = hits[i].doc;
+                Document d = null;
                 try {
                     d = searcher.doc(docId);
                 } catch (Exception e) {
-                    LOGGER.log(
-                            Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+                    LOGGER.log(Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
                 }
                 docs.add(d);
             }
             allCollected = true;
         }
 
-        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever
+        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever form
         // form they need, this way we could get rid of docs
         // the only problem is that count of docs is usually smaller than number of results
-        for (int ii = start; ii < end; ++ii) {
-            boolean alt = (ii % 2 == 0);
+        for (int i = start; i < end; ++i) {
+            boolean alt = (i % 2 == 0);
             boolean hasContext = false;
             try {
-                Document doc = docs.get(ii);
-                String filename = doc.get(QueryBuilder.PATH);
+                int docId = hits[i].doc;
+                Document doc = docs.get(i);
+                if (doc == null) {
+                    continue;
+                }
 
+                String filename = doc.get(QueryBuilder.PATH);
                 AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(doc.get(QueryBuilder.T));
-                Definitions tags = null;
-                IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
-                if (tagsField != null) {
-                    tags = Definitions.deserialize(tagsField.binaryValue().bytes);
-                }
-                Scopes scopes = null;
-                IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
-                if (scopesField != null) {
-                    scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
-                }
-                int nhits = docs.size();
 
                 if (sourceContext != null) {
                     sourceContext.toggleAlt();
+                    Project proj = Project.getProject(filename);
                     try {
                         if (AbstractAnalyzer.Genre.PLAIN == genre && (source != null)) {
-                            // SRCROOT is read with UTF-8 as a default.
-                            hasContext = sourceContext.getContext(
-                                new InputStreamReader(new FileInputStream(
-                                source + filename), StandardCharsets.UTF_8),
-                                null, null, null, filename, tags, nhits > 100,
-                                false, ret, scopes);
+                            int tabSize = settingsHelper.getTabSize(proj);
+                            List<Hit> contextHits = sourceContext.getHits(
+                                    searcher, docId, tabSize, filename);
+                            if (contextHits != null) {
+                                hasContext = true;
+                                ret.addAll(contextHits);
+                            }
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
-                            /**
+                            /*
                              * For backward compatibility, read the
                              * OpenGrok-produced document using the system
                              * default charset.
                              */
-                            try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
+                            try (Reader r = env.isCompressXref()
                                     ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(
                                             TandemPath.join(data + Prefix.XREF_P + filename, ".gz"))))))
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
@@ -499,11 +499,11 @@ public class SearchEngine {
                             }
                         } else {
                             LOGGER.log(Level.WARNING, "Unknown genre: {0} for {1}", new Object[]{genre, filename});
-                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
+                            hasContext = getFallbackContext(ret, doc, filename);
                         }
                     } catch (FileNotFoundException exp) {
                         LOGGER.log(Level.WARNING, "Couldn''t read summary from {0} ({1})", new Object[]{filename, exp.getMessage()});
-                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
+                        hasContext = getFallbackContext(ret, doc, filename);
                     }
                 }
                 if (historyContext != null) {
@@ -635,5 +635,23 @@ public class SearchEngine {
      */
     public void setType(String fileType) {
         this.type = fileType;
+    }
+
+    private boolean getFallbackContext(List<Hit> ret, Document doc, String filename)
+            throws ClassNotFoundException, IOException {
+        Definitions tags = null;
+        IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+        if (tagsField != null) {
+            tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+        }
+
+        Scopes scopes = null;
+        IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
+        if (scopesField != null) {
+            scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+        }
+
+        return sourceContext.getContext(null, null, null, null, filename, tags,
+                false, false, ret, scopes);
     }
 }

@@ -135,7 +135,7 @@ public class SearchAndContextFormatterTest {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(
             instance.getSearcher(), anz);
         uhi.setBreakIterator(() -> new StrictLineBreakIterator());
         uhi.setFormatter(formatter);

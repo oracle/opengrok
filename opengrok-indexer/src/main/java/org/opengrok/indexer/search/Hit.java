@@ -21,6 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * portions copyright 2005 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
@@ -31,16 +32,16 @@ import java.io.File;
  *
  * @author Trond Norbye
  */
-public class Hit implements Comparable<Hit> {
+public class Hit {
     /**
      * Holds value of property filename.
      */
-    private String filename;
+    private final String filename;
 
     /**
      * Holds value of property directory.
      */
-    private String directory;
+    private final String directory;
 
     /**
      * Holds value of property line.
@@ -65,17 +66,29 @@ public class Hit implements Comparable<Hit> {
     /**
      * path relative to source root.
      */
-    private String path;
+    private final String path;
 
     /**
-     * Creates a new instance of Hit.
+     * A phrase match's left offset (inclusive) within the line.
      */
-    public Hit() {
-        this(null, null, null, false, false);
+    private Integer left;
+
+    /**
+     * A phrase match's right offset (exclusive) within the line.
+     */
+    private Integer right;
+
+    /**
+     * Creates a new, possibly-defined instance.
+     *
+     * @param filename The name of the file this hit represents
+     */
+    public Hit(String filename) {
+        this(filename, null, null, false, false);
     }
 
     /**
-     * Creates a new instance of Hit.
+     * Creates a new, possibly-defined instance.
      *
      * @param filename The name of the file this hit represents
      * @param line The line containing the match
@@ -88,10 +101,16 @@ public class Hit implements Comparable<Hit> {
             File file = new File(filename);
             this.path = filename;
             this.filename = file.getName();
-            this.directory = file.getParent();
-            if (directory == null) {
+            final String parent = file.getParent();
+            if (parent == null) {
                 directory = "";
+            } else {
+                directory = parent;
             }
+        } else {
+            this.path = "";
+            this.filename = "";
+            this.directory = "";
         }
         this.line = line;
         this.lineno = lineno;
@@ -99,104 +118,38 @@ public class Hit implements Comparable<Hit> {
         this.alt = alt;
     }
 
-    /**
-     * Getter for property filename.
-     *
-     * @return Value of property filename.
-     */
     public String getFilename() {
         return this.filename;
     }
 
-    /**
-     * Getter for property path.
-     *
-     * @return Value of property path.
-     */
     public String getPath() {
         return this.path;
     }
 
-    /**
-     * Getter for property directory.
-     *
-     * @return Value of property directory
-     */
     public String getDirectory() {
         return this.directory;
     }
 
-    /**
-     * Setter for property filename.
-     *
-     * @param filename New value of property filename.
-     */
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    /**
-     * Getter for property line.
-     *
-     * @return Value of property line.
-     */
     public String getLine() {
         return this.line;
     }
 
-    /**
-     * Setter for property line.
-     *
-     * @param line New value of property line.
-     */
     public void setLine(String line) {
         this.line = line;
     }
 
-    /**
-     * Getter for property line no.
-     *
-     * @return Value of property line no.
-     */
     public String getLineno() {
         return this.lineno;
     }
 
-    /**
-     * Setter for property line no.
-     *
-     * @param lineno New value of property line no.
-     */
     public void setLineno(String lineno) {
         this.lineno = lineno;
     }
 
-    /**
-     * Compare this object to another hit (in order to implement the comparable interface).
-     *
-     * @param o The object to compare this object with
-     *
-     * @return the result of a toString().compareTo() of the filename
-     */
-    @Override
-    public int compareTo(Hit o) throws ClassCastException {
-        return filename.compareTo(o.filename);
-    }
-
-    /**
-     * Getter for property binary.
-     *
-     * @return Value of property binary.
-     */
     public boolean isBinary() {
         return this.binary;
     }
 
-    /**
-     * Setter for property binary.
-     *
-     * @param binary New value of property binary.
-     */
     public void setBinary(boolean binary) {
         this.binary = binary;
     }
@@ -206,19 +159,11 @@ public class Hit implements Comparable<Hit> {
      */
     private String tag;
 
-    /**
-     * Getter for property tag.
-     * @return Value of property tag.
-     */
     public String getTag() {
 
         return this.tag;
     }
 
-    /**
-     * Setter for property tag.
-     * @param tag New value of property tag.
-     */
     public void setTag(String tag) {
 
         this.tag = tag;
@@ -233,21 +178,30 @@ public class Hit implements Comparable<Hit> {
     }
 
     /**
-     * Check if two objects are equal. Only consider the {@code filename} field
-     * to match the return value of the {@link #compareTo(Hit)} method.
-     * @param o the object to compare with
-     * @return true if the filenames are equal
+     * Gets the left line offset (inclusive) of a phrase match.
      */
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Hit) {
-            return compareTo((Hit) o) == 0;
-        }
-        return false;
+    public Integer getLeft() {
+        return this.left;
     }
 
-    @Override
-    public int hashCode() {
-        return filename.hashCode();
+    /**
+     * Sets the left line offset (inclusive) of a phrase match.
+     */
+    public void setLeft(Integer left) {
+        this.left = left;
+    }
+
+    /**
+     * Gets the right line offset (exclusive) of a phrase match.
+     */
+    public Integer getRight() {
+        return this.right;
+    }
+
+    /**
+     * Sets the right line offset (exclusive) of a phrase match.
+     */
+    public void setRight(Integer right) {
+        this.right = right;
     }
 }

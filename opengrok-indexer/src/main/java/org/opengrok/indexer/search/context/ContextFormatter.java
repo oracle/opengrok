@@ -18,25 +18,23 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.search.context;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.search.uhighlight.PassageFormatter;
-import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.Definitions.Tag;
 import org.opengrok.indexer.analysis.Scopes;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.SearchFormatterBase;
 import org.opengrok.indexer.util.SourceSplitter;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.web.HtmlConsts;
@@ -46,22 +44,14 @@ import org.opengrok.indexer.web.Util;
  * Represents a subclass of {@link PassageFormatter} that uses
  * {@link PassageConverter}.
  */
-public class ContextFormatter extends PassageFormatter {
+public class ContextFormatter extends SearchFormatterBase {
 
     private static final String MORE_LABEL = "[all " + HtmlConsts.HELLIP + "]";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ContextFormatter.class);
 
-    /**
-     * Matches a non-word character.
-     */
-    private static final Pattern NONWORD_CHAR = Pattern.compile("(?U)\\W");
-
-    private final PassageConverter cvt;
-    private final List<String> marks = new ArrayList<>();
     private String url;
-    private Definitions defs;
     private Scopes scopes;
 
     /**
@@ -72,17 +62,11 @@ public class ContextFormatter extends PassageFormatter {
     private int moreLimit;
 
     /**
-     * Cached splitter, keyed by {@link #originalText}.
-     */
-    private SourceSplitter splitter;
-    private String originalText;
-
-    /**
      * Initializes a formatter for the specified arguments.
      * @param args required instance
      */
-    public ContextFormatter(ContextArgs args) {
-        this.cvt = new PassageConverter(args);
+    ContextFormatter(ContextArgs args) {
+        super(new PassageConverter(args));
     }
 
     /**
@@ -149,22 +133,6 @@ public class ContextFormatter extends PassageFormatter {
     }
 
     /**
-     * Gets the optional definitions.
-     * @return the defs
-     */
-    public Definitions getDefs() {
-        return defs;
-    }
-
-    /**
-     * Sets the optional definitions.
-     * @param value definitions
-     */
-    public void setDefs(Definitions value) {
-        this.defs = value;
-    }
-
-    /**
      * Gets the optional scopes to use.
      * @return the scopes
      */
@@ -197,12 +165,7 @@ public class ContextFormatter extends PassageFormatter {
             throw new IllegalStateException("Url property is null");
         }
 
-        if (this.originalText == null || !this.originalText.equals(
-                originalText)) {
-            splitter = new SourceSplitter();
-            splitter.reset(originalText);
-            this.originalText = originalText;
-        }
+        updateOriginalText(originalText);
 
         FormattedLines res = new FormattedLines();
         StringBuilder bld = new StringBuilder();
@@ -239,15 +202,7 @@ public class ContextFormatter extends PassageFormatter {
 
                     PhraseHighlight phi = lhi.getMarkup(hioff++);
 
-                    /*
-                     * If the highlight is a sub-string wholly within the
-                     * line, add it to the `marks' list.
-                     */
-                    if (phi.getLineStart() >= 0 &&
-                            phi.getLineEnd() <= line.length()) {
-                        marks.add(line.substring(phi.getLineStart(),
-                                phi.getLineEnd()));
-                    }
+                    checkIfMark(line, phi);
 
                     // Append any line text preceding the phrase highlight ...
                     if (phi.getLineStart() >= 0) {
@@ -272,7 +227,7 @@ public class ContextFormatter extends PassageFormatter {
                 finishLine(bld, lhi.getLineno(), marks);
                 // Regardless of true EOL, write a <br/>.
                 bld.append(HtmlConsts.BR);
-                /**
+                /*
                  * Appending a LF here would hurt the more.jsp view, while
                  * search.jsp (where getContext() does it) is indifferent -- so
                  * skip it.
@@ -351,31 +306,5 @@ public class ContextFormatter extends PassageFormatter {
                 }
             }
         }
-    }
-
-    /**
-     * Search the cross product of {@code linetags} and {@code marks} for any
-     * mark that starts with a {@link Tag#symbol} and where any subsequent
-     * character is a non-word ({@code (?U)\W}) character.
-     * @return a defined instance or {@code null}
-     */
-    private Tag findTagForMark(List<Tag> linetags, List<String> marks) {
-        for (Tag tag : linetags) {
-            if (tag.type != null) {
-                for (String mark : marks) {
-                    if (mark.startsWith(tag.symbol) && (mark.length() ==
-                            tag.symbol.length() || isNonWord(
-                                mark.charAt(tag.symbol.length())))) {
-                        return tag;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private static boolean isNonWord(char c) {
-        String cword = String.valueOf(c);
-        return NONWORD_CHAR.matcher(cword).matches();
     }
 }

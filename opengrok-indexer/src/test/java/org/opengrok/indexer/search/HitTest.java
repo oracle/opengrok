@@ -19,14 +19,17 @@
 
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-
 import java.io.File;
-
-import static org.junit.Assert.*;
 
 /**
  * Do basic sanity testing of the Hit class
@@ -37,10 +40,8 @@ public class HitTest {
 
     @Test
     public void testFilename() {
-        Hit instance = new Hit();
-        assertNull(instance.getFilename());
+        Hit instance = new Hit("a/b/foobar");
         String expResult = "foobar";
-        instance.setFilename(expResult);
         assertEquals(expResult, instance.getFilename());
     }
 
@@ -53,7 +54,7 @@ public class HitTest {
 
     @Test
     public void testLine() {
-        Hit instance = new Hit();
+        Hit instance = new Hit("a/b/c");
         assertNull(instance.getLine());
         String expResult = "This is a line of text";
         instance.setLine(expResult);
@@ -62,7 +63,7 @@ public class HitTest {
 
     @Test
     public void testLineno() {
-        Hit instance = new Hit();
+        Hit instance = new Hit("a/b");
         assertNull(instance.getLineno());
         String expResult = "12";
         instance.setLineno(expResult);
@@ -70,17 +71,8 @@ public class HitTest {
     }
 
     @Test
-    public void testCompareTo() {
-        Hit o1 = new Hit("/foo", null, null, false, false);
-        Hit o2 = new Hit("/foo", "hi", "there", false, false);
-        assertEquals(o2.compareTo(o1), o1.compareTo(o2));
-        o1.setFilename("bar");
-        assertFalse(o2.compareTo(o1) == o1.compareTo(o2));
-    }
-
-    @Test
     public void testBinary() {
-        Hit instance = new Hit();
+        Hit instance = new Hit("abc");
         assertFalse(instance.isBinary());
         instance.setBinary(true);
         assertTrue(instance.isBinary());
@@ -88,7 +80,7 @@ public class HitTest {
 
     @Test
     public void testTag() {
-        Hit instance = new Hit();
+        Hit instance = new Hit("def");
         assertNull(instance.getTag());
         String expResult = "foobar";
         instance.setTag(expResult);
@@ -98,27 +90,9 @@ public class HitTest {
 
     @Test
     public void testAlt() {
-        Hit instance = new Hit();
+        Hit instance = new Hit("ghi/d");
         assertFalse(instance.getAlt());
         Hit o2 = new Hit(null, null, null, false, true);
         assertTrue(o2.getAlt());
-    }
-
-    @Test
-    public void testEquals() {
-        Hit o1 = new Hit("/foo", null, null, false, false);
-        Hit o2 = new Hit("/foo", "hi", "there", false, false);
-        assertEquals(o2.equals(o1), o1.equals(o2));
-        o1.setFilename("bar");
-        assertFalse(o2.equals(o1));
-        assertFalse(o1.equals(o2));
-        assertFalse(o1.equals(new Object()));        
-    }
-
-    @Test
-    public void testHashCode() {
-        String filename = "bar";
-        Hit instance = new Hit(filename, null, null, false, false);
-        assertEquals(filename.hashCode(), instance.hashCode());
     }
 }
