@@ -299,8 +299,8 @@ public final class Configuration {
 
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
-    private StatsdConfig statsdConfig = new StatsdConfig();
-    private GraphiteConfig graphiteConfig = new GraphiteConfig();
+    private BaseStatsdConfig statsdConfig = new BaseStatsdConfig();
+    private BaseGraphiteConfig graphiteConfig = new BaseGraphiteConfig();
 
     private Set<String> disabledRepositories;
 
@@ -1330,24 +1330,24 @@ public final class Configuration {
         this.suggesterConfig = config;
     }
 
-    public StatsdConfig getStatsdConfig() {
+    public BaseStatsdConfig getStatsdConfig() {
         return statsdConfig;
     }
 
-    public void setStatsdConfig(final StatsdConfig config) {
+    public void setStatsdConfig(final BaseStatsdConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("Cannot set Statsd configuration to null");
         }
         this.statsdConfig = config;
     }
 
-    public GraphiteConfig getGraphiteConfig() {
+    public BaseGraphiteConfig getGraphiteConfig() {
         return graphiteConfig;
     }
 
-    public void setGraphiteConfig(GraphiteConfig config) {
+    public void setGraphiteConfig(BaseGraphiteConfig config) {
         if (config == null) {
-            throw new IllegalArgumentException("Cannot set Statsd configuration to null");
+            throw new IllegalArgumentException("Cannot set Graphite configuration to null");
         }
         this.graphiteConfig = config;
     }

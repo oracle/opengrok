@@ -184,10 +184,10 @@ public class ConfigurationHelp {
             return null;
         } else if (paramType == SuggesterConfig.class) {
             return SuggesterConfig.getForHelp();
-        } else if (paramType == StatsdConfig.class) {
-            return StatsdConfig.getForHelp();
-        } else if (paramType == GraphiteConfig.class) {
-            return GraphiteConfig.getForHelp();
+        } else if (paramType == BaseStatsdConfig.class) {
+            return BaseStatsdConfig.getForHelp();
+        } else if (paramType == BaseGraphiteConfig.class) {
+            return BaseGraphiteConfig.getForHelp();
         } else {
             throw new UnsupportedOperationException("getSampleValue() for " +
                 paramType + ", " + genType);

@@ -1882,20 +1882,20 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(suggesterConfig, Configuration::setSuggesterConfig);
     }
 
-    public StatsdConfig getStatsdConfig() {
+    public BaseStatsdConfig getBaseStatsdConfig() {
         return syncReadConfiguration(Configuration::getStatsdConfig);
     }
 
-    public void setStatsdConfig(StatsdConfig statsdConfig) {
-        syncWriteConfiguration(statsdConfig, Configuration::setStatsdConfig);
+    public void setBaseStatsdConfig(BaseStatsdConfig baseStatsdConfig) {
+        syncWriteConfiguration(baseStatsdConfig, Configuration::setStatsdConfig);
     }
 
-    public GraphiteConfig getGraphiteConfig() {
+    public BaseGraphiteConfig getBaseGraphiteConfig() {
         return syncReadConfiguration(Configuration::getGraphiteConfig);
     }
 
-    public void setGraphiteConfig(GraphiteConfig graphiteConfig) {
-        syncWriteConfiguration(graphiteConfig, Configuration::setGraphiteConfig);
+    public void setBaseGraphiteConfig(BaseGraphiteConfig baseGraphiteConfig) {
+        syncWriteConfiguration(baseGraphiteConfig, Configuration::setGraphiteConfig);
     }
 
     public Configuration.MeterRegistryType getWebAppMeterRegistryType() {

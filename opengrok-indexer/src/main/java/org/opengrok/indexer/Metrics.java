@@ -38,6 +38,8 @@ import io.micrometer.graphite.GraphiteMeterRegistry;
 import io.micrometer.statsd.StatsdConfig;
 import io.micrometer.statsd.StatsdMeterRegistry;
 import io.micrometer.statsd.StatsdFlavor;
+import org.opengrok.indexer.configuration.BaseGraphiteConfig;
+import org.opengrok.indexer.configuration.BaseStatsdConfig;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
@@ -57,7 +59,7 @@ public final class Metrics {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Metrics.class);
 
-    private StatsdConfig getStatsdConfig() {
+    private StatsdConfig getStatsdConfig(BaseStatsdConfig baseStatsdConfig) {
         return new StatsdConfig() {
             @Override
             public String get(String k) {
@@ -66,17 +68,17 @@ public final class Metrics {
 
             @Override
             public StatsdFlavor flavor() {
-                return RuntimeEnvironment.getInstance().getStatsdConfig().getFlavor();
+                return baseStatsdConfig.getFlavor();
             }
 
             @Override
             public int port() {
-                return RuntimeEnvironment.getInstance().getStatsdConfig().getPort();
+                return baseStatsdConfig.getPort();
             }
 
             @Override
             public String host() {
-                return RuntimeEnvironment.getInstance().getStatsdConfig().getHost();
+                return baseStatsdConfig.getHost();
             }
 
             @Override
@@ -86,7 +88,7 @@ public final class Metrics {
         };
     }
 
-    private GraphiteConfig getGraphiteConfig() {
+    private GraphiteConfig getGraphiteConfig(BaseGraphiteConfig baseGraphiteConfig) {
         return new GraphiteConfig() {
             @Override
             public String get(String k) {
@@ -95,17 +97,17 @@ public final class Metrics {
 
             @Override
             public int port() {
-                return RuntimeEnvironment.getInstance().getGraphiteConfig().getPort();
+                return baseGraphiteConfig.getPort();
             }
 
             @Override
             public String host() {
-                return RuntimeEnvironment.getInstance().getGraphiteConfig().getHost();
+                return baseGraphiteConfig.getHost();
             }
 
             @Override
             public GraphiteProtocol protocol() {
-                return RuntimeEnvironment.getInstance().getGraphiteConfig().getProtocol();
+                return baseGraphiteConfig.getProtocol();
             }
         };
     }
@@ -133,20 +135,22 @@ public final class Metrics {
     public void configure(Configuration.MeterRegistryType type) {
         switch (type) {
             case PROMETHEUS:
-                LOGGER.log(Level.INFO, "configuring Prometheus registry");
+                LOGGER.log(Level.INFO, "configuring Prometheus registry with default config");
                 prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
                 activeRegistry = prometheusRegistry;
                 break;
             case GRAPHITE:
-                if (RuntimeEnvironment.getInstance().getGraphiteConfig().isEnabled()) {
-                    LOGGER.log(Level.INFO, "configuring Graphite registry");
-                    activeRegistry = new GraphiteMeterRegistry(getGraphiteConfig(), Clock.SYSTEM);
+                BaseGraphiteConfig baseGraphiteConfig = RuntimeEnvironment.getInstance().getBaseGraphiteConfig();
+                if (baseGraphiteConfig.isEnabled()) {
+                    LOGGER.log(Level.INFO, "configuring Graphite registry with {0}", baseGraphiteConfig.toString());
+                    activeRegistry = new GraphiteMeterRegistry(getGraphiteConfig(baseGraphiteConfig), Clock.SYSTEM);
                 }
                 break;
             case STATSD:
-                if (RuntimeEnvironment.getInstance().getStatsdConfig().isEnabled()) {
-                    LOGGER.log(Level.INFO, "configuring Statsd registry");
-                    activeRegistry = new StatsdMeterRegistry(getStatsdConfig(), Clock.SYSTEM);
+                BaseStatsdConfig baseStatsdConfig = RuntimeEnvironment.getInstance().getBaseStatsdConfig();
+                if (baseStatsdConfig.isEnabled()) {
+                    LOGGER.log(Level.INFO, "configuring Statsd registry with {0}", baseStatsdConfig.toString());
+                    activeRegistry = new StatsdMeterRegistry(getStatsdConfig(baseStatsdConfig), Clock.SYSTEM);
                 }
                 break;
             case NONE:

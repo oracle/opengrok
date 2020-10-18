@@ -25,7 +25,7 @@ package org.opengrok.indexer.configuration;
 
 import io.micrometer.graphite.GraphiteProtocol;
 
-public class GraphiteConfig {
+public class BaseGraphiteConfig {
     private int port;
     private String host;
     private boolean enabled;
@@ -59,12 +59,17 @@ public class GraphiteConfig {
         return protocol;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s:%d (%s)", getHost(), getPort(), getProtocol());
+    }
+
     /**
      * Gets an instance version suitable for helper documentation by shifting
      * most default properties slightly.
      */
-    static GraphiteConfig getForHelp() {
-        GraphiteConfig res = new GraphiteConfig();
+    static BaseGraphiteConfig getForHelp() {
+        BaseGraphiteConfig res = new BaseGraphiteConfig();
         res.setHost("foo.bar");
         res.setPort(2004);
         return res;

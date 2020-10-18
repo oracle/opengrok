@@ -28,7 +28,7 @@ import io.micrometer.statsd.StatsdFlavor;
 /**
  * Configuration for Statsd metrics emitted by the Indexer via {@link org.opengrok.indexer.util.Statistics}.
  */
-public class StatsdConfig {
+public class BaseStatsdConfig {
     private int port;
     private String host;
     private boolean enabled;
@@ -62,12 +62,17 @@ public class StatsdConfig {
         return port != 0 && host != null && !host.isEmpty() && flavor != null;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s:%d (%s)", getHost(), getPort(), getFlavor());
+    }
+
     /**
      * Gets an instance version suitable for helper documentation by shifting
      * most default properties slightly.
      */
-    static StatsdConfig getForHelp() {
-        StatsdConfig res = new StatsdConfig();
+    static BaseStatsdConfig getForHelp() {
+        BaseStatsdConfig res = new BaseStatsdConfig();
         res.setHost("foo.bar");
         res.setPort(8125);
         res.setFlavor(StatsdFlavor.ETSY);

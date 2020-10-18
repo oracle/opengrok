@@ -23,22 +23,22 @@
 
 package org.opengrok.indexer.configuration;
 
-import io.micrometer.statsd.StatsdFlavor;
+import io.micrometer.graphite.GraphiteProtocol;
 import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StatsdConfigTest {
+public class BaseGraphiteConfigTest {
     @Test
     public void testIsEnabled() {
-        StatsdConfig config = new StatsdConfig();
+        BaseGraphiteConfig config = new BaseGraphiteConfig();
         assertFalse(config.isEnabled());
-        config.setPort(3141);
+        config.setPort(2222);
         assertFalse(config.isEnabled());
         config.setHost("foo");
-        assertFalse(config.isEnabled());
-        config.setFlavor(StatsdFlavor.ETSY);
+        assertTrue(config.isEnabled());
+        config.setProtocol(GraphiteProtocol.UDP);
         assertTrue(config.isEnabled());
     }
 }
