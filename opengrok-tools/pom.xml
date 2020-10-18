@@ -280,6 +280,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>pylint</argument>
+                                <argument>--max-line-length</argument>
+                                <argument>119</argument>
                                 <argument>-E</argument>
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
@@ -299,6 +301,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>flake8</argument>
+                                <argument>--max-line-length</argument>
+                                <argument>119</argument>
                                 <argument>-v</argument>
                                 <argument>${project.build.sourceDirectory}</argument>
                                 <argument>${project.build.testSourceDirectory}</argument>
