@@ -317,6 +317,7 @@ public final class Configuration {
     }
 
     public enum MeterRegistryType {
+        NONE,
         PROMETHEUS,
         GRAPHITE,
         STATSD
@@ -575,7 +576,7 @@ public final class Configuration {
         setWebappLAF("default");
         // webappCtags is default(boolean)
         setWebAppMeterRegistryType(MeterRegistryType.PROMETHEUS);
-        setIndexerMeterRegistryType(MeterRegistryType.STATSD);
+        setIndexerMeterRegistryType(MeterRegistryType.NONE);
     }
 
     public String getRepoCmd(String clazzName) {
