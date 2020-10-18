@@ -61,8 +61,11 @@ class Repository:
 
     def sync(self):
         # Eventually, there might be per-repository hooks added here.
-        if isinstance(self.configured_commands, dict) and self.configured_commands.get('sync'):
-            return self._run_custom_sync_command(self.listify(self.configured_commands['sync']))
+        if isinstance(self.configured_commands, dict) and \
+                self.configured_commands.get('sync'):
+            return self._run_custom_sync_command(
+                self.listify(self.configured_commands['sync'])
+            )
         return self.reposync()
 
     @abc.abstractmethod
@@ -81,8 +84,11 @@ class Repository:
 
         Return True if so, False otherwise.
         """
-        if isinstance(self.configured_commands, dict) and self.configured_commands.get('incoming'):
-            return self._run_custom_incoming_command(self.listify(self.configured_commands['incoming']))
+        if isinstance(self.configured_commands, dict) and \
+                self.configured_commands.get('incoming'):
+            return self._run_custom_incoming_command(
+                self.listify(self.configured_commands['incoming'])
+            )
         return self.incoming_check()
 
     def incoming_check(self):
@@ -101,9 +107,9 @@ class Repository:
         :return: 0 on success execution, 1 otherwise
         """
         status, output = self._run_command(command)
-        logging_handler = self.logger.info if status == 0 else self.logger.warning
-        logging_handler("output of '{}':".format(command))
-        logging_handler(output)
+        log_handler = self.logger.info if status == 0 else self.logger.warning
+        log_handler("output of '{}':".format(command))
+        log_handler(output)
         return status
 
     def _run_custom_incoming_command(self, command):
@@ -117,7 +123,9 @@ class Repository:
         if status != 0:
             self.logger.error("output of '{}':".format(command))
             self.logger.error(output)
-            raise RepositoryException('failed to check for incoming in repository {}'.format(self))
+            raise RepositoryException(
+                'failed to check for incoming in repository {}'.format(self)
+            )
         return len(output.strip()) > 0
 
     def _run_command(self, command):
@@ -129,14 +137,18 @@ class Repository:
                     - status: 0 on success execution, non-zero otherwise
                     - output: command output as string
         """
-        cmd = self.getCommand(command, work_dir=self.path, env_vars=self.env, logger=self.logger)
+        cmd = self.getCommand(command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform command")
             status = cmd.getretcode()
             if status == 0 and cmd.getstate() != Command.FINISHED:
                 status = 1
-            return status, '\n'.join(filter(None, [cmd.getoutputstr(), cmd.geterroutputstr()]))
+            return status, '\n'.join(filter(None, [
+                cmd.getoutputstr(),
+                cmd.geterroutputstr()
+            ]))
         return 0, cmd.getoutputstr()
 
     @staticmethod
@@ -144,17 +156,21 @@ class Repository:
         """
         Get the repository command, or use default supplier.
 
-        :param configured_commands: commands section from configuration for this repository type
+        :param configured_commands: commands section from configuration
+                                    for this repository type
         :param default: the supplier of default command
         :return: the repository command
         """
         if isinstance(configured_commands, str):
             return configured_commands
-        elif isinstance(configured_commands, dict) and configured_commands.get('command'):
+        elif isinstance(configured_commands, dict) and \
+                configured_commands.get('command'):
             return configured_commands['command']
 
         return default()
 
     @staticmethod
     def listify(object):
-        return object if isinstance(object, list) or isinstance(object, tuple) else [object]
+        if isinstance(object, list) or isinstance(object, tuple):
+            return object
+        return [object]

@@ -120,9 +120,10 @@ def test_invalid_config_option():
 
 
 def test_valid_config():
-    assert check_configuration({PROJECTS_PROPERTY:
-                                    {"foo": {PROXY_PROPERTY: True}},
-                                PROXY_PROPERTY: "proxy"})
+    assert check_configuration({
+        PROJECTS_PROPERTY: {"foo": {PROXY_PROPERTY: True}},
+        PROXY_PROPERTY: "proxy"
+    })
 
 
 @pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
@@ -196,11 +197,16 @@ def test_disabled_command_api():
     with patch(opengrok_tools.utils.mirror.call_rest_api,
                lambda a, b, c: mock(spec=requests.Response)):
         project_name = "foo"
-        config = {DISABLED_CMD_PROPERTY:
-                      {COMMAND_PROPERTY:
-                           ["http://localhost:8080/source/api/v1/foo",
-                            "POST", "data"]},
-                  PROJECTS_PROPERTY: {project_name: {DISABLED_PROPERTY: True}}}
+        config = {
+            DISABLED_CMD_PROPERTY: {
+                COMMAND_PROPERTY: [
+                    "http://localhost:8080/source/api/v1/foo",
+                    "POST", "data"]
+            },
+            PROJECTS_PROPERTY: {
+                project_name: {DISABLED_PROPERTY: True}
+            }
+        }
 
         assert mirror_project(config, project_name, False,
                               None, None) == CONTINUE_EXITVAL
@@ -237,14 +243,19 @@ def test_disabled_command_api_text_append(monkeypatch):
         data = {'messageLevel': 'info', 'duration': 'PT5M',
                 'tags': ['%PROJECT%'],
                 'text': 'disabled project'}
-        config = {DISABLED_CMD_PROPERTY:
-                      {COMMAND_PROPERTY:
-                           ["http://localhost:8080/source/api/v1/foo",
-                            "POST", data]},
-                  PROJECTS_PROPERTY: {project_name:
-                                          {DISABLED_REASON_PROPERTY:
-                                               text_to_append,
-                                           DISABLED_PROPERTY: True}}}
+        config = {
+            DISABLED_CMD_PROPERTY: {
+                COMMAND_PROPERTY: [
+                    "http://localhost:8080/source/api/v1/foo",
+                    "POST", data]
+            },
+            PROJECTS_PROPERTY: {
+                project_name: {
+                    DISABLED_REASON_PROPERTY: text_to_append,
+                    DISABLED_PROPERTY: True
+                }
+            }
+        }
 
         mirror_project(config, project_name, False, None, None)
 
@@ -255,9 +266,14 @@ def test_disabled_command_run():
     """
     spy2(opengrok_tools.utils.mirror.run_command)
     project_name = "foo"
-    config = {DISABLED_CMD_PROPERTY:
-                  {COMMAND_PROPERTY: ["cat"]},
-              PROJECTS_PROPERTY: {project_name: {DISABLED_PROPERTY: True}}}
+    config = {
+        DISABLED_CMD_PROPERTY: {
+            COMMAND_PROPERTY: ["cat"]
+        },
+        PROJECTS_PROPERTY: {
+            project_name: {DISABLED_PROPERTY: True}
+        }
+    }
 
     assert mirror_project(config, project_name, False,
                           None, None) == CONTINUE_EXITVAL
@@ -319,15 +335,21 @@ def test_mirror_project_timeout(monkeypatch):
 
         project_name = "foo"
         # override testing
-        global_config_1 = {PROJECTS_PROPERTY:
-                               {project_name:
-                                    {CMD_TIMEOUT_PROPERTY: cmd_timeout,
-                                     HOOK_TIMEOUT_PROPERTY: hook_timeout}},
-                           CMD_TIMEOUT_PROPERTY: cmd_timeout * 2,
-                           HOOK_TIMEOUT_PROPERTY: hook_timeout * 2}
+        global_config_1 = {
+            PROJECTS_PROPERTY: {
+                project_name: {
+                    CMD_TIMEOUT_PROPERTY: cmd_timeout,
+                    HOOK_TIMEOUT_PROPERTY: hook_timeout
+                }
+            },
+            CMD_TIMEOUT_PROPERTY: cmd_timeout * 2,
+            HOOK_TIMEOUT_PROPERTY: hook_timeout * 2
+        }
         # inheritance testing
-        global_config_2 = {CMD_TIMEOUT_PROPERTY: cmd_timeout,
-                           HOOK_TIMEOUT_PROPERTY: hook_timeout}
+        global_config_2 = {
+            CMD_TIMEOUT_PROPERTY: cmd_timeout,
+            HOOK_TIMEOUT_PROPERTY: hook_timeout
+        }
 
         test_mirror_project(global_config_1)
         test_mirror_project(global_config_2)
@@ -385,10 +407,16 @@ def test_get_repos_for_project(monkeypatch):
     ({'incoming': '/bin/false'}, 'default-command'),
     ([], 'default-command'),
     ({'command': '/usr/local/bin/git'}, '/usr/local/bin/git'),
-    ({'command': '/usr/local/bin/git', 'incoming': '/bin/false'}, '/usr/local/bin/git')
+    (
+            {'command': '/usr/local/bin/git', 'incoming': '/bin/false'},
+            '/usr/local/bin/git'
+    )
 ])
 def test_mirroring_custom_repository_command(config, expected_command):
-    assert expected_command == Repository._repository_command(config, lambda: 'default-command')
+    assert expected_command == Repository._repository_command(
+        config,
+        lambda: 'default-command'
+    )
 
 
 @pytest.mark.parametrize(
@@ -408,7 +436,7 @@ def test_mirroring_custom_incoming_invoke_command(touch_binary):
         repository = GitRepository(mock(), repository_root, 'test-1', {
             'incoming': [touch_binary, 'incoming.txt']
         }, None, None, None)
-        assert repository.incoming() == False
+        assert repository.incoming() is False
         assert 'incoming.txt' in os.listdir(repository_root)
 
 
@@ -429,7 +457,7 @@ def test_mirroring_custom_incoming_changes(echo_binary):
         repository = GitRepository(mock(), repository_root, 'test-1', {
             'incoming': [echo_binary, 'new incoming changes!']
         }, None, None, None)
-        assert True == repository.incoming()
+        assert repository.incoming() is True
 
 
 @pytest.mark.parametrize(
@@ -449,7 +477,7 @@ def test_mirroring_custom_incoming_no_changes(true_binary):
         repository = GitRepository(mock(), repository_root, 'test-1', {
             'incoming': true_binary
         }, None, None, None)
-        assert False == repository.incoming()
+        assert repository.incoming() is False
 
 
 @pytest.mark.parametrize(
@@ -475,7 +503,8 @@ def test_mirroring_custom_incoming_error(false_binary):
 
 def test_mirroring_incoming_invoke_original_command():
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', None, None, None, None)
+        repository = GitRepository(mock(), repository_root, 'test-1',
+                                   None, None, None, None)
         with when(repository).incoming_check().thenReturn(0):
             repository.incoming()
             verify(repository).incoming_check()
@@ -498,7 +527,7 @@ def test_mirroring_custom_sync_invoke_command(touch_binary):
         repository = GitRepository(mock(), repository_root, 'test-1', {
             'sync': [touch_binary, 'sync.txt']
         }, None, None, None)
-        assert False == repository.sync()
+        assert repository.sync() == 0
         assert 'sync.txt' in os.listdir(repository_root)
 
 
@@ -544,7 +573,8 @@ def test_mirroring_custom_sync_error(false_binary):
 
 def test_mirroring_sync_invoke_original_command():
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', None, None, None, None)
+        repository = GitRepository(mock(), repository_root, 'test-1',
+                                   None, None, None, None)
         with when(repository).reposync().thenReturn(0):
             repository.sync()
             verify(repository).reposync()
