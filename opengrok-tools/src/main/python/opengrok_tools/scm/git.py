@@ -31,7 +31,10 @@ class GitRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
         super().__init__(logger, path, project, command, env, hooks, timeout)
 
-        self.command = self._repository_command(command, default=lambda: which('git'))
+        self.command = self._repository_command(
+            command,
+            default=lambda: which('git')
+        )
 
         if not self.command:
             raise RepositoryException("Cannot get git command")
