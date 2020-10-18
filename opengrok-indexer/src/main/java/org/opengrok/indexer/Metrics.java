@@ -149,6 +149,8 @@ public final class Metrics {
                     activeRegistry = new StatsdMeterRegistry(getStatsdConfig(), Clock.SYSTEM);
                 }
                 break;
+            case NONE:
+                break;
             default:
                 throw new IllegalArgumentException("unsupported registry type");
         }
