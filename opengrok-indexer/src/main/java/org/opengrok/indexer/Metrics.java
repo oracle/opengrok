@@ -171,17 +171,21 @@ public final class Metrics {
     /**
      * Set common tag according to list of files.
      * @param subFiles list of files
+     * @return Tag object or null
      */
-    public void updateSubFiles(List<String> subFiles) {
+    public Tag updateSubFiles(List<String> subFiles) {
         // Add tag for per-project reindex.
+        Tag commonTag = null;
         if (activeRegistry != null && !subFiles.isEmpty()) {
             String projects = subFiles.stream().
                     map(s -> s.startsWith(Indexer.PATH_SEPARATOR_STRING) ? s.substring(1) : s).
                     collect(Collectors.joining(","));
-            Tag commonTag = Tag.of("projects", projects);
+            commonTag = Tag.of("projects", projects);
             LOGGER.log(Level.FINE, "updating active registry with common tag: {}", commonTag);
             activeRegistry.config().commonTags(Collections.singleton(commonTag));
         }
+
+        return commonTag;
     }
 
     public PrometheusMeterRegistry getPrometheusRegistry() {
