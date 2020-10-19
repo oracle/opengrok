@@ -223,11 +223,11 @@ public class UserWhiteListPluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean groupAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow OK_USER for random group 1", groupAllowed);
+        assertTrue("should allow OK entity for random group 1", groupAllowed);
 
         randomGroup = new Group(RandomString.generateUpper(10));
         groupAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow OK_USER for random group 2", groupAllowed);
+        assertTrue("should allow OK entity for random group 2", groupAllowed);
     }
 
     @Test
@@ -239,10 +239,10 @@ public class UserWhiteListPluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow random random group 1", projectAllowed);
+        assertFalse("should not allow random group 1", projectAllowed);
 
         randomGroup = new Group(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow random for random group 2", projectAllowed);
+        assertFalse("should not allow random group 2", projectAllowed);
     }
 }
