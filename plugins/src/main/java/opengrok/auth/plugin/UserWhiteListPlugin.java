@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package opengrok.auth.plugin;
@@ -43,16 +43,29 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
     private static final String className = UserWhiteListPlugin.class.getName();
     private static final Logger LOGGER = Logger.getLogger(className);
 
+    // configuration parameters
     static final String FILE_PARAM = "file";
+    static final String FIELD_PARAM = "fieldName";
+
+    // valid values for the FIELD_NAME parameter
+    static final String USERNAME_FIELD = "username";
+    static final String ID_FIELD = "id";
 
     private final Set<String> whitelist = new TreeSet<>();
+    private String fieldName;
 
     @Override
     public void load(Map<String, Object> parameters) {
         String filePath;
-
         if ((filePath = (String) parameters.get(FILE_PARAM)) == null) {
             throw new IllegalArgumentException("Missing parameter [" + FILE_PARAM + "] in the configuration");
+        }
+
+        if ((fieldName = (String) parameters.get(FIELD_PARAM)) == null) {
+            fieldName = USERNAME_FIELD;
+        } else if (!fieldName.equals(USERNAME_FIELD) && !fieldName.equals(ID_FIELD)) {
+            throw new IllegalArgumentException("Invalid value of parameter [" + FIELD_PARAM +
+                    "] in the configuration: only " + USERNAME_FIELD + " or " + ID_FIELD + " are supported");
         }
 
         // Load whitelist from file to memory.
@@ -76,7 +89,13 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
             return false;
         }
 
-        return whitelist.contains(user.getUsername());
+        if (fieldName.equals(USERNAME_FIELD)) {
+            return user.getUsername() != null && whitelist.contains(user.getUsername());
+        } else if (fieldName.equals(ID_FIELD)) {
+            return user.getId() != null && whitelist.contains(user.getId());
+        }
+
+        return false;
     }
 
     @Override
