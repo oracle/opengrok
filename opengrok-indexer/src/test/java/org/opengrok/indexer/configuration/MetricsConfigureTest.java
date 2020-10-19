@@ -23,6 +23,8 @@
 
 package org.opengrok.indexer.configuration;
 
+import io.micrometer.graphite.GraphiteProtocol;
+import io.micrometer.statsd.StatsdFlavor;
 import org.junit.Test;
 import org.opengrok.indexer.Metrics;
 
@@ -31,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MetricsConfigureTest {
     @Test
     public void testConfigure() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         Metrics metrics = Metrics.getInstance();
         assertNull(metrics.getRegistry());
 
@@ -40,5 +44,15 @@ public class MetricsConfigureTest {
 
         metrics.configure(Configuration.MeterRegistryType.NONE);
         assertNull(metrics.getRegistry());
+
+        env.setBaseGraphiteConfig(new BaseGraphiteConfig("localhost", 2222, GraphiteProtocol.PLAINTEXT));
+        metrics.configure(Configuration.MeterRegistryType.GRAPHITE);
+        assertNotNull(metrics.getRegistry());
+        metrics.configure(Configuration.MeterRegistryType.NONE);
+
+        env.setBaseStatsdConfig(new BaseStatsdConfig("loalhost", 8126, StatsdFlavor.DATADOG));
+        metrics.configure(Configuration.MeterRegistryType.STATSD);
+        assertNotNull(metrics.getRegistry());
+        metrics.configure(Configuration.MeterRegistryType.NONE);
     }
 }

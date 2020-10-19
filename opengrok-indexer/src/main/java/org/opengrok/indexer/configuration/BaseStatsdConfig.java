@@ -34,6 +34,15 @@ public class BaseStatsdConfig {
     private boolean enabled;
     private StatsdFlavor flavor;
 
+    public BaseStatsdConfig() {
+    }
+
+    public BaseStatsdConfig(String host, int port, StatsdFlavor flavor) {
+        this.host = host;
+        this.port = port;
+        this.flavor = flavor;
+    }
+
     public String getHost() {
         return host;
     }

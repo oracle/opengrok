@@ -31,6 +31,15 @@ public class BaseGraphiteConfig {
     private boolean enabled;
     private GraphiteProtocol protocol;
 
+    public BaseGraphiteConfig() {
+    }
+
+    public BaseGraphiteConfig(String host, int port, GraphiteProtocol protocol) {
+        this.host = host;
+        this.port = port;
+        this.protocol = protocol;
+    }
+
     public String getHost() {
         return host;
     }
