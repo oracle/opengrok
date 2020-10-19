@@ -28,7 +28,6 @@ import io.micrometer.graphite.GraphiteProtocol;
 public class BaseGraphiteConfig {
     private int port;
     private String host;
-    private boolean enabled;
     private GraphiteProtocol protocol;
 
     public BaseGraphiteConfig() {

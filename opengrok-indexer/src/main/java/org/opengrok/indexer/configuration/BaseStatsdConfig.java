@@ -31,7 +31,6 @@ import io.micrometer.statsd.StatsdFlavor;
 public class BaseStatsdConfig {
     private int port;
     private String host;
-    private boolean enabled;
     private StatsdFlavor flavor;
 
     public BaseStatsdConfig() {
