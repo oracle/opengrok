@@ -1,0 +1,5 @@
+pytest
+GitPython
+pytest-xdist
+mockito
+pytest-mockito

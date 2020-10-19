@@ -213,8 +213,39 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
                                 <argument>setuptools</argument>
-                                <argument>certifi</argument>
                                 <argument>wheel</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Install requirements via pip</id>
+                        <configuration>
+                            <executable>${python.environment}/pip</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>-r</argument>
+                                <argument>${project.basedir}/requirements.txt</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Install test modules via pip</id>
+                        <configuration>
+                            <executable>${python.environment}/pip</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>-r</argument>
+                                <argument>${project.basedir}/tests.txt</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
