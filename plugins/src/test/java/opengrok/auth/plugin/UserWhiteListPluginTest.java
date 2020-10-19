@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -27,6 +28,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.RandomString;
@@ -37,6 +40,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertFalse;
@@ -47,38 +53,67 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Represents a container for tests of {@link UserWhiteListPlugin}.
  */
+@RunWith(Parameterized.class)
 public class UserWhiteListPluginTest {
 
     private static final String OK_USER = "user1321";
-    private static File tempWhitelist;
+    private static final String OK_ID = "id2178";
+    private static File tempWhitelistUser;
+    private static File tempWhitelistId;
     private static HashMap<String, Object> validPluginParameters;
 
     private UserWhiteListPlugin plugin;
+    private final String param;
+
+    @Parameterized.Parameters
+    public static Collection<String> parameters() {
+        return Arrays.asList(UserWhiteListPlugin.ID_FIELD, UserWhiteListPlugin.USERNAME_FIELD);
+    }
+
+    public UserWhiteListPluginTest(String param) {
+        this.param = param;
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        tempWhitelist = File.createTempFile("UserWhiteListPluginTest", "txt");
+        tempWhitelistUser = File.createTempFile("UserWhiteListPluginTestUser", "txt");
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(tempWhitelist), StandardCharsets.UTF_8))) {
+                new FileOutputStream(tempWhitelistUser), StandardCharsets.UTF_8))) {
             writer.write(OK_USER);
             // Don't bother with trailing LF.
         }
 
+        tempWhitelistId = File.createTempFile("UserWhiteListPluginTestId", "txt");
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(tempWhitelistId), StandardCharsets.UTF_8))) {
+            writer.write(OK_ID);
+            // Don't bother with trailing LF.
+        }
+
         validPluginParameters = new HashMap<>();
-        validPluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelist.getPath());
     }
 
     @AfterClass
     public static void afterClass() {
-        if (tempWhitelist != null) {
+        if (tempWhitelistUser != null) {
             //noinspection ResultOfMethodCallIgnored
-            tempWhitelist.delete();
+            tempWhitelistUser.delete();
+        }
+        if (tempWhitelistId != null) {
+            //noinspection ResultOfMethodCallIgnored
+            tempWhitelistId.delete();
         }
     }
 
     @Before
     public void setUp() {
         plugin = new UserWhiteListPlugin();
+        validPluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, this.param);
+        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+            validPluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
+        } else {
+            validPluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistId.getPath());
+        }
     }
 
     @Test
@@ -87,6 +122,16 @@ public class UserWhiteListPluginTest {
             //noinspection ConstantConditions
             plugin.load(null);
             }, "plugin.load(null)");
+    }
+
+    @Test
+    public void shouldThrowOnLoadIfInvalidFieldName() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
+            map.put(UserWhiteListPlugin.FIELD_PARAM, "huh");
+            plugin.load(map);
+        }, "plugin.load(null)");
     }
 
     @Test
@@ -131,15 +176,21 @@ public class UserWhiteListPluginTest {
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(OK_USER));
+        User user;
+        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+            user = new User(OK_USER);
+        } else {
+            user = new User("blurb", OK_ID);
+        }
+        req.setAttribute(UserPlugin.REQUEST_ATTR, user);
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow OK_USER for random project 1", projectAllowed);
+        assertTrue("should allow OK entity for random project 1", projectAllowed);
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow OK_USER for random project 2", projectAllowed);
+        assertTrue("should allow OK entity for random project 2", projectAllowed);
     }
 
     @Test
@@ -151,11 +202,11 @@ public class UserWhiteListPluginTest {
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow rando for random project 1", projectAllowed);
+        assertFalse("should not allow random user for random project 1", projectAllowed);
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow rando for random project 2", projectAllowed);
+        assertFalse("should not allow random user for random project 2", projectAllowed);
     }
 
     @Test
@@ -163,7 +214,13 @@ public class UserWhiteListPluginTest {
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(OK_USER));
+        User user;
+        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+            user = new User(OK_USER);
+        } else {
+            user = new User("blurb", OK_ID);
+        }
+        req.setAttribute(UserPlugin.REQUEST_ATTR, user);
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean groupAllowed = plugin.isAllowed(req, randomGroup);
@@ -183,10 +240,10 @@ public class UserWhiteListPluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow rando for random group 1", projectAllowed);
+        assertFalse("should not allow random random group 1", projectAllowed);
 
         randomGroup = new Group(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow rando for random group 2", projectAllowed);
+        assertFalse("should not allow random for random group 2", projectAllowed);
     }
 }
