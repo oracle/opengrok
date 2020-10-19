@@ -42,6 +42,7 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
         <python.system.executable>python3</python.system.executable>
         <python.environment>${project.build.directory}/env/bin</python.environment>
         <project.python.package.version>${project.version}</project.python.package.version>
+        <python.checkstyle.line-length>119</python.checkstyle.line-length>
     </properties>
 
     <profiles>
@@ -280,6 +281,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>pylint</argument>
+                                <argument>--max-line-length</argument>
+                                <argument>${python.checkstyle.line-length}</argument>
                                 <argument>-E</argument>
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
@@ -299,6 +302,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>flake8</argument>
+                                <argument>--max-line-length</argument>
+                                <argument>${python.checkstyle.line-length}</argument>
                                 <argument>-v</argument>
                                 <argument>${project.build.sourceDirectory}</argument>
                                 <argument>${project.build.testSourceDirectory}</argument>
