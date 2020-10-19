@@ -27,7 +27,6 @@ setup(
     url='https://github.com/OpenGrok/OpenGrok',
     license='CDDL',
     author='Oracle',
-    author_email='opengrok-dev@yahoogroups.com',
     description='Tools for managing OpenGrok instance',
     long_description=readme(),
     python_requires='>=3.4, <4',
