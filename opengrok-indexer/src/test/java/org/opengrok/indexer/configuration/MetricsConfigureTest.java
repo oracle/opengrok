@@ -37,5 +37,8 @@ public class MetricsConfigureTest {
         metrics.configure(Configuration.MeterRegistryType.PROMETHEUS);
         assertNotNull(metrics.getRegistry());
         assertNotNull(metrics.getPrometheusRegistry());
+
+        metrics.configure(Configuration.MeterRegistryType.NONE);
+        assertNull(metrics.getRegistry());
     }
 }

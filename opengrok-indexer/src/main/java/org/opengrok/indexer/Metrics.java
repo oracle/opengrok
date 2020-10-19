@@ -154,6 +154,7 @@ public final class Metrics {
                 }
                 break;
             case NONE:
+                activeRegistry = null;
                 break;
             default:
                 throw new IllegalArgumentException("unsupported registry type");
