@@ -129,13 +129,13 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         }
 
         String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
-        LOGGER.log(Level.FINEST, "expanded filter for user {0} and LDAP user {1} into ''{2}''",
-                new Object[]{user, ldapUser, expandedFilter});
+        LOGGER.log(Level.FINEST, "expanded filter ''{0}'' for user {1} and LDAP user {2} into ''{3}''",
+                new Object[]{ldapFilter, user, ldapUser, expandedFilter});
         AbstractLdapProvider ldapProvider = getLdapProvider();
         try {
             if ((ldapProvider.lookupLdapContent(null, expandedFilter)) == null) {
                 LOGGER.log(Level.WARNING,
-                        "failed to get content for LDAP user {0} with filter {1} on {2}",
+                        "failed to get content for LDAP user {0} with filter ''{1}'' on {2}",
                         new Object[]{ldapUser, expandedFilter, ldapProvider});
                 return;
             }
@@ -166,11 +166,14 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
+                String name = entry.getKey();
+                String value = entry.getValue().iterator().next();
                 try {
-                    filter = replace(filter, entry.getKey(),
-                            entry.getValue().iterator().next(), transforms);
+                    filter = replace(filter, name, value, transforms);
                 } catch (PatternSyntaxException ex) {
-                    LOGGER.log(Level.WARNING, "The pattern for expanding is not valid", ex);
+                    LOGGER.log(Level.WARNING,
+                            String.format("Failed to expand filter ''%s'' with name ''%s'' and value ''%s''",
+                                    filter, name, value), ex);
                 }
             }
         }
