@@ -1,4 +1,5 @@
 import os
+
 from setuptools import setup
 
 from src.main.python.opengrok_tools.version import __version__ as version
@@ -9,6 +10,11 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 def readme():
     with open(os.path.join(SCRIPT_DIR, 'README-dist.txt'), 'r') as readme:
         return readme.read()
+
+
+def readlines(file):
+    with open(os.path.join(SCRIPT_DIR, file), 'r') as file:
+        return list(map(str.strip, file.readlines()))
 
 
 setup(
@@ -31,25 +37,12 @@ setup(
     description='Tools for managing OpenGrok instance',
     long_description=readme(),
     python_requires='>=3.4, <4',
-    install_requires=[
-        'jsonschema==2.6.0',
-        'pyyaml',
-        'requests>=2.20.0',
-        'resource',
-        'filelock',
-        'setuptools>=36.7.2',
-    ],
+    install_requires=readlines('requirements.txt'),
     setup_requires=[
         'pytest-runner',
         'setuptools>=36.7.2',
     ],
-    tests_require=[
-        'pytest',
-        'GitPython',
-        'pytest-xdist',
-        'mockito',
-        'pytest-mockito',
-    ],
+    tests_require=readlines('requirements-tests.txt'),
     entry_points={
         'console_scripts': [
             'opengrok-config-merge=opengrok_tools.config_merge:main',

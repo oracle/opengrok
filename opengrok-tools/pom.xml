@@ -152,6 +152,8 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                                     <includes>
                                         <include>MANIFEST.in</include>
                                         <include>README-dist.txt</include>
+                                        <include>requirements.txt</include>
+                                        <include>requirements-tests.txt</include>
                                         <include>setup.py</include>
                                         <include>setup.cfg</include>
                                     </includes>
@@ -224,9 +226,11 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Install requirements via pip</id>
                         <configuration>
-                            <executable>${python.environment}/pip</executable>
+                            <executable>${python.environment}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
                                 <argument>install</argument>
                                 <argument>-r</argument>
                                 <argument>${project.basedir}/requirements.txt</argument>
@@ -240,12 +244,14 @@ Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Install test modules via pip</id>
                         <configuration>
-                            <executable>${python.environment}/pip</executable>
+                            <executable>${python.environment}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
                                 <argument>install</argument>
                                 <argument>-r</argument>
-                                <argument>${project.basedir}/tests.txt</argument>
+                                <argument>${project.basedir}/requirements-tests.txt</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
