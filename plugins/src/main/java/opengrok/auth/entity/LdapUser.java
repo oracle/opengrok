@@ -82,6 +82,6 @@ public class LdapUser implements Serializable {
 
     @Override
     public String toString() {
-        return "LdapUser{dn=" + dn + ",attributes=" + attributes + '}';
+        return "LdapUser{dn=" + dn + "; attributes=" + attributes + '}';
     }
 }
