@@ -39,21 +39,21 @@ public class MetricsConfigureTest {
         Metrics metrics = Metrics.getInstance();
         assertNull(metrics.getRegistry());
 
-        metrics.configure(Configuration.MeterRegistryType.PROMETHEUS);
+        metrics.configure(MeterRegistryType.PROMETHEUS);
         assertNotNull(metrics.getRegistry());
         assertNotNull(metrics.getPrometheusRegistry());
 
-        metrics.configure(Configuration.MeterRegistryType.NONE);
+        metrics.configure(MeterRegistryType.NONE);
         assertNull(metrics.getRegistry());
 
         env.setBaseGraphiteConfig(new BaseGraphiteConfig("localhost", 2222, GraphiteProtocol.PLAINTEXT));
-        metrics.configure(Configuration.MeterRegistryType.GRAPHITE);
+        metrics.configure(MeterRegistryType.GRAPHITE);
         assertNotNull(metrics.getRegistry());
-        metrics.configure(Configuration.MeterRegistryType.NONE);
+        metrics.configure(MeterRegistryType.NONE);
 
         env.setBaseStatsdConfig(new BaseStatsdConfig("loalhost", 8126, StatsdFlavor.DATADOG));
-        metrics.configure(Configuration.MeterRegistryType.STATSD);
+        metrics.configure(MeterRegistryType.STATSD);
         assertNotNull(metrics.getRegistry());
-        metrics.configure(Configuration.MeterRegistryType.NONE);
+        metrics.configure(MeterRegistryType.NONE);
     }
 }

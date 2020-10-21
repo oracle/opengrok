@@ -316,13 +316,6 @@ public final class Configuration {
         ON, OFF, DIRBASED, UIONLY
     }
 
-    public enum MeterRegistryType {
-        NONE,
-        PROMETHEUS,
-        GRAPHITE,
-        STATSD
-    };
-
     private MeterRegistryType webAppMeterRegistryType;
     private MeterRegistryType indexerMeterRegistryType;
 

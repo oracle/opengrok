@@ -42,7 +42,7 @@ public class MetricsCommonTagTest {
         assertNull(metrics.updateSubFiles(Collections.emptyList()));
 
         List<String> subFiles = Arrays.asList("/foo", "/bar");
-        metrics.configure(Configuration.MeterRegistryType.PROMETHEUS);
+        metrics.configure(MeterRegistryType.PROMETHEUS);
         Tag tag = metrics.updateSubFiles(subFiles);
         assertEquals(Tag.of("projects", subFiles.stream().map(s -> s.substring(1)).
                 collect(Collectors.joining(","))), tag);

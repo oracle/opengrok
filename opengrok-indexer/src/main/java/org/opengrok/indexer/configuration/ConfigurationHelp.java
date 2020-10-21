@@ -173,8 +173,8 @@ public class ConfigurationHelp {
             inm.add("f:user-specified-value");
             inm.add("d:user-specified-value");
             return inm;
-        } else if (paramType == Configuration.MeterRegistryType.class) {
-            return Configuration.MeterRegistryType.GRAPHITE;
+        } else if (paramType == MeterRegistryType.class) {
+            return MeterRegistryType.GRAPHITE;
         } else if (paramType.isEnum()) {
             for (Object value : paramType.getEnumConstants()) {
                 if (!value.equals(defaultValue)) {

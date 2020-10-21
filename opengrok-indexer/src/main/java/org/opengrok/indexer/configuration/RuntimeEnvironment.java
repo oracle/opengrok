@@ -1898,19 +1898,19 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(baseGraphiteConfig, Configuration::setGraphiteConfig);
     }
 
-    public Configuration.MeterRegistryType getWebAppMeterRegistryType() {
+    public MeterRegistryType getWebAppMeterRegistryType() {
         return syncReadConfiguration(Configuration::getWebAppMeterRegistryType);
     }
 
-    public void setWebAppMeterRegistryType(Configuration.MeterRegistryType registryType) {
+    public void setWebAppMeterRegistryType(MeterRegistryType registryType) {
         syncWriteConfiguration(registryType, Configuration::setWebAppMeterRegistryType);
     }
 
-    public Configuration.MeterRegistryType getIndexerMeterRegistryType() {
+    public MeterRegistryType getIndexerMeterRegistryType() {
         return syncReadConfiguration(Configuration::getIndexerMeterRegistryType);
     }
 
-    public void setIndexerAppMeterRegistryType(Configuration.MeterRegistryType registryType) {
+    public void setIndexerAppMeterRegistryType(MeterRegistryType registryType) {
         syncWriteConfiguration(registryType, Configuration::setIndexerMeterRegistryType);
     }
 

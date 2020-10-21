@@ -40,7 +40,7 @@ import io.micrometer.statsd.StatsdMeterRegistry;
 import io.micrometer.statsd.StatsdFlavor;
 import org.opengrok.indexer.configuration.BaseGraphiteConfig;
 import org.opengrok.indexer.configuration.BaseStatsdConfig;
-import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.MeterRegistryType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -132,7 +132,7 @@ public final class Metrics {
      * Configure meter registry.
      * @param type type of meter registry
      */
-    public void configure(Configuration.MeterRegistryType type) {
+    public void configure(MeterRegistryType type) {
         switch (type) {
             case PROMETHEUS:
                 LOGGER.log(Level.INFO, "configuring Prometheus registry with default config");
