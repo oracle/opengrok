@@ -1,1 +1,3 @@
 include README-dist.txt
+include requirements.txt
+include requirements-tests.txt
