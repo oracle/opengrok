@@ -28,7 +28,8 @@ import io.micrometer.statsd.StatsdFlavor;
 import org.junit.Test;
 import org.opengrok.indexer.Metrics;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class MetricsConfigureTest {
     @Test
