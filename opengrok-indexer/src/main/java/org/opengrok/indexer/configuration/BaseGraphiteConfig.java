@@ -80,6 +80,7 @@ public class BaseGraphiteConfig {
         BaseGraphiteConfig res = new BaseGraphiteConfig();
         res.setHost("foo.bar");
         res.setPort(2004);
+        res.setProtocol(GraphiteProtocol.UDP);
         return res;
     }
 }
