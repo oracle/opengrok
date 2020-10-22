@@ -18,9 +18,10 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
-#
+# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright 2020 Robert Williams
+# Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
+#
 
 from shutil import which
 
