@@ -32,10 +32,7 @@ class PerforceRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
         super().__init__(logger, path, project, command, env, hooks, timeout)
 
-        self.command = self._repository_command(
-            command,
-            default=lambda: which('p4')
-        )
+        self.command = self._repository_command(command, default=lambda: which('p4'))
 
         if not self.command:
             raise RepositoryException("Cannot get perforce command")
