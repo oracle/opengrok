@@ -1223,7 +1223,7 @@ public final class Configuration {
      * @return path to the file holding compiled path descriptions for the web application
      */
     public Path getDtagsEftarPath() {
-        return Paths.get(getDataRoot(), "index", EFTAR_DTAGS_NAME);
+        return Paths.get(getDataRoot(), EFTAR_DTAGS_NAME);
     }
 
     public String getCTagsExtraOptionsFile() {
