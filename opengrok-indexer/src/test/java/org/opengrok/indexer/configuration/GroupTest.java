@@ -33,7 +33,13 @@ import java.util.regex.PatternSyntaxException;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class GroupTest {
 
@@ -45,13 +51,8 @@ public class GroupTest {
     public void testEncodeDecode() {
         // Create an exception listener to detect errors while encoding and
         // decoding
-        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
-        ExceptionListener listener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        final LinkedList<Exception> exceptions = new LinkedList<>();
+        ExceptionListener listener = e -> exceptions.addLast(e);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
@@ -116,8 +117,8 @@ public class GroupTest {
     public void basicTest() {
         Group g = new Group("Random name", "abcd");
 
-        assertTrue(g.getName().equals("Random name"));
-        assertTrue(g.getPattern().equals("abcd"));
+        assertEquals("Random name", g.getName());
+        assertEquals("abcd", g.getPattern());
 
         Project t = new Project("abcd");
 
@@ -178,7 +179,7 @@ public class GroupTest {
         assertFalse(g3.match(t));
 
         t.setName("xyz");
-        g1.setSubgroups(new TreeSet<Group>());
+        g1.setSubgroups(new TreeSet<>());
         g1.getSubgroups().add(g2);
         g2.getSubgroups().add(g3);
 
@@ -201,8 +202,8 @@ public class GroupTest {
 
         random1.addProject(abcd);
 
-        assertTrue(random1.getProjects().size() == 1);
-        assertTrue(random1.getProjects().iterator().next() == abcd);
+        assertEquals(1, random1.getProjects().size());
+        assertSame(random1.getProjects().iterator().next(), abcd);
 
         Project efgh = new Project("efgh");
 
@@ -211,24 +212,24 @@ public class GroupTest {
 
         random2.addProject(efgh);
 
-        assertTrue(random2.getProjects().size() == 1);
-        assertTrue(random2.getProjects().iterator().next() == efgh);
+        assertEquals(1, random2.getProjects().size());
+        assertSame(random2.getProjects().iterator().next(), efgh);
     }
 
     @Test
     public void testEquality() {
         Group g1 = new Group();
         Group g2 = new Group();
-        assertTrue("null == null", g1.equals(g2));
+        assertEquals("null == null", g1, g2);
 
         g1 = new Group("name");
         g2 = new Group("other");
-        assertFalse("\"name\" != \"other\"", g1.equals(g2));
+        assertNotEquals("\"name\" != \"other\"", g1, g2);
 
         g1 = new Group("name");
         g2 = new Group("NAME");
-        assertTrue("\"name\" == \"NAME\"", g1.equals(g2));
-        assertTrue("\"name\" == \"name\"", g1.equals(g1));
-        assertTrue("\"NAME\" == \"NAME\"", g2.equals(g2));
+        assertEquals("\"name\" == \"NAME\"", g1, g2);
+        assertEquals("\"name\" == \"name\"", g1, g1);
+        assertEquals("\"NAME\" == \"NAME\"", g2, g2);
     }
 }

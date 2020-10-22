@@ -62,20 +62,17 @@ public class ContextTest {
     @Before
     public void setUp() {
         // Save initial value of the quick context scan flag.
-        savedQuickContextScanFlag
-                = RuntimeEnvironment.getInstance().isQuickContextScan();
+        savedQuickContextScanFlag = RuntimeEnvironment.getInstance().isQuickContextScan();
     }
 
     @After
     public void tearDown() {
         // Restore the initial value of the quick context scan flag.
-        RuntimeEnvironment.getInstance().
-                setQuickContextScan(savedQuickContextScanFlag);
+        RuntimeEnvironment.getInstance().setQuickContextScan(savedQuickContextScanFlag);
     }
 
     /**
      * Tests for the isEmpty() method.
-     *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
@@ -115,7 +112,6 @@ public class ContextTest {
 
     /**
      * Tests for the getContext() method.
-     *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
@@ -128,7 +124,6 @@ public class ContextTest {
 
     /**
      * Helper method for testing various paths through the getContext() method.
-     *
      * @param limit true if limited, quick context scan should be used
      * @param hitList true if output should be written to a list instead of a
      * writer
@@ -269,7 +264,6 @@ public class ContextTest {
      * Test that we don't get an {@code ArrayIndexOutOfBoundsException} when a
      * long (&gt;100 characters) line which contains a match is not terminated
      * with a newline character before the buffer boundary. Bug #383.
-     *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
@@ -296,7 +290,6 @@ public class ContextTest {
     /**
      * Test that we get the [all...] link if a very long line crosses the buffer
      * boundary. Bug 383.
-     *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
@@ -325,7 +318,6 @@ public class ContextTest {
      * Test that a line with more than 100 characters after the first match is
      * truncated, and that &hellip; is appended to show that the line is
      * truncated. Bug 383.
-     *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
@@ -355,7 +347,6 @@ public class ContextTest {
     /**
      * Test that valid HTML is generated for a match that spans multiple lines.
      * It used to nest the tags incorrectly. Bug #15632.
-     *
      * @throws java.lang.Exception exception
      */
     @Test
@@ -387,7 +378,6 @@ public class ContextTest {
 
     /**
      * Parse the XML document contained in a string.
-     *
      * @param document string with the contents of an XML document
      * @return a DOM representation of the document
      * @throws Exception if the document cannot be parsed
@@ -402,7 +392,6 @@ public class ContextTest {
     /**
      * Verify that the matching lines are shown in their original form and not
      * lower-cased (bug #16848).
-     *
      * @throws java.lang.Exception exception
      */
     @Test
@@ -413,28 +402,27 @@ public class ContextTest {
         Context c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", null, false, qb.isDefSearch(), null));
         assertEquals("<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
-                + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
+                        + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
                 out.toString());
     }
 
     /**
      * The results from mixed-case symbol search should contain tags.
-     *
      * @throws java.lang.Exception exception
      */
     @Test
     public void bug17582() throws Exception {
         // Freetext search should match regardless of case
         bug17582(new QueryBuilder().setFreetext("Bug17582"),
-                new int[]{2, 3}, new String[]{"type1", "type2"});
+                new int[] {2, 3}, new String[] {"type1", "type2"});
 
         // Defs search should only match if case matches
         bug17582(new QueryBuilder().setDefs("Bug17582"),
-                new int[]{3}, new String[]{"type2"});
+                new int[] {3}, new String[] {"type2"});
 
         // Refs search should only match if case matches
         bug17582(new QueryBuilder().setRefs("Bug17582"),
-                new int[]{3}, new String[]{"type2"});
+                new int[] {3}, new String[] {"type2"});
 
         // Path search shouldn't match anything in source
         bug17582(new QueryBuilder().setPath("Bug17582"),
@@ -443,17 +431,16 @@ public class ContextTest {
         // Refs should only match if case matches, but freetext will match
         // regardless of case
         bug17582(new QueryBuilder().setRefs("Bug17582").setFreetext("Bug17582"),
-                new int[]{2, 3}, new String[]{"type1", "type2"});
+                new int[] {2, 3}, new String[] {"type1", "type2"});
 
         // Refs should only match if case matches, hist shouldn't match
         // anything in source
         bug17582(new QueryBuilder().setRefs("Bug17582").setHist("bug17582"),
-                new int[]{3}, new String[]{"type2"});
+                new int[] {3}, new String[] {"type2"});
     }
 
     /**
      * Helper method which does the work for {@link #bug17582()}.
-     *
      * @param builder builder for the query we want to test
      * @param lines the expected line numbers in the hit list
      * @param tags the expected tags in the hit list
@@ -481,7 +468,6 @@ public class ContextTest {
 
     /**
      * Test that regexp search has matched words in context.
-     *
      * @throws ParseException parse exception
      */
     @Test
@@ -495,8 +481,7 @@ public class ContextTest {
     }
 
     /**
-     * Helper method for testing presence of expected words in search context
-     *
+     * Helper method for testing presence of expected words in search context.
      * @param searchInText Context of document we are searching in.
      * @param queryString Definition of search query.
      * @param expectWordInContext Word expected to be found by 'queryString' in

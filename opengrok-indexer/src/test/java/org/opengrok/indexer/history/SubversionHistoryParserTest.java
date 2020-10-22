@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>. 
+ * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
@@ -41,7 +41,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
  * @author austvik
  */
 public class SubversionHistoryParserTest {
@@ -76,10 +75,10 @@ public class SubversionHistoryParserTest {
     public void parseEmpty() throws Exception {
         // Empty repository shoud produce at least valid XML.
         History result = instance.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<log>\n" + "</log>");
+                "<log>\n" + "</log>");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
+        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
     }
 
     /**
@@ -89,15 +88,15 @@ public class SubversionHistoryParserTest {
     public void ParseALaSvn() throws Exception {
         String revId1 = "12345";
         String author1 = "username1";
-        String date1= "2007-09-11T11:48:56.123456Z";
+        String date1 = "2007-09-11T11:48:56.123456Z";
         String file1 = "trunk/project/filename.ext";
         String revId2 = "23456";
         String author2 = "username2";
-        String date2= "2006-08-10T11:38:56.123456Z";
+        String date2 = "2006-08-10T11:38:56.123456Z";
         String file2 = "trunk/project/path/filename2.ext2";
         String revId3 = "765432";
         String author3 = "username3";
-        String date3= "2006-08-09T10:38:56.123456Z";
+        String date3 = "2006-08-09T10:38:56.123456Z";
         String output = "<?xml version=\"1.0\"?>\n" +
                 "<log>\n" +
                 "<logentry\n" +
@@ -120,7 +119,7 @@ public class SubversionHistoryParserTest {
                 "<path\n" +
                 "   action=\"M\">" + file2 + "</path>\n" +
                 "</paths>\n" +
-                "<msg>* " + file2 +"\n" +
+                "<msg>* " + file2 + "\n" +
                 "  some comment\n" +
                 "  over several lines.\n" +
                 "</msg>\n" +
@@ -146,8 +145,8 @@ public class SubversionHistoryParserTest {
         assertNotNull(result.getHistoryEntries());
         assertEquals(3, result.getHistoryEntries().size());
 
-        String file1pref = Paths.get(Paths.get("/"+file1).toUri()).toFile().toString();
-        String file2pref = Paths.get(Paths.get("/"+file2).toUri()).toFile().toString();
+        String file1pref = Paths.get(Paths.get("/" + file1).toUri()).toFile().toString();
+        String file2pref = Paths.get(Paths.get("/" + file2).toUri()).toFile().toString();
 
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
@@ -182,6 +181,7 @@ public class SubversionHistoryParserTest {
             this.actualDateTime = actualDateTime;
             this.expectedException = false;
         }
+
         DateTimeTestData(String dateTimeString) {
             this.dateTimeString = dateTimeString;
             this.actualDateTime = null;
@@ -193,18 +193,18 @@ public class SubversionHistoryParserTest {
 
     @Test
     public void testDateFormats() {
-      DateTimeTestData[] dates = new DateTimeTestData[]{
-            new DateTimeTestData("2020-03-24T17:11:35.545818Z", LocalDateTime.of(2020, 3, 24, 17, 11, 35, 545000000)),
-            new DateTimeTestData("2007-09-11T11:48:56.123456Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56, 123000000)),
-            new DateTimeTestData("2007-09-11T11:48:56.000000Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
-            new DateTimeTestData("2007-09-11T11:48:56.Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
-            new DateTimeTestData("2007-09-11 11:48:56Z"),
-            new DateTimeTestData("2007-09-11T11:48:56"),
-            new DateTimeTestData("2007-09-11T11:48:56.123456"),
-            new DateTimeTestData("2007-09-11T11:48:56.000000"),
+        DateTimeTestData[] dates = new DateTimeTestData[] {
+                new DateTimeTestData("2020-03-24T17:11:35.545818Z", LocalDateTime.of(2020, 3, 24, 17, 11, 35, 545000000)),
+                new DateTimeTestData("2007-09-11T11:48:56.123456Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56, 123000000)),
+                new DateTimeTestData("2007-09-11T11:48:56.000000Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+                new DateTimeTestData("2007-09-11T11:48:56.Z", LocalDateTime.of(2007, 9, 11, 11, 48, 56)),
+                new DateTimeTestData("2007-09-11 11:48:56Z"),
+                new DateTimeTestData("2007-09-11T11:48:56"),
+                new DateTimeTestData("2007-09-11T11:48:56.123456"),
+                new DateTimeTestData("2007-09-11T11:48:56.000000"),
         };
 
-        for (int i = 0; i < dates.length; i++) {
+        for (DateTimeTestData date : dates) {
             String revId = "12345";
             String author = "username1";
             String file = "trunk/project/filename.ext";
@@ -214,7 +214,7 @@ public class SubversionHistoryParserTest {
                         + "<logentry\n"
                         + "   revision=\"" + revId + "\">\n"
                         + "<author>" + author + "</author>\n"
-                        + "<date>" + dates[i].dateTimeString + "</date>\n"
+                        + "<date>" + date.dateTimeString + "</date>\n"
                         + "<paths>\n"
                         + "<path\n"
                         + "   action=\"M\">" + file + "</path>\n"
@@ -233,17 +233,16 @@ public class SubversionHistoryParserTest {
                 assertEquals(revId, e.getRevision());
                 assertEquals(author, e.getAuthor());
 
-                Date actualDateTime =
-                    Date.from(dates[i].actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
-                assertEquals(dates[i].dateTimeString, actualDateTime, e.getDate());
+                Date actualDateTime = Date.from(date.actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
+                assertEquals(date.dateTimeString, actualDateTime, e.getDate());
                 assertEquals(1, e.getFiles().size());
-                assertEquals(Paths.get(Paths.get("/"+file).toUri()).toFile().toString(), e.getFiles().first());
-                if (dates[i].expectedException) {
-                    fail("Should throw an IO exception for " + dates[i].dateTimeString);
+                assertEquals(Paths.get(Paths.get("/" + file).toUri()).toFile().toString(), e.getFiles().first());
+                if (date.expectedException) {
+                    fail("Should throw an IO exception for " + date.dateTimeString);
                 }
             } catch (IOException ex) {
-                if (!dates[i].expectedException) {
-                    fail("Should not throw an IO exception for " + dates[i].dateTimeString);
+                if (!date.expectedException) {
+                    fail("Should not throw an IO exception for " + date.dateTimeString);
                 }
             }
         }

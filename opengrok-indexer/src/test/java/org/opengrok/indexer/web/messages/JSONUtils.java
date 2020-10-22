@@ -52,8 +52,9 @@ public final class JSONUtils {
                 }
             }
 
-            if (token != JsonToken.FIELD_NAME)
+            if (token != JsonToken.FIELD_NAME) {
                 continue;
+            }
 
             fields.add(jParser.getCurrentName());
         }

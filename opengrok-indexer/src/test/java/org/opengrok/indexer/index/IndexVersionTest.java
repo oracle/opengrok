@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -31,9 +31,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.After;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +48,6 @@ import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Verify index version check.
- * 
  * @author Vladimir Kotal
  */
 public class IndexVersionTest {
@@ -53,7 +55,7 @@ public class IndexVersionTest {
     private TestRepository repository;
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private Path oldIndexDataDir;
-    
+
     @BeforeClass
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -70,12 +72,12 @@ public class IndexVersionTest {
     @After
     public void tearDown() throws IOException {
         repository.destroy();
-        
+
         if (oldIndexDataDir != null) {
             IOUtils.removeRecursive(oldIndexDataDir);
         }
     }
-    
+
     /**
      * Generate index(es) and check version.
      */
@@ -88,27 +90,27 @@ public class IndexVersionTest {
 
         IndexVersion.check(subFiles);
     }
-    
+
     @Test
     public void testIndexVersionNoIndex() throws Exception {
         IndexVersion.check(new ArrayList<>());
     }
-    
+
     @Test
     public void testIndexVersionProjects() throws Exception {
         testIndexVersion(true, new ArrayList<>());
     }
-    
+
     @Test
     public void testIndexVersionSelectedProjects() throws Exception {
-        testIndexVersion(true, Arrays.asList(new String[]{ "mercurial", "git" }));
+        testIndexVersion(true, Arrays.asList("mercurial", "git"));
     }
-    
+
     @Test
     public void testIndexVersionNoProjects() throws Exception {
         testIndexVersion(false, new ArrayList<>());
     }
-    
+
     @Test(expected = IndexVersion.IndexVersionException.class)
     public void testIndexVersionOldIndex() throws Exception {
         oldIndexDataDir = Files.createTempDirectory("data");

@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -36,10 +37,10 @@ import java.util.List;
 
 import org.junit.After;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +58,6 @@ import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Test indexer w.r.t. repositories.
- *
  * @author Vladimir Kotal
  */
 public class IndexerRepoTest {
@@ -88,7 +88,7 @@ public class IndexerRepoTest {
     public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(true);
     }
-    
+
     /**
      * Test it is possible to enable history per project.
      */
@@ -98,21 +98,21 @@ public class IndexerRepoTest {
     public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(false);
     }
-    
+
     private void testPerProjectHistory(boolean globalOn) throws IndexerException, IOException, HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        
+
         // Make sure we start from scratch.
         Path dataRoot = Files.createTempDirectory("dataForPerProjectHistoryTest");
         env.setDataRoot(dataRoot.toString());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(globalOn);
-        
+
         Project proj = new Project("mercurial", "/mercurial");
         proj.setHistoryEnabled(!globalOn);
         env.getProjects().clear();
         env.getProjects().put("mercurial", proj);
-        
+
         Indexer.getInstance().prepareIndexer(
                 env,
                 true, // search for repositories
@@ -120,7 +120,7 @@ public class IndexerRepoTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null); // repositories - not needed when not refreshing history
-        
+
         File repoRoot = new File(env.getSourceRootFile(), "git");
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -129,7 +129,7 @@ public class IndexerRepoTest {
         } else {
             assertNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
-        
+
         repoRoot = new File(env.getSourceRootFile(), "mercurial");
         fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -138,10 +138,10 @@ public class IndexerRepoTest {
         } else {
             assertNotNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
-        
+
         IOUtils.removeRecursive(dataRoot);
     }
-    
+
     /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
@@ -191,7 +191,7 @@ public class IndexerRepoTest {
         String epath = sourceRoot.toString() + File.separator + SYMLINK;
         String apath = repo.getDirectoryName();
         assertTrue("Should match (with macOS leeway):\n" + epath + "\nv.\n" +
-            apath, epath.equals(apath) || apath.equals("/private" + epath));
+                apath, epath.equals(apath) || apath.equals("/private" + epath));
 
         // Check that history exists for a file in the repository.
         File repoRoot = new File(env.getSourceRootFile(), SYMLINK);

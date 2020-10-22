@@ -43,10 +43,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
- * JUnit test to test that the DirectoryListing produce the expected result
+ * JUnit test to test that the DirectoryListing produce the expected result.
  */
 public class DirectoryListingTest {
 
@@ -70,7 +73,7 @@ public class DirectoryListingTest {
         String href;
         long lastModified;
         /**
-         * May be:
+         * FileEntry size. May be:
          * <pre>
          * positive integer - for a file
          * -2 - for a directory
@@ -216,7 +219,7 @@ public class DirectoryListingTest {
 
     /**
      * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
-     * href="foo" class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
+     * href="foo" class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;.
      */
     private String getHref(Node item) {
         Node a = item.getFirstChild(); // a
@@ -232,7 +235,7 @@ public class DirectoryListingTest {
 
     /**
      * Get the filename from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
-     * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
+     * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;.
      */
     private String getFilename(Node item) {
         Node a = item.getFirstChild(); // a
@@ -255,7 +258,7 @@ public class DirectoryListingTest {
     }
 
     /**
-     * Get the LastModified date from the &lt;td&gt;date&lt;/td&gt;
+     * Get the LastModified date from the &lt;td&gt;date&lt;/td&gt;.
      *
      * @todo fix the item
      * @param item the node representing &lt;td&gt
@@ -274,7 +277,7 @@ public class DirectoryListingTest {
     }
 
     /**
-     * Get the size from the: &lt;td&gt;&lt;tt&gt;size&lt;/tt&gt;&lt;/td&gt;
+     * Get the size from the: &lt;td&gt;&lt;tt&gt;size&lt;/tt&gt;&lt;/td&gt;.
      *
      * @param item the node representing &lt;td&gt;
      * @return positive integer if the record was a file<br>
@@ -297,7 +300,7 @@ public class DirectoryListingTest {
     }
 
     /**
-     * Validate this file-entry in the table
+     * Validate this file-entry in the table.
      *
      * @param element The &lt;tr&gt; element
      * @throws java.lang.Exception
@@ -330,7 +333,7 @@ public class DirectoryListingTest {
     }
 
     /**
-     * Test directory listing
+     * Test directory listing.
      *
      * @throws java.lang.Exception if an error occurs while generating the list.
      */

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.servlet.http.Cookie;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,14 +45,14 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
         ProjectHelperTest.setUpClass();
 
         List<Group> grps = new ArrayList<>(env.getGroups());
-        Map<String,Project> projects = env.getProjects();
+        Map<String, Project> projects = env.getProjects();
         List<RepositoryInfo> rps = env.getRepositories();
         Map<Project, List<RepositoryInfo>> map = getRepositoriesMap();
 
         /**
          * Extend the original groups with some subgroups - structure should be
          * now like this.
-         * 
+         *
          *      allowed_group_2                 group_1
          *     /               \               /       \
          * group_0       allowed_group_3  group_0    allowed_group_3
@@ -214,27 +215,27 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 
     @Test
     public void testHasFavourite() {
-        String[] cookie = new String[]{
-            "grouped_project_2_1",
-            "allowed_grouped_project_2_1",
-            "ungrouped_project_2_1",
-            "uknown",
-            "allowed_grouped_project_0_1",
-            "grouped_project_0_1",};
-        boolean[] exp = new boolean[]{
-            false,
-            true,
-            false,
-            false,
-            false,
-            false,};
-        Group[] groups = new Group[]{
-            Group.getByName("allowed_group_2"),
-            Group.getByName("allowed_group_2"),
-            Group.getByName("allowed_group_2"),
-            Group.getByName("allowed_group_2"),
-            Group.getByName("group_0"),
-            Group.getByName("group_0"),};
+        String[] cookie = new String[] {
+                "grouped_project_2_1",
+                "allowed_grouped_project_2_1",
+                "ungrouped_project_2_1",
+                "uknown",
+                "allowed_grouped_project_0_1",
+                "grouped_project_0_1"};
+        boolean[] exp = new boolean[] {
+                false,
+                true,
+                false,
+                false,
+                false,
+                false};
+        Group[] groups = new Group[] {
+                Group.getByName("allowed_group_2"),
+                Group.getByName("allowed_group_2"),
+                Group.getByName("allowed_group_2"),
+                Group.getByName("allowed_group_2"),
+                Group.getByName("group_0"),
+                Group.getByName("group_0")};
 
         Assert.assertTrue(groups.length == exp.length && exp.length == cookie.length);
 

@@ -191,7 +191,7 @@ public class GroupsTest {
         return null;
     }
 
-    final static String BASIC_CONFIGURATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    static final String BASIC_CONFIGURATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<java version=\"1.8.0_65\" class=\"java.beans.XMLDecoder\">\n"
             + " <object class=\"org.opengrok.indexer.configuration.Configuration\" id=\"Configuration0\">\n"
             + "    <void method=\"addGroup\">\n"

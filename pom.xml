@@ -333,7 +333,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.1.1</version>
                     <executions>
                         <execution>
                             <id>checkstyle</id>
@@ -345,7 +345,9 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                                 <failsOnError>true</failsOnError>
                                 <suppressionsLocation>/dev/checkstyle/suppressions.xml</suppressionsLocation>
                                 <headerLocation>/dev/checkstyle/fileheader.txt</headerLocation>
+                                <includeTestSourceDirectory>true</includeTestSourceDirectory>
                                 <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
+                                <testSourceDirectories>${project.build.testSourceDirectory}</testSourceDirectories>
                             </configuration>
                             <goals>
                                 <goal>check</goal>

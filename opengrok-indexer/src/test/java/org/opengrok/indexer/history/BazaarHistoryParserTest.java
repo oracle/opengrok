@@ -18,13 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.history;
 
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -35,18 +34,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.PlatformUtils;
-import org.opengrok.indexer.web.Util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author austvik
  */
 public class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
-    
+
     public BazaarHistoryParserTest() {
     }
 
@@ -83,7 +82,7 @@ public class BazaarHistoryParserTest {
         History result = instance.parse("");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());        
+        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
     }
 
     @Test
@@ -133,11 +132,11 @@ public class BazaarHistoryParserTest {
                 "      Just a message\n";
 
         History result = instance.parse(output);
-        
+
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
         assertEquals(3, result.getHistoryEntries().size());
-        
+
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
@@ -156,7 +155,7 @@ public class BazaarHistoryParserTest {
         assertTrue(e3.getMessage().contains("line2"));
         assertTrue(e3.getMessage().contains("revno: " + revId4));
     }
-    
+
     @Test
     @SuppressWarnings("unchecked")
     public void parseLogDirectory() throws Exception {
@@ -164,11 +163,11 @@ public class BazaarHistoryParserTest {
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
         String[] files = {
-            "/filename.ext",
-            "/directory",
-            "/directory/filename.ext",
-            "/directory/filename2.ext2",
-            "/otherdir/file.extension"
+                "/filename.ext",
+                "/directory",
+                "/directory/filename.ext",
+                "/directory/filename2.ext2",
+                "/otherdir/file.extension"
         };
         if (PlatformUtils.isWindows()) {
             files = new String[] {
@@ -185,14 +184,14 @@ public class BazaarHistoryParserTest {
             output.append('-');
         }
         output.append('\n');
-        output.append("revno: " + revId1 + "\n");
-        output.append("committer: " + author1 + "\n");
-        output.append("timestamp: " + date1 + "\n");
+        output.append("revno: ").append(revId1).append("\n");
+        output.append("committer: ").append(author1).append("\n");
+        output.append("timestamp: ").append(date1).append("\n");
         output.append("message:\n");
         output.append("  Some message\n");
         output.append("added:\n");
         for (String file : files) {
-            output.append("  " + file.substring(1) + "\n");
+            output.append("  ").append(file.substring(1)).append("\n");
         }
 
         History result = instance.parse(output.toString());
@@ -200,11 +199,11 @@ public class BazaarHistoryParserTest {
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
         assertEquals(1, result.getHistoryEntries().size());
-        
+
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
         assertEquals(new HashSet<>(Arrays.asList(files)), e1.getFiles());
     }
-    
+
 }

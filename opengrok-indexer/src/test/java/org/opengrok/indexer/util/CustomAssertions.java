@@ -39,11 +39,11 @@ import org.opengrok.indexer.analysis.JFlexTokenizer;
 import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
- * Represents a container for custom test assertion methods
+ * Represents a container for custom test assertion methods.
  */
 public class CustomAssertions {
     /**
-     * non-public so as to be just a static container class
+     * non-public so as to be just a static container class.
      */
     protected CustomAssertions() {
     }
@@ -56,11 +56,9 @@ public class CustomAssertions {
      * @param expected the expected content
      * @param actual the actual content
      */
-    public static void assertLinesEqual(String messagePrefix, String expected,
-        String actual) {
-
-        String expecteds[] = expected.split("\n");
-        String gotten[] = actual.split("\n");
+    public static void assertLinesEqual(String messagePrefix, String expected, String actual) {
+        String[] expecteds = expected.split("\n");
+        String[] gotten = actual.split("\n");
         assertLinesEqual(messagePrefix, expecteds, gotten);
     }
 
@@ -71,8 +69,7 @@ public class CustomAssertions {
      * @param expecteds the expected content of lines
      * @param actuals the actual content of lines
      */
-    public static void assertLinesEqual(String messagePrefix,
-        String expecteds[], String actuals[]) {
+    public static void assertLinesEqual(String messagePrefix, String[] expecteds, String[] actuals) {
 
         List<Integer> diffLines = new ArrayList<>();
 
@@ -90,7 +87,9 @@ public class CustomAssertions {
                 ++ndiffs;
                 lastDiff = i;
                 diffLines.add(i);
-                if (ndiffs >= SHOW_N_DIFFS) break;
+                if (ndiffs >= SHOW_N_DIFFS) {
+                    break;
+                }
             }
         }
         if (!diffLines.isEmpty()) {
@@ -98,9 +97,8 @@ public class CustomAssertions {
             diffLines.clear();
         }
 
-        assertTrue(messagePrefix + "--should have no diffs", ndiffs == 0);
-        assertEquals(messagePrefix + "--number of lines", expecteds.length,
-            actuals.length);
+        assertEquals(messagePrefix + "--should have no diffs", 0, ndiffs);
+        assertEquals(messagePrefix + "--number of lines", expecteds.length, actuals.length);
     }
 
     /**
@@ -112,16 +110,14 @@ public class CustomAssertions {
      * @throws java.lang.Exception if an error occurs constructing a
      * {@code klass} instance or testing the stream
      */
-    public static void assertSymbolStream(
-        Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
-        List<String> expectedTokens) throws Exception {
+    public static void assertSymbolStream(Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
+            List<String> expectedTokens) throws Exception {
 
         byte[] inputCopy = copyStream(iss);
         String input = new String(inputCopy, StandardCharsets.UTF_8);
         JFlexTokenizer tokenizer = new JFlexTokenizer(
             klass.getConstructor(Reader.class).newInstance(
-	        new InputStreamReader(new ByteArrayInputStream(inputCopy),
-	        StandardCharsets.UTF_8)));
+                    new InputStreamReader(new ByteArrayInputStream(inputCopy), StandardCharsets.UTF_8)));
 
         CharTermAttribute term = tokenizer.addAttribute(
             CharTermAttribute.class);
@@ -161,16 +157,16 @@ public class CustomAssertions {
         }
     }
 
-    private static void printDiffs(String expecteds[], String actuals[],
-        List<Integer> diffLines) {
-
-        if (diffLines.size() < 1) return;
+    private static void printDiffs(String[] expecteds, String[] actuals, List<Integer> diffLines) {
+        if (diffLines.size() < 1) {
+            return;
+        }
 
         int ln0 = diffLines.get(0);
         int numln = diffLines.size();
-        int loff = (ln0 < expecteds.length ? ln0 : expecteds.length) + 1;
+        int loff = (Math.min(ln0, expecteds.length)) + 1;
         int lnum = count_within(expecteds.length, ln0, numln);
-        int roff = (ln0 < actuals.length ? ln0 : actuals.length) + 1;
+        int roff = (Math.min(ln0, actuals.length)) + 1;
         int rnum = count_within(actuals.length, ln0, numln);
 
         System.out.format("@@ -%d,%d +%d,%d @@", loff, lnum, roff, rnum);
@@ -196,7 +192,9 @@ public class CustomAssertions {
 
     private static int count_within(int maxoffset, int ln0, int numln) {
         while (numln > 0) {
-            if (ln0 + numln <= maxoffset) return numln;
+            if (ln0 + numln <= maxoffset) {
+                return numln;
+            }
             --numln;
         }
         return 0;
@@ -208,8 +206,8 @@ public class CustomAssertions {
      */
     private static void printTokens(List<String> tokens) {
         System.out.println("BEGIN TOKENS\n=====");
-        for (int i = 0; i < tokens.size(); ++i) {
-            System.out.println(tokens.get(i));
+        for (String token : tokens) {
+            System.out.println(token);
         }
         System.out.println("=====\nEND TOKENS");
     }

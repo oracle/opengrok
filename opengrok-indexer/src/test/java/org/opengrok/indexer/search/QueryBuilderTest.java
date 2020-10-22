@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.search;
@@ -26,31 +26,31 @@ package org.opengrok.indexer.search;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Unit test class for QueryBuilder
+ * Unit test class for QueryBuilder.
  * @author Lubos Kosco
  */
 public class QueryBuilderTest {
-       
+
     /**
      * Test of setFreetext method, of class QueryBuilder.
      * @throws ParseException parse exception
      */
     @Test
-    public void testParsePath() throws ParseException {        
+    public void testParsePath() throws ParseException {
         QueryBuilder instance = new QueryBuilder();
         String expResult = "+this +is +a +test +path";
         QueryBuilder result = instance.setPath("this/is/a/test/path");
-        Query test = result.build();        
-        assertEquals(expResult, test.toString(QueryBuilder.PATH) );        
-        
+        Query test = result.build();
+        assertEquals(expResult, test.toString(QueryBuilder.PATH));
+
         expResult = "+this +is +a +test +path +with +file +. +ext";
         result = instance.setPath("/this/is/a/test/path/with/file.ext");
-        test = result.build();        
-        assertEquals(expResult, test.toString(QueryBuilder.PATH) );        
-        
+        test = result.build();
+        assertEquals(expResult, test.toString(QueryBuilder.PATH));
     }
-    
+
 }

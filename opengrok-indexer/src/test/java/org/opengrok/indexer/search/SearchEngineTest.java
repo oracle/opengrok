@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
@@ -37,11 +37,15 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.*;
 import org.opengrok.indexer.history.RepositoryFactory;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Do basic testing of the SearchEngine
+ * Do basic testing of the SearchEngine.
  *
  * @author Trond Norbye
  */

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -50,7 +50,6 @@ import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Tests for BitKeeperRepository.
- *
  * @author James Service &lt;jas2701@googlemail.com&gt;
  */
 @ConditionalRun(RepositoryInstalled.BitKeeperInstalled.class)
@@ -63,7 +62,7 @@ public class BitKeeperRepositoryTest {
     private BitKeeperRepository bkRepo;
     private List<String> bkFiles;
 
-    private class BitKeeperFilenameFilter implements FilenameFilter {
+    private static class BitKeeperFilenameFilter implements FilenameFilter {
         @Override
         public boolean accept(File dir, String name) {
             return !(name.equals("BitKeeper") || name.equals(".bk"));
@@ -95,7 +94,7 @@ public class BitKeeperRepositoryTest {
         bkFiles = null;
     }
 
-    static private void validateHistory(History history) throws Exception {
+    private static void validateHistory(History history) throws Exception {
         final List<HistoryEntry> entries = history.getHistoryEntries();
         final List<String> renames = history.getRenamedFiles();
 
@@ -113,12 +112,12 @@ public class BitKeeperRepositoryTest {
 
         // Validate that the renamed files list corresponds
         // to all the file names we know of for this file.
-        final TreeSet<String> fileNames = new TreeSet<String>();
+        final TreeSet<String> fileNames = new TreeSet<>();
         for (final HistoryEntry entry : entries) {
             fileNames.addAll(entry.getFiles());
         }
         final String currentName = entries.get(0).getFiles().first();
-        final TreeSet<String> pastNames = new TreeSet<String>(renames);
+        final TreeSet<String> pastNames = new TreeSet<>(renames);
         pastNames.add(currentName);
         assertEquals("File history has incorrect rename list.", fileNames, pastNames);
     }
@@ -166,7 +165,7 @@ public class BitKeeperRepositoryTest {
         assertTrue("No exception thrown by getHistory with fake file", caughtPart);
     }
 
-    static private String readStream(InputStream stream) throws IOException {
+    private static String readStream(InputStream stream) throws IOException {
         final Scanner scanner = new Scanner(stream).useDelimiter("\\A");
         return scanner.hasNext() ? scanner.next() : "";
     }
@@ -207,7 +206,7 @@ public class BitKeeperRepositoryTest {
             assertEquals("Wrong file returned by annotate.", currentVersion.getFilename(), file.getName());
             assertEquals("Wrong file returned by annotate.", firstVersion.getFilename(), file.getName());
             assertTrue("Incorrect revisions returned by annotate.", currentVersion.getRevisions().size() > 1);
-            assertTrue("Incorrect revisions returned by annotate.", firstVersion.getRevisions().size() == 1);
+            assertEquals("Incorrect revisions returned by annotate.", 1, firstVersion.getRevisions().size());
         }
     }
 

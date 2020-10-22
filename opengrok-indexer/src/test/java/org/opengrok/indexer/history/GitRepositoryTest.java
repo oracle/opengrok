@@ -18,15 +18,11 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -39,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -52,8 +49,11 @@ import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
- *
  * @author austvik
  */
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
@@ -62,7 +62,7 @@ public class GitRepositoryTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    static private TestRepository repository = new TestRepository();
+    private static TestRepository repository = new TestRepository();
     private GitRepository instance;
 
     @BeforeClass
@@ -110,11 +110,11 @@ public class GitRepositoryTest {
                 revId2 + " file2.h (" + author2 + "     2007-09-10 23:02:45 -0400 273)   if (some code)\n" +
                 revId3 + " file2.c  (" + author3 + "      2006-09-20 21:47:42 -0700 274)           call_function(i);\n";
         String fileName = "something.ext";
-        
+
         GitAnnotationParser parser = new GitAnnotationParser(fileName);
         parser.processStream(new ByteArrayInputStream(output.getBytes()));
         Annotation result = parser.getAnnotation();
-        
+
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {
@@ -151,11 +151,11 @@ public class GitRepositoryTest {
 
     @Test
     public void testDateFormats() {
-        String[][] tests = new String[][]{
-            {"abcd", "expected exception"},
-            {"2016-01-01 10:00:00", "expected exception"},
-            {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "expected exception"},
-            {"2017-07-25T13:17:44+02:00", null},
+        String[][] tests = new String[][] {
+                {"abcd", "expected exception"},
+                {"2016-01-01 10:00:00", "expected exception"},
+                {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "expected exception"},
+                {"2017-07-25T13:17:44+02:00", null},
         };
 
         final GitRepository repository = new GitRepository();
@@ -187,7 +187,7 @@ public class GitRepositoryTest {
      */
     @Test
     public void testRenamedFiles() throws Exception {
-        String[][] tests = new String[][]{
+        String[][] tests = new String[][] {
                 {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", Paths.get("moved2", "renamed2.c").toString()},
                 {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
                 {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
@@ -198,11 +198,9 @@ public class GitRepositoryTest {
         };
 
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
 
-        int i = 0;
         for (String[] test : tests) {
             String file = Paths.get(root.getCanonicalPath(), test[0]).toString();
             String changeset = test[1];
@@ -213,7 +211,6 @@ public class GitRepositoryTest {
             } catch (IOException ex) {
                 Assert.fail(String.format("Looking for original name of %s in %s shouldn't fail", file, changeset));
             }
-            i++;
         }
     }
 
@@ -234,7 +231,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(false);
-        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
     }
 
@@ -248,7 +245,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
-        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
     }
 
@@ -262,18 +259,18 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
-        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, "1086eaf5", revSet);
     }
 
     @Test(expected = IOException.class)
     public void testInvalidRenamedFiles() throws Exception {
-        String[][] tests = new String[][]{
-            {"", "67dfbe26"},
-            {"moved/renamed2.c", ""},
-            {"", ""},
-            {null, "67dfbe26"},
-            {"moved/renamed2.c", null}
+        String[][] tests = new String[][] {
+                {"", "67dfbe26"},
+                {"moved/renamed2.c", ""},
+                {"", ""},
+                {null, "67dfbe26"},
+                {"moved/renamed2.c", null}
 
         };
         File root = new File(repository.getSourceRoot(), "git");
@@ -290,7 +287,6 @@ public class GitRepositoryTest {
     /**
      * Test that {@code getHistoryGet()} returns historical contents of renamed
      * file.
-     *
      * @see #testRenamedFiles for git repo structure info
      */
     @Test
@@ -339,23 +335,23 @@ public class GitRepositoryTest {
 
         final List<String[]> tests = Arrays.asList(
                 // old content (after revision 1086eaf5 inclusively)
-                new String[]{Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content},
-                new String[]{Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content},
-                new String[]{Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), "1086eaf5", new_content},
 
-                new String[]{Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content},
-                new String[]{Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), "67dfbe26", new_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), "1086eaf5", new_content},
 
-                new String[]{Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), "1086eaf5", new_content},
 
                 // old content (before revision b6413947 inclusively)
-                new String[]{Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content},
-                new String[]{Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content},
-                new String[]{Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content},
-                new String[]{Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content},
-                new String[]{Paths.get("moved", "renamed.c").toString(), "b6413947", old_content},
-                new String[]{Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content},
-                new String[]{Paths.get("renamed.c").toString(), "ce4c98ec", old_content}
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), "b6413947", old_content},
+                new String[] {Paths.get("moved2", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), "b6413947", old_content},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), "ce4c98ec", old_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), "b6413947", old_content},
+                new String[] {Paths.get("moved", "renamed.c").toString(), "ce4c98ec", old_content},
+                new String[] {Paths.get("renamed.c").toString(), "ce4c98ec", old_content}
         );
 
         for (String[] params : tests) {
@@ -366,21 +362,20 @@ public class GitRepositoryTest {
     /**
      * Test that {@code getHistoryGet()} returns historical contents of renamed
      * file.
-     *
      * @see #testRenamedFiles for git repo structure info
      */
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
         final List<String[]> tests = Arrays.asList(
-                new String[]{Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
+                new String[] {Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
 
-                new String[]{Paths.get("moved", "renamed.c").toString(), "84599b3c"},
-                new String[]{Paths.get("moved", "renamed.c").toString(), "67dfbe26"},
+                new String[] {Paths.get("moved", "renamed.c").toString(), "84599b3c"},
+                new String[] {Paths.get("moved", "renamed.c").toString(), "67dfbe26"},
 
-                new String[]{Paths.get("renamed.c").toString(), "84599b3c"},
-                new String[]{Paths.get("renamed.c").toString(), "67dfbe26"},
-                new String[]{Paths.get("renamed.c").toString(), "1086eaf5"},
-                new String[]{Paths.get("renamed.c").toString(), "b6413947"}
+                new String[] {Paths.get("renamed.c").toString(), "84599b3c"},
+                new String[] {Paths.get("renamed.c").toString(), "67dfbe26"},
+                new String[] {Paths.get("renamed.c").toString(), "1086eaf5"},
+                new String[] {Paths.get("renamed.c").toString(), "b6413947"}
         );
 
         for (String[] params : tests) {

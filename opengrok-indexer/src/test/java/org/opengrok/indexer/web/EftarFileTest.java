@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -32,10 +32,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * JUnit test to test the EftarFile-system
+ * JUnit test to test the EftarFile-system.
  */
 public class EftarFileTest {
 
@@ -45,7 +46,7 @@ public class EftarFileTest {
     public EftarFileTest() {
     }
 
-    private final static String PATH_STRING = "/path";
+    private static final String PATH_STRING = "/path";
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -58,14 +59,17 @@ public class EftarFileTest {
             StringBuilder sb = new StringBuilder();
             for (int ii = 0; ii < 100; ii++) {
                 sb.append(PATH_STRING);
-                sb.append(Integer.toString(ii));
+                sb.append(ii);
                 out.print(sb.toString());
                 out.print("\tDescription ");
-                out.println(Integer.toString(ii));
+                out.println(ii);
             }
             out.flush();
         } finally {
-            try { out.close(); } catch (Exception e) { }
+            try {
+                out.close();
+            } catch (Exception e) {
+            }
         }
 
         // Create eftar files.
@@ -96,7 +100,7 @@ public class EftarFileTest {
     }
 
     /**
-     * Test usage of an EftarFile
+     * Test usage of an EftarFile.
      * @throws IOException if an error occurs while accessing the eftar file
      */
     @Test
@@ -112,9 +116,9 @@ public class EftarFileTest {
         int offset = match.length();
         for (int ii = 0; ii < 100; ii++) {
             sb.append(PATH_STRING);
-            sb.append(Integer.toString(ii));
+            sb.append(ii);
             match.setLength(offset);
-            match.append(Integer.toString(ii));
+            match.append(ii);
 
             assertEquals(match.toString(), er.get(sb.toString()));
         }

@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 
 /**
- * Represents a container for tests of {@link DocumentMatcher} subclasses
+ * Represents a container for tests of {@link DocumentMatcher} subclasses.
  */
 public class DocumentMatcherTest {
 

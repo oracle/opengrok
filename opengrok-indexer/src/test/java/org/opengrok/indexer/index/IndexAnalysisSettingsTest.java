@@ -26,8 +26,11 @@ package org.opengrok.indexer.index;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -51,23 +54,21 @@ public class IndexAnalysisSettingsTest {
 
     @Test
     public void shouldAffirmINDEX_ANALYSIS_SETTINGS_OBJUID() {
-        String objuid = QueryBuilder.normalizeDirPath(
-            "58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
+        String objuid = QueryBuilder.normalizeDirPath("58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
         assertEquals("IndexAnalysisSettingsDao objuid", objuid,
-            IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID);
+                IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID);
     }
 
     @Test
-    public void shouldRoundTripANullObject() throws IOException,
-            ClassNotFoundException {
+    public void shouldRoundTripANullObject() throws IOException, ClassNotFoundException {
         IndexAnalysisSettings obj = new IndexAnalysisSettings();
         byte[] bin = obj.serialize();
 
         IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
         assertNotNull(res);
-        assertEquals("projectName", null, res.getProjectName());
-        assertEquals("tabSize", null, res.getTabSize());
-        assertEquals("analyzerGuruVersion", null, res.getAnalyzerGuruVersion());
+        assertNull("projectName", res.getProjectName());
+        assertNull("tabSize", res.getTabSize());
+        assertNull("analyzerGuruVersion", res.getAnalyzerGuruVersion());
     }
 
     @Test
@@ -82,8 +83,7 @@ public class IndexAnalysisSettingsTest {
         IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
         assertNotNull(res);
         assertEquals("projectName", PROJECT_NAME, res.getProjectName());
-        assertEquals("tabSize", TABSIZE, (int)res.getTabSize());
-        assertEquals("analyzerGuruVersion", ANALYZER_GURU_VERSION,
-            (long)res.getAnalyzerGuruVersion());
+        assertEquals("tabSize", TABSIZE, (int) res.getTabSize());
+        assertEquals("analyzerGuruVersion", ANALYZER_GURU_VERSION, (long) res.getAnalyzerGuruVersion());
     }
 }

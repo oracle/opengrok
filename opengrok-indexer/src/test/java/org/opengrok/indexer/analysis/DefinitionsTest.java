@@ -18,22 +18,26 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
 
 import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author austvik
  */
 public class DefinitionsTest {
@@ -79,8 +83,8 @@ public class DefinitionsTest {
     public void hasSymbol() {
         Definitions instance = new Definitions();
         instance.addTag(1, "found", "", "", 0, 0);
-        assertEquals(instance.hasSymbol("notFound"), false);
-        assertEquals(instance.hasSymbol("found"), true);
+        assertFalse(instance.hasSymbol("notFound"));
+        assertTrue(instance.hasSymbol("found"));
     }
 
     /**
@@ -89,14 +93,14 @@ public class DefinitionsTest {
     @Test
     public void hasDefinitionAt() {
         Definitions instance = new Definitions();
-        String[] type= new String[1];
-        type[0]="";
+        String[] type = new String[1];
+        type[0] = "";
         instance.addTag(1, "found", "", "", 0, 0);
-        assertEquals(instance.hasDefinitionAt("found", 0, type), false);
-        assertEquals(instance.hasDefinitionAt("found", 1, type), true);
-        assertEquals(instance.hasDefinitionAt("found", 2, type), false);
-        assertEquals(instance.hasDefinitionAt("notFound", 0, type), false);
-        assertEquals(instance.hasDefinitionAt("notFound", 1, type), false);
+        assertFalse(instance.hasDefinitionAt("found", 0, type));
+        assertTrue(instance.hasDefinitionAt("found", 1, type));
+        assertFalse(instance.hasDefinitionAt("found", 2, type));
+        assertFalse(instance.hasDefinitionAt("notFound", 0, type));
+        assertFalse(instance.hasDefinitionAt("notFound", 1, type));
     }
 
     /**
@@ -160,11 +164,10 @@ public class DefinitionsTest {
     public void serialize() throws Exception {
         Definitions instance = new Definitions();
         instance.addTag(1, "one", "", "", 0, 0);
-        byte serial[] = instance.serialize();
+        byte[] serial = instance.serialize();
         Definitions instance2 = Definitions.deserialize(serial);
         assertEquals(instance.getTags().size(), instance2.getTags().size());
         assertEquals(instance.getSymbols().size(), instance2.getSymbols().size());
     }
-
 
 }

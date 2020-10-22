@@ -304,9 +304,11 @@ public class JFlexXrefTest {
     private void testCXrefInclude(Class<? extends JFlexSymbolMatcher> klass) throws Exception {
         String[][] testData = {
             {"#include <abc.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc.h\">abc.h</a>&gt;"},
-            {"#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;"},
+            {"#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc/\">abc</a>/" +
+                    "<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;"},
             {"#include \"abc.h\"", "#<b>include</b> &quot;<a href=\"/source/s?path=abc.h\">abc.h</a>&quot;"},
-            {"#include \"abc/def.h\"", "#<b>include</b> &quot;<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&quot;"},
+            {"#include \"abc/def.h\"", "#<b>include</b> &quot;<a href=\"/source/s?path=abc/\">abc</a>/" +
+                    "<a href=\"/source/s?path=abc/def.h\">def.h</a>&quot;"},
             {"#include <vector>", "#<b>include</b> &lt;<a href=\"/source/s?path=vector\">vector</a>&gt;"},
         };
 
@@ -430,7 +432,7 @@ public class JFlexXrefTest {
     }
     
     /**
-     * Test that CSharpXref correctly handles verbatim strings that end with backslash
+     * Test that CSharpXref correctly handles verbatim strings that end with backslash.
      */
     @Test
     public void testCsharpXrefVerbatimString() throws IOException {
