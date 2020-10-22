@@ -61,8 +61,7 @@ class Repository:
 
     def sync(self):
         # Eventually, there might be per-repository hooks added here.
-        if isinstance(self.configured_commands, dict) and \
-                self.configured_commands.get('sync'):
+        if self.is_command_overridden(self.configured_commands, 'sync'):
             return self._run_custom_sync_command(
                 self.listify(self.configured_commands['sync'])
             )
@@ -84,8 +83,7 @@ class Repository:
 
         Return True if so, False otherwise.
         """
-        if isinstance(self.configured_commands, dict) and \
-                self.configured_commands.get('incoming'):
+        if self.is_command_overridden(self.configured_commands, 'incoming'):
             return self._run_custom_incoming_command(
                 self.listify(self.configured_commands['incoming'])
             )
@@ -174,3 +172,14 @@ class Repository:
         if isinstance(object, list) or isinstance(object, tuple):
             return object
         return [object]
+
+    @staticmethod
+    def is_command_overridden(config, command):
+        """
+        Determine if command is overridden in the configuration.
+
+        :param config: configuration
+        :param command: the command
+        :return: true if overridden, false otherwise
+        """
+        return isinstance(config, dict) and config.get(command)
