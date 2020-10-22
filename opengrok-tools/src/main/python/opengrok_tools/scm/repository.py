@@ -18,7 +18,8 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+# Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
 import abc
