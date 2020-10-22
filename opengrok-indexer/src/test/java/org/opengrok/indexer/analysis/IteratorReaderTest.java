@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -29,12 +29,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Do basic testing of the IteratorReader class.
- *
  * @author Trond Norbye
  */
 public class IteratorReaderTest {
@@ -55,7 +58,7 @@ public class IteratorReaderTest {
      * Test that we get an error immediately when constructing a token stream
      * where the list is {@code null}.
      */
-    @Test(expected= IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testFailfastOnNull() {
         new IteratorReader((List<String>) null);
     }
@@ -64,7 +67,7 @@ public class IteratorReaderTest {
      * Test that an {@code IllegalArgumentException} is thrown immediately also
      * when using the constructor that takes an {@code Iterator}.
      */
-    @Test(expected= IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testFailfastOnNullIterator() {
         new IteratorReader((Iterator<String>) null);
     }
@@ -77,8 +80,7 @@ public class IteratorReaderTest {
      */
     @Test
     public void testReadAllTokens() throws IOException {
-        try (BufferedReader instance = new BufferedReader(new IteratorReader(
-                     Arrays.asList("abc.def", "ghi.jkl")))) {
+        try (BufferedReader instance = new BufferedReader(new IteratorReader(Arrays.asList("abc.def", "ghi.jkl")))) {
             assertEquals("abc.def", instance.readLine());
             assertEquals("ghi.jkl", instance.readLine());
             assertNull(instance.readLine());

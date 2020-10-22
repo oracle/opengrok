@@ -26,10 +26,12 @@ package org.opengrok.indexer.web;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Represents a container for tests of {@link XrefSourceTransformer}.
@@ -68,7 +70,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testDefaultContext1() throws IOException {
         xform.setContextPath(null);
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=null", XREF_FRAG_DFLT, res);
     }
@@ -76,7 +79,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testDefaultContext2() throws IOException {
         xform.setContextPath("source");
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=source", XREF_FRAG_DFLT, res);
     }
@@ -84,7 +88,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testDefaultContext3() throws IOException {
         xform.setContextPath("/source");
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=/source", XREF_FRAG_DFLT, res);
     }
@@ -92,7 +97,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testDefaultContext4() throws IOException {
         xform.setContextPath("/source/");
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=/source/", XREF_FRAG_DFLT, res);
     }
@@ -100,7 +106,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testSvcContext() throws IOException {
         xform.setContextPath("svc");
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=svc", XREF_FRAG_SVC, res);
     }
@@ -108,7 +115,8 @@ public class XrefSourceTransformerTest {
     @Test
     public void testRootContext() throws IOException {
         xform.setContextPath("/");
-        while (xform.yylex()) {}
+        while (xform.yylex()) {
+        }
         String res = out.toString();
         assertEquals("context=/", XREF_FRAG_ROOT, res);
     }

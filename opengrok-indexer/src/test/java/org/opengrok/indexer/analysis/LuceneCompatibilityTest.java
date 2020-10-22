@@ -34,7 +34,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.opengrok.indexer.search.QueryBuilder;
 
 /**
- * external tests, need to have test-framework on the path this will do a sanity
+ * Need to have test-framework on the path. This will do a sanity
  * test on analyzers/tokenizers if they follow latest lucene asserts
  *
  * on compile test cp there needs to be lucene-test-framework, lucene-codecs and
@@ -83,8 +83,8 @@ public class LuceneCompatibilityTest extends TestCase {
     protected void setUp() throws Exception {
         guru = new AnalyzerGuru();
         Class<?> c = Class.forName(LUCENE_TEST_CLASS);
-        //testC = c.newInstance(); //this is static call
-        Class<?>[] argTypes = {TokenStream.class, String[].class, int[].class, int[].class, String[].class, int[].class, int[].class, Integer.class, boolean.class};
+        Class<?>[] argTypes = {TokenStream.class, String[].class, int[].class, int[].class, String[].class, int[].class,
+                int[].class, Integer.class, boolean.class};
         testM = c.getDeclaredMethod(LUCENE_TEST_METHOD, argTypes);
     }
 

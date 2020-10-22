@@ -11,16 +11,16 @@
     </module>
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>
+
+    <module name="LineLength">
+        <property name="max" value="150"/>
+    </module>
+
     <module name="TreeWalker">
         <module name="JavadocStyle"/>
-        <module name="AvoidStarImport">
-            <property name="allowStaticMemberImports" value="true"/>
-        </module>
+        <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
-        <module name="LineLength">
-            <property name="max" value="150"/>
-        </module>
         <module name="MethodLength">
             <property name="max" value="200"/>
         </module>

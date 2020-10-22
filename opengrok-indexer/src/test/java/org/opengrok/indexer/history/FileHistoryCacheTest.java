@@ -223,7 +223,7 @@ public class FileHistoryCacheTest {
         HistoryEntry e2 = entries.get(2);
         assertEquals("Unexpected revision for entry 2", "1:f24a5fd7a85d",
                 e2.getRevision());
-        assertEquals("Invalid tag list for revision 1", null, e2.getTags());
+        assertNull("Invalid tag list for revision 1", e2.getTags());
 
         // Reindex from scratch.
         File dir = new File(cache.getRepositoryHistDataDirname(repo));
@@ -358,7 +358,7 @@ public class FileHistoryCacheTest {
 
         cache.store(historyToStore, repo);
         // check that the data directory is non-empty
-        assertEquals(true, dir.list().length > 0);
+        assertTrue(dir.list().length > 0);
         updatedHistory = cache.get(reposRoot, repo, true);
         assertSameEntries(updatedHistory.getHistoryEntries(),
                 cache.get(reposRoot, repo, true).getHistoryEntries(), true);
@@ -681,13 +681,11 @@ public class FileHistoryCacheTest {
         entriesConstruct.add(e1);
         entriesConstruct.add(e2);
         histConstruct.setHistoryEntries(entriesConstruct);
-        assertSameEntries(histConstruct.getHistoryEntries(),
-                updatedHistory.getHistoryEntries(), false);
+        assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
     }
 
-
     /**
-     * Make sure produces correct history for a renamed and moved file in Subversion
+     * Make sure produces correct history for a renamed and moved file in Subversion.
      */
     @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
     @Test

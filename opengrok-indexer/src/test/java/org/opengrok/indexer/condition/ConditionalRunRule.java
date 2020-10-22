@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.condition;
 
@@ -91,7 +91,8 @@ public class ConditionalRunRule implements TestRule {
     private static RunCondition getIgnoreConditionOnMethod(Description aDescription) {
         try {
             // this is possible because test methods must not have any argument
-            ConditionalRun[] annotations = aDescription.getTestClass().getMethod(aDescription.getMethodName()).getAnnotationsByType(ConditionalRun.class);
+            ConditionalRun[] annotations = aDescription.getTestClass().getMethod(aDescription.getMethodName())
+                    .getAnnotationsByType(ConditionalRun.class);
             return new IgnoreConditionCreator(aDescription.getTestClass(), annotations).create();
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new RuntimeException(ex);

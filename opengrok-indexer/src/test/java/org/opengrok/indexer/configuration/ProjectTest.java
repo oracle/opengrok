@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -33,7 +33,12 @@ import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class ProjectTest {
 
@@ -45,12 +50,8 @@ public class ProjectTest {
     public void testEncodeDecode() {
         // Create an exception listener to detect errors while encoding and
         // decoding
-        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
-        ExceptionListener listener = new ExceptionListener() {
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        final LinkedList<Exception> exceptions = new LinkedList<>();
+        ExceptionListener listener = e -> exceptions.addLast(e);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
@@ -189,16 +190,16 @@ public class ProjectTest {
     public void testEquality() {
         Project g1 = new Project();
         Project g2 = new Project();
-        assertTrue("null == null", g1.equals(g2));
+        assertEquals("null == null", g1, g2);
 
         g1 = new Project("name");
         g2 = new Project("other");
-        assertFalse("\"name\" != \"other\"", g1.equals(g2));
+        assertNotEquals("\"name\" != \"other\"", g1, g2);
 
         g1 = new Project("name");
         g2 = new Project("NAME");
-        assertTrue("\"name\" == \"NAME\"", g1.equals(g2));
-        assertTrue("\"name\" == \"name\"", g1.equals(g1));
-        assertTrue("\"NAME\" == \"NAME\"", g2.equals(g2));
+        assertEquals("\"name\" == \"NAME\"", g1, g2);
+        assertEquals("\"name\" == \"name\"", g1, g1);
+        assertEquals("\"NAME\" == \"NAME\"", g2, g2);
     }
 }

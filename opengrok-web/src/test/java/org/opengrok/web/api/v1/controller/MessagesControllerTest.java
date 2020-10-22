@@ -68,7 +68,8 @@ import static org.junit.Assert.assertTrue;
 public class MessagesControllerTest extends OGKJerseyTest {
 
     private static final GenericType<List<AcceptedMessageModel>> messagesType =
-            new GenericType<List<AcceptedMessageModel>>() {};
+            new GenericType<List<AcceptedMessageModel>>() {
+            };
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -101,12 +102,12 @@ public class MessagesControllerTest extends OGKJerseyTest {
             return new GrizzlyTestContainer(baseUri, context);
         }
 
-        private class GrizzlyTestContainer implements TestContainer {
+        private static class GrizzlyTestContainer implements TestContainer {
             private URI baseUri;
             private final HttpServer server;
 
             private GrizzlyTestContainer(URI baseUri, DeploymentContext context) {
-                this.baseUri = UriBuilder.fromUri(baseUri).path(context.getContextPath()).build(new Object[0]);
+                this.baseUri = UriBuilder.fromUri(baseUri).path(context.getContextPath()).build();
                 this.server = GrizzlyHttpServerFactory.createHttpServer(this.baseUri, context.getResourceConfig(), false);
                 this.server.getServerConfiguration().setAllowPayloadForUndefinedHttpMethods(true);
             }

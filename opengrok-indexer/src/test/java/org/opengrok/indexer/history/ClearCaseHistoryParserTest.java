@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -27,7 +27,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -122,7 +125,7 @@ public class ClearCaseHistoryParserTest {
         assertEquals(0, e4.getFiles().size());
     }
     
-   /**
+    /**
      * Test of parse method, of class ClearCaseHistoryParser.
      * @throws Exception exception
      */

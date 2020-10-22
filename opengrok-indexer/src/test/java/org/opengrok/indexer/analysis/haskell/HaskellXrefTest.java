@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.haskell;
@@ -32,6 +32,8 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,15 +72,14 @@ public class HaskellXrefTest {
 
     private static int writeHaskellXref(InputStream is, PrintStream os,
         Definitions defs) throws IOException {
-        os.println(
-                "<!DOCTYPE html><html lang=\"en\"><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
+        os.println("<!DOCTYPE html><html lang=\"en\"><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" />"
+                + "<link rel=\"stylesheet\" type=\"text/css\" "
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
         AbstractAnalyzer analyzer = fac.getAnalyzer();
-        WriteXrefArgs args = new WriteXrefArgs(
-            new InputStreamReader(is, "UTF-8"), w);
+        WriteXrefArgs args = new WriteXrefArgs(new InputStreamReader(is, StandardCharsets.UTF_8), w);
         args.setDefs(defs);
         Xrefer xref = analyzer.writeXref(args);
         os.print(w.toString());
@@ -98,8 +99,7 @@ public class HaskellXrefTest {
             "x'y' = let f' = 1; g'h = 2 in f' + g'h", 0, 0);
         int actLOC;
         try {
-            actLOC = writeHaskellXref(sampleInputStream,
-                new PrintStream(sampleOutputStream), defs);
+            actLOC = writeHaskellXref(sampleInputStream, new PrintStream(sampleOutputStream), defs);
         } finally {
             sampleInputStream.close();
             sampleOutputStream.close();
@@ -110,7 +110,7 @@ public class HaskellXrefTest {
                 "analysis/haskell/sampleXrefExpected.html");
         ByteArrayOutputStream expectedOutputSteam = new ByteArrayOutputStream();
         try {
-            byte buffer[] = new byte[8192];
+            byte[] buffer = new byte[8192];
             int numBytesRead;
             do {
                 numBytesRead = expectedInputStream.read(buffer, 0, buffer.length);
@@ -123,8 +123,8 @@ public class HaskellXrefTest {
             expectedOutputSteam.close();
         }
 
-        String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").split("\\r?\\n");
-        String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").split("\\r?\\n");
+        String[] actual = new String(sampleOutputStream.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
+        String[] expected = new String(expectedOutputSteam.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         assertLinesEqual("Haskell sampleTest()", expected, actual);
         assertEquals("Haskell LOC", 3, actLOC);
     }
@@ -161,11 +161,11 @@ public class HaskellXrefTest {
         exp.close();
         baos.close();
 
-        String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\\r?\\n");
+        String ostr = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        String[] gotten = ostr.split("\\r?\\n");
 
-        String estr = new String(expbytes, "UTF-8");
-        String expected[] = estr.split("\n");
+        String estr = new String(expbytes, StandardCharsets.UTF_8);
+        String[] expected = estr.split("\n");
 
         assertLinesEqual("Haskell xref", expected, gotten);
         assertEquals("Haskell LOC", expLOC, actLOC);
@@ -176,8 +176,7 @@ public class HaskellXrefTest {
             "analysis/haskell/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-            res, "UTF-8"));
+        BufferedReader in = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
 
         CtagsReader rdr = new CtagsReader();
         String line;

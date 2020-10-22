@@ -30,9 +30,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 
@@ -70,9 +70,9 @@ public class IndexAnalysisSettingsUpgraderTest {
         IndexAnalysisSettings3 vLatest = upgrader.upgrade(bin, 3);
         assertNotNull("should get non-null from upgrader", vLatest);
         assertEquals("should have same projectName", PROJECT_NAME, vLatest.getProjectName());
-        assertEquals("should have same tabSize", TABSIZE, (int)vLatest.getTabSize());
+        assertEquals("should have same tabSize", TABSIZE, (int) vLatest.getTabSize());
         assertEquals("should have same analyzerGuruVersion", ANALYZER_GURU_VERSION,
-                (long)vLatest.getAnalyzerGuruVersion());
+                (long) vLatest.getAnalyzerGuruVersion());
         assertEquals("should have expected analyzer versions",
                 vLatest.getAnalyzersVersions().size(), actAnalyzersVersionNos.size());
 
@@ -108,9 +108,9 @@ public class IndexAnalysisSettingsUpgraderTest {
         IndexAnalysisSettings3 v3 = upgrader.upgrade(bin, 2);
         assertNotNull("should get non-null from upgrader", v3);
         assertEquals("should have same projectName", PROJECT_NAME, v3.getProjectName());
-        assertEquals("should have same tabSize", TABSIZE, (int)v3.getTabSize());
+        assertEquals("should have same tabSize", TABSIZE, (int) v3.getTabSize());
         assertEquals("should have same analyzerGuruVersion", ANALYZER_GURU_VERSION,
-                (long)v3.getAnalyzerGuruVersion());
+                (long) v3.getAnalyzerGuruVersion());
         assertEquals("should have expected analyzer versions",
                 v3.getAnalyzersVersions().size(), actAnalyzersVersionNos.size());
         assertTrue("should have no indexedSymlinks", v3.getIndexedSymlinks().isEmpty());

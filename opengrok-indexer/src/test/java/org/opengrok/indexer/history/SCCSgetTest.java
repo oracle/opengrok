@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.history;
@@ -35,10 +35,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
- * Test the SCCSget class
+ * Test the SCCSget class.
  * @author Trond Norbye
  */
 public class SCCSgetTest {
@@ -161,7 +163,7 @@ public class SCCSgetTest {
 
         while ((entry = zstream.getNextEntry()) != null) {
             String expected = readInput(zstream);
-            InputStream sccs = SCCSget.getRevision("sccs",sccsfile, entry.getName());
+            InputStream sccs = SCCSget.getRevision("sccs", sccsfile, entry.getName());
             String got = readInput(sccs);
             sccs.close();
             zstream.closeEntry();

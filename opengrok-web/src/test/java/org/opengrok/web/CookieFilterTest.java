@@ -49,10 +49,12 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 public class CookieFilterTest {
-    class DummyHttpServletResponse implements HttpServletResponse {
+    static class DummyHttpServletResponse implements HttpServletResponse {
 
         @Override
         public void addCookie(Cookie cookie) {
@@ -125,7 +127,7 @@ public class CookieFilterTest {
         public void addHeader(String s, String s1) {
             List<String> list = headers.get(s);
             if (list == null) {
-                list = new ArrayList<String>();
+                list = new ArrayList<>();
                 headers.put(s, list);
             }
             headers.get(s).add(s1);

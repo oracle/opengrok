@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
+
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
@@ -51,8 +52,10 @@ import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,7 +85,7 @@ public class LdapAttrPluginTest {
     public void setUp() {
         plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
-        
+
         parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
         parameters.put(LdapAttrPlugin.ATTR_PARAM, "mail");
 
@@ -127,17 +130,17 @@ public class LdapAttrPluginTest {
          */
         prepareRequest("007", "james@bond.com", "MI6", "MI7");
 
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
 
         prepareRequest("008", "james@bond.com", "MI6", "MI7");
 
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
 
         prepareRequest("009", "other@email.com", "MI6");
 
@@ -148,14 +151,14 @@ public class LdapAttrPluginTest {
 
         prepareRequest("00A", "random@email.com", "MI6", "MI7");
 
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
+        assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
     }
 
     /**
-     * Test the interaction between {@code LdapUserPlugin} and {@code LdapAttrPlugin}, namely:
+     * Test the interaction between {@code LdapUserPlugin} and {@code LdapAttrPlugin}. Namely:
      * <ul>
      *     <li>use of DN from the <code>LdapUser</code> object cached in the session by <code>LdapUserPlugin</code></li>
      *     <li>configuration of the cached session attribute name</li>
@@ -197,7 +200,7 @@ public class LdapAttrPluginTest {
         plugin.fillSession(request, user);
 
         // See if LdapAttrPlugin set its own session attribute based on the mocked query.
-        assertTrue((Boolean)request.getSession().getAttribute(plugin.getSessionAllowedAttrName()));
+        assertTrue((Boolean) request.getSession().getAttribute(plugin.getSessionAllowedAttrName()));
         assertTrue(ldapUser.getAttribute(attr_to_get).contains(mail_attr_value));
     }
 }

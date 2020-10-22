@@ -242,25 +242,22 @@ public class ConfigurationControllerTest extends OGKJerseyTest {
     @Test
     public void testConfigValueSetVsThread() throws InterruptedException {
         int origValue = env.getHitsPerPage();
-        final int threadValue[] = new int[1];
+        final int[] threadValue = new int[1];
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(1);
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpServletRequest req = new DummyHttpServletRequest();
-                PageConfig pageConfig = PageConfig.get(req);
-                RuntimeEnvironment e = pageConfig.getEnv();
-                startLatch.countDown();
-                // Wait for hint of termination, save the value and exit.
-                try {
-                    endLatch.await();
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                threadValue[0] = e.getHitsPerPage();
+        Thread thread = new Thread(() -> {
+            HttpServletRequest req = new DummyHttpServletRequest();
+            PageConfig pageConfig = PageConfig.get(req);
+            RuntimeEnvironment e = pageConfig.getEnv();
+            startLatch.countDown();
+            // Wait for hint of termination, save the value and exit.
+            try {
+                endLatch.await();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
             }
+            threadValue[0] = e.getHitsPerPage();
         });
 
         thread.start();

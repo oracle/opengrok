@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.analysis;
@@ -27,10 +27,12 @@ import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Unit test class for PathTokenizer
+ * Unit test class for PathTokenizer.
  * @author Lubos Kosco
  */
 public class PathTokenizerTest {
@@ -39,10 +41,10 @@ public class PathTokenizerTest {
      * Test of incrementToken method, of class PathTokenizer.
      */
     @Test
-    public void testIncrementToken() throws Exception {        
+    public void testIncrementToken() throws Exception {
         String inputText = "alpha/beta/gamma/delta.ext";
         String[] expectedTokens = inputText.split("[/.]");
-        PathTokenizer tokenizer = new PathTokenizer();        
+        PathTokenizer tokenizer = new PathTokenizer();
         tokenizer.setReader(new StringReader(inputText));
         CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
         OffsetAttribute offset = tokenizer.addAttribute(OffsetAttribute.class);
@@ -51,12 +53,14 @@ public class PathTokenizerTest {
         int dots = 0;
         tokenizer.reset();
         while (tokenizer.incrementToken()) {
-            if ( term.toString().equals(".") ) { dots++;break; }
+            if (term.toString().equals(".")) {
+                dots++;
+                break;
+            }
             assertTrue("too many tokens", count < expectedTokens.length);
-            String expected = expectedTokens[count];            
+            String expected = expectedTokens[count];
             assertEquals("term", expected, term.toString());
-            assertEquals("start",
-                    inputText.indexOf(expected), offset.startOffset());            
+            assertEquals("start", inputText.indexOf(expected), offset.startOffset());
             assertEquals("end",
                     inputText.indexOf(expected) + expected.length(),
                     offset.endOffset());
@@ -64,6 +68,6 @@ public class PathTokenizerTest {
         }
         tokenizer.end();
         tokenizer.close();
-        assertEquals("wrong number of tokens", expectedTokens.length, count+dots);
+        assertEquals("wrong number of tokens", expectedTokens.length, count + dots);
     }
 }

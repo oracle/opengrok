@@ -24,11 +24,13 @@
 package org.opengrok.indexer.search.context;
 
 import java.util.SortedMap;
+
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.util.BytesRef;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.util.SourceSplitter;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,21 +40,18 @@ import static org.junit.Assert.assertTrue;
  */
 public class PassageConverterTest {
 
-    private static final String DOC =
-        "    Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-        "Mauris vel tortor vel nisl efficitur fermentum nec vel erat.\n" +
-        "Mauris diam nisl, tincidunt nec gravida sit amet, efficitur vitae\n" +
-        "est. Sed aliquam non mi vel mattis:\n" +
-        "\n" +
-        "    Maecenas vitae lacus velit varius vulputate ipsum sed laoreet. Nam maximus libero non ornare egestas. Aenean dignissim ipsum eu rhoncus ultricies.\n" +
-        "\n" +
-        "    Fusce pretium hendrerit dictum. Pellentesque habitant\n" +
-        "morbi tristique senectus et netus.";
+    private static final String DOC = "    Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+            "Mauris vel tortor vel nisl efficitur fermentum nec vel erat.\n" +
+            "Mauris diam nisl, tincidunt nec gravida sit amet, efficitur vitae\n" +
+            "est. Sed aliquam non mi vel mattis:\n" +
+            "\n" +
+            "    Maecenas vitae lacus velit varius vulputate ipsum sed laoreet. Nam maximus libero non ornare egestas." +
+            " Aenean dignissim ipsum eu rhoncus ultricies.\n" +
+            "\n" +
+            "    Fusce pretium hendrerit dictum. Pellentesque habitant\n" +
+            "morbi tristique senectus et netus.";
 
-    private static final String DOC2 =
-        "abc\n" +
-        "def\n" +
-        "ghi";
+    private static final String DOC2 = "abc\ndef\nghi";
 
     private static SourceSplitter splitter;
     private static SourceSplitter splitter2;
@@ -74,12 +73,12 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
-        PassageConverter cvt = getConverter((short)0);
+        PassageConverter cvt = getConverter((short) 0);
         SortedMap<Integer, LineHighlight> linemap =
-            cvt.convert(new Passage[] {p}, splitter);
+                cvt.convert(new Passage[] {p}, splitter);
 
         assertEquals("linemap size()", 1, linemap.size());
         int lineno = linemap.firstKey();
@@ -106,12 +105,12 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
-        PassageConverter cvt = getConverter((short)0);
+        PassageConverter cvt = getConverter((short) 0);
         SortedMap<Integer, LineHighlight> linemap =
-            cvt.convert(new Passage[] {p}, splitter);
+                cvt.convert(new Passage[] {p}, splitter);
 
         assertEquals("linemap size()", 1, linemap.size());
         int lineno = linemap.firstKey();
@@ -144,11 +143,11 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(woff1);
         p.setEndOffset(woff2 + WORD2.length());
-        p.addMatch(woff1, woff1 + WORD1.length(), new BytesRef(WORD1),1);
-        p.addMatch(woff2, woff2 + WORD2.length(), new BytesRef(WORD2),1);
+        p.addMatch(woff1, woff1 + WORD1.length(), new BytesRef(WORD1), 1);
+        p.addMatch(woff2, woff2 + WORD2.length(), new BytesRef(WORD2), 1);
         assertEquals("getNumMatches()", 2, p.getNumMatches());
 
-        PassageConverter cvt = getConverter((short)0);
+        PassageConverter cvt = getConverter((short) 0);
         SortedMap<Integer, LineHighlight> linemap =
                 cvt.convert(new Passage[] {p}, splitter);
 
@@ -184,12 +183,12 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(poff);
         p.setEndOffset(poff + PHRASE.length());
-        p.addMatch(poff, p.getEndOffset(), new BytesRef(PHRASE),1);
+        p.addMatch(poff, p.getEndOffset(), new BytesRef(PHRASE), 1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
-        PassageConverter cvt = getConverter((short)0);
+        PassageConverter cvt = getConverter((short) 0);
         SortedMap<Integer, LineHighlight> linemap =
-            cvt.convert(new Passage[] {p}, splitter);
+                cvt.convert(new Passage[] {p}, splitter);
 
         assertEquals("linemap size()", 2, linemap.size());
         int lineno = linemap.firstKey();
@@ -224,12 +223,12 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());
-        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2),1);
+        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2), 1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
-        PassageConverter cvt = getConverter((short)0);
+        PassageConverter cvt = getConverter((short) 0);
         SortedMap<Integer, LineHighlight> linemap =
-            cvt.convert(new Passage[] {p}, splitter2);
+                cvt.convert(new Passage[] {p}, splitter2);
 
         assertEquals("linemap size()", 3, linemap.size());
         int lineno = linemap.firstKey();
@@ -272,7 +271,7 @@ public class PassageConverterTest {
     }
 
     private static PassageConverter getConverter(short contextCount) {
-        ContextArgs args = new ContextArgs(contextCount, (short)10);
+        ContextArgs args = new ContextArgs(contextCount, (short) 10);
         return new PassageConverter(args);
     }
 }

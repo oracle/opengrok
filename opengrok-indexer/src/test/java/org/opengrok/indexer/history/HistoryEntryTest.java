@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -30,7 +30,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -146,9 +150,9 @@ public class HistoryEntryTest {
      */
     @Test
     public void isActive() {
-        assertEquals(true, instance.isActive());
+        assertTrue(instance.isActive());
         instance.setActive(false);
-        assertEquals(false, instance.isActive());
+        assertFalse(instance.isActive());
     }
 
     /**
@@ -157,9 +161,9 @@ public class HistoryEntryTest {
     @Test
     public void setActive() {
         instance.setActive(true);
-        assertEquals(true, instance.isActive());
+        assertTrue(instance.isActive());
         instance.setActive(false);
-        assertEquals(false, instance.isActive());
+        assertFalse(instance.isActive());
     }
 
     /**
@@ -199,12 +203,10 @@ public class HistoryEntryTest {
     public void addFile() {
         String fileName = "test.file";
         HistoryEntry instance = new HistoryEntry();
-        assertFalse(
-            new History(Collections.singletonList(instance)).hasFileList());
+        assertFalse(new History(Collections.singletonList(instance)).hasFileList());
         instance.addFile(fileName);
         assertTrue(instance.getFiles().contains(fileName));
-        assertTrue(
-            new History(Collections.singletonList(instance)).hasFileList());
+        assertTrue(new History(Collections.singletonList(instance)).hasFileList());
     }
 
     /**
@@ -225,7 +227,7 @@ public class HistoryEntryTest {
      */
     @Test
     public void setFiles() {
-        TreeSet<String> files = new TreeSet<String>();
+        TreeSet<String> files = new TreeSet<>();
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);
@@ -246,14 +248,14 @@ public class HistoryEntryTest {
      */
     @Test
     public void strip() {
-        TreeSet<String> files = new TreeSet<String>();
+        TreeSet<String> files = new TreeSet<>();
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);
         instance.setTags("test tag");
         instance.strip();
         assertEquals(0, instance.getFiles().size());
-        assertEquals(null, instance.getTags());
+        assertNull(instance.getTags());
     }
 
 }

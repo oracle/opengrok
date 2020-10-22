@@ -95,7 +95,7 @@ public class HeadHandlerTest {
          * @param maxCharCount number of characters to generate
          * @param maxLines number of lines to generate
          */
-        public RandomInputStream(int maxCharCount, int maxLines) {
+        RandomInputStream(int maxCharCount, int maxLines) {
             if (maxLines > maxCharCount) {
                 throw new IllegalArgumentException("maxLines must be smaller than or equal to maxCharCount");
             }
@@ -132,7 +132,7 @@ public class HeadHandlerTest {
         }
 
         @Override
-        public int read() throws IOException {
+        public int read() {
             int ret;
             if (charCount < maxCharCount) {
                 if (charCount > 0 && lines < maxLines - 1 && charCount == lineBreaks[lines]) {

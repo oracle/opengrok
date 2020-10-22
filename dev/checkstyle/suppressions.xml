@@ -38,22 +38,24 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
-        |Context\.java|HistoryContext\.java|Suggester\.java" />
+        |Context\.java|HistoryContext\.java|Suggester\.java|ProjectHelperTestBase\.java" />
 
     <suppress checks="FileLength" files="RuntimeEnvironment\.java" />
 
-    <suppress checks="MethodLength" files="Indexer\.java|IndexDatabase\.java" />
+    <suppress checks="MethodLength" files="Indexer\.java|IndexDatabase\.java|AuthorizationFrameworkTest\.java" />
 
     <suppress checks="JavadocStyle" files="MellonHeaderDecoder\.java|CustomSloppyPhraseScorer\.java|
-        |PhrasePositions\.java" />
+        |PhrasePositions\.java|GitRepositoryTest\.java" />
 
     <suppress checks="LineLength" files="CustomSloppyPhraseScorer\.java" />
 
     <suppress checks="EmptyBlock" files="JFlexNonXref\.java|JavaClassAnalyzer\.java|JFlexXref\.java|Util\.java|
-        |ClearCaseRepository\.java" />
+        |ClearCaseRepository\.java|JSONUtils\.java|XrefSourceTransformerTest\.java|MercurialRepositoryTest\.java" />
 
     <suppress checks="WhitespaceAround" files="CustomPhraseQuery\.java|PhrasePositions\.java|
         |CustomSloppyPhraseScorer\.java" />
 
     <suppress checks="WhitespaceAfter" files="CustomSloppyPhraseScorer\.java|CustomPhraseQuery\.java" />
+
+    <suppress checks="AnonInnerLength" files="DummyHttpServletRequestLdap\.java|DummyHttpServletRequestUser\.java" />
 </suppressions>

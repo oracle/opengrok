@@ -23,17 +23,28 @@
 package org.opengrok.indexer.condition;
 
 /**
- * Represents an intentional exception thrown for testing purposes
+ * Represents an intentional exception thrown for testing purposes.
  * <p>
  * https://stackoverflow.com/a/1754473/933163
  * https://stackoverflow.com/questions/1754315/how-to-create-custom-exceptions-in-java
  */
 public class DeliberateRuntimeException extends RuntimeException {
 
-      private static final long serialVersionUID = 7870938126523334656L;
+    private static final long serialVersionUID = 7870938126523334656L;
 
-      public DeliberateRuntimeException() { super(); }
-      public DeliberateRuntimeException(String message) { super(message); }
-      public DeliberateRuntimeException(String message, Throwable cause) { super(message, cause); }
-      public DeliberateRuntimeException(Throwable cause) { super(cause); }
+    public DeliberateRuntimeException() {
+        super();
+    }
+
+    public DeliberateRuntimeException(String message) {
+        super(message);
+    }
+
+    public DeliberateRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DeliberateRuntimeException(Throwable cause) {
+        super(cause);
+    }
 }

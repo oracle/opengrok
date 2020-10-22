@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -34,12 +34,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.junit.AfterClass;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -52,7 +56,9 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
+
 import org.opengrok.indexer.util.IOUtils;
 
 /**
@@ -85,25 +91,23 @@ public class SearchAndContextFormatterTest2 {
         assertTrue("dataroot.isDirectory()", dataroot.isDirectory());
 
         repository1 = new TestRepository();
-        repository1.create(HistoryGuru.class.getResourceAsStream(
-            "repositories.zip"));
+        repository1.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
 
         repository2 = new TestRepository();
-        repository2.create(HistoryGuru.class.getResourceAsStream(
-            "repositories.zip"));
+        repository2.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
 
         // Create symlink #1 underneath source root.
         final String SYMLINK1 = "symlink1";
         File symlink1 = new File(sourceRoot.getCanonicalFile(), SYMLINK1);
         Files.createSymbolicLink(Paths.get(symlink1.getPath()),
-            Paths.get(repository1.getSourceRoot()));
+                Paths.get(repository1.getSourceRoot()));
         assertTrue("symlink1.exists()", symlink1.exists());
 
         // Create symlink #2 underneath source root.
         final String SYMLINK2 = "symlink2";
         File symlink2 = new File(sourceRoot.getCanonicalFile(), SYMLINK2);
         Files.createSymbolicLink(Paths.get(symlink2.getPath()),
-            Paths.get(repository2.getSourceRoot()));
+                Paths.get(repository2.getSourceRoot()));
         assertTrue("symlink2.exists()", symlink2.exists());
 
         Set<String> allowedSymlinks = new HashSet<>();
@@ -111,8 +115,7 @@ public class SearchAndContextFormatterTest2 {
         allowedSymlinks.add(symlink2.getAbsolutePath());
         env.setAllowedSymlinks(allowedSymlinks);
 
-        env.setCtags(System.getProperty(
-            "org.opengrok.indexer.analysis.Ctags", "ctags"));
+        env.setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));
         env.setSourceRoot(sourceRoot.getPath());
         env.setDataRoot(dataroot.getPath());
         RepositoryFactory.initializeIgnoredNames(env);
@@ -130,8 +133,7 @@ public class SearchAndContextFormatterTest2 {
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
-        RuntimeEnvironment.getInstance().readConfiguration(new File(
-            configFile.getAbsolutePath()));
+        RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
     @AfterClass
@@ -171,13 +173,14 @@ public class SearchAndContextFormatterTest2 {
         assertTrue("noHits should be positive", noHits > 0);
         String[] frags = getFirstFragments(instance);
         assertNotNull("getFirstFragments() should return something", frags);
-        assertTrue("frags should have one element", frags.length == 1);
+        assertEquals("frags should have one element", 1, frags.length);
         assertNotNull("frags[0] should be defined", frags[0]);
 
         final String CTX =
-            "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#16\"><span class=\"l\">16</span> </a><br/>" +
-            "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#17\"><span class=\"l\">17</span>         printf ( &quot;<b>Hello</b>, world!\\n&quot; );</a><br/>" +
-            "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#18\"><span class=\"l\">18</span> </a><br/>";
+                "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#16\"><span class=\"l\">16</span> </a><br/>" +
+                        "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#17\"><span class=\"l\">17</span>" +
+                        "         printf ( &quot;<b>Hello</b>, world!\\n&quot; );</a><br/>" +
+                        "<a class=\"s\" href=\"/source/symlink1/git/moved2/renamed2.c#18\"><span class=\"l\">18</span> </a><br/>";
         assertLinesEqual("ContextFormatter output", CTX, frags[0]);
         instance.destroy();
     }
@@ -185,7 +188,7 @@ public class SearchAndContextFormatterTest2 {
     private String[] getFirstFragments(SearchEngine instance)
             throws IOException, InvalidTokenOffsetsException {
 
-        ContextArgs args = new ContextArgs((short)1, (short)10);
+        ContextArgs args = new ContextArgs((short) 1, (short) 10);
 
         /*
          * The following `anz' should go unused, but UnifiedHighlighter demands
@@ -196,26 +199,25 @@ public class SearchAndContextFormatterTest2 {
 
         ContextFormatter formatter = new ContextFormatter(args);
         OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-            instance.getSearcher(), anz);
+                instance.getSearcher(), anz);
         uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(TABSIZE);
 
         ScoreDoc[] docs = instance.scoreDocs();
-        for (int i = 0; i < docs.length; ++i) {
-            int docid = docs[i].doc;
+        for (ScoreDoc scoreDoc : docs) {
+            int docid = scoreDoc.doc;
             Document doc = instance.doc(docid);
 
             String path = doc.get(QueryBuilder.PATH);
             System.out.println(path);
             formatter.setUrl("/source" + path);
 
-            for (String contextField :
-                instance.getQueryBuilder().getContextFields()) {
+            for (String contextField : instance.getQueryBuilder().getContextFields()) {
 
-                Map<String,String[]> res = uhi.highlightFields(
-                    new String[]{contextField}, instance.getQueryObject(),
-                    new int[] {docid}, new int[] {10});
+                Map<String, String[]> res = uhi.highlightFields(
+                        new String[] {contextField}, instance.getQueryObject(),
+                        new int[] {docid}, new int[] {10});
                 String[] frags = res.getOrDefault(contextField, null);
                 if (frags != null) {
                     return frags;
@@ -225,8 +227,7 @@ public class SearchAndContextFormatterTest2 {
         return null;
     }
 
-    private static File createTemporaryDirectory(String name)
-            throws IOException {
+    private static File createTemporaryDirectory(String name) throws IOException {
         File f = Files.createTempDirectory(name).toFile();
         TEMP_DIRS.add(f);
         return f;

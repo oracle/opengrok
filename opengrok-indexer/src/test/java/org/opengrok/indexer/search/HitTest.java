@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search;
 
@@ -26,11 +26,14 @@ import org.junit.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Do basic sanity testing of the Hit class
- *
+ * Do basic sanity testing of the Hit class.
  * @author Trond Norbye
  */
 public class HitTest {
@@ -75,7 +78,7 @@ public class HitTest {
         Hit o2 = new Hit("/foo", "hi", "there", false, false);
         assertEquals(o2.compareTo(o1), o1.compareTo(o2));
         o1.setFilename("bar");
-        assertFalse(o2.compareTo(o1) == o1.compareTo(o2));
+        assertNotEquals(o2.compareTo(o1), o1.compareTo(o2));
     }
 
     @Test
@@ -110,9 +113,9 @@ public class HitTest {
         Hit o2 = new Hit("/foo", "hi", "there", false, false);
         assertEquals(o2.equals(o1), o1.equals(o2));
         o1.setFilename("bar");
-        assertFalse(o2.equals(o1));
-        assertFalse(o1.equals(o2));
-        assertFalse(o1.equals(new Object()));        
+        assertNotEquals(o2, o1);
+        assertNotEquals(o1, o2);
+        assertNotEquals(o1, new Object());
     }
 
     @Test

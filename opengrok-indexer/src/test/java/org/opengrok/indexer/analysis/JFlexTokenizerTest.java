@@ -43,7 +43,10 @@ import org.opengrok.indexer.analysis.scala.ScalaSymbolTokenizer;
 import org.opengrok.indexer.analysis.sh.ShSymbolTokenizer;
 import org.opengrok.indexer.analysis.tcl.TclSymbolTokenizer;
 import org.opengrok.indexer.analysis.uue.UuencodeFullTokenizer;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for JFlexTokenizer.

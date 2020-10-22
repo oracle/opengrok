@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
@@ -38,13 +38,18 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.util.PlatformUtils;
 
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
@@ -70,11 +75,10 @@ public class UtilTest {
     @Test
     public void htmlize() throws IOException {
         String[][] input_output = {
-            {"This is a test", "This is a test"},
-            {"Newline\nshould become <br/>",
-                "Newline<br/>should become &lt;br/&gt;"},
-            {"Open & Grok", "Open &amp; Grok"},
-            {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"},};
+                {"This is a test", "This is a test"},
+                {"Newline\nshould become <br/>", "Newline<br/>should become &lt;br/&gt;"},
+                {"Open & Grok", "Open &amp; Grok"},
+                {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"}};
         for (String[] in_out : input_output) {
             // 1 arg
             assertEquals(in_out[1], Util.htmlize(in_out[0]));
@@ -87,7 +91,7 @@ public class UtilTest {
 
     @Test
     public void breadcrumbPath() {
-        assertEquals(null, Util.breadcrumbPath("/root/", null));
+        assertNull(Util.breadcrumbPath("/root/", null));
 
         assertEquals("", Util.breadcrumbPath("/root/", ""));
 
@@ -105,8 +109,8 @@ public class UtilTest {
                 Util.breadcrumbPath("/r/", "a/b/"));
         // should work the same way with a '.' as file separator
         assertEquals("<a href=\"/r/java/\">java</a>."
-                + "<a href=\"/r/java/lang/\">lang</a>."
-                + "<a href=\"/r/java/lang/String\">String</a>",
+                        + "<a href=\"/r/java/lang/\">lang</a>."
+                        + "<a href=\"/r/java/lang/String\">String</a>",
                 Util.breadcrumbPath("/r/", "java.lang.String", '.'));
         // suffix added to the link?
         assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
@@ -118,8 +122,8 @@ public class UtilTest {
                 Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
         // relative pathes are resolved wrt. / , so path resolves to /a/c/d 
         assertEquals("/<a href=\"/r//a/\">a</a>/"
-                + "<a href=\"/r//a/c/\">c</a>/"
-                + "<a href=\"/r//a/c/d\">d</a>",
+                        + "<a href=\"/r//a/c/\">c</a>/"
+                        + "<a href=\"/r//a/c/d\">d</a>",
                 Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
     }
 
@@ -207,58 +211,58 @@ public class UtilTest {
     @Test
     public void diffline() {
         String[][] tests = {
-            {
-                "if (a < b && foo < bar && c > d)",
-                "if (a < b && foo > bar && c > d)",
-                "if (a &lt; b &amp;&amp; foo <span class=\"d\">&lt;</span> bar &amp;&amp; c &gt; d)",
-                "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"
-            },
-            {
-                "foo << 1",
-                "foo >> 1",
-                "foo <span class=\"d\">&lt;&lt;</span> 1",
-                "foo <span class=\"a\">&gt;&gt;</span> 1"
-            },
-            {
-                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
-                + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
-                + "h_resp_mil) \"",
-                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
-                + "cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, "
-                + "h_resp_time, h_resp_mil) \"",
-                "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
-                + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
-                + "h_resp_mil) &quot;",
-                "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
-                + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
-                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"
-            },
-            {
-                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
-                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
-                "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;, values);",
-                "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
-                + "class=\"a\">, ?</span>)&quot;, values);"
-            },
-            {
-                "char    *config_list = NULL;",
-                "char    **config_list = NULL;",
-                "char    *config_list = NULL;",
-                "char    *<span class=\"a\">*</span>config_list = NULL;"
-            },
-            {
-                "char    **config_list = NULL;",
-                "char    *config_list = NULL;",
-                "char    *<span class=\"d\">*</span>config_list = NULL;",
-                "char    *config_list = NULL;"
-            },
-            {
-                "* An error occured or there is non-numeric stuff at the end",
-                "* An error occurred or there is non-numeric stuff at the end",
-                "* An error occured or there is non-numeric stuff at the end",
-                "* An error occur<span class=\"a\">r</span>ed or there is "
-                + "non-numeric stuff at the end"
-            }
+                {
+                        "if (a < b && foo < bar && c > d)",
+                        "if (a < b && foo > bar && c > d)",
+                        "if (a &lt; b &amp;&amp; foo <span class=\"d\">&lt;</span> bar &amp;&amp; c &gt; d)",
+                        "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"
+                },
+                {
+                        "foo << 1",
+                        "foo >> 1",
+                        "foo <span class=\"d\">&lt;&lt;</span> 1",
+                        "foo <span class=\"a\">&gt;&gt;</span> 1"
+                },
+                {
+                        "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                                + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
+                                + "h_resp_mil) \"",
+                        "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                                + "cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, "
+                                + "h_resp_time, h_resp_mil) \"",
+                        "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
+                                + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
+                                + "h_resp_mil) &quot;",
+                        "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
+                                + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
+                                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"
+                },
+                {
+                        "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
+                        "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
+                        "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;, values);",
+                        "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
+                                + "class=\"a\">, ?</span>)&quot;, values);"
+                },
+                {
+                        "char    *config_list = NULL;",
+                        "char    **config_list = NULL;",
+                        "char    *config_list = NULL;",
+                        "char    *<span class=\"a\">*</span>config_list = NULL;"
+                },
+                {
+                        "char    **config_list = NULL;",
+                        "char    *config_list = NULL;",
+                        "char    *<span class=\"d\">*</span>config_list = NULL;",
+                        "char    *config_list = NULL;"
+                },
+                {
+                        "* An error occured or there is non-numeric stuff at the end",
+                        "* An error occurred or there is non-numeric stuff at the end",
+                        "* An error occured or there is non-numeric stuff at the end",
+                        "* An error occur<span class=\"a\">r</span>ed or there is "
+                                + "non-numeric stuff at the end"
+                }
         };
         for (int i = 0; i < tests.length; i++) {
             String[] strings = Util.diffline(
@@ -271,12 +275,12 @@ public class UtilTest {
 
     @Test
     public void testEncode() {
-        String[][] tests = new String[][]{
-            {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
-            {"ahoj", "ahoj"},
-            {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"},
-            {"tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"},
-            {"multi\nline\t\nstring", "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"}
+        String[][] tests = new String[][] {
+                {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
+                {"ahoj", "ahoj"},
+                {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"},
+                {"tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"},
+                {"multi\nline\t\nstring", "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"}
         };
 
         for (String[] test : tests) {
@@ -391,12 +395,12 @@ public class UtilTest {
         assertFalse(Util.linkify("http://www.example.com?param=1&param2=2", false).contains("target=\"_blank\""));
         assertFalse(Util.linkify("https://www.example.com:8080/other/page", false).contains("target=\"_blank\""));
 
-        assertTrue(Util.linkify("git@github.com:OpenGrok/OpenGrok").equals("git@github.com:OpenGrok/OpenGrok"));
-        assertTrue(Util.linkify("hg@mercurial.com:OpenGrok/OpenGrok").equals("hg@mercurial.com:OpenGrok/OpenGrok"));
-        assertTrue(Util.linkify("ssh://git@github.com:OpenGrok/OpenGrok").equals("ssh://git@github.com:OpenGrok/OpenGrok"));
-        assertTrue(Util.linkify("ldap://example.com/OpenGrok/OpenGrok").equals("ldap://example.com/OpenGrok/OpenGrok"));
-        assertTrue(Util.linkify("smtp://example.com/OpenGrok/OpenGrok").equals("smtp://example.com/OpenGrok/OpenGrok"));
-        assertTrue(Util.linkify("just some crazy text").equals("just some crazy text"));
+        assertEquals("git@github.com:OpenGrok/OpenGrok", Util.linkify("git@github.com:OpenGrok/OpenGrok"));
+        assertEquals("hg@mercurial.com:OpenGrok/OpenGrok", Util.linkify("hg@mercurial.com:OpenGrok/OpenGrok"));
+        assertEquals("ssh://git@github.com:OpenGrok/OpenGrok", Util.linkify("ssh://git@github.com:OpenGrok/OpenGrok"));
+        assertEquals("ldap://example.com/OpenGrok/OpenGrok", Util.linkify("ldap://example.com/OpenGrok/OpenGrok"));
+        assertEquals("smtp://example.com/OpenGrok/OpenGrok", Util.linkify("smtp://example.com/OpenGrok/OpenGrok"));
+        assertEquals("just some crazy text", Util.linkify("just some crazy text"));
 
         // escaping url
         assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
@@ -417,7 +421,8 @@ public class UtilTest {
     @Test
     public void testBuildLink() throws URISyntaxException, MalformedURLException {
         assertEquals("<a href=\"http://www.example.com\">link</a>", Util.buildLink("link", "http://www.example.com"));
-        assertEquals("<a href=\"http://www.example.com?url=xasw&beta=gama\">link</a>", Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama"));
+        assertEquals("<a href=\"http://www.example.com?url=xasw&beta=gama\">link</a>",
+                Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama"));
 
         String link = Util.buildLink("link", "http://www.example.com", true);
         assertTrue(link.contains("href=\"http://www.example.com\""));
@@ -475,16 +480,19 @@ public class UtilTest {
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
                 + "aliqua. "
-                + "<a href=\"http://www.other-example.com?bug=3333\" target=\"_blank\">bug3333fff</a> Ut enim ad minim veniam, quis nostrud exercitation "
+                + "<a href=\"http://www.other-example.com?bug=3333\" target=\"_blank\">bug3333fff</a>"
+                + " Ut enim ad minim veniam, quis nostrud exercitation "
                 + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
                 + "Duis aute irure dolor in reprehenderit in voluptate velit "
                 + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
                 + "occaecat "
-                + "<a href=\"http://www.other-example.com?bug=6478\" target=\"_blank\">bug6478abc</a> cupidatat non proident, sunt in culpa qui officia "
+                + "<a href=\"http://www.other-example.com?bug=6478\" target=\"_blank\">bug6478abc</a>"
+                + " cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
 
         assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "$1", "http://www.example.com?bug=$1"));
-        assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1", "http://www.other-example.com?bug=$2"));
+        assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1",
+                "http://www.other-example.com?bug=$2"));
     }
 
     @Test

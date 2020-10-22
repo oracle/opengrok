@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -34,10 +34,12 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -77,7 +79,7 @@ public class IndexDatabaseTest {
         indexer.prepareIndexer(
                 env, true, true,
                 false, null, null);
-        env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList(new String[]{"/c"})));
+        env.setDefaultProjectsFromNames(new TreeSet<>(Arrays.asList("/c")));
         indexer.doIndexerExecution(true, null, null);
     }
 
@@ -117,16 +119,16 @@ public class IndexDatabaseTest {
     private void checkDataExistence(String fileName, boolean shouldExist) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        for (String dirName : new String[]{"historycache", IndexDatabase.XREF_DIR}) {
+        for (String dirName : new String[] {"historycache", IndexDatabase.XREF_DIR}) {
             File dataDir = new File(env.getDataRootFile(), dirName);
             File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
             if (shouldExist) {
                 Assert.assertTrue("file " + fileName + " not found in " + dirName,
-                    dataFile.exists());
+                        dataFile.exists());
             } else {
                 Assert.assertFalse("file " + fileName + " found in " + dirName,
-                    dataFile.exists());
+                        dataFile.exists());
             }
         }
     }
@@ -185,7 +187,7 @@ public class IndexDatabaseTest {
         instance.setFile("c");
         instance.search();
         ScoreDoc[] scoredocs = instance.scoreDocs();
-        assertTrue("need some search hits to perform the check",scoredocs.length > 0);
+        assertTrue("need some search hits to perform the check", scoredocs.length > 0);
         for (ScoreDoc sd : scoredocs) {
             Document doc = instance.doc(sd.doc);
             assertFalse("PATH field should not contain backslash characters",

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -28,16 +28,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +42,12 @@ import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -102,13 +103,11 @@ public class CVSRepositoryTest {
      * @param reposRoot directory of the repository root
      * @param args arguments to use for the command
      */
-    public static void runCvsCommand(File reposRoot, String ... args) {
+    public static void runCvsCommand(File reposRoot, String... args) {
         List<String> cmdargs = new ArrayList<>();
         CVSRepository repo = new CVSRepository();
         cmdargs.add(repo.getRepoCommand());
-        for (String arg: args) {
-            cmdargs.add(arg);
-        }
+        Collections.addAll(cmdargs, args);
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
@@ -128,9 +127,8 @@ public class CVSRepositoryTest {
     public void testGetBranchNoBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
-        CVSRepository cvsrepo
-                = (CVSRepository) RepositoryFactory.getRepository(root);
-        assertEquals(null, cvsrepo.getBranch());
+        CVSRepository cvsrepo = (CVSRepository) RepositoryFactory.getRepository(root);
+        assertNull(cvsrepo.getBranch());
     }
 
     /**
@@ -222,7 +220,7 @@ public class CVSRepositoryTest {
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {
-            assertEquals(true, result.isEnabled(i));
+            assertTrue(result.isEnabled(i));
         }
         assertEquals(revId1, result.getRevision(1));
         assertEquals(revId2, result.getRevision(2));

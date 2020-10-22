@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -28,10 +28,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
+
+import static org.junit.Assert.assertTrue;
 
 public class XMLAnalyzerTest {
     @Test

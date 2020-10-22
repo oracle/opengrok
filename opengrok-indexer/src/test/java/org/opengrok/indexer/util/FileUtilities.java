@@ -40,7 +40,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Various filesystem utilities used by the different test setups
+ * Various filesystem utilities used by the different test setups.
  *
  * @author Trond Norbye
  */

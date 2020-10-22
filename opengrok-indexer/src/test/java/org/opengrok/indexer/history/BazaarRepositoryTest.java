@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -31,7 +31,9 @@ import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Simple Bazaar repository test.
@@ -81,7 +83,7 @@ public class BazaarRepositoryTest {
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {
-            assertEquals(true, result.isEnabled(i));
+            assertTrue(result.isEnabled(i));
         }
         assertEquals(revId1, result.getRevision(1));
         assertEquals(revId2, result.getRevision(2));

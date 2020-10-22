@@ -28,6 +28,7 @@ import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_SUBSCRIBER_HE
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_TIMEOUT_EXCEEDED_HEADER;
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_DN_HEADER;
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_GUID_HEADER;
+
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.Assert;
@@ -36,7 +37,6 @@ import org.junit.Test;
 
 /**
  * Test OSSO header decoder.
- *
  * @author Krystof Tulinger
  */
 public class OSSODecoderTest {
@@ -82,16 +82,16 @@ public class OSSODecoderTest {
     @Test
     public void testGetUserId() {
         String[] tests = {
-            "123456",
-            "sd45gfgf5sd4g5ffd54g",
-            "ě5 1g56ew1tč6516re5g1g65d1g65d"
+                "123456",
+                "sd45gfgf5sd4g5ffd54g",
+                "ě5 1g56ew1tč6516re5g1g65d1g65d"
         };
 
-        for (int i = 0; i < tests.length; i++) {
-            dummyRequest.setHeader(OSSO_USER_GUID_HEADER, tests[i]);
+        for (String test : tests) {
+            dummyRequest.setHeader(OSSO_USER_GUID_HEADER, test);
             User result = decoder.fromRequest(dummyRequest);
             Assert.assertNotNull(result);
-            Assert.assertEquals(tests[i], result.getId());
+            Assert.assertEquals(test, result.getId());
         }
     }
 
@@ -101,16 +101,16 @@ public class OSSODecoderTest {
     @Test
     public void testGetUserDn() {
         String[] tests = {
-            "123456",
-            "sd45gfgf5sd4g5ffd54g",
-            "ě5 1g56ew1tč6516re5g1g65d1g65d"
+                "123456",
+                "sd45gfgf5sd4g5ffd54g",
+                "ě5 1g56ew1tč6516re5g1g65d1g65d"
         };
 
-        for (int i = 0; i < tests.length; i++) {
-            dummyRequest.setHeader(OSSO_USER_DN_HEADER, tests[i]);
+        for (String test : tests) {
+            dummyRequest.setHeader(OSSO_USER_DN_HEADER, test);
             User result = decoder.fromRequest(dummyRequest);
             Assert.assertNotNull(result);
-            Assert.assertEquals(tests[i], result.getUsername());
+            Assert.assertEquals(test, result.getUsername());
         }
     }
 
@@ -119,16 +119,8 @@ public class OSSODecoderTest {
      */
     @Test
     public void testGetCookieTimestamp() {
-        String[] tests = {
-            "123456",
-            "5761172f",
-            "58d137be",};
-
-        long expected[] = {
-            1193046000L,
-            1465980719000L,
-            1490106302000L
-        };
+        String[] tests = {"123456", "5761172f", "58d137be"};
+        long[] expected = {1193046000L, 1465980719000L, 1490106302000L};
 
         for (int i = 0; i < tests.length; i++) {
             dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, tests[i]);
@@ -143,16 +135,16 @@ public class OSSODecoderTest {
      */
     @Test
     public void testInvalidGetCookieTimestamp() {
-        User u;
         String[] tests = {
-            "sd45gfgf5sd4g5ffd54g",
-            "ě5 1g56ew1tč6516re5g1g65d1g65d",
-            "",
-            "ffffx" // not a hex number
+                "sd45gfgf5sd4g5ffd54g",
+                "ě5 1g56ew1tč6516re5g1g65d1g65d",
+                "",
+                "ffffx" // not a hex number
         };
 
-        for (int i = 0; i < tests.length; i++) {
-            dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, tests[i]);
+        for (String test : tests) {
+            User u;
+            dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, test);
             Assert.assertNotNull(u = decoder.fromRequest(dummyRequest));
             Assert.assertNull(u.getCookieTimestamp());
         }
@@ -163,17 +155,8 @@ public class OSSODecoderTest {
      */
     @Test
     public void testGetTimeouted() {
-        String[] tests = {
-            "false",
-            "true",
-            "FALSE",
-            "TRUE",
-            "abcd"
-        };
-
-        boolean[] expected = {
-            false, true, false, true, false
-        };
+        String[] tests = {"false", "true", "FALSE", "TRUE", "abcd"};
+        boolean[] expected = {false, true, false, true, false};
 
         for (int i = 0; i < tests.length; i++) {
             dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, tests[i]);

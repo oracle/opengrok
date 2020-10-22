@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -36,7 +36,7 @@ import java.nio.file.Files;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
- * A source repository to be used during a test
+ * A source repository to be used during a test.
  *
  * @author Trond Norbye
  */
@@ -105,11 +105,11 @@ public class TestRepository {
         return externalRoot == null ? null : externalRoot.getAbsolutePath();
     }
 
-    private final static String dummyFilename = "dummy.txt";
+    private static final String DUMMY_FILENAME = "dummy.txt";
 
     public File addDummyFile(String project) throws IOException {
         File dummy = new File(getSourceRoot() + File.separator + project +
-            File.separator + dummyFilename);
+            File.separator + DUMMY_FILENAME);
         if (!dummy.exists()) {
             dummy.createNewFile();
         }
@@ -123,7 +123,7 @@ public class TestRepository {
 
     public void removeDummyFile(String project) {
         File dummy = new File(getSourceRoot() + File.separator + project +
-            File.separator + dummyFilename);
+            File.separator + DUMMY_FILENAME);
         dummy.delete();
     }
 

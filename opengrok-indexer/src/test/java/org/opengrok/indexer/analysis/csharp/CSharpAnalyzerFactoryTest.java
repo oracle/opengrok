@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.csharp;
@@ -34,8 +34,6 @@ import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
@@ -45,6 +43,12 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
  *
@@ -114,7 +118,7 @@ public class CSharpAnalyzerFactoryTest {
         assertEquals(4, scopes.size()); //TODO 5
 
         for (int i = 0; i < 41; ++i) {
-            if (i >= 10 && i <= 10) {
+            if (i == 10) {
                 assertEquals("M1", scopes.getScope(i).getName());
                 assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
             } else if (i >= 12 && i <= 14) {

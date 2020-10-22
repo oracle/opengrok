@@ -18,21 +18,23 @@
  */
 
 /*
- * Copyright (c) 2007, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
 import java.text.ParseException;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-/**
- * JUnit test for org.opengrok.indexer.util.Getopt
- */
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class GetoptTest {
 
     public GetoptTest() {
@@ -56,7 +58,7 @@ public class GetoptTest {
 
     @Test
     public void testParseNormal() throws Exception {
-        String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f" };
+        String[] argv = new String[] {"-a", "foo", "-bc", "--", "-f"};
         Getopt instance = new Getopt(argv, "a:bcr:f");
 
         instance.parse();
@@ -75,7 +77,7 @@ public class GetoptTest {
 
     @Test
     public void reset() throws ParseException {
-        String[] argv = new String[]{"-a", "foo", "-bc", "argument1" };
+        String[] argv = new String[] {"-a", "foo", "-bc", "argument1"};
         Getopt instance = new Getopt(argv, "a:bc");
 
         instance.parse();
@@ -107,7 +109,7 @@ public class GetoptTest {
 
     @Test
     public void testParseFailure() throws Exception {
-        String[] argv = new String[]{"-a"};
+        String[] argv = new String[] {"-a"};
         Getopt instance = new Getopt(argv, "a:");
 
         try {
@@ -119,7 +121,7 @@ public class GetoptTest {
                 throw exp;
             }
         }
-        
+
         instance = new Getopt(argv, "b");
         try {
             instance.parse();

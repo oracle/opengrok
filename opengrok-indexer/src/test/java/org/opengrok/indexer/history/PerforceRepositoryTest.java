@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
@@ -45,15 +45,14 @@ import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFil
 import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceFilename;
 
 /**
- * Do basic testing of the Perforce support
- *
+ * Do basic testing of the Perforce support.
  * @author Trond Norbye
  */
 public class PerforceRepositoryTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
-    
+
     private static boolean skip;
     private static List<File> files;
     private static final File root = new File("/var/opengrok/src/p4foo");
@@ -61,7 +60,7 @@ public class PerforceRepositoryTest {
     @BeforeClass
     public static void setUpClass() {
         if (!root.exists()) {
-            skip=true;
+            skip = true;
         } else {
             files = new ArrayList<>();
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -144,7 +143,7 @@ public class PerforceRepositoryTest {
 
     @Test
     public void testProtectFilename() throws Exception {
-        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<>();
+        List<SimpleImmutableEntry<String, String>> testmap = new ArrayList<>();
         testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
         testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
         testmap.add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
@@ -155,15 +154,15 @@ public class PerforceRepositoryTest {
         testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
         testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
 
-        for (SimpleImmutableEntry<String,String> ent : testmap) {
+        for (SimpleImmutableEntry<String, String> ent : testmap) {
             String prot = protectPerforceFilename(ent.getKey());
-            assertEquals("Improper protected filename, "+prot+" != "+ent.getValue(), ent.getValue(), prot);
+            assertEquals("Improper protected filename, " + prot + " != " + ent.getValue(), ent.getValue(), prot);
         }
     }
 
     @Test
     public void testUnprotectFilename() throws Exception {
-        ArrayList<SimpleImmutableEntry<String,String>>   testmap = new ArrayList<>();
+        List<SimpleImmutableEntry<String, String>> testmap = new ArrayList<>();
         testmap.add(new SimpleImmutableEntry<>("Testfile 34", "Testfile 34"));
         testmap.add(new SimpleImmutableEntry<>("Test%52", "Test%2552"));
         testmap.add(new SimpleImmutableEntry<>("Test*4+2", "Test%2A4+2"));
@@ -174,7 +173,7 @@ public class PerforceRepositoryTest {
         testmap.add(new SimpleImmutableEntry<>("#File*Three%trig", "%23File%2AThree%25trig"));
         testmap.add(new SimpleImmutableEntry<>("Two%and5#3#4", "Two%25and5%233%234"));
 
-        for (SimpleImmutableEntry<String,String> ent : testmap) {
+        for (SimpleImmutableEntry<String, String> ent : testmap) {
             String u = unprotectPerforceFilename(ent.getValue());
             assertEquals("Bad unprotected filename for " + ent.getValue(), ent.getKey(), u);
         }

@@ -36,7 +36,7 @@ public abstract class OGKJerseyTest extends JerseyTest {
 
     private static final int BASE_DYNAMIC_OR_PRIVATE_PORT = 49152;
 
-    /** Random.nextInt() will be at most one less than this -- but OK */
+    /** Random.nextInt() will be at most one less than this -- but OK. */
     private static final int DYNAMIC_OR_PRIVATE_PORT_RANGE = 16383;
 
     private static final int MAX_PORT_TRIES = 20;

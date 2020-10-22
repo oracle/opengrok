@@ -23,8 +23,10 @@
 
 package org.opengrok.indexer.analysis;
 
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Represents a container for tests of {@link AnalyzerGuruHelp}.
@@ -33,7 +35,7 @@ public class AnalyzerGuruHelpTest {
     @Test
     public void shouldCreateReadableUsage() {
         String usage = AnalyzerGuruHelp.getUsage();
-        assertTrue("usage is not empty", !usage.isEmpty());
+        assertFalse("usage is not empty", usage.isEmpty());
         assertTrue("usage contains \"*.\"", usage.contains("*."));
         assertTrue("usage contains \"#!\"", usage.contains("#!"));
     }

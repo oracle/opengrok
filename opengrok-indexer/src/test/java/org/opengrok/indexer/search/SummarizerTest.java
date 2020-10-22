@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.search;
@@ -26,7 +26,8 @@ package org.opengrok.indexer.search;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.CompatibleAnalyser;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Unit tests for the Summarizer class.

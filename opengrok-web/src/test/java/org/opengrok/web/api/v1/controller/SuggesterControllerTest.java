@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -92,7 +92,8 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final GenericType<List<Entry<String, Integer>>> popularityDataType =
-            new GenericType<List<Entry<String, Integer>>>() {};
+            new GenericType<List<Entry<String, Integer>>>() {
+            };
 
 
     private static TestRepository repository;
