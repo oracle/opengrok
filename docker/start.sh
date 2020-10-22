@@ -36,7 +36,7 @@ fi
 indexer(){
 	# Wait for Tomcat startup.
 	date +"%F %T Waiting for Tomcat startup..."
-	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null 'http://localhost:8080/${URL_ROOT}'`" == "000" ]; do
+	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null \"http://localhost:8080/${URL_ROOT}\"`" == "000" ]; do
 		sleep 1;
 	done
 	date +"%F %T Startup finished"
