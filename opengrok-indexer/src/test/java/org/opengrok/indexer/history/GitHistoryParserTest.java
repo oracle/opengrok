@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -119,7 +119,7 @@ public class GitHistoryParserTest {
     }
 
     /**
-     * Parse something that could come out from the Memcached repository
+     * Parse something that could come out from the Memcached repository.
      */
     @Test
     public void parseALaMemcached() throws Exception {
@@ -132,8 +132,7 @@ public class GitHistoryParserTest {
         String author2 = "username2 <username2@as345af-23412-sadf-cxvdsfg3123-sfasdf>";
         String date1 = "2008-04-01T15:12:51+00:00";
         String date2 = "2006-05-22T15:23:15+00:00";
-        String output =
-                "commit " + commitId1 + "\n" +
+        String output = "commit " + commitId1 + "\n" +
                 "Author:     " + author1 + "\n" +
                 "AuthorDate: " + date1 + "\n" +
                 "Commit:     " + author1 + "\n" +
@@ -189,7 +188,7 @@ public class GitHistoryParserTest {
     }
 
     /**
-     * Parse something that could come out from the git repository
+     * Parse something that could come out from the git repository.
      */
     @Test
     public void parseALaGit() throws Exception {
@@ -256,7 +255,7 @@ public class GitHistoryParserTest {
     }
 
     /**
-     * Parse something that could come out from the linux kernel repository
+     * Parse something that could come out from the linux kernel repository.
      */
     @Test
     public void parseALaLK() throws Exception {
@@ -347,16 +346,16 @@ public class GitHistoryParserTest {
     public void testDateFormats() {
         GitHistoryParser instance = new GitHistoryParser(false);
 
-        String[][] dates = new String[][]{
-            new String[]{"2017-07-25T13:17:44+02:00", gitISODatePattern},
-            };
+        String[][] dates = new String[][] {
+                new String[] {"2017-07-25T13:17:44+02:00", gitISODatePattern},
+        };
 
-        for (int i = 0; i < dates.length; i++) {
+        for (String[] strings : dates) {
             try {
                 String commitId = "1a23456789abcdef123456789abcderf123456789";
                 String author = "username <username@asfdsaf-23412-sadf-cxvdsfg3123-sfasdf>";
-                String date = dates[i][0];
-                String format = dates[i][1];
+                String date = strings[0];
+                String format = strings[1];
                 Date parsedDate = new SimpleDateFormat(format).parse(date);
                 String output
                         = "commit " + commitId + "\n"

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -85,7 +85,7 @@ public class StringUtilsTest {
             {"aabbccddaabbccdd", "cd", 1},
             {"aabbccddaabbccdd", "cd", 2},
             {"aabbccddaabbccdd", "ccdd", 1},
-            {"aabbccddaabbccdd", "ccdd", 2},};
+            {"aabbccddaabbccdd", "ccdd", 2}};
 
         int[] indices = new int[]{
             -1, -1, 0, -1,
@@ -105,7 +105,7 @@ public class StringUtilsTest {
         for (int i = 0; i < tests.length; i++) {
             int index = StringUtils.nthIndexOf((String) tests[i][0], (String) tests[i][1], (Integer) tests[i][2]);
             assertEquals(String.format("%d-th occurrence of \"%s\" in \"%s\" should start at %d but started at %d",
-                    new Object[]{tests[i][2], tests[i][1], tests[i][0], indices[i], index}),
+                    tests[i][2], tests[i][1], tests[i][0], indices[i], index),
                     index, indices[i]);
         }
     }

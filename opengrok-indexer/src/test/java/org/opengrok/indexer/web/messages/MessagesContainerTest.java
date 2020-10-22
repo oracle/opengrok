@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
@@ -159,7 +160,7 @@ public class MessagesContainerTest {
     }
 
     /**
-     * tests serialization of MessagesContainer.AcceptedMessage
+     * tests serialization of MessagesContainer.AcceptedMessage.
      */
     @Test
     public void testJSON() throws IOException {

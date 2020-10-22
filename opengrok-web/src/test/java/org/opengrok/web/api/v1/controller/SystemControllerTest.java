@@ -108,14 +108,14 @@ public class SystemControllerTest extends OGKJerseyTest {
         // Create path descriptions string.
         StringBuilder sb = new StringBuilder();
         String[][] descriptions = {
-                { "/path1", "foo foo" },
-                { "/path2", "bar bar" }
+                {"/path1", "foo foo"},
+                {"/path2", "bar bar"}
         };
 
-        for (int i = 0; i < descriptions.length; i++) {
-            sb.append(descriptions[i][0]);
+        for (String[] description : descriptions) {
+            sb.append(description[0]);
             sb.append("\t");
-            sb.append(descriptions[i][1]);
+            sb.append(description[1]);
             sb.append("\n");
         }
         String input = sb.toString();
@@ -130,8 +130,8 @@ public class SystemControllerTest extends OGKJerseyTest {
         Path eftarPath = env.getDtagsEftarPath();
         assertTrue(eftarPath.toFile().exists());
         try (EftarFileReader er = new EftarFileReader(eftarPath.toString())) {
-            for (int i = 0; i < descriptions.length; i++) {
-                assertEquals(descriptions[i][1], er.get(descriptions[i][0]));
+            for (String[] description : descriptions) {
+                assertEquals(description[1], er.get(description[0]));
             }
         }
 

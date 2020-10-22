@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
  */
 
@@ -29,13 +29,16 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeSet;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.junit.After;
 import org.junit.AfterClass;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,6 +51,7 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
+
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 /**
@@ -65,12 +69,10 @@ public class SearchAndContextFormatterTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream(
-            "repositories.zip"));
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
 
         env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(
-            "org.opengrok.indexer.analysis.Ctags", "ctags"));
+        env.setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);
@@ -85,8 +87,7 @@ public class SearchAndContextFormatterTest {
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
-        RuntimeEnvironment.getInstance().readConfiguration(new File(
-            configFile.getAbsolutePath()));
+        RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
     @AfterClass
@@ -104,7 +105,7 @@ public class SearchAndContextFormatterTest {
     }
 
     @Test
-    public void testSearch() throws IOException, InvalidTokenOffsetsException {
+    public void testSearch() throws IOException {
         SearchEngine instance = new SearchEngine();
         instance.setFreetext("embedded");
         instance.setFile("main.c");
@@ -112,20 +113,21 @@ public class SearchAndContextFormatterTest {
         assertTrue("noHits should be positive", noHits > 0);
         String[] frags = getFirstFragments(instance);
         assertNotNull("getFirstFragments() should return something", frags);
-        assertTrue("frags should have one element", frags.length == 1);
+        assertEquals("frags should have one element", 1, frags.length);
 
         final String CTX =
-            "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +
-            "<a class=\"s\" href=\"/source/svn/c/main.c#10\"><span class=\"l\">10</span>    Multi line comment, with <b>embedded</b> strange characters: &lt; &gt; &amp;,</a><br/>" +
-            "<a class=\"s\" href=\"/source/svn/c/main.c#11\"><span class=\"l\">11</span>    email address: testuser@example.com and even an URL:</a><br/>";
+                "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +
+                        "<a class=\"s\" href=\"/source/svn/c/main.c#10\"><span class=\"l\">10</span>    " +
+                        "Multi line comment, with <b>embedded</b> strange characters: &lt; &gt; &amp;,</a><br/>" +
+                        "<a class=\"s\" href=\"/source/svn/c/main.c#11\"><span class=\"l\">11</span>    " +
+                        "email address: testuser@example.com and even an URL:</a><br/>";
         assertLinesEqual("ContextFormatter output", CTX, frags[0]);
         instance.destroy();
     }
 
-    private String[] getFirstFragments(SearchEngine instance)
-            throws IOException, InvalidTokenOffsetsException {
+    private String[] getFirstFragments(SearchEngine instance) throws IOException {
 
-        ContextArgs args = new ContextArgs((short)1, (short)10);
+        ContextArgs args = new ContextArgs((short) 1, (short) 10);
 
         /*
          * The following `anz' should go unused, but UnifiedHighlighter demands
@@ -135,26 +137,24 @@ public class SearchAndContextFormatterTest {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         ContextFormatter formatter = new ContextFormatter(args);
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-            instance.getSearcher(), anz);
-        uhi.setBreakIterator(() -> new StrictLineBreakIterator());
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, instance.getSearcher(), anz);
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
 
         ScoreDoc[] docs = instance.scoreDocs();
-        for (int i = 0; i < docs.length; ++i) {
-            int docid = docs[i].doc;
+        for (ScoreDoc scoreDoc : docs) {
+            int docid = scoreDoc.doc;
             Document doc = instance.doc(docid);
 
             String path = doc.get(QueryBuilder.PATH);
             System.out.println(path);
             formatter.setUrl("/source" + path);
 
-            for (String contextField :
-                instance.getQueryBuilder().getContextFields()) {
+            for (String contextField : instance.getQueryBuilder().getContextFields()) {
 
-                Map<String,String[]> res = uhi.highlightFields(
-                    new String[]{contextField}, instance.getQueryObject(),
-                    new int[] {docid}, new int[] {10});
+                Map<String, String[]> res = uhi.highlightFields(
+                        new String[] {contextField}, instance.getQueryObject(),
+                        new int[] {docid}, new int[] {10});
                 String[] frags = res.getOrDefault(contextField, null);
                 if (frags != null) {
                     return frags;

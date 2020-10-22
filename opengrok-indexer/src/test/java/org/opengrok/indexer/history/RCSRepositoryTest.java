@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -35,10 +35,11 @@ import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author Vladimir Kotal
  */
 @ConditionalRun(RepositoryInstalled.RCSInstalled.class)
@@ -47,14 +48,14 @@ public class RCSRepositoryTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    static private TestRepository repository = new TestRepository();
+    private static TestRepository repository = new TestRepository();
 
     /**
      * Revision numbers present in the RCS test repository, in the order
      * they are supposed to be returned from getHistory(), that is latest
      * changeset first.
      */
-    private static final String[] REVISIONS = { "1.2", "1.1" };
+    private static final String[] REVISIONS = {"1.2", "1.1"};
 
     @BeforeClass
     public static void setUpClass() throws IOException {

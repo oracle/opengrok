@@ -15,10 +15,11 @@
  * information: Portions Copyright [yyyy] [name of copyright owner]
  *
  * CDDL HEADER END
- *
- * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
+/*
+ * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
+ */
 package org.opengrok.indexer.util;
 
 import java.nio.charset.StandardCharsets;

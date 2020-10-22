@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opengrok.indexer.history;
@@ -32,7 +32,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -91,7 +93,8 @@ public class RazorHistoryParserTest {
                 "CHECK-OUT       " + user2 + "   1.1     Active  " + date2 + "\n" +
                 "##TITLE:  Built with gmake CC=gcc CFLAGS='-std=c99 -Wall -O2'\n" +
                 "##NOTES: CHECKED OUT TO: /fileserver/sandbox/pbray/OpenGrokSampleRepository\n" +
-                "##AUDIT: " + user2 + " " + date2 + " 1.1 Active CHECKED OUT TO: /fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog \n" +
+                "##AUDIT: " + user2 + " " + date2 + " 1.1 Active CHECKED OUT TO: " +
+                "/fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog \n" +
                 "#The initial release was built with debugging support.\n" +
                 "#This is not appropriate for the production environment.\n" +
                 "##ISSUE:        I...-..5     ++ISSUES++\n" +
@@ -102,7 +105,8 @@ public class RazorHistoryParserTest {
                 "CHECK-IN        " + user1 + "   1.2     Active  " + date3 + "\n" +
                 "##TITLE:  Built with gmake CC=gcc CFLAGS='-std=c99 -Wall -O2'\n" +
                 "##NOTES: CHECKED IN FROM: /fileserver/sandbox/pbray/OpenGrokSampleRepository\n" +
-                "##AUDIT: " + user1 + " " + date3 + " 1.2 Active CHECKED IN FROM: /fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog \n" +
+                "##AUDIT: " + user1 + " " + date3 + " 1.2 Active CHECKED IN FROM: " +
+                "/fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog \n" +
                 "#The initial release was built with debugging support.\n" +
                 "#This is not appropriate for the production environment.\n" +
                 "#\n" +

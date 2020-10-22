@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -83,7 +84,7 @@ public class PhpSymbolTokenizerTest {
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/php/sample.php");
-        InputStreamReader r = new InputStreamReader(res, "UTF-8");
+        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
         String[] termsFor = getTermsFor(r);
         assertArrayEquals(
                 new String[]{

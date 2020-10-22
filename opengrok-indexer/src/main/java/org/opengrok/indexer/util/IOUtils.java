@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -114,16 +113,6 @@ public final class IOUtils {
     }
 
     /**
-     * List files in the directory recursively.
-     *
-     * @param root starting directory     
-     * @return recursively traversed list of files with given suffix
-     */
-    public static List<File> listFilesRec(File root) {
-        return listFilesRec(root, null);
-    }
-
-    /**
      * List files in the directory recursively when looking for files only
      * ending with suffix.
      *
@@ -165,14 +154,11 @@ public final class IOUtils {
      * @return list of file with suffix
      */
     public static List<File> listFiles(File root, String suffix) {
-        File[] files = root.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                if (suffix != null && !suffix.isEmpty()) {
-                    return name.endsWith(suffix);
-                } else {
-                    return true;
-                }
+        File[] files = root.listFiles((dir, name) -> {
+            if (suffix != null && !suffix.isEmpty()) {
+                return name.endsWith(suffix);
+            } else {
+                return true;
             }
         });
         if (files == null) {
@@ -315,16 +301,14 @@ public final class IOUtils {
                 try {
                     input.close();
                 } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
+                    // nothing we can do about it
+                }
             } else if (fin != null) {
                 try {
                     fin.close();
                 } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
+                    // nothing we can do about it
+                }
             }
         }
         return "";

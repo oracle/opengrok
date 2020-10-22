@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,7 +71,6 @@ import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
- *
  * @author Trond Norbye
  */
 public class IndexerTest {
@@ -130,10 +130,10 @@ public class IndexerTest {
         Project p2 = new Project("Project 2", "/this_path_does_not_exist");
 
         // Make the runtime environment aware of these two projects.
-        Map<String,Project> projects = new HashMap<>();
+        Map<String, Project> projects = new HashMap<>();
         projects.put(p1.getName(), p1);
         projects.put("nonexistent", p2);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();        
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjects(projects);
         env.setHistoryEnabled(false);
 
@@ -184,7 +184,7 @@ public class IndexerTest {
         Indexer.main(argv);
     }
 
-    private class MyIndexChangeListener implements IndexChangedListener {
+    private static class MyIndexChangeListener implements IndexChangedListener {
 
         final Queue<String> files = new ConcurrentLinkedQueue<>();
         final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
@@ -199,7 +199,7 @@ public class IndexerTest {
         }
 
         @Override
-        public void fileRemove(String path) {            
+        public void fileRemove(String path) {
         }
 
         @Override
@@ -210,7 +210,7 @@ public class IndexerTest {
         public void fileRemoved(String path) {
             removedFiles.add(path);
         }
-        
+
         public void reset() {
             this.files.clear();
             this.removedFiles.clear();
@@ -220,7 +220,7 @@ public class IndexerTest {
     /**
      * Test indexing w.r.t. setIndexVersionedFilesOnly() setting,
      * i.e. if this option is set to true, index only files tracked by SCM.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
@@ -263,7 +263,7 @@ public class IndexerTest {
     /**
      * IndexChangedListener class used solely for {@code testRemoveFileOnFileChange()}.
      */
-    private class RemoveIndexChangeListener implements IndexChangedListener {
+    private static class RemoveIndexChangeListener implements IndexChangedListener {
 
         final Queue<String> filesToAdd = new ConcurrentLinkedQueue<>();
         final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
@@ -308,7 +308,7 @@ public class IndexerTest {
     /**
      * Test that reindex after changing a file does not wipe out history index
      * for this file. This is important for the incremental history indexing.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
@@ -409,7 +409,7 @@ public class IndexerTest {
 
     /**
      * Test IndexChangedListener behavior in repository with invalid files.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void testIncrementalIndexAddRemoveFile() throws Exception {
@@ -439,7 +439,7 @@ public class IndexerTest {
 
     /**
      * Test that named pipes are not indexed.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void testBug11896() throws Exception {
@@ -456,10 +456,10 @@ public class IndexerTest {
             env.setDataRoot(repository.getDataRoot());
             Executor executor;
 
-            executor = new Executor(new String[]{"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
+            executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
             executor.exec(true);
 
-            executor = new Executor(new String[]{"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
+            executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
             executor.exec(true);
 
             Project project = new Project("testBug11896");
@@ -479,7 +479,6 @@ public class IndexerTest {
 
     /**
      * Should include the existing project.
-     *
      * @throws Exception
      */
     @Test
@@ -492,13 +491,12 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"c"})),
+        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"c"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 
     /**
      * Should discard the non existing project.
-     *
      * @throws Exception
      */
     @Test
@@ -518,13 +516,12 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"lisp", "pascal", "perl", "data"})),
+        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"lisp", "pascal", "perl", "data"})),
                 env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 
     /**
      * Should include all projects in the source root.
-     *
      * @throws Exception
      */
     @Test

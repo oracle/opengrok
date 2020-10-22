@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -90,10 +91,10 @@ public class PageConfigTest {
         String[] attrs = {"a", "b", "c", "d"};
 
         Object[] values = {
-            "some object",
-            new DummyHttpServletRequest(),
-            1,
-            this
+                "some object",
+                new DummyHttpServletRequest(),
+                1,
+                this
         };
 
         assertEquals(attrs.length, values.length);
@@ -120,8 +121,7 @@ public class PageConfigTest {
 
         // Expect directories without trailing slash to get a trailing slash
         // appended.
-        assertCanProcess("/source/history/mercurial/",
-                         "/source", "/history", "/mercurial");
+        assertCanProcess("/source/history/mercurial/", "/source", "/history", "/mercurial");
 
         // Expect no redirection (that is, empty string is returned) if the
         // directories already have a trailing slash.
@@ -141,7 +141,7 @@ public class PageConfigTest {
         // Expect directories without trailing slash to get a trailing slash
         // appended.
         assertCanProcess("/source/xref/mercurial/",
-                         "/source", "/xref", "/mercurial");
+                "/source", "/xref", "/mercurial");
 
         // Expect no redirection (that is, empty string is returned) if the
         // directories already have a trailing slash.
@@ -230,15 +230,23 @@ public class PageConfigTest {
         DummyHttpServletRequest req = new DummyHttpServletRequest() {
             @Override
             public String getParameter(String name) {
-                switch(name) {
-                    case "a": return "1";
-                    case "b": return "100";
-                    case "c": return null;
-                    case "d": return "2";
-                    case "e": return "200";
-                    case "f": return "3000";
-                    case "g": return null;
-                    case "h": return "abcdef";
+                switch (name) {
+                    case "a":
+                        return "1";
+                    case "b":
+                        return "100";
+                    case "c":
+                        return null;
+                    case "d":
+                        return "2";
+                    case "e":
+                        return "200";
+                    case "f":
+                        return "3000";
+                    case "g":
+                        return null;
+                    case "h":
+                        return "abcdef";
                 }
                 return null;
             }
@@ -326,8 +334,8 @@ public class PageConfigTest {
     public void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
-                public String getPathInfo() {
-                    return "/git/nonexistent_file";
+            public String getPathInfo() {
+                return "/git/nonexistent_file";
             }
         };
 
@@ -338,11 +346,7 @@ public class PageConfigTest {
 
     @Test
     public void testGetRequestedRevision() {
-        final String[] params = {"r", "h", "r", "r", "r"};
-        final String[] revisions = {
-            "6c5588de", "", "6c5588de", "6c5588de", "6c5588de"
-        };
-        assertEquals(params.length, revisions.length);
+        final String[] revisions = {"6c5588de", "", "6c5588de", "6c5588de", "6c5588de"};
         for (int i = 0; i < revisions.length; i++) {
             final int index = i;
             DummyHttpServletRequest req = new DummyHttpServletRequest() {
@@ -391,9 +395,11 @@ public class PageConfigTest {
 
                 @Override
                 public String getParameter(String name) {
-                    switch(name) {
-                        case "r": return revisions[index];
-                        case "a": return "true";
+                    switch (name) {
+                        case "r":
+                            return revisions[index];
+                        case "a":
+                            return "true";
                     }
                     return null;
                 }
@@ -405,7 +411,7 @@ public class PageConfigTest {
             assertEquals("main.c", annotation.getFilename());
             assertEquals(revisions.length - i, annotation.getFileVersionsCount());
 
-            for(int j = 1; j <= annotation.size(); j ++ ){
+            for (int j = 1; j <= annotation.size(); j++) {
                 String tmp = annotation.getRevision(j);
                 assertTrue(Arrays.asList(revisions).contains(tmp));
             }
@@ -419,8 +425,7 @@ public class PageConfigTest {
     }
 
     /**
-     * Test the case when the source root is null
-     *
+     * Test the case when the source root is null.
      * @throws IOException I/O exception
      */
     @Test(expected = FileNotFoundException.class)
@@ -439,8 +444,7 @@ public class PageConfigTest {
     }
 
     /**
-     * Test the case when source root is empty
-     *
+     * Test the case when source root is empty.
      * @throws IOException I/O exception
      */
     @Test(expected = FileNotFoundException.class)
@@ -458,8 +462,7 @@ public class PageConfigTest {
     }
 
     /**
-     * Test the case when source root does not exist
-     *
+     * Test the case when source root does not exist.
      * @throws IOException I/O exception
      */
     @Test
@@ -480,8 +483,7 @@ public class PageConfigTest {
     }
 
     /**
-     * Test the case when source root can not be read
-     *
+     * Test the case when source root can not be read.
      * @throws IOException I/O exception
      */
     @Test
@@ -508,8 +510,7 @@ public class PageConfigTest {
     }
 
     /**
-     * Test a successful check
-     *
+     * Test a successful check.
      * @throws IOException I/O exception
      */
     @Test
@@ -530,22 +531,18 @@ public class PageConfigTest {
     /**
      * Assert that {@code canProcess()} returns the expected value for the
      * specified path.
-     *
      * @param expected the expected return value
      * @param context the context path
      * @param servlet the servlet path
      * @param pathInfo the path info
      */
-    private void assertCanProcess(
-            String expected, String context, String servlet, String pathInfo) {
-        PageConfig config =
-                PageConfig.get(createRequest(context, servlet, pathInfo));
+    private void assertCanProcess(String expected, String context, String servlet, String pathInfo) {
+        PageConfig config = PageConfig.get(createRequest(context, servlet, pathInfo));
         assertEquals(expected, config.canProcess());
     }
 
     /**
      * Create a request with the specified path elements.
-     *
      * @param contextPath the context path
      * @param servletPath the path of the servlet
      * @param pathInfo the path info
@@ -553,17 +550,18 @@ public class PageConfigTest {
      */
     private static HttpServletRequest createRequest(
             final String contextPath, final String servletPath,
-            final String pathInfo)
-    {
+            final String pathInfo) {
         return new DummyHttpServletRequest() {
             @Override
             public String getContextPath() {
                 return contextPath;
             }
+
             @Override
             public String getServletPath() {
                 return servletPath;
             }
+
             @Override
             public String getPathInfo() {
                 return pathInfo;

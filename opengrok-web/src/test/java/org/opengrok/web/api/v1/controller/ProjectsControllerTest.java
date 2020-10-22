@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -260,7 +260,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
      */
     @Test
     public void testDelete() throws Exception {
-        String projectsToDelete[] = { "git", "svn" };
+        String[] projectsToDelete = {"git", "svn"};
 
         // Add a group matching the project to be added.
         String groupName = "gitgroup";
@@ -326,7 +326,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
         // Test data removal.
         for (String projectName : projectsToDelete) {
-            for (String dirName : new String[]{"historycache",
+            for (String dirName : new String[] {"historycache",
                     IndexDatabase.XREF_DIR, IndexDatabase.INDEX_DIR}) {
                 File dir = new File(env.getDataRootFile(),
                         dirName + File.separator + projectName);
@@ -418,7 +418,8 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         // Add another project.
         addProject("git");
 
-        GenericType<List<String>> type = new GenericType<List<String>>() {};
+        GenericType<List<String>> type = new GenericType<List<String>>() {
+        };
 
         List<String> projects = target("projects")
                 .request()
@@ -438,7 +439,8 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
     @Test
     public void testGetReposForNonExistentProject() throws Exception {
-        GenericType<List<String>> type = new GenericType<List<String>>() {};
+        GenericType<List<String>> type = new GenericType<List<String>>() {
+        };
 
         // Try to get repos for non-existent project first.
         List<String> repos = target("projects")
@@ -452,7 +454,8 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
     @Test
     public void testGetRepos() throws Exception {
-        GenericType<List<String>> type = new GenericType<List<String>>() {};
+        GenericType<List<String>> type = new GenericType<List<String>>() {
+        };
 
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
@@ -542,7 +545,8 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     @Test
     public void testListFiles() throws IOException, IndexerException {
         final String projectName = "mercurial";
-        GenericType<List<String>> type = new GenericType<List<String>>() {};
+        GenericType<List<String>> type = new GenericType<List<String>>() {
+        };
 
         Indexer.getInstance().prepareIndexer(
                 env,
@@ -559,7 +563,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
                 .request()
                 .get(type);
         filesFromRequest.sort(String::compareTo);
-        String files[] = {"Makefile", "bar.txt", "header.h", "main.c", "novel.txt"};
+        String[] files = {"Makefile", "bar.txt", "header.h", "main.c", "novel.txt"};
         for (int i = 0; i < files.length; i++) {
             files[i] = "/" + projectName + "/" + files[i];
         }

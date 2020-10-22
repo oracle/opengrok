@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -74,7 +75,7 @@ public class HaskellSymbolTokenizerTest {
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/haskell/sample.hs");
-        InputStreamReader r = new InputStreamReader(res, "UTF-8");
+        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
         String[] termsFor = getTermsFor(r);        
         assertArrayEquals(
                 new String[]{

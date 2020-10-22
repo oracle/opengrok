@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -27,7 +27,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -66,11 +69,11 @@ public class CVSHistoryParserTest {
     public void parseEmpty() throws Exception {
         History result = instance.parse("");
         assertNotNull(result);
-        assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
+        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
     }
 
     /**
-     * Parse something that could come out from the W3C public CVS repository
+     * Parse something that could come out from the W3C public CVS repository.
      *
      * @throws java.lang.Exception
      */

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019-2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -51,8 +51,7 @@ import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
- * Test the functionality provided by the HistoryGuru (with friends)
- *
+ * Test the functionality provided by the HistoryGuru (with friends).
  * @author Trond Norbye
  * @author Vladimir Kotal
  */
@@ -73,17 +72,16 @@ public class HistoryGuruTest {
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream(
-                "repositories.zip"));
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
         RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 FILES, true);
         Assert.assertNotEquals(0, FILES.size());
-        
+
         HistoryGuru histGuru = HistoryGuru.getInstance();
         assertNotNull(histGuru);
         Assert.assertEquals(0, histGuru.getRepositories().size());
-        
+
         // Add initial set of repositories to HistoryGuru and RuntimeEnvironment.
         // This is a test in itself. While this makes the structure of the tests
         // a bit incomprehensible, it does not make sense to run the rest of tests
@@ -92,7 +90,7 @@ public class HistoryGuruTest {
         Assert.assertTrue(histGuru.getRepositories().size() > 0);
         Assert.assertEquals(histGuru.getRepositories().size(),
                 env.getRepositories().size());
-        
+
         // Create cache with initial set of repositories.
         histGuru.createCache();
     }
@@ -153,26 +151,26 @@ public class HistoryGuruTest {
         assertEquals("FileHistoryCache",
                 HistoryGuru.getInstance().getCacheInfo());
     }
-    
+
     @Test
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         final int numReposOrig = instance.getRepositories().size();
-        
+
         // Try to add non-existent repository.
         Collection<String> repos = new ArrayList<>();
         repos.add("totally-nonexistent-repository");
         Collection<RepositoryInfo> added = instance.addRepositories(repos);
         Assert.assertEquals(0, added.size());
         Assert.assertEquals(numReposOrig, instance.getRepositories().size());
-        
+
         // Remove one repository.
         repos = new ArrayList<>();
         repos.add(env.getSourceRootPath() + File.separator + "git");
         instance.removeRepositories(repos);
         Assert.assertEquals(numReposOrig - 1, instance.getRepositories().size());
-        
+
         // Add the repository back.
         added = instance.addRepositories(repos);
         Assert.assertEquals(1, added.size());
@@ -274,14 +272,14 @@ public class HistoryGuruTest {
 
         HistoryGuru instance = HistoryGuru.getInstance();
         Collection<RepositoryInfo> addedRepos = instance.addRepositories(
-                Collections.singleton(Paths.get(repository.getSourceRoot(),topLevelDirName).toString()));
+                Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
         assertEquals("should add to max depth", 1, addedRepos.size());
 
         env.setScanningDepth(1);
         List<String> repoDirs = addedRepos.stream().map(RepositoryInfo::getDirectoryName).collect(Collectors.toList());
         instance.removeRepositories(repoDirs);
         addedRepos = instance.addRepositories(
-                Collections.singleton(Paths.get(repository.getSourceRoot(),topLevelDirName).toString()));
+                Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
         assertEquals("should add to increased max depth", 2, addedRepos.size());
 
         env.setScanningDepth(originalScanDepth);

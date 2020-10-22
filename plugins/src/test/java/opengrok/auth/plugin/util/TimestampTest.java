@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -44,7 +44,7 @@ public class TimestampTest {
             "58cfe588"
         };
 
-        long expected[] = {
+        long[] expected = {
             1193046000L,
             1465980719000L,
             2882400009000L,
@@ -68,9 +68,9 @@ public class TimestampTest {
             ""
         };
 
-        for (int i = 0; i < tests.length; i++) {
+        for (String test : tests) {
             try {
-                Timestamp.decodeTimeCookie(tests[i]).getTime();
+                Timestamp.decodeTimeCookie(test).getTime();
                 Assert.fail("Decoding should throw an exception - invalid format");
             } catch (Exception e) {
             }
@@ -82,7 +82,7 @@ public class TimestampTest {
      */
     @Test
     public void testEncodeTimestamp() {
-        Date tests[] = {
+        Date[] tests = {
             new Date(Long.parseLong("1193046000")),
             new Date(Long.parseLong("1465980719000")),
             new Date(Long.parseLong("2882400009000")),

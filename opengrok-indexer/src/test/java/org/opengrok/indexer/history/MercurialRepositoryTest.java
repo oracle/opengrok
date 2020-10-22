@@ -61,22 +61,22 @@ public class MercurialRepositoryTest {
      * changeset first.
      */
     private static final String[] REVISIONS = {
-        "9:8b340409b3a8",
-        "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
-        "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470",
-        "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"
+            "9:8b340409b3a8",
+            "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
+            "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470",
+            "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"
     };
 
     // extra revisions for branch test
     private static final String[] REVISIONS_extra_branch = {
-        "10:c4518ca0c841"
+            "10:c4518ca0c841"
     };
 
     // novel.txt (or its ancestors) existed only since revision 3
     private static final String[] REVISIONS_novel = {
-        "9:8b340409b3a8",
-        "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
-        "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470"
+            "9:8b340409b3a8",
+            "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
+            "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470"
     };
 
     private TestRepository repository;
@@ -124,7 +124,7 @@ public class MercurialRepositoryTest {
 
         // Add a subdirectory with some history.
         runHgCommand(root, "import",
-            Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
+                Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -136,7 +136,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that subset of changesets can be extracted based on penultimate
      * revision number. This works for directories only.
-     *
      * @throws Exception
      */
     @Test
@@ -161,11 +160,10 @@ public class MercurialRepositoryTest {
 
     /**
      * Run Mercurial command.
-     *
      * @param reposRoot directory of the repository root
      * @param args {@code hg} command arguments
      */
-    static public void runHgCommand(File reposRoot, String ... args) {
+    public static void runHgCommand(File reposRoot, String... args) {
         List<String> cmdargs = new ArrayList<>();
         MercurialRepository repo = new MercurialRepository();
 
@@ -185,7 +183,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that history of branched repository contains changesets of the
      * default branch as well.
-     *
      * @throws Exception
      */
     @Test
@@ -211,7 +208,7 @@ public class MercurialRepositoryTest {
                 + REVISIONS_extra_branch.length);
         Collections.addAll(both, REVISIONS_extra_branch);
         Collections.addAll(both, REVISIONS);
-        String revs[] = both.toArray(new String[both.size()]);
+        String[] revs = both.toArray(new String[both.size()]);
         assertEquals(revs.length, entries.size());
         // Ideally we should check that the last revision is branched but
         // there is currently no provision for that in HistoryEntry object.
@@ -234,7 +231,6 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that contents of last revision of a text file match expected content.
-     *
      * @throws java.lang.Exception
      */
     @Test
@@ -267,7 +263,6 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that it is possible to get contents of multiple revisions of a file.
-     * 
      * @throws java.lang.Exception
      */
     @Test
@@ -287,7 +282,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that {@code getHistoryGet()} returns historical contents of renamed
      * file.
-     *
      * @throws java.lang.Exception
      */
     @Test
@@ -299,8 +293,8 @@ public class MercurialRepositoryTest {
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
 
-        /* 
-         * In our test repository the file was renamed twice since 
+        /*
+         * In our test repository the file was renamed twice since
          * revision 3.
          */
         InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
@@ -315,7 +309,6 @@ public class MercurialRepositoryTest {
     /**
      * Test that {@code getHistory()} throws an exception if the revision
      * argument doesn't match any of the revisions in the history.
-     *
      * @throws java.lang.Exception
      */
     @Test

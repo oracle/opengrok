@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.php;
@@ -34,6 +34,8 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -44,12 +46,12 @@ import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
+
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link PhpXref} class.
- *
  * @author Gustavo Lopes
  */
 public class PhpXrefTest {
@@ -64,7 +66,8 @@ public class PhpXrefTest {
         Xrefer xref = analyzer.writeXref(xargs);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
-                + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a> <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
+                        + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a>" +
+                        " <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
                 w.toString());
         assertEquals("PHP LOC", 1, xref.getLOC());
     }
@@ -76,14 +79,20 @@ public class PhpXrefTest {
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
         AbstractAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
-        Xrefer xref =  analyzer.writeXref(xargs);
+        Xrefer xref = analyzer.writeXref(xargs);
         assertLinesEqual("PHP quoting",
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
-                + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">&quot;FOO&quot;</span>, <span class=\"s\">&apos;BAR<strong>\\&apos;</strong>&quot;&apos;</span>); "
-                + "$<a href=\"/source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a>=<span class=\"s\">&apos;bar&apos;</span>; "
-                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;ls&quot;</span>; "
-                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&apos;&apos;</span>; "
-                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
+                        + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" "
+                        + "data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">&quot;FOO&quot;</span>,"
+                        + " <span class=\"s\">&apos;BAR<strong>\\&apos;</strong>&quot;&apos;</span>); "
+                        + "$<a href=\"/source/s?defs=foo\" class=\"intelliWindow-symbol\" "
+                        + "data-definition-place=\"undefined-in-file\">foo</a>=<span class=\"s\">&apos;bar&apos;</span>; "
+                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
+                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;ls&quot;</span>; "
+                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
+                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&apos;&apos;</span>; "
+                        + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
+                        + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
                 w.toString());
         assertEquals("PHP LOC", 1, xref.getLOC());
     }
@@ -91,14 +100,14 @@ public class PhpXrefTest {
 
     public int writePhpXref(InputStream is, PrintStream os) throws IOException {
         os.println(
-                "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
-                + "href=\"http://localhost:8080/source/default/style.css\" /><title>PHP Xref Test</title></head>");
+                "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" />"
+                        + "<link rel=\"stylesheet\" type=\"text/css\" "
+                        + "href=\"http://localhost:8080/source/default/style.css\" /><title>PHP Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
         AbstractAnalyzer analyzer = fac.getAnalyzer();
-        WriteXrefArgs wargs = new WriteXrefArgs(
-            new InputStreamReader(is, "UTF-8"), w);
+        WriteXrefArgs wargs = new WriteXrefArgs(new InputStreamReader(is, StandardCharsets.UTF_8), w);
         wargs.setDefs(getTagsDefinitions());
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
@@ -108,8 +117,8 @@ public class PhpXrefTest {
         return xref.getLOC();
     }
 
-    public void main(String args[]) throws IOException {
-        InputStream is = null;
+    public void main(String[] args) throws IOException {
+        InputStream is;
         if (args.length == 0) {
             is = PhpXrefTest.class.getClassLoader().getResourceAsStream(
                     "analysis/php/sample.php");
@@ -137,8 +146,8 @@ public class PhpXrefTest {
                 "analysis/php/sampleXrefRes.html");
         byte[] expbytes = copyStream(exp);
 
-        String gotten[] = new String(baos.toByteArray(), "UTF-8").split("\\r?\\n");
-        String expected[] = new String(expbytes, "UTF-8").split("\n");
+        String[] gotten = new String(baos.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
+        String[] expected = new String(expbytes, StandardCharsets.UTF_8).split("\n");
         assertLinesEqual("PHP xref", expected, gotten);
         assertEquals("PHP LOC", 29, actLOC);
 
@@ -146,12 +155,10 @@ public class PhpXrefTest {
     }
 
     private Definitions getTagsDefinitions() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "analysis/php/sampletags");
+        InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/php/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-            res, "UTF-8"));
+        BufferedReader in = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
 
         CtagsReader rdr = new CtagsReader();
         String line;

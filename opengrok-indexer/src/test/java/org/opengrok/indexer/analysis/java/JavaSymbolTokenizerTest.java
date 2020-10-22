@@ -30,24 +30,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
-import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Tests the {@link JavaSymbolTokenizer} class.
- *
  * @author Lubos Kosco
  */
 public class JavaSymbolTokenizerTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JavaSymbolTokenizerTest.class);
 
     private final AbstractAnalyzer analyzer;
 
@@ -57,8 +53,8 @@ public class JavaSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);        
-        ts.setReader(r);        
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
+        ts.setReader(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
             ts.reset();
@@ -76,19 +72,19 @@ public class JavaSymbolTokenizerTest {
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/java/Sample.jav");
-        InputStreamReader r = new InputStreamReader(res, "UTF-8");
-        String[] termsFor = getTermsFor(r);        
+        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
+        String[] termsFor = getTermsFor(r);
         assertArrayEquals(
-                new String[]{
-                    "org","opensolaris","opengrok","analysis","java","Sample",
-                    "String","MY_MEMBER","Sample","Method","arg","res","res",
-                    "arg","InnerClass","i","InnerClass","i","InnerMethod",
-                    "length","res","AbstractMethod","test","InnerClass",
-                    "String","InnerMethod","System","out","print","main",
-                    "String","args","num1","num2","num1","num2","num1",
-                    "System","out","println","ArithmeticException","e",
-                    "System","out","println","System","out","println"
+                new String[] {
+                        "org", "opensolaris", "opengrok", "analysis", "java", "Sample",
+                        "String", "MY_MEMBER", "Sample", "Method", "arg", "res", "res",
+                        "arg", "InnerClass", "i", "InnerClass", "i", "InnerMethod",
+                        "length", "res", "AbstractMethod", "test", "InnerClass",
+                        "String", "InnerMethod", "System", "out", "print", "main",
+                        "String", "args", "num1", "num2", "num1", "num2", "num1",
+                        "System", "out", "println", "ArithmeticException", "e",
+                        "System", "out", "println", "System", "out", "println"
                 },
                 termsFor);
-    }            
+    }
 }
