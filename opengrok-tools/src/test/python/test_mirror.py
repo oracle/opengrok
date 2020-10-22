@@ -432,12 +432,13 @@ def test_mirroring_custom_repository_command(config, expected_command):
     ]
 )
 def test_mirroring_custom_incoming_invoke_command(touch_binary):
+    checking_file = 'incoming.txt'
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
-            'incoming': [touch_binary, 'incoming.txt']
+            'incoming': [touch_binary, checking_file]
         }, None, None, None)
         assert repository.incoming() is False
-        assert 'incoming.txt' in os.listdir(repository_root)
+        assert checking_file in os.listdir(repository_root)
 
 
 @pytest.mark.parametrize(
@@ -523,12 +524,13 @@ def test_mirroring_incoming_invoke_original_command():
     ]
 )
 def test_mirroring_custom_sync_invoke_command(touch_binary):
+    checking_file = 'sync.txt'
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
-            'sync': [touch_binary, 'sync.txt']
+            'sync': [touch_binary, checking_file]
         }, None, None, None)
         assert repository.sync() == 0
-        assert 'sync.txt' in os.listdir(repository_root)
+        assert checking_file in os.listdir(repository_root)
 
 
 @pytest.mark.parametrize(
