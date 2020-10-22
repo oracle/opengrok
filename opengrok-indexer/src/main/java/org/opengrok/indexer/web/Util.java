@@ -19,11 +19,10 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2011, Jens Elkner.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
-
 package org.opengrok.indexer.web;
 
 import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;

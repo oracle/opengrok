@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.analysis.kotlin;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;

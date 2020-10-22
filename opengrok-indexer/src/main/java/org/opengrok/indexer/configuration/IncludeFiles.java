@@ -21,7 +21,6 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
-
 package org.opengrok.indexer.configuration;
 
 import java.io.File;

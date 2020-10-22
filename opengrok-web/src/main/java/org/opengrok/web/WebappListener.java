@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 

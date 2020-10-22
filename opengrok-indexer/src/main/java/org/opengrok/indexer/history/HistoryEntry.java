@@ -18,11 +18,8 @@
  */
 
 /*
- * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
- */
-/*
- * Copyright 2006 Trond Norbye.  All rights reserved.
  */
 package org.opengrok.indexer.history;
 

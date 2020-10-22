@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opengrok.indexer.analysis.csharp;
 
 import java.util.HashSet;

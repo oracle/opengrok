@@ -17,14 +17,12 @@
  * CDDL HEADER END
  */
 
-package org.opengrok.web;
-
 /*
  * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
- *
- * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2011, Jens Elkner.
  */
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.FileInputStream;

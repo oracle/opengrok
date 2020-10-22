@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.history;
 
 import org.opengrok.indexer.logger.LoggerFactory;

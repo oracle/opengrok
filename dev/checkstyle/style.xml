@@ -6,8 +6,9 @@
     <module name="NewlineAtEndOfFile">
         <property name="severity" value="ignore" />
     </module>
-    <module name="Header">
+    <module name="RegexpHeader">
         <property name="headerFile" value="${checkstyle.header.file}"/>
+        <property name="multiLines" value="21"/>
     </module>
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>

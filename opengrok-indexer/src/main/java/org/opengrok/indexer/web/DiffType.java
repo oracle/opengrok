@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 - 2011 Jens Elkner.
+ * Copyright (c) 2009, 2011, Jens Elkner.
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;

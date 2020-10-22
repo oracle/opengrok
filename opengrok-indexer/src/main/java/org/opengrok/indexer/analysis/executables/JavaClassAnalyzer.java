@@ -19,8 +19,8 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
- * Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2020, Lubos Kosco <tarzanek@gmail.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 

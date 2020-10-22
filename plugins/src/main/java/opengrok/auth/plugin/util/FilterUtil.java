@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
  */
-
 package opengrok.auth.plugin.util;
 
 import opengrok.auth.plugin.entity.User;

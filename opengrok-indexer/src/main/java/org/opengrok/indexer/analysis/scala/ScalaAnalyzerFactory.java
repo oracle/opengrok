@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.analysis.scala;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;

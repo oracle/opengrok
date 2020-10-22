@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
-
 package org.opengrok.indexer.util;
 
 public class Color {

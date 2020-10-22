@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
