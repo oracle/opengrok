@@ -58,7 +58,7 @@ public class LocalhostFilter implements ContainerRequestFilter {
      * @see SuggesterController#getSuggestions(org.opengrok.web.api.v1.suggester.model.SuggesterQueryData)
      * @see SuggesterController#getConfig()
      */
-    private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
+    static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
             SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config",
             HistoryController.PATH, FileController.PATH, AnnotationController.PATH));
 
@@ -86,6 +86,12 @@ public class LocalhostFilter implements ContainerRequestFilter {
         if (request == null) { // happens in tests
             return;
         }
+
+        Object tokenAuth = request.getAttribute(TokenFilter.TOKEN_AUTHORIZED);
+        if (tokenAuth != null && (boolean)tokenAuth) {
+            return;
+        }
+
         String path = context.getUriInfo().getPath();
         if (allowedPaths.contains(path)) {
             return;
@@ -95,5 +101,4 @@ public class LocalhostFilter implements ContainerRequestFilter {
             context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
     }
-
 }
