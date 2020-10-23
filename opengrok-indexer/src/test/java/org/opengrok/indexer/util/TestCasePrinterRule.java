@@ -18,11 +18,8 @@
  */
 
 /*
- * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-
-// taken from https://technicaltesting.wordpress.com/2012/10/23/junit-rule-for-printing-test-case-start-and-end-information/
-
 package org.opengrok.indexer.util;
 
 import java.io.IOException;
@@ -34,6 +31,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+// taken from https://technicaltesting.wordpress.com/2012/10/23/junit-rule-for-printing-test-case-start-and-end-information/
 public class TestCasePrinterRule implements TestRule {
 
     private OutputStream out;

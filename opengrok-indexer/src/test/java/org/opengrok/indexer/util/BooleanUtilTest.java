@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2019, Thomas Perkins <thomasperkins1123@gmail.com>.
+ */
 package org.opengrok.indexer.util;
 
 import org.junit.Assert;

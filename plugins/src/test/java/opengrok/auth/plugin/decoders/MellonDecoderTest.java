@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  */
-
 package opengrok.auth.plugin.decoders;
 
 import opengrok.auth.plugin.entity.User;
