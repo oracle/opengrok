@@ -80,6 +80,22 @@ public class IncomingFilterTest {
     }
 
     @Test
+    public void localhostTestWithForwardedHeader() throws Exception {
+        Map<String, String> headers = new TreeMap<>();
+        headers.put("X-Forwarded-For", "192.0.2.43, 2001:db8:cafe::17");
+        IncomingFilter filter = mockWithRemoteAddress("127.0.0.1", headers, true);
+
+        ContainerRequestContext context = mockContainerRequestContext("test");
+
+        ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
+
+        filter.filter(context);
+
+        verify(context).abortWith(captor.capture());
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
+    }
+
+    @Test
     public void nonLocalhostTestWithoutToken() throws Exception {
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
 
@@ -166,5 +182,4 @@ public class IncomingFilterTest {
 
         verify(context, never()).abortWith(captor.capture());
     }
-
 }
