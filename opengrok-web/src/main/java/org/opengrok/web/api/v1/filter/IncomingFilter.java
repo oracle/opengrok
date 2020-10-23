@@ -110,6 +110,13 @@ public class IncomingFilter implements ContainerRequestFilter {
             return;
         }
 
+        if (request.getHeader("X-Forwarded-For") != null || request.getHeader("Forwarded") != null) {
+            logger.log(Level.FINEST, "denying request to {0} due to existence of forwarded header in the request",
+                    path);
+            context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            return;
+        }
+
         if (localAddresses.contains(request.getRemoteAddr())) {
             logger.log(Level.FINEST, "allowing request to {0} based on localhost IP address", path);
             return;
