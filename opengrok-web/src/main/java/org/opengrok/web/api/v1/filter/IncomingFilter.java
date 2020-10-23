@@ -107,13 +107,15 @@ public class IncomingFilter implements ContainerRequestFilter {
         }
 
         if (allowedPaths.contains(path)) {
-            logger.log(Level.FINEST, "allowing request to {0} based on allowed path", path);
+            logger.log(Level.FINEST, "allowing request to {0} based on whitelisted path", path);
             return;
         }
 
-        if (!localAddresses.contains(request.getRemoteAddr())) {
-            logger.log(Level.FINEST, "denying request to {0} based on source IP address", path);
-            context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+        if (localAddresses.contains(request.getRemoteAddr())) {
+            logger.log(Level.FINEST, "allowing request to {0} based on localhost IP address", path);
+            return;
         }
+
+        context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
     }
 }
