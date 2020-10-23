@@ -303,7 +303,7 @@ public final class Configuration {
 
     private Set<String> disabledRepositories;
 
-    private Set<String> authenticationTokens;
+    private Set<String> authenticationTokens; // for non-localhost API access
 
     /*
      * types of handling history for remote SCM repositories:
