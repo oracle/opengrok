@@ -42,7 +42,7 @@ public class LocalhostFilterTest {
 
     @Test
     public void nonLocalhostTest() throws Exception {
-        LocalhostFilter filter = mockWithRemoteAddress("192.168.1.1");
+        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
 
         ContainerRequestContext context = mockContainerRequestContext("test");
 
@@ -55,8 +55,8 @@ public class LocalhostFilterTest {
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
     }
 
-    private LocalhostFilter mockWithRemoteAddress(final String remoteAddr) throws Exception {
-        LocalhostFilter filter = new LocalhostFilter();
+    private IncomingFilter mockWithRemoteAddress(final String remoteAddr) throws Exception {
+        IncomingFilter filter = new IncomingFilter();
         filter.init();
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -67,8 +67,8 @@ public class LocalhostFilterTest {
         return filter;
     }
 
-    private void setHttpRequest(final LocalhostFilter filter, final HttpServletRequest request) throws Exception {
-        Field f = LocalhostFilter.class.getDeclaredField("request");
+    private void setHttpRequest(final IncomingFilter filter, final HttpServletRequest request) throws Exception {
+        Field f = IncomingFilter.class.getDeclaredField("request");
         f.setAccessible(true);
         f.set(filter, request);
     }
@@ -90,7 +90,7 @@ public class LocalhostFilterTest {
     }
 
     private void assertFilterDoesNotBlockAddress(final String remoteAddr) throws Exception {
-        LocalhostFilter filter = mockWithRemoteAddress(remoteAddr);
+        IncomingFilter filter = mockWithRemoteAddress(remoteAddr);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
 
@@ -108,7 +108,7 @@ public class LocalhostFilterTest {
 
     @Test
     public void searchTest() throws Exception {
-        LocalhostFilter filter = mockWithRemoteAddress("10.0.0.1");
+        IncomingFilter filter = mockWithRemoteAddress("10.0.0.1");
 
         ContainerRequestContext context = mockContainerRequestContext("search");
 
