@@ -48,9 +48,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This filter allows the request in case it contains the correct authentication token
+ * This filter allows the request in case it contains the correct authentication bearer token
  * (needs to come in via HTTPS) or it is coming from localhost or its path matches the list
  * of built in paths.
+ * If the request does not contain valid token and appears to come from localhost however is proxied
+ * (contains either X-Forwarded-For or Forwarded HTTP headers) it is denied.
  */
 @Provider
 @PreMatching
@@ -76,6 +78,8 @@ public class IncomingFilter implements ContainerRequestFilter {
             "127.0.0.1", "0:0:0:0:0:0:0:1", "localhost"
     ));
 
+    static final String BEARER = "Bearer ";  // Authorization header value prefix
+
     @PostConstruct
     public void init() {
         try {
@@ -97,11 +101,14 @@ public class IncomingFilter implements ContainerRequestFilter {
         String path = context.getUriInfo().getPath();
 
         if (request.isSecure()) {
-            String authHeader;
-            if (((authHeader = request.getHeader(HttpHeaders.AUTHORIZATION)) != null) &&
-                    RuntimeEnvironment.getInstance().getAuthenticationTokens().contains(authHeader)) {
-                logger.log(Level.FINEST, "allowing request to {0} based on authentication header", path);
-                return;
+            String authHeaderValue;
+            if ((authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION)) != null &&
+                    authHeaderValue.startsWith(BEARER)) {
+                String tokenValue = authHeaderValue.substring(BEARER.length());
+                if (RuntimeEnvironment.getInstance().getAuthenticationTokens().contains(tokenValue)) {
+                    logger.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
+                    return;
+                }
             }
         }
 
