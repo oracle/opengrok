@@ -37,6 +37,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.web.api.v1.filter.CorsEnable;
+import org.opengrok.web.api.v1.filter.IncomingFilter;
 import org.opengrok.web.api.v1.suggester.model.SuggesterData;
 import org.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;
@@ -158,7 +159,7 @@ public final class SuggesterController {
 
     /**
      * Returns the suggester configuration {@link SuggesterConfig}.
-     * Because of the {@link org.opengrok.web.api.v1.filter.LocalhostFilter}, the
+     * Because of the {@link IncomingFilter}, the
      * {@link org.opengrok.web.api.v1.controller.ConfigurationController} cannot be accessed from the
      * web page by the remote user. To resolve the problem, this method exposes this functionality.
      * @return suggester configuration
