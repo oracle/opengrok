@@ -112,7 +112,7 @@ public class IncomingFilter implements ContainerRequestFilter {
         }
 
         if (!localAddresses.contains(request.getRemoteAddr())) {
-            logger.log(Level.FINEST, "denying request to {0}", path);
+            logger.log(Level.FINEST, "denying request to {0} based on source IP address", path);
             context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
     }
