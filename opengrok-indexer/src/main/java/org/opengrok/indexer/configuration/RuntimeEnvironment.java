@@ -1934,4 +1934,8 @@ public final class RuntimeEnvironment {
     private int getMessageLimit() {
         return syncReadConfiguration(Configuration::getMessageLimit);
     }
+
+    public Set<String> getTokens() {
+        return new HashSet<>(Arrays.asList("foo", "bar"));
+    }
 }
