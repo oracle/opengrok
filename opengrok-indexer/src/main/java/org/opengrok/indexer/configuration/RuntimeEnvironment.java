@@ -1935,6 +1935,7 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::getMessageLimit);
     }
 
+    // TODO via configuration
     public Set<String> getTokens() {
         return new HashSet<>(Arrays.asList("foo", "bar"));
     }

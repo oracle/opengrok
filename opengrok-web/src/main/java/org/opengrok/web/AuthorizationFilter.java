@@ -48,14 +48,17 @@ public class AuthorizationFilter implements Filter {
     public void init(FilterConfig fc) {
     }
 
+    /**
+     * All RESTful API requests are allowed here because they go through
+     * {@link org.opengrok.web.api.v1.filter.IncomingFilter}.
+     * The /search endpoint will go through authorization via SearchEngine.search()
+     * so does not have to be exempted here.
+     */
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
-        // All RESTful API requests are allowed here for now because they go through LocalhostFilter.
-        // The /search endpoint will go through authorization via SearchEngine.search()
-        // so does not have to be exempted here.
         if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
