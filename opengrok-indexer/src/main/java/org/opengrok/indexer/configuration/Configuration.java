@@ -303,6 +303,8 @@ public final class Configuration {
 
     private Set<String> disabledRepositories;
 
+    private Set<String> authenticationTokens;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -564,6 +566,7 @@ public final class Configuration {
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
+        setAuthenticationTokens(new HashSet<>());
     }
 
     public String getRepoCmd(String clazzName) {
@@ -1334,6 +1337,14 @@ public final class Configuration {
 
     public void setDisabledRepositories(Set<String> disabledRepositories) {
         this.disabledRepositories = disabledRepositories;
+    }
+
+    public Set<String> getAuthenticationTokens() {
+        return authenticationTokens;
+    }
+
+    public void setAuthenticationTokens(Set<String> tokens) {
+        this.authenticationTokens = tokens;
     }
 
     /**

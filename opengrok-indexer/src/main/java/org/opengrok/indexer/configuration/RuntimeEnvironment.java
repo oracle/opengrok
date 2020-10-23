@@ -1936,8 +1936,11 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::getMessageLimit);
     }
 
-    // TODO via configuration
-    public Set<String> getTokens() {
-        return new HashSet<>(Arrays.asList("foo", "bar"));
+    public Set<String> getAuthenticationTokens() {
+        return syncReadConfiguration(Configuration::getAuthenticationTokens);
+    }
+
+    public void setAuthenticationTokens(Set<String> tokens) {
+        syncWriteConfiguration(tokens, Configuration::setAuthenticationTokens);
     }
 }
