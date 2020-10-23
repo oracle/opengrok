@@ -63,7 +63,8 @@ public class IncomingFilterTest {
         RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
 
         Map<String, String> headers = new TreeMap<>();
-        headers.put(HttpHeaders.AUTHORIZATION, allowed ? allowedToken : allowedToken + "_");
+        final String authHeaderValue = IncomingFilter.BEARER + allowedToken;
+        headers.put(HttpHeaders.AUTHORIZATION, allowed ? authHeaderValue : authHeaderValue + "_");
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
