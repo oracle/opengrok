@@ -24,13 +24,19 @@ package org.opengrok.web.api.v1.filter;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -38,10 +44,43 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class LocalhostFilterTest {
+public class IncomingFilterTest {
+    @Test
+    public void nonLocalhostTestWithValidToken() throws Exception {
+        nonLocalhostTestWithToken(true);
+    }
 
     @Test
-    public void nonLocalhostTest() throws Exception {
+    public void nonLocalhostTestWithInvalidToken() throws Exception {
+        nonLocalhostTestWithToken(false);
+    }
+
+    private void nonLocalhostTestWithToken(boolean allowed) throws Exception {
+        String allowedToken = "foo";
+
+        Set<String> tokens = new HashSet<>();
+        tokens.add(allowedToken);
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
+
+        Map<String, String> headers = new TreeMap<>();
+        headers.put(HttpHeaders.AUTHORIZATION, allowed ? allowedToken : allowedToken + "_");
+        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
+
+        ContainerRequestContext context = mockContainerRequestContext("test");
+
+        ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
+
+        filter.filter(context);
+
+        if (allowed) {
+            verify(context, never()).abortWith(captor.capture());
+        } else {
+            verify(context).abortWith(captor.capture());
+        }
+    }
+
+    @Test
+    public void nonLocalhostTestWithoutToken() throws Exception {
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1");
 
         ContainerRequestContext context = mockContainerRequestContext("test");
@@ -55,16 +94,25 @@ public class LocalhostFilterTest {
         assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), captor.getValue().getStatus());
     }
 
-    private IncomingFilter mockWithRemoteAddress(final String remoteAddr) throws Exception {
+    private IncomingFilter mockWithRemoteAddress(final String remoteAddr, Map<String, String> headers, boolean secure)
+            throws Exception {
         IncomingFilter filter = new IncomingFilter();
         filter.init();
 
         HttpServletRequest request = mock(HttpServletRequest.class);
+        for (String name : headers.keySet()) {
+            when(request.getHeader(name)).thenReturn(headers.get(name));
+        }
+        when(request.isSecure()).thenReturn(secure);
         when(request.getRemoteAddr()).thenReturn(remoteAddr);
 
         setHttpRequest(filter, request);
 
         return filter;
+    }
+
+    private IncomingFilter mockWithRemoteAddress(final String remoteAddr) throws Exception {
+        return mockWithRemoteAddress(remoteAddr, new TreeMap<>(), false);
     }
 
     private void setHttpRequest(final IncomingFilter filter, final HttpServletRequest request) throws Exception {
