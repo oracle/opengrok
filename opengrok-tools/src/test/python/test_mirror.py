@@ -164,6 +164,10 @@ def test_incoming_retval(monkeypatch):
 
         # Clone a Git repository so that it can pull.
         repo = Repo.init(repo_path)
+        with repo.config_writer() as git_config:
+            git_config.set_value('user', 'email', 'someone@example.com')
+            git_config.set_value('user', 'name', 'John Doe')
+
         new_file_path = os.path.join(repo_path, 'foo')
         with open(new_file_path, 'w'):
             pass
