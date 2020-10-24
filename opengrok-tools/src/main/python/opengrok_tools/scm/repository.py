@@ -41,6 +41,9 @@ class Repository:
 
     __metaclass__ = abc.ABCMeta
 
+    SYNC_COMMAND_SECTION = 'sync'
+    INCOMING_COMMAND_SECTION = 'incoming'
+
     def __init__(self, logger, path, project, configured_commands, env, hooks,
                  timeout):
         self.logger = logger
@@ -62,9 +65,9 @@ class Repository:
 
     def sync(self):
         # Eventually, there might be per-repository hooks added here.
-        if self.is_command_overridden(self.configured_commands, 'sync'):
+        if self.is_command_overridden(self.configured_commands, self.SYNC_COMMAND_SECTION):
             return self._run_custom_sync_command(
-                self.listify(self.configured_commands['sync'])
+                self.listify(self.configured_commands[self.SYNC_COMMAND_SECTION])
             )
         return self.reposync()
 
@@ -84,9 +87,9 @@ class Repository:
 
         Return True if so, False otherwise.
         """
-        if self.is_command_overridden(self.configured_commands, 'incoming'):
+        if self.is_command_overridden(self.configured_commands, self.INCOMING_COMMAND_SECTION):
             return self._run_custom_incoming_command(
-                self.listify(self.configured_commands['incoming'])
+                self.listify(self.configured_commands[self.INCOMING_COMMAND_SECTION])
             )
         return self.incoming_check()
 
