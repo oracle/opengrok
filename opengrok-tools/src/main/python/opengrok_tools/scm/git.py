@@ -47,30 +47,7 @@ class GitRepository(Repository):
             cmd.log_error("failed to configure git pull.ff")
 
     def reposync(self):
-        git_command = [self.command, "pull", "--ff-only"]
-        cmd = self.getCommand(git_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(git_command))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform pull")
-            return 1
-
-        return 0
+        return self._run_custom_sync_command([self.command, 'pull', '--ff-only'])
 
     def incoming_check(self):
-        git_command = [self.command, "pull", "--dry-run"]
-        cmd = self.getCommand(git_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(git_command))
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform pull")
-            raise RepositoryException('failed to check for incoming in '
-                                      'repository {}'.format(self))
-
-        if len(cmd.getoutput()) == 0:
-            return False
-        else:
-            return True
+        return self._run_custom_incoming_command([self.command, 'pull', '--dry-run'])
