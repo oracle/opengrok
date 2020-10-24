@@ -180,7 +180,7 @@ class Repository:
     @staticmethod
     def is_command_overridden(config, command):
         """
-        Determine if command is overridden in the configuration.
+        Determine if command key is overridden in the configuration.
 
         :param config: configuration
         :param command: the command
