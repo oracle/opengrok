@@ -125,9 +125,7 @@ class Repository:
         if status != 0:
             self.logger.error("output of '{}':".format(command))
             self.logger.error(output)
-            raise RepositoryException(
-                'failed to check for incoming in repository {}'.format(self)
-            )
+            raise RepositoryException('failed to check for incoming in repository {}'.format(self))
         return len(output.strip()) > 0
 
     def _run_command(self, command):
