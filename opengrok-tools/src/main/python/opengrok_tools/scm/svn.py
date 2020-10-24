@@ -25,7 +25,6 @@
 from shutil import which
 
 from .repository import Repository, RepositoryException
-from ..utils.command import Command
 
 
 class SubversionRepository(Repository):
@@ -64,13 +63,4 @@ class SubversionRepository(Repository):
                                no_proxy)
 
         svn_command.append("update")
-        cmd = self.getCommand(svn_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(cmd))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform update")
-            return 1
-
-        return 0
+        return self._run_custom_sync_command(svn_command)
