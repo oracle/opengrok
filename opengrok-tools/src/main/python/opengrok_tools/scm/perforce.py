@@ -26,7 +26,6 @@
 from shutil import which
 
 from .repository import Repository, RepositoryException
-from ..utils.command import Command
 
 
 class PerforceRepository(Repository):
@@ -39,13 +38,4 @@ class PerforceRepository(Repository):
             raise RepositoryException("Cannot get perforce command")
 
     def reposync(self):
-        perforce_command = [self.command, "sync"]
-        cmd = self.getCommand(perforce_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(perforce_command))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform sync")
-            return 1
-        return 0
+        return self._run_custom_sync_command([self.command, 'sync'])
