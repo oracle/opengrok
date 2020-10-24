@@ -25,7 +25,6 @@
 import os
 
 from .repository import Repository, RepositoryException
-from ..utils.command import Command
 
 
 class TeamwareRepository(Repository):
@@ -67,14 +66,4 @@ class TeamwareRepository(Repository):
                               format(self.path))
             return 0
 
-        bringover_command = ["bringover"]
-        cmd = self.getCommand(bringover_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(cmd))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform bringover")
-            return 1
-
-        return 0
+        return self._run_custom_sync_command(['bringover'])
