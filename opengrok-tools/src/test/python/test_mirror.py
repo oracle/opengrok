@@ -415,10 +415,7 @@ def test_get_repos_for_project(monkeypatch):
     )
 ])
 def test_mirroring_custom_repository_command(config, expected_command):
-    assert expected_command == Repository._repository_command(
-        config,
-        lambda: 'default-command'
-    )
+    assert expected_command == Repository._repository_command(config, lambda: 'default-command')
 
 
 @pytest.mark.parametrize(
