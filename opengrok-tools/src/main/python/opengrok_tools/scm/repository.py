@@ -186,4 +186,4 @@ class Repository:
         :param command: the command
         :return: true if overridden, false otherwise
         """
-        return isinstance(config, dict) and config.get(command)
+        return isinstance(config, dict) and config.get(command) is not None
