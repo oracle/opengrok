@@ -25,7 +25,6 @@
 from shutil import which
 
 from .repository import Repository, RepositoryException
-from ..utils.command import Command
 
 
 class RepoRepository(Repository):
@@ -38,31 +37,7 @@ class RepoRepository(Repository):
             raise RepositoryException("Cannot get repo command")
 
     def reposync(self):
-        repo_command = [self.command, "sync", "-cf"]
-        cmd = self.getCommand(repo_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(cmd))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform sync")
-            return 1
-
-        return 0
+        return self._run_custom_sync_command([self.command, 'sync', '-cf'])
 
     def incoming_check(self):
-        repo_command = [self.command, "sync", "-n"]
-        cmd = self.getCommand(repo_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info("output of {}:".format(cmd))
-        self.logger.info(cmd.getoutputstr())
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to perform sync")
-            raise RepositoryException('failed to check for incoming in '
-                                      'repository {}'.format(self))
-
-        if len(cmd.getoutput()) == 0:
-            return False
-        else:
-            return True
+        return self._run_custom_incoming_command([self.command, 'sync', '-n'])
