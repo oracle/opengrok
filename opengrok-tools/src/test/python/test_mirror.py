@@ -402,12 +402,15 @@ def test_get_repos_for_project(monkeypatch):
             assert len(repos) == 0
 
 
+DEFAULT_COMMAND = 'default-command'
+
+
 @pytest.mark.parametrize(['expected_command', 'config'], [
-    ('default-command', None),
+    (DEFAULT_COMMAND, None),
     ('/usr/bin/git', '/usr/bin/git'),
-    ('default-command', {}),
-    ('default-command', {'incoming': '/bin/false'}),
-    ('default-command', []),
+    (DEFAULT_COMMAND, {}),
+    (DEFAULT_COMMAND, {'incoming': '/bin/false'}),
+    (DEFAULT_COMMAND, []),
     ('/usr/local/bin/git', {'command': '/usr/local/bin/git'}),
     (
             '/usr/local/bin/git',
@@ -415,7 +418,7 @@ def test_get_repos_for_project(monkeypatch):
     )
 ])
 def test_mirroring_custom_repository_command(expected_command, config):
-    assert expected_command == Repository._repository_command(config, lambda: 'default-command')
+    assert expected_command == Repository._repository_command(config, lambda: DEFAULT_COMMAND)
 
 
 @pytest.mark.parametrize(
