@@ -34,6 +34,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
@@ -41,6 +43,7 @@ import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Util;
@@ -49,6 +52,8 @@ import org.opengrok.indexer.web.Util;
  * Generates HTML listing of a Directory.
  */
 public class DirectoryListing {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryListing.class);
 
     protected static final String DIRECTORY_SIZE_PLACEHOLDER = "-";
     private final EftarFileReader desc;
@@ -136,14 +141,12 @@ public class DirectoryListing {
      * @throws HistoryException history exception
      * @throws IOException I/O exception
      */
-    public List<String> listTo(String contextPath, File dir, Writer out,
-        String path, List<String> files)
-            throws HistoryException, IOException {
+    public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
+            throws IOException, HistoryException {
         List<DirectoryEntry> filesExtra = null;
         if (files != null) {
             filesExtra = files.stream().map(f ->
-                new DirectoryEntry(new File(dir, f), null)).collect(
-                Collectors.toList());
+                new DirectoryEntry(new File(dir, f), null)).collect(Collectors.toList());
         }
         return extraListTo(contextPath, dir, out, path, filesExtra);
     }
@@ -160,22 +163,21 @@ public class DirectoryListing {
      *  but filtered by {@link PathAccepter}.
      * @return a possible empty list of README files included in the written
      *  listing.
-     * @throws org.opengrok.indexer.history.HistoryException when we cannot
-     * get result from SCM
-     *
-     * @throws java.io.IOException when any I/O problem
-     * @throws NullPointerException if a parameter except <var>files</var>
-     *  is {@code null}
+     * @throws IOException when cannot write to the {@code out} parameter
+     * @throws HistoryException when failed to get last modified time for files in directory
      */
     public List<String> extraListTo(String contextPath, File dir, Writer out,
-        String path, List<DirectoryEntry> entries)
-            throws HistoryException, IOException {
+                                    String path, List<DirectoryEntry> entries) throws IOException, HistoryException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<>();
         int offset = -1;
         EftarFileReader.FNode parentFNode = null;
         if (desc != null) {
-            parentFNode = desc.getNode(path);
+            try {
+                parentFNode = desc.getNode(path);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, String.format("cannot get Eftar node for path ''%s''", path), e);
+            }
             if (parentFNode != null) {
                 offset = parentFNode.getChildOffset();
             }
