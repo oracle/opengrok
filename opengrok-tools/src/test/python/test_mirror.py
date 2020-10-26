@@ -359,18 +359,6 @@ def test_mirroring_custom_repository_command(expected_command, config):
     assert expected_command == Repository._repository_command(config, lambda: DEFAULT_COMMAND)
 
 
-@pytest.mark.parametrize(
-    ('touch_binary'), [
-        pytest.param('/bin/touch',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/touch'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/touch',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/touch'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_incoming_invoke_command(touch_binary):
     checking_file = 'incoming.txt'
     with tempfile.TemporaryDirectory() as repository_root:
@@ -381,18 +369,6 @@ def test_mirroring_custom_incoming_invoke_command(touch_binary):
         assert checking_file in os.listdir(repository_root)
 
 
-@pytest.mark.parametrize(
-    ('echo_binary'), [
-        pytest.param('/bin/echo',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/echo'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/echo',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/echo'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_incoming_changes(echo_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -401,18 +377,6 @@ def test_mirroring_custom_incoming_changes(echo_binary):
         assert repository.incoming() is True
 
 
-@pytest.mark.parametrize(
-    ('true_binary'), [
-        pytest.param('/bin/true',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/true'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/true',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/true'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_incoming_no_changes(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -421,18 +385,6 @@ def test_mirroring_custom_incoming_no_changes(true_binary):
         assert repository.incoming() is False
 
 
-@pytest.mark.parametrize(
-    ('false_binary'), [
-        pytest.param('/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/false'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/false'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_incoming_error(false_binary):
     with pytest.raises(RepositoryException):
         with tempfile.TemporaryDirectory() as repository_root:
@@ -451,18 +403,6 @@ def test_mirroring_incoming_invoke_original_command():
             verify(repository).incoming_check()
 
 
-@pytest.mark.parametrize(
-    ('touch_binary'), [
-        pytest.param('/bin/touch',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/touch'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/touch',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/touch'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_sync_invoke_command(touch_binary):
     checking_file = 'sync.txt'
     with tempfile.TemporaryDirectory() as repository_root:
@@ -473,18 +413,6 @@ def test_mirroring_custom_sync_invoke_command(touch_binary):
         assert checking_file in os.listdir(repository_root)
 
 
-@pytest.mark.parametrize(
-    ('true_binary'), [
-        pytest.param('/bin/true',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/true'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/true',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/true'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_sync_success(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -493,18 +421,6 @@ def test_mirroring_custom_sync_success(true_binary):
         assert 0 == repository.sync()
 
 
-@pytest.mark.parametrize(
-    ('false_binary'), [
-        pytest.param('/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/false'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/false'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_mirroring_custom_sync_error(false_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
