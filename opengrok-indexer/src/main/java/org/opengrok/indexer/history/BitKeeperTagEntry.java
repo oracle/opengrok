@@ -17,9 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
- */
 package org.opengrok.indexer.history;
 
 import java.util.Date;

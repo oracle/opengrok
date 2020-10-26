@@ -17,9 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2019, Shenghan Gao <gaoshenghan199123@gmail.com>.
- */
 package org.opengrok.web.api.v1.filter;
 
 import javax.ws.rs.container.ContainerRequestContext;
