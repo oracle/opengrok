@@ -23,7 +23,6 @@
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Chris Quick <gtoph00@gmail.com>.
  */
-
 package org.opengrok.indexer.history;
 
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;

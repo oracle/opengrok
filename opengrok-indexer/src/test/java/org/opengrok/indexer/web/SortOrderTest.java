@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2011 Trond Norbye.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2011, Trond Norbye. All rights reserved. Use is subject to license terms.
  */
 package org.opengrok.indexer.web;
 

@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.index;
 
 import java.util.concurrent.ExecutorService;

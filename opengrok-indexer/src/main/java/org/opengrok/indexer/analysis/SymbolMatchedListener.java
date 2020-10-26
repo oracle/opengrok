@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis;
 
 // "How do I make a Class extend Observable when it has extended another class too?"

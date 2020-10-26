@@ -21,7 +21,6 @@
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.php;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;

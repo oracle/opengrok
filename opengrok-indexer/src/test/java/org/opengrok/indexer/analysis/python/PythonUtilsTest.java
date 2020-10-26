@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.python;
 
 import static org.junit.Assert.assertEquals;

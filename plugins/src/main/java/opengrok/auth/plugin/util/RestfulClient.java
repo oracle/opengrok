@@ -21,7 +21,6 @@
  * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package opengrok.auth.plugin.util;
 
 import javax.servlet.http.HttpServletResponse;

@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.asm;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;

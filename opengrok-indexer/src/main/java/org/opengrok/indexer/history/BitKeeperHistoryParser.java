@@ -19,10 +19,9 @@
 
 /*
  * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
- * Portions Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;

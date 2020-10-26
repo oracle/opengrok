@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019 Shenghan Gao <gaoshenghan199123@gmail.com>.
+ * Copyright (c) 2019, Shenghan Gao <gaoshenghan199123@gmail.com>.
  */
 package org.opengrok.web;
 
