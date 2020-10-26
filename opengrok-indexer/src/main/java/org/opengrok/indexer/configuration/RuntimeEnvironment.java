@@ -1937,7 +1937,7 @@ public final class RuntimeEnvironment {
     }
 
     public Set<String> getAuthenticationTokens() {
-        return syncReadConfiguration(Configuration::getAuthenticationTokens);
+        return Collections.unmodifiableSet(syncReadConfiguration(Configuration::getAuthenticationTokens));
     }
 
     public void setAuthenticationTokens(Set<String> tokens) {
