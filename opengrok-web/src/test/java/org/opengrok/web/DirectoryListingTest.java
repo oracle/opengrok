@@ -382,6 +382,6 @@ public class DirectoryListingTest {
         StringWriter mockWriter = spy(StringWriter.class);
         instance.extraListTo("ctx", directory, mockWriter, directory.getPath(),
                 Collections.singletonList(new DirectoryEntry(file)));
-        verify(mockWriter, atLeast(1)). write(anyString());
+        verify(mockWriter, atLeast(20)). write(anyString());
     }
 }
