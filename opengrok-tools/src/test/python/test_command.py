@@ -24,12 +24,13 @@
 #
 
 import os
+import platform
 import tempfile
 import time
-import platform
 
 import pytest
 
+from conftest import posix_only, system_binary
 from opengrok_tools.utils.command import Command
 
 
@@ -74,14 +75,14 @@ def test_execute_nonexistent():
     assert cmd.getstate() == Command.ERRORED
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_getoutput():
     cmd = Command(['/bin/ls', '/etc/passwd'])
     cmd.execute()
     assert cmd.getoutput() == ['/etc/passwd\n']
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_work_dir():
     os.chdir("/")
     orig_cwd = os.getcwd()
@@ -101,6 +102,8 @@ def test_env():
     assert "FOO=BAR\n" in cmd.getoutput()
 
 
+@system_binary('true')
+@system_binary('false')
 def test_retcode(true_binary, false_binary):
     cmd = Command([false_binary])
     cmd.execute()
@@ -145,7 +148,7 @@ def test_command_notimeout():
     assert cmd.getretcode() == 0
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_stderr():
     cmd = Command(["/bin/cat", "/foo/bar", "/etc/passwd"],
                   redirect_stderr=False)
@@ -160,7 +163,7 @@ def test_stderr():
 
 
 # This test needs the "/bin/cat" command, therefore it is Unix only.
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_long_output():
     """
     Test that output thread in the Command class captures all of the output.
@@ -188,7 +191,7 @@ def test_long_output():
         assert len("".join(cmd.getoutput())) == num_bytes
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_resource_limits():
     """
     Simple smoke test for setting resource limits.

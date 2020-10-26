@@ -33,6 +33,7 @@ import requests
 from mockito import verify, patch, spy2, mock, ANY, when
 
 import opengrok_tools.mirror
+from conftest import posix_only, system_binary
 from opengrok_tools.scm import Repository
 from opengrok_tools.scm.git import GitRepository
 from opengrok_tools.scm.repository import RepositoryException
@@ -94,7 +95,7 @@ def test_invalid_project_config_hooknames():
         assert not check_project_configuration(config, hookdir=tmpdir)
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_invalid_project_config_nonexec_hook():
     with tempfile.TemporaryDirectory() as tmpdir:
         with open(os.path.join(tmpdir, "foo.sh"), 'w+') as tmpfile:
@@ -103,7 +104,7 @@ def test_invalid_project_config_nonexec_hook():
             assert not check_project_configuration(config, hookdir=tmpdir)
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@posix_only
 def test_valid_project_config_hook():
     with tempfile.TemporaryDirectory() as tmpdir:
         with open(os.path.join(tmpdir, "foo.sh"), 'w+') as tmpfile:
@@ -359,6 +360,7 @@ def test_mirroring_custom_repository_command(expected_command, config):
     assert expected_command == Repository._repository_command(config, lambda: DEFAULT_COMMAND)
 
 
+@system_binary('touch')
 def test_mirroring_custom_incoming_invoke_command(touch_binary):
     checking_file = 'incoming.txt'
     with tempfile.TemporaryDirectory() as repository_root:
@@ -369,6 +371,7 @@ def test_mirroring_custom_incoming_invoke_command(touch_binary):
         assert checking_file in os.listdir(repository_root)
 
 
+@system_binary('echo')
 def test_mirroring_custom_incoming_changes(echo_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -377,6 +380,7 @@ def test_mirroring_custom_incoming_changes(echo_binary):
         assert repository.incoming() is True
 
 
+@system_binary('true')
 def test_mirroring_custom_incoming_no_changes(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -385,6 +389,7 @@ def test_mirroring_custom_incoming_no_changes(true_binary):
         assert repository.incoming() is False
 
 
+@system_binary('false')
 def test_mirroring_custom_incoming_error(false_binary):
     with pytest.raises(RepositoryException):
         with tempfile.TemporaryDirectory() as repository_root:
@@ -403,6 +408,7 @@ def test_mirroring_incoming_invoke_original_command():
             verify(repository).incoming_check()
 
 
+@system_binary('touch')
 def test_mirroring_custom_sync_invoke_command(touch_binary):
     checking_file = 'sync.txt'
     with tempfile.TemporaryDirectory() as repository_root:
@@ -413,6 +419,7 @@ def test_mirroring_custom_sync_invoke_command(touch_binary):
         assert checking_file in os.listdir(repository_root)
 
 
+@system_binary('true')
 def test_mirroring_custom_sync_success(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
@@ -421,6 +428,7 @@ def test_mirroring_custom_sync_success(true_binary):
         assert 0 == repository.sync()
 
 
+@system_binary('false')
 def test_mirroring_custom_sync_error(false_binary):
     with tempfile.TemporaryDirectory() as repository_root:
         repository = GitRepository(mock(), repository_root, 'test-1', {
