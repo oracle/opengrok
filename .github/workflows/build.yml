@@ -4,7 +4,8 @@ on: push
 
 jobs:
   build:
-    runs-on: ubuntu-latest with Java 11
+    name: Ubuntu with Java 11
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout master branch
       uses: actions/checkout@v2
