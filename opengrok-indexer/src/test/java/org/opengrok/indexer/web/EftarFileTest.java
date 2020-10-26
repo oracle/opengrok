@@ -53,9 +53,7 @@ public class EftarFileTest {
         tsv = File.createTempFile("paths", ".tsv");
         eftar = File.createTempFile("paths", ".eftar");
 
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(new FileWriter(tsv));
+        try (PrintWriter out = new PrintWriter(new FileWriter(tsv))) {
             StringBuilder sb = new StringBuilder();
             for (int ii = 0; ii < 100; ii++) {
                 sb.append(PATH_STRING);
@@ -65,11 +63,6 @@ public class EftarFileTest {
                 out.println(ii);
             }
             out.flush();
-        } finally {
-            try {
-                out.close();
-            } catch (Exception e) {
-            }
         }
 
         // Create eftar files.
