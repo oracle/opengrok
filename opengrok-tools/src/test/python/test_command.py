@@ -93,11 +93,9 @@ def test_work_dir():
     assert os.getcwd() == orig_cwd
 
 
-@pytest.mark.skipif(not os.path.exists('/usr/bin/env'),
-                    reason="requires posix")
-def test_env():
-    cmd = Command(['/usr/bin/env'],
-                  env_vars={'FOO': 'BAR', 'A': 'B'})
+@system_binary('env')
+def test_env(env_binary):
+    cmd = Command([env_binary], env_vars={'FOO': 'BAR', 'A': 'B'})
     cmd.execute()
     assert "FOO=BAR\n" in cmd.getoutput()
 
@@ -121,11 +119,10 @@ def test_command_to_str():
     assert str(cmd) == "foo bar"
 
 
-@pytest.mark.skipif(not os.path.exists('/bin/sleep'),
-                    reason="requires /bin/sleep")
-def test_command_timeout():
+@system_binary('sleep')
+def test_command_timeout(sleep_binary):
     timeout = 30
-    cmd = Command(["/bin/sleep", str(timeout)], timeout=3)
+    cmd = Command([sleep_binary, str(timeout)], timeout=3)
     start_time = time.time()
     cmd.execute()
     # Check the process is no longer around.
@@ -138,11 +135,10 @@ def test_command_timeout():
     assert cmd.getretcode() is None
 
 
-@pytest.mark.skipif(not os.path.exists('/bin/sleep'),
-                    reason="requires /bin/sleep")
-def test_command_notimeout():
+@system_binary('sleep')
+def test_command_notimeout(sleep_binary):
     cmd_timeout = 30
-    cmd = Command(["/bin/sleep", "3"], timeout=cmd_timeout)
+    cmd = Command([sleep_binary, "3"], timeout=cmd_timeout)
     cmd.execute()
     assert cmd.getstate() == Command.FINISHED
     assert cmd.getretcode() == 0
