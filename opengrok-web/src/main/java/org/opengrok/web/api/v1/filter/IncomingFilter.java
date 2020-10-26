@@ -101,9 +101,8 @@ public class IncomingFilter implements ContainerRequestFilter {
         String path = context.getUriInfo().getPath();
 
         if (request.isSecure()) {
-            String authHeaderValue;
-            if ((authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION)) != null &&
-                    authHeaderValue.startsWith(BEARER)) {
+            String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
                 String tokenValue = authHeaderValue.substring(BEARER.length());
                 if (RuntimeEnvironment.getInstance().getAuthenticationTokens().contains(tokenValue)) {
                     logger.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
