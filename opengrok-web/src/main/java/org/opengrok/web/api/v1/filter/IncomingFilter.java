@@ -80,6 +80,8 @@ public class IncomingFilter implements ContainerRequestFilter {
 
     static final String BEARER = "Bearer ";  // Authorization header value prefix
 
+    private Set<String> tokens;
+
     @PostConstruct
     public void init() {
         try {
@@ -90,6 +92,9 @@ public class IncomingFilter implements ContainerRequestFilter {
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Could not get localhost addresses", e);
         }
+
+        // Cache the tokens to avoid locking.
+        tokens = RuntimeEnvironment.getInstance().getAuthenticationTokens();
     }
 
     @Override
@@ -104,7 +109,7 @@ public class IncomingFilter implements ContainerRequestFilter {
             String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
             if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
                 String tokenValue = authHeaderValue.substring(BEARER.length());
-                if (RuntimeEnvironment.getInstance().getAuthenticationTokens().contains(tokenValue)) {
+                if (tokens.contains(tokenValue)) {
                     logger.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
                     return;
                 }
