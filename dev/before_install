@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+if [[ "$TRAVIS_OS_NAME" == "linux" || "RUNNER_OS" == "Linux" ]]; then
 	sudo apt-get update -qq
 	if [[ $? != 0 ]]; then
 		echo "cannot update"
