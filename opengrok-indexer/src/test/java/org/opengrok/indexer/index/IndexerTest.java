@@ -364,7 +364,7 @@ public class IndexerTest {
         env.setSourceRoot(testrepo.getSourceRoot());
 
         env.setRepositories(testrepo.getSourceRoot());
-        assertEquals(10, env.getRepositories().size());
+        assertEquals(9, env.getRepositories().size());
 
         String[] repoNames = {"mercurial", "git"};
         env.setRepositories(Arrays.stream(repoNames).

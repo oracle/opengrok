@@ -42,8 +42,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.svn2" value="${test.repositories}/subversion"/>
-    <property name="test.razor" value="${test.repositories}/razor"/>
-    <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
     <property name="build.test.reposroots" value="target/reposroot"/>
     <property name="build.test.classes.dir" value="target/test-classes"/>
 
@@ -66,7 +64,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
     <target name="-post-compile-test">
         <antcall target="-create-svn-repository"/>
-        <antcall target="-create-razor-repository"/>
 
         <!-- Change root in CVS test repository -->
         <!-- Strange indentation in line two levels below to get newline correctly -->
@@ -149,7 +146,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <arg value="create"/>
         <arg value="${build.test.reposroots}/svn2"/>
       </exec>
-    	
+
       <exec executable="svnadmin" input="${test.svndump}/svnlog.dump" failifexecutionfails="true">
         <arg value="load"/>
         <arg value="${build.test.reposroots}/svn2"/>
@@ -161,26 +158,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <arg value="${test.svn2}"/>
       </exec>
     </target>
-    
-    <target name="-create-razor-repository">
-      <delete dir="${test.razor}"/>
-      <copy todir="${test.razor}/Razor-Simple">
-        <fileset dir="${test.razor.repo}/UserSandbox"/>
-      </copy>
-      <copy todir="${test.razor}/Razor-Simple/SimpleCProgram/.razor">
-        <fileset dir="${test.razor.repo}/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
-      </copy>
-
-      <!--
-          The support for binaries in Razor repositories is not fully
-          functional, so the next copy target is commented out for now.
-        -->
-
-      <!--copy todir="${test.razor}/Razor-Simple/SimpleCProgram-BinaryRelease/.razor">
-        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
-      </copy-->
-
-    </target>
 
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
@@ -191,7 +168,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
       <delete dir="${test.git}/.git"/>
       <delete dir="${test.svn}"/>
       <delete dir="${test.svn2}"/>
-      <delete dir="${test.razor}"/>
       <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
 
