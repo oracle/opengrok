@@ -1,0 +1,13 @@
+name: Build
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout master branch
+      uses: actions/checkout@v2
+    - name: Install pre-requisites
+      run: ./dev/before_install
+    - name: Before build actions
+      run: ./dev/before
+    - name: Build
+      run: ./dev/main
