@@ -101,20 +101,6 @@ def test_env():
     assert "FOO=BAR\n" in cmd.getoutput()
 
 
-@pytest.mark.parametrize(
-    ('true_binary', 'false_binary'), [
-        pytest.param('/bin/true', '/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/bin/true') or
-                         not os.path.exists('/bin/false'),
-                         reason="requires /bin binaries")),
-        pytest.param('/usr/bin/true', '/usr/bin/false',
-                     marks=pytest.mark.skipif(
-                         not os.path.exists('/usr/bin/true') or
-                         not os.path.exists('/usr/bin/false'),
-                         reason="requires /usr/bin binaries")),
-    ]
-)
 def test_retcode(true_binary, false_binary):
     cmd = Command([false_binary])
     cmd.execute()
