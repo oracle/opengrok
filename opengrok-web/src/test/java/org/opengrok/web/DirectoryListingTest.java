@@ -26,10 +26,12 @@ package org.opengrok.web;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,7 +39,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.search.DirectoryEntry;
+import org.opengrok.indexer.web.EftarFileReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,6 +52,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * JUnit test to test that the DirectoryListing produce the expected result.
@@ -364,5 +372,15 @@ public class DirectoryListingTest {
         for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }
+    }
+
+    @Test
+    public void directoryListingWithEftarException() throws IOException, HistoryException {
+        EftarFileReader mockReader = mock(EftarFileReader.class);
+        when(mockReader.getNode(anyString())).thenThrow(IOException.class);
+        DirectoryListing instance = new DirectoryListing(mockReader);
+        File file = new File(directory, "foo");
+        instance.extraListTo("ctx", directory, new StringWriter(), directory.getPath(),
+                Collections.singletonList(new DirectoryEntry(file)));
     }
 }
