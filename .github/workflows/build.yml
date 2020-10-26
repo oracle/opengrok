@@ -65,7 +65,5 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Install Universal ctags
       run: choco install universal-ctags
-    - name: Install Subversion
-      run: choco install svn
     - name: Build
       run: mvn -B -V verify
