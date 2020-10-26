@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.configuration;
 
 import org.opengrok.indexer.logger.LoggerFactory;

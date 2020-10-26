@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.analysis.StreamSource;

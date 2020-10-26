@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.util;
 
 import java.io.BufferedInputStream;

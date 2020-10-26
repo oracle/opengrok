@@ -21,7 +21,6 @@
  * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.typescript;
 
 import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;

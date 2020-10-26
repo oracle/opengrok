@@ -19,10 +19,9 @@
 
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis;
 
 import java.io.IOException;

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions copyright 2009 - 2011 Jens Elkner. 
+ * Portions Copyright (c) 2009, 2011, Jens Elkner.
  */
 package org.opengrok.indexer.analysis.document;
 

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;

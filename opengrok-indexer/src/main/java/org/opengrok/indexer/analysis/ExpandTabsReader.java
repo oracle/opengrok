@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright (c) 2009, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis;
 
 import java.io.FilterReader;

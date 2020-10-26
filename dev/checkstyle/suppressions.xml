@@ -34,7 +34,9 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
         |ObjectPool\.java|ObjectValidator\.java|ObjectFactory\.java|AbstractObjectPool\.java|
         |BlockingObjectPool\.java|OGKTextVecField\.java|OGKTextField\.java|
         |LazilyInstantiate\.java|PortChecker\.java|CloseableReentrantReadWriteLock\.java|
-        |ResourceLock\.java|ZeroReader\.java" />
+        |ResourceLock\.java|ZeroReader\.java|ColorUtil\.java|RainbowColorGenerator\.java|WildCardMatcher.java|
+        |BitKeeperAnnotationParser\.java|BitKeeperTagEntry\.java|BitKeeperTagParser\.java|BooleanUtilTest\.java|
+        |CorsEnable\.java|CorsFilter\.java" />
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|

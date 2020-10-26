@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.web;
 
 import java.io.BufferedOutputStream;

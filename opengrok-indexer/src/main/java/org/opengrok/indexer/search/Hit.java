@@ -19,8 +19,6 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * portions copyright 2005 Trond Norbye.  All rights reserved.
- * Use is subject to license terms.
  */
 package org.opengrok.indexer.search;
 

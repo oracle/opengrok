@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>. 
  */
 package org.opengrok.indexer.history;

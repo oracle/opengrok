@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2008, Peter Bray.
  */
-/* Portions Copyright 2008 Peter Bray */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;

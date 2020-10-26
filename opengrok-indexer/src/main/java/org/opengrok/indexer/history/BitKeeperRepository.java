@@ -18,11 +18,10 @@
  */
 
 /*
- * Author: James Service <jas2701@googlemail.com>
- * Portions by: Oracle and/or its affiliates.
+ * Copyright (c) 2017, James Service <jas2701@googlemail.com>
+ * Portions Copyright (c) 2017, 2020, Oracle and/or its affiliates.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.history;
 
 import java.io.File;

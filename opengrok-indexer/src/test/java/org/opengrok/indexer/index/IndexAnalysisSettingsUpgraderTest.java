@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.index;
 
 import static org.junit.Assert.assertArrayEquals;

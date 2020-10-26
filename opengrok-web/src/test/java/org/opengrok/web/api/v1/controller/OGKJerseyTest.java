@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.test.JerseyTest;

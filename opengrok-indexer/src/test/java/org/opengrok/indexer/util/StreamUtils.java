@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright (c) 2017, 2020 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018-2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.analysis.CtagsReader;

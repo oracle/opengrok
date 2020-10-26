@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;

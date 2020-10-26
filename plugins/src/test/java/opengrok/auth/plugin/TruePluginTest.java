@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package opengrok.auth.plugin;
 
 import opengrok.auth.plugin.entity.User;

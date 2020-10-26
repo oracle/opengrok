@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.verilog;
 
 import java.util.HashSet;

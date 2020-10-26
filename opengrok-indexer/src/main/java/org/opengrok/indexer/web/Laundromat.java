@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.web;
 
 import java.util.HashMap;

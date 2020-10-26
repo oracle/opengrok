@@ -19,9 +19,8 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2012, 2013 Constantine A. Murenin &lt;C++@Cns.SU&gt;
+ * Copyright (c) 2012, 2013, Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
-
 package org.opengrok.indexer.analysis.uue;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;

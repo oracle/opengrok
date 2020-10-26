@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;

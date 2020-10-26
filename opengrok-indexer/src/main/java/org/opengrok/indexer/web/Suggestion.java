@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011 Jens Elkner.
+ * Copyright (c) 2011, Jens Elkner.
  */
 package org.opengrok.indexer.web;
 

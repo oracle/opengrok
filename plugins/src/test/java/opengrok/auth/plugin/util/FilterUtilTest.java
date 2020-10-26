@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
  */
-
 package opengrok.auth.plugin.util;
 
 import org.junit.Test;

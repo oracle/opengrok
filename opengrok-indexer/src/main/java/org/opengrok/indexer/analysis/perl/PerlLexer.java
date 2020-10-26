@@ -17,10 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
