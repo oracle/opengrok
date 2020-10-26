@@ -116,6 +116,8 @@ public class IncomingFilter implements ContainerRequestFilter {
             return;
         }
 
+        // In a reverse proxy environment the connection appears to be coming from localhost.
+        // These request should really be using tokens.
         if (request.getHeader("X-Forwarded-For") != null || request.getHeader("Forwarded") != null) {
             logger.log(Level.FINEST, "denying request to {0} due to existence of forwarded header in the request",
                     path);
