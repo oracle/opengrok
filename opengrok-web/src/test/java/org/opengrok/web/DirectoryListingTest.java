@@ -53,8 +53,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * JUnit test to test that the DirectoryListing produce the expected result.
@@ -380,7 +379,9 @@ public class DirectoryListingTest {
         when(mockReader.getNode(anyString())).thenThrow(IOException.class);
         DirectoryListing instance = new DirectoryListing(mockReader);
         File file = new File(directory, "foo");
-        instance.extraListTo("ctx", directory, new StringWriter(), directory.getPath(),
+        StringWriter mockWriter = spy(StringWriter.class);
+        instance.extraListTo("ctx", directory, mockWriter, directory.getPath(),
                 Collections.singletonList(new DirectoryEntry(file)));
+        verify(mockWriter, atLeast(1)). write(anyString());
     }
 }
