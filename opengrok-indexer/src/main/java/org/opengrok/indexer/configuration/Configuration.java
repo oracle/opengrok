@@ -503,6 +503,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setAllowLeadingWildcard(true);
         setAllowedSymlinks(new HashSet<>());
+        setAuthenticationTokens(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
@@ -566,7 +567,6 @@ public final class Configuration {
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
-        setAuthenticationTokens(new HashSet<>());
     }
 
     public String getRepoCmd(String clazzName) {
