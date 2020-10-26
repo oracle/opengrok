@@ -134,8 +134,8 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
         AbstractLdapProvider ldapProvider = getLdapProvider();
         try {
             if ((ldapProvider.lookupLdapContent(null, expandedFilter)) == null) {
-                LOGGER.log(Level.WARNING,
-                        "failed to get content for LDAP user {0} with filter ''{1}'' on {2}",
+                LOGGER.log(Level.FINER,
+                        "empty content for LDAP user {0} with filter ''{1}'' on {2}",
                         new Object[]{ldapUser, expandedFilter, ldapProvider});
                 return;
             }
@@ -143,7 +143,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             throw new AuthorizationException(ex);
         }
 
-        LOGGER.log(Level.FINEST, "LDAP user {0} allowed on {2}",
+        LOGGER.log(Level.FINER, "LDAP user {0} allowed on {2}",
                 new Object[]{ldapUser, ldapProvider});
         updateSession(req, true);
     }
