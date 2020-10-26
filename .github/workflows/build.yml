@@ -57,9 +57,11 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: Install pre-requisites
-      run: ./dev/before_install
+    - name: Install Universal ctags
+      run: choco install universal-ctags
+    - name: Install Subversion
+      run: choco install svn
     - name: Before build actions
       run: ./dev/before
     - name: Build
-      run: ./dev/main
+      run: mvn -B -V verify
