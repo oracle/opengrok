@@ -5,8 +5,13 @@
 # for their fork. Avoid it also for release builds as that can fail such
 # build unnecessarily.
 #
+
+if [[ -n $OPENGROK_REF && $OPENGROK_REF == refs/heads/* ]]; then
+	OPENGROK_BRANCH=${OPENGROK_REF#"refs/heads/"}
+fi
+
 extra_args=""
-if [[ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" && "x$TRAVIS_BRANCH" == "xmaster" ]]; then
+if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" && "x$OPENGROK_BRANCH" == "xmaster" ]]; then
 	echo "Enabling Coveralls"
 	extra_args="jacoco:report coveralls:report"
 

@@ -24,6 +24,9 @@ jobs:
     - name: Before build actions
       run: ./dev/before
     - name: Build
+      env:
+        OPENGROK_REPO_SLUG: ${{ github.repository }}
+        OPENGROK_REF: ${{ github.ref }}
       run: ./dev/main
   macos:
     name: macOS with Java 11
@@ -46,6 +49,9 @@ jobs:
     - name: Before build actions
       run: ./dev/before
     - name: Build
+      env:
+        OPENGROK_REPO_SLUG: ${{ github.repository }}
+        OPENGROK_REF: ${{ github.ref }}
       run: ./dev/main
   windows:
     name: Windows with Java 11
