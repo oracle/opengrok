@@ -10,5 +10,7 @@ jobs:
     steps:
     - name: Checkout master branch
       uses: actions/checkout@v2
+    - name: Install drafter
+      run: npm install drafter
     - name: Build
       run: node dev/parse.js
