@@ -19,26 +19,4 @@ if [[ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" && "x$TRAVIS_BRANCH" == "xmaste
 	fi
 fi
 
-if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-	JAVA_BASE="/c/Program Files/OpenJDK"
-	JDK_DIR=$(find "$JAVA_BASE/" -type d -name '*jdk*' -maxdepth 1 | head -1)
-	export JAVA_HOME=${JAVA_HOME:-$JDK_DIR}
-	echo "JAVA_HOME set to $JAVA_HOME"
-	export PATH=${JAVA_HOME}/bin:${PATH}
-
-	export PATH=${PATH}:/c/ProgramData/chocolatey/lib/universal-ctags/tools
-	export PATH=${PATH}:/c/Program\ Files\ \(x86\)/Subversion/bin
-	export PATH=${PATH}:${JAVA_HOME}
-
-	PYTHON_PATH="/c/Python39"
-	if [[ ! -d $PYTHON_PATH ]]; then
-		>&2 echo "Not a directory: $PYTHON_PATH"
-		exit 1
-	fi
-	# needs to be before the default Python 2
-	export PATH=${PYTHON_PATH}:${PATH}
-
-	extra_args="$extra_args -Dorg.opengrok.indexer.analysis.Ctags=c:\\ProgramData\\chocolatey\\lib\\universal-ctags\\tools\\ctags.exe"
-fi
-
 ./mvnw -B -V verify $extra_args
