@@ -60,5 +60,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./distribution/target/opengrok-${{ needs.get_tag.outputs.tag }}.tar.gz
-        asset_name: opengrok-${{ github.ref }}.tar.gz
+        asset_name: opengrok-${{ needs.get_tag.outputs.tag }}.tar.gz
         asset_content_type: application/octet-stream
