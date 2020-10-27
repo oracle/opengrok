@@ -402,7 +402,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.8</version>
+                <version>3.13.0</version>
                 <reportSets>
                     <reportSet>
                         <reports>
