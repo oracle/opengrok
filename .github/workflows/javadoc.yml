@@ -22,4 +22,4 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Refresh Javadoc
-      run: ./dev/docker.sh
+      run: ./dev/javadoc.sh
