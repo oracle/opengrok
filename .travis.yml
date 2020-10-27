@@ -10,24 +10,6 @@ addons:
       secure: ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0=
 jobs:
   include:
-  - stage: deploy
-    name: Github Release
-    dist: xenial
-    jdk: openjdk11
-    if: repo = "oracle/opengrok" AND tag IS present
-    before_install: dev/before_install
-    install: true
-    script: dev/pre-deploy.sh
-    deploy:
-    - provider: releases
-      name: "$TRAVIS_TAG"
-      api_key:
-        secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-      file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-      skip_cleanup: true
-      on:
-        condition: "$TRAVIS_TAG =~ ^[0-9\\.]+$"
-        all_branches: true
   - stage: docker
     name: Docker image build
     dist: xenial

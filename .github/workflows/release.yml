@@ -1,0 +1,52 @@
+name: Release
+
+# TODO: run this only for the oracle/opengrok repository
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - *.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout master branch
+      uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Install pre-requisites
+      run: ./dev/before_install
+    - name: Before build actions
+      run: ./dev/before
+    - name: Build
+      run: ./mvnw -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload release tarball
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./distribution/target/opengrok-${{ github.ref }}.tar.gz
+        asset_name: opengrok-${{ github.ref }}.tar.gz
+        asset_content_type: application/octet-stream
