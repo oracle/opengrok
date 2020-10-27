@@ -10,34 +10,6 @@ addons:
       secure: ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0=
 jobs:
   include:
-  - stage: test
-    name: Linux + OpenJDK 11
-    os: linux
-    dist: xenial
-    sudo: required
-    jdk: openjdk11
-    install: true
-    script: dev/main
-    before_install: dev/before_install
-    before_script: dev/before
-  - stage: test
-    name: macOS + Oracle JDK 11
-    os: osx
-    osx_image: xcode10.1
-    jdk: oraclejdk11
-    install: true
-    script: dev/main
-    before_install: dev/before_install
-    before_script: dev/before
-  - stage: test
-    name: Windows + Open JDK 11
-    # Use shell until Travis supports Java on Windows proper.
-    language: shell
-    os: windows
-    install: true
-    script: dev/main
-    before_install: dev/before_install.windows openjdk11
-    before_script: dev/before
   - stage: deploy
     name: Github Release
     dist: xenial
