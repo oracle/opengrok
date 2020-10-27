@@ -3,9 +3,13 @@
 set -e
 set -x
 
-if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ||
-    "${TRAVIS_PULL_REQUEST}" != "false" ||
-    "${TRAVIS_BRANCH}" != "master" ]]; then
+if [[ -n $OPENGROK_REF && $OPENGROK_REF == refs/heads/* ]]; then
+	OPENGROK_BRANCH=${OPENGROK_REF#"refs/heads/"}
+fi
+
+if [[ "${OPENGROK_REPO_SLUG}" != "oracle/opengrok" ||
+    -n "${OPENGROK_PULL_REQUEST}" ||
+    "${OPENGROK_BRANCH}" != "master" ]]; then
 	echo "Skipping Javadoc refresh"
 	exit 0
 fi
@@ -24,7 +28,7 @@ cd "$BRANCH"
 if [[ -d ./javadoc ]]; then
 	git rm -rf ./javadoc
 fi
-cp -Rf ${TRAVIS_BUILD_DIR}/target/site/apidocs ./javadoc
+cp -Rf ${OPENGROK_BUILD_DIR}/target/site/apidocs ./javadoc
 git add -f ./javadoc
 git commit -m "Lastest javadoc auto-pushed to branch $BRANCH"
 git push -fq origin "$BRANCH"
