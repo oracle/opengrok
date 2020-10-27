@@ -191,6 +191,9 @@ public class FileHistoryCacheTest {
         // Store the history.
         cache.store(historyToStore, repo);
 
+        // Avoid uncommitted changes.
+        MercurialRepositoryTest.runHgCommand(reposRoot, "revert", "--all");
+
         // Add bunch of changesets with file based changes and tags.
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
                 Paths.get(getClass().getResource("/history/hg-export-tag.txt").toURI()).toString());
