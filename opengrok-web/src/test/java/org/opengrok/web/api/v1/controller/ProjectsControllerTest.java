@@ -380,6 +380,9 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         Files.copy(HistoryGuru.getInstance().getClass().getResourceAsStream("/history/hg-export-subdir.txt"),
                 temp, StandardCopyOption.REPLACE_EXISTING);
 
+        // prevent 'uncommitted changes' error
+        MercurialRepositoryTest.runHgCommand(mercurialRoot, "revert", "--all");
+
         MercurialRepositoryTest.runHgCommand(mercurialRoot, "import", temp.toString());
 
         temp.toFile().delete();
