@@ -6,6 +6,7 @@ set -x
 if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ||
     "${TRAVIS_PULL_REQUEST}" != "false" ||
     "${TRAVIS_BRANCH}" != "master" ]]; then
+	echo "Skipping Javadoc refresh"
 	exit 0
 fi
 
