@@ -32,4 +32,5 @@ jobs:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
         OPENGROK_BUILD_DIR: ${{ github.workspace }}
+        GH_PAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/javadoc.sh
