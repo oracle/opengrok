@@ -55,14 +55,14 @@ echo "Running the image in container"
 docker run -d $IMAGE
 docker ps -a
 
-# Travis can only work on master since it needs encrypted variables.
-if [ "${OPENGROK_PULL_REQUEST}" != "false" ]; then
+# This can only work on home repository since it needs encrypted variables.
+if [[ -n "$OPENGROK_PULL_REQUEST" ]]; then
 	echo "Not pushing Docker image for pull requests"
 	exit 0
 fi
 
 # The push only works on the main repository.
-if [[ "${OPENGROK_REPO_SLUG}" != "oracle/opengrok" ]]; then
+if [[ "$OPENGROK_REPO_SLUG" != "oracle/opengrok" ]]; then
 	echo "Not pushing Docker image for non main repository"
 	exit 0
 fi
