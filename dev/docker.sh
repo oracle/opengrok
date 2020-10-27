@@ -15,8 +15,12 @@ set -e
 API_URL="https://hub.docker.com/v2"
 IMAGE="opengrok/docker"
 
-if [[ -n $TRAVIS_TAG ]]; then
-	VERSION="$TRAVIS_TAG"
+if [[ -n $OPENGROK_REF && $OPENGROK_REF == refs/tags/* ]]; then
+	OPENGROK_TAG=${OPENGROK_REF#"refs/tags/"}
+fi
+
+if [[ -n $OPENGROK_TAG ]]; then
+	VERSION="$OPENGROK_TAG"
 	VERSION_SHORT=$( echo $VERSION | cut -d. -f1,2 )
 else
 	VERSION="latest"
@@ -52,20 +56,20 @@ docker run -d $IMAGE
 docker ps -a
 
 # Travis can only work on master since it needs encrypted variables.
-if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+if [ "${OPENGROK_PULL_REQUEST}" != "false" ]; then
 	echo "Not pushing Docker image for pull requests"
 	exit 0
 fi
 
 # The push only works on the main repository.
-if [[ "${TRAVIS_REPO_SLUG}" != "oracle/opengrok" ]]; then
+if [[ "${OPENGROK_REPO_SLUG}" != "oracle/opengrok" ]]; then
 	echo "Not pushing Docker image for non main repository"
 	exit 0
 fi
 
 # Allow Docker push for release builds only.
-if [[ -z $TRAVIS_TAG ]]; then
-	echo "TRAVIS_TAG is empty"
+if [[ -z $OPENGROK_TAG ]]; then
+	echo "OPENGROK_TAG is empty"
 	exit 0
 fi
 

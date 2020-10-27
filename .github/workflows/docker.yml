@@ -9,4 +9,8 @@ jobs:
     - name: Checkout master branch
       uses: actions/checkout@v2
     - name: Build Docker image
+      env:
+        OPENGROK_REPO_SLUG: ${{ github.repository }}
+        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
+	OPENGROK_REF: ${{ github.ref }}
       run: ./dev/docker.sh
