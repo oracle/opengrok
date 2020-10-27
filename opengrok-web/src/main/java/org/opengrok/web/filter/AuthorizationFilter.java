@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.web;
+package org.opengrok.web.filter;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -32,14 +32,17 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.Laundromat;
+import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.v1.RestApp;
 
+@WebFilter(urlPatterns = "/*")
 public class AuthorizationFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);

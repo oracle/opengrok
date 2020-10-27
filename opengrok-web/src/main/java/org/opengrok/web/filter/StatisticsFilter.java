@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.web.filter;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -31,6 +31,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,7 +39,9 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Timer;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.web.PageConfig;
 
+@WebFilter(urlPatterns = "/*")
 public class StatisticsFilter implements Filter {
 
     static final String REQUESTS_METRIC = "requests";

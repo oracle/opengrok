@@ -39,6 +39,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.annotation.WebListener;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -51,6 +52,7 @@ import java.util.logging.Logger;
  *
  * @author Trond Norbye
  */
+@WebListener
 public final class WebappListener
         implements ServletContextListener, ServletRequestListener {
 

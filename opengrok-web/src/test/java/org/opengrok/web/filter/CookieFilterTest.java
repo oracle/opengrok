@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.web.filter;
 
 import org.junit.Test;
 

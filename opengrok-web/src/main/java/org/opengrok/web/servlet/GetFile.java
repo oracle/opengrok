@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2011, Jens Elkner.
  */
-package org.opengrok.web;
+package org.opengrok.web.servlet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,11 +32,14 @@ import java.io.OutputStream;
 
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.Prefix;
+import org.opengrok.web.PageConfig;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@WebServlet(urlPatterns = {"/raw/*", "/download/*"})
 public class GetFile extends HttpServlet {
 
     public static final long serialVersionUID = -1;
