@@ -81,7 +81,12 @@ public class HistoryContext {
             return false;
         }
         File f = new File(filename);
-        return getHistoryContext(HistoryGuru.getInstance().getHistory(f), path, null, hits, null);
+        History history = HistoryGuru.getInstance().getHistory(f);
+        if (history == null) {
+            LOGGER.log(Level.INFO, "Null history got for {0}", f);
+            return false;
+        }
+        return getHistoryContext(history, path, null, hits, null);
 
     }
 

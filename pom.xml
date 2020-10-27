@@ -73,6 +73,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         reads that Jersey 2.30.1 did "adopt Jackson 2.10.1." -->
         <jackson.version>2.10.1</jackson.version>
         <junit.version>5.7.0</junit.version>
+        <hamcrest.version>2.1</hamcrest.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <apache-commons-lang3.version>3.9</apache-commons-lang3.version>
         <micrometer.version>1.5.4</micrometer.version>
@@ -89,6 +90,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <groupId>org.junit.vintage</groupId>
                 <artifactId>junit-vintage-engine</artifactId>
                 <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>${hamcrest.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.bcel</groupId>

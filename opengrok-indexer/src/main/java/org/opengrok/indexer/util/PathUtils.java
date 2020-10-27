@@ -22,18 +22,21 @@
  */
 package org.opengrok.indexer.util;
 
-import java.io.File;
+import org.opengrok.indexer.logger.LoggerFactory;
+
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Represents a container for file system paths-related utility methods.
@@ -43,7 +46,7 @@ public class PathUtils {
         LoggerFactory.getLogger(PathUtils.class);
 
     /**
-     * Calls {@link #getRelativeToCanonical(String, String, Set, Set)}
+     * Calls {@link #getRelativeToCanonical(Path, Path, Set, Set)}
      * with {@code path}, {@code canonical}, {@code allowedSymlinks=null}, and
      * {@code canonicalRoots=null} (to disable validation of links).
      * @param path a non-canonical (or canonical) path to compare
@@ -53,13 +56,13 @@ public class PathUtils {
      * @throws IOException if an error occurs determining canonical paths
      * for portions of {@code path}
      */
-    public static String getRelativeToCanonical(String path, String canonical)
+    public static String getRelativeToCanonical(Path path, Path canonical)
         throws IOException {
         try {
             return getRelativeToCanonical(path, canonical, null, null);
         } catch (ForbiddenSymlinkException e) {
             // should not get here with allowedSymlinks==null
-            return path;
+            return path.toString();
         }
     }
 
@@ -99,7 +102,7 @@ public class PathUtils {
      * and it encounters an ineligible link
      * @throws InvalidPathException if path cannot be decoded
      */
-    public static String getRelativeToCanonical(String path, String canonical,
+    public static String getRelativeToCanonical(Path path, Path canonical,
             Set<String> allowedSymlinks, Set<String> canonicalRoots)
             throws IOException, ForbiddenSymlinkException, InvalidPathException {
 
@@ -114,24 +117,32 @@ public class PathUtils {
         // following fixup would not be needed, since File and Paths recognize
         // backslash as a delimiter. On Linux and macOS, any backslash needs to
         // be normalized.
-        path = path.replace('\\', File.separatorChar);
-        canonical = canonical.replace('\\', File.separatorChar);
-        String normCanonical = canonical.endsWith(File.separator) ?
-            canonical : canonical + File.separator;
+        final FileSystem fileSystem = path.getFileSystem();
+        final String separator = fileSystem.getSeparator();
+        String strPath = path.toString();
+        strPath = strPath.replace("\\", separator);
+
+        String strCanonical = canonical.toString();
+        strCanonical = strCanonical.replace("\\", separator);
+        String normCanonical = strCanonical.endsWith(separator) ?
+            strCanonical : strCanonical + separator;
         Deque<String> tail = null;
 
-        File iterPath = new File(path);
+        Path iterPath = fileSystem.getPath(strPath);
         while (iterPath != null) {
-            String iterCanon = iterPath.getCanonicalPath();
+            Path iterCanon;
+            try {
+                iterCanon = iterPath.toRealPath();
+            } catch (NoSuchFileException e) {
+                iterCanon = iterPath.normalize().toAbsolutePath();
+            }
 
             // optional symbolic-link check
             if (allowedSymlinks != null) {
-                String iterOriginal = iterPath.getPath();
-                if (Files.isSymbolicLink(Paths.get(iterOriginal)) &&
-                        !isWhitelisted(iterCanon, canonicalRoots) &&
-                        !isAllowedSymlink(iterCanon, allowedSymlinks)) {
-                    String format = String.format("%1$s is prohibited symlink",
-                        iterOriginal);
+                if (Files.isSymbolicLink(iterPath) &&
+                    !isWhitelisted(iterCanon.toString(), canonicalRoots) &&
+                    !isAllowedSymlink(iterCanon, allowedSymlinks)) {
+                    String format = String.format("%1$s is prohibited symlink", iterPath);
                     LOGGER.finest(format);
                     throw new ForbiddenSymlinkException(format);
                 }
@@ -139,8 +150,8 @@ public class PathUtils {
 
             String rel = null;
             if (iterCanon.startsWith(normCanonical)) {
-                rel = iterCanon.substring(normCanonical.length());
-            } else if (normCanonical.equals(iterCanon + File.separator)) {
+                rel = fileSystem.getPath(normCanonical).relativize(iterCanon).toString();
+            } else if (normCanonical.equals(iterCanon + separator)) {
                 rel = "";
             }
             if (rel != null) {
@@ -155,20 +166,22 @@ public class PathUtils {
             if (tail == null) {
                 tail = new LinkedList<>();
             }
-            tail.push(iterPath.getName());
-            iterPath = iterPath.getParentFile();
+            tail.push(Optional.ofNullable(iterPath.getFileName()).map(Path::toString).orElse(""));
+            iterPath = iterPath.getParent();
         }
 
         // `path' is not found to be relative to `canonical', so return as is.
-        return path;
+        return path.toString();
     }
 
-    private static boolean isAllowedSymlink(String canonicalFile,
+    private static boolean isAllowedSymlink(Path canonicalFile,
         Set<String> allowedSymlinks) {
+        final FileSystem fileSystem = canonicalFile.getFileSystem();
+        String canonicalFileStr = canonicalFile.toString();
         for (String allowedSymlink : allowedSymlinks) {
             String canonicalLink;
             try {
-                canonicalLink = new File(allowedSymlink).getCanonicalPath();
+                canonicalLink = fileSystem.getPath(allowedSymlink).toRealPath().toString();
             } catch (IOException e) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine(String.format("unresolvable symlink: %s",
@@ -176,8 +189,8 @@ public class PathUtils {
                 }
                 continue;
             }
-            if (canonicalFile.equals(canonicalLink) ||
-                    canonicalFile.startsWith(canonicalLink + File.separator)) {
+            if (canonicalFileStr.equals(canonicalLink) ||
+                canonicalFile.startsWith(canonicalLink + fileSystem.getSeparator())) {
                 return true;
             }
         }

@@ -169,7 +169,7 @@ public class RepositoryInfo implements Serializable {
         String path;
         String originalPath = dir.getPath();
         try {
-            path = PathUtils.getRelativeToCanonical(originalPath, rootPath);
+            path = PathUtils.getRelativeToCanonical(dir.toPath(), Paths.get(rootPath));
             // OpenGrok has a weird convention that directoryNameRelative must start with a path separator,
             // as it is elsewhere directly appended to env.getSourceRootPath() and also stored as such.
             if (!path.equals(originalPath)) {
