@@ -1,0 +1,12 @@
+name: Build docker image
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout master branch
+      uses: actions/checkout@v2
+    - name: Build Docker image
+      run: ./dev/docker.sh
