@@ -7,7 +7,7 @@
 #  - DOCKER_USERNAME
 #  - DOCKER_PASSWORD
 #
-# These are set via https://travis-ci.com/OpenGrok/docker/settings
+# These are set via https://github.com/oracle/opengrok/settings/secrets
 #
 
 set -e
