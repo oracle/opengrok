@@ -25,6 +25,7 @@ jobs:
       run: ./dev/before
     - name: Build
       env:
+        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/main
@@ -50,6 +51,7 @@ jobs:
       run: ./dev/before
     - name: Build
       env:
+        OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
       run: ./dev/main

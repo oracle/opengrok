@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Windows on Travis does not obfuscate environment variables.
-if [[ $TRAVIS_OS_NAME != "windows" ]]; then
-	echo "Environment variables:"
-	env | sort
-fi
-
 echo "SCM versions:"
 if command -v bk; then bk --version; fi
 if command -v hg; then hg --version; fi
