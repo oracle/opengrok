@@ -1,6 +1,9 @@
 name: Upload javadocs to Github pages
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   ubuntu:
