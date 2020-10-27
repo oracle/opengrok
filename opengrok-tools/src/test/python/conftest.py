@@ -32,6 +32,7 @@ def system_binary(name):
     """
     Creates an argument of {name}_binary which automatically
     skips the test execution when the binary is not available on the system.
+    The full path to the binary on the system is then available as an argument {name}_binary.
 
     :param name: the binary name (the command)
     """
@@ -39,8 +40,14 @@ def system_binary(name):
     def decorator(fn):
         return pytest.mark.parametrize(
             ('{}_binary'.format(name)), [
-                pytest.param('/bin/{}'.format(name), marks=pytest.mark.skipif(not os.path.exists('/bin/{}'.format(name)), reason="requires /bin binaries")),
-                pytest.param('/usr/bin/{}'.format(name), marks=pytest.mark.skipif(not os.path.exists('/usr/bin/{}'.format(name)), reason="requires /usr/bin binaries")),
+                pytest.param('/bin/{}'.format(name), marks=pytest.mark.skipif(
+                    not os.path.exists('/bin/{}'.format(name)),
+                    reason="requires /bin binaries"
+                )),
+                pytest.param('/usr/bin/{}'.format(name), marks=pytest.mark.skipif(
+                    not os.path.exists('/usr/bin/{}'.format(name)),
+                    reason="requires /usr/bin binaries"
+                )),
             ])(fn)
 
     return decorator
