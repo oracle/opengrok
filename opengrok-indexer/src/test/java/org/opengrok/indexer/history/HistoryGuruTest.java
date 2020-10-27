@@ -125,12 +125,13 @@ public class HistoryGuruTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
     public void testBug16465() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (f.getName().equals("bugreport16465@")) {
-                assertNotNull(instance.getHistory(f));
-                assertNotNull(instance.annotate(f, null));
+                assertNotNull(f.getPath() + " must have history", instance.getHistory(f));
+                assertNotNull(f.getPath() + " must have annotations", instance.annotate(f, null));
             }
         }
     }

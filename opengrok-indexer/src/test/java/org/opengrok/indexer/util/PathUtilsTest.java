@@ -23,8 +23,14 @@
  */
 package org.opengrok.indexer.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.UnixPresent;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,14 +41,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.UnixPresent;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Represents a container for tests of {@link PathUtils}.
@@ -53,6 +54,16 @@ public class PathUtilsTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
+
+    private String relativeToCanonical(String path, String canonical) throws IOException {
+        return PathUtils.getRelativeToCanonical(Paths.get(path), Paths.get(canonical));
+    }
+
+    private String relativeToCanonical(String path, String canonical, Set<String> allowedSymlinks,
+        Set<String> canonicalRoots)
+        throws IOException, ForbiddenSymlinkException {
+        return PathUtils.getRelativeToCanonical(Paths.get(path), Paths.get(canonical), allowedSymlinks, canonicalRoots);
+    }
 
     @After
     public void tearDown() {
@@ -72,21 +83,21 @@ public class PathUtilsTest {
     @Test
     public void shouldHandleSameInputs() throws IOException {
         final String USR_BIN = Paths.get("/usr/bin").toString();
-        String rel = PathUtils.getRelativeToCanonical(USR_BIN, USR_BIN);
+        String rel = relativeToCanonical(USR_BIN, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to itself", "", rel);
     }
 
     @Test
     public void shouldHandleEffectivelySameInputs() throws IOException {
         String USR_BIN = Paths.get(Paths.get("/usr/bin").toUri()).toString();
-        String rel = PathUtils.getRelativeToCanonical(USR_BIN + File.separator, USR_BIN);
+        String rel = relativeToCanonical(USR_BIN + File.separator, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to ~itself", "", rel);
     }
 
     @Test
     @ConditionalRun(UnixPresent.class)
     public void shouldHandleLinksOfArbitraryDepthWithValidation()
-            throws IOException, ForbiddenSymlinkException {
+        throws IOException, ForbiddenSymlinkException {
         // Create real directories
         File sourceRoot = createTemporaryDirectory("srcroot");
         assertTrue("sourceRoot.isDirectory()", sourceRoot.isDirectory());
@@ -100,36 +111,35 @@ public class PathUtilsTest {
         File realDir2 = createTemporaryDirectory("realdir2");
         assertTrue("realDir2.isDirectory()", realDir2.isDirectory());
 
-        // Create symlink #1 underneath source root.
+        // Create symlink #1 underneath source root (srcroot/symlink1 -> realdir1)
         final String SYMLINK1 = "symlink1";
         File symlink1 = new File(sourceRoot, SYMLINK1);
         Files.createSymbolicLink(Paths.get(symlink1.getPath()),
             Paths.get(realDir1.getPath()));
         assertTrue("symlink1.exists()", symlink1.exists());
 
-        // Create symlink #2 underneath realdir1/b.
+        // Create symlink #2 underneath realdir1/b (realdir1/b/symlink2 -> realdir2)
         final String SYMLINK2 = "symlink2";
         File symlink2 = new File(realDir1b, SYMLINK2);
         Files.createSymbolicLink(Paths.get(symlink2.getPath()),
             Paths.get(realDir2.getPath()));
         assertTrue("symlink2.exists()", symlink2.exists());
 
-        // Assert symbolic path
+        // Assert symbolic path srcroot/symlink1/b/symlink2
         Path sympath = Paths.get(sourceRoot.getPath(), SYMLINK1, "b",
             SYMLINK2);
         assertTrue("2-link path exists", Files.exists(sympath));
 
         // Test v. realDir1 canonical
         String realDir1Canon = realDir1.getCanonicalPath();
-        String rel = PathUtils.getRelativeToCanonical(sympath.toString(),
-            realDir1Canon);
+        String rel = relativeToCanonical(sympath.toString(), realDir1Canon);
         assertEquals("because links aren't validated", "b/" + SYMLINK2, rel);
 
         // Test v. realDir1 canonical with validation and no allowed links
         Set<String> allowedSymLinks = new HashSet<>();
         ForbiddenSymlinkException expex = null;
         try {
-            PathUtils.getRelativeToCanonical(sympath.toString(), realDir1Canon,
+            relativeToCanonical(sympath.toString(), realDir1Canon,
                     allowedSymLinks, null);
         } catch (ForbiddenSymlinkException e) {
             expex = e;
@@ -139,7 +149,7 @@ public class PathUtilsTest {
 
         // Test v. realDir1 canonical with validation and an allowed link
         allowedSymLinks.add(symlink2.getPath());
-        rel = PathUtils.getRelativeToCanonical(sympath.toString(),
+        rel = relativeToCanonical(sympath.toString(),
                 realDir1Canon, allowedSymLinks, null);
         assertEquals("because link is OKed", "b/" + SYMLINK2, rel);
     }
@@ -175,7 +185,7 @@ public class PathUtilsTest {
         allowedSymLinks.add(symlink1.getPath());
 
         String realDir1Canon = realDir1.getCanonicalPath();
-        String rel = PathUtils.getRelativeToCanonical(symlink2.toString(),
+        String rel = relativeToCanonical(symlink2.toString(),
                 realDir1Canon, allowedSymLinks, null);
         assertEquals("symlink2 should be allowed implicitly as a canonical child of symlink1",
                 "b", rel);
@@ -187,7 +197,7 @@ public class PathUtilsTest {
         final String MY_VAR_FOLDERS =
             "/var/folders/58/546k9lk08xl56t0059bln0_h0000gp/T/tilde/Documents";
         final String EXPECTED_REL = MY_VAR_FOLDERS.substring("/var/".length());
-        String rel = PathUtils.getRelativeToCanonical(MY_VAR_FOLDERS,
+        String rel = relativeToCanonical(MY_VAR_FOLDERS,
             "/private/var");
         Assert.assertEquals("/var/run rel to /private/var", EXPECTED_REL, rel);
     }
@@ -199,7 +209,7 @@ public class PathUtilsTest {
             "\\var\\folders\\58\\546k9lk08xl56t0059bln0_h0000gp\\T";
         final String EXPECTED_REL = MY_VAR_FOLDERS.substring("/var/".length()).
             replace('\\', '/');
-        String rel = PathUtils.getRelativeToCanonical(MY_VAR_FOLDERS,
+        String rel = relativeToCanonical(MY_VAR_FOLDERS,
             "/private/var");
         Assert.assertEquals("/var/run rel to /private/var", EXPECTED_REL, rel);
     }

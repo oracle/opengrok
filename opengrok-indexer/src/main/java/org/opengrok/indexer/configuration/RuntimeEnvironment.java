@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -407,8 +408,8 @@ public final class RuntimeEnvironment {
             throw new FileNotFoundException("sourceRoot is not defined");
         }
 
-        String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
-                sourceRoot, getAllowedSymlinks(), getCanonicalRoots());
+        String maybeRelPath = PathUtils.getRelativeToCanonical(file.toPath(),
+                Paths.get(sourceRoot), getAllowedSymlinks(), getCanonicalRoots());
         File maybeRelFile = new File(maybeRelPath);
         if (!maybeRelFile.isAbsolute()) {
             /*

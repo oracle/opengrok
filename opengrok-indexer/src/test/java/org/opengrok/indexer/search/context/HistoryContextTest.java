@@ -23,9 +23,10 @@
  */
 package org.opengrok.indexer.search.context;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -76,11 +77,11 @@ public class HistoryContextTest {
     public void testIsEmpty() {
         TermQuery q1 = new TermQuery(new Term("refs", "isEmpty"));
         TermQuery q2 = new TermQuery(new Term("defs", "isEmpty"));
-        TermQuery q3 = new TermQuery(new Term("hist", "isEmpty"));        
+        TermQuery q3 = new TermQuery(new Term("hist", "isEmpty"));
         BooleanQuery.Builder q4 = new BooleanQuery.Builder();
         q4.add(q1, Occur.MUST);
         q4.add(q2, Occur.MUST);
-        BooleanQuery.Builder q5 = new BooleanQuery.Builder();        
+        BooleanQuery.Builder q5 = new BooleanQuery.Builder();
         q5.add(q2, Occur.MUST);
         q5.add(q3, Occur.MUST);
 
@@ -96,13 +97,13 @@ public class HistoryContextTest {
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_3args() throws Exception {
         String path = "/mercurial/Makefile";
-        String filename = repositories.getSourceRoot() + path;
+        String filename = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile").toString();
 
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
         ArrayList<Hit> hits = new ArrayList<>();
         boolean gotCtx = new HistoryContext(q1).getContext(filename, path, hits);
-        assertTrue(gotCtx);
+        assertTrue(filename + " has context", gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy</b> program"));
@@ -113,7 +114,7 @@ public class HistoryContextTest {
         q2.add(new Term("hist", "program"));
         hits.clear();
         gotCtx = new HistoryContext(q2.build()).getContext(filename, path, hits);
-        assertTrue(gotCtx);
+        assertTrue(filename + " has context", gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy program</b>"));
@@ -122,7 +123,7 @@ public class HistoryContextTest {
         TermQuery q3 = new TermQuery(new Term("hist", "term_does_not_exist"));
         hits.clear();
         gotCtx = new HistoryContext(q3).getContext(filename, path, hits);
-        assertFalse(gotCtx);
+        assertFalse(filename + " has no context", gotCtx);
         assertEquals(0, hits.size());
 
         // Search for term with multiple hits - hist:small OR hist:target
@@ -131,7 +132,7 @@ public class HistoryContextTest {
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         hits.clear();
         gotCtx = new HistoryContext(q4.build()).getContext(filename, path, hits);
-        assertTrue(gotCtx);
+        assertTrue(filename + " has context", gotCtx);
         assertEquals(2, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
@@ -143,14 +144,14 @@ public class HistoryContextTest {
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_4args() throws Exception {
         String path = "/mercurial/Makefile";
-        File file = new File(repositories.getSourceRoot() + path);
-        String parent = file.getParent();
-        String base = file.getName();
+        Path file = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile");
+        String parent = file.getParent().toString();
+        String base = file.getFileName().toString();
 
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
         StringWriter sw = new StringWriter();
-        assertTrue(new HistoryContext(q1).getContext(parent, base, path, sw, null));
+        assertTrue(parent + " has context", new HistoryContext(q1).getContext(parent, base, path, sw, null));
         assertTrue(sw.toString().contains(
                 "Created a small <b>dummy</b> program"));
 
@@ -159,14 +160,14 @@ public class HistoryContextTest {
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q2.build()).getContext(parent, base, path, sw, null));
+        assertTrue(parent + " has context", new HistoryContext(q2.build()).getContext(parent, base, path, sw, null));
         assertTrue(sw.toString().contains(
                 "Created a small <b>dummy program</b>"));
 
         // Search for a term that doesn't exist
         TermQuery q3 = new TermQuery(new Term("hist", "term_does_not_exist"));
         sw = new StringWriter();
-        assertFalse(new HistoryContext(q3).getContext(parent, base, path, sw, null));
+        assertFalse(parent + " has no context", new HistoryContext(q3).getContext(parent, base, path, sw, null));
         assertEquals("", sw.toString());
 
         // Search for term with multiple hits - hist:small OR hist:target
@@ -174,7 +175,7 @@ public class HistoryContextTest {
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q4.build()).getContext(parent, base, path, sw, null));
+        assertTrue(parent + " has context", new HistoryContext(q4.build()).getContext(parent, base, path, sw, null));
         String result = sw.toString();
         assertTrue(result.contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
