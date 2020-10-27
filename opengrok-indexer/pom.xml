@@ -411,6 +411,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                             <excludes>
                                 <exclude>**/*XrefTest.java</exclude>
                                 <exclude>**/HistoryGuruTest.java</exclude>
+                                <exclude>**/MercurialRepositoryTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
