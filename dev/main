@@ -41,12 +41,4 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	extra_args="$extra_args -Dorg.opengrok.indexer.analysis.Ctags=c:\\ProgramData\\chocolatey\\lib\\universal-ctags\\tools\\ctags.exe"
 fi
 
-ret=0
-./mvnw -B -V verify $extra_args || ret=1
-
-if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-	echo "Checking Apiary blueprint format"
-	node dev/parse.js || ret=1
-fi
-
-exit $ret
+./mvnw -B -V verify $extra_args
