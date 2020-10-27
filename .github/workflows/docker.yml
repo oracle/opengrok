@@ -10,6 +10,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Build Docker image
       env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+	DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REF: ${{ github.ref }}
