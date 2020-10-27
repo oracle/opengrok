@@ -1,5 +1,6 @@
 name: Upload javadocs to Github pages
 
+# TODO: do not run on tagged (release) build
 on:
   push:
     branches:
