@@ -3,8 +3,6 @@ name: Release
 # TODO: run this only for the oracle/opengrok repository
 on:
   push:
-    branches:
-      - master
     tags:
       - '**'
 
