@@ -3,7 +3,12 @@ name: Upload javadocs to Github pages
 on:
   push:
     branches:
-      - master
+    - master
+    paths:
+    - opengrok-indexer/**
+    - opengrok-web/**
+    - suggester/**
+    - plugins/**
 
 jobs:
   ubuntu:
