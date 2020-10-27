@@ -1,7 +1,12 @@
 name: Check Apiary blueprint
 
-# TODO: restrict path to apiary.apib
-on: [push, pull_request]
+on:
+  push:
+    paths:
+    - apiary.apib
+  pull_request:
+    paths:
+    - apiary.apib
 
 jobs:
   ubuntu:
