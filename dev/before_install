@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$TRAVIS_OS_NAME" == "linux" || "$RUNNER_OS" == "Linux" ]]; then
+if [[ "$RUNNER_OS" == "Linux" ]]; then
 	sudo apt-get update -qq
 	if [[ $? != 0 ]]; then
 		echo "cannot update"
@@ -36,16 +36,13 @@ if [[ "$TRAVIS_OS_NAME" == "linux" || "$RUNNER_OS" == "Linux" ]]; then
 		exit 1
 	fi
 
-	# We only need to preserve TRAVIS_OS_NAME but older sudo do not
-	# support argument to --preserve-env.
-	sudo --preserve-env ./dev/install-universal_ctags.sh
+	sudo ./dev/install-universal_ctags.sh
 	if [[ $? != 0 ]]; then
 		echo "cannot install Universal ctags"
 		exit 1
 	fi
 
-elif [[ "$TRAVIS_OS_NAME" == "osx" || "$RUNNER_OS" == "macOS" ]]; then
-#	brew update
+elif [[ "$RUNNER_OS" == "macOS" ]]; then
         export HOMEBREW_NO_AUTO_UPDATE=1
 
 	brew install cvs libgit2 jq autoconf automake
@@ -63,9 +60,7 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" || "$RUNNER_OS" == "macOS" ]]; then
 		exit 1
 	fi
 
-	# We only need to preserve TRAVIS_OS_NAME but older sudo do not
-	# support argument to --preserve-env.
-	sudo --preserve-env ./dev/install-universal_ctags.sh
+	sudo ./dev/install-universal_ctags.sh
 	if [[ $? != 0 ]]; then
 		echo "cannot install Universal ctags"
 		exit 1

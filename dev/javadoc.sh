@@ -19,8 +19,8 @@ echo -e "Publishing javadoc to $BRANCH...\n"
 
 ./mvnw -DskipTests=true site
 
-git config --global user.email "travis@travis-ci.org"
-git config --global user.name "travis-ci"
+git config --global user.email "noreply@github.com"
+git config --global user.name "Foo Bar"
 git clone --quiet --branch=$BRANCH \
     https://${GH_PAGES_TOKEN}@github.com/oracle/opengrok "$BRANCH"
 
