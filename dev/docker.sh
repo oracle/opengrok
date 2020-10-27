@@ -33,7 +33,11 @@ if [[ -z $VERSION_SHORT ]]; then
 	exit 1
 fi
 
+echo "Version: $VERSION"
+echo "Short version: $VERSION_SHORT"
+
 # Build the image.
+echo "Building docker image"
 docker build \
     -t $IMAGE:$VERSION \
     -t $IMAGE:$VERSION_SHORT \
@@ -43,6 +47,7 @@ docker build \
 # Run the image in container. This is not strictly needed however
 # serves as additional test in automatic builds.
 #
+echo "Running the image in container"
 docker run -d $IMAGE
 docker ps -a
 
