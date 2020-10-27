@@ -131,4 +131,4 @@ fi
 push_readme "${IMAGE}" "${TOKEN}" "docker/README.md"
 
 # update Microbadger
-curl -X POST https://hooks.microbadger.com/images/opengrok/docker/pSastb42Ikfn2dF5llR54sSPqbQ=
+curl -s -X POST https://hooks.microbadger.com/images/opengrok/docker/pSastb42Ikfn2dF5llR54sSPqbQ=
