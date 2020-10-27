@@ -4,6 +4,8 @@ on:
   push:
     paths:
     - apiary.apib
+    branches:
+    - master
   pull_request:
     paths:
     - apiary.apib
