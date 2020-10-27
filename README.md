@@ -51,15 +51,7 @@ For full list of contributors see https://github.com/oracle/opengrok/graphs/cont
 
 ## 5. Contact us
 
-Feel free to participate in discussion on the mailing lists:
-
-  `opengrok-users@yahoogroups.com` (user topics)
-
-  `opengrok-dev@yahoogroups.com` (developers' discussion)
-
-To subscribe, send email to `<mailing_list_name>-subscribe@yahoogroups.com`
-
-There are also Slack channels on https://opengrok.slack.com/
+There are Slack channels on https://opengrok.slack.com/
 
 ## 6. Run as container
 
