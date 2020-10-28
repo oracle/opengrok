@@ -49,6 +49,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HeadHandler;
+import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.Version;
 
@@ -95,6 +96,12 @@ public class GitRepository extends Repository {
      */
     private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
 
+    /**
+     * This is a static replacement for 'working' field. Effectively, check if git is working once in a JVM
+     * instead of calling it for every GitRepository instance.
+     */
+    private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
+
     public GitRepository() {
         type = "git";
         /*
@@ -107,6 +114,21 @@ public class GitRepository extends Repository {
 
         ignoredDirs.add(".git");
         ignoredFiles.add(".git");
+    }
+
+    private static boolean isGitWorking() {
+        String repoCommand = getCommand(GitRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
+        Executor exec = new Executor(new String[] {repoCommand, "--version"});
+        if (exec.exec(false) == 0) {
+            final String outputVersion = exec.getOutputString();
+            final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
+            try {
+                return Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
+            } catch (NumberFormatException ex) {
+                LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
+            }
+        }
+        return false;
     }
 
     /**
@@ -521,21 +543,7 @@ public class GitRepository extends Repository {
     @Override
     public boolean isWorking() {
         if (working == null) {
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            Executor exec = new Executor(new String[]{RepoCommand, "--version"});
-
-            if (exec.exec(false) == 0) {
-                final String outputVersion = exec.getOutputString();
-                final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
-                try {
-                    working = Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
-                } catch (NumberFormatException ex) {
-                    LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
-                    working = false;
-                }
-            } else {
-                working = false;
-            }
+            working = GIT_IS_WORKING.get();
         }
 
         return working;
