@@ -117,7 +117,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Gets the instance's repository command, primarily for testing purposes.
-     * @return null if not {@link isWorking}, or otherwise a defined command
+     * @return null if not {@link #isWorking()}, or otherwise a defined command
      */
     public String getRepoCommand() {
         isWorking();
@@ -548,6 +548,17 @@ public abstract class Repository extends RepositoryInfo {
         return exec.exec(false) == 0;
     }
 
+    protected static String getCommand(Class<? extends Repository> repoClass, String propertyKey, String fallbackCommand) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String className = repoClass.getCanonicalName();
+        String command = env.getRepoCmd(className);
+        if (command == null) {
+            command = System.getProperty(propertyKey, fallbackCommand);
+            env.setRepoCmd(className, command);
+        }
+        return command;
+    }
+
     /**
      * Set the name of the external client command that should be used to access
      * the repository wrt. the given parameters. Does nothing, if this
@@ -561,18 +572,10 @@ public abstract class Repository extends RepositoryInfo {
      * @see #RepoCommand
      */
     protected String ensureCommand(String propertyKey, String fallbackCommand) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        
-        if (RepoCommand != null) {
-            return RepoCommand;
-        }
-        
-        RepoCommand = env.getRepoCmd(this.getClass().getCanonicalName());
         if (RepoCommand == null) {
-            RepoCommand = System.getProperty(propertyKey, fallbackCommand);
-            env.setRepoCmd(this.getClass().getCanonicalName(), RepoCommand);
+            RepoCommand = getCommand(this.getClass(), propertyKey, fallbackCommand);
         }
-        
+
         return RepoCommand;
     }
 
