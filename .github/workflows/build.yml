@@ -30,6 +30,7 @@ jobs:
         OPENGROK_REF: ${{ github.ref }}
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
   macos:
     name: macOS with Java 11
@@ -58,6 +59,7 @@ jobs:
         OPENGROK_REF: ${{ github.ref }}
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
   windows:
     name: Windows with Java 11
