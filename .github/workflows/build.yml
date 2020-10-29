@@ -29,6 +29,7 @@ jobs:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: ./dev/main
   macos:
     name: macOS with Java 11
@@ -56,6 +57,7 @@ jobs:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
         OPENGROK_REF: ${{ github.ref }}
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: ./dev/main
   windows:
     name: Windows with Java 11
