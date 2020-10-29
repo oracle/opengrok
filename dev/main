@@ -21,7 +21,7 @@ if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" && "x$OPENGROK_BRANCH" == "xm
 	#
 	# Sonar seems to only work on master branch commits.
 	#
-	if [ "${OPENGROK_PULL_REQUEST}" = "false" ]; then
+	if [[ -z "${OPENGROK_PULL_REQUEST}" ]]; then
 		echo "Enabling Sonar"
 		extra_args="$extra_args -Dsonar.login=$OPENGROK_SONAR_TOKEN sonar:sonar"
 	fi
