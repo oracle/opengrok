@@ -22,6 +22,7 @@
  */
 package org.opengrok.web.api.v1.filter;
 
+import org.opengrok.indexer.configuration.ConfigurationChangedListener;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.web.api.v1.controller.AnnotationController;
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
  */
 @Provider
 @PreMatching
-public class IncomingFilter implements ContainerRequestFilter {
+public class IncomingFilter implements ContainerRequestFilter, ConfigurationChangedListener {
 
     private static final Logger logger = LoggerFactory.getLogger(IncomingFilter.class);
 
@@ -82,6 +83,14 @@ public class IncomingFilter implements ContainerRequestFilter {
 
     private Set<String> tokens;
 
+    private Set<String> getTokens() {
+        return tokens;
+    }
+
+    private void setTokens(Set<String> tokens) {
+        this.tokens = tokens;
+    }
+
     @PostConstruct
     public void init() {
         try {
@@ -94,7 +103,14 @@ public class IncomingFilter implements ContainerRequestFilter {
         }
 
         // Cache the tokens to avoid locking.
-        tokens = RuntimeEnvironment.getInstance().getAuthenticationTokens();
+        setTokens(RuntimeEnvironment.getInstance().getAuthenticationTokens());
+
+        RuntimeEnvironment.getInstance().registerListener(this);
+    }
+
+    @Override
+    public void onConfigurationChanged() {
+        setTokens(RuntimeEnvironment.getInstance().getAuthenticationTokens());
     }
 
     @Override
@@ -109,7 +125,7 @@ public class IncomingFilter implements ContainerRequestFilter {
             String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
             if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
                 String tokenValue = authHeaderValue.substring(BEARER.length());
-                if (tokens.contains(tokenValue)) {
+                if (getTokens().contains(tokenValue)) {
                     logger.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
                     return;
                 }
