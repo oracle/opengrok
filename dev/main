@@ -13,7 +13,10 @@ fi
 extra_args=""
 if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" && "x$OPENGROK_BRANCH" == "xmaster" ]]; then
 	echo "Enabling Coveralls"
-	extra_args="jacoco:report coveralls:report"
+	if [[ -n $OPENGROK_COVERALLS_TOKEN ]]; then
+		extra_args="$extra_args -DrepoToken=$OPENGROK_COVERALLS_TOKEN"
+	fi
+	extra_args="$extra_args jacoco:report coveralls:report"
 
 	#
 	# Sonar seems to only work on master branch commits.
