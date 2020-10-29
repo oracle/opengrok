@@ -381,6 +381,25 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 </plugins>
             </build>
         </profile>
+        <profile>
+          <id>sonar</id>
+          <properties>
+            <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+            <sonar.organization>opengrok</sonar.organization>
+          </properties>
+          <build>
+            <plugins>
+              <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+              </plugin>
+              <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+              </plugin>
+            </plugins>
+          </build>
+        </profile>
     </profiles>
 
     <reporting>
