@@ -9,6 +9,8 @@ on:
     - opengrok-web/**
     - suggester/**
     - plugins/**
+    - .github/workflows/javadoc.yml
+    - dev/javadoc.sh
 
 jobs:
   ubuntu:
