@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -123,6 +124,8 @@ public final class RuntimeEnvironment {
     private final transient Set<String> ctagsLanguages = new HashSet<>();
 
     public WatchDogService watchDog;
+
+    private final Set<ConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
 
     public List<String> getSubFiles() {
         return subFiles;
@@ -1679,6 +1682,10 @@ public final class RuntimeEnvironment {
         getAuthorizationFramework().reload();
 
         messagesContainer.setMessageLimit(getMessageLimit());
+
+        for (ConfigurationChangedListener l : listeners) {
+            l.onConfigurationChanged();
+        }
     }
 
     public void setIndexTimestamp() throws IOException {
@@ -1942,5 +1949,9 @@ public final class RuntimeEnvironment {
 
     public void setAuthenticationTokens(Set<String> tokens) {
         syncWriteConfiguration(tokens, Configuration::setAuthenticationTokens);
+    }
+
+    public void registerListener(ConfigurationChangedListener listener) {
+        listeners.add(listener);
     }
 }
