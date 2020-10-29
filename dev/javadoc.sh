@@ -20,8 +20,8 @@ echo -e "Building Javadoc...\n"
 ./mvnw -DskipTests=true site
 
 echo -e "Publishing javadoc to $BRANCH...\n"
-git config --global user.email "noreply@github.com"
-git config --global user.name "Foo Bar"
+git config --global user.name "github-actions[bot]"
+git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git clone --quiet --branch=$BRANCH \
     https://github.com/oracle/opengrok "$BRANCH"
 
