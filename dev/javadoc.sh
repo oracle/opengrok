@@ -15,14 +15,15 @@ if [[ "${OPENGROK_REPO_SLUG}" != "oracle/opengrok" ||
 fi
 
 BRANCH="gh-pages"
-echo -e "Publishing javadoc to $BRANCH...\n"
 
+echo -e "Building Javadoc...\n"
 ./mvnw -DskipTests=true site
 
+echo -e "Publishing javadoc to $BRANCH...\n"
 git config --global user.email "noreply@github.com"
 git config --global user.name "Foo Bar"
 git clone --quiet --branch=$BRANCH \
-    https://${GH_PAGES_TOKEN}@github.com/oracle/opengrok "$BRANCH"
+    https://github.com/oracle/opengrok "$BRANCH"
 
 cd "$BRANCH"
 if [[ -d ./javadoc ]]; then
