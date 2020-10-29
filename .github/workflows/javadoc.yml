@@ -28,6 +28,11 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
+    - name: Checkout gh-pages branch
+      uses: actions/checkout@v2
+      with:
+        ref: gh-pages
+        path: gh-pages
     - name: Refresh Javadoc
       env:
         OPENGROK_REPO_SLUG: ${{ github.repository }}
