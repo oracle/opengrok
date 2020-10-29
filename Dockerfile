@@ -23,13 +23,13 @@ RUN mkdir -p /mvn/opengrok-web/src/main/webapp
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies
-RUN mvn -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
+RUN mvn -T 1C -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
 
 # build the project
 COPY ./ /opengrok-source
 WORKDIR /opengrok-source
 
-RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
+RUN mvn -T 1C -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
 RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
 FROM tomcat:9-jdk11

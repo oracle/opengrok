@@ -17,7 +17,7 @@ fi
 BRANCH="gh-pages"
 echo -e "Publishing javadoc to $BRANCH...\n"
 
-./mvnw -DskipTests=true site
+./mvnw -T 1C -DskipTests=true site
 
 git config --global user.email "noreply@github.com"
 git config --global user.name "Foo Bar"

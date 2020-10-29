@@ -24,4 +24,4 @@ if [[ "x$OPENGROK_REPO_SLUG" == "xoracle/opengrok" && "x$OPENGROK_BRANCH" == "xm
 	fi
 fi
 
-./mvnw -B -V verify $extra_args
+./mvnw -T 1C -B -V verify $extra_args

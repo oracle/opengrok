@@ -41,7 +41,7 @@ jobs:
     - name: Before build actions
       run: ./dev/before
     - name: Build
-      run: ./mvnw -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+      run: ./mvnw -T 1C -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1

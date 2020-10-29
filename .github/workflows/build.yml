@@ -74,4 +74,4 @@ jobs:
     - name: Install Universal ctags
       run: choco install universal-ctags
     - name: Build
-      run: mvn -B -V verify
+      run: mvn -T 1C -B -V verify
