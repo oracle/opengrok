@@ -26,7 +26,7 @@ jobs:
     - name: Install pre-requisites
       run: ./dev/before_install
       if: runner.os == 'Linux' || runner.os == 'macOS'
-    - name: Install Universal ctags
+    - name: Install Universal ctags (Windows)
       run: choco install universal-ctags
       if: runner.os == 'Windows'
     - name: Before build actions
