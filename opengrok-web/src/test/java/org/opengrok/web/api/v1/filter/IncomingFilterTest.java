@@ -18,12 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.filter;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,32 +41,74 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 public class IncomingFilterTest {
+    @Before
+    public void beforeTest() {
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(new HashSet<>());
+    }
+
     @Test
     public void nonLocalhostTestWithValidToken() throws Exception {
-        nonLocalhostTestWithToken(true);
-    }
-
-    @Test
-    public void nonLocalhostTestWithInvalidToken() throws Exception {
-        nonLocalhostTestWithToken(false);
-    }
-
-    private void nonLocalhostTestWithToken(boolean allowed) throws Exception {
         String allowedToken = "foo";
 
         Set<String> tokens = new HashSet<>();
         tokens.add(allowedToken);
         RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
 
+        nonLocalhostTestWithToken(true, allowedToken);
+    }
+
+    @Test
+    public void nonLocalhostTestWithInvalidToken() throws Exception {
+        String allowedToken = "bar";
+
+        Set<String> tokens = new HashSet<>();
+        tokens.add(allowedToken);
+        RuntimeEnvironment.getInstance().setAuthenticationTokens(tokens);
+
+        nonLocalhostTestWithToken(false, allowedToken + "_");
+    }
+
+    @Test
+    public void nonLocalhostTestWithTokenChange() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        String token = "foobar";
+
         Map<String, String> headers = new TreeMap<>();
-        final String authHeaderValue = IncomingFilter.BEARER + allowedToken;
-        headers.put(HttpHeaders.AUTHORIZATION, allowed ? authHeaderValue : authHeaderValue + "_");
+        final String authHeaderValue = IncomingFilter.BEARER + token;
+        headers.put(HttpHeaders.AUTHORIZATION, authHeaderValue);
+        assertTrue(env.getAuthenticationTokens().isEmpty());
+        IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
+
+        ContainerRequestContext context = mockContainerRequestContext("test");
+        ArgumentCaptor<Response> captor = ArgumentCaptor.forClass(Response.class);
+
+        // No tokens configured.
+        filter.filter(context);
+        verify(context).abortWith(captor.capture());
+
+        // Setting tokens without refreshing configuration should have no effect.
+        Set<String> tokens = new HashSet<>();
+        tokens.add(token);
+        env.setAuthenticationTokens(tokens);
+        filter.filter(context);
+        verify(context, times(2)).abortWith(captor.capture());
+
+        // The request should pass only after applyConfig().
+        env.applyConfig(false, CommandTimeoutType.RESTFUL);
+        context = mockContainerRequestContext("test");
+        filter.filter(context);
+        verify(context, never()).abortWith(captor.capture());
+    }
+
+    private void nonLocalhostTestWithToken(boolean allowed, String token) throws Exception {
+        Map<String, String> headers = new TreeMap<>();
+        final String authHeaderValue = IncomingFilter.BEARER + token;
+        headers.put(HttpHeaders.AUTHORIZATION, authHeaderValue);
         IncomingFilter filter = mockWithRemoteAddress("192.168.1.1", headers, true);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
