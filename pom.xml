@@ -72,7 +72,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         https://eclipse-ee4j.github.io/jersey.github.io/release-notes/2.30.1.html
         reads that Jersey 2.30.1 did "adopt Jackson 2.10.1." -->
         <jackson.version>2.10.1</jackson.version>
-        <junit.version>5.4.2</junit.version>
+        <junit.version>5.7.0</junit.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <apache-commons-lang3.version>3.9</apache-commons-lang3.version>
         <micrometer.version>1.5.4</micrometer.version>

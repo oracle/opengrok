@@ -20,13 +20,9 @@
 package org.opengrok.indexer.util;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class BooleanUtilTest {
-
-  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   // Test written by Diffblue Cover.
   @Test
