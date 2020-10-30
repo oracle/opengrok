@@ -40,5 +40,4 @@ jobs:
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Build
       run: mvn -B -V verify
