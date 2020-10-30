@@ -1618,6 +1618,8 @@ public final class RuntimeEnvironment {
      * Re-apply the configuration.
      * @param reindex is the message result of reindex
      * @param cmdType command timeout type
+     * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
+     * boolean, CommandTimeoutType) applyConfig(config, reindex, cmdType)
      */
     public void applyConfig(boolean reindex, CommandTimeoutType cmdType) {
         applyConfig(configuration, reindex, cmdType);
@@ -1650,6 +1652,9 @@ public final class RuntimeEnvironment {
      * Set configuration from the incoming parameter. The configuration could
      * have come from the Indexer (in which case some extra work is needed) or
      * is it just a request to set new configuration in place.
+     *
+     * The classes that have registered their listener will be pinged here.
+     * @see ConfigurationChangedListener
      *
      * @param config the incoming configuration
      * @param reindex is the message result of reindex
