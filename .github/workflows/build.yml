@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   ubuntu:
-    name: Ubuntu with Java 11
+    name: ${{ matrix.os }} with Java 11
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
