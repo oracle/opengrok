@@ -25,13 +25,13 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Install pre-requisites
       run: ./dev/before_install
-      if: runner.os == "Linux" || runner.os == "macOS"
+      if: runner.os == 'Linux' || runner.os == 'macOS'
     - name: Install Universal ctags
       run: choco install universal-ctags
-      if: runner.os == "Windows"
+      if: runner.os == 'Windows'
     - name: Before build actions
       run: ./dev/before
-      if: runner.os == "Linux" || runner.os == "macOS"
+      if: runner.os == 'Linux' || runner.os == 'macOS'
     - name: Build
       env:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
