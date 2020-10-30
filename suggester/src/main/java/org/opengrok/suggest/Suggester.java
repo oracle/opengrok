@@ -186,9 +186,7 @@ public final class Suggester implements Closeable {
                 submitInitIfIndexExists(executor, indexDir);
             }
 
-            Duration duration = Duration.between(start, Instant.now());
-            suggesterInitTimer.record(duration);
-            shutdownAndAwaitTermination(executor, duration, "Suggester successfully initialized");
+            shutdownAndAwaitTermination(executor, start, "Suggester successfully initialized");
             initDone.countDown();
         }
     }
@@ -252,10 +250,13 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService, Duration duration, final String logMessageOnSuccess) {
+    private void shutdownAndAwaitTermination(final ExecutorService executorService, Instant start,
+                                             final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
+            Duration duration = Duration.between(start, Instant.now());
+            suggesterInitTimer.record(duration);
             logger.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
                     DurationFormatUtils.formatDurationWords(duration.toMillis(),
                             true, true)});
@@ -295,9 +296,8 @@ public final class Suggester implements Closeable {
                 }
             }
 
-            Duration duration = Duration.between(start, Instant.now());
-            suggesterRebuildTimer.record(duration);
-            shutdownAndAwaitTermination(executor, duration, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            shutdownAndAwaitTermination(executor, start,
+                    "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
 
         rebuildLock.lock();
