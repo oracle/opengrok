@@ -23,11 +23,10 @@
 package org.opengrok.indexer.analysis;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.List;
 import java.util.Map;
@@ -37,9 +36,6 @@ import java.util.Set;
  * Represents a container for tests of {@link LangMap}.
  */
 public class LangMapTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testEmptyMap() {
@@ -168,8 +164,7 @@ public class LangMapTest {
     public void testBadExtensionFileSpec() {
         LangMap map = new LangTreeMap();
 
-        thrown.expect(IllegalArgumentException.class);
-        map.add(".c.in", "foo");
+        assertThrows(IllegalArgumentException.class, () -> map.add(".c.in", "foo"));
     }
 
     @Test
@@ -177,8 +172,7 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         LangMap map2 = map.unmodifiable();
 
-        thrown.expect(UnsupportedOperationException.class);
-        map2.add(".FOO", "foo");
+        assertThrows(UnsupportedOperationException.class, () -> map2.add(".FOO", "foo"));
     }
 
     @Test
@@ -186,8 +180,7 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         LangMap map2 = map.unmodifiable();
 
-        thrown.expect(UnsupportedOperationException.class);
-        map2.exclude(".FOO");
+        assertThrows(UnsupportedOperationException.class, () -> map2.exclude(".FOO"));
     }
 
     @Test
@@ -195,8 +188,7 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         Map<String, String> additions = map.getAdditions();
 
-        thrown.expect(UnsupportedOperationException.class);
-        additions.clear();
+        assertThrows(UnsupportedOperationException.class, additions::clear);
     }
 
     @Test
@@ -204,7 +196,6 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         Set<String> exclusions = map.getExclusions();
 
-        thrown.expect(UnsupportedOperationException.class);
-        exclusions.clear();
+        assertThrows(UnsupportedOperationException.class, exclusions::clear);
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.pascal;
@@ -32,8 +32,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.AfterClass;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
@@ -129,7 +130,6 @@ public class PascalAnalyzerFactoryTest {
         assertThat(type[0], is("function"));
         assertTrue(definitions.hasDefinitionAt("TSample.GetUser", 63, type));
         assertThat(type[0], is("function"));
-        
     }
 
 }
