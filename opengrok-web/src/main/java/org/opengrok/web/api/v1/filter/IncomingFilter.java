@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 @PreMatching
 public class IncomingFilter implements ContainerRequestFilter, ConfigurationChangedListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(IncomingFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IncomingFilter.class);
 
     /**
      * Endpoint paths that are exempted from this filter.
@@ -99,7 +99,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
                 localAddresses.add(inetAddress.getHostAddress());
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not get localhost addresses", e);
+            LOGGER.log(Level.SEVERE, "Could not get localhost addresses", e);
         }
 
         // Cache the tokens to avoid locking.
@@ -110,6 +110,7 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
 
     @Override
     public void onConfigurationChanged() {
+        LOGGER.log(Level.FINER, "refreshing token cache");
         setTokens(RuntimeEnvironment.getInstance().getAuthenticationTokens());
     }
 
@@ -126,28 +127,28 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
             if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
                 String tokenValue = authHeaderValue.substring(BEARER.length());
                 if (getTokens().contains(tokenValue)) {
-                    logger.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
+                    LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
                     return;
                 }
             }
         }
 
         if (allowedPaths.contains(path)) {
-            logger.log(Level.FINEST, "allowing request to {0} based on whitelisted path", path);
+            LOGGER.log(Level.FINEST, "allowing request to {0} based on whitelisted path", path);
             return;
         }
 
         // In a reverse proxy environment the connection appears to be coming from localhost.
         // These request should really be using tokens.
         if (request.getHeader("X-Forwarded-For") != null || request.getHeader("Forwarded") != null) {
-            logger.log(Level.FINEST, "denying request to {0} due to existence of forwarded header in the request",
+            LOGGER.log(Level.FINEST, "denying request to {0} due to existence of forwarded header in the request",
                     path);
             context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
             return;
         }
 
         if (localAddresses.contains(request.getRemoteAddr())) {
-            logger.log(Level.FINEST, "allowing request to {0} based on localhost IP address", path);
+            LOGGER.log(Level.FINEST, "allowing request to {0} based on localhost IP address", path);
             return;
         }
 
