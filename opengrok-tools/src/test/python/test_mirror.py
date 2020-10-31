@@ -24,6 +24,7 @@
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
+import multiprocessing
 import os
 import stat
 import sys
@@ -178,6 +179,7 @@ def test_incoming_retval(monkeypatch):
         repo.clone(cloned_repo_path)
 
         with monkeypatch.context() as m:
+            multiprocessing.set_start_method('fork')
             m.setattr(sys, 'argv', ['prog', "-I", project_name])
 
             # With mocking done via pytest it is necessary to patch
