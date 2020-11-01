@@ -24,21 +24,17 @@
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
-import multiprocessing
 import os
 import stat
-import sys
 import tempfile
 
 import pytest
 import requests
-from git import Repo
 from mockito import verify, patch, spy2, mock, ANY, when
 
 import opengrok_tools.mirror
 from opengrok_tools.scm import Repository
 from opengrok_tools.scm.git import GitRepository
-from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.scm.repository import RepositoryException
 from opengrok_tools.utils.command import Command
 from opengrok_tools.utils.exitvals import (
