@@ -268,6 +268,12 @@ public class IndexerTest {
         final Queue<String> filesToAdd = new ConcurrentLinkedQueue<>();
         final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
+        private final String path;
+
+        RemoveIndexChangeListener(String path) {
+            this.path = path;
+        }
+
         @Override
         public void fileAdd(String path, String analyzer) {
             filesToAdd.add(path);
@@ -290,11 +296,12 @@ public class IndexerTest {
             // The test for the file existence needs to be performed here
             // since the call to {@code removeFile()} will be eventually
             // followed by {@code addFile()} that will create the file again.
-            if (path.equals("/mercurial/bar.txt")) {
+            if (path.equals(this.path)) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File f = new File(env.getDataRootPath(),
                         TandemPath.join("historycache" + path, ".gz"));
-                Assert.assertTrue("history cache file should be preserved", f.exists());
+                Assert.assertTrue(String.format("history cache file %s should be preserved", f),
+                        f.exists());
             }
             removedFiles.add(path);
         }
@@ -326,22 +333,20 @@ public class IndexerTest {
         Project project = new Project("mercurial", "/mercurial");
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
-        RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
+        RemoveIndexChangeListener listener = new RemoveIndexChangeListener("/mercurial/bar.txt");
         idb.addIndexChangedListener(listener);
         idb.update();
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
-        Thread.sleep(1100);
+        // Thread.sleep(1100);
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial",
                 "bar.txt");
         Assert.assertTrue(bar.exists());
-        FileWriter fw = new FileWriter(bar, true);
-        BufferedWriter bw = new BufferedWriter(fw);
-        bw.write("foo\n");
-        bw.close();
-        fw.close();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {
+            bw.write("foo\n");
+        }
 
         // reindex
         idb.update();
