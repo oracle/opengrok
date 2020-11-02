@@ -24,21 +24,17 @@
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
-import multiprocessing
 import os
 import stat
-import sys
 import tempfile
 
 import pytest
 import requests
-from git import Repo
 from mockito import verify, patch, spy2, mock, ANY, when
 
 import opengrok_tools.mirror
 from opengrok_tools.scm import Repository
 from opengrok_tools.scm.git import GitRepository
-from opengrok_tools.scm.repofactory import get_repository
 from opengrok_tools.scm.repository import RepositoryException
 from opengrok_tools.utils.command import Command
 from opengrok_tools.utils.exitvals import (
@@ -127,70 +123,6 @@ def test_valid_config():
         PROJECTS_PROPERTY: {"foo": {PROXY_PROPERTY: True}},
         PROXY_PROPERTY: "proxy"
     })
-
-
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
-def test_incoming_retval(monkeypatch):
-    """
-    Test that the special CONTINUE_EXITVAL value bubbles all the way up to
-    the mirror.py return value.
-    """
-
-    class MockResponse:
-
-        # mock json() method always returns a specific testing dictionary
-        @staticmethod
-        def json():
-            return "true"
-
-        @staticmethod
-        def raise_for_status():
-            pass
-
-    with tempfile.TemporaryDirectory() as source_root:
-        repo_name = "parent_repo"
-        repo_path = os.path.join(source_root, repo_name)
-        cloned_repo_name = "cloned_repo"
-        cloned_repo_path = os.path.join(source_root, cloned_repo_name)
-        project_name = "foo"  # does not matter for this test
-
-        os.mkdir(repo_path)
-
-        def mock_get_repos(*args, **kwargs):
-            return [get_repository(cloned_repo_path,
-                                   "git", project_name)]
-
-        def mock_get(*args, **kwargs):
-            return MockResponse()
-
-        # Clone a Git repository so that it can pull.
-        repo = Repo.init(repo_path)
-        with repo.config_writer() as git_config:
-            git_config.set_value('user', 'email', 'someone@example.com')
-            git_config.set_value('user', 'name', 'John Doe')
-
-        new_file_path = os.path.join(repo_path, 'foo')
-        with open(new_file_path, 'w'):
-            pass
-        assert os.path.isfile(new_file_path)
-        index = repo.index
-        index.add([new_file_path])
-        index.commit("add file")
-        repo.clone(cloned_repo_path)
-
-        with monkeypatch.context() as m:
-            multiprocessing.set_start_method('fork')
-            m.setattr(sys, 'argv', ['prog', "-I", project_name])
-
-            # With mocking done via pytest it is necessary to patch
-            # the call-site rather than the absolute object path.
-            m.setattr("opengrok_tools.mirror.get_config_value",
-                      lambda x, y, z: source_root)
-            m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
-                      mock_get_repos)
-            m.setattr("opengrok_tools.utils.mirror.do_api_call", mock_get)
-
-            assert opengrok_tools.mirror.main() == CONTINUE_EXITVAL
 
 
 def test_empty_project_config():
