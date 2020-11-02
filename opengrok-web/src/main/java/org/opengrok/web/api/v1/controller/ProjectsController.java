@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -41,6 +41,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -250,27 +251,28 @@ public class ProjectsController {
         projectName = Laundromat.launderInput(projectName);
 
         Project project = env.getProjects().get(projectName);
-        if (project != null) {
-            project.setIndexed(true);
+        if (project == null) {
+            logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
+            throw new NotFoundException(String.format("project '%s' does not exist", projectName));
+        }
 
-            // Refresh current version of the project's repositories.
-            List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
-            if (riList != null) {
-                for (RepositoryInfo ri : riList) {
-                    Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
+        project.setIndexed(true);
 
-                    if (repo != null && repo.getCurrentVersion() != null && repo.getCurrentVersion().length() > 0) {
-                        // getRepository() always creates fresh instance
-                        // of the Repository object so there is no need
-                        // to call setCurrentVersion() on it.
-                        ri.setCurrentVersion(repo.determineCurrentVersion());
-                    }
+        // Refresh current version of the project's repositories.
+        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+        if (riList != null) {
+            for (RepositoryInfo ri : riList) {
+                Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
+
+                if (repo != null && repo.getCurrentVersion() != null && repo.getCurrentVersion().length() > 0) {
+                    // getRepository() always creates fresh instance
+                    // of the Repository object so there is no need
+                    // to call setCurrentVersion() on it.
+                    ri.setCurrentVersion(repo.determineCurrentVersion());
                 }
             }
-            suggester.rebuild(projectName);
-        } else {
-            logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
         }
+        suggester.rebuild(projectName);
 
         // In case this project has just been incrementally indexed,
         // its IndexSearcher needs a poke.
