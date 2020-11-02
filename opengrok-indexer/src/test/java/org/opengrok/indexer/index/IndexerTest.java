@@ -333,16 +333,18 @@ public class IndexerTest {
         Project project = new Project("mercurial", "/mercurial");
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
-        RemoveIndexChangeListener listener = new RemoveIndexChangeListener("/mercurial/bar.txt");
+        String path = "/mercurial/bar.txt";
+        RemoveIndexChangeListener listener = new RemoveIndexChangeListener(path);
         idb.addIndexChangedListener(listener);
         idb.update();
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
-        // Thread.sleep(1100);
-        File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial",
-                "bar.txt");
+        File historyFile = new File(env.getDataRootPath(),
+                TandemPath.join("historycache" + path, ".gz"));
+        Assert.assertTrue(String.format("history cache for %s has to exist", path), historyFile.exists());
+        File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial","bar.txt");
         Assert.assertTrue(bar.exists());
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {
             bw.write("foo\n");
