@@ -344,7 +344,7 @@ public class IndexerTest {
         File historyFile = new File(env.getDataRootPath(),
                 TandemPath.join("historycache" + path, ".gz"));
         Assert.assertTrue(String.format("history cache for %s has to exist", path), historyFile.exists());
-        File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial","bar.txt");
+        File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial", "bar.txt");
         Assert.assertTrue(bar.exists());
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {
             bw.write("foo\n");
