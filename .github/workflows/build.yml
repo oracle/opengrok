@@ -23,16 +23,17 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-    - name: Install pre-requisites
-      run: ./dev/before_install
+    - name: Install pre-requisites (Unix)
       if: runner.os == 'Linux' || runner.os == 'macOS'
+      run: ./dev/before_install
     - name: Install Universal ctags (Windows)
       run: choco install universal-ctags
       if: runner.os == 'Windows'
-    - name: Before build actions
-      run: ./dev/before
+    - name: Before build actions (Unix)
       if: runner.os == 'Linux' || runner.os == 'macOS'
+      run: ./dev/before
     - name: Unix build
+      if: runner.os == 'Linux' || runner.os == 'macOS'
       env:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
@@ -40,8 +41,7 @@ jobs:
         OPENGROK_COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: runner.os == 'Linux' || runner.os == 'macOS'
       run: ./dev/main
     - name: Windows build
-      run: mvn -B -V verify
       if: runner.os == 'Windows'
+      run: mvn -B -V verify
