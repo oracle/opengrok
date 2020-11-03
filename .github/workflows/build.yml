@@ -3,7 +3,7 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  ubuntu:
+  build:
     name: ${{ matrix.os }} with Java 11
     runs-on: ${{ matrix.os }}
     strategy:
