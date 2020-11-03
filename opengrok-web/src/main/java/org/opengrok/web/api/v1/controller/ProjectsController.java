@@ -186,9 +186,9 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/data")
-    public void deleteProjectData(@PathParam("project") String projectName) throws HistoryException {
+    public void deleteProjectData(@PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
 
         Project project = disableProject(projectName);
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
@@ -206,7 +206,7 @@ public class ProjectsController {
         deleteHistoryCache(projectName);
 
         // Delete suggester data.
-        suggester.delete(projectName);
+        new Thread(() -> suggester.delete(projectName)).start();
     }
 
     @DELETE
@@ -246,9 +246,9 @@ public class ProjectsController {
     @PUT
     @Path("/{project}/indexed")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void markIndexed(@PathParam("project") String projectName) throws Exception {
+    public void markIndexed(@PathParam("project") String projectNameParam) throws Exception {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
@@ -272,7 +272,8 @@ public class ProjectsController {
                 }
             }
         }
-        suggester.rebuild(projectName);
+
+        new Thread(() -> suggester.rebuild(projectName)).start();
 
         // In case this project has just been incrementally indexed,
         // its IndexSearcher needs a poke.
