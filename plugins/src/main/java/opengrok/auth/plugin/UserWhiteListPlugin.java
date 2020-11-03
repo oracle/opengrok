@@ -74,6 +74,9 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Unable to read the file \"%s\"", filePath), e);
         }
+
+        LOGGER.log(Level.FINE, "UserWhiteList plugin loaded with filePath={0} ({1} entries), fieldName={2}",
+                new Object[]{filePath, whitelist.size(), fieldName});
     }
 
     @Override
