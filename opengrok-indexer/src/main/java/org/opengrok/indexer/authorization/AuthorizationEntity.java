@@ -524,6 +524,15 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     }
 
     /**
+     * Check if this plugin is marked as optional.
+     *
+     * @return true if is optional; false otherwise
+     */
+    public boolean isOptional() {
+        return getFlag().isOptional();
+    }
+
+    /**
      * Print the entity hierarchy.
      *
      * @return the string containing this entity representation

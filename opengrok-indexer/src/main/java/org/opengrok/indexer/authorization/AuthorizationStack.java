@@ -219,7 +219,13 @@ public class AuthorizationStack extends AuthorizationEntity {
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate) {
 
-        boolean overallDecision = true;
+        Boolean overallDecision = null;
+        boolean optionalFailure = false;
+
+        if (getStack().isEmpty()) {
+            return true;
+        }
+
         for (AuthorizationEntity authEntity : getStack()) {
 
             if (skippingPredicate.shouldSkip(authEntity)) {
@@ -232,24 +238,29 @@ public class AuthorizationStack extends AuthorizationEntity {
                 LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\"",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
 
-                boolean pluginDecision = authEntity.isAllowed(entity, pluginPredicate, skippingPredicate);
+                boolean entityDecision = authEntity.isAllowed(entity, pluginPredicate, skippingPredicate);
 
                 LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
-                                pluginDecision ? "true" : "false"});
+                                entityDecision ? "true" : "false"});
 
-                if (!pluginDecision && authEntity.isRequired()) {
+                if (!entityDecision && authEntity.isRequired()) {
                     // required sets a failure but still invokes all other plugins
                     overallDecision = false;
-                    continue;
-                } else if (!pluginDecision && authEntity.isRequisite()) {
+                } else if (!entityDecision && authEntity.isRequisite()) {
                     // requisite sets a failure and immediately returns the failure
                     overallDecision = false;
                     break;
-                } else if (overallDecision && pluginDecision && authEntity.isSufficient()) {
+                } else if (!entityDecision && authEntity.isOptional()) {
+                    optionalFailure = true;
+                } else if (entityDecision && authEntity.isSufficient()) {
                     // sufficient immediately returns the success
+                    if ((overallDecision == null) || overallDecision) {
+                        overallDecision = true;
+                        break;
+                    }
+                } else if (overallDecision == null && entityDecision) {
                     overallDecision = true;
-                    break;
                 }
             } catch (AuthorizationException ex) {
                 // Propagate up so that proper HTTP error can be given.
@@ -264,8 +275,12 @@ public class AuthorizationStack extends AuthorizationEntity {
 
                 LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
-                            "false (failed)"});
+                                "false (failed)"});
 
+                if (authEntity.isOptional()) {
+                    optionalFailure = true;
+                    continue;
+                }
                 // set the return value to false for this faulty plugin
                 if (!authEntity.isSufficient()) {
                     overallDecision = false;
@@ -275,6 +290,14 @@ public class AuthorizationStack extends AuthorizationEntity {
                     break;
                 }
             }
+        }
+
+        if (overallDecision == null && optionalFailure) {
+            return false;
+        }
+
+        if (overallDecision == null) {
+            return true;
         }
 
         return overallDecision;

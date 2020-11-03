@@ -654,6 +654,57 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
             },
+            {
+                new StackSetup(
+                    NewStack(AuthControlFlag.REQUIRED,
+                        new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createTestFailingPlugin()),
+                        new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
+                    // optional plugin returns false
+                    // required plugin returns false => false
+                    NewTest(false, createUnallowedProject()),
+                    NewTest(false, createUnallowedGroup()),
+                    // optional plugin returns false
+                    // required plugin returns true => true
+                    NewTest(true, createAllowedProject()),
+                    NewTest(true, createAllowedGroup()))
+            },
+            {
+                new StackSetup(
+                    NewStack(AuthControlFlag.REQUIRED,
+                            new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin()),
+                            new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin())),
+                    // optional plugin returns false
+                    // required plugin returns true => true
+                    NewTest(true, createUnallowedProject()),
+                    NewTest(true, createUnallowedGroup()),
+                    // optional plugin returns true
+                    // required plugin returns false => false
+                    NewTest(false, createAllowedProject()),
+                    NewTest(false, createAllowedGroup()))
+            },
+            {
+                new StackSetup(
+                    NewStack(AuthControlFlag.REQUIRED,
+                            new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createTestFailingPlugin())
+                            ),
+                    // optional plugin returns false => false
+                    NewTest(false, createUnallowedProject()),
+                    NewTest(false, createUnallowedGroup()),
+                    NewTest(false, createAllowedProject()),
+                    NewTest(false, createAllowedGroup()))
+            },
+            {
+                new StackSetup(
+                    NewStack(AuthControlFlag.REQUIRED,
+                            new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin())
+                    ),
+                    // optional plugin returns false => false
+                    NewTest(false, createUnallowedProject()),
+                    NewTest(false, createUnallowedGroup()),
+                    // optional plugin returns true => true
+                    NewTest(true, createAllowedProject()),
+                    NewTest(true, createAllowedGroup()))
+            },
         };
     }
 
@@ -668,11 +719,13 @@ public class AuthorizationFrameworkTest {
         for (TestCase innerSetup : setup.setup) {
             String entityName = (innerSetup.entity == null ? "null" : innerSetup.entity.getName());
             try {
+                // group test
                 actual = framework.isAllowed(innerSetup.request, (Group) innerSetup.entity);
                 Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, entityName),
                         innerSetup.expected,
                         actual);
             } catch (ClassCastException ex) {
+                // project test
                 actual = framework.isAllowed(innerSetup.request, (Project) innerSetup.entity);
                 Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, entityName),
                         innerSetup.expected,

@@ -48,13 +48,17 @@ public enum AuthControlFlag {
      */
     REQUISITE("requisite"),
     /**
-     * If such a plugin succeeds and no prior required plugin has failed the
-     * authorization framework returns success to the application immediately
-     * without calling any further plugins in the stack. A failure of a
-     * sufficient plugin is ignored and processing of the plugin list continues
-     * unaffected.
+     * If such a plugin succeeds and no prior required plugin has failed,
+     * the authorization framework returns success immediately
+     * without calling any further plugins in the stack.
+     * A failure of a sufficient plugin is ignored and processing of the stack continues unaffected.
      */
-    SUFFICIENT("sufficient");
+    SUFFICIENT("sufficient"),
+    /**
+     * The failure is returned only if stack traversal finished and
+     * there was no prior result recorded.
+     */
+    OPTIONAL("optional");
 
     private final String flag;
 
@@ -77,6 +81,10 @@ public enum AuthControlFlag {
 
     public boolean isSufficient() {
         return SUFFICIENT.equals(this);
+    }
+
+    public boolean isOptional() {
+        return OPTIONAL.equals(this);
     }
 
     /**
