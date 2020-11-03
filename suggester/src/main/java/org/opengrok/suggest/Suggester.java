@@ -100,7 +100,6 @@ public final class Suggester implements Closeable {
 
     private final CountDownLatch initDone = new CountDownLatch(1);
 
-    private final Counter suggesterRebuildCounter;
     private final Timer suggesterRebuildTimer;
     private final Timer suggesterInitTimer;
 
@@ -152,9 +151,6 @@ public final class Suggester implements Closeable {
         this.timeThreshold = timeThreshold;
         this.rebuildParallelismLevel = rebuildParallelismLevel;
 
-        suggesterRebuildCounter = Counter.builder("suggester.rebuild").
-                description("suggester rebuild count").
-                register(registry);
         suggesterRebuildTimer = Timer.builder("suggester.rebuild.latency").
                 description("suggester rebuild latency").
                 register(registry);
@@ -284,7 +280,6 @@ public final class Suggester implements Closeable {
 
         synchronized (lock) {
             Instant start = Instant.now();
-            suggesterRebuildCounter.increment();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
