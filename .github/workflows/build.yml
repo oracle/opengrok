@@ -27,13 +27,13 @@ jobs:
       if: runner.os == 'Linux' || runner.os == 'macOS'
       run: ./dev/before_install
     - name: Install Universal ctags (Windows)
-      run: choco install universal-ctags
       if: runner.os == 'Windows'
+      run: choco install universal-ctags
     - name: Before build actions (Unix)
       if: runner.os == 'Linux' || runner.os == 'macOS'
       run: ./dev/before
-    - name: Unix build
-      if: runner.os == 'Linux' || runner.os == 'macOS'
+    - name: Maven build
+      shell: bash
       env:
         OPENGROK_PULL_REQUEST: ${{ github.head_ref }}
         OPENGROK_REPO_SLUG: ${{ github.repository }}
@@ -42,6 +42,3 @@ jobs:
         OPENGROK_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./dev/main
-    - name: Windows build
-      if: runner.os == 'Windows'
-      run: mvn -B -V verify
