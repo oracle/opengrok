@@ -720,6 +720,21 @@ public class AuthorizationFrameworkTest {
                     NewTest(true, createAllowedProject()),
                     NewTest(true, createAllowedGroup()))
             },
+            {
+                new StackSetup(
+                    NewStack(AuthControlFlag.REQUIRED,
+                            new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin()),
+                            new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin())
+                    ),
+                    // optional plugin returns false
+                    // sufficient plugin returns true => true
+                    NewTest(true, createUnallowedProject()),
+                    NewTest(true, createUnallowedGroup()),
+                    // optional plugin returns true
+                    // sufficient plugin returns false => true
+                    NewTest(true, createAllowedProject()),
+                    NewTest(true, createAllowedGroup()))
+            },
         };
     }
 
