@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -206,7 +207,7 @@ public class ProjectsController {
         deleteHistoryCache(projectName);
 
         // Delete suggester data.
-        new Thread(() -> suggester.delete(projectName)).start();
+        CompletableFuture.runAsync(() -> suggester.delete(projectName));
     }
 
     @DELETE
@@ -273,7 +274,7 @@ public class ProjectsController {
             }
         }
 
-        new Thread(() -> suggester.rebuild(projectName)).start();
+        CompletableFuture.runAsync(() -> suggester.rebuild(projectName));
 
         // In case this project has just been incrementally indexed,
         // its IndexSearcher needs a poke.
