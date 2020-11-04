@@ -55,6 +55,7 @@ public enum AuthControlFlag {
      */
     SUFFICIENT("sufficient"),
     /**
+     * A success of a optional plugin is ignored and processing of the stack continues unaffected.
      * The failure is returned only if stack traversal finished and
      * there was no prior result recorded.
      */
