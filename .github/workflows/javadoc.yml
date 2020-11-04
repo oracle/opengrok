@@ -29,6 +29,7 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Checkout gh-pages branch
+      if: github.repository == 'oracle/opengrok'
       uses: actions/checkout@v2
       with:
         ref: gh-pages
