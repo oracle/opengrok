@@ -38,13 +38,23 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    return handler(
+    logger = logging.getLogger(__name__)
+
+    logger.debug("{} API call: {} with data '{}' and headers: {}".
+                 format(verb, uri, data, headers))
+    r = handler(
         uri,
         data=data,
         params=params,
         headers=headers,
         proxies=get_proxies(uri)
     )
+
+    if r is not None:
+        logger.error("API call failed: {}".format(r))
+        r.raise_for_status()
+
+    return r
 
 
 def call_rest_api(command, pattern, name):
@@ -100,10 +110,4 @@ def call_rest_api(command, pattern, name):
             data = data.replace(pattern, name)
         logger.debug("entity data: {}".format(data))
 
-    logger.debug("{} API call: {} with data '{}' and headers: {}".
-                 format(verb, uri, data, headers))
-    r = do_api_call(verb, uri, headers=headers, data=data)
-    if r is not None:
-        logger.debug("API call result: {}".format(r))
-        r.raise_for_status()
-    return r
+    return do_api_call(verb, uri, headers=headers, data=data)

@@ -168,7 +168,7 @@ def test_restful_fail(monkeypatch):
             self.status_code = 500
             self.raise_for_status = self.p
 
-    def mock_response(verb, uri, headers, data):
+    def mock_response(uri, headers, data, params, proxies):
         return MockResponse()
 
     commands = CommandSequence(
@@ -176,7 +176,7 @@ def test_restful_fail(monkeypatch):
                             [{'command': ['http://foo', 'PUT', 'data']}]))
     assert commands is not None
     with monkeypatch.context() as m:
-        m.setattr("opengrok_tools.utils.restful.do_api_call",
+        m.setattr("requests.put",
                   mock_response)
         commands.run()
         assert commands.check([]) == 1

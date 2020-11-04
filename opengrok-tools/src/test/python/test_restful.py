@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019-2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pytest
@@ -107,12 +107,11 @@ def test_restful_fail(monkeypatch):
             self.status_code = 400
             self.raise_for_status = self.p
 
-    def mock_response(uri, verb, headers, data):
+    def mock_response(uri, headers, data, params, proxies):
         return MockResponse()
 
     with monkeypatch.context() as m:
-        m.setattr("opengrok_tools.utils.restful.do_api_call",
-                  mock_response)
+        m.setattr("requests.put", mock_response)
         with pytest.raises(HTTPError):
             call_rest_api({'command': ['http://foo', 'PUT', 'data']},
                           None, None)
