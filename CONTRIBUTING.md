@@ -12,5 +12,7 @@ Make sure to add a comment line line to the changeset saying which Issue it is i
 Each pull request should be accompanied by a comment explaining how the change was tested, unless unit tests are provided/updated.
 Please make every effort to make most of your changes covered by tests.
 
+Feel free to add a Copyright line to the source files wehre you made non-trivial changes.
+
 For a pull request to be merged, we need the contributor to sign Oracle Contributor Agreement first.
 See http://www.oracle.com/technetwork/community/oca-486395.html for details.
