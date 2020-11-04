@@ -27,14 +27,18 @@ package org.opengrok.indexer.index;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -711,19 +715,24 @@ public final class Indexer {
                 "with lots of renamed files. Default is off.").execute(v ->
                     cfg.setHandleHistoryOfRenamedFiles((Boolean) v));
 
-            parser.on("--repository", "=path/to/repository",
+            parser.on("--repository", "=[path/to/repository|@file_with_paths]",
                     "Path (relative to the source root) to a repository for generating",
                     "history (if -H,--history is on). By default all discovered repositories",
                     "are history-eligible; using --repository limits to only those specified.",
-                    "Option may be repeated.").execute(v -> repositories.add((String) v));
+                    "File containing paths can be specified via @path syntax.",
+                    "Option may be repeated.")
+                .execute(v -> handlePathParameter(repositories, ((String) v).trim()));
 
-            parser.on("-S", "--search", "=[path/to/repository]",
+            parser.on("-S", "--search", "=[path/to/repository|@file_with_paths]",
                     "Search for source repositories under -s,--source, and add them. Path",
-                    "(relative to the source root) is optional. Option may be repeated.").execute(v -> {
+                    "(relative to the source root) is optional. ",
+                    "File containing paths can be specified via @path syntax.",
+                    "Option may be repeated.")
+                .execute(v -> {
                         searchRepositories = true;
-                        String repoPath = (String) v;
-                        if (!repoPath.isEmpty()) {
-                            searchPaths.add(repoPath);
+                        String value = ((String) v).trim();
+                        if (!value.isEmpty()) {
+                            handlePathParameter(searchPaths, value);
                         }
                     });
 
@@ -1140,6 +1149,24 @@ public final class Indexer {
 
         if (in.equals("n")) {
             System.exit(1);
+        }
+    }
+
+    // Visible for testing
+    static void handlePathParameter(Collection<String> paramValueStore, String pathValue) {
+        if (pathValue.startsWith("@")) {
+            paramValueStore.addAll(loadPathsFromFile(pathValue.substring(1)));
+        } else {
+            paramValueStore.add(pathValue);
+        }
+    }
+
+    private static List<String> loadPathsFromFile(String filename) {
+        try {
+            return Files.readAllLines(Path.of(filename));
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, String.format("Could not load paths from %s", filename), e);
+            throw new UncheckedIOException(e);
         }
     }
 

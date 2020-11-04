@@ -425,6 +425,10 @@ public final class HistoryGuru {
                     continue;
                 }
                 if (repository == null) {
+                    if (depth > env.getScanningDepth()) {
+                        // we reached our search max depth, skip looking through the children
+                        continue;
+                    }
                     // Not a repository, search its sub-dirs.
                     if (pathAccepter.accept(file)) {
                         File[] subFiles = file.listFiles();
@@ -433,7 +437,8 @@ public final class HistoryGuru {
                                     "Failed to get sub directories for ''{0}'', " +
                                     "check access permissions.",
                                     file.getAbsolutePath());
-                        } else if (depth <= env.getScanningDepth()) {
+                        } else {
+                            // Recursive call to scan next depth
                             repoList.addAll(addRepositories(subFiles,
                                     allowedNesting, depth + 1, isNested));
                         }
