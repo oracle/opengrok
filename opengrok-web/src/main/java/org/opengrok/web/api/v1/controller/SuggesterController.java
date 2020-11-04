@@ -69,6 +69,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -173,13 +174,13 @@ public final class SuggesterController {
     @PUT
     @Path("/rebuild")
     public void rebuild() {
-        new Thread(() -> suggester.rebuild()).start();
+        CompletableFuture.runAsync(() -> suggester.rebuild());
     }
 
     @PUT
     @Path("/rebuild/{project}")
     public void rebuild(@PathParam("project") final String project) {
-        new Thread(() -> suggester.rebuild(project)).start();
+        CompletableFuture.runAsync(() -> suggester.rebuild(project));
     }
 
     /**
