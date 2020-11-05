@@ -34,11 +34,11 @@ APPLICATION_JSON = 'application/json'   # default
 
 
 def do_api_call(verb, uri, params=None, headers=None, data=None):
+    logger = logging.getLogger(__name__)
+
     handler = getattr(requests, verb.lower())
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
-
-    logger = logging.getLogger(__name__)
 
     logger.debug("{} API call: {} with data '{}' and headers: {}".
                  format(verb, uri, data, headers))
