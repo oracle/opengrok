@@ -51,7 +51,6 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     )
 
     if r is not None:
-        logger.error("API call failed: {}".format(r))
         r.raise_for_status()
 
     return r
