@@ -307,8 +307,18 @@ public class LdapFacade extends AbstractLdapProvider {
         return res;
     }
 
-    private String getSearchDescription(String dn, String filter, String[] attributes) {
-        return "DN: " + dn + " , filter: " + filter + " , attributes: " + String.join(",", attributes);
+    // available for testing
+    static String getSearchDescription(String dn, String filter, String[] attributes) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("DN: ");
+        builder.append(dn);
+        builder.append(" , filter: ");
+        builder.append(filter);
+        if (attributes != null) {
+            builder.append(" , attributes: ");
+            builder.append(String.join(",", attributes));
+        }
+        return builder.toString();
     }
 
     /**
