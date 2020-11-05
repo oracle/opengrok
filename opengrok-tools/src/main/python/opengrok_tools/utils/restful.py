@@ -59,8 +59,10 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
         proxies=get_proxies(uri)
     )
 
-    if r is not None:
-        r.raise_for_status()
+    if r is None:
+        raise Exception("API call failed")
+
+    r.raise_for_status()
 
     return r
 
