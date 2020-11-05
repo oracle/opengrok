@@ -34,6 +34,15 @@ APPLICATION_JSON = 'application/json'   # default
 
 
 def do_api_call(verb, uri, params=None, headers=None, data=None):
+    """
+    Perform an API call. Will raise an exception if the request fails.
+    :param verb: string holding HTTP verb
+    :param uri: URI string
+    :param params: request parameters
+    :param headers: HTTP headers dictionary
+    :param data: data or None
+    :return: the result of the handler call, can be None
+    """
     logger = logging.getLogger(__name__)
 
     handler = getattr(requests, verb.lower())
