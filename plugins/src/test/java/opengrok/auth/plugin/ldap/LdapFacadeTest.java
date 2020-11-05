@@ -131,4 +131,12 @@ public class LdapFacadeTest {
         facade.prepareServers();
         assertFalse(facade.isConfigured());
     }
+
+    @Test
+    public void testGetSearchDescription() {
+        assertEquals("DN: foo , filter: bar , attributes: Bilbo,Frodo",
+                LdapFacade.getSearchDescription("foo", "bar", new String[]{"Bilbo", "Frodo"}));
+        assertEquals("DN: foo , filter: bar",
+                LdapFacade.getSearchDescription("foo", "bar", null));
+    }
 }
