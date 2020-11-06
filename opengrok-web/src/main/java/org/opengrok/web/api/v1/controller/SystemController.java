@@ -34,6 +34,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 
 @Path("/system")
 public class SystemController {
@@ -48,7 +49,7 @@ public class SystemController {
     @Consumes(MediaType.TEXT_PLAIN)
     public void refresh(final String project) {
         env.maybeRefreshIndexSearchers(Collections.singleton(project));
-        suggester.rebuild(project);
+        CompletableFuture.runAsync(() -> suggester.rebuild(project));
     }
 
     @PUT
