@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
@@ -96,8 +95,6 @@ public class PathUtils {
      * the explicit validation against {@code allowedSymlinks}.
      * @return a relative path determined as described above -- or {@code path}
      * if no canonical relativity is found
-     * @throws IOException if an error occurs determining canonical paths
-     * for portions of {@code path}
      * @throws ForbiddenSymlinkException if symbolic-link checking is active
      * and it encounters an ineligible link
      * @throws InvalidPathException if path cannot be decoded
@@ -133,7 +130,7 @@ public class PathUtils {
             Path iterCanon;
             try {
                 iterCanon = iterPath.toRealPath();
-            } catch (NoSuchFileException e) {
+            } catch (IOException e) {
                 iterCanon = iterPath.normalize().toAbsolutePath();
             }
 
