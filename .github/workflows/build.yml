@@ -1,6 +1,13 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+    - README.md
+    - '**/*.md'
+  pull_request:
+  schedule:
+  - cron: "0 0 * * 0"
 
 jobs:
   build:
