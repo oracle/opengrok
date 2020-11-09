@@ -716,7 +716,7 @@ public class AuthorizationFrameworkTest {
                     NewTest(true, createUnallowedProject()),
                     NewTest(true, createUnallowedGroup()),
                     // optional plugin1 returns true
-                    // optional plugin2 returns false
+                    // optional plugin2 returns false => true
                     NewTest(true, createAllowedProject()),
                     NewTest(true, createAllowedGroup()))
             },

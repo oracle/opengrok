@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -219,7 +220,7 @@ public class AuthorizationStack extends AuthorizationEntity {
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate) {
 
-        Boolean overallDecision = null;
+        boolean overallDecision = true;
         boolean optionalFailure = false;
 
         if (getStack().isEmpty()) {
@@ -253,14 +254,9 @@ public class AuthorizationStack extends AuthorizationEntity {
                     break;
                 } else if (!entityDecision && authEntity.isOptional()) {
                     optionalFailure = true;
-                } else if (entityDecision && authEntity.isSufficient()) {
+                } else if (overallDecision && entityDecision && authEntity.isSufficient()) {
                     // sufficient immediately returns the success
-                    if ((overallDecision == null) || overallDecision) {
-                        overallDecision = true;
-                        break;
-                    }
-                } else if (overallDecision == null && entityDecision) {
-                    overallDecision = true;
+                    break;
                 }
             } catch (AuthorizationException ex) {
                 // Propagate up so that proper HTTP error can be given.
@@ -292,12 +288,10 @@ public class AuthorizationStack extends AuthorizationEntity {
             }
         }
 
-        if (overallDecision == null && optionalFailure) {
+        if (optionalFailure &&
+                getStack().stream().filter(AuthorizationEntity::isOptional).count() == 1 &&
+                getStack().stream().filter(Predicate.not(AuthorizationEntity::isOptional)).findAny().isEmpty()) {
             return false;
-        }
-
-        if (overallDecision == null) {
-            return true;
         }
 
         return overallDecision;
