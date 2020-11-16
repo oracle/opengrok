@@ -442,7 +442,7 @@ class SuggesterProjectData implements Closeable {
 
         try {
             if (lookups.get(term.field()).get(term.text()) == null) {
-                logger.log(Level.WARNING, "Cannot increment search count for unknown term {0} in {1}",
+                logger.log(Level.FINE, "Cannot increment search count for unknown term {0} in {1}",
                         new Object[]{term, suggesterDir});
                 return false; // unknown term
             }
