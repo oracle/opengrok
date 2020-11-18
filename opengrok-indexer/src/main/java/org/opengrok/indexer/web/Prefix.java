@@ -81,7 +81,9 @@ public enum Prefix {
     /** CSS and images. */
     STATIC("/default"),
     /** JavaScript. */
-    JS("/js");
+    JS("/js"),
+    /** JavaScript in Web JARs. */
+    WEBJARS("/webjars");
 
     private final String prefix;
     Prefix(String prefix) {
