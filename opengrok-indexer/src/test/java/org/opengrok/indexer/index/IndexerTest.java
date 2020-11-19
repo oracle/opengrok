@@ -27,6 +27,7 @@ package org.opengrok.indexer.index;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,6 +35,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +49,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -97,21 +101,28 @@ public class IndexerTest {
         repository.destroy();
     }
 
-    /**
-     * Test of doIndexerExecution method, of class Indexer.
-     * @throws java.lang.Exception
-     */
     @Test
-    public void testIndexGeneration() throws Exception {
-        System.out.println("Generating index by using the class methods");
+    public void testXrefGeneration() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
-        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
+
+        // There should be certain number of xref files produced.
+        List<String> result = null;
+        try (Stream<Path> walk = Files.walk(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR))) {
+            result = walk.filter(Files::isRegularFile).filter(f -> f.toString().endsWith(".gz")).
+                    map(x -> x.toString()).collect(Collectors.toList());
+        }
+        assertNotNull(result);
+        assertTrue(result.size() > 50);
+
+        // Some files would have empty xref so the file should not be present.
+        assertFalse(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR, "data", "Logo.png", ".gz").
+                toFile().exists());
     }
 
     /**
