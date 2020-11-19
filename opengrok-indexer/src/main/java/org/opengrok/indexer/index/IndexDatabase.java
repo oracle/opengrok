@@ -795,7 +795,7 @@ public class IndexDatabase {
         fa.setFoldingEnabled(env.isFoldingEnabled());
 
         Document doc = new Document();
-        try (Writer xrefOut = newXrefWriter(fa, path)) {
+        try (Writer xrefOut = newXrefWriter(path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
@@ -1696,19 +1696,13 @@ public class IndexDatabase {
         return hash;
     }
 
-    private boolean isXrefWriter(AbstractAnalyzer fa) {
-        AbstractAnalyzer.Genre g = fa.getFactory().getGenre();
-        return (g == AbstractAnalyzer.Genre.PLAIN || g == AbstractAnalyzer.Genre.XREFABLE);
-    }
-
     /**
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer newXrefWriter(AbstractAnalyzer fa, String path)
-            throws IOException {
+    private Writer newXrefWriter(String path) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.isGenerateHtml() && isXrefWriter(fa)) {
+        if (env.isGenerateHtml()) {
             boolean compressed = env.isCompressXref();
             File xrefFile = whatXrefFile(path, compressed);
             File parentFile = xrefFile.getParentFile();
@@ -1788,7 +1782,7 @@ public class IndexDatabase {
                                   String path) throws IOException {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        boolean outIsXrefWriter = false;
+        boolean outIsXrefWriter = false; // potential xref writer
         int reqTabSize = project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
@@ -1866,7 +1860,7 @@ public class IndexDatabase {
             }
 
             if (fa != null) {
-                outIsXrefWriter = isXrefWriter(fa);
+                outIsXrefWriter = true;
             }
 
             // The versions checks have passed.
