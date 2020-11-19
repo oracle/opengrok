@@ -83,6 +83,7 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -795,8 +796,28 @@ public class IndexDatabase {
         fa.setFoldingEnabled(env.isFoldingEnabled());
 
         Document doc = new Document();
-        try (Writer xrefOut = newXrefWriter(fa, path)) {
+        CountingWriter xrefOut = null;
+        try {
+            String xrefAbs = null;
+            File transientXref = null;
+            if (env.isGenerateHtml()) {
+                xrefAbs = getXrefPath(path);
+                transientXref = new File(TandemPath.join(xrefAbs,
+                        PendingFileCompleter.PENDING_EXTENSION));
+                xrefOut = newXrefWriter(path, transientXref, env.isCompressXref());
+            }
+
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+
+            // Avoid producing empty xref files.
+            if (xrefOut != null && xrefOut.getCount() > 0) {
+                PendingFileRenaming ren = new PendingFileRenaming(xrefAbs,
+                        transientXref.getAbsolutePath());
+                completer.add(ren);
+            } else if (xrefOut != null) {
+                LOGGER.log(Level.FINER, "xref for {0} would be empty, removing", path);
+                transientXref.delete();
+            }
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
                 new Object[]{path, e.getMessage()});
@@ -816,6 +837,9 @@ public class IndexDatabase {
         } finally {
             fa.setCtags(null);
             fa.setCountsAggregator(null);
+            if (xrefOut != null) {
+                xrefOut.close();
+            }
         }
 
         try {
@@ -1696,40 +1720,63 @@ public class IndexDatabase {
         return hash;
     }
 
+    private class CountingWriter extends Writer {
+        private long count;
+        private Writer out;
+
+        CountingWriter(Writer out) {
+            super(out);
+            this.out = out;
+            this.count = 0;
+        }
+
+        @Override
+        public void write(@NotNull char[] chars, int off, int len) throws IOException {
+            out.write(chars, off, len);
+            count += len;
+        }
+
+        @Override
+        public void flush() throws IOException {
+            out.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            out.close();
+        }
+
+        public long getCount() {
+            return count;
+        }
+    }
+
+    private String getXrefPath(String path) {
+        boolean compressed = RuntimeEnvironment.getInstance().isCompressXref();
+        File xrefFile = whatXrefFile(path, compressed);
+        File parentFile = xrefFile.getParentFile();
+
+        // If mkdirs() returns false, the failure is most likely
+        // because the file already exists. But to check for the
+        // file first and only add it if it doesn't exists would
+        // only increase the file IO...
+        if (!parentFile.mkdirs()) {
+            assert parentFile.exists();
+        }
+
+        // Write to a pending file for later renaming.
+        String xrefAbs = xrefFile.getAbsolutePath();
+        return xrefAbs;
+    }
+
     /**
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer newXrefWriter(AbstractAnalyzer fa, String path) throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.isGenerateHtml() && fa != null) {
-            boolean compressed = env.isCompressXref();
-            File xrefFile = whatXrefFile(path, compressed);
-            File parentFile = xrefFile.getParentFile();
-
-            // If mkdirs() returns false, the failure is most likely
-            // because the file already exists. But to check for the
-            // file first and only add it if it doesn't exists would
-            // only increase the file IO...
-            if (!parentFile.mkdirs()) {
-                assert parentFile.exists();
-            }
-
-            // Write to a pending file for later renaming.
-            String xrefAbs = xrefFile.getAbsolutePath();
-            File transientXref = new File(TandemPath.join(xrefAbs,
-                PendingFileCompleter.PENDING_EXTENSION));
-            PendingFileRenaming ren = new PendingFileRenaming(xrefAbs,
-                transientXref.getAbsolutePath());
-            completer.add(ren);
-
-            return new BufferedWriter(new OutputStreamWriter(compressed ?
-                new GZIPOutputStream(new FileOutputStream(transientXref)) :
-                new FileOutputStream(transientXref)));
-        }
-
-        // no Xref for this analyzer
-        return null;
+    private CountingWriter newXrefWriter(String path, File transientXref, boolean compressed) throws IOException {
+        return new CountingWriter(new BufferedWriter(new OutputStreamWriter(compressed ?
+            new GZIPOutputStream(new FileOutputStream(transientXref)) :
+            new FileOutputStream(transientXref))));
     }
 
     LockFactory pickLockFactory(RuntimeEnvironment env) {
