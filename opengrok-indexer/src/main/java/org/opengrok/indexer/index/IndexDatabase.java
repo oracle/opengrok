@@ -795,7 +795,7 @@ public class IndexDatabase {
         fa.setFoldingEnabled(env.isFoldingEnabled());
 
         Document doc = new Document();
-        try (Writer xrefOut = newXrefWriter(path)) {
+        try (Writer xrefOut = newXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
@@ -1700,9 +1700,9 @@ public class IndexDatabase {
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer newXrefWriter(String path) throws IOException {
+    private Writer newXrefWriter(AbstractAnalyzer fa, String path) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.isGenerateHtml()) {
+        if (env.isGenerateHtml() && fa != null) {
             boolean compressed = env.isCompressXref();
             File xrefFile = whatXrefFile(path, compressed);
             File parentFile = xrefFile.getParentFile();
