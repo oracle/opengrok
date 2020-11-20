@@ -550,6 +550,8 @@ public class IndexDatabase {
                 }
             }
 
+            // The RuntimeException thrown from the block above can prevent the writing from completing.
+            // This is deliberate.
             try {
                 finishWriting();
             } catch (IOException e) {
