@@ -537,17 +537,17 @@ public class IndexDatabase {
                     reader.close();
                 }
             }
-        } catch (RuntimeException ex) {
-            LOGGER.log(Level.SEVERE,
-                "Failed with unexpected RuntimeException", ex);
-            throw ex;
-        } finally {
+
             try {
                 finishWriting();
             } catch (IOException e) {
                 finishingException = e;
             }
-
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.SEVERE,
+                "Failed with unexpected RuntimeException", ex);
+            throw ex;
+        } finally {
             completer = null;
             try {
                 if (writer != null) {
