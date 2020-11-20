@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -367,27 +368,38 @@ public class IndexDatabase {
         // Successfully indexed the project. The message is sent even if
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
-        if (project != null) {
-            // Also need to store the correct value in configuration
-            // when indexer writes it to a file.
-            project.setIndexed(true);
+        if (project == null) {
+            return;
+        }
 
-            if (env.getConfigURI() != null) {
-                Response r = ClientBuilder.newClient()
-                        .target(env.getConfigURI())
-                        .path("api")
-                        .path("v1")
-                        .path("projects")
-                        .path(Util.URIEncode(project.getName()))
-                        .path("indexed")
-                        .request()
-                        .put(Entity.text(""));
+        // Also need to store the correct value in configuration
+        // when indexer writes it to a file.
+        project.setIndexed(true);
 
-                if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                    LOGGER.log(Level.WARNING, "Couldn''t notify the webapp that project {0} was indexed: {1}",
-                            new Object[] {project, r});
-                }
-            }
+        if (env.getConfigURI() == null) {
+            return;
+        }
+
+        Response r;
+        try {
+            r = ClientBuilder.newClient()
+                    .target(env.getConfigURI())
+                    .path("api")
+                    .path("v1")
+                    .path("projects")
+                    .path(Util.URIEncode(project.getName()))
+                    .path("indexed")
+                    .request()
+                    .put(Entity.text(""));
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "Couldn''t notify the webapp that project {0} was indexed: {1}",
+                    new Object[] {project, e});
+            return;
+        }
+
+        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            LOGGER.log(Level.WARNING, "Couldn''t notify the webapp that project {0} was indexed: {1}",
+                    new Object[] {project, r});
         }
     }
 
