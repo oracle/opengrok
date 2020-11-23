@@ -27,6 +27,7 @@ import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.EftarFileReader;
+import org.opengrok.indexer.web.PathDescription;
 import org.opengrok.web.api.v1.RestApp;
 
 import javax.ws.rs.client.Entity;
@@ -106,31 +107,23 @@ public class SystemControllerTest extends OGKJerseyTest {
 
         // Create path descriptions string.
         StringBuilder sb = new StringBuilder();
-        String[][] descriptions = {
-                {"/path1", "foo foo"},
-                {"/path2", "bar bar"}
+        PathDescription[] descriptions = {
+                new PathDescription("/path1", "foo foo"),
+                new PathDescription("/path2", "bar bar")
         };
-
-        for (String[] description : descriptions) {
-            sb.append(description[0]);
-            sb.append("\t");
-            sb.append(description[1]);
-            sb.append("\n");
-        }
-        String input = sb.toString();
 
         // Reload the contents via API call.
         Response r = target("system")
                 .path("pathdesc")
-                .request().post(Entity.text(input));
+                .request().post(Entity.json(descriptions));
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
         // Check
         Path eftarPath = env.getDtagsEftarPath();
         assertTrue(eftarPath.toFile().exists());
         try (EftarFileReader er = new EftarFileReader(eftarPath.toString())) {
-            for (String[] description : descriptions) {
-                assertEquals(description[1], er.get(description[0]));
+            for (PathDescription description : descriptions) {
+                assertEquals(description.getDescription(), er.get(description.getPath()));
             }
         }
 

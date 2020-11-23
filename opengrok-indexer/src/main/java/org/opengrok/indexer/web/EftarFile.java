@@ -23,15 +23,11 @@
 package org.opengrok.indexer.web;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
@@ -52,6 +48,7 @@ public class EftarFile {
 
     public static final int RECORD_LENGTH = 14;
     private long offset;
+    private Node root;
 
     class Node {
 
@@ -142,46 +139,28 @@ public class EftarFile {
             traverse(childnode);
         }
     }
-    private Node root;
-
-    public void readInput(File inputFile) throws IOException {
-        try (BufferedReader r = new BufferedReader(new FileReader(inputFile))) {
-            readInput(r);
-        }
-    }
-
-    public void readInput(String input) throws IOException {
-        try (BufferedReader r = new BufferedReader(new StringReader(input))) {
-            readInput(r);
-        }
-    }
 
     /**
      * Reads the input into interim representation. Can be called multiple times.
-     * @param r reader
+     * @param descriptions set of PathDescription
      * @throws IOException
      */
-    private void readInput(BufferedReader r) throws IOException {
+    private void readInput(Set<PathDescription> descriptions) throws IOException {
         if (root == null) {
             root = new Node(1, null);
         }
-        String line;
-        while ((line = r.readLine()) != null) {
-            int tab = line.indexOf('\t');
-            if (tab > 0) {
-                String path = line.substring(0, tab);
-                String desc = line.substring(tab + 1);
-                StringTokenizer toks = new StringTokenizer(path, "\\/");
-                Node n = root;
-                while (toks.hasMoreTokens()) {
-                    n = n.put(myHash(toks.nextToken()), null);
-                }
-                n.tag = desc;
+
+        for (PathDescription desc : descriptions) {
+            StringTokenizer toks = new StringTokenizer(desc.getPath(), "\\/");
+            Node n = root;
+            while (toks.hasMoreTokens()) {
+                n = n.put(myHash(toks.nextToken()), null);
             }
+            n.tag = desc.getDescription();
         }
     }
 
-    public void write(String outPath) throws FileNotFoundException, IOException {
+    public void write(String outPath) throws IOException {
         offset = RECORD_LENGTH;
         traverse(root);
         try (DataOutputStream out = new DataOutputStream(
@@ -195,13 +174,8 @@ public class EftarFile {
         }
     }
 
-    public void create(File inputFile, String outputPath) throws IOException {
-        readInput(inputFile);
-        write(outputPath);
-    }
-
-    public void create(String input, String outputPath) throws IOException, FileNotFoundException {
-        readInput(input);
+    public void create(Set<PathDescription> descriptions, String outputPath) throws IOException {
+        readInput(descriptions);
         write(outputPath);
     }
 }

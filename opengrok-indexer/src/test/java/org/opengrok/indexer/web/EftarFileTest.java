@@ -23,9 +23,9 @@
 package org.opengrok.indexer.web;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -40,7 +40,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class EftarFileTest {
 
-    private static File tsv;
     private static File eftar;
 
     public EftarFileTest() {
@@ -50,35 +49,26 @@ public class EftarFileTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        tsv = File.createTempFile("paths", ".tsv");
-        eftar = File.createTempFile("paths", ".eftar");
 
-        try (PrintWriter out = new PrintWriter(new FileWriter(tsv))) {
-            StringBuilder sb = new StringBuilder();
-            for (int ii = 0; ii < 100; ii++) {
-                sb.append(PATH_STRING);
-                sb.append(ii);
-                out.print(sb.toString());
-                out.print("\tDescription ");
-                out.println(ii);
-            }
-            out.flush();
+        eftar = File.createTempFile("paths", ".eftar");
+        int len = 100;
+        Set<PathDescription> descriptions = new HashSet<>();
+
+        StringBuilder sb = new StringBuilder();
+        for (int ii = 0; ii < len; ii++) {
+            sb.append(PATH_STRING);
+            sb.append(ii);
+            descriptions.add(new PathDescription(sb.toString(), "Description " + ii));
         }
 
-        // Create eftar files.
-        String inputFile = tsv.getAbsolutePath();
         String outputFile = eftar.getAbsolutePath();
 
         EftarFile ef = new EftarFile();
-        ef.create(new File(inputFile), outputFile);
+        ef.create(descriptions, outputFile);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        if (tsv != null) {
-            tsv.delete();
-        }
-
         if (eftar != null) {
             eftar.delete();
         }
@@ -113,7 +103,7 @@ public class EftarFileTest {
             match.setLength(offset);
             match.append(ii);
 
-            assertEquals(match.toString(), er.get(sb.toString()));
+            assertEquals("description for path " + sb.toString(), match.toString(), er.get(sb.toString()));
         }
         er.close();
     }
