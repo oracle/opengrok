@@ -828,8 +828,8 @@ public class IndexDatabase {
                         transientXref.getAbsolutePath());
                 completer.add(ren);
             } else if (xrefOut != null) {
-                LOGGER.log(Level.FINER, "xref for {0} would be empty, removing", path);
-                transientXref.delete();
+                LOGGER.log(Level.FINER, "xref for {0} would be empty, will remove", path);
+                completer.add(new PendingFileDeletion(transientXref.toString()));
             }
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
