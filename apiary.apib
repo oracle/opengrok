@@ -258,20 +258,19 @@ see https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html#parse-java
 ### updates path descriptions for web application [POST]
 
 This will refresh the path descriptions. The web application will store
-the descriptions in a file so it is not necessary to reload the path
-descriptions after each web application redeploy.
+the descriptions in a file under data root so it is not necessary to load the path
+descriptions manually after each web application redeploy.
 
-The input consists of strings separated by newline. Each string contains
-a path and its description.
+The paths are relative to source root, starting with /.
 
-The paths are relative to source root, starting with /. The path and its
-description is separated by a single tab character.
-
-+ Request (text/plain)
++ Request (application/json)
   + Body
 
-            /foo    bar
-            /foo/foo    bar bar
+            [
+                {"path": "/foo", "description": "foo foo"},
+                {"path": "/bar", "description": "bar"}
+            ]
+
 
 + Response 204
 
