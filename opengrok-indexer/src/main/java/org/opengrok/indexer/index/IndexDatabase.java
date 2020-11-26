@@ -1733,14 +1733,13 @@ public class IndexDatabase {
         return hash;
     }
 
-    private class CountingWriter extends Writer {
+    private static class CountingWriter extends Writer {
         private long count;
-        private Writer out;
+        private final Writer out;
 
         CountingWriter(Writer out) {
             super(out);
             this.out = out;
-            this.count = 0;
         }
 
         @Override
@@ -1788,8 +1787,8 @@ public class IndexDatabase {
      */
     private CountingWriter newXrefWriter(String path, File transientXref, boolean compressed) throws IOException {
         return new CountingWriter(new BufferedWriter(new OutputStreamWriter(compressed ?
-            new GZIPOutputStream(new FileOutputStream(transientXref)) :
-            new FileOutputStream(transientXref))));
+                new GZIPOutputStream(new FileOutputStream(transientXref)) :
+                new FileOutputStream(transientXref))));
     }
 
     LockFactory pickLockFactory(RuntimeEnvironment env) {
