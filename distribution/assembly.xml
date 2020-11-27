@@ -46,13 +46,6 @@
           </includes>
         </fileSet>
         <fileSet>
-          <directory>${project.build.directory}/dist</directory>
-          <outputDirectory>man/man1</outputDirectory>
-          <includes>
-            <include>opengrok.1</include>
-          </includes>
-        </fileSet>
-        <fileSet>
           <directory>${project.build.directory}/../lib</directory>
           <outputDirectory>lib/lib</outputDirectory>
           <includes>
