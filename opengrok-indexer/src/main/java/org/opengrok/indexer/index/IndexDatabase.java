@@ -391,7 +391,7 @@ public class IndexDatabase {
                     .request()
                     .put(Entity.text(""));
         } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, String.format("Couldn''t notify the webapp that project {0} was indexed",
+            LOGGER.log(Level.WARNING, String.format("Couldn''t notify the webapp that project %s was indexed",
                     project), e);
             return;
         }
