@@ -109,13 +109,13 @@ def deploy_war(logger, source_war, target_war, config_file=None,
         with tempfile.NamedTemporaryFile(prefix='OpenGroktmpWar',
                                          suffix='.war',
                                          delete=False) as tmp_war:
-            logger.info('Repacking {} with custom configuration path to {}'.
-                        format(source_war, tmp_war.name))
+            logger.debug('Repacking {} with custom configuration path to {}'.
+                         format(source_war, tmp_war.name))
             repack_war(logger, source_war, tmp_war.name, DEFAULT_CONFIG_FILE,
                        config_file, insert_path)
             source_war = tmp_war.name
 
-    logger.info("Installing {} to {}".format(source_war, target_war))
+    logger.debug("Installing {} to {}".format(source_war, target_war))
     copyfile(source_war, target_war)
 
     if tmp_war:
@@ -151,10 +151,6 @@ def main():
                    args.insert)
     except XMLProcessingException as e:
         fatal(e)
-
-    print("Start your application server (if it is not already running) "
-          "or wait until it loads the just installed web application.\n"
-          "OpenGrok should be available on <HOST>:<PORT>/{APP_CONTEXT}")
 
 
 if __name__ == '__main__':
