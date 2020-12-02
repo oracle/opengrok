@@ -268,7 +268,6 @@ public class LdapServer implements Serializable {
 
             try {
                 ctx = new InitialLdapContext(env, null);
-                ctx.reconnect(null);
                 ctx.setRequestControls(null);
                 LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this.toString());
                 errorTimestamp = 0;
