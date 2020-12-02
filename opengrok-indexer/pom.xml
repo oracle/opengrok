@@ -341,7 +341,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                         <manifest>
                             <mainClass>org.opengrok.indexer.index.Indexer</mainClass>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                         <manifestEntries>
                         </manifestEntries>
