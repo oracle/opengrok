@@ -226,11 +226,11 @@ public class LdapServer implements Serializable {
      * @return true if it is working
      */
     public synchronized boolean isWorking() {
-        if (!isReachable()) {
-            return false;
-        }
-
         if (ctx == null) {
+            if (!isReachable()) {
+                return false;
+            }
+
             ctx = connect();
         }
         return ctx != null;
