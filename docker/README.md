@@ -70,12 +70,12 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 
 ## Environment Variables
 
-| Docker Environment Var. | Description |
-| ----------------------- | ----------- |
-`REINDEX: <time_in_minutes>`<br/> *Optional* *Default: 10* | Period of automatic mirroring/reindexing. Setting to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec: `docker exec <container> /scripts/index.sh`
-`INDEXER_OPT` | pass extra options to opengrok-indexer. For example, "-i d:vendor" will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
-`NOMIRROR` | To avoid the mirroring step, set the variable to non-empty value.
-`URL_ROOT`<br/> *Default: /* | Override the sub-URL that OpenGrok should run on.
+| Docker Environment Var. | Default value | Description |
+| ----------------------- | ------------- | ----------- |
+`REINDEX` | 10 | Period of automatic mirroring/reindexing in minutes. Setting to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec: `docker exec <container> /scripts/index.sh`
+`INDEXER_OPT` | empty | pass extra options to OpenGrok Indexer. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
+`NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
+`URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e REINDEX=30`
 
