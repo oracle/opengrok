@@ -131,6 +131,8 @@ docker run -d \
 
 If you want to do your own development, you can build the image yourself:
 
+    git clone https://github.com/oracle/opengrok.git
+    cd opengrok
     docker build -t opengrok-dev .
 
 Then run the container:
