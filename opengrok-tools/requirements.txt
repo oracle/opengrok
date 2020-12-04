@@ -1,14 +1,3 @@
-certifi==2018.8.24
-chardet==3.0.4
-filelock==3.0.10
-idna==2.7
-JsonForm==0.0.2
-jsonschema==2.6.0
-JsonSir==0.0.2
-Python-EasyConfig==0.1.7
-PyYAML==3.13
-requests==2.20.0
-Resource==0.2.1
-six==1.11.0
-urllib3==1.23
-GitPython==3.0.6
+# installs dependencies from ./setup.py, and the package itself,
+# in editable mode
+-e .
