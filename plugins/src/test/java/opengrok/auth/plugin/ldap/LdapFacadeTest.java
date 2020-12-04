@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class LdapFacadeTest {
     @Test
@@ -54,11 +56,15 @@ public class LdapFacadeTest {
     }
 
     private LdapServer getSpyLdapServer(String name) throws UnknownHostException {
-        LdapServer server1 = new LdapServer(name);
-        LdapServer serverSpy1 = Mockito.spy(server1);
-        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
-        Mockito.when(serverSpy1.isWorking()).thenReturn(true);
-        return serverSpy1;
+        return getSpyLdapServer(name, true);
+    }
+
+    private LdapServer getSpyLdapServer(String name, boolean working) throws UnknownHostException {
+        LdapServer server = new LdapServer(name);
+        LdapServer serverSpy = Mockito.spy(server);
+        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
+        Mockito.when(serverSpy.isWorking()).thenReturn(working);
+        return serverSpy;
     }
 
     @Test
@@ -116,19 +122,9 @@ public class LdapFacadeTest {
     @Test
     public void testPrepareServersNegative() throws UnknownHostException {
         Configuration config = new Configuration();
-
-        LdapServer server1 = new LdapServer("ldap://foo.com");
-        LdapServer serverSpy1 = Mockito.spy(server1);
-        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
-        Mockito.when(serverSpy1.isReachable()).thenReturn(false);
-
-        LdapServer server2 = new LdapServer("ldap://bar.com");
-        LdapServer serverSpy2 = Mockito.spy(server2);
-        Mockito.when(serverSpy2.getAddresses(any())).thenReturn(new InetAddress[]{});
-
-        config.setServers(Arrays.asList(serverSpy1, serverSpy2));
+        config.setServers(Arrays.asList(getSpyLdapServer("ldap://foo.com", false),
+                getSpyLdapServer("ldap://bar.com", true)));
         LdapFacade facade = new LdapFacade(config);
-        facade.prepareServers();
         assertFalse(facade.isConfigured());
     }
 
@@ -138,5 +134,19 @@ public class LdapFacadeTest {
                 LdapFacade.getSearchDescription("foo", "bar", new String[]{"Bilbo", "Frodo"}));
         assertEquals("DN: foo, filter: bar",
                 LdapFacade.getSearchDescription("foo", "bar", null));
+    }
+
+    @Test
+    public void testPrepareServersCloseUnused() throws UnknownHostException {
+        Configuration config = new Configuration();
+
+        LdapServer server1 = getSpyLdapServer("ldap://foo.com");
+        LdapServer server2 = getSpyLdapServer("ldap://bar.com");
+        LdapServer[] servers = {server1, server2};
+        config.setServers(Arrays.asList(servers));
+
+        LdapFacade facade = new LdapFacade(config);
+        verify(server1, times(0)).close();
+        verify(server2).close();
     }
 }
