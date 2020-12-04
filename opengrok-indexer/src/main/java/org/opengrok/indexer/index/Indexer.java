@@ -757,7 +757,8 @@ public final class Indexer {
                     cfg.setWebappLAF((String) stylePath));
 
             parser.on("-T", "--threads", "=number", Integer.class,
-                    "The number of threads to use for index generation and repository scan.",
+                    "The number of threads to use for index generation, repository scan",
+                    "and repository invalidation.",
                     "By default the number of threads will be set to the number of available",
                     "CPUs. This influences the number of spawned ctags processes as well.").
                     execute(threadCount -> cfg.setIndexingParallelism((Integer) threadCount));
