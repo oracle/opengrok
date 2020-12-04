@@ -42,7 +42,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -816,16 +815,12 @@ public final class HistoryGuru {
          * run in parallel to speed up the process.
          */
         final CountDownLatch latch = new CountDownLatch(repos.size());
-        final ExecutorService executor = Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors(),
-            new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
+        final ExecutorService executor = Executors.newFixedThreadPool(env.getIndexingParallelism(),
+                runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("invalidate-repos-" + thread.getId());
                     return thread;
-                }
-        });
+                });
 
         for (RepositoryInfo rinfo : repos) {
             executor.submit(new Runnable() {
