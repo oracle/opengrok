@@ -94,6 +94,7 @@ public final class Suggester implements Closeable {
     private final int rebuildParallelismLevel;
 
     private volatile boolean rebuilding;
+    private volatile boolean terminating;
     private final Lock rebuildLock = new ReentrantLock();
     private final Condition rebuildDone = rebuildLock.newCondition();
 
@@ -278,6 +279,10 @@ public final class Suggester implements Closeable {
         rebuildLock.unlock();
 
         synchronized (lock) {
+            if (terminating) {
+                return;
+            }
+
             Instant start = Instant.now();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
@@ -588,6 +593,7 @@ public final class Suggester implements Closeable {
     @Override
     public void close() {
         executorService.shutdownNow();
+        terminating = true;
         projectData.values().forEach(f -> {
             try {
                 f.close();
