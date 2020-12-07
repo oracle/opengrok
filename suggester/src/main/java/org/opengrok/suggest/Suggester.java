@@ -173,6 +173,10 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
+            if (terminating) {
+                return;
+            }
+
             Instant start = Instant.now();
             LOGGER.log(Level.INFO, "Initializing suggester");
 
