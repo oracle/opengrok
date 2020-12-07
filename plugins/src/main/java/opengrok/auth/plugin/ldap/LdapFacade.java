@@ -213,8 +213,10 @@ public class LdapFacade extends AbstractLdapProvider {
             }
         }
 
-        LOGGER.log(Level.FINER, String.format("server check done (current server: %s)",
-                actualServer != -1 ? servers.get(actualServer) : "N/A"));
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, String.format("server check done (current server: %s)",
+                    actualServer != -1 ? servers.get(actualServer) : "N/A"));
+        }
     }
 
     /**
