@@ -173,16 +173,16 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            if (terminating) {
-                return;
-            }
-
             Instant start = Instant.now();
             LOGGER.log(Level.INFO, "Initializing suggester");
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
             for (NamedIndexDir indexDir : luceneIndexes) {
+                if (terminating) {
+                    LOGGER.log(Level.INFO, "Terminating suggester initialization");
+                    return;
+                }
                 submitInitIfIndexExists(executor, indexDir);
             }
 
