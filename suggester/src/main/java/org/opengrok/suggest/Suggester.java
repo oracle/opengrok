@@ -173,10 +173,6 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
-            if (terminating) {
-                return;
-            }
-
             Instant start = Instant.now();
             LOGGER.log(Level.INFO, "Initializing suggester");
 
@@ -185,7 +181,6 @@ public final class Suggester implements Closeable {
             for (NamedIndexDir indexDir : luceneIndexes) {
                 if (terminating) {
                     LOGGER.log(Level.INFO, "Terminating suggester initialization");
-                    shutdownAndAwaitTermination(executor);
                     return;
                 }
                 submitInitIfIndexExists(executor, indexDir);
@@ -256,26 +251,17 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService) {
-        shutdownAndAwaitTermination(executorService, null, null, null);
-    }
-
     private void shutdownAndAwaitTermination(final ExecutorService executorService, Instant start,
                                              Timer timer,
                                              final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
-            Duration duration = null;
-            if (timer != null) {
-                duration = Duration.between(start, Instant.now());
-                timer.record(duration);
-            }
-            if (duration != null && logMessageOnSuccess != null) {
-                LOGGER.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
-                        DurationFormatUtils.formatDurationWords(duration.toMillis(),
-                                true, true)});
-            }
+            Duration duration = Duration.between(start, Instant.now());
+            timer.record(duration);
+            LOGGER.log(Level.INFO, "{0} (took {1})", new Object[]{logMessageOnSuccess,
+                    DurationFormatUtils.formatDurationWords(duration.toMillis(),
+                            true, true)});
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Interrupted while building suggesters", e);
             Thread.currentThread().interrupt();
@@ -307,12 +293,6 @@ public final class Suggester implements Closeable {
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
 
             for (NamedIndexDir indexDir : indexDirs) {
-                if (terminating) {
-                    LOGGER.log(Level.INFO, "Terminating suggester rebuild");
-                    shutdownAndAwaitTermination(executor);
-                    return;
-                }
-
                 SuggesterProjectData data = this.projectData.get(indexDir.name);
                 if (data != null) {
                     executor.submit(getRebuildRunnable(data));
