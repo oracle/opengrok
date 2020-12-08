@@ -217,6 +217,10 @@ public final class Suggester implements Closeable {
     private Runnable getInitRunnable(final NamedIndexDir indexDir) {
         return () -> {
             try {
+                if (terminating) {
+                    return;
+                }
+
                 Instant start = Instant.now();
                 LOGGER.log(Level.FINE, "Initializing {0}", indexDir);
 
@@ -334,6 +338,10 @@ public final class Suggester implements Closeable {
     private Runnable getRebuildRunnable(final SuggesterProjectData data) {
         return () -> {
             try {
+                if (terminating) {
+                    return;
+                }
+
                 Instant start = Instant.now();
                 LOGGER.log(Level.FINE, "Rebuilding {0}", data);
                 data.rebuild();
