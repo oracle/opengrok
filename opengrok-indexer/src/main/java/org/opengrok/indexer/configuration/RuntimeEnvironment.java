@@ -24,6 +24,7 @@
 package org.opengrok.indexer.configuration;
 
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
+import static org.opengrok.indexer.index.IndexerUtil.getHeaders;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1418,6 +1419,7 @@ public final class RuntimeEnvironment {
                 .path("configuration")
                 .queryParam("reindex", true)
                 .request()
+                .headers(getHeaders())
                 .put(Entity.xml(configXML));
 
         if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
@@ -1444,6 +1446,7 @@ public final class RuntimeEnvironment {
                     .path("system")
                     .path("refresh")
                     .request()
+                    .headers(getHeaders())
                     .put(Entity.text(project));
 
             if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
@@ -1946,6 +1949,14 @@ public final class RuntimeEnvironment {
 
     private int getMessageLimit() {
         return syncReadConfiguration(Configuration::getMessageLimit);
+    }
+
+    public String getIndexerAuthenticationToken() {
+        return syncReadConfiguration(Configuration::getIndexerAuthenticationToken);
+    }
+
+    public void setIndexerAuthenticationToken(String token) {
+        syncWriteConfiguration(token, Configuration::setIndexerAuthenticationToken);
     }
 
     public Set<String> getAuthenticationTokens() {

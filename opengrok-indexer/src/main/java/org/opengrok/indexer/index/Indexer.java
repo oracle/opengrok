@@ -750,6 +750,23 @@ public final class Indexer {
                     "stylesheet. The factory-setting is: \"default\".").execute(stylePath ->
                     cfg.setWebappLAF((String) stylePath));
 
+            parser.on("--token", "=string|@file_with_string",
+                    "Authorization bearer API token to use when making API calls",
+                    "to the web application").
+                    execute(optarg -> {
+                        String value = ((String) optarg).trim();
+                        if (value.startsWith("@")) {
+                            try {
+                                String token = new String(Files.readAllBytes(Path.of(value))).trim();
+                                cfg.setIndexerAuthenticationToken(token);
+                            } catch (IOException e) {
+                                die("Failed to read from " + value);
+                            }
+                        } else {
+                            cfg.setIndexerAuthenticationToken(value);
+                        }
+                    });
+
             parser.on("-T", "--threads", "=number", Integer.class,
                     "The number of threads to use for index generation, repository scan",
                     "and repository invalidation.",
