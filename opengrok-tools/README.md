@@ -39,12 +39,6 @@ python3 -m venv env
 . env/bin/activate
 ```
 
-Install development dependencies
-
-```bash
-python -m pip install -r requirements.txt
-```
-
 ## Developing
 
 When you start developing, install the package in a development mode.
