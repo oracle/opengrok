@@ -22,17 +22,35 @@
  */
 package org.opengrok.indexer.index;
 
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.ResponseProcessingException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-class IndexerUtil {
+public class IndexerUtil {
 
     private IndexerUtil() {
+    }
+
+    /**
+     * @return map of HTTP headers to use when making API requests to the web application
+     */
+    public static MultivaluedMap<String, Object> getHeaders() {
+        MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        String token = null;
+        if ((token = RuntimeEnvironment.getInstance().getIndexerAuthenticationToken()) != null) {
+            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
+
+        return headers;
     }
 
     /**
@@ -56,7 +74,8 @@ class IndexerUtil {
                                                         .path("v1")
                                                         .path("configuration")
                                                         .path("projectsEnabled")
-                                                        .request();
+                                                        .request()
+                                                        .headers(getHeaders());
         final String enabled = request.get(String.class);
         if (enabled == null || !Boolean.valueOf(enabled)) {
             final Response r = request.put(Entity.text(Boolean.TRUE.toString()));
