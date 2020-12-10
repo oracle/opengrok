@@ -43,7 +43,7 @@ public class IndexerUtil {
     /**
      * @return map of HTTP headers to use when making API requests to the web application
      */
-    public static MultivaluedMap<String, Object> getHeaders() {
+    public static MultivaluedMap<String, Object> getWebAppHeaders() {
         MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         String token = null;
         if ((token = RuntimeEnvironment.getInstance().getIndexerAuthenticationToken()) != null) {
@@ -75,7 +75,7 @@ public class IndexerUtil {
                                                         .path("configuration")
                                                         .path("projectsEnabled")
                                                         .request()
-                                                        .headers(getHeaders());
+                                                        .headers(getWebAppHeaders());
         final String enabled = request.get(String.class);
         if (enabled == null || !Boolean.valueOf(enabled)) {
             final Response r = request.put(Entity.text(Boolean.TRUE.toString()));

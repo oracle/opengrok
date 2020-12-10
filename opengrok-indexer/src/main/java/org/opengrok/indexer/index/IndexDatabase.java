@@ -106,7 +106,7 @@ import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
 
-import static org.opengrok.indexer.index.IndexerUtil.getHeaders;
+import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -391,7 +391,7 @@ public class IndexDatabase {
                     .path(Util.URIEncode(project.getName()))
                     .path("indexed")
                     .request()
-                    .headers(getHeaders())
+                    .headers(getWebAppHeaders())
                     .put(Entity.text(""));
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, String.format("Couldn''t notify the webapp that project %s was indexed",
