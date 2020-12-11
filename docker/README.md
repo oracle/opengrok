@@ -73,6 +73,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 | Docker Environment Var. | Default value | Description |
 | ----------------------- | ------------- | ----------- |
 `REINDEX` | 10 | Period of automatic mirroring/reindexing in minutes. Setting to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec: `docker exec <container> /scripts/index.sh`
+`INDEXER_FLAGS` | `-H -P -S -G` | allows to override indexer flags
 `INDEXER_OPT` | empty | pass extra options to OpenGrok Indexer. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
 `NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
 `URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
