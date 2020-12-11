@@ -20,17 +20,17 @@
         <destName>source.war</destName>
       </file>
       <file>
-        <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/opengrok-tools-${project.python.package.version}.tar.gz</source>
+        <source>${project.basedir}/../tools/${project.build.directory}/dist/opengrok-tools-${project.python.package.version}.tar.gz</source>
         <outputDirectory>tools</outputDirectory>
         <destName>opengrok-tools.tar.gz</destName>
       </file>
       <file>
-         <source>${project.basedir}/../opengrok-tools/README-dist.txt</source>
+         <source>${project.basedir}/../tools/README-dist.txt</source>
          <outputDirectory>tools</outputDirectory>
          <destName>README.txt</destName>
       </file>
       <file>
-        <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/logging.properties.template</source>
+        <source>${project.basedir}/../tools/${project.build.directory}/dist/logging.properties.template</source>
         <outputDirectory>doc</outputDirectory>
         <destName>logging.properties.template</destName>
       </file>

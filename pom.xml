@@ -50,7 +50,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <module>opengrok-web</module>
         <module>distribution</module>
         <module>suggester</module>
-        <module>opengrok-tools</module>
+        <module>tools</module>
     </modules>
 
     <scm>
