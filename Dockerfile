@@ -16,7 +16,7 @@ COPY suggester/pom.xml /mvn/suggester/
 
 # distribution and opengrok-tools do not have dependencies to cache
 RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml
-RUN sed -i 's:<module>opengrok-tools</module>::g' /mvn/pom.xml
+RUN sed -i 's:<module>tools</module>::g' /mvn/pom.xml
 
 RUN mkdir -p /mvn/opengrok-indexer/target/jflex-sources
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp
