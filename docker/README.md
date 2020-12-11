@@ -106,9 +106,9 @@ services:
       REINDEX: '60'
     # Volumes store your data between container upgrades
     volumes:
-       - '~/opengrok-src/:/opengrok/src/'  # source code
-       - '~/opengrok-etc/:/opengrok/etc/'  # folder contains configuration.xml
-       - '~/opengrok-data/:/opengrok/data/'  # index and other things for source code
+       - '~/opengrok/src/:/opengrok/src/'  # source code
+       - '~/opengrok/etc/:/opengrok/etc/'  # folder contains configuration.xml
+       - '~/opengrok/data/:/opengrok/data/'  # index and other things for source code
 ```
 
 Save the file into `docker-compose.yml` and then simply run
