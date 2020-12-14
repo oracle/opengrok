@@ -18,13 +18,15 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
 
 import argparse
+import os
 import sys
+import tempfile
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
@@ -34,11 +36,27 @@ from .utils.exitvals import (
     SUCCESS_EXITVAL
 )
 
+from filelock import Timeout, FileLock
+
 """
   opengrok.jar wrapper
 
   This script can be used to run the OpenGrok indexer.
 """
+
+
+def get_project_from_options(options):
+    """
+    return project name from indexer arguments or None (assumes single project)
+    """
+    for i, v in enumerate(options):
+        if v == '-P':
+            try:
+                return options[i + 1]
+            except IndexError:
+                return None
+
+    return None
 
 
 def main():
@@ -68,15 +86,28 @@ def main():
         doprint = args.doprint[0]
         logger.debug("Console logging: {}".format(doprint))
 
-    indexer = Indexer(args.options, logger=logger, java=args.java,
-                      jar=args.jar, java_opts=args.java_opts,
-                      env_vars=args.environment, doprint=doprint)
-    indexer.execute()
-    ret = indexer.getretcode()
-    if ret is None or ret != SUCCESS_EXITVAL:
-        # The output is already printed thanks to 'doprint' above.
-        logger.error("Indexer command failed (return code {})".format(ret))
-        sys.exit(FAILURE_EXITVAL)
+    project = get_project_from_options(args.options)
+    if project:
+        lockfile = project + "-indexer"
+    else:
+        lockfile = os.path.basename(sys.argv[0])
+
+    lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
+    try:
+        with lock.acquire(timeout=0):
+            indexer = Indexer(args.options, logger=logger, java=args.java,
+                              jar=args.jar, java_opts=args.java_opts,
+                              env_vars=args.environment, doprint=doprint)
+            indexer.execute()
+            ret = indexer.getretcode()
+            if ret is None or ret != SUCCESS_EXITVAL:
+                # The output is already printed thanks to 'doprint' above.
+                logger.error("Indexer command failed (return code {})".
+                             format(ret))
+                sys.exit(FAILURE_EXITVAL)
+    except Timeout:
+        logger.warning("Already running, exiting.")
+        return FAILURE_EXITVAL
 
 
 if __name__ == '__main__':
