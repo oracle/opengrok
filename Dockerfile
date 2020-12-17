@@ -14,7 +14,7 @@ COPY opengrok-web/pom.xml /mvn/opengrok-web/
 COPY plugins/pom.xml /mvn/plugins/
 COPY suggester/pom.xml /mvn/suggester/
 
-# distribution and opengrok-tools do not have dependencies to cache
+# distribution and tools do not have dependencies to cache
 RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml
 RUN sed -i 's:<module>tools</module>::g' /mvn/pom.xml
 
