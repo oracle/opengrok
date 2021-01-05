@@ -40,7 +40,15 @@ fi
 
 URI="http://localhost:8080/${URL_ROOT}"
 OPS=${INDEXER_FLAGS:='-H -P -S -G'}
-BODY_INCLUDE_FILE="/opengrok/data/body_include"
+
+OPENGROK_BASE_DIR="/opengrok"
+OPENGROK_DATA_ROOT="$OPENGROK_BASE_DIR/data"
+OPENGROK_SRC_ROOT="$OPENGROK_BASE_DIR/src"
+BODY_INCLUDE_FILE="$OPENGROK_DATA_ROOT/body_include"
+OPENGROK_CONFIG_FILE="$OPENGROK_BASE_DIR/etc/configuration.xml"
+
+export OPENGROK_INDEXER_OPTIONAL_ARGS=$INDEXER_OPT
+export OPENGROK_NO_MIRROR=$NOMIRROR
 
 function deploy {
 	if [[ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]]; then
@@ -48,8 +56,8 @@ function deploy {
 
 		# Delete old deployment and (re)deploy.
 		rm -rf /usr/local/tomcat/webapps/*
-		opengrok-deploy -c /opengrok/etc/configuration.xml \
-	            /opengrok/lib/source.war "/usr/local/tomcat/webapps/${WAR_NAME}"
+		opengrok-deploy -c "$OPENGROK_CONFIG_FILE" \
+	            "$OPENGROK_BASE_DIR/lib/source.war" "/usr/local/tomcat/webapps/${WAR_NAME}"
 
 		# Set up redirect from /source
 		mkdir "/usr/local/tomcat/webapps/source"
@@ -64,42 +72,62 @@ function bare_config {
 	fi
 	echo '<p><h1>Waiting on the initial reindex to finish.. Stay tuned !</h1></p>' > "$BODY_INCLUDE_FILE"
 
+  echo "Creating bare configuration"
 	opengrok-indexer \
 	    -a /opengrok/lib/opengrok.jar -- \
-	    -s /opengrok/src \
-	    -d /opengrok/data \
+	    -s "$OPENGROK_SRC_ROOT" \
+	    -d "$OPENGROK_DATA_ROOT" \
 	    --remote on \
-	    -W /opengrok/etc/configuration.xml \
+	    -P -H \
+	    -W "$OPENGROK_CONFIG_FILE" \
 	    --noIndex
+  echo "Done creating bare config"
 }
 
 function wait_for_tomcat {
-	# Wait for Tomcat startup.
-	date +"%F %T Waiting for Tomcat startup..."
-	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null \"http://localhost:8080/${URL_ROOT}\"`" == "000" ]; do
+	# Wait for Tomcat startup and web app deploy.
+	date +"%F %T Waiting for Tomcat startup and web app deployment..."
+	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null \"http://localhost:8080/${URL_ROOT}\"`" != "200" ]; do
 		sleep 1;
 	done
-	date +"%F %T Tomcat startup finished"
+	date +"%F %T Tomcat startup finished and web app deployed"
 }
 
-function data_sync {
-	if [ -z $NOMIRROR ]; then
-		date +"%F %T Mirroring starting"
-		opengrok-mirror --all --uri "$URI"
-		date +"%F %T Mirroring finished"
-	fi
+function save_config {
+  echo "Saving configuration"
+  # Note: URI ends with a slash
+  # TODO: check result of the API call and move only if successful
+  curl -s -o "$OPENGROK_CONFIG_FILE" -X GET "${URI}api/v1/configuration"
+  echo "Done saving configuration"
+}
 
-	date +"%F %T Indexing starting"
-	opengrok-indexer \
-	    -a /opengrok/lib/opengrok.jar -- \
-	    -s /opengrok/src \
-	    -d /opengrok/data \
-	    --remote on \
-	    -W /opengrok/etc/configuration.xml \
-	    -U "$URI" \
-	    $OPS \
-	    $INDEXER_OPT "$@"
-	date +"%F %T Indexing finished"
+function add_projects {
+  # Add each directory under source root as a project.
+  # For https://github.com/oracle/opengrok/issues/3403 this should be replaced
+  # with query to get all projects and add only those that are not already present.
+  echo "Adding projects"
+  find $OPENGROK_SRC_ROOT/* -maxdepth 0 -type d -print | xargs -n 1 basename | \
+    while read dir; do
+      echo "Adding $dir"
+      # Note: URI ends with a slash
+      curl -s -X POST -H 'Content-Type: text/plain' -d "$dir" "${URI}api/v1/projects"
+    done
+  echo "Done adding projects"
+}
+
+# Perform mirroring and indexing of all projects.
+function data_sync {
+  add_projects
+
+	date +"%F %T Sync starting"
+	# TODO: $URI vs sync.yml
+	opengrok-sync -U "$URI" --driveon --config /scripts/sync.yml
+
+	# Workaround for https://github.com/oracle/opengrok/issues/1670
+	touch $OPENGROK_DATA_ROOT/timestamp
+
+	date +"%F %T Sync finished"
+	save_config
 }
 
 function indexer {
@@ -108,18 +136,21 @@ function indexer {
 	while true; do
 		data_sync
 
-		# If this was a case of initial indexing, move the include away.
+		# If this was the case of initial indexing, move the include away.
 		rm -f "$BODY_INCLUDE_FILE"
 		if [[ -f $BODY_INCLUDE_FILE.orig ]]; then
 			mv "$BODY_INCLUDE_FILE.orig" "$BODY_INCLUDE_FILE"
 		fi
 
-		# Index every $REINDEX minutes.
+		# Want to reload the includes anyway in case the user modified them.
+		curl -s -X PUT "${URI}api/v1/system/includes/reload"
+
+		# Sync every $REINDEX minutes.
 		if [ "$REINDEX" == "0" ]; then
-			date +"%F %T Automatic reindexing disabled"
+			date +"%F %T Automatic sync disabled"
 			return
 		else
-			date +"%F %T Automatic reindexing in $REINDEX minutes..."
+			date +"%F %T Automatic sync in $REINDEX minutes..."
 		fi
 		sleep `expr 60 \* $REINDEX`
 	done
@@ -131,7 +162,7 @@ deploy
 # Create empty configuration to avoid the non existent file exception
 # during the first web app startup.
 #
-if [[ ! -f /opengrok/etc/configuration.xml ]]; then
+if [[ ! -f "$OPENGROK_CONFIG_FILE" ]]; then
 	bare_config
 fi
 
