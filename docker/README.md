@@ -36,6 +36,8 @@ The mirroring step works by going through all projects and attempting to
 synchronize all its repositories (e.g. it will do `git pull` for Git
 repositories).
 
+Projects are enabled in this setup and there is no way how to change that.
+
 ### Indexer logs
 
 The indexer/mirroring is set so that it does not log into files.
