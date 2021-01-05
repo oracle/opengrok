@@ -95,7 +95,15 @@ def main():
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
         with lock.acquire(timeout=0):
-            indexer = Indexer(args.options, logger=logger, java=args.java,
+            optional_args = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
+            options = args.options
+            if optional_args and len(optional_args) > 0 and options:
+                logger.debug("adding optional indexer arguments: {}".
+                             format(optional_args))
+                if options:
+                    options.extend(optional_args)
+
+            indexer = Indexer(options, logger=logger, java=args.java,
                               jar=args.jar, java_opts=args.java_opts,
                               env_vars=args.environment, doprint=doprint)
             indexer.execute()

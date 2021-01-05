@@ -75,34 +75,43 @@ def get_config_file(logger, uri):
 def main():
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper '
                                                  'for indexing single project',
-                                     parents=[get_java_parser()])
-    parser.add_argument('-t', '--template', required=True,
+                                     parents=[get_java_parser()],
+                                     prog=sys.argv[0])
+    parser.add_argument('-t', '--template',
                         help='Logging template file')
-    parser.add_argument('-p', '--pattern', required=True,
+    parser.add_argument('-p', '--pattern',
                         help='Pattern to substitute in logging template with'
                              'project name')
     parser.add_argument('-P', '--project', required=True,
                         help='Project name')
-    parser.add_argument('-d', '--directory', required=True,
+    parser.add_argument('-d', '--directory',
                         help='Logging directory')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
 
+    cmd_args = sys.argv[1:]
+    extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
+    if extra_opts:
+        cmd_args.extend(extra_opts.split())
+
     try:
-        args = parser.parse_args()
+        args = parser.parse_args(cmd_args)
     except ValueError as e:
         fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     # Make sure the log directory exists.
-    if not os.path.isdir(args.directory):
-        os.makedirs(args.directory)
+    if args.directory:
+        if not os.path.isdir(args.directory):
+            os.makedirs(args.directory)
 
     # Get files needed for per-project reindex.
     conf_file = get_config_file(logger, args.uri)
-    logprop_file = get_logprop_file(logger, args.template, args.pattern,
-                                    args.project)
+    logprop_file = None
+    if args.template and args.pattern:
+        logprop_file = get_logprop_file(logger, args.template, args.pattern,
+                                        args.project)
 
     # Reindex with the modified logging.properties file and read-only config.
     command = ['-R', conf_file]
@@ -110,15 +119,17 @@ def main():
     java_opts = []
     if args.java_opts:
         java_opts.extend(args.java_opts)
-    java_opts.append("-Djava.util.logging.config.file={}".
-                     format(logprop_file))
+    if logprop_file:
+        java_opts.append("-Djava.util.logging.config.file={}".
+                         format(logprop_file))
     indexer = Indexer(command, logger=logger, jar=args.jar,
                       java=args.java, java_opts=java_opts,
                       env_vars=args.environment, doprint=args.doprint)
     indexer.execute()
     ret = indexer.getretcode()
     os.remove(conf_file)
-    os.remove(logprop_file)
+    if logprop_file:
+        os.remove(logprop_file)
     if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(indexer.getoutputstr())
         logger.error("Indexer command for project {} failed (return code {})".

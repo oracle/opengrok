@@ -90,6 +90,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
         for entry in os.listdir(directory):
             if path.isdir(path.join(directory, entry)):
                 dirs_to_process.append(entry)
+
     logger.debug("to process: {}".format(dirs_to_process))
     cmds_base = []
     for d in dirs_to_process:
@@ -97,6 +98,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                                        config.get("cleanup"),
                                        args.driveon)
         cmds_base.append(cmd_base)
+
     # Map the commands into pool of workers so they can be processed.
     retval = SUCCESS_EXITVAL
     with Pool(processes=int(args.workers)) as pool:

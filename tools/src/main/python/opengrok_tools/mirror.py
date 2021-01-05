@@ -93,6 +93,8 @@ def main():
                         help='uri of the webapp with context path')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')
+    parser.add_argument('-L', '--logdir',
+                        help='log directory')
     parser.add_argument('-B', '--backupcount', default=8,
                         help='how many log files to keep around in batch mode')
     parser.add_argument('-I', '--check-changes', action='store_true',
@@ -109,6 +111,12 @@ def main():
         return fatal(e, False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
+
+    nomirror = os.environ.get("OPENGROK_NO_MIRROR")
+    if nomirror and len(nomirror) > 0:
+        logger.debug("skipping mirror based on the OPENGROK_NO_MIRROR " +
+                     "environment variable")
+        return SUCCESS_EXITVAL
 
     if len(args.project) > 0 and args.all:
         return fatal("Cannot use both project list and -a/--all", False)
@@ -156,10 +164,13 @@ def main():
     logdir = None
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
-        logdir = config.get(LOGDIR_PROPERTY)
-        if not logdir:
-            return fatal("The {} property is required in batch mode".
-                         format(LOGDIR_PROPERTY), False)
+        if args.logdir:
+            logdir = args.logdir
+        else:
+            logdir = config.get(LOGDIR_PROPERTY)
+            if not logdir:
+                return fatal("The {} property is required in batch mode".
+                             format(LOGDIR_PROPERTY), False)
 
     projects = args.project
     if len(projects) == 1:
