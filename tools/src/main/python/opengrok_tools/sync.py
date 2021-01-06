@@ -94,9 +94,9 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
     logger.debug("to process: {}".format(dirs_to_process))
     cmds_base = []
     for d in dirs_to_process:
-        cmd_base = CommandSequenceBase(d, commands, args.loglevel,
-                                       config.get("cleanup"),
-                                       args.driveon)
+        cmd_base = CommandSequenceBase(d, commands, loglevel=args.loglevel,
+                                       cleanup=config.get("cleanup"),
+                                       driveon=args.driveon, url=uri)
         cmds_base.append(cmd_base)
 
     # Map the commands into pool of workers so they can be processed.

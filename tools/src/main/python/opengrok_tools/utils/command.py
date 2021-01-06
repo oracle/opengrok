@@ -335,16 +335,21 @@ class Command:
         subst_done = -1
         for i, cmdarg in enumerate(self.cmd):
             if args_subst:
+                newarg = cmdarg
                 for pattern in args_subst.keys():
-                    if pattern in cmdarg:
-                        newarg = cmdarg.replace(pattern, args_subst[pattern])
-                        self.logger.debug("replacing cmdarg with {}".
+                    if pattern in newarg and args_subst[pattern]:
+                        self.logger.debug("replacing '{}' in '{}' with '{}'".
+                                          format(pattern, newarg,
+                                          args_subst[pattern]))
+                        newarg = newarg.replace(pattern, args_subst[pattern])
+                        self.logger.debug("replaced argument with {}".
                                           format(newarg))
-                        newcmd.append(newarg)
                         subst_done = i
 
                 if subst_done != i:
                     newcmd.append(self.cmd[i])
+                else:
+                    newcmd.append(newarg)
             else:
                 newcmd.append(self.cmd[i])
 

@@ -18,8 +18,9 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 PROJECT_SUBST = '%PROJECT%'
+URL_SUBST = '%URL%'
 COMMAND_PROPERTY = "command"
