@@ -118,9 +118,11 @@ public class ProjectsController {
                     }
                 }
                 // deleted repository
-                for (RepositoryInfo repo : map.get(project)) {
-                    if (!repos.contains(repo)) {
-                        allrepos.remove(repo);
+                if (map.get(project) != null) {
+                    for (RepositoryInfo repo : map.get(project)) {
+                        if (!repos.contains(repo)) {
+                            allrepos.remove(repo);
+                        }
                     }
                 }
             }
