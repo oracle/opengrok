@@ -66,6 +66,15 @@ def test_subst_append_exclsubst_nosubst():
     assert cmd.cmd == ['foo', 'bar', '1', '2']
 
 
+def test_subst_multiple():
+    """
+    Test multiple substitutions within one argument.
+    """
+    cmd = Command(['foo', 'aaa%ARG%bbb%XYZ%ccc', 'bar'],
+                  args_subst={"%ARG%": "blah", "%XYZ%": "xyz"})
+    assert cmd.cmd == ['foo', 'aaablahbbbxyzccc', 'bar']
+
+
 # On Windows the return code is actually 1.
 @pytest.mark.skipif(platform.system() == 'Windows',
                     reason="broken on Windows")

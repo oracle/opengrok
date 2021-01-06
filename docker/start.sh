@@ -51,7 +51,7 @@ export OPENGROK_NO_MIRROR=$NOMIRROR
 
 function deploy {
 	if [[ ! -f "/usr/local/tomcat/webapps/${WAR_NAME}" ]]; then
-		date +"%F %T Deployment path does not exist. Deploying..."
+		date +"%F %T Deployment path for ${WAR_NAME} does not exist. Deploying..."
 
 		# Delete old deployment and (re)deploy.
 		rm -rf /usr/local/tomcat/webapps/*
@@ -122,7 +122,7 @@ function data_sync {
   add_projects
 
 	date +"%F %T Sync starting"
-	# TODO: $URI vs sync.yml
+	# TODO: is --driveon necessary ?
 	opengrok-sync -U "$URI" --driveon --config /scripts/sync.yml
 
 	# Workaround for https://github.com/oracle/opengrok/issues/1670

@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import json
@@ -67,7 +67,16 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     return r
 
 
-def call_rest_api(command, pattern, name):
+def subst(src, substitutions):
+    if substitutions:
+        for pattern, value in substitutions.items():
+            if value:
+                src = src.replace(pattern, value)
+
+    return src
+
+
+def call_rest_api(command, substitutions=None):
     """
     Make RESTful API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
@@ -75,7 +84,8 @@ def call_rest_api(command, pattern, name):
     Default content type is application/json.
 
     :param command: command (list of URI, HTTP verb, data payload)
-    :param pattern: pattern for command name and/or data substitution
+    :param substitutions: dictionary of pattern:value for command and/or
+                          data substitution
     :param name: command name
     :return return value from given requests method
     """
@@ -98,9 +108,7 @@ def call_rest_api(command, pattern, name):
     if headers is None:
         headers = {}
 
-    if pattern and name:
-        uri = uri.replace(pattern, name)
-
+    uri = subst(uri, substitutions)
     header_names = [x.lower() for x in headers.keys()]
 
     if data:
@@ -116,8 +124,7 @@ def call_rest_api(command, pattern, name):
                     data = json.dumps(data)
                 break
 
-        if pattern and name:
-            data = data.replace(pattern, name)
+        data = subst(data, substitutions)
         logger.debug("entity data: {}".format(data))
 
     return do_api_call(verb, uri, headers=headers, data=data)
