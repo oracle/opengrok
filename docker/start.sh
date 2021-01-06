@@ -39,7 +39,6 @@ else
 fi
 
 URI="http://localhost:8080/${URL_ROOT}"
-OPS=${INDEXER_FLAGS:='-H -P -S -G'}
 
 OPENGROK_BASE_DIR="/opengrok"
 OPENGROK_DATA_ROOT="$OPENGROK_BASE_DIR/data"
@@ -72,6 +71,8 @@ function bare_config {
 	fi
 	echo '<p><h1>Waiting on the initial reindex to finish.. Stay tuned !</h1></p>' > "$BODY_INCLUDE_FILE"
 
+  # The options used here should match the options used by the per-project
+  # indexer in sync.yml.
   echo "Creating bare configuration"
 	opengrok-indexer \
 	    -a /opengrok/lib/opengrok.jar -- \
@@ -103,6 +104,7 @@ function save_config {
 
 function add_projects {
   # Add each directory under source root as a project.
+  # TODO: remove projects that no longer have the directory under source root
   # For https://github.com/oracle/opengrok/issues/3403 this should be replaced
   # with query to get all projects and add only those that are not already present.
   echo "Adding projects"
