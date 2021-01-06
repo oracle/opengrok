@@ -139,19 +139,19 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        fatal(e)
+        return fatal(e, exit=False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if args.insert and not os.path.isfile(args.insert):
-        fatal("File '{}' does not exist".format(args.insert))
+        return fatal("File '{}' does not exist".format(args.insert), exit=False)
 
     try:
         deploy_war(logger, args.source_war[0], args.target_war[0], args.config,
                    args.insert)
     except XMLProcessingException as e:
-        fatal(e)
+        return fatal(e, exit=False)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -112,11 +112,11 @@ def main():
                 # The output is already printed thanks to 'doprint' above.
                 logger.error("Indexer command failed (return code {})".
                              format(ret))
-                sys.exit(FAILURE_EXITVAL)
+                return FAILURE_EXITVAL
     except Timeout:
         logger.warning("Already running, exiting.")
         return FAILURE_EXITVAL
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
