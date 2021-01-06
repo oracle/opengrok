@@ -136,7 +136,7 @@ def test_disabled_command_api():
     call is specified in the configuration for disabled project.
     """
     with patch(opengrok_tools.utils.mirror.call_rest_api,
-               lambda a, b, c: mock(spec=requests.Response)):
+               lambda a, b: mock(spec=requests.Response)):
         project_name = "foo"
         config = {
             DISABLED_CMD_PROPERTY: {
@@ -153,7 +153,7 @@ def test_disabled_command_api():
                               None, None) == CONTINUE_EXITVAL
         verify(opengrok_tools.utils.mirror). \
             call_rest_api(config.get(DISABLED_CMD_PROPERTY),
-                          PROJECT_SUBST, project_name)
+                          {PROJECT_SUBST: project_name})
 
 
 def test_disabled_command_api_text_append(monkeypatch):
@@ -163,7 +163,7 @@ def test_disabled_command_api_text_append(monkeypatch):
 
     text_to_append = "foo bar"
 
-    def mock_call_rest_api(command, b, c):
+    def mock_call_rest_api(command, b):
         disabled_command = config.get(DISABLED_CMD_PROPERTY)
         assert disabled_command
         command_args = disabled_command.get(COMMAND_PROPERTY)
