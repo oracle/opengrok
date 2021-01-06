@@ -84,7 +84,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                 dirs_to_process.append(line.strip())
         else:
             logger.error("cannot get list of projects")
-            sys.exit(FAILURE_EXITVAL)
+            return FAILURE_EXITVAL
     else:
         logger.debug("Processing directory {}".format(directory))
         for entry in os.listdir(directory):
@@ -105,7 +105,7 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
         try:
             cmds_base_results = pool.map(worker, cmds_base, 1)
         except KeyboardInterrupt:
-            sys.exit(FAILURE_EXITVAL)
+            return FAILURE_EXITVAL
         else:
             for cmds_base in cmds_base_results:
                 logger.debug("Checking results of project {}".
@@ -156,21 +156,21 @@ def main():
     try:
         args = parser.parse_args()
     except ValueError as e:
-        fatal(e)
+        return fatal(e, exit=False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     uri = args.uri
     if not is_web_uri(uri):
         logger.error("Not a URI: {}".format(uri))
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
     logger.debug("web application URI = {}".format(uri))
 
     # First read and validate configuration file as it is mandatory argument.
     config = read_config(logger, args.config)
     if config is None:
         logger.error("Cannot read config file from {}".format(args.config))
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
 
     # Changing working directory to root will avoid problems when running
     # programs via sudo/su. Do this only after the config file was read
@@ -180,13 +180,13 @@ def main():
     except OSError:
         logger.error("cannot change working directory to /",
                      exc_info=True)
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
 
     try:
         commands = config["commands"]
     except KeyError:
         logger.error("The config file has to contain key \"commands\"")
-        sys.exit(FAILURE_EXITVAL)
+        return FAILURE_EXITVAL
 
     directory = args.directory
     if not args.directory and not args.projects and not args.indexed:
@@ -195,7 +195,7 @@ def main():
         if not directory:
             logger.error("Neither -d or -P or -I specified and cannot get "
                          "source root from the webapp")
-            sys.exit(FAILURE_EXITVAL)
+            return FAILURE_EXITVAL
         else:
             logger.info("Assuming directory: {}".format(directory))
 
@@ -220,11 +220,11 @@ def main():
                 r = do_sync(args, commands, config, directory, dirs_to_process,
                             ignore_errors, logger, uri)
         except Timeout:
-            logger.warning("Already running, exiting.")
-            sys.exit(FAILURE_EXITVAL)
+            logger.warning("Already running")
+            return FAILURE_EXITVAL
 
-    sys.exit(r)
+    return r
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
