@@ -38,7 +38,14 @@ else
 	WAR_NAME="${URL_ROOT//\//#}.war"
 fi
 
+# make sure URI ends with slash
 URI="http://localhost:8080/${URL_ROOT}"
+if [[ -n $URL_ROOT ]]; then
+	URI="$URI/"
+fi
+
+echo "URL_ROOT = $URL_ROOT"
+echo "URI = $URI"
 
 OPENGROK_BASE_DIR="/opengrok"
 OPENGROK_DATA_ROOT="$OPENGROK_BASE_DIR/data"
@@ -88,7 +95,9 @@ function bare_config {
 function wait_for_tomcat {
 	# Wait for Tomcat startup and web app deploy.
 	date +"%F %T Waiting for Tomcat startup and web app deployment..."
-	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null \"http://localhost:8080/${URL_ROOT}\"`" != "200" ]; do
+	# URI has to end with slash - this is important (otherwise Tomcat will return HTTP
+	# code 302 to redirect to the location ending with slash).
+	while [ "`curl --silent --write-out '%{response_code}' -o /dev/null \"${URI}\"`" != "200" ]; do
 		sleep 1;
 	done
 	date +"%F %T Tomcat startup finished and web app deployed"
@@ -122,7 +131,7 @@ function data_sync {
   add_projects
 
 	date +"%F %T Sync starting"
-	# TODO: is --driveon necessary ?
+	# The --driveon option is necessary for the initial reindex.
 	opengrok-sync -U "$URI" --driveon --config /scripts/sync.yml
 
 	# Workaround for https://github.com/oracle/opengrok/issues/1670
