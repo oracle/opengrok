@@ -101,7 +101,7 @@ def main():
                 logger.debug("adding optional indexer arguments: {}".
                              format(optional_args))
                 if options:
-                    options.extend(optional_args)
+                    options.extend(optional_args.split())
 
             indexer = Indexer(options, logger=logger, java=args.java,
                               jar=args.jar, java_opts=args.java_opts,
