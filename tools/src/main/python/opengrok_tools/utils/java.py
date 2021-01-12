@@ -88,7 +88,7 @@ class Java(Command):
             if os.path.isdir(java_home):
                 java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
-            cmd = Command('/usr/libexec/java_home')
+            cmd = Command(['/usr/libexec/java_home'])
             cmd.execute()
             java = os.path.join(cmd.getoutputstr(), 'bin', 'java')
         elif system_name == 'Linux':
