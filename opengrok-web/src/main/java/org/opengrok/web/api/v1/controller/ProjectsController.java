@@ -118,7 +118,7 @@ public class ProjectsController {
                     }
                 }
                 // deleted repository
-                if (map.get(project) != null) {
+                if (map.containsKey(project)) {
                     for (RepositoryInfo repo : map.get(project)) {
                         if (!repos.contains(repo)) {
                             allrepos.remove(repo);
