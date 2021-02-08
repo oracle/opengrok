@@ -340,7 +340,7 @@ class Command:
                     if pattern in newarg and args_subst[pattern]:
                         self.logger.debug("replacing '{}' in '{}' with '{}'".
                                           format(pattern, newarg,
-                                          args_subst[pattern]))
+                                                 args_subst[pattern]))
                         newarg = newarg.replace(pattern, args_subst[pattern])
                         self.logger.debug("replaced argument with {}".
                                           format(newarg))
