@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.9"
+__version__ = "1.0"
 
 
 def worker(base):
@@ -67,49 +67,40 @@ def worker(base):
     return base
 
 
-def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
-            logger, uri):
+def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
+            uri, numworkers, driveon=False, print_output=False, logger=None):
+    """
+    Process the list of directories in parallel.
+    :param logger: logger to be used in this function
+    :param loglevel: log level used for executed commands
+    :param commands: commands structure
+    :param cleanup: cleanup commands
+    :param dirs_to_process: directories
+    :param ignore_errors: ignore errors for these projects
+    :param uri: web app URI
+    :param numworkers: number of pool workers
+    :param driveon: continue even if encountering failure
+    :param print_output: whether to print the output of the commands
+                         using the supplied logger
+    :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
+    """
 
-    if args.projects:
-        dirs_to_process = args.projects
-        logger.debug("Processing directories: {}".
-                     format(dirs_to_process))
-    elif args.indexed:
-        indexed_projects = list_indexed_projects(logger, uri)
-        logger.debug("Processing indexed projects: {}".
-                     format(indexed_projects))
-
-        if indexed_projects:
-            for line in indexed_projects:
-                dirs_to_process.append(line.strip())
-        else:
-            logger.error("cannot get list of projects")
-            return FAILURE_EXITVAL
-    else:
-        logger.debug("Processing directory {}".format(directory))
-        for entry in os.listdir(directory):
-            if path.isdir(path.join(directory, entry)):
-                dirs_to_process.append(entry)
-
-    logger.debug("to process: {}".format(dirs_to_process))
     cmds_base = []
-    for d in dirs_to_process:
-        cmd_base = CommandSequenceBase(d, commands, loglevel=args.loglevel,
-                                       cleanup=config.get("cleanup"),
-                                       driveon=args.driveon, url=uri)
+    for dir in dirs_to_process:
+        cmd_base = CommandSequenceBase(dir, commands, loglevel=loglevel,
+                                       cleanup=cleanup,
+                                       driveon=driveon, url=uri)
         cmds_base.append(cmd_base)
 
     # Map the commands into pool of workers so they can be processed.
     retval = SUCCESS_EXITVAL
-    with Pool(processes=int(args.workers)) as pool:
+    with Pool(processes=int(numworkers)) as pool:
         try:
             cmds_base_results = pool.map(worker, cmds_base, 1)
         except KeyboardInterrupt:
             return FAILURE_EXITVAL
         else:
             for cmds_base in cmds_base_results:
-                logger.debug("Checking results of project {}".
-                             format(cmds_base))
                 cmds = CommandSequence(cmds_base)
                 cmds.fill(cmds_base.retcodes, cmds_base.outputs,
                           cmds_base.failed)
@@ -117,12 +108,13 @@ def do_sync(args, commands, config, directory, dirs_to_process, ignore_errors,
                 if r != SUCCESS_EXITVAL:
                     retval = FAILURE_EXITVAL
 
+                if print_output and logger:
+                    cmds.print_outputs(logger, lines=True)
+
     return retval
 
 
 def main():
-    dirs_to_process = []
-
     parser = argparse.ArgumentParser(description='Manage parallel workers.',
                                      parents=[
                                          get_base_parser(
@@ -209,16 +201,44 @@ def main():
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
+    dirs_to_process = []
+    if args.projects:
+        dirs_to_process = args.projects
+        logger.debug("Processing directories: {}".
+                     format(dirs_to_process))
+    elif args.indexed:
+        indexed_projects = list_indexed_projects(logger, uri)
+        logger.debug("Processing indexed projects: {}".
+                     format(indexed_projects))
+
+        if indexed_projects:
+            for line in indexed_projects:
+                dirs_to_process.append(line.strip())
+        else:
+            logger.error("cannot get list of projects")
+            return FAILURE_EXITVAL
+    else:
+        logger.debug("Processing directory {}".format(directory))
+        for entry in os.listdir(directory):
+            if path.isdir(path.join(directory, entry)):
+                dirs_to_process.append(entry)
+
+    logger.debug("directories to process: {}".format(dirs_to_process))
+
     if args.nolock:
-        r = do_sync(args, commands, config, directory, dirs_to_process,
-                    ignore_errors, logger, uri)
+        r = do_sync(args.loglevel, commands, config.get("cleanup"),
+                    dirs_to_process,
+                    ignore_errors, uri, args.workers,
+                    driveon=args.driveon)
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
                                      "opengrok-sync.lock"))
         try:
             with lock.acquire(timeout=0):
-                r = do_sync(args, commands, config, directory, dirs_to_process,
-                            ignore_errors, logger, uri)
+                r = do_sync(args.loglevel, commands, config.get("cleanup"),
+                            dirs_to_process,
+                            ignore_errors, uri, args.workers,
+                            driveon=args.driveon)
         except Timeout:
             logger.warning("Already running")
             return FAILURE_EXITVAL

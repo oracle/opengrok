@@ -79,6 +79,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 `INDEXER_OPT` | empty | pass extra options to OpenGrok Indexer. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
 `NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
 `URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
+`WORKERS` | number of CPUs in the container | number of workers to use for syncing
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e REINDEX=30`
 
