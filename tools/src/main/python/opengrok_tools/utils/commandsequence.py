@@ -163,22 +163,11 @@ class CommandSequence(CommandSequenceBase):
                                               format(command, self.name))
                             continue
                     else:
-                        if self.driveon:
-                            do = "driving on"
-                            self.logger.debug("command '{}' for project '{}'' failed "
-                                              "with code {}, {}".
-                                              format(command, self.name, retcode, do))
-                        else:
-                            do = "breaking"
-                            self.logger.error("command '{}' for project '{}'' failed "
-                                              "with code {}, {}".
-                                              format(command, self.name, retcode, do))
-
-                        if self.driveon:
-                            continue
-                        else:
-                            self.failed = True
-                            self.run_cleanup()
+                        self.logger.error("command '{}' for project {} failed "
+                                          "with code {}, breaking".
+                                          format(command, self.name, retcode))
+                        self.failed = True
+                        self.run_cleanup()
 
                     break
 
