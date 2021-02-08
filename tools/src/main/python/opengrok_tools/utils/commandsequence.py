@@ -234,16 +234,13 @@ class CommandSequence(CommandSequenceBase):
         """
         Check the output of the commands and perform logging.
 
-        Return 0 on success, 1 if error was detected.
+        Return SUCCESS_EXITVAL on success, 1 if error was detected.
         """
-
-        if not ignore_errors:
-            return
 
         ret = SUCCESS_EXITVAL
         self.print_outputs(self.logger, loglevel=logging.DEBUG)
 
-        if self.name in ignore_errors:
+        if ignore_errors and self.name in ignore_errors:
             self.logger.debug("errors of project '{}' ignored".
                               format(self.name))
             return
