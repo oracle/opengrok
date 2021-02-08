@@ -76,4 +76,4 @@ RUN chmod -R +x /scripts
 # run
 WORKDIR $CATALINA_HOME
 EXPOSE 8080
-CMD ["/scripts/start.sh"]
+CMD ["/scripts/start.py"]
