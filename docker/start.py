@@ -22,14 +22,14 @@
 #
 
 import os
-from requests import get, ConnectionError
 import logging
 import multiprocessing
-from pathlib import Path
 import shutil
 import subprocess
 import threading
 import time
+from pathlib import Path
+from requests import get, ConnectionError
 
 from opengrok_tools.utils.log import get_console_logger, \
     get_log_level, get_class_basename
@@ -95,6 +95,10 @@ def set_url_root(url_root):
 
 
 def get_war_name(url_root):
+    """
+    :param url_root: web app URL root
+    :return: filename of the WAR file
+    """
     if len(url_root) == 0:
         return "ROOT.war"
     else:
@@ -145,8 +149,8 @@ def wait_for_tomcat(uri):
 
     while True:
         try:
-            r = get(uri)
-            status = r.status_code
+            ret = get(uri)
+            status = ret.status_code
         except ConnectionError:
             status = 0
 
@@ -315,7 +319,6 @@ if __name__ == "__main__":
     if URL_ROOT != '/source':
         setup_redirect_source(URL_ROOT)
 
-    # TODO verify these are passed on
     env = {}
     if os.environ.get('INDEXER_OPT'):
         env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = \
