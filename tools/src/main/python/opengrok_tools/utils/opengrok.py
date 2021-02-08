@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018-2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import urllib.parse
@@ -110,6 +110,18 @@ def set_configuration(logger, configuration, uri):
         return False
 
     return True
+
+
+def list_projects(logger, uri):
+    try:
+        r = do_api_call('GET',
+                        get_uri(uri, 'api', 'v1', 'projects'))
+    except Exception:
+        logger.error('could not list projects from web application '
+                     'on {}'.format(uri))
+        return None
+
+    return r.json()
 
 
 def list_indexed_projects(logger, uri):

@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -88,6 +88,7 @@ def main():
                         help='Logging directory')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
+    parser.add_argument('--printoutput', action='store_true', default=False)
 
     cmd_args = sys.argv[1:]
     extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
@@ -100,6 +101,8 @@ def main():
         fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
+
+    logger.debug('Command arguments extended with {}'.format(extra_opts))
 
     # Make sure the log directory exists.
     if args.directory:
@@ -130,6 +133,10 @@ def main():
     os.remove(conf_file)
     if logprop_file:
         os.remove(logprop_file)
+
+    # TODO
+    if args.printoutput:
+        logger.info(indexer.getoutputstr())
     if ret is None or ret != SUCCESS_EXITVAL:
         logger.error(indexer.getoutputstr())
         logger.error("Indexer command for project {} failed (return code {})".

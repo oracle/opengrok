@@ -46,7 +46,7 @@ class CommandSequenceBase:
     """
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
-                 driveon=False, url=None):
+                 driveon=False, url=None, env=None):
         self.name = name
         self.commands = commands
         self.failed = False
@@ -58,6 +58,7 @@ class CommandSequenceBase:
         self.cleanup = cleanup
         self.loglevel = loglevel
         self.driveon = driveon
+        self.env = env
 
         self.url = url
 
@@ -65,6 +66,12 @@ class CommandSequenceBase:
         return str(self.name)
 
     def get_cmd_output(self, cmd, indent=""):
+        """
+        :param cmd: command
+        :param indent: prefix for each line
+        :return: command output as string
+        """
+
         str = ""
         for line in self.outputs.get(cmd, []):
             str += '{}{}'.format(indent, line)
@@ -84,7 +91,7 @@ class CommandSequence(CommandSequenceBase):
     def __init__(self, base):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
                          cleanup=base.cleanup, driveon=base.driveon,
-                         url=base.url)
+                         url=base.url, env=base.env)
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
@@ -132,6 +139,7 @@ class CommandSequence(CommandSequenceBase):
                 command_args = command.get(COMMAND_PROPERTY)
                 command = Command(command_args,
                                   env_vars=command.get("env"),
+                                  logger=self.logger,
                                   resource_limits=command.get("limits"),
                                   args_subst={PROJECT_SUBST: self.name,
                                               URL_SUBST: self.url},
@@ -196,6 +204,7 @@ class CommandSequence(CommandSequenceBase):
                 self.logger.debug("Running cleanup command '{}'".
                                   format(command_args))
                 cmd = Command(command_args,
+                              logger=self.logger,
                               args_subst={PROJECT_SUBST: self.name,
                                           URL_SUBST: self.url},
                               args_append=[self.name], excl_subst=True)
@@ -206,6 +215,21 @@ class CommandSequence(CommandSequenceBase):
                                       format(cmd.cmd, cmd.getretcode()))
                     self.logger.info('output: {}'.format(cmd.getoutputstr()))
 
+    def print_outputs(self, logger, loglevel=logging.INFO, lines=False):
+        """
+        Print command outputs.
+        """
+
+        logger.debug("Output for project '{}':".format(self.name))
+        for cmd in self.outputs.keys():
+            if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
+                if lines:
+                    logger.log(loglevel, "Output from '{}':".format(cmd))
+                    logger.log(loglevel, '{}'.format(self.get_cmd_output(cmd)))
+                else:
+                    logger.log(loglevel, "'{}': {}".
+                               format(cmd, self.outputs[cmd]))
+
     def check(self, ignore_errors):
         """
         Check the output of the commands and perform logging.
@@ -213,12 +237,11 @@ class CommandSequence(CommandSequenceBase):
         Return 0 on success, 1 if error was detected.
         """
 
+        if not ignore_errors:
+            return
+
         ret = SUCCESS_EXITVAL
-        self.logger.debug("Output for project '{}':".format(self.name))
-        for cmd in self.outputs.keys():
-            if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
-                self.logger.debug("'{}': {}".
-                                  format(cmd, self.outputs[cmd]))
+        self.print_outputs(self.logger, loglevel=logging.DEBUG)
 
         if self.name in ignore_errors:
             self.logger.debug("errors of project '{}' ignored".
