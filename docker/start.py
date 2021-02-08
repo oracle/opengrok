@@ -62,7 +62,7 @@ OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_BASE_DIR, "etc",
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 
 
-def set_url_root(url_root):
+def set_url_root(logger, url_root):
     """
     Set URL root and URI based on input
     :param url_root: input
@@ -101,11 +101,11 @@ def get_war_name(url_root):
     """
     if len(url_root) == 0:
         return "ROOT.war"
-    else:
-        return url_root + ".war"
+
+    return url_root + ".war"
 
 
-def deploy(url_root):
+def deploy(logger, url_root):
     """
     Deploy the web application
     :param url_root: web app URL root
@@ -127,7 +127,7 @@ def deploy(url_root):
                OPENGROK_CONFIG_FILE, None)
 
 
-def setup_redirect_source(url_root):
+def setup_redirect_source(logger, url_root):
     """
     Set up redirect from /source
     """
@@ -140,7 +140,7 @@ def setup_redirect_source(url_root):
         index.write("<% response.sendRedirect(\"/{}\"); %>".format(url_root))
 
 
-def wait_for_tomcat(uri):
+def wait_for_tomcat(logger, uri):
     """
     Active/busy waiting for Tomcat to come up.
     Currently there is no upper time bound.
@@ -164,7 +164,7 @@ def wait_for_tomcat(uri):
     logger.info("Tomcat is ready")
 
 
-def refresh_projects(uri):
+def refresh_projects(logger, uri):
     """
     Ensure each immediate source root subdirectory is a project.
     """
@@ -187,7 +187,7 @@ def refresh_projects(uri):
             delete_project(logger, item, uri)
 
 
-def save_config(uri, config_path):
+def save_config(logger, uri, config_path):
     """
     Retrieve configuration from the web app and write it to file.
     :param uri: web app URI
@@ -218,16 +218,16 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def syncer(loglevel, uri, config_path, reindex, numworkers, env):
+def syncer(logger, loglevel, uri, config_path, reindex, numworkers, env):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
     """
 
-    wait_for_tomcat(uri)
+    wait_for_tomcat(logger, uri)
 
     while True:
-        refresh_projects(uri)
+        refresh_projects(logger, uri)
 
         if os.environ.get('OPENGROK_SYNC_YML'):  # debug only
             config_file = os.environ.get('OPENGROK_SYNC_YML')
@@ -260,14 +260,14 @@ def syncer(loglevel, uri, config_path, reindex, numworkers, env):
         # Workaround for https://github.com/oracle/opengrok/issues/1670
         Path(os.path.join(OPENGROK_DATA_ROOT, 'timestamp')).touch()
 
-        save_config(uri, config_path)
+        save_config(logger, uri, config_path)
 
         sleep_seconds = int(reindex) * 60
         logger.info("Sleeping for {} seconds".format(sleep_seconds))
         time.sleep(sleep_seconds)
 
 
-def create_bare_config():
+def create_bare_config(logger):
     """
     Create bare configuration file with a few basic settings.
     """
@@ -292,7 +292,7 @@ def create_bare_config():
         raise Exception("Failed to create bare configuration")
 
 
-if __name__ == "__main__":
+def main():
     log_level = os.environ.get('OPENGROK_LOG_LEVEL')
     if log_level:
         log_level = get_log_level(log_level)
@@ -301,9 +301,9 @@ if __name__ == "__main__":
 
     logger = get_console_logger(get_class_basename(), log_level)
 
-    URI, URL_ROOT = set_url_root(os.environ.get('URL_ROOT'))
-    logger.debug("URL_ROOT = {}".format(URL_ROOT))
-    logger.debug("URI = {}".format(URI))
+    uri, url_root = set_url_root(logger, os.environ.get('URL_ROOT'))
+    logger.debug("URL_ROOT = {}".format(url_root))
+    logger.debug("URI = {}".format(uri))
 
     # default period for reindexing (in minutes)
     reindex_env = os.environ.get('REINDEX')
@@ -314,10 +314,10 @@ if __name__ == "__main__":
     logger.debug("reindex period = {} minutes".format(reindex_min))
 
     # Note that deploy is done before Tomcat is started.
-    deploy(URL_ROOT)
+    deploy(logger, url_root)
 
-    if URL_ROOT != '/source':
-        setup_redirect_source(URL_ROOT)
+    if url_root != '/source':
+        setup_redirect_source(logger, url_root)
 
     env = {}
     if os.environ.get('INDEXER_OPT'):
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config()
+        create_bare_config(logger)
 
     if os.environ.get('WORKERS'):
         num_workers = os.environ.get('WORKERS')
@@ -342,11 +342,16 @@ if __name__ == "__main__":
     logger.info('Number of sync workers: {}'.format(num_workers))
 
     logger.debug("Starting sync thread")
-    t = threading.Thread(target=syncer, name="Sync thread",
-                         args=(log_level, URI, OPENGROK_CONFIG_FILE,
-                               reindex_min, num_workers, env))
-    t.start()
+    thread = threading.Thread(target=syncer, name="Sync thread",
+                              args=(logger, log_level, uri,
+                                    OPENGROK_CONFIG_FILE,
+                                    reindex_min, num_workers, env))
+    thread.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
     subprocess.run([os.path.join(tomcat_root, 'bin', 'catalina.sh'), 'run'])
+
+
+if __name__ == "__main__":
+    main()
