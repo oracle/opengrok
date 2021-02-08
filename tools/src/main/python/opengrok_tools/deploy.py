@@ -18,12 +18,13 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
 import argparse
 import os
+import sys
 import tempfile
 from shutil import copyfile
 from zipfile import ZipFile
