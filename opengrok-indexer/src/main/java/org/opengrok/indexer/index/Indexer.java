@@ -750,6 +750,17 @@ public final class Indexer {
                     "stylesheet. The factory-setting is: \"default\".").execute(stylePath ->
                     cfg.setWebappLAF((String) stylePath));
 
+            parser.on("-T", "--threads", "=number", Integer.class,
+                    "The number of threads to use for index generation, repository scan",
+                    "and repository invalidation.",
+                    "By default the number of threads will be set to the number of available",
+                    "CPUs. This influences the number of spawned ctags processes as well.").
+                    execute(threadCount -> cfg.setIndexingParallelism((Integer) threadCount));
+
+            parser.on("-t", "--tabSize", "=number", Integer.class,
+                "Default tab size to use (number of spaces per tab character).")
+                    .execute(tabSize -> cfg.setTabSize((Integer) tabSize));
+
             parser.on("--token", "=string|@file_with_string",
                     "Authorization bearer API token to use when making API calls",
                     "to the web application").
@@ -766,17 +777,6 @@ public final class Indexer {
                             cfg.setIndexerAuthenticationToken(value);
                         }
                     });
-
-            parser.on("-T", "--threads", "=number", Integer.class,
-                    "The number of threads to use for index generation, repository scan",
-                    "and repository invalidation.",
-                    "By default the number of threads will be set to the number of available",
-                    "CPUs. This influences the number of spawned ctags processes as well.").
-                    execute(threadCount -> cfg.setIndexingParallelism((Integer) threadCount));
-
-            parser.on("-t", "--tabSize", "=number", Integer.class,
-                "Default tab size to use (number of spaces per tab character).")
-                    .execute(tabSize -> cfg.setTabSize((Integer) tabSize));
 
             parser.on("-U", "--uri", "=SCHEME://webappURI:port/contextPath",
                 "Send the current configuration to the specified web application.").execute(webAddr -> {
