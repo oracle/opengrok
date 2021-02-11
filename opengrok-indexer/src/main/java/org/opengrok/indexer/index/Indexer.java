@@ -24,14 +24,18 @@
  */
 package org.opengrok.indexer.index;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -767,8 +771,9 @@ public final class Indexer {
                     execute(optarg -> {
                         String value = ((String) optarg).trim();
                         if (value.startsWith("@")) {
-                            try {
-                                String token = new String(Files.readAllBytes(Path.of(value))).trim();
+                            try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                                    new FileInputStream(Path.of(value).toString().substring(1))))) {
+                                String token = in.readLine().trim();
                                 cfg.setIndexerAuthenticationToken(token);
                             } catch (IOException e) {
                                 die("Failed to read from " + value);
