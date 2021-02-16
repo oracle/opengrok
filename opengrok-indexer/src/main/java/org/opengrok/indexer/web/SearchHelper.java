@@ -320,7 +320,7 @@ public class SearchHelper {
                 } else {
                     errorMsg = "Failed to initialize search. Check the index";
                     if (projects.size() > 0) {
-                        errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
+                        errorMsg += " for projects: " + String.join(", ", projects);
                     }
                     return this;
                 }
@@ -348,9 +348,9 @@ public class SearchHelper {
         } catch (FileNotFoundException e) {
             errorMsg = "Index database not found. Check the index";
             if (projects.size() > 0) {
-                errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
+                errorMsg += " for projects: " + String.join(", ", projects);
             }
-            errorMsg = errorMsg + "; " + e.getMessage();
+            errorMsg += "; " + e.getMessage();
         } catch (IOException e) {
             errorMsg = e.getMessage();
         }
