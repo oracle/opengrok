@@ -144,6 +144,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>5.0.0</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
