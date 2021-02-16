@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -314,12 +314,14 @@ public class SearchHelper {
                 // We use MultiReader even for single project. This should
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
-                reader = RuntimeEnvironment.getInstance().getMultiReader(
-                    projects, searcherList);
+                reader = RuntimeEnvironment.getInstance().getMultiReader(projects, searcherList);
                 if (reader != null) {
                     searcher = new IndexSearcher(reader);
                 } else {
-                    errorMsg = "Failed to initialize search. Check the index.";
+                    errorMsg = "Failed to initialize search. Check the index";
+                    if (projects.size() > 0) {
+                        errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
+                    }
                     return this;
                 }
             }
@@ -344,8 +346,11 @@ public class SearchHelper {
         } catch (ParseException e) {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
-//          errorMsg = "Index database(s) not found: " + e.getMessage();
-            errorMsg = "Index database(s) not found.";
+            errorMsg = "Index database not found";
+            if (projects.size() > 0) {
+                errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
+            }
+            errorMsg = errorMsg + " " + e.getMessage();
         } catch (IOException e) {
             errorMsg = e.getMessage();
         }
