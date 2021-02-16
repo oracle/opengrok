@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
 import org.opengrok.indexer.web.Laundromat;

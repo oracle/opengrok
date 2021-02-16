@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.configuration.Project;
@@ -489,8 +488,8 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * Set this plugin as failed. This plugin will no more call the underlying
      * plugin isAllowed methods.
      *
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Group)
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Project)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Group)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Project)
      */
     public synchronized void setFailed() {
         working = false;

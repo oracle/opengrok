@@ -38,8 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;

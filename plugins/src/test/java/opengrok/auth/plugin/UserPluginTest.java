@@ -22,8 +22,7 @@
  */
 package opengrok.auth.plugin;
 
-import javax.servlet.http.HttpServletRequest;
-
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.decoders.OSSOHeaderDecoder;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;

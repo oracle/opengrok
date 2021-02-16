@@ -27,7 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.decoders.IUserDecoder;
 import opengrok.auth.plugin.entity.User;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
