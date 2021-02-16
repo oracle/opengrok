@@ -346,7 +346,7 @@ public class SearchHelper {
         } catch (ParseException e) {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
-            errorMsg = "Index database not found";
+            errorMsg = "Index database not found. Check the index";
             if (projects.size() > 0) {
                 errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
             }
