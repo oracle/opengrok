@@ -181,6 +181,17 @@ Honors the Accept header. The text type works for plain text files only.
 
 + Response 204
 
+## Get last index time [/system/indextime]
+
+The time is in the ISO 8601 format in UTC time zone.
+
+### Retrieve last index time [GET]
+
++ Response 200 (application/json)
+  + Body
+
+    "2021-02-15T16:39:16.409+00:00"
+
 ## Index searchers refresh [/system/refresh]
 
 ### refreshes index searchers for specified project [PUT]
