@@ -40,9 +40,15 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SystemControllerTest extends OGKJerseyTest {
@@ -126,6 +132,28 @@ public class SystemControllerTest extends OGKJerseyTest {
                 assertEquals(description.getDescription(), er.get(description.getPath()));
             }
         }
+
+        // Cleanup
+        IOUtils.removeRecursive(dataRoot);
+    }
+
+    @Test
+    public void testIndexTime() throws IOException, ParseException {
+        Path dataRoot = Files.createTempDirectory("indexTimetest");
+        env.setDataRoot(dataRoot.toString());
+        File indexTimeFile = Paths.get(dataRoot.toString(), "timestamp").toFile();
+        indexTimeFile.createNewFile();
+        assertTrue(indexTimeFile.exists());
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss+ZZ");
+        Date date = f.parse("2021-02-16_11:18:01+UTC");
+        indexTimeFile.setLastModified(date.getTime());
+
+        Response r = target("system")
+                .path("indextime")
+                .request().get();
+        String result = r.readEntity(String.class);
+
+        assertThat(result, containsString("2021-02-16T11:18:01.000+00:00"));
 
         // Cleanup
         IOUtils.removeRecursive(dataRoot);

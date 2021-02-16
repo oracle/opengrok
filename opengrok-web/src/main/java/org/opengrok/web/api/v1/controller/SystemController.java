@@ -22,6 +22,10 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.EftarFile;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -31,12 +35,17 @@ import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -73,5 +82,18 @@ public class SystemController {
         EftarFile ef = new EftarFile();
         ef.create(Set.of(descriptions), env.getDtagsEftarPath().toString());
         LOGGER.log(Level.INFO, "reloaded path descriptions with {0} entries", descriptions.length);
+    }
+
+    @GET
+    @Path("/indextime")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getIndexTime() throws JsonProcessingException {
+        File indexTimeFile = Paths.get(env.getDataRootFile().toString(), "timestamp").toFile();
+        Date date = new Date(indexTimeFile.lastModified());
+        ObjectMapper mapper = new ObjectMapper();
+        // StdDateFormat is ISO8601 since jackson 2.9
+        mapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
+        String result = mapper.writeValueAsString(date);
+        return result;
     }
 }
