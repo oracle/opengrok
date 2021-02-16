@@ -350,7 +350,7 @@ public class SearchHelper {
             if (projects.size() > 0) {
                 errorMsg = errorMsg + " for projects: " + String.join(", ", projects);
             }
-            errorMsg = errorMsg + " " + e.getMessage();
+            errorMsg = errorMsg + "; " + e.getMessage();
         } catch (IOException e) {
             errorMsg = e.getMessage();
         }
