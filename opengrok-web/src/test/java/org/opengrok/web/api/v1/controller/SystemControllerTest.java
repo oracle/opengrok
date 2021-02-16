@@ -23,6 +23,9 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.Response;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -30,10 +33,6 @@ import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.PathDescription;
 import org.opengrok.web.api.v1.RestApp;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
 
 import java.io.File;
 import java.io.IOException;

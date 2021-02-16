@@ -24,6 +24,11 @@
 package org.opengrok.web;
 
 import io.micrometer.core.instrument.Timer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -37,11 +42,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;

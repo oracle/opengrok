@@ -23,6 +23,7 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.Application;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,7 +37,6 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
-import javax.ws.rs.core.Application;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -45,8 +45,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
 

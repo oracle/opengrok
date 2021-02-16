@@ -23,6 +23,10 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.apache.lucene.index.Term;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,10 +45,6 @@ import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.filter.AuthorizationFilter;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,10 +54,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
@@ -91,9 +91,8 @@ public class SuggesterControllerTest extends OGKJerseyTest {
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private static final GenericType<List<Entry<String, Integer>>> popularityDataType =
-            new GenericType<List<Entry<String, Integer>>>() {
-            };
+    private static final GenericType<List<Entry<String, Integer>>> popularityDataType = new GenericType<>() {
+    };
 
 
     private static TestRepository repository;

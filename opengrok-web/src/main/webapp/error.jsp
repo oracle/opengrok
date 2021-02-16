@@ -22,7 +22,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="javax.servlet.http.HttpServletResponse"%>
+<%@page import="jakarta.servlet.http.HttpServletResponse"%>
 <%@ page session="false" isErrorPage="true" import="
 java.io.PrintWriter,
 java.io.StringWriter,

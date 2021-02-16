@@ -22,13 +22,13 @@
  */
 package opengrok.auth.plugin.util;
 
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Test;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Application;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 

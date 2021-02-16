@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
@@ -37,8 +38,6 @@ import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Spy;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
 import static org.junit.Assert.assertEquals;

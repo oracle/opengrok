@@ -25,6 +25,12 @@ package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -41,13 +47,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -67,9 +66,8 @@ import static org.junit.Assert.assertTrue;
 
 public class MessagesControllerTest extends OGKJerseyTest {
 
-    private static final GenericType<List<AcceptedMessageModel>> messagesType =
-            new GenericType<List<AcceptedMessageModel>>() {
-            };
+    private static final GenericType<List<AcceptedMessageModel>> messagesType = new GenericType<>() {
+    };
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

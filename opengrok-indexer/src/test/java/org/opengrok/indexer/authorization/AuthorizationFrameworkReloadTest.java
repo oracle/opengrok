@@ -31,7 +31,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import javax.servlet.http.HttpSession;
+
+import jakarta.servlet.http.HttpSession;
 import org.junit.Test;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;

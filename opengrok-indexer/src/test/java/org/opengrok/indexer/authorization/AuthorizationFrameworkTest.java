@@ -30,7 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

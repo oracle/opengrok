@@ -22,12 +22,11 @@
  */
 package org.opengrok.web.api.v1.suggester.provider.filter;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
 
 /**
  * Filter which checks if suggester is enabled and if not then returns {@link Response.Status#NOT_FOUND}.

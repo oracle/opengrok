@@ -22,7 +22,7 @@
  */
 package opengrok.auth.plugin.decoders;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 
 /**

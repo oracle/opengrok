@@ -22,10 +22,9 @@
  */
 package org.opengrok.web.api.v1;
 
+import jakarta.ws.rs.ApplicationPath;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
-
-import javax.ws.rs.ApplicationPath;
 
 @ApplicationPath(RestApp.API_PATH)
 public class RestApp extends ResourceConfig {

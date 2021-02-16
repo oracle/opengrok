@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.servlet.http.Cookie;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
