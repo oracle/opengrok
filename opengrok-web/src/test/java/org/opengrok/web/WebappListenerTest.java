@@ -22,11 +22,10 @@
  */
 package org.opengrok.web;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Test;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.http.HttpServletRequest;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

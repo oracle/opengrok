@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.configuration.Project;
@@ -165,8 +164,8 @@ public class AuthorizationPlugin extends AuthorizationStack {
      * false otherwise
      *
      * @see #isFailed()
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Project)
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Group)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Project)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Group)
      */
     @Override
     public boolean isAllowed(Nameable entity,

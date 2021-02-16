@@ -23,6 +23,9 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.After;
@@ -49,9 +52,6 @@ import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -421,7 +421,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         // Add another project.
         addProject("git");
 
-        GenericType<List<String>> type = new GenericType<List<String>>() {
+        GenericType<List<String>> type = new GenericType<>() {
         };
 
         List<String> projects = target("projects")
@@ -442,7 +442,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
     @Test
     public void testGetReposForNonExistentProject() throws Exception {
-        GenericType<List<String>> type = new GenericType<List<String>>() {
+        GenericType<List<String>> type = new GenericType<>() {
         };
 
         // Try to get repos for non-existent project first.
@@ -457,7 +457,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
     @Test
     public void testGetRepos() throws Exception {
-        GenericType<List<String>> type = new GenericType<List<String>>() {
+        GenericType<List<String>> type = new GenericType<>() {
         };
 
         // Create subrepository.
@@ -548,7 +548,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     @Test
     public void testListFiles() throws IOException, IndexerException {
         final String projectName = "mercurial";
-        GenericType<List<String>> type = new GenericType<List<String>>() {
+        GenericType<List<String>> type = new GenericType<>() {
         };
 
         Indexer.getInstance().prepareIndexer(

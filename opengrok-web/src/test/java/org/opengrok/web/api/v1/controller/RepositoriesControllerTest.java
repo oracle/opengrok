@@ -23,6 +23,8 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -38,7 +40,6 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
-import javax.ws.rs.core.Application;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public class RepositoriesControllerTest extends OGKJerseyTest {
         repository.destroy();
     }
 
-    @Test(expected = javax.ws.rs.NotFoundException.class)
+    @Test(expected = NotFoundException.class)
     public void testGetRepositoryTypeOfNonExistentRepository() throws Exception {
         getRepoType(Paths.get("/totally-nonexistent-repository").toString());
     }

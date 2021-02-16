@@ -23,6 +23,8 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -37,8 +39,6 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -122,7 +122,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)
                 .request()
-                .get(new GenericType<List<AnnotationController.AnnotationDTO>>() {
+                .get(new GenericType<>() {
                 });
         assertEquals(getNumLines(new File(env.getSourceRootFile(), path)), annotations.size());
         assertEquals("Trond Norbye", annotations.get(0).getAuthor());
@@ -146,7 +146,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
                 .queryParam("path", path)
                 .queryParam("revision", "bb74b7e8")
                 .request()
-                .get(new GenericType<List<AnnotationController.AnnotationDTO>>() {
+                .get(new GenericType<>() {
                 });
         assertEquals(8, annotations.size());
         assertEquals("Trond Norbye", annotations.get(0).getAuthor());

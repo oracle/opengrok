@@ -23,6 +23,15 @@
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -32,15 +41,6 @@ import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;

@@ -22,11 +22,11 @@
  */
 package org.opengrok.web.api.error;
 
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.opengrok.indexer.logger.LoggerFactory;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

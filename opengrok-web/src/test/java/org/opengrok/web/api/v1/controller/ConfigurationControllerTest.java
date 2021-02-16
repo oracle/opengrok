@@ -28,10 +28,11 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.CountDownLatch;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Assert;

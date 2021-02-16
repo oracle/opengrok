@@ -22,6 +22,9 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -40,9 +43,6 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryDTO;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryEntryDTO;
 
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -136,7 +136,7 @@ public class HistoryControllerTest extends OGKJerseyTest {
                 .queryParam("start", start)
                 .request()
                 .get();
-        HistoryDTO history = response.readEntity(new GenericType<HistoryDTO>() {
+        HistoryDTO history = response.readEntity(new GenericType<>() {
         });
         assertEquals(size, history.getEntries().size());
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());

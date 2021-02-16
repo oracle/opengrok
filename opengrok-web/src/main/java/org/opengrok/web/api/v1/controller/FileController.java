@@ -23,6 +23,15 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
@@ -32,15 +41,6 @@ import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
 import org.opengrok.web.util.NoPathParameterException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

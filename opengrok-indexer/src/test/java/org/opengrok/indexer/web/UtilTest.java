@@ -35,9 +35,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

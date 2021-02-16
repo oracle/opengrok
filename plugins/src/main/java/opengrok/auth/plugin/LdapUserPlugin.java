@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
