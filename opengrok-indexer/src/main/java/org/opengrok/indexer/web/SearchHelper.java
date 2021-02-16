@@ -319,7 +319,7 @@ public class SearchHelper {
                     searcher = new IndexSearcher(reader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index";
-                    if (projects.size() > 0) {
+                    if (!projects.isEmpty()) {
                         errorMsg += " for projects: " + String.join(", ", projects);
                     }
                     return this;
@@ -347,7 +347,7 @@ public class SearchHelper {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
             errorMsg = "Index database not found. Check the index";
-            if (projects.size() > 0) {
+            if (!projects.isEmpty()) {
                 errorMsg += " for projects: " + String.join(", ", projects);
             }
             errorMsg += "; " + e.getMessage();
