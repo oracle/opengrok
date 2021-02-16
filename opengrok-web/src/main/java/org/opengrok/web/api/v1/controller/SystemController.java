@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import org.opengrok.indexer.configuration.IndexTimestamp;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.EftarFile;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -41,9 +41,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -88,8 +86,7 @@ public class SystemController {
     @Path("/indextime")
     @Produces(MediaType.APPLICATION_JSON)
     public String getIndexTime() throws JsonProcessingException {
-        File indexTimeFile = Paths.get(env.getDataRootFile().toString(), "timestamp").toFile();
-        Date date = new Date(indexTimeFile.lastModified());
+        Date date = new IndexTimestamp().getDateForLastIndexRun();
         ObjectMapper mapper = new ObjectMapper();
         // StdDateFormat is ISO8601 since jackson 2.9
         mapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
