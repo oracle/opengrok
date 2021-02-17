@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -139,12 +140,12 @@ public class SystemControllerTest extends OGKJerseyTest {
     public void testIndexTime() throws IOException, ParseException {
         Path dataRoot = Files.createTempDirectory("indexTimetest");
         env.setDataRoot(dataRoot.toString());
-        File indexTimeFile = Paths.get(dataRoot.toString(), "timestamp").toFile();
-        indexTimeFile.createNewFile();
-        assertTrue(indexTimeFile.exists());
+        Path indexTimeFile = dataRoot.resolve("timestamp");
+        Files.createFile(indexTimeFile);
+        assertTrue(Files.exists(indexTimeFile));
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss+ZZ");
         Date date = f.parse("2021-02-16_11:18:01+UTC");
-        indexTimeFile.setLastModified(date.getTime());
+        Files.setLastModifiedTime(indexTimeFile, FileTime.fromMillis(date.getTime()));
 
         Response r = target("system")
                 .path("indextime")
