@@ -135,9 +135,7 @@ public class IndexCheck {
         int segVersion;
 
         try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockFactory)) {
-           SegmentInfos segInfos;
-
-            segInfos = SegmentInfos.readLatestCommit(indexDirectory);
+            SegmentInfos segInfos = SegmentInfos.readLatestCommit(indexDirectory);
             segVersion = segInfos.getIndexCreatedVersionMajor();
         }
 
