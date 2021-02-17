@@ -104,7 +104,7 @@ public final class WebappListener
             env.watchDog.start(new File(pluginDirectory));
         }
 
-        // Check project index(es).
+        // Check index(es).
         if (env.isProjectsEnabled()) {
             LOGGER.log(Level.FINE, "Checking indexes for all projects");
             Map<String, Project> projects = env.getProjects();
