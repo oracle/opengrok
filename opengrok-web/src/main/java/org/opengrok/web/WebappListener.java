@@ -105,6 +105,18 @@ public final class WebappListener
         }
 
         // Check index(es).
+        check_index(env);
+
+        env.startExpirationTimer();
+        startupTimer.record(Duration.between(start, Instant.now()));
+    }
+
+    /**
+     * Checks the index(es). If projects are enabled then each project with invalid index
+     * is marked as not being indexed.
+     * @param env runtime environment
+     */
+    private void check_index(RuntimeEnvironment env) {
         if (env.isProjectsEnabled()) {
             LOGGER.log(Level.FINE, "Checking indexes for all projects");
             Map<String, Project> projects = env.getProjects();
@@ -130,9 +142,6 @@ public final class WebappListener
             }
             LOGGER.log(Level.FINE, "Index check done");
         }
-
-        env.startExpirationTimer();
-        startupTimer.record(Duration.between(start, Instant.now()));
     }
 
     /**
