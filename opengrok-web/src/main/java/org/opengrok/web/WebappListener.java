@@ -121,6 +121,14 @@ public final class WebappListener
                 }
             }
             LOGGER.log(Level.FINE, "Index check for all projects done");
+        } else {
+            LOGGER.log(Level.FINE, "Checking index");
+            try {
+                IndexCheck.checkDir(new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR));
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "index check failed", e);
+            }
+            LOGGER.log(Level.FINE, "Index check done");
         }
 
         env.startExpirationTimer();
