@@ -45,10 +45,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SystemControllerTest extends OGKJerseyTest {
@@ -153,7 +151,7 @@ public class SystemControllerTest extends OGKJerseyTest {
                 .request().get();
         String result = r.readEntity(String.class);
 
-        assertThat(result, containsString("2021-02-16T11:18:01.000+00:00"));
+        assertEquals("\"2021-02-16T11:18:01.000+00:00\"", result);
 
         // Cleanup
         IOUtils.removeRecursive(dataRoot);
