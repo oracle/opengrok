@@ -90,7 +90,6 @@ public class SystemController {
         ObjectMapper mapper = new ObjectMapper();
         // StdDateFormat is ISO8601 since jackson 2.9
         mapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
-        String result = mapper.writeValueAsString(date);
-        return result;
+        return mapper.writeValueAsString(date);
     }
 }
