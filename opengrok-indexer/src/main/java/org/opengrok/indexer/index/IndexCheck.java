@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -38,38 +38,52 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
- * Index version checker.
+ * Index checker.
  *
- * @author Vladimir Kotal
+ * @author Vladimír Kotal
  */
-public class IndexVersion {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IndexVersion.class);
+public class IndexCheck {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexCheck.class);
 
     /**
      * Exception thrown when index version does not match Lucene version.
      */
     public static class IndexVersionException extends Exception {
 
-        private static final long serialVersionUID = -756788782277552544L;
+        private static final long serialVersionUID = 5693446916108385595L;
 
-        public IndexVersionException(String s) {
+        private int luceneIndexVersion = -1;
+        private int indexVersion = -1;
+
+        public IndexVersionException(String s, int luceneIndexVersion, int indexVersion) {
             super(s);
+
+            this.indexVersion = indexVersion;
+            this.luceneIndexVersion = luceneIndexVersion;
+        }
+
+        @Override
+        public String toString() {
+            return getMessage() + ": " + String.format("Lucene version = %d", luceneIndexVersion) + ", " +
+                    String.format("index version = %d", indexVersion);
         }
     }
 
-    private IndexVersion() {
+    private IndexCheck() {
+        // utility class
     }
     
     /**
      * Check if version of index(es) matches major Lucene version.
      * @param subFilesList list of paths. If non-empty, only projects matching these paths will be checked.
-     * @throws Exception otherwise
+     * @return true on success, false on failure
      */
-    public static void check(List<String> subFilesList) throws Exception {
+    public static boolean check(List<String> subFilesList) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
         LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
                 indexRoot);
+        int ret = 0;
 
         if (!subFilesList.isEmpty()) {
             // Assumes projects are enabled.
@@ -77,7 +91,7 @@ public class IndexVersion {
                 LOGGER.log(Level.FINER,
                         "Checking Lucene index version in project {0}",
                         projectName);
-                checkDir(new File(indexRoot, projectName));
+                ret |= checkDirNoExceptions(new File(indexRoot, projectName));
             }
         } else {
             if (env.isProjectsEnabled()) {
@@ -85,42 +99,52 @@ public class IndexVersion {
                     LOGGER.log(Level.FINER,
                             "Checking Lucene index version in project {0}",
                             projectName);
-                    checkDir(new File(indexRoot, projectName));
+                    ret |= checkDirNoExceptions(new File(indexRoot, projectName));
                 }
             } else {
                 LOGGER.log(Level.FINER, "Checking Lucene index version in {0}",
                         indexRoot);
-                checkDir(indexRoot);
+                ret |= checkDirNoExceptions(indexRoot);
             }
         }
+
+        return ret == 0;
+    }
+
+    private static int checkDirNoExceptions(File dir) {
+        try {
+            checkDir(dir);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Index check for directory " + dir.toString() + " failed", e);
+            return 1;
+        }
+
+        return 0;
     }
 
     /**
-     * Check index version in given directory. It assumes that that all commits
+     * Check index in given directory. It assumes that that all commits (if any)
      * in the Lucene segment file were done with the same version.
      *
      * @param dir directory with index
-     * @thows IOException if the directory cannot be opened
+     * @throws IOException if the directory cannot be opened
+     * @throws IndexVersionException if the version of the index does not match Lucene index version
      */
-    private static void checkDir(File dir) throws Exception {
-        LockFactory lockfact = NativeFSLockFactory.INSTANCE;
+    public static void checkDir(File dir) throws IndexVersionException, IOException {
+        LockFactory lockFactory = NativeFSLockFactory.INSTANCE;
         int segVersion;
 
-        try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockfact)) {
-           SegmentInfos segInfos = null;
+        try (Directory indexDirectory = FSDirectory.open(dir.toPath(), lockFactory)) {
+           SegmentInfos segInfos;
 
-            try {
-                segInfos = SegmentInfos.readLatestCommit(indexDirectory);
-                segVersion = segInfos.getIndexCreatedVersionMajor();
-            } catch (IndexNotFoundException e) {
-                return;
-            }
+            segInfos = SegmentInfos.readLatestCommit(indexDirectory);
+            segVersion = segInfos.getIndexCreatedVersionMajor();
         }
 
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
-                String.format("Directory %s has index of version %d and Lucene has %d",
-                dir.toString(), segVersion, Version.LATEST.major));
+                String.format("Directory %s has index version discrepancy", dir.toString()),
+                    Version.LATEST.major, segVersion);
         }
     }
 }

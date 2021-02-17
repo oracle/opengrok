@@ -29,7 +29,10 @@ import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexCheck;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
@@ -43,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,6 +102,25 @@ public final class WebappListener
         String pluginDirectory = env.getPluginDirectory();
         if (pluginDirectory != null && env.isAuthorizationWatchdog()) {
             env.watchDog.start(new File(pluginDirectory));
+        }
+
+        // Check project index(es).
+        if (env.isProjectsEnabled()) {
+            LOGGER.log(Level.FINE, "Checking indexes for all projects");
+            Map<String, Project> projects = env.getProjects();
+            File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
+            if (indexRoot.exists()) {
+                for (String projectName : projects.keySet()) {
+                    try {
+                        IndexCheck.checkDir(new File(indexRoot, projectName));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING,
+                                String.format("Project %s index check failed, marking as not indexed", projectName), e);
+                        projects.get(projectName).setIndexed(false);
+                    }
+                }
+            }
+            LOGGER.log(Level.FINE, "Index check for all projects done");
         }
 
         env.startExpirationTimer();
