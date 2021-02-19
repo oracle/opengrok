@@ -134,11 +134,13 @@ def main():
     if logprop_file:
         os.remove(logprop_file)
 
-    # TODO
+    output_printed = False
     if args.printoutput:
         logger.info(indexer.getoutputstr())
+        output_printed = True
     if ret is None or ret != SUCCESS_EXITVAL:
-        logger.error(indexer.getoutputstr())
+        if not output_printed:
+            logger.error(indexer.getoutputstr())
         logger.error("Indexer command for project {} failed (return code {})".
                      format(args.project, ret))
         sys.exit(FAILURE_EXITVAL)
