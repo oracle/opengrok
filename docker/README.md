@@ -28,7 +28,7 @@ image based on the official one.
 
 ## Additional info about the image
 
-* Tomcat 9
+* Tomcat 10
 * JRE 11
 * Configurable mirroring/reindexing (default every 10 min)
 
