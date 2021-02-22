@@ -1,0 +1,25 @@
+commands:
+- command:
+  - '%URL%api/v1/messages'
+  - POST
+  - messageLevel: warning
+    duration: PT1H
+    tags: ['%PROJECT%']
+    text: resync + reindex in progress
+- command: [opengrok-mirror, -I, -U, '%URL%', '%PROJECT%']
+- command: [opengrok-reindex-project, --printoutput,
+    --jar, /opengrok/lib/opengrok.jar, -U, '%URL%', -P, '%PROJECT%', --,
+    -r, dirbased, -G, -m, '256', --leadingWildCards, 'on',
+    -c, /usr/local/bin/ctags, -U, '%URL%', -H, '%PROJECT%']
+  limits: {RLIMIT_NOFILE: 1024}
+- command:
+  - '%URL%api/v1/messages?tag=%PROJECT%'
+  - DELETE
+  - 'resync + reindex in progress'
+  - 'Content-type': 'text/plain'
+cleanup:
+- command:
+  - '%URL%api/v1/messages?tag=%PROJECT%'
+  - DELETE
+  - 'resync + reindex in progress'
+  - 'Content-type': 'text/plain'
