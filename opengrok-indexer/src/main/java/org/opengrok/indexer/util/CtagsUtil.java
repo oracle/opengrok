@@ -90,27 +90,31 @@ public class CtagsUtil {
 
     /**
      * Deletes Ctags temporary files left over after terminating Ctags processes
-     * in case of timeout, @see Ctags#doCtags.
+     * in case of timeout or Ctags crash, @see Ctags#doCtags.
      */
     public static void deleteTempFiles() {
         String[] dirs = {System.getProperty("java.io.tmpdir"),
                 System.getenv("TMPDIR"), System.getenv("TMP")};
 
-        for (String dir : dirs) {
-            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory {0}", dir);
-            deleteTempFiles(dir);
+        for (String directoryName : dirs) {
+            if (directoryName == null) {
+                continue;
+            }
+
+            File directory = new File(directoryName);
+            if (!directory.isDirectory()) {
+                continue;
+            }
+
+            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory {0}", directoryName);
+            deleteTempFiles(directory);
         }
     }
 
-    private static void deleteTempFiles(String directoryName) {
+    private static void deleteTempFiles(File directory) {
         final Pattern pattern = Pattern.compile("tags\\.\\S{6}"); // ctags uses this pattern to call mkstemp()
 
-        if (directoryName == null) {
-            return;
-        }
-
-        File dir = new File(directoryName);
-        File[] files = dir.listFiles((dir1, name) -> {
+        File[] files = directory.listFiles((dir1, name) -> {
             Matcher matcher = pattern.matcher(name);
             return matcher.find();
         });
