@@ -46,7 +46,7 @@ class CommandSequenceBase:
     """
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
-                 driveon=False, url=None, env=None):
+                 driveon=False, url=None, env=None, http_headers=None):
         self.name = name
         self.commands = commands
         self.failed = False
@@ -59,6 +59,7 @@ class CommandSequenceBase:
         self.loglevel = loglevel
         self.driveon = driveon
         self.env = env
+        self.http_headers = http_headers
 
         self.url = url
 
@@ -127,7 +128,8 @@ class CommandSequence(CommandSequenceBase):
             if cmd_value.startswith(URL_SUBST) or is_web_uri(cmd_value):
                 try:
                     call_rest_api(command, {PROJECT_SUBST: self.name,
-                                            URL_SUBST: self.url})
+                                            URL_SUBST: self.url},
+                                  self.http_headers)
                 except HTTPError as e:
                     self.logger.error("RESTful command {} failed: {}".
                                       format(command, e))

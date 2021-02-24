@@ -20,12 +20,13 @@
 #
 
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import argparse
 import pytest
-from opengrok_tools.utils.parsers import str2bool
+import os
+from opengrok_tools.utils.parsers import str2bool, get_headers
 
 
 def test_str2bool_exception():
@@ -51,3 +52,24 @@ def test_str2bool():
     for val in ['false', 'n', 'no']:
         assert not str2bool(val)
         assert not str2bool(val.upper())
+
+
+def test_get_headers():
+    assert get_headers(None) == {}
+    assert get_headers([]) == {}
+
+    assert get_headers(['foo: bar', 'mumble: bumble']) == {'foo': 'bar', 'mumble': 'bumble'}
+
+
+def test_get_headers_file(tmp_path):
+    assert get_headers(None) == {}
+    assert get_headers([]) == {}
+
+    headers_file = {'Moomintroll': 'Snorkmaiden', 'Mymble': 'Little My'}
+    file_path = tmp_path / "headers"
+    headers_text = os.linesep.join(key + ': ' + str(val) for key, val in headers_file.items())
+    file_path.write_text(headers_text)
+
+    headers_expected = {'mumble': 'bumble'}
+    headers_expected.update(headers_file)
+    assert get_headers(['@' + str(file_path), 'mumble: bumble']) == headers_expected

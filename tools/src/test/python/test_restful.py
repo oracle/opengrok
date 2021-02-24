@@ -75,9 +75,9 @@ def test_unknown_verb():
         call_rest_api(command, {pattern: value})
 
 
-def test_headers(monkeypatch):
+def test_content_type(monkeypatch):
     """
-    Test HTTP header handling.
+    Test HTTP Content-type header handling.
     """
     for verb in ["PUT", "POST", "DELETE"]:
         text_plain_header = {CONTENT_TYPE: 'text/plain'}
@@ -96,6 +96,28 @@ def test_headers(monkeypatch):
                 m.setattr("opengrok_tools.utils.restful.do_api_call",
                           mock_response)
                 call_rest_api(command)
+
+
+def test_headers(monkeypatch):
+    """
+    Test that HTTP headers from command specification are united with
+    HTTP headers passed to call_res_api()
+    :param monkeypatch: monkey fixture
+    """
+    headers = {'Tatsuo': 'Yasuko'}
+    command = {"command": ["http://localhost:8080/source/api/v1/bar",
+                           'GET', "data", headers]}
+    extra_headers = {'Mei': 'Totoro'}
+
+    def mock_response(uri, verb, headers, data):
+        all_headers = headers
+        all_headers.update(extra_headers)
+        assert headers == all_headers
+
+    with monkeypatch.context() as m:
+        m.setattr("opengrok_tools.utils.restful.do_api_call",
+                  mock_response)
+        call_rest_api(command, http_headers=extra_headers)
 
 
 def test_restful_fail(monkeypatch):
