@@ -30,7 +30,7 @@ import tempfile
 from .utils.indexer import Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import get_configuration
-from .utils.parsers import get_java_parser
+from .utils.parsers import get_java_parser, add_http_headers, get_headers
 from .utils.exitvals import (
     FAILURE_EXITVAL,
     SUCCESS_EXITVAL
@@ -89,8 +89,7 @@ def main():
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
-    headers = {}
-    # TODO HTTP headers - append headers
+    add_http_headers(parser)
 
     cmd_args = sys.argv[1:]
     extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
@@ -112,6 +111,7 @@ def main():
             os.makedirs(args.directory)
 
     # Get files needed for per-project reindex.
+    headers = get_headers(args.header)
     conf_file = get_config_file(logger, args.uri, headers=headers)
     logprop_file = None
     if args.template and args.pattern:
