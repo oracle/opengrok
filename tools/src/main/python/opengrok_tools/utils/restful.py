@@ -76,17 +76,18 @@ def subst(src, substitutions):
     return src
 
 
-def call_rest_api(command, substitutions=None):
+def call_rest_api(command, substitutions=None, http_headers=None):
     """
     Make RESTful API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
 
     Default content type is application/json.
 
-    :param command: command (list of URI, HTTP verb, data payload)
+    :param command: command (list of URI, HTTP verb, data payload,
+                             HTTP header dictionary)
     :param substitutions: dictionary of pattern:value for command and/or
                           data substitution
-    :param name: command name
+    :param http_headers: optional dictionary of HTTP headers to be appended
     :return return value from given requests method
     """
 
@@ -107,6 +108,9 @@ def call_rest_api(command, substitutions=None):
 
     if headers is None:
         headers = {}
+
+    if http_headers:
+        headers.update(http_headers)
 
     uri = subst(uri, substitutions)
     header_names = [x.lower() for x in headers.keys()]

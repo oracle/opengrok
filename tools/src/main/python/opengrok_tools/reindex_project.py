@@ -60,11 +60,11 @@ def get_logprop_file(logger, template, pattern, project):
     return tmpf.name
 
 
-def get_config_file(logger, uri):
+def get_config_file(logger, uri, headers=None):
     """
     Get fresh configuration from the webapp and store it in temporary file.
     """
-    config = get_configuration(logger, uri)
+    config = get_configuration(logger, uri, headers)
 
     with tempfile.NamedTemporaryFile(delete=False) as tmpf:
         tmpf.write(config.encode())
@@ -89,6 +89,8 @@ def main():
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
+    headers = {}
+    # TODO HTTP headers - append headers
 
     cmd_args = sys.argv[1:]
     extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
@@ -110,7 +112,7 @@ def main():
             os.makedirs(args.directory)
 
     # Get files needed for per-project reindex.
-    conf_file = get_config_file(logger, args.uri)
+    conf_file = get_config_file(logger, args.uri, headers=headers)
     logprop_file = None
     if args.template and args.pattern:
         logprop_file = get_logprop_file(logger, args.template, args.pattern,
