@@ -39,7 +39,7 @@ from filelock import Timeout, FileLock
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
-from .utils.parsers import get_base_parser
+from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
 from .utils.exitvals import (
@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 
 def worker(base):
@@ -68,7 +68,8 @@ def worker(base):
 
 
 def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
-            uri, numworkers, driveon=False, print_output=False, logger=None):
+            uri, numworkers, driveon=False, print_output=False, logger=None,
+            http_headers=None):
     """
     Process the list of directories in parallel.
     :param logger: logger to be used in this function
@@ -82,6 +83,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     :param driveon: continue even if encountering failure
     :param print_output: whether to print the output of the commands
                          using the supplied logger
+    :param logger: optional logger
+    :param http_headers: optional dictionary of HTTP headers
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
@@ -89,7 +92,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
     for dir in dirs_to_process:
         cmd_base = CommandSequenceBase(dir, commands, loglevel=loglevel,
                                        cleanup=cleanup,
-                                       driveon=driveon, url=uri)
+                                       driveon=driveon, url=uri,
+                                       http_headers=http_headers)
         cmds_base.append(cmd_base)
 
     # Map the commands into pool of workers so they can be processed.
@@ -144,6 +148,7 @@ def main():
     parser.add_argument('--nolock', action='store_false', default=True,
                         help='do not acquire lock that prevents multiple '
                         'instances from running')
+    add_http_headers(parser)
 
     try:
         args = parser.parse_args()
@@ -180,10 +185,17 @@ def main():
         logger.error("The config file has to contain key \"commands\"")
         return FAILURE_EXITVAL
 
+    headers = get_headers(args.headers)
+    config_headers = config.get("headers")
+    if config_headers:
+        logger.debug("Updating HTTP headers with headers from the configuration: {}".
+                     format(config_headers))
+        headers.update(config_headers)
+
     directory = args.directory
     if not args.directory and not args.projects and not args.indexed:
         # Assume directory, get the source root value from the webapp.
-        directory = get_config_value(logger, 'sourceRoot', uri)
+        directory = get_config_value(logger, 'sourceRoot', uri, headers=headers)
         if not directory:
             logger.error("Neither -d or -P or -I specified and cannot get "
                          "source root from the webapp")
@@ -207,7 +219,7 @@ def main():
         logger.debug("Processing directories: {}".
                      format(dirs_to_process))
     elif args.indexed:
-        indexed_projects = list_indexed_projects(logger, uri)
+        indexed_projects = list_indexed_projects(logger, uri, headers=headers)
         logger.debug("Processing indexed projects: {}".
                      format(indexed_projects))
 
@@ -229,7 +241,7 @@ def main():
         r = do_sync(args.loglevel, commands, config.get("cleanup"),
                     dirs_to_process,
                     ignore_errors, uri, args.workers,
-                    driveon=args.driveon)
+                    driveon=args.driveon, http_headers=headers)
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
                                      "opengrok-sync.lock"))
@@ -238,7 +250,7 @@ def main():
                 r = do_sync(args.loglevel, commands, config.get("cleanup"),
                             dirs_to_process,
                             ignore_errors, uri, args.workers,
-                            driveon=args.driveon)
+                            driveon=args.driveon, http_headers=headers)
         except Timeout:
             logger.warning("Already running")
             return FAILURE_EXITVAL
