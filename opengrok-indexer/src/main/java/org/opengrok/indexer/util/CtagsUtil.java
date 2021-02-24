@@ -97,6 +97,7 @@ public class CtagsUtil {
                 System.getenv("TMPDIR"), System.getenv("TMP")};
 
         for (String dir : dirs) {
+            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory {0}", dir);
             deleteTempFiles(dir);
         }
     }
