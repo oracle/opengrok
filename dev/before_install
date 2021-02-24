@@ -14,7 +14,6 @@ if [[ "$RUNNER_OS" == "Linux" ]]; then
 	    cssc \
 	    bzr \
 	    subversion \
-	    monotone \
 	    rcs \
 	    rcs-blame \
 	    python3 \
