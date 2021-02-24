@@ -114,7 +114,7 @@ public class CtagsUtil {
     private static void deleteTempFiles(File directory) {
         final Pattern pattern = Pattern.compile("tags\\.\\S{6}"); // ctags uses this pattern to call mkstemp()
 
-        File[] files = directory.listFiles((dir1, name) -> {
+        File[] files = directory.listFiles((dir, name) -> {
             Matcher matcher = pattern.matcher(name);
             return matcher.find();
         });
