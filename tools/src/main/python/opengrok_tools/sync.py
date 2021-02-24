@@ -185,7 +185,7 @@ def main():
         logger.error("The config file has to contain key \"commands\"")
         return FAILURE_EXITVAL
 
-    headers = get_headers(args.headers)
+    headers = get_headers(args.header)
     config_headers = config.get("headers")
     if config_headers:
         logger.debug("Updating HTTP headers with headers from the configuration: {}".
