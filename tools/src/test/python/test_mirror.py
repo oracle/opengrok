@@ -308,10 +308,10 @@ def test_get_repos_for_project(monkeypatch):
     timeout = 314159
     test_repo = "/" + project_name
 
-    def mock_get_repos(*args):
+    def mock_get_repos(*args, headers=None):
         return [test_repo]
 
-    def mock_get_repo_type(*args):
+    def mock_get_repo_type(*args, headers=None):
         return "Git"
 
     with tempfile.TemporaryDirectory() as source_root:

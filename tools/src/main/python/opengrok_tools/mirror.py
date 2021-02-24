@@ -47,7 +47,7 @@ from .utils.exitvals import (
 from .utils.log import get_console_logger, get_class_basename, \
     fatal, get_batch_logger
 from .utils.opengrok import get_config_value, list_indexed_projects
-from .utils.parsers import get_base_parser
+from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
 from .utils.utils import get_int, is_web_uri
 from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
@@ -58,12 +58,12 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "0.9"
+__version__ = "1.0"
 
 
 def worker(args):
     project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
-        source_root, batch = args
+        source_root, batch, headers = args
 
     if batch:
         get_batch_logger(logdir, project_name,
@@ -73,7 +73,7 @@ def worker(args):
 
     return mirror_project(config, project_name,
                           check_changes,
-                          uri, source_root)
+                          uri, source_root, headers=headers)
 
 
 def main():
@@ -104,7 +104,7 @@ def main():
                              ' if no change is found.')
     parser.add_argument('-w', '--workers', default=cpu_count(),
                         help='Number of worker processes')
-    # TODO HTTP headers
+    add_http_headers(parser)
 
     try:
         args = parser.parse_args()
@@ -112,6 +112,8 @@ def main():
         return fatal(e, False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
+
+    headers = get_headers(args.header)
 
     nomirror = os.environ.get("OPENGROK_NO_MIRROR")
     if nomirror and len(nomirror) > 0:
@@ -142,7 +144,8 @@ def main():
         return 1
 
     # Save the source root to avoid querying the web application.
-    source_root = get_config_value(logger, 'sourceRoot', uri)
+    source_root = get_config_value(logger, 'sourceRoot', uri,
+                                   headers=headers)
     if not source_root:
         return 1
 
@@ -180,7 +183,7 @@ def main():
         lockfile = os.path.basename(sys.argv[0])
 
     if args.all:
-        projects = list_indexed_projects(logger, args.uri)
+        projects = list_indexed_projects(logger, args.uri, headers=headers)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
@@ -192,7 +195,7 @@ def main():
                                         args.backupcount, config,
                                         args.check_changes,
                                         args.uri, source_root,
-                                        args.batch])
+                                        args.batch, headers])
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:

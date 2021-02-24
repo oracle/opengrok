@@ -63,7 +63,8 @@ DISABLED_CMD_PROPERTY = 'disabled_command'
 
 def get_repos_for_project(project_name, uri, source_root,
                           ignored_repos=None,
-                          commands=None, proxy=None, command_timeout=None):
+                          commands=None, proxy=None, command_timeout=None,
+                          headers=None):
     """
     :param project_name: project name
     :param uri: web application URI
@@ -73,13 +74,14 @@ def get_repos_for_project(project_name, uri, source_root,
     :param proxy: dictionary of proxy servers - to be used as environment
                   variables
     :param command_timeout: command timeout value in seconds
+    :param headers: optional HTTP headers dictionary
     :return: list of Repository objects
     """
 
     logger = logging.getLogger(__name__)
 
     repos = []
-    for repo_path in get_repos(logger, project_name, uri):
+    for repo_path in get_repos(logger, project_name, uri, headers=headers):
         logger.debug("Repository path = {}".format(repo_path))
 
         if ignored_repos:
@@ -344,7 +346,7 @@ def handle_disabled_project(config, project_name, disabled_msg):
 
 
 def mirror_project(config, project_name, check_changes, uri,
-                   source_root):
+                   source_root, headers=None):
     """
     Mirror the repositories of single project.
     :param config global configuration dictionary
@@ -396,7 +398,8 @@ def mirror_project(config, project_name, check_changes, uri,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
                                   proxy=proxy,
-                                  command_timeout=command_timeout)
+                                  command_timeout=command_timeout,
+                                  headers=headers)
     if not repos:
         logger.info("No repositories for project {}".
                     format(project_name))
