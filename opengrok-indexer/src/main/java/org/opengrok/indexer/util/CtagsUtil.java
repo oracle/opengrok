@@ -30,7 +30,11 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -93,8 +97,13 @@ public class CtagsUtil {
      * in case of timeout or Ctags crash, @see Ctags#doCtags.
      */
     public static void deleteTempFiles() {
-        String[] dirs = {System.getProperty("java.io.tmpdir"),
-                System.getenv("TMPDIR"), System.getenv("TMP")};
+        Set<String> dirs = new HashSet<>(Arrays.asList(System.getProperty("java.io.tmpdir"),
+                System.getenv("TMPDIR"), System.getenv("TMP")));
+
+        if (PlatformUtils.isUnix()) {
+            // hard-coded TMPDIR in Universal Ctags on Unix.
+            dirs.add("/tmp");
+        }
 
         for (String directoryName : dirs) {
             if (directoryName == null) {
