@@ -263,7 +263,7 @@ def main():
     #
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
-    headers = get_headers(args.headers)
+    headers = get_headers(args.header)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")
