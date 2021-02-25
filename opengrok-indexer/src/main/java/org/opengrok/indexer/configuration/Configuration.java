@@ -305,6 +305,7 @@ public final class Configuration {
 
     private Set<String> authenticationTokens; // for non-localhost API access
     private String indexerAuthenticationToken;
+    private boolean allowInsecureTokens;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -1354,6 +1355,14 @@ public final class Configuration {
 
     public void setIndexerAuthenticationToken(String token) {
         this.indexerAuthenticationToken = token;
+    }
+
+    public boolean isAllowInsecureTokens() {
+        return this.allowInsecureTokens;
+    }
+
+    public void setAllowInsecureTokens(boolean value) {
+        this.allowInsecureTokens = value;
     }
 
     /**

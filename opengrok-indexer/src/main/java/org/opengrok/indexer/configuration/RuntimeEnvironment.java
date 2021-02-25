@@ -1968,6 +1968,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(tokens, Configuration::setAuthenticationTokens);
     }
 
+    public boolean isAllowInsecureTokens() {
+        return syncReadConfiguration(Configuration::isAllowInsecureTokens);
+    }
+
+    public void setAllowInsecureTokens(boolean value) {
+        syncWriteConfiguration(value, Configuration::setAllowInsecureTokens);
+    }
+
     public void registerListener(ConfigurationChangedListener listener) {
         listeners.add(listener);
     }

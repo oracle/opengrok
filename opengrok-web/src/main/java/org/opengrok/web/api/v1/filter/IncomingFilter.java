@@ -122,13 +122,15 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
 
         String path = context.getUriInfo().getPath();
 
-        if (request.isSecure()) {
-            String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
-                String tokenValue = authHeaderValue.substring(BEARER.length());
-                if (getTokens().contains(tokenValue)) {
-                    LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
+        String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
+            String tokenValue = authHeaderValue.substring(BEARER.length());
+            if (getTokens().contains(tokenValue)) {
+                if (request.isSecure() || RuntimeEnvironment.getInstance().isAllowInsecureTokens()) {
+                    LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication token", path);
                     return;
+                } else {
+                    LOGGER.log(Level.FINEST, "request to {0} has a valid token however is not secure", path);
                 }
             }
         }
