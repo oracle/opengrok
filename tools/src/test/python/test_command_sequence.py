@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -180,3 +180,20 @@ def test_restful_fail(monkeypatch):
                   mock_response)
         commands.run()
         assert commands.check([]) == 1
+
+
+def test_headers_init():
+    headers = {'foo': 'bar'}
+
+    # First verify that header parameter of a command does not impact class member.
+    commands = CommandSequence(CommandSequenceBase("opengrok-master",
+                                                   [{'command': ['http://foo', 'PUT', 'data', headers]}]))
+
+    assert commands.http_headers is None
+
+    # Second, verify that init function propagates the headers.
+    commands = CommandSequence(CommandSequenceBase("opengrok-master",
+                                                   [{'command': ['http://foo', 'PUT', 'data']}],
+                                                   http_headers=headers))
+
+    assert commands.http_headers == headers
