@@ -307,7 +307,7 @@ def run_command(cmd, project_name):
                             cmd.getoutputstr()))
 
 
-def handle_disabled_project(config, project_name, disabled_msg):
+def handle_disabled_project(config, project_name, disabled_msg, headers=None):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
@@ -329,7 +329,8 @@ def handle_disabled_project(config, project_name, disabled_msg):
                 command_args[2]["text"] = text + ": " + disabled_msg
 
             try:
-                call_rest_api(disabled_command, {PROJECT_SUBST: project_name})
+                call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
+                              http_headers=headers)
             except HTTPError as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
@@ -384,7 +385,8 @@ def mirror_project(config, project_name, check_changes, uri,
         if project_config.get(DISABLED_PROPERTY):
             handle_disabled_project(config, project_name,
                                     project_config.
-                                    get(DISABLED_REASON_PROPERTY))
+                                    get(DISABLED_REASON_PROPERTY),
+                                    headers=headers)
             logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL
