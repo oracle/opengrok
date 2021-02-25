@@ -33,7 +33,7 @@ image based on the official one.
 * Configurable mirroring/reindexing (default every 10 min)
 
 The mirroring step works by going through all projects and attempting to
-synchronize all its repositories (e.g. it will do `git pull` for Git
+synchronize all its repositories (e.g. it will do `git pull --ff-only` for Git
 repositories).
 
 Projects are enabled in this setup and there is no way how to change that.
