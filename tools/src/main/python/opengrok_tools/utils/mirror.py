@@ -91,7 +91,7 @@ def get_repos_for_project(project_name, uri, source_root,
                 logger.info("repository {} ignored".format(repo_path))
                 continue
 
-        repo_type = get_repo_type(logger, repo_path, uri)
+        repo_type = get_repo_type(logger, repo_path, uri, headers=headers)
         if not repo_type:
             raise RepositoryException("cannot determine type of repository {}".
                                       format(repo_path))
@@ -243,10 +243,11 @@ def process_hook(hook_ident, hook, source_root, project_name, proxy,
     return True
 
 
-def process_changes(repos, project_name, uri):
+def process_changes(repos, project_name, uri, headers=None):
     """
     :param repos: repository list
     :param project_name: project name
+    :param headers: optional dictionary of HTTP headers
     :return: exit code
     """
     logger = logging.getLogger(__name__)
@@ -257,7 +258,8 @@ def process_changes(repos, project_name, uri):
     try:
         r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
                                        urllib.parse.quote_plus(project_name),
-                                       'property', 'indexed'))
+                                       'property', 'indexed'),
+                        headers=headers)
         if not bool(r.json()):
             changes_detected = True
             logger.info('Project {} has not been indexed yet'
@@ -407,7 +409,7 @@ def mirror_project(config, project_name, check_changes, uri,
 
     # Check if the project or any of its repositories have changed.
     if check_changes:
-        r = process_changes(repos, project_name, uri)
+        r = process_changes(repos, project_name, uri, headers=headers)
         if r != SUCCESS_EXITVAL:
             return r
 
