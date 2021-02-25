@@ -109,7 +109,10 @@ def call_rest_api(command, substitutions=None, http_headers=None):
     if headers is None:
         headers = {}
 
+    logger.debug("Headers from the command: {}".format(headers))
     if http_headers:
+        logger.debug("Updating HTTP headers for command {} with {}".
+                     format(command, http_headers))
         headers.update(http_headers)
 
     uri = subst(uri, substitutions)
