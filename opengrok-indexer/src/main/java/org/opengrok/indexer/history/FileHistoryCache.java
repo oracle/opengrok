@@ -103,14 +103,14 @@ class FileHistoryCache implements HistoryCache {
             Repository repository, File srcFile, File root, boolean renamed)
             throws HistoryException {
 
-        Statistics statRepoHist = new Statistics();
-
         File file = new File(root, filename);
         // Only store directory history for the top-level directory.
         if (file.isDirectory() && !filename.equals(repository.getDirectoryName())) {
             LOGGER.log(Level.FINE, "Not storing history cache for {0}: not top level directory", file);
             return;
         }
+
+        Statistics statRepoHist = new Statistics();
 
         /*
          * If the file was renamed (in the changesets that are being indexed),
