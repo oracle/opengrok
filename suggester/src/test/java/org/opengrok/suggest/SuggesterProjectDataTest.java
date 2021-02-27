@@ -308,4 +308,22 @@ public class SuggesterProjectDataTest {
         assertThat(searchCounts, contains(new SimpleEntry<>(t1.bytes(), 10), new SimpleEntry<>(t2.bytes(), 5)));
     }
 
+    @Test
+    public void testRebuildPicksUpNewFields() throws IOException {
+        // create dummy index
+        try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
+            iw.isOpen(); // dummy operation
+        }
+        init(false);
+
+        // add new field after suggester data were initialized
+        addText(FIELD, "term1 term2");
+
+        assertTrue(getSuggestions(FIELD, "t", 10).isEmpty());
+
+        data.rebuild();
+
+        assertFalse(getSuggestions(FIELD, "t", 10).isEmpty());
+    }
+
 }

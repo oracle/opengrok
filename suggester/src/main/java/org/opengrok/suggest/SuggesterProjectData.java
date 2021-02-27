@@ -98,6 +98,8 @@ class SuggesterProjectData implements Closeable {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    private final Set<String> allowedFields;
+
     private Set<String> fields;
 
     private final Directory tempDir;
@@ -106,34 +108,35 @@ class SuggesterProjectData implements Closeable {
             final Directory indexDir,
             final Path suggesterDir,
             final boolean allowMostPopular,
-            final Set<String> fields
+            final Set<String> allowedFields
     ) throws IOException {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
         this.allowMostPopular = allowMostPopular;
+        this.allowedFields = allowedFields;
 
         tempDir = FSDirectory.open(Paths.get(System.getProperty(TMP_DIR_PROPERTY)));
 
-        initFields(fields);
+        initFields();
     }
 
-    private void initFields(final Set<String> fields) throws IOException {
+    private void initFields() throws IOException {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             Collection<String> indexedFields = FieldInfos.getIndexedFields(indexReader);
-            if (fields == null) {
+            if (allowedFields == null) {
                 this.fields = new HashSet<>(indexedFields);
-            } else if (!indexedFields.containsAll(fields)) {
-                Set<String> copy = new HashSet<>(fields);
+            } else if (!indexedFields.containsAll(allowedFields)) {
+                Set<String> copy = new HashSet<>(allowedFields);
                 copy.removeAll(indexedFields);
                 logger.log(Level.WARNING,
                         "Fields {0} will be ignored because they were not found in index directory {1}",
                         new Object[] {copy, indexDir});
 
-                copy = new HashSet<>(fields);
+                copy = new HashSet<>(allowedFields);
                 copy.retainAll(indexedFields);
                 this.fields = copy;
             } else {
-                this.fields = new HashSet<>(fields);
+                this.fields = new HashSet<>(allowedFields);
             }
         }
     }
@@ -231,6 +234,7 @@ class SuggesterProjectData implements Closeable {
     public void rebuild() throws IOException {
         lock.writeLock().lock();
         try {
+            initFields();
             build();
 
             if (allowMostPopular) {
