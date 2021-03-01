@@ -316,7 +316,7 @@ public class SuggesterProjectDataTest {
         }
         init(false);
 
-        // add new field after suggester data were initialized
+        // add new field after suggester data was initialized
         addText(FIELD, "term1 term2");
 
         assertTrue(getSuggestions(FIELD, "t", 10).isEmpty());
