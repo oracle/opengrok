@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 
 def worker(base):
@@ -255,7 +255,7 @@ def main():
 
     logger.debug("directories to process: {}".format(dirs_to_process))
 
-    if len(args.project) == 1:
+    if args.project and len(args.project) == 1:
         lockfile_name = args.project[0]
     else:
         lockfile_name = os.path.basename(sys.argv[0])
