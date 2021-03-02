@@ -131,13 +131,15 @@ def main():
     group1 = parser.add_mutually_exclusive_group()
     group1.add_argument('-d', '--directory',
                         help='Directory to process')
-    group1.add_argument('-P', '--projects', nargs='*',
-                        help='List of projects to process')
+    group1.add_argument('-P', '--project', nargs='*',
+                        help='project(s) to process')
 
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
+    parser.add_argument('--ignore_project', nargs='+',
+                        help='do not process given project(s)')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
@@ -193,7 +195,7 @@ def main():
         headers.update(config_headers)
 
     directory = args.directory
-    if not args.directory and not args.projects and not args.indexed:
+    if not args.directory and not args.project and not args.indexed:
         # Assume directory, get the source root value from the webapp.
         directory = get_config_value(logger, 'sourceRoot', uri, headers=headers)
         if not directory:
@@ -211,11 +213,11 @@ def main():
             ignore_errors = config["ignore_errors"]
         except KeyError:
             pass
-    logger.debug("Ignored projects: {}".format(ignore_errors))
+    logger.debug("Ignoring errors from projects: {}".format(ignore_errors))
 
     dirs_to_process = []
-    if args.projects:
-        dirs_to_process = args.projects
+    if args.project:
+        dirs_to_process = args.project
         logger.debug("Processing directories: {}".
                      format(dirs_to_process))
     elif args.indexed:
@@ -235,7 +237,28 @@ def main():
             if path.isdir(path.join(directory, entry)):
                 dirs_to_process.append(entry)
 
+    ignored_projects = []
+    config_ignored_projects = config.get("ignore_projects")
+    if config_ignored_projects:
+        logger.debug("Updating list of ignored projects list from the configuration: {}".
+                     format(config_ignored_projects))
+        ignored_projects.extend(config_ignored_projects)
+
+    if args.ignore_project:
+        logger.debug("Updating list of ignored projects based on options: {}".
+                     format(args.ignore_project))
+        ignored_projects.extend(args.ignore_project)
+
+    if ignored_projects:
+        dirs_to_process = list(set(dirs_to_process) - set(ignored_projects))
+        logger.debug("Removing projects: {}".format(ignored_projects))
+
     logger.debug("directories to process: {}".format(dirs_to_process))
+
+    if len(args.project) == 1:
+        lockfile_name = args.project[0]
+    else:
+        lockfile_name = os.path.basename(sys.argv[0])
 
     if args.nolock:
         r = do_sync(args.loglevel, commands, config.get("cleanup"),
@@ -244,7 +267,7 @@ def main():
                     driveon=args.driveon, http_headers=headers)
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
-                                     "opengrok-sync.lock"))
+                                     lockfile_name + ".lock"))
         try:
             with lock.acquire(timeout=0):
                 r = do_sync(args.loglevel, commands, config.get("cleanup"),
