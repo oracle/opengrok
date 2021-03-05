@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -503,7 +503,8 @@ public class IndexDatabase {
                     Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
                     indexDown(sourceRoot, dir, args);
-                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir));
+                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
+                            "indexer.db.directory.traversal");
 
                     showFileCount(dir, args);
 
@@ -511,7 +512,8 @@ public class IndexDatabase {
                     elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
-                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir));
+                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
+                            "indexer.db.directory.index");
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
@@ -660,7 +662,8 @@ public class IndexDatabase {
 
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore
-            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail));
+            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail),
+                    "indexer.db.optimize");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
