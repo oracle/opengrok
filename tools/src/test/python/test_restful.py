@@ -98,13 +98,14 @@ def test_content_type(monkeypatch):
                 call_rest_api(command)
 
 
-def test_headers(monkeypatch):
+def test_headers_timeout(monkeypatch):
     """
     Test that HTTP headers from command specification are united with
-    HTTP headers passed to call_res_api()
+    HTTP headers passed to call_res_api(). Also test timeout.
     :param monkeypatch: monkey fixture
     """
     headers = {'Tatsuo': 'Yasuko'}
+    expected_timeout = 42
     command = {"command": ["http://localhost:8080/source/api/v1/bar",
                            'GET', "data", headers]}
     extra_headers = {'Mei': 'Totoro'}
@@ -113,14 +114,20 @@ def test_headers(monkeypatch):
         all_headers = headers
         all_headers.update(extra_headers)
         assert headers == all_headers
+        assert timeout == expected_timeout
 
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.restful.do_api_call",
                   mock_response)
-        call_rest_api(command, http_headers=extra_headers)
+        call_rest_api(command, http_headers=extra_headers,
+                      timeout=expected_timeout)
 
 
 def test_restful_fail(monkeypatch):
+    """
+    Test that failures in call_rest_api() result in HTTPError exception.
+    This is done only for the PUT HTTP verb.
+    """
     class MockResponse:
         def p(self):
             raise HTTPError("foo")
