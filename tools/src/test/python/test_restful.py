@@ -46,7 +46,7 @@ def test_replacement(monkeypatch):
             self.status_code = okay_status
             self.raise_for_status = self.p
 
-    def mock_response(verb, uri, headers, data):
+    def mock_response(verb, uri, headers, data, timeout):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"
@@ -85,7 +85,7 @@ def test_content_type(monkeypatch):
             command = {"command": ["http://localhost:8080/source/api/v1/foo",
                                    verb, "data", header_arg]}
 
-            def mock_response(uri, verb, headers, data):
+            def mock_response(uri, verb, headers, data, timeout):
                 if header_arg:
                     assert text_plain_header.items() <= headers.items()
                 else:
@@ -109,7 +109,7 @@ def test_headers(monkeypatch):
                            'GET', "data", headers]}
     extra_headers = {'Mei': 'Totoro'}
 
-    def mock_response(uri, verb, headers, data):
+    def mock_response(uri, verb, headers, data, timeout):
         all_headers = headers
         all_headers.update(extra_headers)
         assert headers == all_headers
@@ -129,7 +129,7 @@ def test_restful_fail(monkeypatch):
             self.status_code = 400
             self.raise_for_status = self.p
 
-    def mock_response(uri, headers, data, params, proxies):
+    def mock_response(uri, headers, data, params, proxies, timeout):
         return MockResponse()
 
     with monkeypatch.context() as m:
