@@ -106,8 +106,8 @@ def main():
     parser.add_argument('-w', '--workers', default=cpu_count(),
                         help='Number of worker processes')
     add_http_headers(parser)
-    parser.add_argument('--api_timeout', help='Set response timeout in seconds'
-                                              'for RESTful API calls')
+    parser.add_argument('--api_timeout', proxies=None,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     try:
         args = parser.parse_args()

@@ -90,8 +90,8 @@ def main():
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
     add_http_headers(parser)
-    parser.add_argument('--api_timeout', help='Set response timeout in seconds'
-                                              'for RESTful API calls')
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     cmd_args = sys.argv[1:]
     extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
