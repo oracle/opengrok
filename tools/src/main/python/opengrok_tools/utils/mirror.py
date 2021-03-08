@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import re
@@ -64,7 +64,7 @@ DISABLED_CMD_PROPERTY = 'disabled_command'
 def get_repos_for_project(project_name, uri, source_root,
                           ignored_repos=None,
                           commands=None, proxy=None, command_timeout=None,
-                          headers=None):
+                          headers=None, timeout=None):
     """
     :param project_name: project name
     :param uri: web application URI
@@ -81,7 +81,8 @@ def get_repos_for_project(project_name, uri, source_root,
     logger = logging.getLogger(__name__)
 
     repos = []
-    for repo_path in get_repos(logger, project_name, uri, headers=headers):
+    for repo_path in get_repos(logger, project_name, uri,
+                               headers=headers, timeout=timeout):
         logger.debug("Repository path = {}".format(repo_path))
 
         if ignored_repos:
@@ -91,7 +92,8 @@ def get_repos_for_project(project_name, uri, source_root,
                 logger.info("repository {} ignored".format(repo_path))
                 continue
 
-        repo_type = get_repo_type(logger, repo_path, uri, headers=headers)
+        repo_type = get_repo_type(logger, repo_path, uri,
+                                  headers=headers, timeout=timeout)
         if not repo_type:
             raise RepositoryException("cannot determine type of repository {}".
                                       format(repo_path))
@@ -307,7 +309,7 @@ def run_command(cmd, project_name):
                             cmd.getoutputstr()))
 
 
-def handle_disabled_project(config, project_name, disabled_msg, headers=None):
+def handle_disabled_project(config, project_name, disabled_msg, headers=None, timeout=None):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
@@ -330,7 +332,7 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None):
 
             try:
                 call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
-                              http_headers=headers)
+                              http_headers=headers, timeout=timeout)
             except HTTPError as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
@@ -349,7 +351,7 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None):
 
 
 def mirror_project(config, project_name, check_changes, uri,
-                   source_root, headers=None):
+                   source_root, headers=None, timeout=None):
     """
     Mirror the repositories of single project.
     :param config global configuration dictionary
@@ -358,6 +360,8 @@ def mirror_project(config, project_name, check_changes, uri,
      and terminate if no change is found
     :param uri
     :param source_root
+    :param headers: optional dictionary of HTTP headers
+    :param timeout: optional timeount in seconds for API call response
     :return exit code
     """
 
@@ -386,7 +390,8 @@ def mirror_project(config, project_name, check_changes, uri,
             handle_disabled_project(config, project_name,
                                     project_config.
                                     get(DISABLED_REASON_PROPERTY),
-                                    headers=headers)
+                                    headers=headers,
+                                    timeout=timeout)
             logger.info("Project '{}' disabled, exiting".
                         format(project_name))
             return CONTINUE_EXITVAL
@@ -403,7 +408,8 @@ def mirror_project(config, project_name, check_changes, uri,
                                   get(COMMANDS_PROPERTY),
                                   proxy=proxy,
                                   command_timeout=command_timeout,
-                                  headers=headers)
+                                  headers=headers,
+                                  timeout=timeout)
     if not repos:
         logger.info("No repositories for project {}".
                     format(project_name))

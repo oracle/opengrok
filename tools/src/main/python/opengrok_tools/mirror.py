@@ -58,12 +58,12 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 
 def worker(args):
     project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
-        source_root, batch, headers = args
+        source_root, batch, headers, api_timeout = args
 
     if batch:
         get_batch_logger(logdir, project_name,
@@ -73,7 +73,8 @@ def worker(args):
 
     return mirror_project(config, project_name,
                           check_changes,
-                          uri, source_root, headers=headers)
+                          uri, source_root, headers=headers,
+                          timeout=api_timeout)
 
 
 def main():
@@ -105,6 +106,8 @@ def main():
     parser.add_argument('-w', '--workers', default=cpu_count(),
                         help='Number of worker processes')
     add_http_headers(parser)
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     try:
         args = parser.parse_args()
@@ -145,7 +148,7 @@ def main():
 
     # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri,
-                                   headers=headers)
+                                   headers=headers, timeout=args.api_timeout)
     if not source_root:
         return 1
 
@@ -183,7 +186,9 @@ def main():
         lockfile = os.path.basename(sys.argv[0])
 
     if args.all:
-        projects = list_indexed_projects(logger, args.uri, headers=headers)
+        projects = list_indexed_projects(logger, args.uri,
+                                         headers=headers,
+                                         timeout=args.api_timeout)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
@@ -195,7 +200,8 @@ def main():
                                         args.backupcount, config,
                                         args.check_changes,
                                         args.uri, source_root,
-                                        args.batch, headers])
+                                        args.batch, headers,
+                                        args.api_timeout])
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:

@@ -60,11 +60,11 @@ def get_logprop_file(logger, template, pattern, project):
     return tmpf.name
 
 
-def get_config_file(logger, uri, headers=None):
+def get_config_file(logger, uri, headers=None, timeout=None):
     """
     Get fresh configuration from the webapp and store it in temporary file.
     """
-    config = get_configuration(logger, uri, headers)
+    config = get_configuration(logger, uri, headers=headers, timeout=timeout)
 
     with tempfile.NamedTemporaryFile(delete=False) as tmpf:
         tmpf.write(config.encode())
@@ -90,6 +90,8 @@ def main():
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
     add_http_headers(parser)
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     cmd_args = sys.argv[1:]
     extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
