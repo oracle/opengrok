@@ -52,7 +52,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 
 def worker(base):
@@ -69,7 +69,7 @@ def worker(base):
 
 def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
             uri, numworkers, driveon=False, print_output=False, logger=None,
-            http_headers=None):
+            http_headers=None, timeout=None):
     """
     Process the list of directories in parallel.
     :param logger: logger to be used in this function
@@ -85,6 +85,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
                          using the supplied logger
     :param logger: optional logger
     :param http_headers: optional dictionary of HTTP headers
+    :param timeout: optional timeout in seconds for API call response
     :return SUCCESS_EXITVAL on success, FAILURE_EXITVAL on error
     """
 
@@ -93,7 +94,8 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
         cmd_base = CommandSequenceBase(dir, commands, loglevel=loglevel,
                                        cleanup=cleanup,
                                        driveon=driveon, url=uri,
-                                       http_headers=http_headers)
+                                       http_headers=http_headers,
+                                       api_timeout=timeout)
         cmds_base.append(cmd_base)
 
     # Map the commands into pool of workers so they can be processed.
@@ -150,6 +152,9 @@ def main():
     parser.add_argument('--nolock', action='store_false', default=True,
                         help='do not acquire lock that prevents multiple '
                         'instances from running')
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds'
+                        'for RESTful API calls')
     add_http_headers(parser)
 
     try:
@@ -197,7 +202,8 @@ def main():
     directory = args.directory
     if not args.directory and not args.project and not args.indexed:
         # Assume directory, get the source root value from the webapp.
-        directory = get_config_value(logger, 'sourceRoot', uri, headers=headers)
+        directory = get_config_value(logger, 'sourceRoot', uri,
+                                     headers=headers, timeout=args.api_timeout)
         if not directory:
             logger.error("Neither -d or -P or -I specified and cannot get "
                          "source root from the webapp")
@@ -221,7 +227,9 @@ def main():
         logger.debug("Processing directories: {}".
                      format(dirs_to_process))
     elif args.indexed:
-        indexed_projects = list_indexed_projects(logger, uri, headers=headers)
+        indexed_projects = list_indexed_projects(logger, uri,
+                                                 headers=headers,
+                                                 timeout=args.api_timeout)
         logger.debug("Processing indexed projects: {}".
                      format(indexed_projects))
 
@@ -264,7 +272,8 @@ def main():
         r = do_sync(args.loglevel, commands, config.get("cleanup"),
                     dirs_to_process,
                     ignore_errors, uri, args.workers,
-                    driveon=args.driveon, http_headers=headers)
+                    driveon=args.driveon, http_headers=headers,
+                    timeout=args.api_timeout)
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
                                      lockfile_name + ".lock"))
@@ -273,7 +282,8 @@ def main():
                 r = do_sync(args.loglevel, commands, config.get("cleanup"),
                             dirs_to_process,
                             ignore_errors, uri, args.workers,
-                            driveon=args.driveon, http_headers=headers)
+                            driveon=args.driveon, http_headers=headers,
+                            timeout=args.api_timeout)
         except Timeout:
             logger.warning("Already running")
             return FAILURE_EXITVAL

@@ -111,7 +111,7 @@ def install_config(doit, logger, src, dst):
 
 
 def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
-                   roconfig, java, headers=None):
+                   roconfig, java, headers=None, timeout=None):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -127,7 +127,8 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
         sys.exit(FAILURE_EXITVAL)
 
     if doit:
-        current_config = get_configuration(logger, uri, headers=headers)
+        current_config = get_configuration(logger, uri,
+                                           headers=headers, timeout=timeout)
         if not current_config:
             sys.exit(FAILURE_EXITVAL)
     else:
@@ -162,7 +163,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                     install_config(doit, logger, fmerged.name, main_config)
 
 
-def project_add(doit, logger, project, uri, headers=None):
+def project_add(doit, logger, project, uri, headers=None, timeout=None):
     """
     Adds a project to configuration. Works in multiple steps:
 
@@ -173,10 +174,11 @@ def project_add(doit, logger, project, uri, headers=None):
     logger.info("Adding project {}".format(project))
 
     if doit:
-        add_project(logger, project, uri, headers=headers)
+        add_project(logger, project, uri, headers=headers, timeout=timeout)
 
 
-def project_delete(logger, project, uri, doit=True, deletesource=False, headers=None):
+def project_delete(logger, project, uri, doit=True, deletesource=False,
+                   headers=None, timeout=None):
     """
     Delete the project for configuration and all its data.
     Works in multiple steps:
@@ -193,10 +195,11 @@ def project_delete(logger, project, uri, doit=True, deletesource=False, headers=
     logger.info("Deleting project {} and its index data".format(project))
 
     if doit:
-        delete_project(logger, project, uri, headers=headers)
+        delete_project(logger, project, uri, headers=headers, timeout=timeout)
 
     if deletesource:
-        src_root = get_config_value(logger, 'sourceRoot', uri, headers=headers)
+        src_root = get_config_value(logger, 'sourceRoot', uri, headers=headers,
+                                    timeout=timeout)
         if not src_root or len(src_root) == 0:
             raise Exception("source root empty")
         logger.debug("Source root = {}".format(src_root))
@@ -236,6 +239,8 @@ def main():
                         default=False, help='Do not delete source code when '
                                             'deleting a project')
     add_http_headers(parser)
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', metavar='project', nargs='+',
@@ -322,7 +327,8 @@ def main():
                 for proj in args.add:
                     project_add(doit=doit, logger=logger,
                                 project=proj,
-                                uri=uri, headers=headers)
+                                uri=uri, headers=headers,
+                                timeout=args.api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -331,14 +337,16 @@ def main():
                                jar_file=args.jar,
                                roconfig=args.roconfig,
                                java=args.java,
-                               headers=headers)
+                               headers=headers,
+                               timeout=args.api_timeout)
             elif args.delete:
                 for proj in args.delete:
                     project_delete(logger=logger,
                                    project=proj,
                                    uri=uri, doit=doit,
                                    deletesource=not args.nosourcedelete,
-                                   headers=headers)
+                                   headers=headers,
+                                   timeout=args.api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -347,7 +355,8 @@ def main():
                                jar_file=args.jar,
                                roconfig=args.roconfig,
                                java=args.java,
-                               headers=headers)
+                               headers=headers,
+                               timeout=args.api_timeout)
             elif args.refresh:
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -356,7 +365,8 @@ def main():
                                jar_file=args.jar,
                                roconfig=args.roconfig,
                                java=args.java,
-                               headers=headers)
+                               headers=headers,
+                               timeout=args.api_timeout)
             else:
                 parser.print_help()
                 sys.exit(FAILURE_EXITVAL)
@@ -370,7 +380,8 @@ def main():
                             config_data = config_file.read().encode("utf-8")
                             if not set_configuration(logger,
                                                      config_data, uri,
-                                                     headers=headers):
+                                                     headers=headers,
+                                                     timeout=args.api_timeout):
                                 sys.exit(FAILURE_EXITVAL)
                 else:
                     logger.error("file {} does not exist".format(main_config))

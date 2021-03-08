@@ -168,7 +168,7 @@ def test_restful_fail(monkeypatch):
             self.status_code = 500
             self.raise_for_status = self.p
 
-    def mock_response(uri, headers, data, params, proxies):
+    def mock_response(uri, headers, data, params, proxies, timeout):
         return MockResponse()
 
     commands = CommandSequence(
@@ -176,8 +176,7 @@ def test_restful_fail(monkeypatch):
                             [{'command': ['http://foo', 'PUT', 'data']}]))
     assert commands is not None
     with monkeypatch.context() as m:
-        m.setattr("requests.put",
-                  mock_response)
+        m.setattr("requests.put", mock_response)
         commands.run()
         assert commands.check([]) == 1
 

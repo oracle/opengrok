@@ -135,7 +135,7 @@ def test_disabled_command_api():
     Test that mirror_project() calls call_rest_api() if API
     call is specified in the configuration for disabled project.
     """
-    def mock_call_rest_api(command, b, http_headers=None):
+    def mock_call_rest_api(command, b, http_headers=None, timeout=None):
         return mock(spec=requests.Response)
 
     with patch(opengrok_tools.utils.mirror.call_rest_api,
@@ -157,7 +157,7 @@ def test_disabled_command_api():
         verify(opengrok_tools.utils.mirror). \
             call_rest_api(config.get(DISABLED_CMD_PROPERTY),
                           {PROJECT_SUBST: project_name},
-                          http_headers=None)
+                          http_headers=None, timeout=None)
 
 
 def test_disabled_command_api_text_append(monkeypatch):
@@ -167,7 +167,7 @@ def test_disabled_command_api_text_append(monkeypatch):
 
     text_to_append = "foo bar"
 
-    def mock_call_rest_api(command, b, http_headers=None):
+    def mock_call_rest_api(command, b, http_headers=None, timeout=None):
         disabled_command = config.get(DISABLED_CMD_PROPERTY)
         assert disabled_command
         command_args = disabled_command.get(COMMAND_PROPERTY)
@@ -312,10 +312,10 @@ def test_get_repos_for_project(monkeypatch):
     timeout = 314159
     test_repo = "/" + project_name
 
-    def mock_get_repos(*args, headers=None):
+    def mock_get_repos(*args, headers=None, timeout=None):
         return [test_repo]
 
-    def mock_get_repo_type(*args, headers=None):
+    def mock_get_repo_type(*args, headers=None, timeout=None):
         return "Git"
 
     with tempfile.TemporaryDirectory() as source_root:
