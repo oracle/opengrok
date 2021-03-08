@@ -24,11 +24,14 @@
 #
 
 import pytest
+import requests
 
 from requests.exceptions import HTTPError
 
+from mockito import verify, patch, mock
+
 from opengrok_tools.utils.restful import call_rest_api,\
-    CONTENT_TYPE, APPLICATION_JSON
+    CONTENT_TYPE, APPLICATION_JSON, do_api_call
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY
 
 
@@ -46,7 +49,7 @@ def test_replacement(monkeypatch):
             self.status_code = okay_status
             self.raise_for_status = self.p
 
-    def mock_response(verb, uri, headers, data, timeout):
+    def mock_do_api_call(verb, uri, headers, data, timeout):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"
@@ -61,7 +64,7 @@ def test_replacement(monkeypatch):
         value = "BAR"
         with monkeypatch.context() as m:
             m.setattr("opengrok_tools.utils.restful.do_api_call",
-                      mock_response)
+                      mock_do_api_call)
             assert call_rest_api(command, {pattern: value}). \
                 status_code == okay_status
 
@@ -110,7 +113,7 @@ def test_headers_timeout(monkeypatch):
                            'GET', "data", headers]}
     extra_headers = {'Mei': 'Totoro'}
 
-    def mock_response(uri, verb, headers, data, timeout):
+    def mock_do_api_call(uri, verb, headers, data, timeout):
         all_headers = headers
         all_headers.update(extra_headers)
         assert headers == all_headers
@@ -118,9 +121,32 @@ def test_headers_timeout(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.restful.do_api_call",
-                  mock_response)
-        call_rest_api(command, http_headers=extra_headers,
+                  mock_do_api_call)
+        call_rest_api(command,
+                      http_headers=extra_headers,
                       timeout=expected_timeout)
+
+
+def test_headers_timeout_requests():
+    """
+    Test that headers and timeout parameters from do_call_api() are passed
+    to the appropriate function in the requests module.
+    Currently done for the GET HTTP verb only.
+    """
+
+    uri = "http://foo:8080"
+    headers = {"foo": "bar"}
+    timeout = 44
+
+    def mock_requests_get(uri, **kwargs):
+        return mock(spec=requests.Response)
+
+    with patch(requests.get, mock_requests_get):
+        do_api_call("GET", uri, headers=headers, timeout=timeout)
+
+        verify(requests).get(uri, data=None, params=None,
+                             headers=headers, proxies=None,
+                             timeout=timeout)
 
 
 def test_restful_fail(monkeypatch):

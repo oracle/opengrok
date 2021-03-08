@@ -29,7 +29,11 @@ from inspect import getmembers, isfunction, signature
 from opengrok_tools.utils import opengrok
 
 
-def test_headers(monkeypatch):
+def test_headers_timout(monkeypatch):
+    """
+    Test that all functions in the opengrok module propagate the timeout and
+    HTTP headers to do_api_call().
+    """
     headers_expected = {'foo': 'bar'}
     timeout_expected = 42
 
@@ -37,7 +41,7 @@ def test_headers(monkeypatch):
         assert headers == headers_expected
         assert timeout == timeout_expected
 
-    logger = logging.getLogger("test_headers")
+    logger = logging.getLogger("test_headers_timeout")
 
     for func in getmembers(opengrok, isfunction):
         f = func[1]
