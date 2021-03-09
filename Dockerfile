@@ -18,9 +18,6 @@ COPY suggester/pom.xml /mvn/suggester/
 RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml
 RUN sed -i 's:<module>tools</module>::g' /mvn/pom.xml
 
-# get clean state
-RUN mvn clean
-
 RUN mkdir -p /mvn/opengrok-indexer/target/jflex-sources
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
