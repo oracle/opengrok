@@ -317,7 +317,10 @@ def main():
             logger.error("SYNC_TIME_MINUTES is not a number: {}".
                          format(sync_env))
 
-    logger.info("synchronization period = {} minutes".format(sync_period))
+    if sync_period == 0:
+        logger.info("synchronization disabled")
+    else:
+        logger.info("synchronization period = {} minutes".format(sync_period))
 
     # Note that deploy is done before Tomcat is started.
     deploy(logger, url_root)
