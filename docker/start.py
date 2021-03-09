@@ -262,6 +262,10 @@ def syncer(logger, loglevel, uri, config_path, reindex, numworkers, env):
 
         save_config(logger, uri, config_path)
 
+        if int(reindex) <= 0:
+            logger.debug("Quitting sync loop")
+            break
+
         sleep_seconds = int(reindex) * 60
         logger.info("Sleeping for {} seconds".format(sleep_seconds))
         time.sleep(sleep_seconds)
