@@ -66,6 +66,7 @@ OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
 def set_url_root(logger, url_root):
     """
     Set URL root and URI based on input
+    :param logger: logger instance
     :param url_root: input
     :return: URI and URL root
     """
@@ -109,6 +110,7 @@ def get_war_name(url_root):
 def deploy(logger, url_root):
     """
     Deploy the web application
+    :param logger: logger instance
     :param url_root: web app URL root
     """
 
@@ -191,6 +193,7 @@ def refresh_projects(logger, uri):
 def save_config(logger, uri, config_path):
     """
     Retrieve configuration from the web app and write it to file.
+    :param logger: logger instance
     :param uri: web app URI
     :param config_path: file path
     """
