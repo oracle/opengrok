@@ -618,7 +618,7 @@ public final class Indexer {
                     "files), but process all other command line options.").execute(v ->
                     runIndex = false);
 
-            parser.on("--nestingMaximum", "=number",
+            parser.on("--nestingMaximum", "=number", Integer.class,
                     "Maximum depth of nested repositories. Default is 1.").execute(v ->
                     cfg.setNestingMaximum((Integer) v));
 
