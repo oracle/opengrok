@@ -60,6 +60,7 @@ BODY_INCLUDE_FILE = os.path.join(OPENGROK_DATA_ROOT, "body_include")
 OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_BASE_DIR, "etc",
                                     "configuration.xml")
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
+OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
 
 
 def set_url_root(logger, url_root):
@@ -218,7 +219,43 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def syncer(logger, loglevel, uri, config_path, sync_period, numworkers, env):
+def indexer_no_projects(logger, uri, config_path, sync_period,
+                        extra_indexer_options):
+    """
+    Project less indexer
+    """
+
+    wait_for_tomcat(logger, uri)
+
+    while True:
+        indexer_options = ['-s', OPENGROK_SRC_ROOT,
+                           '-d', OPENGROK_DATA_ROOT,
+                           '-c', '/usr/local/bin/ctags',
+                           '--remote', 'on',
+                           '-H',
+                           '-W', config_path,
+                           '-U', uri]
+        if extra_indexer_options:
+            logger.debug("Adding extra indexer options: {}".
+                         format(extra_indexer_options))
+            indexer_options.extend(extra_indexer_options.split())
+        indexer = Indexer(indexer_options, logger=logger,
+                          jar=OPENGROK_JAR)
+        indexer.execute()
+        ret = indexer.getretcode()
+        if ret is None or ret != SUCCESS_EXITVAL:
+            logger.error('Command returned {}'.format(ret))
+            logger.error(indexer.geterroutputstr())
+        else:
+            logger.info(indexer.getoutputstr())
+
+        sleep_seconds = sync_period * 60
+        logger.info("Sleeping for {} seconds".format(sleep_seconds))
+        time.sleep(sleep_seconds)
+
+
+def project_syncer(logger, loglevel, uri, config_path, sync_period,
+                   numworkers, env):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
@@ -267,22 +304,25 @@ def syncer(logger, loglevel, uri, config_path, sync_period, numworkers, env):
         time.sleep(sleep_seconds)
 
 
-def create_bare_config(logger):
+def create_bare_config(logger, use_projects=True):
     """
     Create bare configuration file with a few basic settings.
     """
 
     logger.info('Creating bare configuration in {}'.
                 format(OPENGROK_CONFIG_FILE))
-    indexer = Indexer(['-s', OPENGROK_SRC_ROOT,
+    indexer_options = ['-s', OPENGROK_SRC_ROOT,
                        '-d', OPENGROK_DATA_ROOT,
                        '-c', '/usr/local/bin/ctags',
                        '--remote', 'on',
-                       '-P', '-H',
+                       '-H',
                        '-W', OPENGROK_CONFIG_FILE,
-                       '--noIndex'],
-                      jar=os.path.join(OPENGROK_LIB_DIR,
-                                       'opengrok.jar'),
+                       '--noIndex']
+    if use_projects:
+        indexer_options.append('-P')
+
+    indexer = Indexer(indexer_options,
+                      jar=OPENGROK_JAR,
                       logger=logger, doprint=True)
     indexer.execute()
     ret = indexer.getretcode()
@@ -329,12 +369,17 @@ def main():
         setup_redirect_source(logger, url_root)
 
     env = {}
-    if os.environ.get('INDEXER_OPT'):
-        env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = \
-            os.environ.get('INDEXER_OPT')
+    extra_indexer_options = os.environ.get('INDEXER_OPT')
+    if extra_indexer_options:
+        logger.info("extra indexer options: {}".format(extra_indexer_options))
+        env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
     if os.environ.get('NOMIRROR'):
         env['OPENGROK_NO_MIRROR'] = os.environ.get('NOMIRROR')
     logger.debug('Extra environment: {}'.format(env))
+
+    use_projects = True
+    if os.environ.get('AVOID_PROJECTS'):
+        use_projects = False
 
     #
     # Create empty configuration to avoid the non existent file exception
@@ -342,26 +387,35 @@ def main():
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config(logger)
+        create_bare_config(logger, use_projects=use_projects)
 
     if sync_period > 0:
-        num_workers = multiprocessing.cpu_count()
-        workers_env = os.environ.get('WORKERS')
-        if workers_env:
-            try:
-                n = int(workers_env)
-                if n > 0:
-                    num_workers = n
-            except ValueError:
-                logger.error("WORKERS is not a number: {}".format(workers_env))
+        if use_projects:
+            num_workers = multiprocessing.cpu_count()
+            workers_env = os.environ.get('WORKERS')
+            if workers_env:
+                try:
+                    n = int(workers_env)
+                    if n > 0:
+                        num_workers = n
+                except ValueError:
+                    logger.error("WORKERS is not a number: {}".
+                                 format(workers_env))
 
-        logger.info('Number of sync workers: {}'.format(num_workers))
+            logger.info('Number of sync workers: {}'.format(num_workers))
+
+            worker_function = project_syncer
+            syncer_args = (logger, log_level, uri,
+                           OPENGROK_CONFIG_FILE,
+                           sync_period, num_workers, env)
+        else:
+            worker_function = indexer_no_projects
+            syncer_args = (logger, uri, OPENGROK_CONFIG_FILE, sync_period,
+                           extra_indexer_options)
 
         logger.debug("Starting sync thread")
-        thread = threading.Thread(target=syncer, name="Sync thread",
-                                  args=(logger, log_level, uri,
-                                        OPENGROK_CONFIG_FILE,
-                                        sync_period, num_workers, env))
+        thread = threading.Thread(target=worker_function, name="Sync thread",
+                                  args=syncer_args)
         thread.start()
 
     # Start Tomcat last. It will be the foreground process.
