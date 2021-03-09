@@ -218,7 +218,7 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def syncer(logger, loglevel, uri, config_path, reindex, numworkers, env):
+def syncer(logger, loglevel, uri, config_path, sync_period, numworkers, env):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
@@ -242,7 +242,7 @@ def syncer(logger, loglevel, uri, config_path, reindex, numworkers, env):
         #
         # The driveon=True is needed for the initial indexing of newly
         # added project, otherwise the incoming check in the opengrok-mirror
-        # would short circuit it.
+        # program would short circuit it.
         #
         if env:
             logger.info('Merging commands with environment')
@@ -262,7 +262,7 @@ def syncer(logger, loglevel, uri, config_path, reindex, numworkers, env):
 
         save_config(logger, uri, config_path)
 
-        sleep_seconds = int(reindex) * 60
+        sleep_seconds = sync_period * 60
         logger.info("Sleeping for {} seconds".format(sleep_seconds))
         time.sleep(sleep_seconds)
 
@@ -305,13 +305,22 @@ def main():
     logger.debug("URL_ROOT = {}".format(url_root))
     logger.debug("URI = {}".format(uri))
 
-    # default period for reindexing (in minutes)
-    reindex_env = os.environ.get('REINDEX')
-    if reindex_env:
-        reindex_min = reindex_env
+    # default period for syncing (in minutes)
+    sync_period = 10
+    sync_env = os.environ.get('SYNC_TIME_MINUTES')
+    if sync_env:
+        try:
+            n = int(sync_env)
+            if n >= 0:
+                sync_period = n
+        except ValueError:
+            logger.error("SYNC_TIME_MINUTES is not a number: {}".
+                         format(sync_env))
+
+    if sync_period == 0:
+        logger.info("synchronization disabled")
     else:
-        reindex_min = 10
-    logger.debug("reindex period = {} minutes".format(reindex_min))
+        logger.info("synchronization period = {} minutes".format(sync_period))
 
     # Note that deploy is done before Tomcat is started.
     deploy(logger, url_root)
@@ -335,18 +344,25 @@ def main():
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
         create_bare_config(logger)
 
-    if os.environ.get('WORKERS'):
-        num_workers = os.environ.get('WORKERS')
-    else:
+    if sync_period > 0:
         num_workers = multiprocessing.cpu_count()
-    logger.info('Number of sync workers: {}'.format(num_workers))
+        workers_env = os.environ.get('WORKERS')
+        if workers_env:
+            try:
+                n = int(workers_env)
+                if n > 0:
+                    num_workers = n
+            except ValueError:
+                logger.error("WORKERS is not a number: {}".format(workers_env))
 
-    logger.debug("Starting sync thread")
-    thread = threading.Thread(target=syncer, name="Sync thread",
-                              args=(logger, log_level, uri,
-                                    OPENGROK_CONFIG_FILE,
-                                    reindex_min, num_workers, env))
-    thread.start()
+        logger.info('Number of sync workers: {}'.format(num_workers))
+
+        logger.debug("Starting sync thread")
+        thread = threading.Thread(target=syncer, name="Sync thread",
+                                  args=(logger, log_level, uri,
+                                        OPENGROK_CONFIG_FILE,
+                                        sync_period, num_workers, env))
+        thread.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
