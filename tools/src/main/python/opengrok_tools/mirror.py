@@ -96,14 +96,14 @@ def main():
                         help='batch mode - will log into a file')
     parser.add_argument('-L', '--logdir',
                         help='log directory')
-    parser.add_argument('-B', '--backupcount', default=8,
+    parser.add_argument('-B', '--backupcount', default=8, type=int,
                         help='how many log files to keep around in batch mode')
     parser.add_argument('-I', '--check-changes', action='store_true',
                         help='Check for changes in the project or its'
                              ' repositories,'
                              ' terminate the processing'
                              ' if no change is found.')
-    parser.add_argument('-w', '--workers', default=cpu_count(),
+    parser.add_argument('-w', '--workers', default=cpu_count(), type=int,
                         help='Number of worker processes')
     add_http_headers(parser)
     parser.add_argument('--api_timeout', type=int,

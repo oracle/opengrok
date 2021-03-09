@@ -22,7 +22,7 @@ If you happen to have one of the following:
   - Source Code Management systems not supported in the image (e.g. Perforce,
     Clearcase, etc.)
   - need for authentication/authorization
-  
+
 then it is advisable to run OpenGrok standalone or construct your own Docker
 image based on the official one.
 
@@ -74,13 +74,13 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 
 | Docker Environment Var. | Default value | Description |
 | ----------------------- | ------------- | ----------- |
-`REINDEX` | 10 | Period of automatic mirroring/reindexing in minutes. Setting to `0` will disable automatic indexing. You can manually trigger an reindex using docker exec: `docker exec <container> /scripts/index.sh`
+`SYNC_PERIOD_MINUTES` | 10 | Period of automatic synchronization (i.e. mirroring + reindexing) in minutes. Setting to `0` will disable automatic syncing.
 `INDEXER_OPT` | empty | pass extra options to OpenGrok Indexer. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
 `NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
 `URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
 `WORKERS` | number of CPUs in the container | number of workers to use for syncing
 
-To specify environment variable for `docker run`, use the `-e` option, e.g. `-e REINDEX=30`
+To specify environment variable for `docker run`, use the `-e` option, e.g. `-e SYNC_PERIOD_MINUTES=30`
 
 ## OpenGrok Web-Interface
 
@@ -105,7 +105,7 @@ services:
     ports:
       - "8080:8080/tcp"
     environment:
-      REINDEX: '60'
+      SYNC_PERIOD_MINUTES: '60'
     # Volumes store your data between container upgrades
     volumes:
        - '~/opengrok/src/:/opengrok/src/'  # source code
@@ -123,7 +123,7 @@ Equivalent `docker run` command would look like this:
 docker run -d \
     --name opengrok \
     -p 8080:8080/tcp \
-    -e REINDEX="60" \
+    -e SYNC_PERIOD_MINUTES="60" \
     -v ~/opengrok-src/:/opengrok/src/ \
     -v ~/opengrok-etc/:/opengrok/etc/ \
     -v ~/opengrok-data/:/opengrok/data/ \

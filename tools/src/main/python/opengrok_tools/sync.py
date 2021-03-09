@@ -100,7 +100,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
 
     # Map the commands into pool of workers so they can be processed.
     retval = SUCCESS_EXITVAL
-    with Pool(processes=int(numworkers)) as pool:
+    with Pool(processes=numworkers) as pool:
         try:
             cmds_base_results = pool.map(worker, cmds_base, 1)
         except KeyboardInterrupt:
@@ -127,7 +127,7 @@ def main():
                                              tool_version=__version__)
                                      ])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
-                        help='Number of worker processes')
+                        help='Number of worker processes', type=int)
 
     # There can be only one way how to supply list of projects to process.
     group1 = parser.add_mutually_exclusive_group()
