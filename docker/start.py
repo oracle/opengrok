@@ -311,7 +311,7 @@ def main():
     if sync_env:
         try:
             n = int(sync_env)
-            if n > 0:
+            if n >= 0:
                 sync_period = n
         except ValueError:
             logger.error("SYNC_TIME_MINUTES is not a number: {}".
