@@ -243,14 +243,8 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
                          format(extra_indexer_options))
             indexer_options.extend(extra_indexer_options.split())
         indexer = Indexer(indexer_options, logger=logger,
-                          jar=OPENGROK_JAR)
+                          jar=OPENGROK_JAR, doprint=True)
         indexer.execute()
-        ret = indexer.getretcode()
-        if ret is None or ret != SUCCESS_EXITVAL:
-            logger.error('Command returned {}'.format(ret))
-            logger.error(indexer.geterroutputstr())
-        else:
-            logger.info(indexer.getoutputstr())
 
         sleep_seconds = sync_period * 60
         logger.info("Sleeping for {} seconds".format(sleep_seconds))
