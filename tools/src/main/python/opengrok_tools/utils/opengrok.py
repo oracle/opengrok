@@ -55,7 +55,7 @@ def get_repos(logger, project, uri, headers=None, timeout=None):
 
 def get_config_value(logger, name, uri, headers=None, timeout=None):
     """
-    Get list of repositories for given project name.
+    Get configuration value.
 
     Return string with the result on success, None on failure.
     """
@@ -69,6 +69,32 @@ def get_config_value(logger, name, uri, headers=None, timeout=None):
         return None
 
     return r.text
+
+
+def set_config_value(logger, name, value, uri, headers=None, timeout=None):
+    """
+    Set configuration value.
+    :param logger: logger instance
+    :param name: name of the configuration field
+    :param value: field value
+    :param uri: web app URI
+    :param headers: optional dictionary of HTTP headers
+    :param timeout: optional request timeout
+    :return: True on success, False on failure
+    """
+    try:
+        local_headers = {}
+        if headers:
+            local_headers.update(headers)
+        local_headers['Content-type'] = 'application/text'
+        do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration', name),
+                    data=value, headers=local_headers, timeout=timeout)
+    except Exception:
+        logger.error("Cannot set the '{}' config field to '{}' from the web "
+                     "application on {}".format(name, value, uri))
+        return False
+
+    return True
 
 
 def get_repo_type(logger, repository, uri, headers=None, timeout=None):
