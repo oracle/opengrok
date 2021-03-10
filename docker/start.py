@@ -37,7 +37,7 @@ from opengrok_tools.deploy import deploy_war
 from opengrok_tools.utils.indexer import Indexer
 from opengrok_tools.sync import do_sync
 from opengrok_tools.utils.opengrok import list_projects, \
-    add_project, delete_project, get_configuration
+    add_project, delete_project, get_configuration, set_config_value
 from opengrok_tools.utils.readconfig import read_config
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 
@@ -260,6 +260,8 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
 
     wait_for_tomcat(logger, uri)
 
+    set_config_value(logger, 'projectsEnabled', 'true', uri)
+
     while True:
         refresh_projects(logger, uri)
 
@@ -301,7 +303,7 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
         time.sleep(sleep_seconds)
 
 
-def create_bare_config(logger, use_projects=True):
+def create_bare_config(logger):
     """
     Create bare configuration file with a few basic settings.
     """
@@ -315,8 +317,6 @@ def create_bare_config(logger, use_projects=True):
                        '-H',
                        '-W', OPENGROK_CONFIG_FILE,
                        '--noIndex']
-    if use_projects:
-        indexer_options.append('-P')
 
     indexer = Indexer(indexer_options,
                       jar=OPENGROK_JAR,
@@ -384,7 +384,7 @@ def main():
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config(logger, use_projects=use_projects)
+        create_bare_config(logger)
 
     if sync_period > 0:
         if use_projects:
