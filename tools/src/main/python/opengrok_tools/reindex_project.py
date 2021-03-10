@@ -94,18 +94,12 @@ def main():
                         help='Set response timeout in seconds for RESTful API calls')
 
     cmd_args = sys.argv[1:]
-    extra_opts = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
-    if extra_opts:
-        cmd_args.extend(extra_opts.split())
-
     try:
         args = parser.parse_args(cmd_args)
     except ValueError as e:
         fatal(e)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
-
-    logger.debug('Command arguments extended with {}'.format(extra_opts))
 
     # Make sure the log directory exists.
     if args.directory:
@@ -121,15 +115,19 @@ def main():
                                         args.project)
 
     # Reindex with the modified logging.properties file and read-only config.
-    command = ['-R', conf_file]
-    command.extend(args.options)
+    indexer_options = ['-R', conf_file] + args.options
+    extra_options = os.environ.get("OPENGROK_INDEXER_OPTIONAL_ARGS")
+    if extra_options:
+        logger.debug('indexer arguments extended with {}'.format(extra_options))
+        # Prepend the extra options because we want the arguments to end with a project.
+        indexer_options = extra_options.split() + indexer_options
     java_opts = []
     if args.java_opts:
         java_opts.extend(args.java_opts)
     if logprop_file:
         java_opts.append("-Djava.util.logging.config.file={}".
                          format(logprop_file))
-    indexer = Indexer(command, logger=logger, jar=args.jar,
+    indexer = Indexer(indexer_options, logger=logger, jar=args.jar,
                       java=args.java, java_opts=java_opts,
                       env_vars=args.environment, doprint=args.doprint)
     indexer.execute()
