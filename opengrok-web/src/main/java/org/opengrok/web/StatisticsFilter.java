@@ -36,7 +36,9 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.Metrics;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.SearchHelper;
 
 public class StatisticsFilter implements Filter {
@@ -76,16 +78,7 @@ public class StatisticsFilter implements Filter {
     private void measure(HttpServletResponse httpResponse, HttpServletRequest httpReq,
                          Duration duration, PageConfig config) {
         String category;
-        if (isRoot(httpReq)) {
-            category = "root";
-        } else {
-            String prefix = config.getPrefix().toString();
-            if (prefix.isEmpty()) {
-                category = "unknown";
-            } else {
-                category = prefix.substring(1);
-            }
-        }
+        category = getCategory(httpReq, config);
 
         Timer categoryTimer = Timer.builder("requests.latency").
                 tags("category", category, "code", String.valueOf(httpResponse.getStatus())).
@@ -100,6 +93,25 @@ public class StatisticsFilter implements Filter {
                 successfulSearch.record(duration);
             }
         }
+    }
+
+    @NotNull
+    private String getCategory(HttpServletRequest httpReq, PageConfig config) {
+        String category;
+        if (isRoot(httpReq)) {
+            category = "root";
+        } else {
+            String prefix = config.getPrefix().toString();
+            if (prefix.isEmpty()) {
+                category = "unknown";
+            } else {
+                category = prefix.substring(1);
+                if (category.equals("xref") && httpReq.getParameter(QueryParameters.ANNOTATION_PARAM) != null) {
+                    category = "annotate";
+                }
+            }
+        }
+        return category;
     }
 
     private boolean isRoot(final HttpServletRequest httpReq) {
