@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author Krystof Tulinger
  */
 @RunWith(Parameterized.class)
@@ -83,7 +83,7 @@ public class AuthorizationEntityTest {
     @Before
     public void setUp() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        envGroups = env.getGroups();
+        envGroups = new TreeSet<>(env.getGroups().values());
         envProjects = env.getProjects();
         env.setGroups(new TreeSet<>());
         env.setProjects(new TreeMap<>());
@@ -133,7 +133,7 @@ public class AuthorizationEntityTest {
         g1.addProject(env.getProjects().get("project 1"));
         g1.addProject(env.getProjects().get("project 2"));
         g1.addProject(env.getProjects().get("project 3"));
-        env.getGroups().add(g1);
+        env.getGroups().put(g1.getName(), g1);
         g2 = new Group();
         g2.setName("group 2");
         g2.addProject(env.getProjects().get("project 4"));
@@ -141,12 +141,12 @@ public class AuthorizationEntityTest {
         g2.addProject(env.getProjects().get("project 6"));
         g2.addProject(env.getProjects().get("project 7"));
         g1.addGroup(g2);
-        env.getGroups().add(g2);
+        env.getGroups().put(g2.getName(), g2);
         g3 = new Group();
         g3.setName("group 3");
         g3.addProject(env.getProjects().get("project 8"));
         g3.addProject(env.getProjects().get("project 9"));
-        env.getGroups().add(g3);
+        env.getGroups().put(g3.getName(), g3);
 
         // add g1 and all descendants their projects
         authEntity = authEntityFactory.apply(null);
@@ -156,7 +156,7 @@ public class AuthorizationEntityTest {
 
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})), authEntity.forGroups());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"project 1", "project 2", "project 3",
-            "project 4", "project 5", "project 6", "project 7"})), authEntity.forProjects());
+                "project 4", "project 5", "project 6", "project 7"})), authEntity.forProjects());
 
         // add group2, its parent g1 and g2 projects
         authEntity = authEntityFactory.apply(null);
@@ -185,7 +185,7 @@ public class AuthorizationEntityTest {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
         authEntity.setForProjects(new TreeSet<>(Arrays.asList(new String[]{"project 1", "project 2", "project 3",
-            "project 4", "project 5", "project 6", "project 7"})));
+                "project 4", "project 5", "project 6", "project 7"})));
 
         authEntity.load(new TreeMap<>());
 
@@ -223,7 +223,7 @@ public class AuthorizationEntityTest {
         g1.addProject(new Project("project 1"));
         g1.addProject(new Project("project 2"));
         g1.addProject(new Project("project 3"));
-        env.getGroups().add(g1);
+        env.getGroups().put(g1.getName(), g1);
 
         authEntity.load(new TreeMap<>());
 

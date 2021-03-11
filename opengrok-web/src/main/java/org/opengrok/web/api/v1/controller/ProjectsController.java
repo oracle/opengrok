@@ -100,7 +100,7 @@ public class ProjectsController {
             // Note that the project is inactive in the UI until it is indexed.
             // See {@code isIndexed()}
             env.getProjects().put(projectName, project);
-            env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjectList()));
+            env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjectList()));
         } else {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
@@ -197,7 +197,7 @@ public class ProjectsController {
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
 
         // Delete index and xrefs.
-        for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
+        for (String dirName : new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
             java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
             try {
                 IOUtils.removeRecursive(path);

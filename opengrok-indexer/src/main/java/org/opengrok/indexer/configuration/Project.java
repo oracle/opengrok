@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -166,7 +167,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Set a textual name of this project, preferably don't use " , " in the
      * name, since it's used as delimiter for more projects
-     *
+     * <p>
      * XXX we should not allow setting project name after it has been
      * constructed because it is probably part of HashMap.
      *
@@ -181,7 +182,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Set the path (relative from source root) this project is located.
      *
      * @param path the relative path from source root where this project is
-     * located, starting with path separator.
+     *             located, starting with path separator.
      */
     public void setPath(String path) {
         this.path = Util.fixPathIfWindows(path);

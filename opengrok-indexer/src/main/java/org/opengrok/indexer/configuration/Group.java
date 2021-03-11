@@ -28,11 +28,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import org.opengrok.indexer.util.ClassUtil;
 
 /**
  * Placeholder for the information about subgroups of projects and repositories.
- *
+ * <p>
  * Supports natural ordering based on case insensitive group names.
  *
  * @author Krystof Tulinger
@@ -47,7 +48,7 @@ public class Group implements Comparable<Group>, Nameable {
     private String name;
     /**
      * Group regexp pattern.
-     *
+     * <p>
      * No project matches the empty pattern of "" however this group can still
      * be used as a superior group for other groups (without duplicating the
      * projects).
@@ -55,10 +56,10 @@ public class Group implements Comparable<Group>, Nameable {
     private String pattern = "";
     /**
      * Compiled group pattern.
-     *
+     * <p>
      * We set up the empty compiled pattern by default to "()" to reduce code
      * complexity when performing a match for a group without a pattern.
-     *
+     * <p>
      * This pattern is updated whenever the string pattern {@link #pattern} is
      * updated.
      *
@@ -291,7 +292,7 @@ public class Group implements Comparable<Group>, Nameable {
         Group ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasGroups()) {
-            for (Group grp : env.getGroups()) {
+            for (Group grp : env.getGroups().values()) {
                 if (name.equals(grp.getName())) {
                     ret = grp;
                 }
@@ -305,7 +306,7 @@ public class Group implements Comparable<Group>, Nameable {
      * the project's description.
      *
      * @param project the project
-     * @param groups set of groups
+     * @param groups  set of groups
      * @return set of groups matching the project
      */
     public static Set<Group> matching(Project project, Set<Group> groups) {

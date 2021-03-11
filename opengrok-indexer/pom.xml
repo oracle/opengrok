@@ -23,7 +23,8 @@ Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -237,7 +238,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
     <build>
         <plugins>
-<!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
+            <!-- jflex:generate plugin HAS to be the first one which runs in generate-sources phase!!! -->
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
@@ -265,7 +266,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.commit.id</includeOnlyProperty>
                     </includeOnlyProperties>
-		    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
                 </configuration>
                 <executions>
                     <execution>
@@ -356,7 +357,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                 </executions>
             </plugin>
 
-           <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
@@ -428,9 +429,9 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                             <excludes>
                                 <exclude>**/*XrefTest.java</exclude>
                                 <exclude>**/HistoryGuruTest.java</exclude>
-				<!-- times out when running 'hg update mybranch' -->
+                                <!-- times out when running 'hg update mybranch' -->
                                 <exclude>**/MercurialRepositoryTest.java</exclude>
-				<!-- testSymlink fails due to path difference -->
+                                <!-- testSymlink fails due to path difference -->
                                 <exclude>**/IndexerRepoTest.java</exclude>
                             </excludes>
                         </configuration>

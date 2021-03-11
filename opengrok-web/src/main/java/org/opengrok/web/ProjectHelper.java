@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -86,7 +87,7 @@ public final class ProjectHelper {
 
     private ProjectHelper(PageConfig cfg) {
         this.cfg = cfg;
-        groups = new TreeSet<>(cfg.getEnv().getGroups());
+        groups = new TreeSet<>(cfg.getEnv().getGroups().values());
         ungroupedProjects = new TreeSet<>();
         ungroupedRepositories = new TreeSet<>();
 
@@ -149,7 +150,7 @@ public final class ProjectHelper {
      * Generates ungrouped projects and repositories.
      */
     private void populateGroups() {
-        groups.addAll(cfg.getEnv().getGroups());
+        groups.addAll(cfg.getEnv().getGroups().values());
         for (Project project : cfg.getEnv().getProjectList()) {
             // filterProjects() only adds groups which match project's name.
             Set<Group> copy = Group.matching(project, groups);
@@ -209,7 +210,7 @@ public final class ProjectHelper {
     /**
      * Filters and saves the original set of projects into request's attribute.
      *
-     * @param name attribute name
+     * @param name     attribute name
      * @param original original set
      * @return filtered set
      */
@@ -226,7 +227,7 @@ public final class ProjectHelper {
     /**
      * Filters and saves the original set of groups into request's attribute.
      *
-     * @param name attribute name
+     * @param name     attribute name
      * @param original original set
      * @return filtered set
      */
@@ -300,16 +301,16 @@ public final class ProjectHelper {
     }
 
     /**
-     * @see #getProjects()
      * @return filtered ungrouped projects
+     * @see #getProjects()
      */
     public Set<Project> getUngroupedProjects() {
         return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, ungroupedProjects);
     }
 
     /**
-     * @see #getRepositories()
      * @return filtered ungrouped projects
+     * @see #getRepositories()
      */
     public Set<Project> getUngroupedRepositories() {
         return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, ungroupedRepositories);
@@ -363,7 +364,7 @@ public final class ProjectHelper {
     /**
      * Checks if given group contains a subgroup which is allowed by the
      * AuthorizationFramework.
-     *
+     * <p>
      * This should be used for deciding if this group should be written in the
      * group hierarchy in the resulting html because it contains other allowed
      * groups.
@@ -392,10 +393,10 @@ public final class ProjectHelper {
 
     /**
      * Checks if given group contains a favourite project.
-     *
+     * <p>
      * Favourite project is a project which is contained in the OpenGrokProject
      * cookie, i. e. it has been searched or viewed by the user.
-     *
+     * <p>
      * This should by used to determine if this group should be displayed
      * expanded or rolled up.
      *
@@ -459,7 +460,7 @@ public final class ProjectHelper {
 
     /**
      * Checks if there is a favourite project in ungrouped projects.
-     *
+     * <p>
      * This should by used to determine if this 'other' section should be
      * displayed expanded or rolled up.
      *

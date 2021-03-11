@@ -28,14 +28,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+
 import org.opengrok.indexer.util.Getopt;
 
 /**
- *
  * @author Krystof Tulinger
  */
 public final class Groups {
@@ -151,7 +152,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            matchGroups(System.out, cfg.getGroups(), match);
+            matchGroups(System.out, new TreeSet<>(cfg.getGroups().values()), match);
         } else if (empty) {
             // just list the groups
             if (parent != null || groupname != null || grouppattern != null) {
@@ -173,7 +174,7 @@ public final class Groups {
                 usage(System.err);
                 System.exit(1);
             }
-            deleteGroup(cfg.getGroups(), groupname);
+            deleteGroup(new TreeSet<>(cfg.getGroups().values()), groupname);
             out = prepareOutput(outFile);
             printOut(list, cfg, out);
         } else if (groupname != null) {
@@ -181,7 +182,7 @@ public final class Groups {
                 grouppattern = "";
             }
             // perform insert/update. parent may be null
-            if (!modifyGroup(cfg.getGroups(), groupname, grouppattern, parent)) {
+            if (!modifyGroup(new TreeSet<>(cfg.getGroups().values()), groupname, grouppattern, parent)) {
                 System.err.println("Parent group does not exist \"" + parent + "\"");
             } else {
                 out = prepareOutput(outFile);
@@ -206,15 +207,15 @@ public final class Groups {
      * Prints the configuration to the stream.
      *
      * @param list if true then it lists all available groups in configuration
-     * if @param out is different than stdout it also prints the current
-     * configuration to that stream otherwise it prints the configuration to the
-     * @param out stream.
-     * @param cfg configuration
-     * @param out output stream
+     *             if @param out is different than stdout it also prints the current
+     *             configuration to that stream otherwise it prints the configuration to the
+     * @param out  stream.
+     * @param cfg  configuration
+     * @param out  output stream
      */
     private static void printOut(boolean list, Configuration cfg, PrintStream out) {
         if (list) {
-            listGroups(System.out, cfg.getGroups());
+            listGroups(System.out, new TreeSet<>(cfg.getGroups().values()));
             if (out != System.out) {
                 out.print(cfg.getXMLRepresentationAsString());
             }
@@ -244,7 +245,7 @@ public final class Groups {
     /**
      * List groups given as a parameter.
      *
-     * @param out stream
+     * @param out    stream
      * @param groups groups
      */
     private static void listGroups(PrintStream out, Set<Group> groups) {
@@ -263,9 +264,9 @@ public final class Groups {
     /**
      * Finds groups which would match the project.
      *
-     * @param out stream to write the results
+     * @param out    stream to write the results
      * @param groups set of groups
-     * @param match project name
+     * @param match  project name
      */
     private static void matchGroups(PrintStream out, Set<Group> groups, String match) {
         Project p = new Project(match);
@@ -289,14 +290,14 @@ public final class Groups {
 
     /**
      * Adds a group into the xml tree.
-     *
+     * <p>
      * If group already exists, only the pattern is modified. Parent group can
      * be null, in that case a new group is inserted as a top level group.
      *
-     * @param groups existing groups
-     * @param groupname new group name
+     * @param groups       existing groups
+     * @param groupname    new group name
      * @param grouppattern new group pattern
-     * @param parent parent
+     * @param parent       parent
      * @return false if parent group was not found, true otherwise
      */
     private static boolean modifyGroup(Set<Group> groups, String groupname, String grouppattern, String parent) {
@@ -321,7 +322,7 @@ public final class Groups {
     /**
      * Removes group from the xml tree.
      *
-     * @param groups existing groups
+     * @param groups    existing groups
      * @param groupname group to remove
      */
     private static void deleteGroup(Set<Group> groups, String groupname) {
@@ -340,10 +341,9 @@ public final class Groups {
      *
      * @param groups set of groups (mixed top level and other groups)
      * @param walker an instance of {@link Walker} which is used for every
-     * traversed group
+     *               traversed group
      * @return true if {@code walker} emits true for any of the groups; false
      * otherwise
-     *
      * @see Walker
      */
     private static boolean treeTraverseGroups(Set<Group> groups, Walker walker) {
@@ -376,7 +376,7 @@ public final class Groups {
      *
      * @param groups set of groups (mixed top level and other groups)
      * @param walker an instance of {@link Walker} which is used for every
-     * traversed group
+     *               traversed group
      * @return true if {@code walker} emits true for any of the groups; false
      */
     private static boolean linearTraverseGroups(Set<Group> groups, Walker walker) {

@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -111,22 +112,22 @@ public class RuntimeEnvironmentTest {
     public void testIncludeRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNull(instance.getIncludeRootPath());
-        
+
         // set data root
         File f = File.createTempFile("dataroot", null);
         String path = f.getCanonicalPath();
         instance.setDataRoot(path);
-        
+
         // verify they are the same
         assertEquals(instance.getDataRootPath(), instance.getIncludeRootPath());
-        
+
         // set include root
         f = File.createTempFile("includeroot", null);
         path = f.getCanonicalPath();
         instance.setIncludeRoot(path);
         assertEquals(path, instance.getIncludeRootPath());
     }
-    
+
     @Test
     public void testSourceRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
@@ -170,10 +171,10 @@ public class RuntimeEnvironmentTest {
 
         Group g = new Group("Random", "xyz.*");
 
-        instance.getGroups().add(g);
+        instance.getGroups().put(g.getName(), g);
         assertEquals(1, instance.getGroups().size());
-        assertEquals(g, instance.getGroups().iterator().next());
-        assertEquals("Random", instance.getGroups().iterator().next().getName());
+        assertEquals(g, instance.getGroups().values().iterator().next());
+        assertEquals("Random", instance.getGroups().values().iterator().next().getName());
 
         instance.setGroups(null);
         assertNull(instance.getGroups());
@@ -206,8 +207,8 @@ public class RuntimeEnvironmentTest {
         String instanceCtags = instance.getCtags();
         assertNotNull(instanceCtags);
         assertTrue("instance ctags should equals 'ctags' or the sys property",
-            instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
+                instanceCtags.equals("ctags") || instanceCtags.equals(
+                        System.getProperty("org.opengrok.indexer.analysis.Ctags")));
         String path = "/usr/bin/ctags";
         instance.setCtags(path);
         assertEquals(path, instance.getCtags());
@@ -215,8 +216,8 @@ public class RuntimeEnvironmentTest {
         instance.setCtags(null);
         instanceCtags = instance.getCtags();
         assertTrue("instance ctags should equals 'ctags' or the sys property",
-            instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
+                instanceCtags.equals("ctags") || instanceCtags.equals(
+                        System.getProperty("org.opengrok.indexer.analysis.Ctags")));
     }
 
     @Test
@@ -324,10 +325,10 @@ public class RuntimeEnvironmentTest {
     public void testBugPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
-            "\\b([12456789][0-9]{6})\\b",
-            "\\b(#\\d+)\\b",
-            "(BUG123)",
-            "\\sbug=(\\d+[a-t])*(\\W*)"
+                "\\b([12456789][0-9]{6})\\b",
+                "\\b(#\\d+)\\b",
+                "(BUG123)",
+                "\\sbug=(\\d+[a-t])*(\\W*)"
         };
         for (String test : tests) {
             try {
@@ -343,12 +344,12 @@ public class RuntimeEnvironmentTest {
     public void testInvalidBugPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
-            "\\b([",
-            "\\b({,6})\\b",
-            "\\b6)\\b",
-            "*buggy",
-            "BUG123", // does not contain a group
-            "\\b[a-z]+\\b" // does not contain a group
+                "\\b([",
+                "\\b({,6})\\b",
+                "\\b6)\\b",
+                "*buggy",
+                "BUG123", // does not contain a group
+                "\\b[a-z]+\\b" // does not contain a group
         };
         for (String test : tests) {
             try {
@@ -372,10 +373,10 @@ public class RuntimeEnvironmentTest {
     public void testReviewPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
-            "\\b(\\d{4}/\\d{3})\\b",
-            "\\b(#PSARC\\d+)\\b",
-            "(REVIEW 123)",
-            "\\sreview=(\\d+[a-t])*(\\W*)"
+                "\\b(\\d{4}/\\d{3})\\b",
+                "\\b(#PSARC\\d+)\\b",
+                "(REVIEW 123)",
+                "\\sreview=(\\d+[a-t])*(\\W*)"
         };
         for (String test : tests) {
             try {
@@ -391,12 +392,12 @@ public class RuntimeEnvironmentTest {
     public void testInvalidReviewPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String[] tests = new String[]{
-            "\\b([",
-            "\\b({,6})\\b",
-            "\\b6)\\b",
-            "*reviewy",
-            "REVIEW 123", // does not contain a group
-            "\\b[a-z]+\\b" // does not contain a group
+                "\\b([",
+                "\\b({,6})\\b",
+                "\\b6)\\b",
+                "*reviewy",
+                "REVIEW 123", // does not contain a group
+                "\\b[a-z]+\\b" // does not contain a group
         };
         for (String test : tests) {
             try {
@@ -854,7 +855,8 @@ public class RuntimeEnvironmentTest {
     /**
      * Verify that getPathRelativeToSourceRoot() returns path relative to
      * source root for both directories and symbolic links.
-     * @throws java.io.IOException I/O exception
+     *
+     * @throws java.io.IOException       I/O exception
      * @throws ForbiddenSymlinkException forbidden symlink exception
      */
     @Test
@@ -911,9 +913,9 @@ public class RuntimeEnvironmentTest {
         Project project2 = new Project("barfoo", "/barfoo");
         env.getProjects().put(project2.getName(), project2);
         final Group group1 = new Group("group1", "bar");
-        env.getGroups().add(group1);
+        env.getGroups().put(group1.getName(), group1);
         final Group group2 = new Group("group2", "bar.*");
-        env.getGroups().add(group2);
+        env.getGroups().put(group2.getName(), group2);
 
         final RepositoryInfo repository1 = new RepositoryInfo();
         repository1.setDirectoryNameRelative("/bar");
@@ -930,7 +932,7 @@ public class RuntimeEnvironmentTest {
         Assert.assertEquals(2, env.getGroups().size());
 
         // populate groups for the first time
-        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
 
         Assert.assertEquals(2, env.getProjects().size());
         Assert.assertEquals(2, env.getRepositories().size());
@@ -947,7 +949,7 @@ public class RuntimeEnvironmentTest {
         env.getRepositories().remove(repository1);
 
         // populate groups for the second time
-        env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
+        env.populateGroups(new TreeSet<>(env.getGroups().values()), new TreeSet<>(env.getProjects().values()));
 
         Assert.assertEquals(2, env.getProjects().size());
         Assert.assertEquals(1, env.getRepositories().size());

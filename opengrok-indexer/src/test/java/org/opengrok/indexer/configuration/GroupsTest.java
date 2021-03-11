@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.TreeSet;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +54,7 @@ public class GroupsTest {
 
     @Test
     public void testDeleteGroup() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new TreeSet<>(cfg.getGroups().values());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
@@ -75,7 +77,7 @@ public class GroupsTest {
 
     @Test
     public void testAddGroup() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new TreeSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "new fantastic group");
         Assert.assertNull(grp);
 
@@ -93,7 +95,7 @@ public class GroupsTest {
 
     @Test
     public void testAddGroupToParent() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new TreeSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "apache");
         Assert.assertNotNull(grp);
 
@@ -120,7 +122,7 @@ public class GroupsTest {
 
     @Test
     public void testModifyGroup() {
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new TreeSet<>(cfg.getGroups().values());
         Group grp = findGroup(groups, "apache");
         Assert.assertNotNull(grp);
         Assert.assertEquals(grp.getName(), "apache");
@@ -139,16 +141,16 @@ public class GroupsTest {
     @Test
     public void testMatchGroup() {
         Object[][] tests = new Object[][]{
-            {"null", 0},
-            {"apache", 0},
-            {"apache-2.2", 1},
-            {"ctags 5.6.6.7.4", 1},
-            {"ctags", 0},
-            {"opengrok", 1},
-            {"opengrok-12.0-rc3", 1},
-            {"opengrk", 0}
+                {"null", 0},
+                {"apache", 0},
+                {"apache-2.2", 1},
+                {"ctags 5.6.6.7.4", 1},
+                {"ctags", 0},
+                {"opengrok", 1},
+                {"opengrok-12.0-rc3", 1},
+                {"opengrk", 0}
         };
-        Set<Group> groups = cfg.getGroups();
+        Set<Group> groups = new TreeSet<>(cfg.getGroups().values());
 
         for (Object[] test : tests) {
             testSingleMatch(groups, (int) test[1], (String) test[0]);

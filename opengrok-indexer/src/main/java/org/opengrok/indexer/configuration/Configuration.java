@@ -103,7 +103,7 @@ public final class Configuration {
      * value.
      */
     private static final String NONPOSITIVE_NUMBER_ERROR =
-        "Invalid value for \"%s\" - \"%s\". Expected value greater than 0";
+            "Invalid value for \"%s\" - \"%s\". Expected value greater than 0";
 
     /**
      * Path to {@code ctags} binary.
@@ -149,7 +149,7 @@ public final class Configuration {
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
     private Map<String, Project> projects; // project name -> Project
-    private Set<Group> groups;
+    private Map<String, Group> groups; // group name -> Group
     private String sourceRoot;
     private String dataRoot;
     /**
@@ -370,6 +370,7 @@ public final class Configuration {
 
     /**
      * Sets the nesting maximum of repositories to a specified value.
+     *
      * @param nestingMaximum the new value
      * @throws IllegalArgumentException if {@code nestingMaximum} is negative
      */
@@ -526,7 +527,7 @@ public final class Configuration {
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
-        setGroups(new TreeSet<>());
+        setGroups(new ConcurrentHashMap<>());
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
@@ -591,19 +592,17 @@ public final class Configuration {
     }
 
     /**
-     * @see org.opengrok.indexer.web.messages.MessagesContainer
-     *
      * @return int the current message limit
+     * @see org.opengrok.indexer.web.messages.MessagesContainer
      */
     public int getMessageLimit() {
         return messageLimit;
     }
 
     /**
-     * @see org.opengrok.indexer.web.messages.MessagesContainer
-     *
      * @param messageLimit the limit
      * @throws IllegalArgumentException when the limit is negative
+     * @see org.opengrok.indexer.web.messages.MessagesContainer
      */
     public void setMessageLimit(int messageLimit) throws IllegalArgumentException {
         if (messageLimit < 0) {
@@ -644,6 +643,7 @@ public final class Configuration {
 
     /**
      * Gets the configuration's ctags command. Default is null.
+     *
      * @return the configured value
      */
     public String getCtags() {
@@ -652,6 +652,7 @@ public final class Configuration {
 
     /**
      * Sets the configuration's ctags command.
+     *
      * @param ctags A program name (full-path if necessary) or {@code null}
      */
     public void setCtags(String ctags) {
@@ -660,6 +661,7 @@ public final class Configuration {
 
     /**
      * Gets the configuration's mandoc command. Default is {@code null}.
+     *
      * @return the configured value
      */
     public String getMandoc() {
@@ -668,6 +670,7 @@ public final class Configuration {
 
     /**
      * Sets the configuration's mandoc command.
+     *
      * @param value A program name (full-path if necessary) or {@code null}
      */
     public void setMandoc(String value) {
@@ -677,6 +680,7 @@ public final class Configuration {
     /**
      * Gets the total number of context lines per file to show in cases where it
      * is limited. Default is 10.
+     *
      * @return a value greater than zero
      */
     public short getContextLimit() {
@@ -686,13 +690,14 @@ public final class Configuration {
     /**
      * Sets the total number of context lines per file to show in cases where it
      * is limited.
+     *
      * @param value a value greater than zero
      * @throws IllegalArgumentException if {@code value} is not positive
      */
     public void setContextLimit(short value) throws IllegalArgumentException {
         if (value < 1) {
             throw new IllegalArgumentException(
-                String.format(NONPOSITIVE_NUMBER_ERROR, "contextLimit", value));
+                    String.format(NONPOSITIVE_NUMBER_ERROR, "contextLimit", value));
         }
         this.contextLimit = value;
     }
@@ -700,6 +705,7 @@ public final class Configuration {
     /**
      * Gets the number of context lines to show before or after any match.
      * Default is zero.
+     *
      * @return a value greater than or equal to zero
      */
     public short getContextSurround() {
@@ -708,6 +714,7 @@ public final class Configuration {
 
     /**
      * Sets the number of context lines to show before or after any match.
+     *
      * @param value a value greater than or equal to zero
      * @throws IllegalArgumentException if {@code value} is negative
      */
@@ -715,7 +722,7 @@ public final class Configuration {
             throws IllegalArgumentException {
         if (value < 0) {
             throw new IllegalArgumentException(
-                String.format(NEGATIVE_NUMBER_ERROR, "contextSurround", value));
+                    String.format(NEGATIVE_NUMBER_ERROR, "contextSurround", value));
         }
         this.contextSurround = value;
     }
@@ -792,7 +799,7 @@ public final class Configuration {
     public void setHistoryCache(boolean historyCache) {
         this.historyCache = historyCache;
     }
-    
+
     /**
      * How long can a history request take before it's cached? If the time is
      * exceeded, the result is cached. This setting only affects
@@ -854,19 +861,25 @@ public final class Configuration {
      * @throws IOException when group is not unique across the set
      */
     public void addGroup(Group group) throws IOException {
-        if (!groups.add(group)) {
+        if (groups.containsKey(group.getName())) {
             throw new IOException(
                     String.format("Duplicate group name '%s' in configuration.",
                             group.getName()));
+        } else {
+            groups.put(group.getName(), group);
         }
     }
 
-    public Set<Group> getGroups() {
+    public Map<String, Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Map<String, Group> groups) {
         this.groups = groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = setToMap(groups);
     }
 
     public String getSourceRoot() {
@@ -883,12 +896,11 @@ public final class Configuration {
 
     /**
      * Sets data root.
-     *
+     * <p>
      * This method also sets the pluginDirectory if it is not already set.
      *
-     * @see #setPluginDirectory(java.lang.String)
-     *
      * @param dataRoot data root path
+     * @see #setPluginDirectory(java.lang.String)
      */
     public void setDataRoot(String dataRoot) {
         if (dataRoot != null && getPluginDirectory() == null) {
@@ -899,16 +911,17 @@ public final class Configuration {
 
     /**
      * If {@link #includeRoot} is not set, {@link #dataRoot} will be returned.
+     *
      * @return web include root directory
      */
     public String getIncludeRoot() {
         return includeRoot != null ? includeRoot : dataRoot;
     }
-    
+
     public void setIncludeRoot(String newRoot) {
         this.includeRoot = newRoot;
     }
-    
+
     public List<RepositoryInfo> getRepositories() {
         return repositories;
     }
@@ -1021,8 +1034,8 @@ public final class Configuration {
      *
      * @param bugPattern the new pattern
      * @throws PatternSyntaxException when the pattern is not a valid regexp or
-     * does not contain at least one capture group and the group does not
-     * contain a single character
+     *                                does not contain at least one capture group and the group does not
+     *                                contain a single character
      */
     public void setBugPattern(String bugPattern) throws PatternSyntaxException {
         if (!bugPattern.matches(PATTERN_SINGLE_GROUP)) {
@@ -1052,8 +1065,8 @@ public final class Configuration {
      *
      * @param reviewPattern the new pattern
      * @throws PatternSyntaxException when the pattern is not a valid regexp or
-     * does not contain at least one capture group and the group does not
-     * contain a single character
+     *                                does not contain at least one capture group and the group does not
+     *                                contain a single character
      */
     public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
         if (!reviewPattern.matches(PATTERN_SINGLE_GROUP)) {
@@ -1106,7 +1119,7 @@ public final class Configuration {
 
     /**
      * @param value off|on|simple|native where "on" is an alias for "simple".
-     * Any other value is a fallback alias for "off" (with a logged warning).
+     *              Any other value is a fallback alias for "off" (with a logged warning).
      */
     public void setLuceneLocking(LuceneLockName value) {
         this.luceneLocking = value;
@@ -1436,7 +1449,7 @@ public final class Configuration {
         // This ensures that when the configuration is reloaded then the set 
         // contains only root groups. Subgroups are discovered again
         // as follows below
-        conf.groups.removeIf(new Predicate<Group>() {
+        conf.groups.values().removeIf(new Predicate<Group>() {
             @Override
             public boolean test(Group g) {
                 return g.getParent() != null;
@@ -1446,8 +1459,8 @@ public final class Configuration {
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)
         // supporting an iterator.
-        TreeSet<Group> copy = new TreeSet<>();
-        LinkedList<Group> stack = new LinkedList<>(conf.groups);
+        Set<Group> copy = new TreeSet<>();
+        LinkedList<Group> stack = new LinkedList<>(conf.groups.values());
         while (!stack.isEmpty()) {
             Group group = stack.pollFirst();
             stack.addAll(group.getSubgroups());
@@ -1465,7 +1478,7 @@ public final class Configuration {
                 tmp = tmp.getParent();
             }
         }
-        conf.setGroups(copy);
+        conf.setGroups(setToMap(copy));
 
         /*
          * Validate any defined canonicalRoot entries, and only include where
@@ -1484,5 +1497,11 @@ public final class Configuration {
         }
 
         return conf;
+    }
+
+    private static Map<String, Group> setToMap(Set<Group> groups) {
+        Map<String, Group> groupsMap = new ConcurrentHashMap<>();
+        groups.forEach(group -> groupsMap.put(group.getName(), group));
+        return groupsMap;
     }
 }
