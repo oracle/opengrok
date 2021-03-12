@@ -386,7 +386,7 @@ def main():
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config(logger, extra_indexer_options)
+        create_bare_config(logger, extra_indexer_options.split())
 
     if sync_period > 0:
         if use_projects:
