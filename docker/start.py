@@ -319,6 +319,8 @@ def create_bare_config(logger, extra_indexer_options=None):
                        '--noIndex']
 
     if extra_indexer_options:
+        if type(extra_indexer_options) is not list:
+            raise Exception("extra_indexer_options has to be a list")
         indexer_options.extend(extra_indexer_options)
     indexer = Indexer(indexer_options,
                       jar=OPENGROK_JAR,
