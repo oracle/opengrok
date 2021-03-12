@@ -303,7 +303,7 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
         time.sleep(sleep_seconds)
 
 
-def create_bare_config(logger):
+def create_bare_config(logger, extra_indexer_options=None):
     """
     Create bare configuration file with a few basic settings.
     """
@@ -318,6 +318,8 @@ def create_bare_config(logger):
                        '-W', OPENGROK_CONFIG_FILE,
                        '--noIndex']
 
+    if extra_indexer_options:
+        indexer_options.extend(extra_indexer_options)
     indexer = Indexer(indexer_options,
                       jar=OPENGROK_JAR,
                       logger=logger, doprint=True)
@@ -384,7 +386,7 @@ def main():
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config(logger)
+        create_bare_config(logger, extra_indexer_options)
 
     if sync_period > 0:
         if use_projects:
