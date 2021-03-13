@@ -274,8 +274,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Assign tags to changesets they represent The complete list of tags must
-     * be pre-built using {@code getTagList()}. Then this function squeeze all
+     * Assign tags to changesets they represent. The complete list of tags must
+     * be pre-built using {@code getTagList()}. Then this function squeezes all
      * tags to changesets which actually exist in the history of given file.
      * Must be implemented repository-specific.
      *
