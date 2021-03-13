@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -485,5 +486,16 @@ public class GitRepositoryTest {
         Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
         Assert.assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
         Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+    }
+
+    @Test
+    public void testBuildTagList() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+        assertEquals(0, gitrepo.getTagList().size());
+
+        // TODO: add some tags (using JGit), rebuild tag list
     }
 }

@@ -33,16 +33,25 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -52,6 +61,8 @@ import org.opengrok.indexer.util.HeadHandler;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.StringUtils;
 import org.opengrok.indexer.util.Version;
+
+import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
 /**
  * Access to a Git repository.
@@ -613,31 +624,49 @@ public class GitRepository extends Repository {
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = new TreeSet<>();
 
-        /*
-         * Bulk log-tags command courtesy of GitHub's louie0817.
-         */
-        ArrayList<String> argv = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(RepoCommand);
-        argv.add("log");
-        argv.add("--tags");
-        argv.add("--simplify-by-decoration");
-        argv.add("--pretty=%H:%at:%D:");
+        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
+                create(Paths.get(directory.getAbsolutePath(), ".git").toFile())) {
+            try (Git git = new Git(repository)) {
+                List<Ref> refList = git.tagList().call(); // refs sorted according to tag names
+                Map<Ref, String> ref2Tags = new HashMap<>();
+                for (Ref ref : refList) {
+                    String tagName = ref.getName().replace("refs/tags/", "");
+                    String existingTags;
+                    if ((existingTags = ref2Tags.get(ref)) != null) {
+                        existingTags = existingTags + TAGS_SEPARATOR + tagName;
+                        ref2Tags.put(ref, existingTags);
+                    } else {
+                        ref2Tags.put(ref, tagName);
+                    }
+                }
 
-        Executor executor = new Executor(argv, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        int status = executor.exec(true, new GitTagParser(this.tagList));
+                // TODO convert to .stream().forEach()
+                for (Map.Entry<Ref, String> entry : ref2Tags.entrySet()) {
+                    Date date = getCommitDate(repository, entry.getKey());
+                    GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getObjectId().getName(),
+                            date, entry.getValue());
+                    this.tagList.add(tagEntry);
+                }
+            }
+        } catch (IOException | GitAPIException e) {
+            LOGGER.log(Level.WARNING, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
+            // In case of partial success, do not null-out tagList here.
+        }
+
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
                     new Object[] {tagList.size(), directory});
         }
+    }
 
-        if (status != 0) {
-            LOGGER.log(Level.WARNING,
-                "Failed to get tags for: \"{0}\" Exit code: {1}",
-                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
-            // In case of partial success, do not null-out tagList here.
+    @NotNull
+    private Date getCommitDate(org.eclipse.jgit.lib.Repository repository, Ref ref) throws IOException {
+        int commitTime;
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevCommit commit = walk.parseCommit(ref.getObjectId());
+            commitTime = commit.getCommitTime();
         }
+        return new Date((long) (commitTime) * 1000);
     }
 
     @Override
