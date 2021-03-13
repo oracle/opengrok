@@ -233,6 +233,11 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
             <artifactId>annotations</artifactId>
             <version>20.1.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>5.10.0.202012080955-r</version>
+        </dependency>
     </dependencies>
 
     <build>
