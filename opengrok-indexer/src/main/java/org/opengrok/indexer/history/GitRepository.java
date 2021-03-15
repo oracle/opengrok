@@ -33,13 +33,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -47,6 +41,8 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
@@ -672,34 +668,10 @@ public class GitRepository extends Repository {
 
     @Override
     String determineParent(CommandTimeoutType cmdType) throws IOException {
-        String parent = null;
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("remote");
-        cmd.add("-v");
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        executor.exec();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("origin") && line.contains("(fetch)")) {
-                    String[] parts = line.split("\\s+");
-                    if (parts.length != 3) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to get parent for {0}", getDirectoryName());
-                    }
-                    parent = parts[1];
-                    break;
-                }
-            }
+        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
+                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+            return repository.getConfig().getString("remote", "origin", "url");
         }
-
-        return parent;
     }
 
     @Override
