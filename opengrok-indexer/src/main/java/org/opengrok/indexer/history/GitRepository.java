@@ -47,6 +47,8 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -640,7 +642,6 @@ public class GitRepository extends Repository {
                     }
                 }
 
-                // TODO convert to .stream().forEach()
                 for (Map.Entry<Ref, String> entry : ref2Tags.entrySet()) {
                     Date date = getCommitDate(repository, entry.getKey());
                     GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getObjectId().getName(),
@@ -703,28 +704,16 @@ public class GitRepository extends Repository {
 
     @Override
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
-        String branch = null;
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("branch");
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        executor.exec();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("*")) {
-                    branch = line.substring(2).trim();
-                    break;
-                }
+        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
+                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+            Ref head = repository.exactRef(Constants.HEAD);
+            if (head != null) {
+               String branchName = head.getLeaf().getName();
+               return branchName.substring(branchName.indexOf('/', 5) + 1);
             }
         }
 
-        return branch;
+        return null;
     }
 
     @Override

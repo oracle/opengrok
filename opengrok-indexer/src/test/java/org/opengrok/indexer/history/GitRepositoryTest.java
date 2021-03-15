@@ -90,10 +90,21 @@ public class GitRepositoryTest {
     @Test
     public void testDetermineCurrentVersion() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String ver = gitrepo.determineCurrentVersion();
         Assert.assertNotNull(ver);
+        assertEquals("2017-01-26 14:51 +0100 84599b3 Kryštof Tulinger renaming directories", ver);
+    }
+
+    @Test
+    public void testDetermineBranch() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        String branch = gitrepo.determineBranch();
+        Assert.assertNotNull(branch);
+        assertEquals("master", branch);
+
+        // TODO: add branch, switch to it and call again
     }
 
     /**
