@@ -719,37 +719,24 @@ public class GitRepository extends Repository {
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
         File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<>();
-        // The delimiter must not be contained in the date format emitted by
-        // {@code GIT_DATE_OPT}.
-        String delim = "#";
 
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-
-        cmd.add(RepoCommand);
-        cmd.add("log");
-        cmd.add("-1");
-        cmd.add("--pretty=%cd" + delim + "%h %an %s");
-        cmd.add(GIT_DATE_OPT);
-
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        if (executor.exec(false) != 0) {
-            throw new IOException(executor.getErrorString());
+        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
+                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+            Ref head = repository.exactRef(Constants.HEAD);
+            if (head != null) {
+                try (RevWalk walk = new RevWalk(repository); ObjectReader reader = repository.newObjectReader()) {
+                    RevCommit commit = walk.parseCommit(head.getObjectId());
+                    int commitTime = commit.getCommitTime();
+                    Date date = new Date((long) (commitTime) * 1000);
+                    return String.format("%s %s %s %s",
+                            format(date),
+                            reader.abbreviate(head.getObjectId()).name(),
+                            commit.getAuthorIdent().getName(),
+                            commit.getShortMessage());
+                }
+            }
         }
 
-        String output = executor.getOutputString().trim();
-        int indexOf = StringUtils.nthIndexOf(output, delim, 1);
-        if (indexOf < 0) {
-            throw new IOException(
-                    String.format("Couldn't extract date from \"%s\".", output));
-        }
-
-        try {
-            Date date = parse(output.substring(0, indexOf));
-            return String.format("%s %s", format(date), output.substring(indexOf + 1));
-        } catch (ParseException ex) {
-            throw new IOException(ex);
-        }
+        return null; // TODO: throw IOException ?
     }
 }
