@@ -687,8 +687,6 @@ public class GitRepository extends Repository {
 
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
-        File directory = new File(getDirectoryName());
-
         try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
                 create(Paths.get(getDirectoryName(), ".git").toFile())) {
             Ref head = repository.exactRef(Constants.HEAD);
