@@ -108,6 +108,16 @@ public class GitRepositoryTest {
         // TODO: add branch, switch to it and call again
     }
 
+    @Test
+    public void testDetermineParent() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        String parent = gitrepo.determineParent();
+        Assert.assertNull(parent);
+
+        // TODO: add origin and rerun
+    }
+
     /**
      * Test of parseAnnotation method, of class GitRepository.
      */
