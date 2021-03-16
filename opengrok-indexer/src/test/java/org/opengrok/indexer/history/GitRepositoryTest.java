@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,8 +94,8 @@ public class GitRepositoryTest {
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String ver = gitrepo.determineCurrentVersion();
         Assert.assertNotNull(ver);
-        // TODO: what about time zone ?
-        assertEquals("2017-01-26 14:51 +0100 84599b3 Kryštof Tulinger renaming directories", ver);
+        Date date = new Date((long) (1485438707) * 1000);
+        assertEquals(Repository.format(date) + " 84599b3 Kryštof Tulinger renaming directories", ver);
     }
 
     @Test
