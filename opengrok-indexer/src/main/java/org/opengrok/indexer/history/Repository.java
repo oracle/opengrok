@@ -523,7 +523,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return the string representing the formatted date
      * @see #OUTPUT_DATE_FORMAT
      */
-    public String format(Date date) {
+    public static String format(Date date) {
         synchronized (OUTPUT_DATE_FORMAT) {
             return OUTPUT_DATE_FORMAT.format(date);
         }
