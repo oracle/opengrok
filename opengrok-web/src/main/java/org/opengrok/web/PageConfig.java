@@ -1303,7 +1303,9 @@ public final class PageConfig {
         }
 
         String lastRev = getLastRevFromIndex();
-        if (lastRev != null) return lastRev;
+        if (lastRev != null) {
+            return lastRev;
+        }
 
         // fallback
         return getLastRevFromHistory();
