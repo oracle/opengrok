@@ -61,6 +61,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.apache.lucene.document.Document;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -76,6 +78,7 @@ import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
@@ -1291,11 +1294,24 @@ public final class PageConfig {
                 getPath(), env.isCompressXref());
     }
 
+    /**
+     * @return last revision string for {@code file} or null
+     */
     public String getLatestRevision() {
         if (!getEnv().isHistoryEnabled()) {
             return null;
         }
 
+        String lastRev = getLastRevFromIndex();
+        if (lastRev != null) return lastRev;
+
+        // fallback
+        return getLastRevFromHistory();
+    }
+
+    @Nullable
+    private String getLastRevFromHistory() {
+        // fallback
         History hist;
         try {
             hist = HistoryGuru.getInstance().
@@ -1323,6 +1339,19 @@ public final class PageConfig {
         }
 
         return he.getRevision();
+    }
+
+    @Nullable
+    private String getLastRevFromIndex() {
+        Document doc = null;
+        try {
+            doc = IndexDatabase.getDocument(getResourceFile());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
+        }
+
+        String lastRev = doc.get(QueryBuilder.LASTREV);
+        return lastRev;
     }
 
     /**
@@ -1529,7 +1558,7 @@ public final class PageConfig {
         sh.start = getSearchStart();
         sh.maxItems = getSearchMaxItems();
         sh.contextPath = req.getContextPath();
-        // jel: this should be IMHO a config param since not only core dependend
+        // jel: this should be IMHO a config param since not only core dependent
         sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
         sh.isCrossRefSearch = getPrefix() == Prefix.SEARCH_R;
         sh.isGuiSearch = sh.isCrossRefSearch || getPrefix() == Prefix.SEARCH_P;

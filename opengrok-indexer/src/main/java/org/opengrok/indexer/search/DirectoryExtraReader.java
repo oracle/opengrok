@@ -90,7 +90,8 @@ public class DirectoryExtraReader {
             String filepath = d.get(QueryBuilder.PATH);
             Integer numlines = tryParseInt(d.get(QueryBuilder.NUML));
             Integer loc = tryParseInt(d.get(QueryBuilder.LOC));
-            FileExtra extra = new FileExtra(filepath, numlines, loc);
+            String lastRev = d.get(QueryBuilder.LASTREV);
+            FileExtra extra = new FileExtra(filepath, numlines, loc, lastRev);
             results.add(extra);
         }
 
