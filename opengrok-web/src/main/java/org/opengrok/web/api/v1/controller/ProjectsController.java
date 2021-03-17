@@ -90,11 +90,13 @@ public class ProjectsController {
         if (!env.getProjects().containsKey(projectName)) {
             Project project = new Project(projectName, "/" + projectName);
 
-            // Add repositories in this project.
-            List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+            if (env.isHistoryEnabled()) {
+                // Add repositories in this project.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
 
-            env.addRepositories(repos);
-            env.getProjectRepositoriesMap().put(project, repos);
+                env.addRepositories(repos);
+                env.getProjectRepositoriesMap().put(project, repos);
+            }
 
             // Finally introduce the project to the configuration.
             // Note that the project is inactive in the UI until it is indexed.
@@ -105,29 +107,31 @@ public class ProjectsController {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
 
-            // Refresh the list of repositories of this project.
-            // This is the goal of this action: if an existing project
-            // is re-added, this means its list of repositories has changed.
-            List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
-            List<RepositoryInfo> allrepos = env.getRepositories();
-            synchronized (allrepos) {
-                // newly added repository
-                for (RepositoryInfo repo : repos) {
-                    if (!allrepos.contains(repo)) {
-                        allrepos.add(repo);
+            if (env.isHistoryEnabled()) {
+                // Refresh the list of repositories of this project.
+                // This is the goal of this action: if an existing project
+                // is re-added, this means its list of repositories has changed.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+                List<RepositoryInfo> allrepos = env.getRepositories();
+                synchronized (allrepos) {
+                    // newly added repository
+                    for (RepositoryInfo repo : repos) {
+                        if (!allrepos.contains(repo)) {
+                            allrepos.add(repo);
+                        }
                     }
-                }
-                // deleted repository
-                if (map.containsKey(project)) {
-                    for (RepositoryInfo repo : map.get(project)) {
-                        if (!repos.contains(repo)) {
-                            allrepos.remove(repo);
+                    // deleted repository
+                    if (map.containsKey(project)) {
+                        for (RepositoryInfo repo : map.get(project)) {
+                            if (!repos.contains(repo)) {
+                                allrepos.remove(repo);
+                            }
                         }
                     }
                 }
-            }
 
-            map.put(project, repos);
+                map.put(project, repos);
+            }
         }
 
         return Response.status(Response.Status.CREATED).build();
@@ -174,12 +178,14 @@ public class ProjectsController {
             group.getProjects().remove(project);
         }
 
-        // Now remove the repositories associated with this project.
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
-        if (repos != null) {
-            env.getRepositories().removeAll(repos);
+        if (env.isHistoryEnabled()) {
+            // Now remove the repositories associated with this project.
+            List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+            if (repos != null) {
+                env.getRepositories().removeAll(repos);
+            }
+            env.getProjectRepositoriesMap().remove(project);
         }
-        env.getProjectRepositoriesMap().remove(project);
 
         env.getProjects().remove(projectName, project);
 
