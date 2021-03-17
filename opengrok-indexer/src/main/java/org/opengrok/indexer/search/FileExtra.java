@@ -30,6 +30,7 @@ public class FileExtra {
     private final String filepath;
     private final Integer numlines;
     private final Integer loc;
+    private final String lastRev;
 
     /**
      * Initializes an instance with specified file path, number of lines, and
@@ -37,11 +38,13 @@ public class FileExtra {
      * @param filepath the file path
      * @param numlines the number of lines (null if unknown)
      * @param loc the lines-of-code (null if unknown)
+     * @param lastRev last revision string (null if unknown)
      */
-    public FileExtra(String filepath, Integer numlines, Integer loc) {
+    public FileExtra(String filepath, Integer numlines, Integer loc, String lastRev) {
         this.filepath = filepath;
         this.numlines = numlines;
         this.loc = loc;
+        this.lastRev = lastRev;
     }
 
     /**
@@ -63,5 +66,12 @@ public class FileExtra {
      */
     public Integer getLoc() {
         return loc;
+    }
+
+    /**
+     * @return last revision string (null if unknown)
+     */
+    public String getLastRev() {
+        return lastRev;
     }
 }

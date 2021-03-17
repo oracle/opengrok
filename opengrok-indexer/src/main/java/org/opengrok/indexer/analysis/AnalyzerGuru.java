@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -110,6 +110,8 @@ import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.HistoryReader;
@@ -591,10 +593,18 @@ public class AnalyzerGuru {
 
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             try {
-                HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
+                HistoryGuru histGuru = HistoryGuru.getInstance();
+                HistoryReader hr = histGuru.getHistoryReader(file);
                 if (hr != null) {
                     doc.add(new TextField(QueryBuilder.HIST, hr));
-                    // date = hr.getLastCommentDate() //RFE
+                    History history;
+                    if ((history = histGuru.getHistory(file)) != null) {
+                        List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
+                        if (historyEntries.size() > 0) {
+                            HistoryEntry histEntry = historyEntries.get(0);
+                            doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
+                        }
+                    }
                 }
             } catch (HistoryException e) {
                 LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
