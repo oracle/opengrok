@@ -1352,8 +1352,11 @@ public final class PageConfig {
             LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
         }
 
-        String lastRev = doc.get(QueryBuilder.LASTREV);
-        return lastRev;
+        if (doc != null) {
+            return doc.get(QueryBuilder.LASTREV);
+        }
+
+        return null;
     }
 
     /**
