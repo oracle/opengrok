@@ -1313,7 +1313,6 @@ public final class PageConfig {
 
     @Nullable
     private String getLastRevFromHistory() {
-        // fallback
         History hist;
         try {
             hist = HistoryGuru.getInstance().
