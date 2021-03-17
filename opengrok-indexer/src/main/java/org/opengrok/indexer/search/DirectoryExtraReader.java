@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
@@ -36,6 +37,7 @@ import org.apache.lucene.search.TopDocs;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.index.NumLinesLOCUtil;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Statistics;
 
 /**
  * Represents a searcher to supplement metadata from the file-system with
@@ -77,8 +79,14 @@ public class DirectoryExtraReader {
             throw new IOException(PARSE_ERROR);
         }
 
+        Statistics stat = new Statistics();
         TopDocs hits = searcher.search(query, DIR_LIMIT_NUM);
         List<NullableNumLinesLOC> results = processHits(searcher, hits);
+
+        stat.report(LOGGER, Level.FINEST, "search via DirectoryExtraReader done",
+                "search.latency", new String[]{"category", "extra",
+                        "outcome", hits.scoreDocs.length > 0 ? "success" : "empty"});
+
         return results;
     }
 
