@@ -191,6 +191,8 @@ public class FileAnalyzer extends AbstractAnalyzer {
             }
             case QueryBuilder.DEFS:
                 return new TokenStreamComponents(createPlainSymbolTokenizer());
+            case QueryBuilder.LASTREV:
+                return new TokenStreamComponents(createPlainFullTokenizer());
             default:
                 LOGGER.log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);

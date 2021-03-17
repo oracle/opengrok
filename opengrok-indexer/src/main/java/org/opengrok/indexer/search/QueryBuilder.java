@@ -60,8 +60,9 @@ public class QueryBuilder {
     public static final String SCOPES = "scopes";
     public static final String NUML = "numl";
     public static final String LOC = "loc";
+    public static final String LASTREV = "lastrev"; // last revision
     /**
-     * Fields we use in lucene: internal ones.
+     * Fields we use in Lucene: internal ones.
      */
     public static final String D = "d"; // Directory key
     public static final String U = "u"; // File and timestamp key
