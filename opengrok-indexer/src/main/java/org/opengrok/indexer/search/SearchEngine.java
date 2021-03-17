@@ -65,6 +65,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.Summary.Fragment;
 import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
 
@@ -210,8 +211,12 @@ public class SearchEngine {
 
     private void searchIndex(IndexSearcher searcher, boolean paging) throws IOException {
         collector = TopScoreDocCollector.create(hitsPerPage * cachePages, Short.MAX_VALUE);
+        Statistics stat = new Statistics();
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
+        stat.report(LOGGER, Level.FINEST, "search via SearchEngine done",
+                "search.latency", new String[]{"category", "engine",
+                        "outcome", totalHits > 0 ? "success" : "empty"});
         if (!paging && totalHits > 0) {
             collector = TopScoreDocCollector.create(totalHits, Short.MAX_VALUE);
             searcher.search(query, collector);
