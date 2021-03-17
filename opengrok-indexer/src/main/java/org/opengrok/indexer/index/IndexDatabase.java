@@ -1635,7 +1635,8 @@ public class IndexDatabase {
             Statistics stat = new Statistics();
             TopDocs top = searcher.search(q, 1);
             stat.report(LOGGER, Level.FINEST, "search via getDocument done",
-                    "search.latency", new String[]{"category", "getdocument"});
+                    "search.latency", new String[]{"category", "getdocument",
+                            "outcome", top.totalHits.value == 0 ? "empty" : "success"});
             if (top.totalHits.value == 0) {
                 // No hits, no document...
                 return null;
