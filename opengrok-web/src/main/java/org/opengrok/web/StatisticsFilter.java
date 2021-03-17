@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -46,13 +47,6 @@ public class StatisticsFilter implements Filter {
     static final String REQUESTS_METRIC = "requests";
 
     private final DistributionSummary requests = Metrics.getPrometheusRegistry().summary(REQUESTS_METRIC);
-
-    private final Timer emptySearch = Timer.builder("search.latency").
-            tags("outcome", "empty").
-            register(Metrics.getPrometheusRegistry());
-    private final Timer successfulSearch = Timer.builder("search.latency").
-            tags("outcome", "success").
-            register(Metrics.getPrometheusRegistry());
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -86,11 +80,18 @@ public class StatisticsFilter implements Filter {
         categoryTimer.record(duration);
 
         SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
-        if (helper != null) {
+        MeterRegistry registry = Metrics.getRegistry();
+        if (helper != null && registry != null) {
             if (helper.hits == null || helper.hits.length == 0) {
-                emptySearch.record(duration);
+                Timer.builder("search.latency").
+                        tags("category", "ui", "outcome", "empty").
+                        register(registry).
+                        record(duration);
             } else {
-                successfulSearch.record(duration);
+                Timer.builder("search.latency").
+                        tags("category", "ui", "outcome", "success").
+                        register(registry).
+                        record(duration);
             }
         }
     }
