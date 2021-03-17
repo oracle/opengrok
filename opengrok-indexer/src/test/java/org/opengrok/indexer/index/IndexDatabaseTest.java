@@ -25,16 +25,19 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.TreeSet;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -188,5 +191,13 @@ public class IndexDatabaseTest {
             assertFalse("PATH field should not contain backslash characters",
                     doc.getField(QueryBuilder.PATH).stringValue().contains("\\"));
         }
+    }
+
+    @Test
+    public void testGetLastRev() throws IOException, ParseException {
+        Document doc = IndexDatabase.getDocument(Paths.get(repository.getSourceRoot(),
+                "git", "main.c").toFile());
+        assertNotNull(doc);
+        assertEquals("aa35c258", doc.get(QueryBuilder.LASTREV));
     }
 }
