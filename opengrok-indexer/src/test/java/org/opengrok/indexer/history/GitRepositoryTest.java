@@ -143,6 +143,7 @@ public class GitRepositoryTest {
             assertNotNull(gitrepo);
             ver = gitrepo.determineCurrentVersion();
             assertNotNull(ver);
+            // Not able to set commit ID and date so only check the rest.
             assertTrue("ends with author and commit comment", ver.endsWith(authorName + " " + comment));
 
             FileUtilities.removeDirs(cloneRoot);
