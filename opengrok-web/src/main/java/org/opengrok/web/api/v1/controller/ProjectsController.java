@@ -221,6 +221,10 @@ public class ProjectsController {
     @DELETE
     @Path("/{project}/historycache")
     public void deleteHistoryCache(@PathParam("project") String projectName) {
+        if (!env.isHistoryEnabled()) {
+            return;
+        }
+
         // Avoid classification as a taint bug.
         projectName = Laundromat.launderInput(projectName);
 
