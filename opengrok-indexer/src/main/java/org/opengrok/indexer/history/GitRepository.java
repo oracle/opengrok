@@ -695,7 +695,7 @@ public class GitRepository extends Repository {
         try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
                 create(Paths.get(getDirectoryName(), ".git").toFile())) {
             Ref head = repository.exactRef(Constants.HEAD);
-            if (head != null) {
+            if (head != null && head.getObjectId() != null) {
                 try (RevWalk walk = new RevWalk(repository); ObjectReader reader = repository.newObjectReader()) {
                     RevCommit commit = walk.parseCommit(head.getObjectId());
                     int commitTime = commit.getCommitTime();
