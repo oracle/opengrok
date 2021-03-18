@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -37,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.util.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -49,6 +52,7 @@ import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.assertEquals;
@@ -88,14 +92,63 @@ public class GitRepositoryTest {
         instance = null;
     }
 
+    private void checkCurrentVersion(File root, int timestamp, String commitId, String shortComment)
+            throws Exception {
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        assertNotNull(gitrepo);
+        String ver = gitrepo.determineCurrentVersion();
+        assertNotNull(ver);
+        Date date = new Date((long) (timestamp) * 1000);
+        assertEquals(Repository.format(date) + " " + commitId + " " + shortComment, ver);
+    }
+
     @Test
     public void testDetermineCurrentVersion() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        assertNotNull(gitrepo);
         String ver = gitrepo.determineCurrentVersion();
-        Assert.assertNotNull(ver);
+        assertNotNull(ver);
         Date date = new Date((long) (1485438707) * 1000);
-        assertEquals(Repository.format(date) + " 84599b3 Kryštof Tulinger renaming directories", ver);
+        assertEquals(Repository.format(date) + " " + "84599b3" + " " + "Kryštof Tulinger renaming directories", ver);
+
+        // Clone under source root to avoid problems with prohibited symlinks.
+        File localPath = new File(repository.getSourceRoot(), "gitCloneTestCurrentVersion");
+        String cloneUrl = root.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath)
+                .call()) {
+            File cloneRoot = gitClone.getRepository().getWorkTree();
+            // Check the checkout went okay.
+            checkCurrentVersion(cloneRoot, 1485438707, "84599b3",
+                    "Kryštof Tulinger renaming directories");
+
+            // Create new file, commit and check the current version string.
+            File myFile = new File(cloneRoot, "testfile");
+            if (!myFile.createNewFile()) {
+                throw new IOException("Could not create file " + myFile);
+            }
+            gitClone.add()
+                    .addFilepattern("testfile")
+                    .call();
+            String comment = "Added testfile";
+            String authorName = "Foo Bar";
+            gitClone.commit()
+                    .setMessage(comment)
+                    .setAuthor(authorName, "foo@bar.com")
+                    .call();
+
+            gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
+            assertNotNull(gitrepo);
+            ver = gitrepo.determineCurrentVersion();
+            assertNotNull(ver);
+            assertTrue("ends with author and commit comment", ver.endsWith(authorName + " " + comment));
+
+            FileUtilities.removeDirs(cloneRoot);
+        }
+
+        FileUtilities.removeDirs(root);
     }
 
     @Test
@@ -106,7 +159,7 @@ public class GitRepositoryTest {
         Assert.assertNotNull(branch);
         assertEquals("master", branch);
 
-        // TODO: add branch, switch to it and call again
+        // TODO: clone, add branch, switch to it and call again
     }
 
     @Test
@@ -116,7 +169,7 @@ public class GitRepositoryTest {
         String parent = gitrepo.determineParent();
         Assert.assertNull(parent);
 
-        // TODO: add origin and rerun
+        // TODO: clone, change origin and retest
     }
 
     /**
