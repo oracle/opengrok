@@ -1,5 +1,5 @@
 
-Copyright (c) 2006, 2020 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2021 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
@@ -45,7 +45,7 @@ See https://github.com/oracle/opengrok/wiki/Developer-intro and https://github.c
 
 ## 4. Authors
 
-The project has been originally conceived in Sun Microsystems by Chandan B.N.
+The project has been originally conceived in [Sun Microsystems](https://en.wikipedia.org/wiki/Sun_Microsystems) by Chandan B.N.
 
 For full list of contributors see https://github.com/oracle/opengrok/graphs/contributors
 
