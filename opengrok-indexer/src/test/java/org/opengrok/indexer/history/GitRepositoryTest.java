@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -39,7 +38,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.util.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
