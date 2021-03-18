@@ -110,7 +110,7 @@ public class GitRepositoryTest {
         String ver = gitrepo.determineCurrentVersion();
         assertNotNull(ver);
         Date date = new Date((long) (1485438707) * 1000);
-        assertEquals(Repository.format(date) + " " + "84599b3" + " " + "Kryštof Tulinger renaming directories", ver);
+        assertEquals(Repository.format(date) + " 84599b3 Kryštof Tulinger renaming directories", ver);
 
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "gitCloneTestCurrentVersion");
