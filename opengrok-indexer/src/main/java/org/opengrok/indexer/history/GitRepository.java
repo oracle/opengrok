@@ -680,14 +680,8 @@ public class GitRepository extends Repository {
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
         try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
                 create(Paths.get(getDirectoryName(), ".git").toFile())) {
-            Ref head = repository.exactRef(Constants.HEAD);
-            if (head != null) {
-               String branchName = head.getLeaf().getName();
-               return branchName.substring(branchName.indexOf('/', 5) + 1);
-            }
+            return repository.getBranch();
         }
-
-        return null;
     }
 
     @Override
