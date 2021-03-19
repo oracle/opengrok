@@ -628,21 +628,23 @@ public class GitRepository extends Repository {
                 create(Paths.get(directory.getAbsolutePath(), ".git").toFile())) {
             try (Git git = new Git(repository)) {
                 List<Ref> refList = git.tagList().call(); // refs sorted according to tag names
-                Map<Ref, String> ref2Tags = new HashMap<>();
+                Map<RevCommit, String> commit2Tags = new HashMap<>();
                 for (Ref ref : refList) {
                     String tagName = ref.getName().replace("refs/tags/", "");
                     String existingTags;
-                    if ((existingTags = ref2Tags.get(ref)) != null) {
+                    RevCommit commit = getCommit(repository, ref);
+                    if ((existingTags = commit2Tags.get(commit)) != null) {
                         existingTags = existingTags + TAGS_SEPARATOR + tagName;
-                        ref2Tags.put(ref, existingTags);
+                        commit2Tags.put(commit, existingTags);
                     } else {
-                        ref2Tags.put(ref, tagName);
+                        commit2Tags.put(commit, tagName);
                     }
                 }
 
-                for (Map.Entry<Ref, String> entry : ref2Tags.entrySet()) {
-                    Date date = getCommitDate(repository, entry.getKey());
-                    GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getObjectId().getName(),
+                for (Map.Entry<RevCommit, String> entry : commit2Tags.entrySet()) {
+                    int commitTime = entry.getKey().getCommitTime();
+                    Date date = new Date((long) (commitTime) * 1000);
+                    GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getName(),
                             date, entry.getValue());
                     this.tagList.add(tagEntry);
                 }
@@ -659,13 +661,10 @@ public class GitRepository extends Repository {
     }
 
     @NotNull
-    private Date getCommitDate(org.eclipse.jgit.lib.Repository repository, Ref ref) throws IOException {
-        int commitTime;
+    private RevCommit getCommit(org.eclipse.jgit.lib.Repository repository, Ref ref) throws IOException {
         try (RevWalk walk = new RevWalk(repository)) {
-            RevCommit commit = walk.parseCommit(ref.getObjectId());
-            commitTime = commit.getCommitTime();
+            return walk.parseCommit(ref.getObjectId());
         }
-        return new Date((long) (commitTime) * 1000);
     }
 
     @Override
