@@ -203,6 +203,7 @@ public class GitRepositoryTest {
         // Next, clone the repository and create new origin there.
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
+        assertTrue(localPath.delete());
         String cloneUrl = root.toURI().toString();
         try (Git gitClone = Git.cloneRepository()
                 .setURI(cloneUrl)
