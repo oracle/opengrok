@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Ref;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -165,13 +166,30 @@ public class GitRepositoryTest {
 
     @Test
     public void testDetermineBranch() throws Exception {
+        // First check branch of known repository.
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String branch = gitrepo.determineBranch();
         Assert.assertNotNull(branch);
         assertEquals("master", branch);
 
-        // TODO: clone, add branch, switch to it and call again
+        // Next, clone the repository and create new branch there.
+        // Clone under source root to avoid problems with prohibited symlinks.
+        File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
+        String cloneUrl = root.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath)
+                .call()) {
+
+            Ref ref = gitClone.checkout().setCreateBranch(true).setName("foo").call();
+            assertNotNull(ref);
+
+            gitrepo = (GitRepository) RepositoryFactory.getRepository(gitClone.getRepository().getWorkTree());
+            branch = gitrepo.determineBranch();
+            Assert.assertNotNull(branch);
+            assertEquals("foo", branch);
+        }
     }
 
     @Test
