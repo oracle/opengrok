@@ -36,9 +36,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.URIish;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -623,6 +627,46 @@ public class GitRepositoryTest {
         gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
         assertEquals(0, gitrepo.getTagList().size());
 
-        // TODO: add some tags (using JGit), rebuild tag list
+        try (Git git = Git.open(root)) {
+            // Tag the HEAD first.
+            Ref ref = git.tag().setName("one").call();
+            assertNotNull(ref);
+            gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+            Set<TagEntry> tags = gitrepo.getTagList();
+            assertEquals(1, tags.size());
+            Date date = new Date((long) (1485438707) * 1000);
+            TagEntry tagEntry = new GitTagEntry("84599b3cccb3eeb5aa9aec64771678d6526bcecb", date, "one");
+            assertEquals(tagEntry, tags.toArray()[0]);
+
+            // Tag again so that single changeset has multiple tags.
+            ref = git.tag().setName("two").call();
+            assertNotNull(ref);
+            gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+            tags = gitrepo.getTagList();
+            assertEquals(1, tags.size());
+            Set<TagEntry> expectedTags = new TreeSet<>();
+            date = new Date((long) (1485438707) * 1000);
+            tagEntry = new GitTagEntry("84599b3cccb3eeb5aa9aec64771678d6526bcecb", date, "one, two");
+            expectedTags.add(tagEntry);
+            assertEquals(expectedTags, tags);
+
+            // Tag specific changeset (not HEAD) and recheck.
+            org.eclipse.jgit.lib.Repository repo = git.getRepository();
+            RevCommit commit;
+            ObjectId objectId = repo.resolve("b6413947a5");
+            try (RevWalk walk = new RevWalk(repo)) {
+                commit = walk.parseCommit(objectId);
+            }
+            assertNotNull(commit);
+            ref = git.tag().setName("three").setObjectId(commit).call();
+            assertNotNull(ref);
+            gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
+            tags = gitrepo.getTagList();
+            assertEquals(2, tags.size());
+            date = new Date((long) (1485263264) * 1000);
+            tagEntry = new GitTagEntry("b6413947a59f481ddc0a05e0d181731233557f6e", date, "three");
+            expectedTags.add(tagEntry);
+            assertEquals(expectedTags, tags);
+        }
     }
 }
