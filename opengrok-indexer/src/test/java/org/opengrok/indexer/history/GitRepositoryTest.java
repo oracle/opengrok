@@ -160,8 +160,6 @@ public class GitRepositoryTest {
 
             FileUtilities.removeDirs(cloneRoot);
         }
-
-        FileUtilities.removeDirs(root);
     }
 
     @Test
