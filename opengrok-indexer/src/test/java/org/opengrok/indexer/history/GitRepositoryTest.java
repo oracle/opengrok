@@ -40,6 +40,7 @@ import java.util.Set;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.URIish;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -185,10 +186,13 @@ public class GitRepositoryTest {
             Ref ref = gitClone.checkout().setCreateBranch(true).setName("foo").call();
             assertNotNull(ref);
 
-            gitrepo = (GitRepository) RepositoryFactory.getRepository(gitClone.getRepository().getWorkTree());
+            File cloneRoot = gitClone.getRepository().getWorkTree();
+            gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
             branch = gitrepo.determineBranch();
             Assert.assertNotNull(branch);
             assertEquals("foo", branch);
+
+            FileUtilities.removeDirs(cloneRoot);
         }
     }
 
@@ -199,7 +203,26 @@ public class GitRepositoryTest {
         String parent = gitrepo.determineParent();
         Assert.assertNull(parent);
 
-        // TODO: clone, change origin and retest
+        // Next, clone the repository and create new origin there.
+        // Clone under source root to avoid problems with prohibited symlinks.
+        File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
+        String cloneUrl = root.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath)
+                .call()) {
+
+            String uri = "http://foo.bar";
+            gitClone.remoteAdd().setName("origin").setUri(new URIish(uri)).call();
+
+            File cloneRoot = gitClone.getRepository().getWorkTree();
+            gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
+            parent = gitrepo.determineParent();
+            Assert.assertNotNull(parent);
+            assertEquals(uri, parent);
+
+            FileUtilities.removeDirs(cloneRoot);
+        }
     }
 
     /**

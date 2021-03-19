@@ -703,6 +703,6 @@ public class GitRepository extends Repository {
             }
         }
 
-        return null; // TODO: throw IOException ?
+        return null;
     }
 }
