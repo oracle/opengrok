@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -102,6 +104,17 @@ public class GitRepositoryTest {
 
     @Test
     public void testDetermineCurrentVersion() throws Exception {
+        // First test with empty repository.
+        File emptyGitDir = new File(repository.getSourceRoot(), "gitEmpty");
+        try (Git git = Git.init().setDirectory(emptyGitDir).call()) {
+            GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(git.getRepository().getWorkTree());
+            assertNotNull(gitrepo);
+            String ver = gitrepo.determineCurrentVersion();
+            assertNull(ver);
+            FileUtilities.removeDirs(emptyGitDir);
+        }
+
+        // Next, check known repository with some commits.
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         assertNotNull(gitrepo);
