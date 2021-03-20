@@ -624,6 +624,7 @@ public class GitRepository extends Repository {
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = new TreeSet<>();
 
+        // TODO: add timeout
         try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
                 create(Paths.get(directory.getAbsolutePath(), ".git").toFile())) {
             try (Git git = new Git(repository)) {
