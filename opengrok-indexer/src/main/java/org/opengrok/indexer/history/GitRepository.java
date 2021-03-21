@@ -672,11 +672,9 @@ public class GitRepository extends Repository {
 
         try {
             future.get(RuntimeEnvironment.getInstance().getCommandTimeout(cmdType), TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.log(Level.WARNING, "failed tag rebuild for directory " + directory, e);
-        }
-        catch (TimeoutException e) {
+        } catch (TimeoutException e) {
             LOGGER.log(Level.WARNING, "timed out tag rebuild for directory " + directory, e);
         }
 
