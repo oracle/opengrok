@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -42,6 +42,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.LazilyInstantiate;
 
 /**
  * Access to a Mercurial repository.
@@ -103,6 +104,12 @@ public class MercurialRepository extends Repository {
 
     private static final Pattern LOG_COPIES_PATTERN
             = Pattern.compile("^(\\d+):(.*)");
+
+    /**
+     * This is a static replacement for 'working' field. Effectively, check if hg is working once in a JVM
+     * instead of calling it for every MercurialRepository instance.
+     */
+    private static final LazilyInstantiate<Boolean> HG_IS_WORKING = LazilyInstantiate.using(MercurialRepository::isHgWorking);
 
     public MercurialRepository() {
         type = "Mercurial";
@@ -479,11 +486,15 @@ public class MercurialRepository extends Repository {
         return true;
     }
 
+    private static boolean isHgWorking() {
+        String repoCommand = getCommand(MercurialRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
+        return checkCmd(repoCommand);
+    }
+
     @Override
     public boolean isWorking() {
         if (working == null) {
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(RepoCommand);
+            working = HG_IS_WORKING.get();
         }
         return working;
     }
