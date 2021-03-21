@@ -39,6 +39,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -589,42 +595,8 @@ public class GitRepository extends Repository {
         return true;
     }
 
-    /**
-     * Builds a Git tag list by querying Git commit hash, commit time, and tag
-     * names.
-     * <p>Repository technically relies on the tag list to be ancestor ordered.
-     * <p>For a version control system that uses "linear revision numbering"
-     * (e.g. Subversion or Mercurial), the natural ordering in the
-     * {@link TreeSet} is by ancestor order and so
-     * {@link TagEntry#compareTo(HistoryEntry)} always determines the correct
-     * tag.
-     * <p>For {@link GitTagEntry} that does not use linear revision numbering,
-     * the {@link TreeSet} will be ordered by date. That does not necessarily
-     * align with ancestor order. In that case,
-     * {@link GitTagEntry#compareTo(HistoryEntry)} that compares by date can
-     * find the wrong tag.
-     * <p>Linus Torvalds: [When asking] "'can commit X be an ancestor of commit
-     * Y' (as a way to basically limit certain algorithms from having to walk
-     * all the way down). We've used commit dates for it, and realistically it
-     * really has worked very well. But it was always a broken heuristic."
-     * <p>"I think the lack of [generation numbers] is literally the only real
-     * design mistake we have [in Git]."
-     * <p>"We discussed adding generation numbers about 6 years ago [in 2005].
-     * We clearly *should* have done it. Instead, we went with the hacky `let's
-     * use commit time', that everybody really knew was technically wrong, and
-     * was a hack, but avoided the need."
-     * <p>If Git ever gets standard generation numbers,
-     * {@link GitTagEntry#compareTo(HistoryEntry)} should be revised to work
-     * reliably in all cases akin to a version control system that uses "linear
-     * revision numbering."
-     * @param directory a defined directory of the repository
-     * @param cmdType command timeout type
-     */
-    @Override
-    protected void buildTagList(File directory, CommandTimeoutType cmdType) {
+    private void rebuildTagList(File directory) {
         this.tagList = new TreeSet<>();
-
-        // TODO: add timeout
         try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
                 create(Paths.get(directory.getAbsolutePath(), ".git").toFile())) {
             try (Git git = new Git(repository)) {
@@ -658,6 +630,58 @@ public class GitRepository extends Repository {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
                     new Object[] {tagList.size(), directory});
+        }
+    }
+
+    /**
+     * Builds a Git tag list by querying Git commit hash, commit time, and tag
+     * names.
+     * <p>Repository technically relies on the tag list to be ancestor ordered.
+     * <p>For a version control system that uses "linear revision numbering"
+     * (e.g. Subversion or Mercurial), the natural ordering in the
+     * {@link TreeSet} is by ancestor order and so
+     * {@link TagEntry#compareTo(HistoryEntry)} always determines the correct
+     * tag.
+     * <p>For {@link GitTagEntry} that does not use linear revision numbering,
+     * the {@link TreeSet} will be ordered by date. That does not necessarily
+     * align with ancestor order. In that case,
+     * {@link GitTagEntry#compareTo(HistoryEntry)} that compares by date can
+     * find the wrong tag.
+     * <p>Linus Torvalds: [When asking] "'can commit X be an ancestor of commit
+     * Y' (as a way to basically limit certain algorithms from having to walk
+     * all the way down). We've used commit dates for it, and realistically it
+     * really has worked very well. But it was always a broken heuristic."
+     * <p>"I think the lack of [generation numbers] is literally the only real
+     * design mistake we have [in Git]."
+     * <p>"We discussed adding generation numbers about 6 years ago [in 2005].
+     * We clearly *should* have done it. Instead, we went with the hacky `let's
+     * use commit time', that everybody really knew was technically wrong, and
+     * was a hack, but avoided the need."
+     * <p>If Git ever gets standard generation numbers,
+     * {@link GitTagEntry#compareTo(HistoryEntry)} should be revised to work
+     * reliably in all cases akin to a version control system that uses "linear
+     * revision numbering."
+     * @param directory a defined directory of the repository
+     * @param cmdType command timeout type
+     */
+    @Override
+    protected void buildTagList(File directory, CommandTimeoutType cmdType) {
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<?> future = executor.submit(() -> rebuildTagList(directory));
+        executor.shutdown();
+
+        try {
+            future.get(RuntimeEnvironment.getInstance().getCommandTimeout(cmdType), TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            LOGGER.log(Level.WARNING, "failed tag rebuild for directory " + directory, e);
+        }
+        catch (TimeoutException e) {
+            LOGGER.log(Level.WARNING, "timed out tag rebuild for directory " + directory, e);
+        }
+
+        if (!executor.isTerminated()) {
+            executor.shutdownNow();
         }
     }
 
