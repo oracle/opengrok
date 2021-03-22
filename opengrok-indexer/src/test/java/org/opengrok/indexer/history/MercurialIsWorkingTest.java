@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.history;
 
 import org.junit.AfterClass;
