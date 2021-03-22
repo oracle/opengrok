@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -136,14 +136,14 @@ public class RepositoryFactoryTest {
      * There is no conditional run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
      */
-    private void testNotWorkingRepository(String repoPath, String propName)
+    static void testNotWorkingRepository(TestRepository repository, String repoPath, String propName)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
 
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         try {
             File root = new File(repository.getSourceRoot(), repoPath);
-            env.setSourceRoot(repository.getSourceRoot());
+            RuntimeEnvironment.getInstance().setSourceRoot(repository.getSourceRoot());
             Repository repo = RepositoryFactory.getRepository(root);
             assertNotNull("should have defined repo", repo);
             assertFalse("repo should not be working", repo.isWorking());
@@ -155,19 +155,12 @@ public class RepositoryFactoryTest {
             }
         }
     }
-    
-    @Test
-    public void testNotWorkingMercurialRepository()
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
-            IOException, ForbiddenSymlinkException {
-        testNotWorkingRepository("mercurial", MercurialRepository.CMD_PROPERTY_KEY);
-    }
-    
+
     @Test
     public void testNotWorkingBitkeeperRepository()
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        testNotWorkingRepository("bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
+        testNotWorkingRepository(repository,"bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 
     @Test
