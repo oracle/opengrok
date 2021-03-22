@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
 
@@ -236,7 +236,7 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>5.10.0.202012080955-r</version>
+            <version>5.11.0.202103091610-r</version>
         </dependency>
     </dependencies>
 
