@@ -495,6 +495,7 @@ public class MercurialRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             working = HG_IS_WORKING.get();
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         }
         return working;
     }
