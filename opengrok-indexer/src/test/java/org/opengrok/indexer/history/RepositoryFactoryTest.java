@@ -160,7 +160,7 @@ public class RepositoryFactoryTest {
     public void testNotWorkingBitkeeperRepository()
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        testNotWorkingRepository(repository,"bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
+        testNotWorkingRepository(repository, "bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 
     @Test
