@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -109,7 +110,7 @@ public class MercurialRepository extends Repository {
      * This is a static replacement for 'working' field. Effectively, check if hg is working once in a JVM
      * instead of calling it for every MercurialRepository instance.
      */
-    private static final LazilyInstantiate<Boolean> HG_IS_WORKING = LazilyInstantiate.using(MercurialRepository::isHgWorking);
+    private static final Supplier<Boolean> HG_IS_WORKING = LazilyInstantiate.using(MercurialRepository::isHgWorking);
 
     public MercurialRepository() {
         type = "Mercurial";
