@@ -108,8 +108,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineCurrentVersion() throws Exception {
-        // First test with empty repository.
+    public void testDetermineCurrentVersionWithEmptyRepository() throws Exception {
         File emptyGitDir = new File(repository.getSourceRoot(), "gitEmpty");
         try (Git git = Git.init().setDirectory(emptyGitDir).call()) {
             GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(git.getRepository().getWorkTree());
@@ -118,8 +117,10 @@ public class GitRepositoryTest {
             assertNull(ver);
             FileUtilities.removeDirs(emptyGitDir);
         }
+    }
 
-        // Next, check known repository with some commits.
+    @Test
+    public void testDetermineCurrentVersionOfKnownRepository() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         assertNotNull(gitrepo);
@@ -127,7 +128,14 @@ public class GitRepositoryTest {
         assertNotNull(ver);
         Date date = new Date((long) (1485438707) * 1000);
         assertEquals(Repository.format(date) + " 84599b3 Kryštof Tulinger renaming directories", ver);
+    }
 
+    @Test
+    public void testDetermineCurrentVersionAfterChange() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        assertNotNull(gitrepo);
+        String ver;
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "gitCloneTestCurrentVersion");
         String cloneUrl = root.toURI().toString();
@@ -167,17 +175,23 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineBranch() throws Exception {
+    public void testDetermineBranchBasic() throws Exception {
         // First check branch of known repository.
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String branch = gitrepo.determineBranch();
         Assert.assertNotNull(branch);
         assertEquals("master", branch);
+    }
 
-        // Next, clone the repository and create new branch there.
+    @Test
+    public void testDetermineBranchAfterChange() throws Exception {
+        // Clone the test repository and create new branch there.
         // Clone under source root to avoid problems with prohibited symlinks.
+        File root = new File(repository.getSourceRoot(), "git");
         File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        String branch;
         String cloneUrl = root.toURI().toString();
         try (Git gitClone = Git.cloneRepository()
                 .setURI(cloneUrl)
@@ -198,13 +212,19 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineParent() throws Exception {
+    public void testDetermineParentEmpty() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String parent = gitrepo.determineParent();
         Assert.assertNull(parent);
+    }
 
-        // Next, clone the repository and create new origin there.
+    @Test
+    public void testDetermineParent() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        String parent;
+        // Clone the repository and create new origin there.
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineParent");
         String cloneUrl = root.toURI().toString();
