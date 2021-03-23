@@ -595,10 +595,13 @@ public class GitRepository extends Repository {
         return true;
     }
 
+    private org.eclipse.jgit.lib.Repository getJGitRepository(String directory) throws IOException {
+        return FileRepositoryBuilder.create(Paths.get(directory, ".git").toFile());
+    }
+
     private void rebuildTagList(File directory) {
         this.tagList = new TreeSet<>();
-        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
-                create(Paths.get(directory.getAbsolutePath(), ".git").toFile())) {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(directory.getAbsolutePath())) {
             try (Git git = new Git(repository)) {
                 List<Ref> refList = git.tagList().call(); // refs sorted according to tag names
                 Map<RevCommit, String> commit2Tags = new HashMap<>();
@@ -687,24 +690,21 @@ public class GitRepository extends Repository {
 
     @Override
     String determineParent(CommandTimeoutType cmdType) throws IOException {
-        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
-                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             return repository.getConfig().getString("remote", "origin", "url");
         }
     }
 
     @Override
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
-        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
-                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             return repository.getBranch();
         }
     }
 
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
-        try (org.eclipse.jgit.lib.Repository repository = FileRepositoryBuilder.
-                create(Paths.get(getDirectoryName(), ".git").toFile())) {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             Ref head = repository.exactRef(Constants.HEAD);
             if (head != null && head.getObjectId() != null) {
                 try (RevWalk walk = new RevWalk(repository); ObjectReader reader = repository.newObjectReader()) {
