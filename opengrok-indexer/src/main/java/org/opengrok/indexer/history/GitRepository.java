@@ -607,7 +607,6 @@ public class GitRepository extends Repository {
                 Map<RevCommit, String> commit2Tags = new HashMap<>();
                 for (Ref ref : refList) {
                     String tagName = ref.getName().replace("refs/tags/", "");
-                    String existingTags;
                     RevCommit commit = getCommit(repository, ref);
                     commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
                 }
