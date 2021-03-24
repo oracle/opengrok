@@ -89,7 +89,7 @@ public class LuceneCompatibilityTest extends TestCase {
     }
 
     public void testCompatibility() throws Exception {
-        for (AnalyzerFactory fa : guru.getAnalyzerFactories()) {
+        for (AnalyzerFactory fa : AnalyzerGuru.getAnalyzerFactories()) {
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();

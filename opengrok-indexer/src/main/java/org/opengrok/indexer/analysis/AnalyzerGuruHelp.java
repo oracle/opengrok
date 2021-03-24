@@ -48,6 +48,18 @@ public class AnalyzerGuruHelp {
      */
     public static String getUsage() {
         StringBuilder b = new StringBuilder();
+
+        b.append("List of analyzers:\n");
+        b.append("The names of the analyzers (left column) can be used for the -A indexer option:\n\n");
+        byFactory(AnalyzerGuru.getAnalyzerFactories().stream().
+                collect(Collectors.toMap(f -> f.getClass().getSimpleName(), f -> f))).
+                forEach((factory) -> {
+            b.append(String.format("%-10s : %s\n",
+                    factory.fac.getClass().getSimpleName().replace("AnalyzerFactory", ""),
+                    factory.fac.getName() != null ? factory.fac.getName() : "N/A"));
+        });
+        b.append("\n");
+
         b.append("AnalyzerGuru prefixes:\n");
         byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
             b.append(String.format("%-10s : %s\n", reportable(kv.key + '*'),
@@ -172,8 +184,7 @@ public class AnalyzerGuruHelp {
         return res.stream().toArray(String[]::new);
     }
 
-    private static List<MappedFactory> byKey(
-        Map<String, AnalyzerFactory> mapped) {
+    private static List<MappedFactory> byKey(Map<String, AnalyzerFactory> mapped) {
 
         List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
             return new MappedFactory(t.getKey(), t.getValue());
@@ -186,8 +197,7 @@ public class AnalyzerGuruHelp {
         return res;
     }
 
-    private static List<MappedFactory> byFactory(
-        Map<String, AnalyzerFactory> mapped) {
+    private static List<MappedFactory> byFactory(Map<String, AnalyzerFactory> mapped) {
 
         List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
             return new MappedFactory(t.getKey(), t.getValue());

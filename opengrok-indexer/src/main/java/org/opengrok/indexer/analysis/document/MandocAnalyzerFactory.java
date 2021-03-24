@@ -32,7 +32,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 public class MandocAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String NAME = "Mandoc";
+    private static final String NAME = "Manual pages";
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
