@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -48,26 +49,38 @@ public class AnalyzerGuruHelp {
      */
     public static String getUsage() {
         StringBuilder b = new StringBuilder();
-        b.append("AnalyzerGuru prefixes:\n");
+
+        b.append("List of analyzers:" + System.lineSeparator());
+        b.append("The names of the analyzers (left column) can be used for the -A indexer option:" +
+                System.lineSeparator() + System.lineSeparator());
+        byFactory(AnalyzerGuru.getAnalyzerFactories().stream().
+                collect(Collectors.toMap(f -> f.getClass().getSimpleName(), f -> f))).
+                forEach((factory) -> {
+            b.append(String.format("%-10s : %s%n",
+                    factory.fac.getClass().getSimpleName().replace("AnalyzerFactory", ""),
+                    factory.fac.getName() != null ? factory.fac.getName() : "N/A"));
+        });
+
+        b.append(System.lineSeparator() + "AnalyzerGuru prefixes:" + System.lineSeparator());
         byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
-            b.append(String.format("%-10s : %s\n", reportable(kv.key + '*'),
+            b.append(String.format("%-10s : %s%n", reportable(kv.key + '*'),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru extensions:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru extensions:" + System.lineSeparator());
         byKey(AnalyzerGuru.getExtensionsMap()).forEach((kv) -> {
-            b.append(String.format("*.%-7s : %s\n",
+            b.append(String.format("*.%-7s : %s%n",
                 reportable(kv.key.toLowerCase(Locale.ROOT)),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru magic strings:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru magic strings:" + System.lineSeparator());
         byFactory(AnalyzerGuru.getMagicsMap()).forEach((kv) -> {
-            b.append(String.format("%-23s : %s\n", reportable(kv.key),
+            b.append(String.format("%-23s : %s%n", reportable(kv.key),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru magic matchers:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru magic matchers:" + System.lineSeparator());
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
             if (m.getIsPreciseMagic()) {
                 b.append(reportable(m));
@@ -121,7 +134,7 @@ public class AnalyzerGuruHelp {
     }
 
     private static String reportable(FileAnalyzerFactory.Matcher m) {
-        final String MATCHER_FMT = "%-11s %-1s %s\n";
+        final String MATCHER_FMT = "%-11s %-1s %s%n";
         StringBuilder b = new StringBuilder();
         String[] lines = splitLines(m.description(), 66);
         for (int i = 0; i < lines.length; ++i) {
@@ -172,8 +185,7 @@ public class AnalyzerGuruHelp {
         return res.stream().toArray(String[]::new);
     }
 
-    private static List<MappedFactory> byKey(
-        Map<String, AnalyzerFactory> mapped) {
+    private static List<MappedFactory> byKey(Map<String, AnalyzerFactory> mapped) {
 
         List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
             return new MappedFactory(t.getKey(), t.getValue());
@@ -186,8 +198,7 @@ public class AnalyzerGuruHelp {
         return res;
     }
 
-    private static List<MappedFactory> byFactory(
-        Map<String, AnalyzerFactory> mapped) {
+    private static List<MappedFactory> byFactory(Map<String, AnalyzerFactory> mapped) {
 
         List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
             return new MappedFactory(t.getKey(), t.getValue());

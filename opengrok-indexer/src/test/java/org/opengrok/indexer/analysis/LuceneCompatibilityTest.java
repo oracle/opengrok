@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -89,7 +89,7 @@ public class LuceneCompatibilityTest extends TestCase {
     }
 
     public void testCompatibility() throws Exception {
-        for (AnalyzerFactory fa : guru.getAnalyzerFactories()) {
+        for (AnalyzerFactory fa : AnalyzerGuru.getAnalyzerFactories()) {
             String input = "Hello world";
             String[] output = new String[]{"Hello", "world"};
             testA = fa.getAnalyzer();
