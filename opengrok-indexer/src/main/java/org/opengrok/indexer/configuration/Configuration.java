@@ -543,6 +543,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
+        setMergeCommitsEnabled(true);
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
         setNestingMaximum(1);
