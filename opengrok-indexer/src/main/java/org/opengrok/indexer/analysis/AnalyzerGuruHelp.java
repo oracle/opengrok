@@ -58,9 +58,8 @@ public class AnalyzerGuruHelp {
                     factory.fac.getClass().getSimpleName().replace("AnalyzerFactory", ""),
                     factory.fac.getName() != null ? factory.fac.getName() : "N/A"));
         });
-        b.append("\n");
 
-        b.append("AnalyzerGuru prefixes:\n");
+        b.append("\nAnalyzerGuru prefixes:\n");
         byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
             b.append(String.format("%-10s : %s\n", reportable(kv.key + '*'),
                 reportable(kv.fac)));
