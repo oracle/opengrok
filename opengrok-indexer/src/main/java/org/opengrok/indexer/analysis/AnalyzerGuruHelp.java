@@ -50,36 +50,37 @@ public class AnalyzerGuruHelp {
     public static String getUsage() {
         StringBuilder b = new StringBuilder();
 
-        b.append("List of analyzers:\n");
-        b.append("The names of the analyzers (left column) can be used for the -A indexer option:\n\n");
+        b.append("List of analyzers:" + System.lineSeparator());
+        b.append("The names of the analyzers (left column) can be used for the -A indexer option:" +
+                System.lineSeparator() + System.lineSeparator());
         byFactory(AnalyzerGuru.getAnalyzerFactories().stream().
                 collect(Collectors.toMap(f -> f.getClass().getSimpleName(), f -> f))).
                 forEach((factory) -> {
-            b.append(String.format("%-10s : %s\n",
+            b.append(String.format("%-10s : %s" + System.lineSeparator(),
                     factory.fac.getClass().getSimpleName().replace("AnalyzerFactory", ""),
                     factory.fac.getName() != null ? factory.fac.getName() : "N/A"));
         });
 
-        b.append("\nAnalyzerGuru prefixes:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru prefixes:" + System.lineSeparator());
         byKey(AnalyzerGuru.getPrefixesMap()).forEach((kv) -> {
-            b.append(String.format("%-10s : %s\n", reportable(kv.key + '*'),
+            b.append(String.format("%-10s : %s" + System.lineSeparator(), reportable(kv.key + '*'),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru extensions:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru extensions:" + System.lineSeparator());
         byKey(AnalyzerGuru.getExtensionsMap()).forEach((kv) -> {
-            b.append(String.format("*.%-7s : %s\n",
+            b.append(String.format("*.%-7s : %s" + System.lineSeparator(),
                 reportable(kv.key.toLowerCase(Locale.ROOT)),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru magic strings:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru magic strings:" + System.lineSeparator());
         byFactory(AnalyzerGuru.getMagicsMap()).forEach((kv) -> {
-            b.append(String.format("%-23s : %s\n", reportable(kv.key),
+            b.append(String.format("%-23s : %s" + System.lineSeparator(), reportable(kv.key),
                 reportable(kv.fac)));
         });
 
-        b.append("\nAnalyzerGuru magic matchers:\n");
+        b.append(System.lineSeparator() + "AnalyzerGuru magic matchers:" + System.lineSeparator());
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
             if (m.getIsPreciseMagic()) {
                 b.append(reportable(m));
