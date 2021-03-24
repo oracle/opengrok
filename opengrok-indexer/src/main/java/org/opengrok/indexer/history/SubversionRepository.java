@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,7 +37,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -229,8 +229,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
 
@@ -258,7 +257,7 @@ public class SubversionRepository extends Repository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec() == 0) {
             try {
-                copyBytes(sink, executor.getOutputStream());
+                copyBytes(out::write, executor.getOutputStream());
                 return true;
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to get content for {0}",

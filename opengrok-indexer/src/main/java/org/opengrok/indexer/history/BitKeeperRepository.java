@@ -19,13 +19,14 @@
 
 /*
  * Copyright (c) 2017, James Service <jas2701@googlemail.com>
- * Portions Copyright (c) 2017, 2020, Oracle and/or its affiliates.
+ * Portions Copyright (c) 2017, 2021, Oracle and/or its affiliates.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +34,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.util.BufferSink;
 import org.suigeneris.jrcs.rcs.InvalidVersionNumberException;
 import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -300,8 +300,7 @@ public class BitKeeperRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String revision) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String revision) {
 
         final File directory = new File(parent).getAbsoluteFile();
         final ArrayList<String> argv = new ArrayList<String>();
@@ -322,7 +321,7 @@ public class BitKeeperRepository extends Repository {
         }
 
         try {
-            copyBytes(sink, executor.getOutputStream());
+            copyBytes(out::write, executor.getOutputStream());
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to get content for {0}",
