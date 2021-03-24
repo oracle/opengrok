@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -77,6 +77,8 @@ public class RepositoryInfo implements Serializable {
     private boolean handleRenamedFiles;
     @DTOElement
     private boolean historyEnabled;
+    @DTOElement
+    private boolean mergeCommitsEnabled;
 
     /**
      * Empty constructor to support serialization.
@@ -108,6 +110,20 @@ public class RepositoryInfo implements Serializable {
      */
     public void setHandleRenamedFiles(boolean flag) {
         this.handleRenamedFiles = flag;
+    }
+
+    /**
+     * @return true if the repository handles merge commits.
+     */
+    public boolean isMergeCommitsEnabled() {
+        return this.mergeCommitsEnabled;
+    }
+
+    /**
+     * @param flag true if the repository should handle merge commits, false otherwise.
+     */
+    public void setMergeCommitsEnabled(boolean flag) {
+        this.mergeCommitsEnabled = flag;
     }
 
     /**
@@ -293,11 +309,13 @@ public class RepositoryInfo implements Serializable {
         if (proj != null) {
             setHistoryEnabled(proj.isHistoryEnabled());
             setHandleRenamedFiles(proj.isHandleRenamedFiles());
+            setMergeCommitsEnabled(proj.isMergeCommitsEnabled());
         } else {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             setHistoryEnabled(env.isHistoryEnabled());
             setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
+            setMergeCommitsEnabled(env.isMergeCommitsEnabled());
         }
     }
 

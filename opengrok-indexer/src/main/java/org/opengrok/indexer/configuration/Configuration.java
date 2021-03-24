@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -231,6 +231,8 @@ public final class Configuration {
      * for capable repositories.
      */
     private boolean handleHistoryOfRenamedFiles;
+
+    private boolean mergeCommitsEnabled;
 
     public static final double defaultRamBufferSize = 16;
 
@@ -541,6 +543,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
+        setMergeCommitsEnabled(true);
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
         setNestingMaximum(1);
@@ -829,6 +832,14 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
+    }
+
+    public void setMergeCommitsEnabled(boolean flag) {
+        this.mergeCommitsEnabled = flag;
+    }
+
+    public boolean isMergeCommitsEnabled() {
+        return mergeCommitsEnabled;
     }
 
     public boolean isNavigateWindowEnabled() {

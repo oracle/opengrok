@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
 
@@ -59,6 +60,7 @@ public class GitRepositoryOctopusTest {
         repository = new TestRepository();
         repository.create(GitRepositoryOctopusTest.class.getResourceAsStream(
                 "/history/git-octopus.zip"));
+        RuntimeEnvironment.getInstance().setMergeCommitsEnabled(true);
     }
 
     @AfterClass
