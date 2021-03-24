@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2008, Peter Bray.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
@@ -28,13 +28,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 
 /**
  * Adds access to to a <a href="http://www.visible.com/Products/Razor/index.htm">Razor</a> Repository
@@ -220,8 +220,7 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         // @TODO : Rename & Delete Support
         try {
@@ -236,7 +235,7 @@ public class RazorRepository extends Repository {
                 // according to to the Razor 4.x/5.x manuals)
                 try (FileInputStream in = new FileInputStream(binaryFile)) {
                     GZIPInputStream gzIn = new GZIPInputStream(in);
-                    copyBytes(sink, gzIn);
+                    copyBytes(out::write, gzIn);
                 }
                 return true;
             }
@@ -245,7 +244,7 @@ public class RazorRepository extends Repository {
             if (rcsFile != null && rcsFile.exists()) {
                 String rcsPath = rcsFile.getPath();
                 try (InputStream in = new RCSget(rcsPath, rev)) {
-                    copyBytes(sink, in);
+                    copyBytes(out::write, in);
                 }
                 return true;
             }
@@ -256,7 +255,7 @@ public class RazorRepository extends Repository {
                         SCCSRepository.CMD_FALLBACK);
                 try (InputStream in = SCCSget.getRevision(RepoCommand,
                         sccsFile, rev)) {
-                    copyBytes(sink, in);
+                    copyBytes(out::write, in);
                 }
                 return true;
             }

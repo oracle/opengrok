@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -26,6 +26,7 @@ package org.opengrok.indexer.history;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -65,8 +65,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
         try {
@@ -76,7 +75,7 @@ public class MonotoneRepository extends Repository {
             String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
                     RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            copyBytes(sink, executor.getOutputStream());
+            copyBytes(out::write, executor.getOutputStream());
             return true;
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,

@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -211,11 +212,9 @@ public abstract class Repository extends RepositoryInfo {
      * @return {@code true} if contents were found
      * @throws java.io.IOException if an I/O error occurs
      */
-    public boolean getHistoryGet(
-            File target, String parent, String basename, String rev)
-            throws IOException {
+    public boolean getHistoryGet(File target, String parent, String basename, String rev) throws IOException {
         try (FileOutputStream out = new FileOutputStream(target)) {
-            return getHistoryGet(out::write, parent, basename, rev);
+            return getHistoryGet(out, parent, basename, rev);
         }
     }
 
@@ -227,10 +226,9 @@ public abstract class Repository extends RepositoryInfo {
      * @param rev the revision to get
      * @return a defined instance if contents were found; or else {@code null}
      */
-    public InputStream getHistoryGet(
-            String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        if (getHistoryGet(out::write, parent, basename, rev)) {
+        if (getHistoryGet(out, parent, basename, rev)) {
             return new ByteArrayInputStream(out.toByteArray());
         }
         return null;
@@ -240,14 +238,13 @@ public abstract class Repository extends RepositoryInfo {
      * Subclasses must override to get the contents of a specific version of a
      * named file, and copy to the specified {@code sink}.
      *
-     * @param sink a defined instance
+     * @param out a defined instance of OutputStream
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
      * @param rev the revision to get
      * @return a value indicating if the get was successful.
      */
-    abstract boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev);
+    abstract boolean getHistoryGet(OutputStream out, String parent, String basename, String rev);
 
     /**
      * Checks whether this parser can annotate files.
@@ -619,7 +616,7 @@ public abstract class Repository extends RepositoryInfo {
 
     static class HistoryRevResult {
         boolean success;
-        int iterations;
+        long iterations;
     }
 
     private class RepositoryDateFormat extends DateFormat {

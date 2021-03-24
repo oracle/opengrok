@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,7 +35,6 @@ import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -70,13 +70,12 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
         try {
             File file = new File(parent, basename);
             File rcsFile = getRCSFile(file);
             try (InputStream in = new RCSget(rcsFile.getPath(), rev)) {
-                copyBytes(sink, in);
+                copyBytes(out::write, in);
             }
             return true;
         } catch (IOException ioe) {

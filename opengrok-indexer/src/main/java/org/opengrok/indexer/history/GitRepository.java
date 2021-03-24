@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -53,16 +54,21 @@ import java.util.regex.Pattern;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.util.io.CountingOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HeadHandler;
 import org.opengrok.indexer.util.LazilyInstantiate;
@@ -224,57 +230,74 @@ public class GitRepository extends Repository {
     /**
      * Try to get file contents for given revision.
      *
-     * @param sink a required target sink
+     * @param out a required OutputStream
      * @param fullpath full pathname of the file
-     * @param rev revision
+     * @param rev revision string
      * @return a defined instance with {@code success} == {@code true} if no
-     * error occurred and with non-zero {@code iterations} if some data was
-     * transferred
+     * error occurred and with non-zero {@code iterations} if some data was transferred
      */
-    private HistoryRevResult getHistoryRev(
-            BufferSink sink, String fullpath, String rev) {
+    private HistoryRevResult getHistoryRev(OutputStream out, String fullpath, String rev) {
 
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
+
+        /*
+         * Be careful, git uses only forward slashes in its command and output (not in file path).
+         * Using backslashes together with git show will get empty output and 0 status code.
+         */
+        String filename;
+        result.success = false;
         try {
-            /*
-             * Be careful, git uses only forward slashes in its command and output (not in file path).
-             * Using backslashes together with git show will get empty output and 0 status code.
-             */
-            String filename = Paths.get(getCanonicalDirectoryName()).relativize(
+            filename = Paths.get(getCanonicalDirectoryName()).relativize(
                     Paths.get(fullpath)).toString().replace(File.separatorChar, '/');
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String[] argv = {
-                RepoCommand,
-                "show",
-                rev + ":" + filename
-            };
-
-            Executor executor = new Executor(Arrays.asList(argv), directory,
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            int status = executor.exec();
-            result.iterations = copyBytes(sink, executor.getOutputStream());
-
-            /*
-             * If exit value of the process was not 0 then the file did
-             * not exist or internal git error occured.
-             */
-            result.success = (status == 0);
-        } catch (Exception exception) {
-            LOGGER.log(Level.SEVERE,
-                    String.format(
-                            "Failed to get history for file %s in revision %s:",
-                            fullpath, rev
-                    ),
-                    exception
-            );
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' in for repository '%s'",
+                    fullpath, directory), e);
+            return result;
         }
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(directory.getAbsolutePath())) {
+            ObjectId commitId = repository.resolve(rev);
+
+            // a RevWalk allows to walk over commits based on some filtering that is defined
+            try (RevWalk revWalk = new RevWalk(repository)) {
+                RevCommit commit = revWalk.parseCommit(commitId);
+                // and using commit's tree find the path
+                RevTree tree = commit.getTree();
+
+                // now try to find a specific file
+                try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                    treeWalk.addTree(tree);
+                    treeWalk.setRecursive(true);
+                    treeWalk.setFilter(PathFilter.create(filename));
+                    if (!treeWalk.next()) {
+                        LOGGER.log(Level.FINEST,
+                                String.format("Did not find expected file '%s' in revision %s for repository '%s'",
+                                        filename, rev, directory));
+                        return result;
+                    }
+
+                    ObjectId objectId = treeWalk.getObjectId(0);
+                    ObjectLoader loader = repository.open(objectId);
+
+                    CountingOutputStream countingOutputStream = new CountingOutputStream(out);
+                    loader.copyTo(countingOutputStream);
+                    result.iterations = countingOutputStream.getCount();
+                    result.success = true;
+                }
+
+                revWalk.dispose();
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to get file '%s' in revision %s for repository '%s'",
+                    filename, rev, directory), e);
+        }
+
         return result;
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         String fullpath;
         try {
@@ -285,7 +308,7 @@ public class GitRepository extends Repository {
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(out, fullpath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -312,7 +335,7 @@ public class GitRepository extends Repository {
                     return false;
                 }
                 if (!fullRenamedPath.equals(fullpath)) {
-                    result = getHistoryRev(sink, fullRenamedPath, rev);
+                    result = getHistoryRev(out, fullRenamedPath, rev);
                 }
             }
         }

@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.util.BufferSink;
 
 /**
  *
@@ -159,8 +159,7 @@ public class RepositoryTest {
         }
 
         @Override
-        boolean getHistoryGet(
-                BufferSink sink, String parent, String basename, String rev) {
+        boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
             return false;
         }
 
