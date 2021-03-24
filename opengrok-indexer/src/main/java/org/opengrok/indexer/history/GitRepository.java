@@ -171,7 +171,9 @@ public class GitRepository extends Repository {
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
         cmd.add(GIT_DATE_OPT);
-        cmd.add("-m");
+        if (isMergeCommitsEnabled()) {
+            cmd.add("-m");
+        }
 
         if (file.isFile() && isHandleRenamedFiles()) {
             cmd.add("--follow");
