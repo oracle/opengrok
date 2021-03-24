@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -350,8 +351,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         String fullpath;
         try {
@@ -362,7 +362,7 @@ public class MercurialRepository extends Repository {
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(out::write, fullpath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
@@ -379,7 +379,7 @@ public class MercurialRepository extends Repository {
                 return false;
             }
             if (origpath != null && !origpath.equals(fullpath)) {
-                result = getHistoryRev(sink, origpath, rev);
+                result = getHistoryRev(out::write, origpath, rev);
             }
         }
 

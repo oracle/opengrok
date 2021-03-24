@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -34,7 +35,6 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -96,8 +96,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         File directory = new File(getDirectoryName());
         Process process = null;
@@ -107,7 +106,7 @@ public class BazaarRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {RepoCommand, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            copyBytes(sink, process.getInputStream());
+            copyBytes(out::write, process.getInputStream());
             return true;
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -170,8 +170,7 @@ public class SSCMRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         File directory = new File(parent);
 
@@ -212,7 +211,7 @@ public class SSCMRepository extends Repository {
 
             File tmpFile = new File(tmp, basename);
             try (FileInputStream in = new FileInputStream(tmpFile)) {
-                copyBytes(sink, in);
+                copyBytes(out::write, in);
             } finally {
                 boolean deleteOnExit = false;
                 // delete the temporary file on close

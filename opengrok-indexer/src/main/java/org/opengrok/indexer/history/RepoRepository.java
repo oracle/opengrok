@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
@@ -26,9 +26,9 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.util.BufferSink;
 
 /**
  * Access to a Git repository.
@@ -91,8 +91,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
         throw new UnsupportedOperationException("Should never be called!");
     }
 
