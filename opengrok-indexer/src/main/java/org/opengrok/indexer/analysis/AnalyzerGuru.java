@@ -391,7 +391,7 @@ public class AnalyzerGuru {
         return Collections.unmodifiableMap(fileTypeDescriptions);
     }
 
-    public List<AnalyzerFactory> getAnalyzerFactories() {
+    public static List<AnalyzerFactory> getAnalyzerFactories() {
         return Collections.unmodifiableList(factories);
     }
 
