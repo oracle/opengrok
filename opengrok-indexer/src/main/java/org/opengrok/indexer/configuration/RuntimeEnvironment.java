@@ -1251,6 +1251,14 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::isHandleHistoryOfRenamedFiles);
     }
 
+    public void setMergeCommitsEnabled(boolean flag) {
+        syncWriteConfiguration(flag, Configuration::setMergeCommitsEnabled);
+    }
+
+    public boolean isMergeCommitsEnabled() {
+        return syncReadConfiguration(Configuration::isMergeCommitsEnabled);
+    }
+
     public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
         syncWriteConfiguration(navigateWindowEnabled, Configuration::setNavigateWindowEnabled);
     }

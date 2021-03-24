@@ -232,6 +232,8 @@ public final class Configuration {
      */
     private boolean handleHistoryOfRenamedFiles;
 
+    private boolean mergeCommitsEnabled;
+
     public static final double defaultRamBufferSize = 16;
 
     /**
@@ -829,6 +831,14 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
+    }
+
+    public void setMergeCommitsEnabled(boolean flag) {
+        this.mergeCommitsEnabled = flag;
+    }
+
+    public boolean isMergeCommitsEnabled() {
+        return mergeCommitsEnabled;
     }
 
     public boolean isNavigateWindowEnabled() {
