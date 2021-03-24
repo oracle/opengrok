@@ -134,7 +134,7 @@ public class AnalyzerGuruHelp {
     }
 
     private static String reportable(FileAnalyzerFactory.Matcher m) {
-        final String MATCHER_FMT = "%-11s %-1s %s\n";
+        final String MATCHER_FMT = "%-11s %-1s %s%n";
         StringBuilder b = new StringBuilder();
         String[] lines = splitLines(m.description(), 66);
         for (int i = 0; i < lines.length; ++i) {
