@@ -491,7 +491,6 @@ public class GitRepository extends Repository {
                 for (int i = 0; i < rawText.size(); i++) {
                     final PersonIdent sourceAuthor = result.getSourceAuthor(i);
                     final RevCommit sourceCommit = result.getSourceCommit(i);
-                    final String line = rawText.getString(i);
                     annotation.addLine(sourceCommit.getId().abbreviate(8).name(), sourceAuthor.getName(), true);
                 }
             }
