@@ -465,7 +465,7 @@ public class GitRepository extends Repository {
         Annotation annotation = getAnnotation(revision, filePath);
 
         if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
-            // File might have changed its location if it was renamed.
+            // The file might have changed its location if it was renamed.
             // Try to lookup its original name and get the annotation again.
             String origName = findOriginalName(file.getCanonicalPath(), revision);
             if (origName != null) {
