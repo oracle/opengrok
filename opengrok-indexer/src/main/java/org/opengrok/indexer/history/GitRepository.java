@@ -453,37 +453,6 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Get first revision of given file without following renames.
-     * @param fullpath file path to get first revision of
-     */
-    private String getFirstRevision(String fullpath) {
-        String[] argv = {
-                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
-                "rev-list",
-                "--reverse",
-                "HEAD",
-                "--",
-                fullpath
-        };
-
-        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        HeadHandler headHandler = new HeadHandler(1);
-        int status = executor.exec(false, headHandler);
-
-        String line;
-        if (headHandler.count() > 0 && (line = headHandler.get(0)) != null) {
-            return line.trim();
-        }
-
-        LOGGER.log(Level.WARNING,
-                "Failed to get first revision for: \"{0}\" Exit code: {1}",
-                new Object[]{fullpath, String.valueOf(status)});
-
-        return null;
-    }
-
-    /**
      * Annotate the specified file/revision.
      *
      * @param file file to annotate
