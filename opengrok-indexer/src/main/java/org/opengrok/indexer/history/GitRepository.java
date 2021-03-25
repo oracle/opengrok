@@ -75,7 +75,6 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
-import org.opengrok.indexer.util.HeadHandler;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.Version;
 
