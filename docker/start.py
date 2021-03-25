@@ -370,7 +370,7 @@ def main():
         setup_redirect_source(logger, url_root)
 
     env = {}
-    extra_indexer_options = os.environ.get('INDEXER_OPT')
+    extra_indexer_options = os.environ.get('INDEXER_OPT', '')
     if extra_indexer_options:
         logger.info("extra indexer options: {}".format(extra_indexer_options))
         env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
