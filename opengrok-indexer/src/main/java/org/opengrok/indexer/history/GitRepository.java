@@ -51,12 +51,17 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -488,61 +493,46 @@ public class GitRepository extends Repository {
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add(BLAME);
-        cmd.add("-c"); // to get correctly formed changeset IDs
-        cmd.add(ABBREV_BLAME);
-        if (revision != null) {
-            cmd.add(revision);
-        } else {
-            // {@code git blame} follows renames by default. If renamed file handling is off, its output would
-            // contain invalid revisions. Therefore, the revision range needs to be constrained.
-            if (!isHandleRenamedFiles()) {
-                String firstRevision = getFirstRevision(file.getAbsolutePath());
-                if (firstRevision == null) {
-                    return null;
-                }
-                cmd.add(firstRevision + "..");
-            }
+        String filePath = getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath());
+        Annotation annotation = getAnnotation(revision, filePath);
+
+        if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
+            // File might have changed its location if it was renamed.
+            // Try to lookup its original name and get the annotation again.
+            String origName = findOriginalName(file.getCanonicalPath(), revision);
+            annotation = getAnnotation(revision, origName);
         }
-        cmd.add("--");
-        cmd.add(getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath()));
 
-        Executor executor = new Executor(cmd, new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        GitAnnotationParser parser = new GitAnnotationParser(file.getName());
-        int status = executor.exec(true, parser);
+        return annotation;
+    }
 
-        // File might have changed its location if it was renamed.
-        // Try to lookup its original name and get the annotation again.
-        if (status != 0 && isHandleRenamedFiles()) {
-            cmd.clear();
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            cmd.add(RepoCommand);
-            cmd.add(BLAME);
-            cmd.add("-c"); // to get correctly formed changeset IDs
-            cmd.add(ABBREV_BLAME);
+    @NotNull
+    private Annotation getAnnotation(String revision, String filePath) throws IOException {
+        Annotation annotation = new Annotation(filePath);
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            BlameCommand blameCommand = new Git(repository).blame().setFilePath(filePath);
             if (revision != null) {
-                cmd.add(revision);
+                ObjectId commitId = repository.resolve(revision);
+                blameCommand.setStartCommit(commitId);
             }
-            cmd.add("--");
-            cmd.add(findOriginalName(file.getCanonicalPath(), revision));
-            executor = new Executor(cmd, new File(getDirectoryName()),
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            parser = new GitAnnotationParser(file.getName());
-            status = executor.exec(true, parser);
+            blameCommand.setFollowFileRenames(isHandleRenamedFiles());
+            final BlameResult result = blameCommand.setTextComparator(RawTextComparator.WS_IGNORE_ALL).call();
+            if (result != null) {
+                final RawText rawText = result.getResultContents();
+                for (int i = 0; i < rawText.size(); i++) {
+                    final PersonIdent sourceAuthor = result.getSourceAuthor(i);
+                    final RevCommit sourceCommit = result.getSourceCommit(i);
+                    final String line = rawText.getString(i);
+                    annotation.addLine(sourceCommit.getId().abbreviate(8).name(), sourceAuthor.getName(), true);
+                }
+            }
+        } catch (GitAPIException e) {
+            LOGGER.log(Level.FINER,
+                    String.format("failed to get annotation for file '%s' in repository '%s' in revision '%s'",
+                            filePath, getDirectoryName(), revision));
         }
-
-        if (status != 0) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
-            return null;
-        }
-
-        return parser.getAnnotation();
+        return annotation;
     }
 
     @Override
