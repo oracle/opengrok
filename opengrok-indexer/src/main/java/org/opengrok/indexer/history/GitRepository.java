@@ -631,9 +631,9 @@ public class GitRepository extends Repository {
                 List<Ref> refList = git.tagList().call(); // refs sorted according to tag names
                 Map<RevCommit, String> commit2Tags = new HashMap<>();
                 for (Ref ref : refList) {
-                    String tagName = ref.getName().replace("refs/tags/", "");
                     try {
                         RevCommit commit = getCommit(repository, ref);
+                        String tagName = ref.getName().replace("refs/tags/", "");
                         commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
                     } catch (IOException e) {
                         LOGGER.log(Level.FINEST,
