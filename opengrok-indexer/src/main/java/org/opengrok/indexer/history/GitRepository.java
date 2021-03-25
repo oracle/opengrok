@@ -632,8 +632,13 @@ public class GitRepository extends Repository {
                 Map<RevCommit, String> commit2Tags = new HashMap<>();
                 for (Ref ref : refList) {
                     String tagName = ref.getName().replace("refs/tags/", "");
-                    RevCommit commit = getCommit(repository, ref);
-                    commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
+                    try {
+                        RevCommit commit = getCommit(repository, ref);
+                        commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.FINEST,
+                                String.format("cannot get tags for \"" + directory.getAbsolutePath() + "\""), e);
+                    }
                 }
 
                 for (Map.Entry<RevCommit, String> entry : commit2Tags.entrySet()) {
@@ -649,7 +654,7 @@ public class GitRepository extends Repository {
             // In case of partial success, do not null-out tagList here.
         }
 
-        if (LOGGER.isLoggable(Level.FINEST)) {
+        if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
                     new Object[] {tagList.size(), directory});
         }
