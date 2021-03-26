@@ -487,6 +487,9 @@ public class GitRepository extends Repository {
             RevCommit commit = commits.iterator().next();
             if (commit != null) {
                 revision = commit.getId().getName();
+            } else {
+                LOGGER.log(Level.WARNING, String.format("cannot get first revision of '%s' in repository '%s'",
+                        filePath, getDirectoryName()));
             }
         } catch (IOException | GitAPIException e) {
             LOGGER.log(Level.WARNING,
