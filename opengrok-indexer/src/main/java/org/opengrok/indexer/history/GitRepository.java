@@ -483,6 +483,7 @@ public class GitRepository extends Repository {
     private String getFirstRevision(String filePath) {
         String revision = null;
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            filePath = filePath.replace(File.separatorChar, '/');
             Iterable<RevCommit> commits = new Git(repository).log().addPath(filePath).setMaxCount(1).call();
             RevCommit commit = commits.iterator().next();
             if (commit != null) {
