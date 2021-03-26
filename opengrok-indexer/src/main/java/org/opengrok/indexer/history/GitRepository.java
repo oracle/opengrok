@@ -505,6 +505,7 @@ public class GitRepository extends Repository {
         Annotation annotation = new Annotation(filePath);
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            filePath = filePath.replace(File.separatorChar, '/');
             BlameCommand blameCommand = new Git(repository).blame().setFilePath(filePath);
             ObjectId commitId = repository.resolve(revision);
             blameCommand.setStartCommit(commitId);
