@@ -462,6 +462,10 @@ public class GitRepository extends Repository {
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
         String filePath = getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath());
+
+        if (revision == null) {
+            revision = getFirstRevision(filePath);
+        }
         Annotation annotation = getAnnotation(revision, filePath);
 
         if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
@@ -476,22 +480,30 @@ public class GitRepository extends Repository {
         return annotation;
     }
 
+    private String getFirstRevision(String filePath) {
+        String revision = null;
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            Iterable<RevCommit> commits = new Git(repository).log().addPath(filePath).setMaxCount(1).call();
+            RevCommit commit = commits.iterator().next();
+            if (commit != null) {
+                revision = commit.getId().getName();
+            }
+        } catch (IOException | GitAPIException e) {
+            LOGGER.log(Level.WARNING,
+                    String.format("cannot get first revision of '%s' in repository '%s'",
+                            filePath, getDirectoryName()), e);
+        }
+        return revision;
+    }
+
     @NotNull
     private Annotation getAnnotation(String revision, String filePath) throws IOException {
         Annotation annotation = new Annotation(filePath);
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             BlameCommand blameCommand = new Git(repository).blame().setFilePath(filePath);
-            if (revision == null) {
-                Iterable<RevCommit> commits = new Git(repository).log().addPath(filePath).setMaxCount(1).call();
-                RevCommit commit = commits.iterator().next();
-                if (commit != null) {
-                    revision = commit.getId().getName();
-                }
-            } else {
-                ObjectId commitId = repository.resolve(revision);
-                blameCommand.setStartCommit(commitId);
-            }
+            ObjectId commitId = repository.resolve(revision);
+            blameCommand.setStartCommit(commitId);
             blameCommand.setFollowFileRenames(isHandleRenamedFiles());
             final BlameResult result = blameCommand.setTextComparator(RawTextComparator.WS_IGNORE_ALL).call();
             if (result != null) {
