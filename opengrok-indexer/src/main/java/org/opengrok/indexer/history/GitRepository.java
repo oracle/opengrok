@@ -655,7 +655,7 @@ public class GitRepository extends Repository {
         }
 
         if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
+            LOGGER.log(Level.FINER, "Read tags count={0} for {1}",
                     new Object[] {tagList.size(), directory});
         }
     }
