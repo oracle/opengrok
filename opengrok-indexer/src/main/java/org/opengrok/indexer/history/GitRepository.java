@@ -482,7 +482,13 @@ public class GitRepository extends Repository {
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             BlameCommand blameCommand = new Git(repository).blame().setFilePath(filePath);
-            if (revision != null) {
+            if (revision == null) {
+                Iterable<RevCommit> commits = new Git(repository).log().addPath(filePath).setMaxCount(1).call();
+                RevCommit commit = commits.iterator().next();
+                if (commit != null) {
+                    revision = commit.getId().getName();
+                }
+            } else {
                 ObjectId commitId = repository.resolve(revision);
                 blameCommand.setStartCommit(commitId);
             }
