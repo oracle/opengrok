@@ -232,6 +232,15 @@ public class GitRepository extends Repository {
     }
 
     /**
+     * Be careful, git uses only forward slashes in its command and output (not in file path).
+     * Using backslashes together with git show will get empty output and 0 status code.
+     * @return string with separator characters replaced with forward slash
+     */
+    private static String getGitFilePath(String filePath) {
+        return filePath.replace(File.separatorChar, '/');
+    }
+
+    /**
      * Try to get file contents for given revision.
      *
      * @param out a required OutputStream
@@ -245,15 +254,10 @@ public class GitRepository extends Repository {
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
 
-        /*
-         * Be careful, git uses only forward slashes in its command and output (not in file path).
-         * Using backslashes together with git show will get empty output and 0 status code.
-         */
         String filename;
         result.success = false;
         try {
-            filename = Paths.get(getCanonicalDirectoryName()).relativize(
-                    Paths.get(fullpath)).toString().replace(File.separatorChar, '/');
+            filename = getGitFilePath(Paths.get(getCanonicalDirectoryName()).relativize(Paths.get(fullpath)).toString());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' in for repository '%s'",
                     fullpath, directory), e);
@@ -483,8 +487,10 @@ public class GitRepository extends Repository {
     private String getFirstRevision(String filePath) {
         String revision = null;
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            filePath = filePath.replace(File.separatorChar, '/');
-            Iterable<RevCommit> commits = new Git(repository).log().addPath(filePath).setMaxCount(1).call();
+            Iterable<RevCommit> commits = new Git(repository).log().
+                    addPath(getGitFilePath(filePath)).
+                    setMaxCount(1).
+                    call();
             RevCommit commit = commits.iterator().next();
             if (commit != null) {
                 revision = commit.getId().getName();
@@ -505,8 +511,7 @@ public class GitRepository extends Repository {
         Annotation annotation = new Annotation(filePath);
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            filePath = filePath.replace(File.separatorChar, '/');
-            BlameCommand blameCommand = new Git(repository).blame().setFilePath(filePath);
+            BlameCommand blameCommand = new Git(repository).blame().setFilePath(getGitFilePath(filePath));
             ObjectId commitId = repository.resolve(revision);
             blameCommand.setStartCommit(commitId);
             blameCommand.setFollowFileRenames(isHandleRenamedFiles());
