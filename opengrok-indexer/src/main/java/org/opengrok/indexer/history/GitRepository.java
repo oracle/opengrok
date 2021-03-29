@@ -129,6 +129,8 @@ public class GitRepository extends Repository {
      */
     private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
 
+    public static final int GIT_ABBREV_LEN = 8;
+
     public GitRepository() {
         type = "git";
         /*
@@ -521,7 +523,8 @@ public class GitRepository extends Repository {
                 for (int i = 0; i < rawText.size(); i++) {
                     final PersonIdent sourceAuthor = result.getSourceAuthor(i);
                     final RevCommit sourceCommit = result.getSourceCommit(i);
-                    annotation.addLine(sourceCommit.getId().abbreviate(8).name(), sourceAuthor.getName(), true);
+                    annotation.addLine(sourceCommit.getId().abbreviate(GIT_ABBREV_LEN).
+                            name(), sourceAuthor.getName(), true);
                 }
             }
         } catch (GitAPIException e) {
