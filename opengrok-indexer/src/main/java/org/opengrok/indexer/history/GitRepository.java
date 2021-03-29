@@ -51,12 +51,17 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -70,7 +75,6 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
-import org.opengrok.indexer.util.HeadHandler;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.Version;
 
@@ -124,6 +128,8 @@ public class GitRepository extends Repository {
      * instead of calling it for every GitRepository instance.
      */
     private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
+
+    public static final int GIT_ABBREV_LEN = 8;
 
     public GitRepository() {
         type = "git";
@@ -228,6 +234,15 @@ public class GitRepository extends Repository {
     }
 
     /**
+     * Be careful, git uses only forward slashes in its command and output (not in file path).
+     * Using backslashes together with git show will get empty output and 0 status code.
+     * @return string with separator characters replaced with forward slash
+     */
+    private static String getGitFilePath(String filePath) {
+        return filePath.replace(File.separatorChar, '/');
+    }
+
+    /**
      * Try to get file contents for given revision.
      *
      * @param out a required OutputStream
@@ -241,15 +256,10 @@ public class GitRepository extends Repository {
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
 
-        /*
-         * Be careful, git uses only forward slashes in its command and output (not in file path).
-         * Using backslashes together with git show will get empty output and 0 status code.
-         */
         String filename;
         result.success = false;
         try {
-            filename = Paths.get(getCanonicalDirectoryName()).relativize(
-                    Paths.get(fullpath)).toString().replace(File.separatorChar, '/');
+            filename = getGitFilePath(Paths.get(getCanonicalDirectoryName()).relativize(Paths.get(fullpath)).toString());
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' in for repository '%s'",
                     fullpath, directory), e);
@@ -448,37 +458,6 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Get first revision of given file without following renames.
-     * @param fullpath file path to get first revision of
-     */
-    private String getFirstRevision(String fullpath) {
-        String[] argv = {
-                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
-                "rev-list",
-                "--reverse",
-                "HEAD",
-                "--",
-                fullpath
-        };
-
-        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        HeadHandler headHandler = new HeadHandler(1);
-        int status = executor.exec(false, headHandler);
-
-        String line;
-        if (headHandler.count() > 0 && (line = headHandler.get(0)) != null) {
-            return line.trim();
-        }
-
-        LOGGER.log(Level.WARNING,
-                "Failed to get first revision for: \"{0}\" Exit code: {1}",
-                new Object[]{fullpath, String.valueOf(status)});
-
-        return null;
-    }
-
-    /**
      * Annotate the specified file/revision.
      *
      * @param file file to annotate
@@ -488,61 +467,72 @@ public class GitRepository extends Repository {
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add(BLAME);
-        cmd.add("-c"); // to get correctly formed changeset IDs
-        cmd.add(ABBREV_BLAME);
-        if (revision != null) {
-            cmd.add(revision);
-        } else {
-            // {@code git blame} follows renames by default. If renamed file handling is off, its output would
-            // contain invalid revisions. Therefore, the revision range needs to be constrained.
-            if (!isHandleRenamedFiles()) {
-                String firstRevision = getFirstRevision(file.getAbsolutePath());
-                if (firstRevision == null) {
-                    return null;
-                }
-                cmd.add(firstRevision + "..");
+        String filePath = getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath());
+
+        if (revision == null) {
+            revision = getFirstRevision(filePath);
+        }
+        Annotation annotation = getAnnotation(revision, filePath);
+
+        if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
+            // The file might have changed its location if it was renamed.
+            // Try to lookup its original name and get the annotation again.
+            String origName = findOriginalName(file.getCanonicalPath(), revision);
+            if (origName != null) {
+                annotation = getAnnotation(revision, origName);
             }
         }
-        cmd.add("--");
-        cmd.add(getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath()));
 
-        Executor executor = new Executor(cmd, new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        GitAnnotationParser parser = new GitAnnotationParser(file.getName());
-        int status = executor.exec(true, parser);
+        return annotation;
+    }
 
-        // File might have changed its location if it was renamed.
-        // Try to lookup its original name and get the annotation again.
-        if (status != 0 && isHandleRenamedFiles()) {
-            cmd.clear();
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            cmd.add(RepoCommand);
-            cmd.add(BLAME);
-            cmd.add("-c"); // to get correctly formed changeset IDs
-            cmd.add(ABBREV_BLAME);
-            if (revision != null) {
-                cmd.add(revision);
+    private String getFirstRevision(String filePath) {
+        String revision = null;
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            Iterable<RevCommit> commits = new Git(repository).log().
+                    addPath(getGitFilePath(filePath)).
+                    setMaxCount(1).
+                    call();
+            RevCommit commit = commits.iterator().next();
+            if (commit != null) {
+                revision = commit.getId().getName();
+            } else {
+                LOGGER.log(Level.WARNING, String.format("cannot get first revision of '%s' in repository '%s'",
+                        filePath, getDirectoryName()));
             }
-            cmd.add("--");
-            cmd.add(findOriginalName(file.getCanonicalPath(), revision));
-            executor = new Executor(cmd, new File(getDirectoryName()),
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            parser = new GitAnnotationParser(file.getName());
-            status = executor.exec(true, parser);
-        }
-
-        if (status != 0) {
+        } catch (IOException | GitAPIException e) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
-            return null;
+                    String.format("cannot get first revision of '%s' in repository '%s'",
+                            filePath, getDirectoryName()), e);
         }
+        return revision;
+    }
 
-        return parser.getAnnotation();
+    @NotNull
+    private Annotation getAnnotation(String revision, String filePath) throws IOException {
+        Annotation annotation = new Annotation(filePath);
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            BlameCommand blameCommand = new Git(repository).blame().setFilePath(getGitFilePath(filePath));
+            ObjectId commitId = repository.resolve(revision);
+            blameCommand.setStartCommit(commitId);
+            blameCommand.setFollowFileRenames(isHandleRenamedFiles());
+            final BlameResult result = blameCommand.setTextComparator(RawTextComparator.WS_IGNORE_ALL).call();
+            if (result != null) {
+                final RawText rawText = result.getResultContents();
+                for (int i = 0; i < rawText.size(); i++) {
+                    final PersonIdent sourceAuthor = result.getSourceAuthor(i);
+                    final RevCommit sourceCommit = result.getSourceCommit(i);
+                    annotation.addLine(sourceCommit.getId().abbreviate(GIT_ABBREV_LEN).
+                            name(), sourceAuthor.getName(), true);
+                }
+            }
+        } catch (GitAPIException e) {
+            LOGGER.log(Level.FINER,
+                    String.format("failed to get annotation for file '%s' in repository '%s' in revision '%s'",
+                            filePath, getDirectoryName(), revision));
+        }
+        return annotation;
     }
 
     @Override
