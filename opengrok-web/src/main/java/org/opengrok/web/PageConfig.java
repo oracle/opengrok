@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +62,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.Info;
@@ -1342,11 +1344,24 @@ public final class PageConfig {
         return he.getRevision();
     }
 
+    /**
+     * Retrieve last revision from the document matching the resource file (if any).
+     * @return last revision or {@code null} if the document cannot be found or is out of sync
+     * w.r.t. last modified time of the file.
+     */
     @Nullable
     private String getLastRevFromIndex() {
         Document doc = null;
         try {
             doc = IndexDatabase.getDocument(getResourceFile());
+            if (doc != null) {
+                Date docDate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
+                Date fileDate = new Date(getResourceFile().lastModified());
+                if (docDate.compareTo(fileDate) < 0) {
+                    LOGGER.log(Level.FINER, "document for '{0}' is out of sync", getResourceFile());
+                    return null;
+                }
+            }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
         }
