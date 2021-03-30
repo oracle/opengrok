@@ -55,6 +55,9 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -79,6 +82,9 @@ class FileHistoryCache implements HistoryCache {
 
     private final PathAccepter pathAccepter = env.getPathAccepter();
     private boolean historyIndexDone = false;
+
+    private Counter fileHistoryCacheHits;
+    private Counter fileHistoryCacheMisses;
 
     @Override
     public void setHistoryIndexDone() {
@@ -144,7 +150,7 @@ class FileHistoryCache implements HistoryCache {
 
         statRepoHist.report(LOGGER, Level.FINER,
                 String.format("Done storing history cache for '%s'", filename),
-                "filehistorycache.history");
+                "filehistorycache.history.store");
     }
 
     private boolean isRenamedFile(String filename, Repository repository, History history)
@@ -174,7 +180,17 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public void initialize() {
-        // nothing to do
+        MeterRegistry meterRegistry = Metrics.getRegistry();
+        if (meterRegistry != null) {
+            fileHistoryCacheHits = Counter.builder("filehistorycache.history.get").
+                    description("file history cache hits").
+                    tag("what", "hits").
+                    register(meterRegistry);
+            fileHistoryCacheMisses = Counter.builder("filehistorycache.history.get").
+                    description("file history cache misses").
+                    tag("what", "miss").
+                    register(meterRegistry);
+        }
     }
 
     @Override
@@ -568,6 +584,9 @@ class FileHistoryCache implements HistoryCache {
         File cache = getCachedFile(file);
         if (isUpToDate(file, cache)) {
             try {
+                if (fileHistoryCacheHits != null) {
+                    fileHistoryCacheHits.increment();
+                }
                 return readCache(cache);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
@@ -575,6 +594,9 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
+        if (fileHistoryCacheMisses != null) {
+            fileHistoryCacheMisses.increment();
+        }
         /*
          * Some mirrors of repositories which are capable of fetching history
          * for directories may contain lots of files untracked by given SCM.
