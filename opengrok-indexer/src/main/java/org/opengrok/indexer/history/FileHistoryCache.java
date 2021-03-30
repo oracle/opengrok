@@ -188,7 +188,7 @@ class FileHistoryCache implements HistoryCache {
                     register(meterRegistry);
             fileHistoryCacheMisses = Counter.builder("filehistorycache.history.get").
                     description("file history cache misses").
-                    tag("what", "hits").
+                    tag("what", "miss").
                     register(meterRegistry);
         }
     }
