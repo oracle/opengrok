@@ -56,6 +56,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -179,15 +180,16 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public void initialize() {
-        if (Metrics.getRegistry() != null) {
+        MeterRegistry meterRegistry = Metrics.getRegistry();
+        if (meterRegistry != null) {
             fileHistoryCacheHits = Counter.builder("filehistorycache.get").
                     description("file history cache hits").
                     tag("what", "hits").
-                    register(Metrics.getRegistry());
+                    register(meterRegistry);
             fileHistoryCacheMisses = Counter.builder("filehistorycache.get").
                     description("file history cache misses").
                     tag("what", "hits").
-                    register(Metrics.getRegistry());
+                    register(meterRegistry);
         }
     }
 
