@@ -150,7 +150,7 @@ class FileHistoryCache implements HistoryCache {
 
         statRepoHist.report(LOGGER, Level.FINER,
                 String.format("Done storing history cache for '%s'", filename),
-                "filehistorycache.history");
+                "filehistorycache.history.store");
     }
 
     private boolean isRenamedFile(String filename, Repository repository, History history)
@@ -182,11 +182,11 @@ class FileHistoryCache implements HistoryCache {
     public void initialize() {
         MeterRegistry meterRegistry = Metrics.getRegistry();
         if (meterRegistry != null) {
-            fileHistoryCacheHits = Counter.builder("filehistorycache.get").
+            fileHistoryCacheHits = Counter.builder("filehistorycache.history.get").
                     description("file history cache hits").
                     tag("what", "hits").
                     register(meterRegistry);
-            fileHistoryCacheMisses = Counter.builder("filehistorycache.get").
+            fileHistoryCacheMisses = Counter.builder("filehistorycache.history.get").
                     description("file history cache misses").
                     tag("what", "hits").
                     register(meterRegistry);
