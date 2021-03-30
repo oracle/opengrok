@@ -34,7 +34,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertFalse;
 
-public class  IndexerMainTest {
+public class IndexerMainTest {
     private TestRepository repository;
 
     @Before
