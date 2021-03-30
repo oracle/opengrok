@@ -55,6 +55,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import io.micrometer.core.instrument.Counter;
+import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -79,6 +81,15 @@ class FileHistoryCache implements HistoryCache {
 
     private final PathAccepter pathAccepter = env.getPathAccepter();
     private boolean historyIndexDone = false;
+
+    private final Counter fileHistoryCacheHits = Counter.builder("filehistorycache.get").
+            description("file history cache hits").
+            tag("what", "hits").
+            register(Metrics.getRegistry());
+    private final Counter fileHistoryCacheMisses = Counter.builder("filehistorycache.get").
+            description("file history cache misses").
+            tag("what", "hits").
+            register(Metrics.getRegistry());
 
     @Override
     public void setHistoryIndexDone() {
@@ -568,6 +579,7 @@ class FileHistoryCache implements HistoryCache {
         File cache = getCachedFile(file);
         if (isUpToDate(file, cache)) {
             try {
+                fileHistoryCacheHits.increment();
                 return readCache(cache);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
@@ -575,6 +587,7 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
+        fileHistoryCacheMisses.increment();
         /*
          * Some mirrors of repositories which are capable of fetching history
          * for directories may contain lots of files untracked by given SCM.
