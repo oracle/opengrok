@@ -82,14 +82,8 @@ class FileHistoryCache implements HistoryCache {
     private final PathAccepter pathAccepter = env.getPathAccepter();
     private boolean historyIndexDone = false;
 
-    private final Counter fileHistoryCacheHits = Counter.builder("filehistorycache.get").
-            description("file history cache hits").
-            tag("what", "hits").
-            register(Metrics.getRegistry());
-    private final Counter fileHistoryCacheMisses = Counter.builder("filehistorycache.get").
-            description("file history cache misses").
-            tag("what", "hits").
-            register(Metrics.getRegistry());
+    private Counter fileHistoryCacheHits;
+    private Counter fileHistoryCacheMisses;
 
     @Override
     public void setHistoryIndexDone() {
@@ -185,7 +179,16 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public void initialize() {
-        // nothing to do
+        if (Metrics.getRegistry() != null) {
+            fileHistoryCacheHits = Counter.builder("filehistorycache.get").
+                    description("file history cache hits").
+                    tag("what", "hits").
+                    register(Metrics.getRegistry());
+            fileHistoryCacheMisses = Counter.builder("filehistorycache.get").
+                    description("file history cache misses").
+                    tag("what", "hits").
+                    register(Metrics.getRegistry());
+        }
     }
 
     @Override
