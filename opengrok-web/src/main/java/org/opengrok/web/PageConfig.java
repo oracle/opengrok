@@ -39,6 +39,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.InvalidParameterException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1346,31 +1347,39 @@ public final class PageConfig {
 
     /**
      * Retrieve last revision from the document matching the resource file (if any).
-     * @return last revision or {@code null} if the document cannot be found or is out of sync
-     * w.r.t. last modified time of the file.
+     * @return last revision or {@code null} if the document cannot be found, is out of sync
+     * w.r.t. last modified time of the file or the last commit ID is not stored in the document.
      */
     @Nullable
     private String getLastRevFromIndex() {
         Document doc = null;
         try {
             doc = IndexDatabase.getDocument(getResourceFile());
-            if (doc != null) {
-                Date docDate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
+        }
+
+        String lastRev = null;
+        if (doc != null) {
+            // There is no point of checking the date if the LASTREV field is not present.
+            lastRev = doc.get(QueryBuilder.LASTREV);
+            if (lastRev != null) {
+                Date docDate;
+                try {
+                    docDate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
+                } catch (ParseException e) {
+                    LOGGER.log(Level.WARNING, String.format("cannot get date from the document %s", doc), e);
+                    return null;
+                }
                 Date fileDate = new Date(getResourceFile().lastModified());
                 if (docDate.compareTo(fileDate) < 0) {
                     LOGGER.log(Level.FINER, "document for '{0}' is out of sync", getResourceFile());
                     return null;
                 }
             }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, String.format("cannot get document for %s", path), e);
         }
 
-        if (doc != null) {
-            return doc.get(QueryBuilder.LASTREV);
-        }
-
-        return null;
+        return lastRev;
     }
 
     /**
