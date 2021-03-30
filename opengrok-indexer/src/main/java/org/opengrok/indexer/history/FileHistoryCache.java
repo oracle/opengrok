@@ -584,7 +584,9 @@ class FileHistoryCache implements HistoryCache {
         File cache = getCachedFile(file);
         if (isUpToDate(file, cache)) {
             try {
-                fileHistoryCacheHits.increment();
+                if (fileHistoryCacheHits != null) {
+                    fileHistoryCacheHits.increment();
+                }
                 return readCache(cache);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
@@ -592,7 +594,9 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
-        fileHistoryCacheMisses.increment();
+        if (fileHistoryCacheMisses != null) {
+            fileHistoryCacheMisses.increment();
+        }
         /*
          * Some mirrors of repositories which are capable of fetching history
          * for directories may contain lots of files untracked by given SCM.
