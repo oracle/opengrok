@@ -39,7 +39,7 @@ import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 

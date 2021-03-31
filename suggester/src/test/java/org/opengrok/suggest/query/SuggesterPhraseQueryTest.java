@@ -24,13 +24,13 @@
 package org.opengrok.suggest.query;
 
 import org.apache.lucene.index.Term;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SuggesterPhraseQueryTest {
 
