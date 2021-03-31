@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -26,9 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TreeSet;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -43,21 +41,10 @@ import static org.junit.Assert.assertTrue;
 public class HistoryEntryTest {
 
     private HistoryEntry instance;
-    private Date historyDate = new Date();
-    private String historyRevision = "1.0";
-    private String historyAuthor = "test author";
-    private String historyMessage = "history entry message";
- 
-    public HistoryEntryTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+    private final Date historyDate = new Date();
+    private final String historyRevision = "1.0";
+    private final String historyAuthor = "test author";
+    private final String historyMessage = "history entry message";
 
     @Before
     public void setUp() {

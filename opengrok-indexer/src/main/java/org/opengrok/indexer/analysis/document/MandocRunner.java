@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
@@ -70,7 +70,7 @@ public class MandocRunner {
     }
 
     /**
-     * Starts a run of the mandoc binary to receive input from {@link write}.
+     * Starts a run of the mandoc binary to receive input from {@link #write}.
      * @throws IOException thrown if a read or write to the mandoc process
      * fails.
      * @throws MandocException if no mandoc binary is defined
@@ -102,9 +102,7 @@ public class MandocRunner {
 
         if (LOGGER.isLoggable(Level.FINER)) {
             StringBuilder sb = new StringBuilder();
-            command.forEach((s) -> {
-                sb.append(s).append(" ");
-            });
+            command.forEach(s -> sb.append(s).append(" "));
             String cmd = sb.toString();
             LOGGER.log(Level.FINER, "Executing mandoc command [{0}]", cmd);
         }
@@ -175,7 +173,7 @@ public class MandocRunner {
      * Writes a character to the input of the run of mandoc.
      * @param s the string to write.
      * @throws IllegalStateException thrown if the runner was not successfully
-     * {@link start}ed.
+     * {@link #start}ed.
      * @throws IOException thrown if a write to the mandoc process fails.
      */
     public void write(String s) throws IOException {

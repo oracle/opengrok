@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -126,7 +126,9 @@ public class MessagesControllerTest extends OGKJerseyTest {
                 try {
                     this.server.start();
                     if (this.baseUri.getPort() == 0) {
-                        this.baseUri = UriBuilder.fromUri(this.baseUri).port(this.server.getListener("grizzly").getPort()).build(new Object[0]);
+                        this.baseUri = UriBuilder.fromUri(this.baseUri)
+                                .port(this.server.getListener("grizzly").getPort())
+                                .build();
                     }
                 } catch (IOException e) {
                     throw new TestContainerException(e);
@@ -195,8 +197,6 @@ public class MessagesControllerTest extends OGKJerseyTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.json(msgAsString));
 
-        assertEquals(0,
-                env.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 

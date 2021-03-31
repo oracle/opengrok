@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.query;
 
@@ -133,6 +133,7 @@ class SuggesterQueryParser extends CustomQueryParser {
             for (BooleanClause clause1 : suggesterClauses) {
                 if (clause.getQuery().equals(clause1.getQuery())) {
                     contains = true;
+                    break;
                 }
             }
         }

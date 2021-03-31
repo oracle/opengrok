@@ -52,7 +52,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
 
     private final Map<String, String> headers = new HashMap<>();
     private final Map<String, Object> attrs = new HashMap<>();
-    private HttpSession sessions = new HttpSession() {
+    private final HttpSession sessions = new HttpSession() {
 
         private final Map<String, Object> attrs = new HashMap<>();
 
@@ -231,12 +231,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
         String encodedValue = authHeader.split(" ")[1];
         Base64.Decoder decoder = Base64.getDecoder();
         String username = new String(decoder.decode(encodedValue)).split(":")[0];
-        return new Principal() {
-            @Override
-            public String getName() {
-                return username;
-            }
-        };
+        return () -> username;
     }
 
     @Override

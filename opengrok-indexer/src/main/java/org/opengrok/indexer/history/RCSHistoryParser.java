@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -89,7 +89,7 @@ class RCSHistoryParser {
             Node n = archive.findNode(ver);
             n = n.root();
 
-            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            ArrayList<HistoryEntry> entries = new ArrayList<>();
             traverse(n, entries);
 
             History history = new History();

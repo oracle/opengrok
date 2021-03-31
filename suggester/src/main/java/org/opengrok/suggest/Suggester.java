@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -83,9 +83,9 @@ public final class Suggester implements Closeable {
 
     private Duration awaitTerminationTime;
 
-    private boolean allowMostPopular;
+    private final boolean allowMostPopular;
 
-    private boolean projectsEnabled;
+    private final boolean projectsEnabled;
 
     private final Set<String> allowedFields;
 

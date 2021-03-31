@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -95,7 +95,7 @@ public class ProgressTest {
 
         Mockito.when(logger.isLoggable(any())).thenReturn(true);
         ExecutorService executor = Executors.newFixedThreadPool(totalCount);
-        System.out.println(String.format("Will run %d threads", totalCount));
+        System.out.printf("Will run %d threads%n", totalCount);
         try (Progress progress = new Progress(logger, "foo", totalCount)) {
             while (progress.getLoggerThread().getState() != Thread.State.WAITING) {
                 System.out.println("Waiting for the logger thread to reach the initial wait()");

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
@@ -29,7 +29,7 @@ org.opengrok.indexer.web.Prefix"
 %>
 <%!
 /* ---------------------- foot.jspf members start --------------------- */
-    private static EnumSet<Prefix> needAddDiv = EnumSet.of(
+    private static final EnumSet<Prefix> needAddDiv = EnumSet.of(
         Prefix.HIST_L, Prefix.XREF_P, Prefix.DIFF_P, Prefix.MORE_P,
         // could NOT find any mapping/reference to those ones:
         Prefix.HIST_S, Prefix.XREF_S, Prefix.DIFF_S, Prefix.MORE_S);

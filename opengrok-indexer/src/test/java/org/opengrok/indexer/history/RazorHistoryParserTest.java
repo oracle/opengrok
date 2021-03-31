@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -27,9 +27,7 @@ import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -42,17 +40,6 @@ import static org.junit.Assert.assertTrue;
 public class RazorHistoryParserTest {
 
     RazorHistoryParser instance;
-
-    public RazorHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() {

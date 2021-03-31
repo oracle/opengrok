@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
@@ -127,15 +127,15 @@ document.domReady.push(function() { domReadyMenu(); });
     <tr>
     <td colspan="3" >
     <button tabindex="6" type="button"
-        onclick="javascript: selectAllProjects(); return false;"
+        onclick="selectAllProjects(); return false;"
         >select all</button>
     &nbsp;
     <button tabindex="7" type="button"
-        onclick="javascript: invertAllProjects(); return false;"
+        onclick="invertAllProjects(); return false;"
         >invert selection</button>
     &nbsp;
     <button tabindex="8" type="button"
-        onclick="javascript: deselectAllProjects(); return false;"
+        onclick="deselectAllProjects(); return false;"
         >clear</button>
     </td>
     </tr>
@@ -218,7 +218,7 @@ document.domReady.push(function() { domReadyMenu(); });
 <div id="form-controls">
     <input tabindex="9" class="submit btn" onclick="$('#xrd').val(''); $('#sbox').submit()"
            type="submit" value="Search"/>
-    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+    <input tabindex="10" class="submit btn" onclick="clearSearchFrom();"
            type="button" value="Clear"/>
     <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
            type="button" value="Help"/>

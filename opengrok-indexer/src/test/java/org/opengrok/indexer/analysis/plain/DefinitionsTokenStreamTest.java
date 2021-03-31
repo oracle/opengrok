@@ -128,9 +128,7 @@ public class DefinitionsTokenStreamTest {
 
         // Deserialize the token stream.
         DefinitionsTokenStream tokstream = new DefinitionsTokenStream();
-        tokstream.initialize(defs, src, (in) -> {
-            return ExpandTabsReader.wrap(in, tabSize);
-        });
+        tokstream.initialize(defs, src, in -> ExpandTabsReader.wrap(in, tabSize));
 
         // Iterate through stream.
         CharTermAttribute term = tokstream.getAttribute(

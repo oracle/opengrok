@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -51,11 +51,11 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     /** Prefix which identifies lines with the description of a commit. */
     private static final String DESC_PREFIX = "description: ";
 
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private List<HistoryEntry> entries = new ArrayList<>();
     private final MercurialRepository repository;
     private final String mydir;
     private boolean isDir;
-    private final List<String> renamedFiles = new ArrayList<String>();
+    private final List<String> renamedFiles = new ArrayList<>();
 
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
@@ -111,7 +111,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        entries = new ArrayList<HistoryEntry>();
+        entries = new ArrayList<>();
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {

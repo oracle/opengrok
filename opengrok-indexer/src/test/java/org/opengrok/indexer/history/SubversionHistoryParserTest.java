@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
@@ -35,9 +35,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -46,17 +44,6 @@ import org.junit.Test;
 public class SubversionHistoryParserTest {
 
     private SubversionHistoryParser instance;
-
-    public SubversionHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() {

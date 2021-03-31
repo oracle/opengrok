@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -27,7 +27,6 @@ package org.opengrok.indexer.search.context;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -70,13 +69,11 @@ public class Context {
      * whose values tell if the field is case insensitive (true for
      * insensitivity, false for sensitivity).
      */
-    private static final Map<String, Boolean> TOKEN_FIELDS =
-            new HashMap<String, Boolean>();
-    static {
-        TOKEN_FIELDS.put(QueryBuilder.FULL, Boolean.TRUE);
-        TOKEN_FIELDS.put(QueryBuilder.REFS, Boolean.FALSE);
-        TOKEN_FIELDS.put(QueryBuilder.DEFS, Boolean.FALSE);
-    }
+    private static final Map<String, Boolean> TOKEN_FIELDS = Map.of(
+            QueryBuilder.FULL, Boolean.TRUE,
+            QueryBuilder.REFS, Boolean.FALSE,
+            QueryBuilder.DEFS, Boolean.FALSE
+    );
 
     /**
      * Initializes a context generator for matchers derived from the specified
@@ -202,9 +199,8 @@ public class Context {
         formatter.setMoreUrl(moreURL);
         formatter.setMoreLimit(linelimit);
 
-        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
-            searcher, anz);
-        uhi.setBreakIterator(() -> new StrictLineBreakIterator());
+        OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env, searcher, anz);
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(tabSize);
 
@@ -285,11 +281,11 @@ public class Context {
                 (urlPrefix == null) ? "" : Util.URIEncodePath(urlPrefix);
         String pathE = Util.URIEncodePath(path);
         if (tags != null) {
-            matchingTags = new TreeMap<Integer, String[]>();
+            matchingTags = new TreeMap<>();
             try {
                 for (Definitions.Tag tag : tags.getTags()) {
-                    for (int i = 0; i < m.length; i++) {
-                        if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
+                    for (LineMatcher lineMatcher : m) {
+                        if (lineMatcher.match(tag.symbol) == LineMatcher.MATCHED) {
                             String scope = null;
                             String scopeUrl = null;
                             if (scopes != null) {
@@ -306,20 +302,19 @@ public class Context {
                              * desc[4] is scope
                              */
                             String[] desc = {
-                                tag.symbol,
-                                Integer.toString(tag.line),
-                                tag.type,
-                                tag.text,
-                                scope,
-                                };
+                                    tag.symbol,
+                                    Integer.toString(tag.line),
+                                    tag.type,
+                                    tag.text,
+                                    scope,
+                            };
                             if (in == null) {
                                 if (out == null) {
                                     Hit hit = new Hit(path,
                                             Util.htmlize(desc[3]).replace(
-                                            desc[0], "<b>" + desc[0] + "</b>"),
+                                                    desc[0], "<b>" + desc[0] + "</b>"),
                                             desc[1], false, alt);
                                     hits.add(hit);
-                                    anything = true;
                                 } else {
                                     out.write("<a class=\"s\" href=\"");
                                     out.write(urlPrefixE);
@@ -343,8 +338,8 @@ public class Context {
                                     out.write("<i>");
                                     out.write(desc[2]);
                                     out.write("</i><br/>");
-                                    anything = true;
                                 }
+                                anything = true;
                             } else {
                                 matchingTags.put(tag.line, desc);
                             }
@@ -419,8 +414,8 @@ public class Context {
             int matchedLines = 0;
             while ((token = tokens.yylex()) != null && (!lim ||
                     matchedLines < limit_max_lines)) {
-                for (int i = 0; i < m.length; i++) {
-                    matchState = m[i].match(token);
+                for (LineMatcher lineMatcher : m) {
+                    matchState = lineMatcher.match(token);
                     if (matchState == LineMatcher.MATCHED) {
                         if (!isDefSearch) {
                             tokens.printContext();
@@ -428,7 +423,6 @@ public class Context {
                             tokens.printContext();
                         }
                         matchedLines++;
-                        //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
                         break;
                     } else if (matchState == LineMatcher.WAIT) {
                         tokens.holdOn();

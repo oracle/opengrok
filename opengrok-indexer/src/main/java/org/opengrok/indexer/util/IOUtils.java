@@ -81,7 +81,7 @@ public final class IOUtils {
      * @throws IOException if any read error
      */
     public static void removeRecursive(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                     throws IOException {

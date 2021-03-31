@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -45,12 +45,12 @@ public class FakeLdapFacade extends AbstractLdapProvider {
         if ("objectclass=*".equals(filter)) {
             List<String> v = Arrays.asList(values);
             if (v.isEmpty()) {
-                map.put("mail", new TreeSet<>(Arrays.asList(new String[]{"james@bond.com"})));
-                map.put("ou", new TreeSet<>(Arrays.asList(new String[]{"MI6"})));
+                map.put("mail", new TreeSet<>(Arrays.asList("james@bond.com")));
+                map.put("ou", new TreeSet<>(Arrays.asList("MI6")));
             } else {
                 for (String x : v) {
                     if (x.equals("uid")) {
-                        map.put("uid", new TreeSet<>(Arrays.asList(new String[]{"bondjame"})));
+                        map.put("uid", new TreeSet<>(Arrays.asList("bondjame")));
                     }
                 }
             }
@@ -58,8 +58,8 @@ public class FakeLdapFacade extends AbstractLdapProvider {
         }
 
         if (filter.contains("objectclass")) {
-            map.put("dn", new TreeSet<>(Arrays.asList(new String[]{"cn=mi6,cn=mi6,cn=james,dc=bond,dc=com",
-                "cn=mi7,cn=mi7,cn=james,dc=bond,dc=com"})));
+            map.put("dn", new TreeSet<>(Arrays.asList("cn=mi6,cn=mi6,cn=james,dc=bond,dc=com",
+                    "cn=mi7,cn=mi7,cn=james,dc=bond,dc=com")));
         }
 
         return new LdapSearchResult<>("fakedn", map);

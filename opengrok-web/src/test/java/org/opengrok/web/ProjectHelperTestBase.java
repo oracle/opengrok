@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -223,7 +223,7 @@ public class ProjectHelperTestBase {
             createProject(i, 1, false, false, false, rps, prjs, map);
         }
 
-        for (int i = 0 + 2; i < 2 + 2; i++) {
+        for (int i = 2; i < 4; i++) {
             createProject(i, 1, false, true, false, rps, prjs, map);
         }
 
@@ -231,7 +231,7 @@ public class ProjectHelperTestBase {
             createRepository(i, 1, 1, false, false, rps, prjs, map);
         }
 
-        for (int i = 0 + 2; i < 2 + 2; i++) {
+        for (int i = 2; i < 4; i++) {
             createRepository(i, 1, 1, false, true, rps, prjs, map);
         }
 

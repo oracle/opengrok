@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -37,10 +37,10 @@ public class History {
      * SCMs) during cache creation.
      * These are relative to repository root.
      */
-    private List<String> renamedFiles = new ArrayList<String>();
+    private List<String> renamedFiles = new ArrayList<>();
     
     public History() {
-        this(new ArrayList<HistoryEntry>());
+        this(new ArrayList<>());
     }
 
     History(List<HistoryEntry> entries) {
@@ -80,8 +80,8 @@ public class History {
      * @return The list of entries in this history
      */
     public List<HistoryEntry> getHistoryEntries(int limit, int offset) {
-        offset = offset < 0 ? 0 : offset;
-        limit = offset + limit > entries.size() ? limit = entries.size() - offset : limit;
+        offset = Math.max(offset, 0);
+        limit = offset + limit > entries.size() ? entries.size() - offset : limit;
         return entries.subList(offset, offset + limit);
     }    
     

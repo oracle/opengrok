@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -37,7 +37,6 @@ import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Spy;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
 import static org.junit.Assert.assertEquals;
@@ -51,7 +50,7 @@ import static org.mockito.Mockito.when;
  * @author Vladimir Kotal
  */
 public class LdapUserPluginTest {
-    @Spy
+
     private LdapUserPlugin plugin;
 
     @Before

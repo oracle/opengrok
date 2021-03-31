@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -78,7 +78,7 @@ public class WatchDogService {
                 watchDogWatcher = FileSystems.getDefault().newWatchService();
                 Path dir = Paths.get(directory.getAbsolutePath());
 
-                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(dir, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
                         // attach monitor

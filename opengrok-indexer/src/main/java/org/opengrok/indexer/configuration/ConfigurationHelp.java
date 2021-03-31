@@ -359,11 +359,10 @@ public class ConfigurationHelp {
                     for (int j = 0; j < XML_COMMENT_START.length(); ++j) {
                         append(" ");
                     }
-                    append(word);
                 } else {
                     append(value.substring(i, i + spaceLen));
-                    append(word);
                 }
+                append(word);
 
                 i += spaceLen + wordLen;
             }

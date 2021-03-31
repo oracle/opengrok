@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.entity;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -46,11 +47,7 @@ public class LdapUser implements Serializable {
     public LdapUser(String dn, Map<String, Set<String>> attrs) {
         this.dn = dn;
 
-        if (attrs == null) {
-            this.attributes = new HashMap<>();
-        } else {
-            this.attributes = attrs;
-        }
+        this.attributes = Objects.requireNonNullElseGet(attrs, HashMap::new);
     }
 
     /**

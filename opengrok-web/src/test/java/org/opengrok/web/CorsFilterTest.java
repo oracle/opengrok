@@ -29,7 +29,6 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import org.junit.Test;
 import org.opengrok.web.api.v1.filter.CorsFilter;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +45,7 @@ public class CorsFilterTest {
 
     @Test
     public void CorsTest() {
-        testBoth("https://example.org", Arrays.asList("*"));
+        testBoth("https://example.org", List.of("*"));
     }
 
     private void testBoth(String origin, List<Object> headerValue) {

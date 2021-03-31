@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 
 public class FileControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 

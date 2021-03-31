@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.document.Document;
@@ -172,26 +173,21 @@ public class JFlexXrefTest {
      * @param klass the Xref sub-class to test
      * @param path path to input file with a definition
      */
-    private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass,
-        String path) throws Exception {
+    private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass, String path) throws Exception {
         File file = new File(repository.getSourceRoot() + File.separator + path);
         Definitions defs = ctags.doCtags(file.getAbsolutePath());
 
         // Input files contain non-ascii characters and are encoded in UTF-8
-        Reader in = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        try (Reader in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
 
-        JFlexXref xref = new JFlexXref(klass.getConstructor(Reader.class).
-            newInstance(in));
-        xref.setDefs(defs);
+            JFlexXref xref = new JFlexXref(klass.getConstructor(Reader.class).newInstance(in));
+            xref.setDefs(defs);
 
-        StringWriter out = new StringWriter();
-        xref.write(out);
-        String outstr = out.toString();
-        boolean hasAnchor = outstr.contains("\" name=\"bug15890\"/><a href=");
-        //TODO improve below to reflect all possible classes of a definition
-        if (!hasAnchor) {
-            assertTrue("No bug15890 anchor found for " + path + ":\n" + outstr,
-                hasAnchor);
+            StringWriter out = new StringWriter();
+            xref.write(out);
+            String outstr = out.toString();
+            boolean hasAnchor = outstr.contains("\" name=\"bug15890\"/><a href=");
+            assertTrue("No bug15890 anchor found for " + path + ":\n" + outstr, hasAnchor);
         }
     }
 
@@ -377,11 +373,12 @@ public class JFlexXrefTest {
     @Test
     public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
-        Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
-        JFlexXref xref = new JFlexXref(new SQLXref(in));
-        xref.setDefs(ctags.doCtags(filename));
-        // The next call used to fail with an ArrayIndexOutOfBoundsException.
-        xref.write(new StringWriter());
+        try (Reader in = new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8)) {
+            JFlexXref xref = new JFlexXref(new SQLXref(in));
+            xref.setDefs(ctags.doCtags(filename));
+            // The next call used to fail with an ArrayIndexOutOfBoundsException.
+            xref.write(new StringWriter());
+        }
     }
 
     /**
