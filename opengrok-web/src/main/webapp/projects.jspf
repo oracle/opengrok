@@ -26,6 +26,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page import="
 java.net.URLEncoder,
+java.nio.charset.StandardCharsets,
 org.opengrok.web.PageConfig
 "%><%
 /* ---------------------- projects.jspf start --------------------- */
