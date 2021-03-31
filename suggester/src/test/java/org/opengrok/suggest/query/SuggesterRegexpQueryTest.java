@@ -23,15 +23,16 @@
 package org.opengrok.suggest.query;
 
 import org.apache.lucene.index.Term;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SuggesterRegexpQueryTest {
 
     @Test
     public void testLength() {
         SuggesterRegexpQuery q = new SuggesterRegexpQuery(new Term("test", ".*test"));
-        Assert.assertEquals(".*test".length(), q.length());
+        assertEquals(".*test".length(), q.length());
     }
 
 }

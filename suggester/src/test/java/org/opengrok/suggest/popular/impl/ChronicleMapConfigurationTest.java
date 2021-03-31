@@ -22,14 +22,14 @@
  */
 package org.opengrok.suggest.popular.impl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.popular.impl.chronicle.ChronicleMapConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChronicleMapConfigurationTest {
 

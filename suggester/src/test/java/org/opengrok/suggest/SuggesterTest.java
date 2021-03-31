@@ -39,7 +39,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterWildcardQuery;
 
@@ -60,8 +60,9 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SuggesterTest {
 
@@ -99,29 +100,34 @@ public class SuggesterTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNullSuggesterDir() {
-        new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE, 1, registry);
+        assertThrows(IllegalArgumentException.class,
+                () -> new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE, 1, registry));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNullDuration() throws IOException {
-        Path tempFile = Files.createTempFile("opengrok", "test");
-        try {
-            new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE, 1, registry);
-        } finally {
-            tempFile.toFile().delete();
-        }
+    @Test
+    public void testNullDuration() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Path tempFile = Files.createTempFile("opengrok", "test");
+            try {
+                new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE, 1, registry);
+            } finally {
+                tempFile.toFile().delete();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNegativeDuration() throws IOException {
-        Path tempFile = Files.createTempFile("opengrok", "test");
-        try {
-            new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE, 1, registry);
-        } finally {
-            tempFile.toFile().delete();
-        }
+    @Test
+    public void testNegativeDuration() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Path tempFile = Files.createTempFile("opengrok", "test");
+            try {
+                new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE, 1, registry);
+            } finally {
+                tempFile.toFile().delete();
+            }
+        });
     }
 
     private SuggesterTestData initSuggester() throws IOException {

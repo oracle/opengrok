@@ -70,7 +70,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <!-- Jackson version needs to match the version of Jackson which Jersey
         depends on or otherwise weird things will happen. -->
         <jackson.version>2.11.3</jackson.version>
-        <junit.version>5.7.0</junit.version>
+        <junit.version>5.7.1</junit.version>
         <hamcrest.version>2.1</hamcrest.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <apache-commons-lang3.version>3.9</apache-commons-lang3.version>
