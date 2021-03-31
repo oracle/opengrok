@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -44,16 +44,16 @@ import opengrok.auth.plugin.ldap.FakeLdapFacade;
 import opengrok.auth.plugin.ldap.LdapException;
 import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -66,7 +66,7 @@ public class LdapAttrPluginTest {
 
     private static File whitelistFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws IOException {
         whitelistFile = Files.createTempFile("opengrok-auth-", "-check.tmp").toFile();
         try (Writer w = new OutputStreamWriter(new FileOutputStream(whitelistFile))) {
@@ -76,12 +76,12 @@ public class LdapAttrPluginTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         whitelistFile.delete();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
@@ -144,10 +144,10 @@ public class LdapAttrPluginTest {
 
         prepareRequest("009", "other@email.com", "MI6");
 
-        Assert.assertFalse(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertFalse(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertFalse(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertFalse(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
+        assertFalse(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
+        assertFalse(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
+        assertFalse(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
+        assertFalse(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
 
         prepareRequest("00A", "random@email.com", "MI6", "MI7");
 

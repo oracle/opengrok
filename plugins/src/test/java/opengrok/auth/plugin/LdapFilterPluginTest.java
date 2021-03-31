@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -27,16 +27,17 @@ import java.util.Collections;
 import java.util.TreeSet;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class LdapFilterPluginTest {
 
     private LdapFilterPlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new LdapFilterPlugin();
     }
@@ -103,8 +104,8 @@ public class LdapFilterPluginTest {
         plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testLoadTransformsNegative() {
-        plugin.loadTransforms("foo:toUpperCase,ugly:nice");
+        assertThrows(UnsupportedOperationException.class, () -> plugin.loadTransforms("foo:toUpperCase,ugly:nice"));
     }
 }
