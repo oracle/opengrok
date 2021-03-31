@@ -173,7 +173,7 @@ public final class Indexer {
                 try {
                     for (InetAddress addr : InetAddress.getAllByName(HostUtil.urlToHostname(webappURI))) {
                         int port = HostUtil.urlToPort(webappURI);
-                        if (port < 0) {
+                        if (port <= 0) {
                             LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
                             break;
                         }
