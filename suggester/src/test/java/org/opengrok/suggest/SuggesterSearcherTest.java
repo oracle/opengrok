@@ -34,9 +34,9 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.query.SuggesterFuzzyQuery;
 import org.opengrok.suggest.query.SuggesterPhraseQuery;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
@@ -58,7 +58,7 @@ public class SuggesterSearcherTest {
 
     private static SuggesterSearcher searcher;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         dir = new ByteBuffersDirectory();
 
@@ -78,7 +78,7 @@ public class SuggesterSearcherTest {
         searcher = new SuggesterSearcher(ir, 10);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws IOException {
         dir.close();
     }

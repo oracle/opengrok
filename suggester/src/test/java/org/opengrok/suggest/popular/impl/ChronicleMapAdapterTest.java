@@ -23,9 +23,9 @@
 package org.opengrok.suggest.popular.impl;
 
 import org.apache.lucene.util.BytesRef;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.popular.impl.chronicle.ChronicleMapAdapter;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.Map.Entry;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChronicleMapAdapterTest {
 
@@ -47,14 +47,14 @@ public class ChronicleMapAdapterTest {
 
     private Path tempFile;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         tempFile = Files.createTempFile("opengrok", "test");
 
         map = new ChronicleMapAdapter(FIELD, 3, 10, tempFile.toFile());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         map.close();
         Files.delete(tempFile);
