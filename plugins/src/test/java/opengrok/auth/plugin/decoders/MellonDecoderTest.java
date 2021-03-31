@@ -18,25 +18,27 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static opengrok.auth.plugin.decoders.MellonHeaderDecoder.MELLON_EMAIL_HEADER;
 import static opengrok.auth.plugin.decoders.MellonHeaderDecoder.MELLON_USERNAME_HEADER;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class MellonDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
     MellonHeaderDecoder decoder = new MellonHeaderDecoder();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
         dummyRequest.setHeader(MELLON_EMAIL_HEADER, "foo@bar.cz");
@@ -46,10 +48,10 @@ public class MellonDecoderTest {
     public void testId() {
         User result = decoder.fromRequest(dummyRequest);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("foo@bar.cz", result.getId());
+        assertNotNull(result);
+        assertEquals("foo@bar.cz", result.getId());
         assertNull(result.getUsername());
-        Assert.assertFalse(result.isTimeouted());
+        assertFalse(result.isTimeouted());
     }
 
     @Test
@@ -62,8 +64,8 @@ public class MellonDecoderTest {
         dummyRequest.setHeader(MELLON_USERNAME_HEADER, "foo");
         User result = decoder.fromRequest(dummyRequest);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("foo", result.getUsername());
-        Assert.assertFalse(result.isTimeouted());
+        assertNotNull(result);
+        assertEquals("foo", result.getUsername());
+        assertFalse(result.isTimeouted());
     }
 }

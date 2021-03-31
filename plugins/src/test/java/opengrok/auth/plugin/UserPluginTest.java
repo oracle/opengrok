@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -26,11 +26,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.decoders.OSSOHeaderDecoder;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -40,43 +44,43 @@ public class UserPluginTest {
 
     private UserPlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new UserPlugin(new OSSOHeaderDecoder());
     }
 
     @Test
     public void testNoUser() {
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Group()));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Project()));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createGroup("some group")));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createProject("some project")));
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Group()));
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Project()));
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createGroup("some group")));
+        assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createProject("some project")));
     }
 
     @Test
     public void testUser() {
         HttpServletRequest req;
-        Assert.assertTrue(plugin.isAllowed(req = createRequest("007"), new Group()));
-        Assert.assertEquals("007", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
-        Assert.assertTrue(plugin.isAllowed(req = createRequest("008"), new Project()));
-        Assert.assertEquals("008", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
-        Assert.assertTrue(plugin.isAllowed(req = createRequest("009"), createGroup("some group")));
-        Assert.assertEquals("009", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
-        Assert.assertTrue(plugin.isAllowed(req = createRequest("00A"), createProject("some project")));
-        Assert.assertEquals("00A", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
+        assertTrue(plugin.isAllowed(req = createRequest("007"), new Group()));
+        assertEquals("007", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
+        assertTrue(plugin.isAllowed(req = createRequest("008"), new Project()));
+        assertEquals("008", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
+        assertTrue(plugin.isAllowed(req = createRequest("009"), createGroup("some group")));
+        assertEquals("009", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
+        assertTrue(plugin.isAllowed(req = createRequest("00A"), createProject("some project")));
+        assertEquals("00A", ((User) req.getAttribute(UserPlugin.REQUEST_ATTR)).getUsername());
     }
 
     @Test
     public void testTimeoutedUser() {
         HttpServletRequest req;
-        Assert.assertFalse(plugin.isAllowed(req = createRequest("007", true), new Group()));
-        Assert.assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
-        Assert.assertFalse(plugin.isAllowed(req = createRequest("008", true), new Project()));
-        Assert.assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
-        Assert.assertFalse(plugin.isAllowed(req = createRequest("009", true), createGroup("some group")));
-        Assert.assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
-        Assert.assertFalse(plugin.isAllowed(req = createRequest("00A", true), createProject("some project")));
-        Assert.assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
+        assertFalse(plugin.isAllowed(req = createRequest("007", true), new Group()));
+        assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
+        assertFalse(plugin.isAllowed(req = createRequest("008", true), new Project()));
+        assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
+        assertFalse(plugin.isAllowed(req = createRequest("009", true), createGroup("some group")));
+        assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
+        assertFalse(plugin.isAllowed(req = createRequest("00A", true), createProject("some project")));
+        assertNull(req.getAttribute(UserPlugin.REQUEST_ATTR));
     }
 
     protected HttpServletRequest createRequest(String email) {

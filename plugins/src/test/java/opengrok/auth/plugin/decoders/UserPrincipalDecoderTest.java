@@ -18,23 +18,25 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class UserPrincipalDecoderTest {
     DummyHttpServletRequestUser dummyRequest;
     UserPrincipalDecoder decoder = new UserPrincipalDecoder();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
     }
@@ -45,10 +47,10 @@ public class UserPrincipalDecoderTest {
 
         User result = decoder.fromRequest(dummyRequest);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("foo", result.getUsername());
+        assertNotNull(result);
+        assertEquals("foo", result.getUsername());
         assertNull(result.getId());
-        Assert.assertFalse(result.isTimeouted());
+        assertFalse(result.isTimeouted());
     }
 
     @Test

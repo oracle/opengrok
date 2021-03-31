@@ -23,8 +23,8 @@
 package opengrok.auth.plugin;
 
 import opengrok.auth.plugin.entity.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.RandomString;
@@ -39,7 +39,7 @@ public class FalsePluginTest {
 
     private FalsePlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new FalsePlugin();
     }

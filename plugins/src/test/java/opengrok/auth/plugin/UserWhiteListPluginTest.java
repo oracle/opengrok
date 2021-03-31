@@ -19,17 +19,15 @@
 
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
 import opengrok.auth.plugin.entity.User;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.RandomString;
@@ -43,16 +41,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link UserWhiteListPlugin}.
  */
-@RunWith(Parameterized.class)
 public class UserWhiteListPluginTest {
 
     private static final String OK_USER = "user1321";
@@ -62,18 +60,12 @@ public class UserWhiteListPluginTest {
     private static HashMap<String, Object> validPluginParameters;
 
     private UserWhiteListPlugin plugin;
-    private final String param;
 
-    @Parameterized.Parameters
     public static Collection<String> parameters() {
         return Arrays.asList(UserWhiteListPlugin.ID_FIELD, UserWhiteListPlugin.USERNAME_FIELD);
     }
 
-    public UserWhiteListPluginTest(String param) {
-        this.param = param;
-    }
-
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         tempWhitelistUser = File.createTempFile("UserWhiteListPluginTestUser", "txt");
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
@@ -92,7 +84,7 @@ public class UserWhiteListPluginTest {
         validPluginParameters = new HashMap<>();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         if (tempWhitelistUser != null) {
             //noinspection ResultOfMethodCallIgnored
@@ -104,37 +96,42 @@ public class UserWhiteListPluginTest {
         }
     }
 
-    @Before
-    public void setUp() {
+    public void init(String param) {
         plugin = new UserWhiteListPlugin();
-        validPluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, this.param);
-        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+        validPluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, param);
+        if (param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
             validPluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
         } else {
             validPluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistId.getPath());
         }
     }
 
-    @Test
-    public void shouldThrowOnLoadIfNullArgument() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldThrowOnLoadIfNullArgument(String param) {
+        init(param);
         assertThrows(NullPointerException.class, () -> {
             //noinspection ConstantConditions
             plugin.load(null);
             }, "plugin.load(null)");
     }
 
-    @Test
-    public void shouldThrowOnLoadIfInvalidFieldName() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldThrowOnLoadIfInvalidFieldName(String param) {
+        init(param);
         assertThrows(IllegalArgumentException.class, () -> {
-            HashMap<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
             map.put(UserWhiteListPlugin.FILE_PARAM, tempWhitelistUser.getPath());
             map.put(UserWhiteListPlugin.FIELD_PARAM, "huh");
             plugin.load(map);
         }, "plugin.load(null)");
     }
 
-    @Test
-    public void shouldThrowOnLoadIfUnreadableFileSpecified() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldThrowOnLoadIfUnreadableFileSpecified(String param) {
+        init(param);
         HashMap<String, Object> unreadablePluginParameters = new HashMap<>();
         unreadablePluginParameters.put(UserWhiteListPlugin.FILE_PARAM,
                 RandomString.generateLower(24));
@@ -146,13 +143,15 @@ public class UserWhiteListPluginTest {
             caughtException = ex;
         }
 
-        assertNotNull("caught IllegalArgumentException", caughtException);
-        assertTrue("caughtException should mention 'Unable to read the file'",
-                caughtException.getMessage().contains("Unable to read the file"));
+        assertNotNull(caughtException, "caught IllegalArgumentException");
+        assertTrue(caughtException.getMessage().contains("Unable to read the file"),
+                "caughtException should mention 'Unable to read the file'");
     }
 
-    @Test
-    public void shouldThrowOnLoadIfNoFileSpecified() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldThrowOnLoadIfNoFileSpecified(String param) {
+        init(param);
         IllegalArgumentException caughtException = null;
         try {
             plugin.load(new HashMap<>());
@@ -160,23 +159,27 @@ public class UserWhiteListPluginTest {
             caughtException = ex;
         }
 
-        assertNotNull("caught IllegalArgumentException", caughtException);
-        assertTrue("caughtException should mention 'Missing parameter'",
-                caughtException.getMessage().contains("Missing parameter"));
+        assertNotNull(caughtException, "caught IllegalArgumentException");
+        assertTrue(caughtException.getMessage().contains("Missing parameter"),
+                "caughtException should mention 'Missing parameter'");
     }
 
-    @Test
-    public void shouldUnload() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldUnload(String param) {
+        init(param);
         plugin.unload();
     }
 
-    @Test
-    public void shouldAllowWhitelistedUserForAnyProject() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldAllowWhitelistedUserForAnyProject(String param) {
+        init(param);
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         User user;
-        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+        if (param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
             user = new User(OK_USER);
         } else {
             user = new User("blurb", OK_ID);
@@ -185,15 +188,17 @@ public class UserWhiteListPluginTest {
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow OK entity for random project 1", projectAllowed);
+        assertTrue(projectAllowed, "should allow OK entity for random project 1");
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow OK entity for random project 2", projectAllowed);
+        assertTrue(projectAllowed, "should allow OK entity for random project 2");
     }
 
-    @Test
-    public void shouldNotAllowRandomUserForAnyProject() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldNotAllowRandomUserForAnyProject(String param) {
+        init(param);
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
@@ -201,20 +206,22 @@ public class UserWhiteListPluginTest {
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow random user for random project 1", projectAllowed);
+        assertFalse(projectAllowed, "should not allow random user for random project 1");
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow random user for random project 2", projectAllowed);
+        assertFalse(projectAllowed, "should not allow random user for random project 2");
     }
 
-    @Test
-    public void shouldAllowWhitelistedUserForAnyGroup() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldAllowWhitelistedUserForAnyGroup(String param) {
+        init(param);
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         User user;
-        if (this.param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
+        if (param.equals(UserWhiteListPlugin.USERNAME_FIELD)) {
             user = new User(OK_USER);
         } else {
             user = new User("blurb", OK_ID);
@@ -223,15 +230,17 @@ public class UserWhiteListPluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean groupAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow OK entity for random group 1", groupAllowed);
+        assertTrue(groupAllowed, "should allow OK entity for random group 1");
 
         randomGroup = new Group(RandomString.generateUpper(10));
         groupAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow OK entity for random group 2", groupAllowed);
+        assertTrue(groupAllowed, "should allow OK entity for random group 2");
     }
 
-    @Test
-    public void shouldNotAllowRandomUserForAnyGroup() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldNotAllowRandomUserForAnyGroup(String param) {
+        init(param);
         plugin.load(validPluginParameters);
 
         DummyHttpServletRequest req = new DummyHttpServletRequest();
@@ -239,10 +248,10 @@ public class UserWhiteListPluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow random group 1", projectAllowed);
+        assertFalse(projectAllowed, "should not allow random group 1");
 
         randomGroup = new Group(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow random group 2", projectAllowed);
+        assertFalse(projectAllowed, "should not allow random group 2");
     }
 }

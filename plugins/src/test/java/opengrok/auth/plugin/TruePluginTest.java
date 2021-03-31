@@ -23,14 +23,14 @@
 package opengrok.auth.plugin;
 
 import opengrok.auth.plugin.entity.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.RandomString;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link TruePlugin}.
@@ -39,7 +39,7 @@ public class TruePluginTest {
 
     private TruePlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new TruePlugin();
     }
@@ -61,11 +61,11 @@ public class TruePluginTest {
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow rando for random project 1", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random project 1");
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow rando for random project 2", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random project 2");
     }
 
     @Test
@@ -75,10 +75,10 @@ public class TruePluginTest {
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow rando for random group 1", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random group 1");
 
         randomGroup = new Group(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow rando for random group 2", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random group 2");
     }
 }
