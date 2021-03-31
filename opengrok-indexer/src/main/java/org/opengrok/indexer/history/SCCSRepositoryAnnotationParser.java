@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -47,18 +47,14 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     private final Annotation annotation;
     
     private final Map<String, String> authors;
-    
-    private final File file;
-    
+
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
      */
-    private static final Pattern ANNOTATION_PATTERN
-            = Pattern.compile("^([\\d.]+)\\s+");
+    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^([\\d.]+)\\s+");
     
     SCCSRepositoryAnnotationParser(File file, Map<String, String> authors) {
         this.annotation = new Annotation(file.getName());
-        this.file = file;
         this.authors = authors;
     }
     

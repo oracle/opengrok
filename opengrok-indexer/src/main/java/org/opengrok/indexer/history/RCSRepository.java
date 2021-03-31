@@ -24,7 +24,6 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -115,10 +114,7 @@ public class RCSRepository extends Repository {
      * Wrap a {@code Throwable} in an {@code IOException} and return it.
      */
     static IOException wrapInIOException(String message, Throwable t) {
-        // IOException's constructor takes a Throwable, but only in JDK 6
-        IOException ioe = new IOException(message + ": " + t.getMessage());
-        ioe.initCause(t);
-        return ioe;
+        return new IOException(message + ": " + t.getMessage(), t);
     }
 
     @Override
@@ -130,14 +126,11 @@ public class RCSRepository extends Repository {
 
         // If there is at least one entry with the ',v' suffix,
         // consider this a RCS repository.
-        String[] list = rcsDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                // Technically we should check whether the entry is a file
-                // however this would incur additional I/O. The pattern
-                // should be enough.
-                return name.matches(".*,v");
-            }
+        String[] list = rcsDir.list((dir, name) -> {
+            // Technically we should check whether the entry is a file
+            // however this would incur additional I/O. The pattern
+            // should be enough.
+            return name.matches(".*,v");
         });
 
         return (list.length > 0);

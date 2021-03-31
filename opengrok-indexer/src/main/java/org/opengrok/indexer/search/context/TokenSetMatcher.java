@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search.context;
 
-import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -35,16 +34,12 @@ public class TokenSetMatcher extends LineMatcher {
         // Use a TreeSet with an explicit comparator to allow for case
         // insensitive lookups in the set if this is a case insensitive
         // matcher.
-        this.tokenSet = new TreeSet<String>(new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                return compareStrings(s1, s2);
-            }
-        });
+        this.tokenSet = new TreeSet<>(this::compareStrings);
 
         this.tokenSet.addAll(tokenSet);
     }
 
+    @Override
     public int match(String token) {
         return tokenSet.contains(token) ? MATCHED : NOT_MATCHED;
     }

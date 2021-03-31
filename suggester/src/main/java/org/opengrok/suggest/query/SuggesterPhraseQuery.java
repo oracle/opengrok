@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest.query;
@@ -53,9 +53,9 @@ public class SuggesterPhraseQuery extends Query {
         }
     }
 
-    private CustomPhraseQuery phraseQuery;
+    private final CustomPhraseQuery phraseQuery;
 
-    private SuggesterQuery suggesterQuery;
+    private final SuggesterQuery suggesterQuery;
 
     /**
      * @param field term field

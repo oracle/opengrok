@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -34,7 +34,7 @@ import org.junit.runners.model.Statement;
 // taken from https://technicaltesting.wordpress.com/2012/10/23/junit-rule-for-printing-test-case-start-and-end-information/
 public class TestCasePrinterRule implements TestRule {
 
-    private OutputStream out;
+    private final OutputStream out;
     private final TestCasePrinter printer = new TestCasePrinter();
 
     private String beforeContent = null;

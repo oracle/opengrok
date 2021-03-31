@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -84,9 +84,9 @@ class SuggesterProjectData implements Closeable {
 
     private static final double AVERAGE_LENGTH_DEFAULT = 22;
 
-    private Directory indexDir;
+    private final Directory indexDir;
 
-    private Path suggesterDir;
+    private final Path suggesterDir;
 
     private final Map<String, WFSTCompletionLookup> lookups = new HashMap<>();
 
@@ -94,7 +94,7 @@ class SuggesterProjectData implements Closeable {
 
     private final Map<String, Double> averageLengths = new HashMap<>();
 
-    private boolean allowMostPopular;
+    private final boolean allowMostPopular;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 

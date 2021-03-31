@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -179,12 +179,8 @@ public class Group implements Comparable<Group>, Nameable {
      */
     public Set<Project> getAllProjects() {
         Set<Project> projectsTmp = new TreeSet<>();
-        for (Project p : getRepositories()) {
-            projectsTmp.add(p);
-        }
-        for (Project p : getProjects()) {
-            projectsTmp.add(p);
-        }
+        projectsTmp.addAll(getRepositories());
+        projectsTmp.addAll(getProjects());
         for (Group grp : getDescendants()) {
             projectsTmp.addAll(grp.getAllProjects());
         }
@@ -310,7 +306,7 @@ public class Group implements Comparable<Group>, Nameable {
      */
     public static Set<Group> matching(Project project, Set<Group> groups) {
         Set<Group> copy = new TreeSet<>(groups);
-        copy.removeIf((g) -> !g.match(project));
+        copy.removeIf(g -> !g.match(project));
         return copy;
     }
 }

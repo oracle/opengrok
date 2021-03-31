@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -169,7 +168,7 @@ public final class PageConfig {
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
 
-    private ExecutorService executor;
+    private final ExecutorService executor;
 
     /**
      * Sets current request's attribute.
@@ -452,28 +451,23 @@ public final class PageConfig {
             } else {
                 List<String> listOfFiles;
                 if (env.getListDirsFirst()) {
-                    Arrays.sort(files, new Comparator<File>() {
-                            @Override
-                            public int compare(File f1, File f2) {
-                                if (f1.isDirectory() && f2.isDirectory()) {
-                                    return f1.getName().compareTo(f2.getName());
-                                } else if (f1.isFile() && f2.isFile()) {
-                                    return f1.getName().compareTo(f2.getName());
-                                } else {
-                                    if (f1.isFile() && f2.isDirectory()) {
-                                        return 1;
-                                    } else {
-                                        return -1;
-                                    }
-                                }
+                    Arrays.sort(files, (f1, f2) -> {
+                        if (f1.isDirectory() && f2.isDirectory()) {
+                            return f1.getName().compareTo(f2.getName());
+                        } else if (f1.isFile() && f2.isFile()) {
+                            return f1.getName().compareTo(f2.getName());
+                        } else {
+                            if (f1.isFile() && f2.isDirectory()) {
+                                return 1;
+                            } else {
+                                return -1;
                             }
-                        });
+                        }
+                    });
                 } else {
-                    Arrays.sort(files,
-                            (File f1, File f2) -> f1.getName().compareTo(f2.getName()));
+                    Arrays.sort(files, Comparator.comparing(File::getName));
                 }
-                listOfFiles = Arrays.asList(files).stream().
-                            map(f -> f.getName()).collect(Collectors.toList());
+                listOfFiles = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
 
                 if (env.hasProjects() && getPath().isEmpty()) {
                     /**
@@ -489,11 +483,8 @@ public final class PageConfig {
                      * projects filtering.
                      */
                     List<String> modifiableListOfFiles = new ArrayList<>(listOfFiles);
-                    modifiableListOfFiles.removeIf((t) -> {
-                        return !getProjectHelper().getAllProjects().stream().anyMatch((p) -> {
-                            return p.getName().equalsIgnoreCase(t);
-                        });
-                    });
+                    modifiableListOfFiles.removeIf(t -> getProjectHelper().getAllProjects().stream()
+                            .noneMatch(p -> p.getName().equalsIgnoreCase(t)));
                     return dirFileList = Collections.unmodifiableList(modifiableListOfFiles);
                 }
 
@@ -889,12 +880,8 @@ public final class PageConfig {
         if (cookies != null) {
             for (int i = cookies.length - 1; i >= 0; i--) {
                 if (cookies[i].getName().equals(cookieName)) {
-                    try {
-                        String value = URLDecoder.decode(cookies[i].getValue(), "utf-8");
-                        splitByComma(value, res);
-                    } catch (UnsupportedEncodingException ex) {
-                        LOGGER.log(Level.INFO, "decoding cookie failed", ex);
-                    }
+                    String value = URLDecoder.decode(cookies[i].getValue(), StandardCharsets.UTF_8);
+                    splitByComma(value, res);
                 }
             }
         }
@@ -979,7 +966,7 @@ public final class PageConfig {
             if (group != null) {
                 projectNames.addAll(getProjectHelper().getAllGrouped(group)
                                                       .stream()
-                                                      .filter(project -> project.isIndexed())
+                                                      .filter(Project::isIndexed)
                                                       .map(Project::getName)
                                                       .collect(Collectors.toSet()));
             }

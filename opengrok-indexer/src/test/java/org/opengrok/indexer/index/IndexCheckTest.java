@@ -54,7 +54,7 @@ import org.opengrok.indexer.util.TestRepository;
 public class IndexCheckTest {
 
     private TestRepository repository;
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private Path oldIndexDataDir;
 
     @BeforeClass

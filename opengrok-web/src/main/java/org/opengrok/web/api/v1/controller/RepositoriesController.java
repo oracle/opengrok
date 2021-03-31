@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -40,7 +40,7 @@ import java.io.IOException;
 @Path("/repositories")
 public class RepositoriesController {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private Object getRepositoryInfoData(String repositoryPath) {
         for (RepositoryInfo ri : env.getRepositories()) {

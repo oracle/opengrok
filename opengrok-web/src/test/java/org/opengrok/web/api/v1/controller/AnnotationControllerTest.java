@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -60,7 +60,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 
@@ -140,7 +140,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAnnotationAPIWithRevision() throws IOException {
+    public void testAnnotationAPIWithRevision() {
         final String path = "git/Makefile";
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)

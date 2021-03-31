@@ -18,18 +18,16 @@
  */
 
 /*
- * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -38,36 +36,17 @@ import org.junit.Test;
  */
 public class AnnotationTest {
 
-    public AnnotationTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getRevision method, of class Annotation.
      */
     @Test
     public void getRevision() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.getRevision(1), "");
+        assertEquals("", instance.getRevision(1));
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.getRevision(1), "1.0");
+        assertEquals("1.0", instance.getRevision(1));
         instance.addLine("1.1.0", "Author 2", false);
-        assertEquals(instance.getRevision(2), "1.1.0");
+        assertEquals("1.1.0", instance.getRevision(2));
     }
 
     /**
@@ -76,11 +55,11 @@ public class AnnotationTest {
     @Test
     public void getAuthor() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.getAuthor(1), "");
+        assertEquals("", instance.getAuthor(1));
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.getAuthor(1), "Author");
+        assertEquals("Author", instance.getAuthor(1));
         instance.addLine("1.1.0", "Author 2", false);
-        assertEquals(instance.getAuthor(2), "Author 2");
+        assertEquals("Author 2", instance.getAuthor(2));
     }
 
     /**
@@ -89,11 +68,11 @@ public class AnnotationTest {
     @Test
     public void isEnabled() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.isEnabled(1), false);
+        assertFalse(instance.isEnabled(1));
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.isEnabled(1), true);
+        assertTrue(instance.isEnabled(1));
         instance.addLine("1.1.0", "Author 2", false);
-        assertEquals(instance.isEnabled(2), false);
+        assertFalse(instance.isEnabled(2));
     }
 
     /**
@@ -102,11 +81,11 @@ public class AnnotationTest {
     @Test
     public void size() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.size(), 0);
+        assertEquals(0, instance.size());
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.size(), 1);
+        assertEquals(1, instance.size());
         instance.addLine("1.1", "Author 2", true);
-        assertEquals(instance.size(), 2);
+        assertEquals(2, instance.size());
     }
 
     /**
@@ -115,11 +94,11 @@ public class AnnotationTest {
     @Test
     public void getWidestRevision() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.getWidestRevision(), 0);
+        assertEquals(0, instance.getWidestRevision());
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.getWidestRevision(), 3);
+        assertEquals(3, instance.getWidestRevision());
         instance.addLine("1.1.0", "Author 2", true);
-        assertEquals(instance.getWidestRevision(), 5);
+        assertEquals(5, instance.getWidestRevision());
     }
 
     /**
@@ -128,11 +107,11 @@ public class AnnotationTest {
     @Test
     public void getWidestAuthor() {
         Annotation instance = new Annotation("testfile.tst");
-        assertEquals(instance.getWidestAuthor(), 0);
+        assertEquals(0, instance.getWidestAuthor());
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.getWidestAuthor(), 6);
+        assertEquals(6, instance.getWidestAuthor());
         instance.addLine("1.1.0", "Author 2", false);
-        assertEquals(instance.getWidestAuthor(), 8);
+        assertEquals(8, instance.getWidestAuthor());
     }
 
     /**
@@ -142,7 +121,7 @@ public class AnnotationTest {
     public void addLine() {
         Annotation instance = new Annotation("testfile.tst");
         instance.addLine("1.0", "Author", true);
-        assertEquals(instance.size(), 1);
+        assertEquals(1, instance.size());
         instance.addLine(null, null, true);
     }
 

@@ -140,7 +140,7 @@ public class RepositoryTest {
         }
     }
 
-    private class RepositoryImplementation extends Repository {
+    private static class RepositoryImplementation extends Repository {
         private static final long serialVersionUID = 1686223058901603237L;
 
         @Override

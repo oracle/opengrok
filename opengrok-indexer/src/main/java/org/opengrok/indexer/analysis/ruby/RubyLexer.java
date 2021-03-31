@@ -96,12 +96,8 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (dHead.qopname) {
-            case "m": // named here a la Perl for the Ruby /pat/ operator
-                return true;
-            default:
-                return false;
-        }
+        // "m" named here a la Perl for the Ruby /pat/ operator
+        return "m".equals(dHead.qopname);
     }
 
     /**

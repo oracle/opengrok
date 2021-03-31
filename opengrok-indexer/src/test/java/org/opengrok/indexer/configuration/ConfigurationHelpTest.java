@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.configuration;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class ConfigurationHelpTest {
     @Test
     public void shouldCreateReadableUsage() {
         String samples = ConfigurationHelp.getSamples();
-        assertTrue("samples are not empty", !samples.isEmpty());
+        assertFalse("samples are not empty", samples.isEmpty());
         assertTrue("samples contains \"<?\"", samples.contains("<?"));
         assertTrue("samples contains \"user-defined\"",
             samples.contains("user-defined"));

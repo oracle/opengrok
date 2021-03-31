@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.vb;
@@ -38,13 +38,8 @@ public final class Consts {
         populateKeywordSet(kwds);
         reservedKeywords = Collections.unmodifiableSet(kwds);
 
-        HashSet<String> hashwords = new HashSet<>();
-        hashwords.add("#const"); // VB lang-reference/keywords
-        hashwords.add("#else"); // VB lang-reference/keywords
-        hashwords.add("#elseif"); // VB lang-reference/keywords
-        hashwords.add("#end"); // VB lang-reference/keywords
-        hashwords.add("#if"); // VB lang-reference/keywords
-        directives = Collections.unmodifiableSet(hashwords);
+        // VB lang-reference/keywords
+        directives = Set.of("#const", "#else", "#elseif", "#end", "#if");
     }
 
     private Consts() {

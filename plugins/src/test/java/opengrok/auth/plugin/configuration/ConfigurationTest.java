@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.configuration;
 
@@ -28,8 +28,9 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+
 import junit.framework.AssertionFailedError;
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHook;
@@ -50,12 +51,7 @@ public class ConfigurationTest {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        ExceptionListener listener = exceptions::addLast;
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
@@ -66,7 +62,7 @@ public class ConfigurationTest {
         configuration1.setSearchTimeout(1000);
         configuration1.setConnectTimeout(42);
         configuration1.setCountLimit(10);
-        configuration1.setServers(new ArrayList<>(Arrays.asList(new LdapServer("http://server.com"))));
+        configuration1.setServers(new ArrayList<>(List.of(new LdapServer("http://server.com"))));
         WebHooks webHooks = new WebHooks();
         WebHook hook = new WebHook();
         hook.setContent("foo");

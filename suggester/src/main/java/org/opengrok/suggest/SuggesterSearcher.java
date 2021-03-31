@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest;
@@ -213,10 +213,7 @@ class SuggesterSearcher extends IndexSearcher {
         if (query instanceof CustomPhraseQuery) {
             return false;
         }
-        if (suggesterQuery instanceof SuggesterRangeQuery) {
-            return false;
-        }
-        return true;
+        return !(suggesterQuery instanceof SuggesterRangeQuery);
     }
 
     private ComplexQueryData getComplexQueryData(final Query query, final LeafReaderContext leafReaderContext) {

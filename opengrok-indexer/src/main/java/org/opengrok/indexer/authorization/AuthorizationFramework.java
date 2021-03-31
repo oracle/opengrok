@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -168,11 +168,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
                         }
 
                         // shouldn't skip if the project is contained in the setup
-                        if (authEntity.forProjects().contains(project.getName())) {
-                            return false;
-                        }
-
-                        return true;
+                        return !authEntity.forProjects().contains(project.getName());
                     }
                 });
     }

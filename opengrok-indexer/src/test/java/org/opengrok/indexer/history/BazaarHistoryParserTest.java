@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -27,9 +27,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.PlatformUtils;
@@ -44,17 +42,6 @@ import static org.junit.Assert.assertTrue;
 public class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
-
-    public BazaarHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() {
@@ -179,9 +166,7 @@ public class BazaarHistoryParserTest {
         }
 
         StringBuilder output = new StringBuilder();
-        for (int i = 0; i < 60; i++) {
-            output.append('-');
-        }
+        output.append("-".repeat(60));
         output.append('\n');
         output.append("revno: ").append(revId1).append("\n");
         output.append("committer: ").append(author1).append("\n");

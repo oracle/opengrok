@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -449,18 +449,14 @@ public class RuntimeEnvironmentTest {
         assertTrue(instance.isIndexVersionedFilesOnly());
     }
 
-    @Test
+    @Test(expected = Throwable.class)
     public void testXMLencdec() throws IOException {
         Configuration c = new Configuration();
         String m = c.getXMLRepresentationAsString();
         Configuration o = Configuration.makeXMLStringAsConfiguration(m);
         assertNotNull(o);
         m = m.replace('a', 'm');
-        try {
-            o = Configuration.makeXMLStringAsConfiguration(m);
-            fail("makeXmlStringsAsConfiguration should throw exception");
-        } catch (Throwable t) {
-        }
+        Configuration.makeXMLStringAsConfiguration(m);
     }
 
     @Test

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -279,16 +279,11 @@ public class AuthorizationPlugin extends AuthorizationStack {
      */
     @Override
     public String hierarchyToString(String prefix, String colorElement) {
-        StringBuilder builder = new StringBuilder(prefix);
-
-        builder.append(colorToString(colorElement));
-        builder.append(infoToString(prefix));
-        builder.append(" (class ").append(isWorking() ? "loaded" : "missing/failed").append(")");
-        builder.append("\n");
-
-        builder.append(setupToString(prefix));
-        builder.append(targetsToString(prefix));
-
-        return builder.toString();
+        return prefix + colorToString(colorElement) +
+                infoToString(prefix) +
+                " (class " + (isWorking() ? "loaded" : "missing/failed") + ")" +
+                "\n" +
+                setupToString(prefix) +
+                targetsToString(prefix);
     }
 }

@@ -56,7 +56,7 @@ import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class HistoryControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -115,7 +116,7 @@ public class IndexerTest {
         List<String> result = null;
         try (Stream<Path> walk = Files.walk(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR))) {
             result = walk.filter(Files::isRegularFile).filter(f -> f.toString().endsWith(".gz")).
-                    map(x -> x.toString()).collect(Collectors.toList());
+                    map(Path::toString).collect(Collectors.toList());
         }
         assertNotNull(result);
         assertTrue(result.size() > 50);
@@ -162,7 +163,7 @@ public class IndexerTest {
 
         // p2 should not be in the project list anymore
         for (Project p : newProjects) {
-            assertFalse("p2 not removed", p.getPath().equals(p2.getPath()));
+            assertNotEquals("p2 not removed", p.getPath(), p2.getPath());
         }
 
         // p1 should be there
@@ -509,8 +510,8 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"c"})),
-                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Collections.singletonList("c")),
+                env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 
     /**
@@ -534,8 +535,8 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"lisp", "pascal", "perl", "data"})),
-                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Arrays.asList("lisp", "pascal", "perl", "data")),
+                env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 
     /**
@@ -559,6 +560,6 @@ public class IndexerTest {
         env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
-        assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(projects, env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 }

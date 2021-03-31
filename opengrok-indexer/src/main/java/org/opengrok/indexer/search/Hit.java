@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search;
 
@@ -58,7 +58,7 @@ public class Hit implements Comparable<Hit> {
     /**
      * Holds value of property alt used to highlight alternating files.
      */
-    private boolean alt;
+    private final boolean alt;
 
     /**
      * path relative to source root.

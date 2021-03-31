@@ -45,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -133,7 +132,7 @@ public final class RuntimeEnvironment {
         return subFiles;
     }
 
-    private List<String> subFiles = new ArrayList<>();
+    private final List<String> subFiles = new ArrayList<>();
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
@@ -145,8 +144,8 @@ public final class RuntimeEnvironment {
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
-        lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
-        lzRevisionExecutor = LazilyInstantiate.using(() -> newRevisionExecutor());
+        lzSearchExecutor = LazilyInstantiate.using(this::newSearchExecutor);
+        lzRevisionExecutor = LazilyInstantiate.using(this::newRevisionExecutor);
     }
 
     // Instance of authorization framework and its lock.
@@ -171,14 +170,11 @@ public final class RuntimeEnvironment {
     private ExecutorService newSearchExecutor() {
         return Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
-                new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
+                runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("search-" + thread.getId());
                     return thread;
-                }
-            });
+                });
     }
 
     public ExecutorService getRevisionExecutor() {
@@ -1759,12 +1755,9 @@ public final class RuntimeEnvironment {
             Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
             mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
             searcherManagerMap.put(projectName, mgr);
-            searcher = (SuperIndexSearcher) mgr.acquire();
-            searcher.setSearcherManager(mgr);
-        } else {
-            searcher = (SuperIndexSearcher) mgr.acquire();
-            searcher.setSearcherManager(mgr);
         }
+        searcher = (SuperIndexSearcher) mgr.acquire();
+        searcher.setSearcherManager(mgr);
 
         return searcher;
     }

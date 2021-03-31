@@ -139,7 +139,7 @@ public final class BoundedBlockingObjectPool<T> extends AbstractObjectPool<T>
         }
     }
 
-    private class ObjectReturner<E> implements Callable<Void> {
+    private static class ObjectReturner<E> implements Callable<Void> {
         private final LinkedBlockingDeque<E> queue;
         private final E e;
         private final boolean puttingLast;

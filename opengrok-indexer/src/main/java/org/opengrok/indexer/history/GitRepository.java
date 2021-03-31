@@ -99,16 +99,10 @@ public class GitRepository extends Repository {
     public static final String CMD_FALLBACK = "git";
 
     /**
-     * Git blame command.
-     */
-    private static final String BLAME = "blame";
-
-    /**
      * Arguments to shorten git IDs.
      */
     private static final int CSET_LEN = 8;
     private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
-    private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
 
     /**
      * All git commands that emit date that needs to be parsed by
@@ -626,8 +620,7 @@ public class GitRepository extends Repository {
                         String tagName = ref.getName().replace("refs/tags/", "");
                         commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
                     } catch (IOException e) {
-                        LOGGER.log(Level.FINEST,
-                                String.format("cannot get tags for \"" + directory.getAbsolutePath() + "\""), e);
+                        LOGGER.log(Level.FINEST, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
                     }
                 }
 

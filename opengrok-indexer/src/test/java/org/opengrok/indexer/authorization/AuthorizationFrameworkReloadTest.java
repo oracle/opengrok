@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -90,7 +90,7 @@ public class AuthorizationFrameworkReloadTest {
      * This might uncover any snags with locking within AuthorizationFramework.
      */
     @Test
-    public void testReloadCycle() throws URISyntaxException {
+    public void testReloadCycle() {
         String projectName = "project" + Math.random();
 
         // Create authorization stack for single project.
@@ -114,15 +114,12 @@ public class AuthorizationFrameworkReloadTest {
         // Create a thread that does reload() every now and then.
         runThread = true;
         final int maxReloadSleep = 10;
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (runThread) {
-                    framework.reload();
-                    try {
-                        Thread.sleep((long) (Math.random() % maxReloadSleep) + 1);
-                    } catch (InterruptedException ex) {
-                    }
+        Thread t = new Thread(() -> {
+            while (runThread) {
+                framework.reload();
+                try {
+                    Thread.sleep((long) (Math.random() % maxReloadSleep) + 1);
+                } catch (InterruptedException ex) {
                 }
             }
         });

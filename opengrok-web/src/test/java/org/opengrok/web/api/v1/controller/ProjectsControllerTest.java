@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -78,7 +78,7 @@ import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
 public class ProjectsControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 
@@ -196,7 +196,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
         // Check that HistoryGuru now includes the project in its list.
         Set<String> directoryNames = HistoryGuru.getInstance().
-                getRepositories().stream().map(ri -> ri.getDirectoryName()).
+                getRepositories().stream().map(RepositoryInfo::getDirectoryName).
                 collect(Collectors.toSet());
         assertTrue("though it should contain the top root,",
                 directoryNames.contains(repoPath) || directoryNames.contains(
@@ -218,10 +218,10 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         assertTrue(env.getProjects().containsKey("svn"));
 
         assertFalse(HistoryGuru.getInstance().getRepositories().stream().
-                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                map(RepositoryInfo::getDirectoryName).collect(Collectors.toSet()).
                 contains("git"));
         assertFalse(HistoryGuru.getInstance().getRepositories().stream().
-                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                map(RepositoryInfo::getDirectoryName).collect(Collectors.toSet()).
                 contains("svn"));
     }
 
@@ -337,7 +337,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         // Check that HistoryGuru no longer maintains the removed projects.
         for (String p : projectsToDelete) {
             assertFalse(HistoryGuru.getInstance().getRepositories().stream().
-                    map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                    map(RepositoryInfo::getDirectoryName).collect(Collectors.toSet()).
                     contains(repository.getSourceRoot() + File.separator + p));
         }
 

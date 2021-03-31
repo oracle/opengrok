@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -180,7 +181,7 @@ public class BitKeeperRepository extends Repository {
     String determineParent(CommandTimeoutType cmdType) throws IOException {
         final File directory = new File(getDirectoryName());
 
-        final ArrayList<String> argv = new ArrayList<String>();
+        final ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("parent");
@@ -231,7 +232,7 @@ public class BitKeeperRepository extends Repository {
         final File directory = absolute.getParentFile();
         final String basename = absolute.getName();
 
-        final ArrayList<String> argv = new ArrayList<String>();
+        final ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("files");
@@ -270,7 +271,7 @@ public class BitKeeperRepository extends Repository {
         final File directory = absolute.getParentFile();
         final String basename = absolute.getName();
 
-        final ArrayList<String> argv = new ArrayList<String>();
+        final ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("log");
@@ -303,7 +304,7 @@ public class BitKeeperRepository extends Repository {
     boolean getHistoryGet(OutputStream out, String parent, String basename, String revision) {
 
         final File directory = new File(parent).getAbsoluteFile();
-        final ArrayList<String> argv = new ArrayList<String>();
+        final List<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("get");

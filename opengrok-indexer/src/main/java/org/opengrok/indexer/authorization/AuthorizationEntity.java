@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -429,8 +429,8 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
              */
             Group g;
             if ((g = Group.getByName(x)) != null) {
-                forProjects().addAll(g.getAllProjects().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
-                groups.addAll(g.getRelatedGroups().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
+                forProjects().addAll(g.getAllProjects().stream().map(Project::getName).collect(Collectors.toSet()));
+                groups.addAll(g.getRelatedGroups().stream().map(Group::getName).collect(Collectors.toSet()));
                 groups.add(x);
             } else {
                 LOGGER.log(Level.WARNING, "Configured group \"{0}\" in forGroups section"

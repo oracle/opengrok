@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -1144,7 +1143,7 @@ public final class Configuration {
     }
 
     public void setIndexingParallelism(int value) {
-        this.indexingParallelism = value > 0 ? value : 0;
+        this.indexingParallelism = Math.max(value, 0);
     }
 
     public int getHistoryParallelism() {
@@ -1152,7 +1151,7 @@ public final class Configuration {
     }
 
     public void setHistoryParallelism(int value) {
-        this.historyParallelism = value > 0 ? value : 0;
+        this.historyParallelism = Math.max(value, 0);
     }
 
     public int getHistoryRenamedParallelism() {
@@ -1160,7 +1159,7 @@ public final class Configuration {
     }
 
     public void setHistoryRenamedParallelism(int value) {
-        this.historyRenamedParallelism = value > 0 ? value : 0;
+        this.historyRenamedParallelism = Math.max(value, 0);
     }
 
     public boolean isTagsEnabled() {
@@ -1417,12 +1416,7 @@ public final class Configuration {
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
         final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        ExceptionListener listener = exceptions::addLast;
 
         try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener)) {
             ret = d.readObject();
@@ -1447,12 +1441,7 @@ public final class Configuration {
         // This ensures that when the configuration is reloaded then the set 
         // contains only root groups. Subgroups are discovered again
         // as follows below
-        conf.groups.removeIf(new Predicate<Group>() {
-            @Override
-            public boolean test(Group g) {
-                return g.getParent() != null;
-            }
-        });
+        conf.groups.removeIf(g -> g.getParent() != null);
 
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)

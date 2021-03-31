@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -100,11 +100,7 @@ public final class Results {
             }
 
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
-            ArrayList<Integer> dirDocs = dirHash.get(parent);
-            if (dirDocs == null) {
-                dirDocs = new ArrayList<>();
-                dirHash.put(parent, dirDocs);
-            }
+            ArrayList<Integer> dirDocs = dirHash.computeIfAbsent(parent, k -> new ArrayList<>());
             dirDocs.add(docId);
         }
         return dirHash;

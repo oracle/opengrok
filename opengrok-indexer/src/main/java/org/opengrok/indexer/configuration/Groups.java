@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -227,13 +227,9 @@ public final class Groups {
         PrintStream out = System.out;
         if (outFile != null) {
             try {
-                out = new PrintStream(outFile, "utf-8");
-            } catch (FileNotFoundException ex) {
-                System.err.println("An error occurred - file does not exist");
-                ex.printStackTrace(System.err);
-                System.exit(3);
-            } catch (UnsupportedEncodingException ex) {
-                System.err.println("An error occurred - file contains unsupported charset");
+                out = new PrintStream(outFile, StandardCharsets.UTF_8);
+            } catch (IOException ex) {
+                System.err.println("An error occurred - " + ex.getMessage());
                 ex.printStackTrace(System.err);
                 System.exit(3);
             }
@@ -248,15 +244,12 @@ public final class Groups {
      * @param groups groups
      */
     private static void listGroups(PrintStream out, Set<Group> groups) {
-        treeTraverseGroups(groups, new Walker() {
-            @Override
-            public boolean call(Group g) {
-                for (int i = 0; i < g.getFlag() * 2; i++) {
-                    out.print(" ");
-                }
-                out.println(g.getName() + " ~ '" + g.getPattern() + "'");
-                return false;
+        treeTraverseGroups(groups, g -> {
+            for (int i = 0; i < g.getFlag() * 2; i++) {
+                out.print(" ");
             }
+            out.println(g.getName() + " ~ '" + g.getPattern() + "'");
+            return false;
         });
     }
 
@@ -271,14 +264,11 @@ public final class Groups {
         Project p = new Project(match);
 
         List<Group> matched = new ArrayList<>();
-        linearTraverseGroups(groups, new Walker() {
-            @Override
-            public boolean call(Group g) {
-                if (g.match(p)) {
-                    matched.add(g);
-                }
-                return false;
+        linearTraverseGroups(groups, g -> {
+            if (g.match(p)) {
+                matched.add(g);
             }
+            return false;
         });
 
         out.println(matched.size() + " group(s) match(es) the \"" + match + "\"");
@@ -364,7 +354,7 @@ public final class Groups {
                 return true;
             }
 
-            g.getSubgroups().forEach((x) -> x.setFlag(g.getFlag() + 1));
+            g.getSubgroups().forEach(x -> x.setFlag(g.getFlag() + 1));
             // add all the subgroups respecting the sorted order
             stack.addAll(0, g.getSubgroups());
         }
@@ -389,33 +379,27 @@ public final class Groups {
     }
 
     private static boolean insertToParent(Set<Group> groups, String parent, Group g) {
-        return linearTraverseGroups(groups, new Walker() {
-            @Override
-            public boolean call(Group x) {
-                if (x.getName().equals(parent)) {
-                    x.addGroup(g);
-                    Group tmp = x.getParent();
-                    while (tmp != null) {
-                        tmp.addDescendant(g);
-                        tmp = tmp.getParent();
-                    }
-                    return true;
+        return linearTraverseGroups(groups, x -> {
+            if (x.getName().equals(parent)) {
+                x.addGroup(g);
+                Group tmp = x.getParent();
+                while (tmp != null) {
+                    tmp.addDescendant(g);
+                    tmp = tmp.getParent();
                 }
-                return false;
+                return true;
             }
+            return false;
         });
     }
 
     private static boolean updateGroup(Set<Group> groups, String groupname, String grouppattern) {
-        return linearTraverseGroups(groups, new Walker() {
-            @Override
-            public boolean call(Group g) {
-                if (g.getName().equals(groupname)) {
-                    g.setPattern(grouppattern);
-                    return true;
-                }
-                return false;
+        return linearTraverseGroups(groups, g -> {
+            if (g.getName().equals(groupname)) {
+                g.setPattern(grouppattern);
+                return true;
             }
+            return false;
         });
     }
 

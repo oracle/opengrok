@@ -213,7 +213,7 @@ document.domReady.push(function() {domReadyHistory();});
         <tr>
             <th>Revision <%
             if (hist.hasTags()) {
-                %><a href="#" onclick="javascript: toggle_revtags(); return false;">
+                %><a href="#" onclick="toggle_revtags(); return false;">
                     <span class="revtags-hidden">
                     (&lt;&lt;&lt; Hide revision tags)</span>
                     <span class="revtags">
@@ -238,7 +238,7 @@ document.domReady.push(function() {domReadyHistory();});
             <th>Author</th>
             <th>Comments <%
             if (hist.hasFileList()) {
-                %><a href="#" onclick="javascript: toggle_filelist(); return false;">
+                %><a href="#" onclick="toggle_filelist(); return false;">
                     <div class="filelist-hidden">
                     (&lt;&lt;&lt; Hide modified files)</div>
                     <div class="filelist">

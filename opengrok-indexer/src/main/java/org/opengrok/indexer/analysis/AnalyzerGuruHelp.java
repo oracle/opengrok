@@ -26,6 +26,7 @@ package org.opengrok.indexer.analysis;
 import org.opengrok.indexer.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -182,40 +183,31 @@ public class AnalyzerGuruHelp {
             b.setLength(0);
         }
 
-        return res.stream().toArray(String[]::new);
+        return res.toArray(String[]::new);
     }
 
     private static List<MappedFactory> byKey(Map<String, AnalyzerFactory> mapped) {
-
-        List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
-            return new MappedFactory(t.getKey(), t.getValue());
-        }).collect(Collectors.toList());
-
-        res.sort((mf1, mf2) -> {
-            return mf1.key.toLowerCase(Locale.ROOT).compareTo(
-                mf2.key.toLowerCase(Locale.ROOT));
-        });
-        return res;
+        return mapped.entrySet().stream()
+                .map(t -> new MappedFactory(t.getKey(), t.getValue()))
+                .sorted(Comparator.comparing(mf -> mf.key.toLowerCase(Locale.ROOT)))
+                .collect(Collectors.toList());
     }
 
     private static List<MappedFactory> byFactory(Map<String, AnalyzerFactory> mapped) {
-
-        List<MappedFactory> res = mapped.entrySet().stream().map((t) -> {
-            return new MappedFactory(t.getKey(), t.getValue());
-        }).collect(Collectors.toList());
-
-        res.sort((mf1, mf2) -> {
-            String r1 = reportable(mf1.fac);
-            String r2 = reportable(mf2.fac);
-            int cmp = r1.toLowerCase(Locale.ROOT).compareTo(
-                r2.toLowerCase(Locale.ROOT));
-            if (cmp != 0) {
-                return cmp;
-            }
-            return mf1.key.toLowerCase(Locale.ROOT).compareTo(
-                mf2.key.toLowerCase(Locale.ROOT));
-        });
-        return res;
+        return mapped.entrySet().stream()
+                .map(t -> new MappedFactory(t.getKey(), t.getValue()))
+                .sorted((mf1, mf2) -> {
+                    String r1 = reportable(mf1.fac);
+                    String r2 = reportable(mf2.fac);
+                    int cmp = r1.toLowerCase(Locale.ROOT).compareTo(
+                            r2.toLowerCase(Locale.ROOT));
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+                    return mf1.key.toLowerCase(Locale.ROOT).compareTo(
+                            mf2.key.toLowerCase(Locale.ROOT));
+                })
+                .collect(Collectors.toList());
     }
 
     private static class MappedFactory {

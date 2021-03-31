@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.api.constraints;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 public class PositiveDurationValidatorTest {
 
-    private PositiveDurationValidator validator = new PositiveDurationValidator();
+    private final PositiveDurationValidator validator = new PositiveDurationValidator();
 
     @Test
     public void testNull() {

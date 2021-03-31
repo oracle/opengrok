@@ -42,6 +42,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -120,8 +121,7 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
-    private static final Comparator<File> FILENAME_COMPARATOR =
-        (File p1, File p2) -> p1.getName().compareTo(p2.getName());
+    private static final Comparator<File> FILENAME_COMPARATOR = Comparator.comparing(File::getName);
 
     private static final Set<String> CHECK_FIELDS;
 
@@ -137,7 +137,7 @@ public class IndexDatabase {
     private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
             Comparator.comparingInt(String::length).thenComparing(o -> o));
 
-    private Project project;
+    private final Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
@@ -228,18 +228,15 @@ public class IndexDatabase {
                 db.addIndexChangedListener(listener);
             }
 
-            parallelizer.getFixedExecutor().submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        db.update();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE,
-                                String.format("Problem updating index database in directory %s: ",
-                                        db.indexDirectory.getDirectory()), e);
-                    } finally {
-                        latch.countDown();
-                    }
+            parallelizer.getFixedExecutor().submit(() -> {
+                try {
+                    db.update();
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE,
+                            String.format("Problem updating index database in directory %s: ",
+                                    db.indexDirectory.getDirectory()), e);
+                } finally {
+                    latch.countDown();
                 }
             });
         }
@@ -291,14 +288,11 @@ public class IndexDatabase {
 
             for (final IndexDatabase db : dbs) {
                 db.addIndexChangedListener(listener);
-                parallelizer.getFixedExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            db.update();
-                        } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
-                        }
+                parallelizer.getFixedExecutor().submit(() -> {
+                    try {
+                        db.update();
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                     }
                 });
             }
@@ -619,17 +613,14 @@ public class IndexDatabase {
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
-                parallelizer.getFixedExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            db.update();
-                        } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE,
-                                "Problem updating lucene index database: ", e);
-                        } finally {
-                            latch.countDown();
-                        }
+                parallelizer.getFixedExecutor().submit(() -> {
+                    try {
+                        db.update();
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.SEVERE,
+                            "Problem updating lucene index database: ", e);
+                    } finally {
+                        latch.countDown();
                     }
                 });
             }
@@ -1688,14 +1679,12 @@ public class IndexDatabase {
         // Sanitize Windows path delimiters in order not to conflict with Lucene escape character.
         path = path.replace("\\", "/");
 
-        IndexReader ireader = getIndexReader(path);
+        try (IndexReader ireader = getIndexReader(path)) {
+            if (ireader == null) {
+                // No index, no document..
+                return null;
+            }
 
-        if (ireader == null) {
-            // No index, no document..
-            return null;
-        }
-
-        try {
             Document doc;
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
@@ -1717,31 +1706,24 @@ public class IndexDatabase {
             }
 
             return doc;
-        } finally {
-            ireader.close();
         }
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IndexDatabase other = (IndexDatabase) obj;
-        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
-            return false;
-        }
-        return true;
+        IndexDatabase that = (IndexDatabase) o;
+        return Objects.equals(project, that.project);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
-        return hash;
+        return Objects.hash(project);
     }
 
     private static class CountingWriter extends Writer {

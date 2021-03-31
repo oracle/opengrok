@@ -18,19 +18,17 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 --%>
 <%@ taglib tagdir="/WEB-INF/tags" prefix="opengrok" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@page import="java.util.Comparator"%>
 <%@page import="java.util.Iterator"%>
 <%@page import="java.util.LinkedList"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="org.opengrok.indexer.configuration.Group"%>
 <%@page import="org.opengrok.indexer.configuration.Project"%>
-<%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
 <%@page import="org.opengrok.web.PageConfig"%>
 <%@page import="org.opengrok.web.ProjectHelper"%>
 <%@ page import="static org.opengrok.indexer.web.messages.MessagesUtils.printMessages" %>
@@ -43,12 +41,6 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
     String messages;
 
     printMessages(out, cfg.getMessages());
-
-    Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
-        public int compare(RepositoryInfo r1, RepositoryInfo r2) {
-            return r1.getDirectoryName().compareTo(r2.getDirectoryName());
-        }
-    };
     
     ProjectHelper pHelper = cfg.getProjectHelper();
     if (pHelper.getAllProjects().size() > 0) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -81,9 +81,9 @@ public class LdapFacadeTest {
 
         LdapFacade facade = new LdapFacade(config);
         assertEquals(Collections.singleton(connectTimeoutValue),
-                facade.getServers().stream().map(s -> s.getConnectTimeout()).collect(Collectors.toSet()));
+                facade.getServers().stream().map(LdapServer::getConnectTimeout).collect(Collectors.toSet()));
         assertEquals(Collections.singleton(readTimeoutValue),
-                facade.getServers().stream().map(s -> s.getReadTimeout()).collect(Collectors.toSet()));
+                facade.getServers().stream().map(LdapServer::getReadTimeout).collect(Collectors.toSet()));
     }
 
     @Test

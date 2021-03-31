@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
@@ -133,8 +133,7 @@ public class PluginClassLoaderTest {
             Assert.fail("Should produce SecurityException");
         } catch (ClassNotFoundException ex) {
             Assert.fail("Should not produce ClassNotFoundException");
-        } catch (SecurityException ex) {
-        } catch (Throwable e) {
+        } catch (Throwable ex) {
         }
     }
 

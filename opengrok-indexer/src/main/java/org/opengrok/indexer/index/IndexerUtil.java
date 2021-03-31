@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -77,7 +77,7 @@ public class IndexerUtil {
                                                         .request()
                                                         .headers(getWebAppHeaders());
         final String enabled = request.get(String.class);
-        if (enabled == null || !Boolean.valueOf(enabled)) {
+        if (!Boolean.parseBoolean(enabled)) {
             final Response r = request.put(Entity.text(Boolean.TRUE.toString()));
             if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                 throw new WebApplicationException(String.format("Unable to enable projects: %s", r.getStatusInfo().getReasonPhrase()), r.getStatus());

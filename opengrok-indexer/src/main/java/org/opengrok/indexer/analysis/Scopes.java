@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis;
 
@@ -73,7 +73,7 @@ public class Scopes implements Serializable {
 
         @Override
         public int compareTo(Scope o) {
-            return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
+            return Integer.compare(lineFrom, o.lineFrom);
         }
 
         public int getLineFrom() {
@@ -121,7 +121,7 @@ public class Scopes implements Serializable {
     public static final Scope GLOBAL_SCOPE = new Scope(0, 0, "global", null, null);
 
     // tree of scopes sorted by starting line
-    private TreeSet<Scope> scopes = new TreeSet<>();
+    private final TreeSet<Scope> scopes = new TreeSet<>();
 
     public Scopes() {
         // nothing to do here

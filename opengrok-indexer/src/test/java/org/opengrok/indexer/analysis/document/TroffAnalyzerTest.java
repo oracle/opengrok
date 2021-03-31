@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2009, 2011, Jens Elkner.
  */
 package org.opengrok.indexer.analysis.document;
@@ -34,11 +34,8 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import org.apache.lucene.document.Document;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.util.TestRepository;
@@ -95,20 +92,6 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * @throws java.lang.Exception exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    /**
-     * @throws java.lang.Exception exception
-     */
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    /**
      * Test method for {@link org.opengrok.indexer.analysis.document
      *  .TroffAnalyzer#analyze(org.apache.lucene.document.Document,
      *      java.io.InputStream)}.
@@ -127,24 +110,4 @@ public class TroffAnalyzerTest {
         }, xrefOut);
     }
 
-    /**
-     * Test method for {@link org.opengrok.indexer.analysis.document
-     * .TroffAnalyzer#tokenStream(java.lang.String, java.io.Reader)}.
-     */
-    @Ignore
-    public void testTokenStreamStringReader() {
-        fail("Not yet implemented");
-    }
-
-    /**
-     * Test method for {@link org.opengrok.indexer.analysis.document
-     * .TroffAnalyzer#writeXref(java.io.Reader, java.io.Writer,
-     *      org.opengrok.indexer.analysis.Definitions,
-     *      org.opengrok.indexer.history.Annotation,
-     *      org.opengrok.indexer.configuration.Project)}.
-     */
-    @Ignore
-    public void xtestWriteXrefReaderWriterDefinitionsAnnotationProject() {
-        fail("Not yet implemented");
-    }
 }

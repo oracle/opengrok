@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -67,7 +67,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         String s = in.readLine();
         while (s != null) {
             if (state == ParseState.NAMES && s.startsWith("symbolic names:")) {
-                tags = new HashMap<String, String>();
+                tags = new HashMap<>();
                 state = ParseState.TAG;
                 s = in.readLine();
             }

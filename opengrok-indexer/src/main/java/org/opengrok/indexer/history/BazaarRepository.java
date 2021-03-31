@@ -77,7 +77,7 @@ public class BazaarRepository extends Repository {
             throws IOException {
         String filename = getRepoRelativePath(file);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("log");

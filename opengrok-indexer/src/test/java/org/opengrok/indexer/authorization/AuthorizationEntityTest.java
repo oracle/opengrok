@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,19 +55,11 @@ public class AuthorizationEntityTest {
 
     private final Function<Void, AuthorizationEntity> authEntityFactory;
 
-    private static final Function<Void, AuthorizationEntity> PLUGIN_FACTORY = new Function<Void, AuthorizationEntity>() {
-        @Override
-        public AuthorizationEntity apply(Void t) {
-            return new AuthorizationPlugin(AuthControlFlag.REQUIRED, "");
-        }
-    };
+    private static final Function<Void, AuthorizationEntity> PLUGIN_FACTORY =
+            t -> new AuthorizationPlugin(AuthControlFlag.REQUIRED, "");
 
-    private static final Function<Void, AuthorizationEntity> STACK_FACTORY = new Function<Void, AuthorizationEntity>() {
-        @Override
-        public AuthorizationEntity apply(Void t) {
-            return new AuthorizationStack(AuthControlFlag.REQUIRED, "");
-        }
-    };
+    private static final Function<Void, AuthorizationEntity> STACK_FACTORY =
+            t -> new AuthorizationStack(AuthControlFlag.REQUIRED, "");
 
     @Parameterized.Parameters
     public static Collection<Function<Void, AuthorizationEntity>> parameters() {
@@ -154,9 +147,9 @@ public class AuthorizationEntityTest {
         authEntity.setForGroups("group 1");
         authEntity.load(new TreeMap<>());
 
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})), authEntity.forGroups());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"project 1", "project 2", "project 3",
-            "project 4", "project 5", "project 6", "project 7"})), authEntity.forProjects());
+        assertEquals(new TreeSet<>(Arrays.asList("group 1", "group 2")), authEntity.forGroups());
+        assertEquals(new TreeSet<>(Arrays.asList("project 1", "project 2", "project 3",
+                "project 4", "project 5", "project 6", "project 7")), authEntity.forProjects());
 
         // add group2, its parent g1 and g2 projects
         authEntity = authEntityFactory.apply(null);
@@ -164,8 +157,8 @@ public class AuthorizationEntityTest {
         authEntity.setForGroups("group 2");
         authEntity.load(new TreeMap<>());
 
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})), authEntity.forGroups());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"project 4", "project 5", "project 6", "project 7"})), authEntity.forProjects());
+        assertEquals(new TreeSet<>(Arrays.asList("group 1", "group 2")), authEntity.forGroups());
+        assertEquals(new TreeSet<>(Arrays.asList("project 4", "project 5", "project 6", "project 7")), authEntity.forProjects());
 
         // add only g3 and its projects
         authEntity = authEntityFactory.apply(null);
@@ -173,8 +166,8 @@ public class AuthorizationEntityTest {
         authEntity.setForGroups("group 3");
         authEntity.load(new TreeMap<>());
 
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"group 3"})), authEntity.forGroups());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"project 8", "project 9"})), authEntity.forProjects());
+        assertEquals(new TreeSet<>(Collections.singletonList("group 3")), authEntity.forGroups());
+        assertEquals(new TreeSet<>(Arrays.asList("project 8", "project 9")), authEntity.forProjects());
     }
 
     /**
@@ -184,8 +177,8 @@ public class AuthorizationEntityTest {
     public void testForGroupsAndForProjectsDiscoveryInvalidProject() {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
-        authEntity.setForProjects(new TreeSet<>(Arrays.asList(new String[]{"project 1", "project 2", "project 3",
-            "project 4", "project 5", "project 6", "project 7"})));
+        authEntity.setForProjects(new TreeSet<>(Arrays.asList("project 1", "project 2", "project 3",
+                "project 4", "project 5", "project 6", "project 7")));
 
         authEntity.load(new TreeMap<>());
 
@@ -200,7 +193,7 @@ public class AuthorizationEntityTest {
     public void testForGroupsAndForProjectsDiscoveryInvalidGroup() {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
-        authEntity.setForGroups(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})));
+        authEntity.setForGroups(new TreeSet<>(Arrays.asList("group 1", "group 2")));
 
         authEntity.load(new TreeMap<>());
 
@@ -215,7 +208,7 @@ public class AuthorizationEntityTest {
     public void testForGroupsAndForProjectsDiscoveryInvalidProjectInGroup() {
         AuthorizationEntity authEntity = authEntityFactory.apply(null);
 
-        authEntity.setForGroups(new TreeSet<>(Arrays.asList(new String[]{"group 1", "group 2"})));
+        authEntity.setForGroups(new TreeSet<>(Arrays.asList("group 1", "group 2")));
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         Group g1 = new Group();
@@ -227,7 +220,7 @@ public class AuthorizationEntityTest {
 
         authEntity.load(new TreeMap<>());
 
-        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"group 1"})), authEntity.forGroups());
+        assertEquals(new TreeSet<>(Collections.singletonList("group 1")), authEntity.forGroups());
         assertEquals(new TreeSet<>(), authEntity.forProjects());
     }
 }

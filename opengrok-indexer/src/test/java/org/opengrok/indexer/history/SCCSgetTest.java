@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,9 +46,6 @@ public class SCCSgetTest {
     private static boolean haveSccs = true;
     private File sccsfile;
     private File sccsdir;
-
-    public SCCSgetTest() {
-    }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -85,10 +81,6 @@ public class SCCSgetTest {
 
             }
         }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Before

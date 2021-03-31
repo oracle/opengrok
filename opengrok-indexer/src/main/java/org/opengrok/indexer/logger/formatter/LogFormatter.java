@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.logger.formatter;
 
@@ -48,8 +48,8 @@ public class LogFormatter extends Formatter {
 
     private static final String DEFAULT_FORMAT = "%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp %2$s%n%4$s: %5$s%6$s%n";
 
-    private String format;
-    private String version;
+    private final String format;
+    private final String version;
 
     public LogFormatter() {
         this(DEFAULT_FORMAT, "unknown");

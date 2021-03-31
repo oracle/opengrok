@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -94,7 +94,7 @@ public class BitKeeperRepositoryTest {
         bkFiles = null;
     }
 
-    private static void validateHistory(History history) throws Exception {
+    private static void validateHistory(History history) {
         final List<HistoryEntry> entries = history.getHistoryEntries();
         final List<String> renames = history.getRenamedFiles();
 
@@ -143,7 +143,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryInvalid() throws Exception {
+    public void testGetHistoryInvalid() {
         assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");
@@ -165,13 +165,13 @@ public class BitKeeperRepositoryTest {
         assertTrue("No exception thrown by getHistory with fake file", caughtPart);
     }
 
-    private static String readStream(InputStream stream) throws IOException {
+    private static String readStream(InputStream stream) {
         final Scanner scanner = new Scanner(stream).useDelimiter("\\A");
         return scanner.hasNext() ? scanner.next() : "";
     }
 
     @Test
-    public void testGetHistoryGet() throws Exception {
+    public void testGetHistoryGet() {
         assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
 
         for (final String bkFile : bkFiles) {
@@ -185,7 +185,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryGetInvalid() throws Exception {
+    public void testGetHistoryGetInvalid() {
         assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
 
         assertNull("Something returned by getHistoryGet with fake file",
@@ -211,7 +211,7 @@ public class BitKeeperRepositoryTest {
     }
 
     @Test
-    public void testAnnotationInvalid() throws Exception {
+    public void testAnnotationInvalid() {
         assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");

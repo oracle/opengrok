@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -41,8 +41,6 @@ public class MonotoneAnnotationParser implements Executor.StreamHandler {
      */
     private final Annotation annotation;
 
-    private final File file;
-    
     /**
      * Pattern used to extract author/revision from the {@code mnt annotate} command.
      */
@@ -54,7 +52,6 @@ public class MonotoneAnnotationParser implements Executor.StreamHandler {
      */
     public MonotoneAnnotationParser(File file) {
         annotation = new Annotation(file.getName());
-        this.file = file;
     }
 
    /**
@@ -68,7 +65,6 @@ public class MonotoneAnnotationParser implements Executor.StreamHandler {
     
     @Override
     public void processStream(InputStream input) throws IOException {
-        Annotation ret;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             String line;
             String author = null;

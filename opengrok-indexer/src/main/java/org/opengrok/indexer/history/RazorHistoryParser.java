@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2008, Peter Bray.
  */
 package org.opengrok.indexer.history;
@@ -87,7 +87,7 @@ class RazorHistoryParser {
     protected History parseContents(BufferedReader contents) throws IOException {
         String line;
 
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        ArrayList<HistoryEntry> entries = new ArrayList<>();
         HistoryEntry entry = null;
 
         boolean ignoreEntry = false;

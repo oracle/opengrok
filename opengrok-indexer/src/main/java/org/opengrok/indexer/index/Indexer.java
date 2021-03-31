@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -262,7 +262,7 @@ public final class Indexer {
                 }
 
                 if (!IndexCheck.check(subFilesList)) {
-                    System.err.printf("Index check failed\n");
+                    System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
                             (subFilesList.size() > 0 ?
                                     "data for projects " + String.join(",", subFilesList) : "all data") +
@@ -334,7 +334,7 @@ public final class Indexer {
                     IndexerUtil.enableProjects(webappURI);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, String.format("Couldn't notify the webapp on %s.", webappURI), e);
-                    System.err.println(String.format("Couldn't notify the webapp on %s: %s.", webappURI, e.getLocalizedMessage()));
+                    System.err.printf("Couldn't notify the webapp on %s: %s.%n", webappURI, e.getLocalizedMessage());
                 }
             }
 
@@ -433,7 +433,7 @@ public final class Indexer {
                 if (!preHelp) {
                     die(e.getMessage());
                 } else {
-                    System.err.println(String.format("Warning: failed to read -R %s", cfgFile));
+                    System.err.printf("Warning: failed to read -R %s%n", cfgFile);
                 }
             }
         }));
@@ -538,8 +538,7 @@ public final class Indexer {
                 String repoType = (String) v;
                 String repoSimpleType = RepositoryFactory.matchRepositoryByName(repoType);
                 if (repoSimpleType == null) {
-                    System.err.println(String.format(
-                            "'--disableRepository %s' does not match a type and is ignored", v));
+                    System.err.printf("'--disableRepository %s' does not match a type and is ignored%n", v);
                 } else {
                     disabledRepositories.add(repoSimpleType);
                 }
@@ -587,8 +586,7 @@ public final class Indexer {
                         cfg.setLuceneLocking(LuceneLockName.valueOf(vuc));
                     }
                 } catch (IllegalArgumentException e) {
-                    System.err.println(String.format(
-                        "`--lock %s' is invalid and ignored", v));
+                    System.err.printf("`--lock %s' is invalid and ignored%n", v);
                 }
             });
 
@@ -1029,12 +1027,11 @@ public final class Indexer {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
                         String.join(",", repositories));
                 HistoryGuru.getInstance().createCache(repositories);
-                LOGGER.info("Done...");
             } else {
                 LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
                 HistoryGuru.getInstance().createCache();
-                LOGGER.info("Done...");
             }
+            LOGGER.info("Done...");
         }
 
         if (createDict) {
@@ -1103,22 +1100,19 @@ public final class Indexer {
             for (final IndexDatabase db : dbs) {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
-                parallelizer.getFixedExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (update) {
-                                db.update();
-                            } else if (optimize) {
-                                db.optimize();
-                            }
-                        } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE, "An error occurred while "
-                                    + (update ? "updating" : "optimizing")
-                                    + " index", e);
-                        } finally {
-                            latch.countDown();
+                parallelizer.getFixedExecutor().submit(() -> {
+                    try {
+                        if (update) {
+                            db.update();
+                        } else if (optimize) {
+                            db.optimize();
                         }
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.SEVERE, "An error occurred while "
+                                + (update ? "updating" : "optimizing")
+                                + " index", e);
+                    } finally {
+                        latch.countDown();
                     }
                 });
             }

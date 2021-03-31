@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.haskell;
@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,22 +67,22 @@ public class HaskellSymbolTokenizerTest {
             throw new RuntimeException(ex);
         }
 
-        return l.toArray(new String[l.size()]);
+        return l.toArray(new String[0]);
     }
 
     @Test
-    public void sampleTest() throws UnsupportedEncodingException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "analysis/haskell/sample.hs");
-        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
-        String[] termsFor = getTermsFor(r);        
-        assertArrayEquals(
-                new String[]{
-                    "qsort", // line 2
-                    "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
-                    "x'y'", "f'", "g'h", "f'", "g'h" // line 6
-                },
-                termsFor);
+    public void sampleTest() throws IOException {
+        try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/haskell/sample.hs");
+             InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
+            String[] termsFor = getTermsFor(r);
+            assertArrayEquals(
+                    new String[] {
+                            "qsort", // line 2
+                            "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
+                            "x'y'", "f'", "g'h", "f'", "g'h" // line 6
+                    },
+                    termsFor);
+        }
     }
 
     /**

@@ -471,11 +471,7 @@ class FileHistoryCache implements HistoryCache {
                     }
                 }
 
-                List<HistoryEntry> list = map.get(s);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    map.put(s, list);
-                }
+                List<HistoryEntry> list = map.computeIfAbsent(s, k -> new ArrayList<>());
 
                 list.add(e);
             }
@@ -514,12 +510,11 @@ class FileHistoryCache implements HistoryCache {
         /*
          * Now handle renamed files (in parallel).
          */
-        HashMap<String, List<HistoryEntry>> renamed_map =
-                new HashMap<>();
-        for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
+        HashMap<String, List<HistoryEntry>> renamedMap = new HashMap<>();
+        for (final Map.Entry<String, List<HistoryEntry>> mapEntry : map.entrySet()) {
             try {
-                if (isRenamedFile(map_entry.getKey(), repository, history)) {
-                    renamed_map.put(map_entry.getKey(), map_entry.getValue());
+                if (isRenamedFile(mapEntry.getKey(), repository, history)) {
+                    renamedMap.put(mapEntry.getKey(), mapEntry.getValue());
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING,
@@ -530,7 +525,7 @@ class FileHistoryCache implements HistoryCache {
         // the actual files otherwise storeFile() might be racing for
         // mkdirs() if there are multiple renamed files from single directory
         // handled in parallel.
-        for (final String file : renamed_map.keySet()) {
+        for (final String file : renamedMap.keySet()) {
             File cache;
             try {
                 cache = getCachedFile(new File(env.getSourceRootPath() + file));
@@ -546,14 +541,14 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         final Repository repositoryF = repository;
-        final CountDownLatch latch = new CountDownLatch(renamed_map.size());
+        final CountDownLatch latch = new CountDownLatch(renamedMap.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
-        for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
+        for (final Map.Entry<String, List<HistoryEntry>> mapEntry : renamedMap.entrySet()) {
             env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
                     try {
-                        doFileHistory(map_entry.getKey(), map_entry.getValue(),
+                        doFileHistory(mapEntry.getKey(), mapEntry.getValue(),
                             repositoryF,
-                            new File(env.getSourceRootPath() + map_entry.getKey()),
+                            new File(env.getSourceRootPath() + mapEntry.getKey()),
                             root, true);
                         renamedFileHistoryCount.getAndIncrement();
                     } catch (Exception ex) {

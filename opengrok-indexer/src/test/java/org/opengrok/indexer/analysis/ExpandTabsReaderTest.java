@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -44,13 +44,10 @@ public class ExpandTabsReaderTest {
     public void testExpandTabs() throws IOException {
         // Create a couple of lines to see if tabs are expanded as expected.
         String inputLine = "abc\tdef\t\t12345678\t1\t1234567\tabc";
-        StringBuilder input = new StringBuilder();
-        input.append(inputLine).append('\n');
-        input.append(inputLine).append('\r');
-        input.append('\t');
 
         // Create Reader that reads the test input.
-        StringReader sr = new StringReader(input.toString());
+        String input = inputLine + '\n' + inputLine + '\r' + '\t';
+        StringReader sr = new StringReader(input);
 
         // Wrap the input in an ExpandTabsReader with tab size 8.
         Reader expandedInput = new ExpandTabsReader(sr, 8);

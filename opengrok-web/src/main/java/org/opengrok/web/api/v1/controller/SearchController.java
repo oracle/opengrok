@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -103,7 +103,7 @@ public class SearchController {
 
     private static class SearchEngineWrapper implements AutoCloseable {
 
-        private SearchEngine engine = new SearchEngine();
+        private final SearchEngine engine = new SearchEngine();
 
         private int numResults;
 

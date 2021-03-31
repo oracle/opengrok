@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -104,8 +104,7 @@ public enum AuthControlFlag {
             throw new IllegalArgumentException(
                     String.format("No control flag \"%s\", available flags are [%s]. %s",
                             flag,
-                            Arrays.asList(AuthControlFlag.values())
-                                    .stream()
+                            Arrays.stream(AuthControlFlag.values())
                                     .map(AuthControlFlag::toString)
                                     .collect(Collectors.joining(", ")),
                             ex.getLocalizedMessage()), ex);

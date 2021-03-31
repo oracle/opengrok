@@ -79,7 +79,7 @@ public class RepositoryLookupCached implements RepositoryLookup {
         // If we find repo mapping, we backfill the cache with these entries as well
         List<String> backfillPaths = new ArrayList<>();
         // Walk up the file's path until we find a matching enclosing Repository
-        while (!maybeRepo.isPresent() && path != null) {
+        while (maybeRepo.isEmpty() && path != null) {
             String nextPath = path.toString();
             boolean isDirectory = Files.isDirectory(path);
             if (isDirectory) {
@@ -116,7 +116,7 @@ public class RepositoryLookupCached implements RepositoryLookup {
              * Repository object that represents NO_REPOSITORY as a definitive negative cached value, while Optional.empty
              * would represent a tentative negative value.
              */
-            if (!maybeRepo.isPresent()) {
+            if (maybeRepo.isEmpty()) {
                 if (isDirectory) {
                     backfillPaths.add(nextPath);
                 }

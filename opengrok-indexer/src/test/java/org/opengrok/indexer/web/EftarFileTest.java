@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -27,9 +27,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,9 +39,6 @@ import static org.junit.Assert.assertEquals;
 public class EftarFileTest {
 
     private static File eftar;
-
-    public EftarFileTest() {
-    }
 
     private static final String PATH_STRING = "/path";
 
@@ -68,18 +63,10 @@ public class EftarFileTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         if (eftar != null) {
             eftar.delete();
         }
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     /**

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -63,10 +63,9 @@ public class ConfigurationTest {
                 if ((prop = attr.getValue("property")) != null) {
                     for (Field f : Group.class.getDeclaredFields()) {
                         if (Modifier.isTransient(f.getModifiers())) {
-                            Assert.assertFalse("'" + f.getName() +
-                                "' field is transient and yet is present in XML " +
-                                "encoding of Group object",
-                                prop.equals(f.getName()));
+                            Assert.assertNotEquals("'" + f.getName() +
+                                    "' field is transient and yet is present in XML " +
+                                    "encoding of Group object", prop, f.getName());
                         }
                     }
                 }
@@ -155,9 +154,7 @@ public class ConfigurationTest {
         final LinkedList<Exception> exceptions = new LinkedList<>();
 
         try (ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-                XMLDecoder dec = new XMLDecoder(in, null, (Exception e) -> {
-                    exceptions.addLast(e);
-                })) {
+                XMLDecoder dec = new XMLDecoder(in, null, exceptions::addLast)) {
 
             cfg = (Configuration) dec.readObject();
             assertNotNull(cfg);

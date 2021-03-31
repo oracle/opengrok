@@ -476,7 +476,7 @@ class PendingFileCompleter {
         if (!start.toFile().exists()) {
             return;
         }
-        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(start, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file,
                     BasicFileAttributes attrs) throws IOException {
