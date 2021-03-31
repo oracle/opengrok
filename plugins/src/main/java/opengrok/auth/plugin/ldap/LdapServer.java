@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -64,7 +64,7 @@ public class LdapServer implements Serializable {
     private int readTimeout;
     private int interval = 10 * 1000;
 
-    private Hashtable<String, String> env;
+    private final Hashtable<String, String> env;
     private LdapContext ctx;
     private long errorTimestamp = 0;
 
@@ -242,7 +242,7 @@ public class LdapServer implements Serializable {
      * @return the new connection or null
      */
     private synchronized LdapContext connect() {
-        LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this.toString());
+        LOGGER.log(Level.INFO, "Connecting to LDAP server {0} ", this);
 
         if (errorTimestamp > 0 && errorTimestamp + interval > System.currentTimeMillis()) {
             LOGGER.log(Level.WARNING, "LDAP server {0} is down", this.url);
@@ -269,7 +269,7 @@ public class LdapServer implements Serializable {
             try {
                 ctx = new InitialLdapContext(env, null);
                 ctx.setRequestControls(null);
-                LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this.toString());
+                LOGGER.log(Level.INFO, "Connected to LDAP server {0}", this);
                 errorTimestamp = 0;
             } catch (NamingException ex) {
                 LOGGER.log(Level.WARNING, "LDAP server {0} is not responding", env.get(Context.PROVIDER_URL));
@@ -352,7 +352,7 @@ public class LdapServer implements Serializable {
     }
 
     private static Hashtable<String, String> prepareEnv() {
-        Hashtable<String, String> e = new Hashtable<String, String>();
+        Hashtable<String, String> e = new Hashtable<>();
 
         e.put(Context.INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
         e.put(LDAP_CONNECT_TIMEOUT_PARAMETER, Integer.toString(LDAP_CONNECT_TIMEOUT));

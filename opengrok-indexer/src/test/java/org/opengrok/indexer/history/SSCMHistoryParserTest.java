@@ -18,20 +18,19 @@
  */
 
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -41,17 +40,6 @@ import org.junit.Test;
 public class SSCMHistoryParserTest {
 
     SSCMHistoryParser instance;
-
-    public SSCMHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() {
@@ -72,7 +60,7 @@ public class SSCMHistoryParserTest {
     public void parseEmpty() throws IOException {
         History result = instance.parse("");
         assertNotNull(result);
-        assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
+        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
     }
 
     /**
@@ -118,13 +106,13 @@ public class SSCMHistoryParserTest {
         assertNotNull(result);
         // History entries that do not increment version number are not included
         //  (no file changes)
-        assertTrue("Should contain four history entries", 4 == result.getHistoryEntries().size());
+        assertEquals("Should contain four history entries", 4, result.getHistoryEntries().size());
         // History entries are reversed (newest first)
         {
             HistoryEntry e0 = result.getHistoryEntries().get(0);
             assertEquals("4", e0.getRevision());
             assertEquals(author5, e0.getAuthor());
-            assertTrue(!e0.getMessage().isEmpty());
+            assertFalse(e0.getMessage().isEmpty());
             assertEquals(0, e0.getFiles().size());
         }
 
@@ -132,7 +120,7 @@ public class SSCMHistoryParserTest {
             HistoryEntry e1 = result.getHistoryEntries().get(1);
             assertEquals("3", e1.getRevision());
             assertEquals(author4, e1.getAuthor());
-            assertTrue(!e1.getMessage().isEmpty());
+            assertFalse(e1.getMessage().isEmpty());
             assertEquals(0, e1.getFiles().size());
         }
 
@@ -140,7 +128,7 @@ public class SSCMHistoryParserTest {
             HistoryEntry e2 = result.getHistoryEntries().get(2);
             assertEquals("2", e2.getRevision());
             assertEquals(author3, e2.getAuthor());
-            assertTrue(!e2.getMessage().isEmpty());
+            assertFalse(e2.getMessage().isEmpty());
             assertEquals(0, e2.getFiles().size());
         }
 

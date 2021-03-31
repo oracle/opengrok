@@ -18,13 +18,15 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
@@ -66,7 +68,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
                 if (lengthBOM > 0) {
                     return true;
                 }
-                String ascii = new String(content, "US-ASCII");
+                String ascii = new String(content, StandardCharsets.US_ASCII);
                 return isPlainText(ascii);
             }
 

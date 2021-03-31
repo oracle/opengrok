@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -180,12 +179,7 @@ public final class ProjectHelper {
      */
     private Set<Project> filterProjects(Set<Project> p) {
         Set<Project> repos = new TreeSet<>(p);
-        repos.removeIf(new Predicate<Project>() {
-            @Override
-            public boolean test(Project t) {
-                return !cfg.isAllowed(t) || !t.isIndexed();
-            }
-        });
+        repos.removeIf(t -> !cfg.isAllowed(t) || !t.isIndexed());
         return repos;
     }
 
@@ -197,12 +191,7 @@ public final class ProjectHelper {
      */
     private Set<Group> filterGroups(Set<Group> p) {
         Set<Group> grps = new TreeSet<>(p);
-        grps.removeIf(new Predicate<Group>() {
-            @Override
-            public boolean test(Group t) {
-                return !(cfg.isAllowed(t) || hasAllowedSubgroup(t));
-            }
-        });
+        grps.removeIf(t -> !(cfg.isAllowed(t) || hasAllowedSubgroup(t)));
         return grps;
     }
 
@@ -376,7 +365,7 @@ public final class ProjectHelper {
         Boolean val;
         Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP);
         if (p == null) {
-            p = new TreeMap<String, Boolean>();
+            p = new TreeMap<>();
             cfg.setRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP, p);
         }
         val = p.get(group.getName());
@@ -407,38 +396,35 @@ public final class ProjectHelper {
         Boolean val;
         Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP);
         if (p == null) {
-            p = new TreeMap<String, Boolean>();
+            p = new TreeMap<>();
             cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         }
         val = p.get(group.getName());
         if (val == null) {
             Set<Project> favourite = getAllGrouped();
-            favourite.removeIf(new Predicate<Project>() {
-                @Override
-                public boolean test(Project t) {
-                    // project is favourite
-                    if (!isFavourite(t)) {
-                        return true;
-                    }
-                    // project is contained in group repositories
-                    if (getRepositories(group).contains(t)) {
-                        return false;
-                    }
-                    // project is contained in group projects
-                    if (getProjects(group).contains(t)) {
-                        return false;
-                    }
-                    // project is contained in subgroup's repositories and projects
-                    for (Group g : filterGroups(group.getDescendants())) {
-                        if (getProjects(g).contains(t)) {
-                            return false;
-                        }
-                        if (getRepositories(g).contains(t)) {
-                            return false;
-                        }
-                    }
+            favourite.removeIf(t -> {
+                // project is favourite
+                if (!isFavourite(t)) {
                     return true;
                 }
+                // project is contained in group repositories
+                if (getRepositories(group).contains(t)) {
+                    return false;
+                }
+                // project is contained in group projects
+                if (getProjects(group).contains(t)) {
+                    return false;
+                }
+                // project is contained in subgroup's repositories and projects
+                for (Group g : filterGroups(group.getDescendants())) {
+                    if (getProjects(g).contains(t)) {
+                        return false;
+                    }
+                    if (getRepositories(g).contains(t)) {
+                        return false;
+                    }
+                }
+                return true;
             });
             val = !favourite.isEmpty();
             p.put(group.getName(), val);
@@ -475,7 +461,7 @@ public final class ProjectHelper {
     }
 
     private static Set<Project> mergeProjects(Set<Project> p1, Set<Project> p2) {
-        Set<Project> set = new TreeSet<Project>();
+        Set<Project> set = new TreeSet<>();
         set.addAll(p1);
         set.addAll(p2);
         return set;

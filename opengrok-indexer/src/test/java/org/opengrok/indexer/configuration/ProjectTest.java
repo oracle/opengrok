@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -51,7 +51,7 @@ public class ProjectTest {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = e -> exceptions.addLast(e);
+        ExceptionListener listener = exceptions::addLast;
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);

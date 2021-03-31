@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -41,7 +41,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -150,15 +149,15 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @Override
         public void invalidate() {
-            attrs = new HashMap<String, Object>();
+            attrs = new HashMap<>();
         }
 
         @Override
         public boolean isNew() {
             return true;
         }
-    };
-    
+    }
+
     private HttpSession session;
 
     @Override
@@ -391,23 +390,6 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     @Override
     public Map<String, String[]> getParameterMap() {
         return Collections.unmodifiableMap(parameters);
-    }
-
-    public void setParameterMap(Map<String, String[]> parameters) {
-        if (parameters == null) {
-            this.parameters = Collections.emptyMap();
-        } else {
-            this.parameters = new HashMap<>(parameters);
-            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-                String[] values;
-                if (entry.getValue() == null) {
-                    values = new String[0];
-                } else {
-                    values = Arrays.copyOf(entry.getValue(), entry.getValue().length);
-                }
-                this.parameters.put(entry.getKey(), values);
-            }
-        }
     }
 
     @Override

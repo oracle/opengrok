@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -58,9 +58,9 @@ public class HeadHandlerTest {
         return tests;
     }
 
-    private int lineCnt;
-    private int headLineCnt;
-    private int totalCharCount;
+    private final int lineCnt;
+    private final int headLineCnt;
+    private final int totalCharCount;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HeadHandlerTest.class);
 

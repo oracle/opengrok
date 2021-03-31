@@ -75,7 +75,7 @@ import java.util.regex.Pattern;
 public class OptionParser {
 
     // Used to hold data type converters
-    private static Map<Class<?>, DataParser> converters = new HashMap<>();
+    private static final Map<Class<?>, DataParser> converters = new HashMap<>();
 
     static class DataParser {
         Class<?> dataType;

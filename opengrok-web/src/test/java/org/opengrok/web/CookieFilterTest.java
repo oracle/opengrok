@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -111,7 +111,7 @@ public class CookieFilterTest {
 
         }
 
-        private Map<String, List<String>> headers = new HashMap<>();
+        private final Map<String, List<String>> headers = new HashMap<>();
 
         @Override
         public void setHeader(String s, String s1) {
@@ -123,12 +123,8 @@ public class CookieFilterTest {
 
         @Override
         public void addHeader(String s, String s1) {
-            List<String> list = headers.get(s);
-            if (list == null) {
-                list = new ArrayList<>();
-                headers.put(s, list);
-            }
-            headers.get(s).add(s1);
+            List<String> list = headers.computeIfAbsent(s, k -> new ArrayList<>());
+            list.add(s1);
         }
 
         @Override

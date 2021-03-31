@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.framework;
 
@@ -305,7 +305,7 @@ public abstract class PluginFramework<PluginType> {
     }
 
     private String getClassName(File f) {
-        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
+        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1);
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
         // no need to check for the index from lastIndexOf because we're in a branch
         // where we expect the .class suffix

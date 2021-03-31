@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Krystof Tulinger (tulinkry).
  */
 package org.opengrok.indexer.util;
@@ -77,13 +77,13 @@ public class VersionTest {
 
     @Test
     public void testEqualsComparsion() {
-        Assert.assertTrue(new Version(1).compareTo(new Version(1)) == 0);
-        Assert.assertTrue(new Version(1, 3).compareTo(new Version(1, 3)) == 0);
-        Assert.assertTrue(new Version(1, 2).compareTo(new Version(1, 2)) == 0);
-        Assert.assertTrue(new Version(1, 100).compareTo(new Version(1, 100)) == 0);
-        Assert.assertTrue(new Version(1, 2, 3).compareTo(new Version(1, 2, 3)) == 0);
-        Assert.assertTrue(new Version(1, 2, 4).compareTo(new Version(1, 2, 4)) == 0);
-        Assert.assertTrue(new Version(1, 0, 0).compareTo(new Version(1, 0, 0)) == 0);
-        Assert.assertTrue(new Version(1, 0, 0).compareTo(new Version(1, 0, 0, 0, 0)) == 0);
+        Assert.assertEquals(0, new Version(1).compareTo(new Version(1)));
+        Assert.assertEquals(0, new Version(1, 3).compareTo(new Version(1, 3)));
+        Assert.assertEquals(0, new Version(1, 2).compareTo(new Version(1, 2)));
+        Assert.assertEquals(0, new Version(1, 100).compareTo(new Version(1, 100)));
+        Assert.assertEquals(0, new Version(1, 2, 3).compareTo(new Version(1, 2, 3)));
+        Assert.assertEquals(0, new Version(1, 2, 4).compareTo(new Version(1, 2, 4)));
+        Assert.assertEquals(0, new Version(1, 0, 0).compareTo(new Version(1, 0, 0)));
+        Assert.assertEquals(0, new Version(1, 0, 0).compareTo(new Version(1, 0, 0, 0, 0)));
     }
 }

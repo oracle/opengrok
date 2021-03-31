@@ -43,7 +43,7 @@ public class PendingTokenTest {
     @Test
     public void testEquals2() {
         PendingToken instance1 = new PendingToken("a", 0, 1);
-        assertEquals("PendingToken default nonpos", false, instance1.nonpos);
+        assertFalse("PendingToken default nonpos", instance1.nonpos);
 
         PendingToken instance2 = new PendingToken("a", 0, 1);
         instance2.nonpos = true;
@@ -78,7 +78,7 @@ public class PendingTokenTest {
     @Test
     public void testSameHashCodes() {
         PendingToken instance1 = new PendingToken("a", 0, 1);
-        assertEquals("PendingToken default nonpos", false, instance1.nonpos);
+        assertFalse("PendingToken default nonpos", instance1.nonpos);
 
         PendingToken instance2 = new PendingToken("a", 0, 1);
         instance2.nonpos = true;

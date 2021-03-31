@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -122,8 +122,7 @@ public class SearchHelperTest {
         SearchHelper searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
-        System.out.println("single project search returned " +
-            Long.toString(searchHelper.totalHits) + " hits");
+        System.out.println("single project search returned " + searchHelper.totalHits + " hits");
         Assert.assertEquals(4, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -132,8 +131,7 @@ public class SearchHelperTest {
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search returned " +
-            Long.toString(searchHelper.totalHits) + " hits");
+        System.out.println("multi-project search returned " + searchHelper.totalHits + " hits");
         Assert.assertEquals(5, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -141,8 +139,7 @@ public class SearchHelperTest {
         searchHelper = this.getSearchHelper("CannotExistAnywhereForSure")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search for non-existing term returned " +
-            Long.toString(searchHelper.totalHits) + " hits");
+        System.out.println("multi-project search for non-existing term returned " + searchHelper.totalHits + " hits");
         Assert.assertEquals(0, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -162,8 +159,7 @@ public class SearchHelperTest {
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search after reindex returned " +
-            Long.toString(searchHelper.totalHits) + " hits");
+        System.out.println("multi-project search after reindex returned " + searchHelper.totalHits + " hits");
         Assert.assertEquals(6, searchHelper.totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
@@ -173,8 +169,7 @@ public class SearchHelperTest {
         searchHelper = this.getSearchHelperPath("JaVa")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search for non-existing term returned " +
-            Long.toString(searchHelper.totalHits) + " hits");
+        System.out.println("multi-project search for non-existing term returned " + searchHelper.totalHits + " hits");
         Assert.assertEquals(5, searchHelper.totalHits);
         searchHelper.destroy();   
         

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -65,15 +65,14 @@ import static org.junit.Assert.assertTrue;
 
 public class SuggesterTest {
 
-    private MeterRegistry registry = new SimpleMeterRegistry();
+    private final MeterRegistry registry = new SimpleMeterRegistry();
 
     private static class SuggesterTestData {
 
         private Suggester s;
         private Path indexDir;
         private Path suggesterDir;
-        private List<Suggester.NamedIndexReader> namedIndexReaders = new ArrayList<>();
-
+        private final List<Suggester.NamedIndexReader> namedIndexReaders = new ArrayList<>();
 
         private void close() throws IOException {
             for (Suggester.NamedIndexReader ir: namedIndexReaders) {

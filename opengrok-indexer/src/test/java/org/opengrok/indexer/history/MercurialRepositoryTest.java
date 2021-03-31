@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -208,7 +208,7 @@ public class MercurialRepositoryTest {
                 + REVISIONS_extra_branch.length);
         Collections.addAll(both, REVISIONS_extra_branch);
         Collections.addAll(both, REVISIONS);
-        String[] revs = both.toArray(new String[both.size()]);
+        String[] revs = both.toArray(new String[0]);
         assertEquals(revs.length, entries.size());
         // Ideally we should check that the last revision is branched but
         // there is currently no provision for that in HistoryEntry object.

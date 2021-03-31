@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.java;
@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,26 +64,26 @@ public class JavaSymbolTokenizerTest {
             throw new RuntimeException(ex);
         }
 
-        return l.toArray(new String[l.size()]);
+        return l.toArray(new String[0]);
     }
 
     @Test
-    public void sampleTest() throws UnsupportedEncodingException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "analysis/java/Sample.jav");
-        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
-        String[] termsFor = getTermsFor(r);
-        assertArrayEquals(
-                new String[] {
-                        "org", "opensolaris", "opengrok", "analysis", "java", "Sample",
-                        "String", "MY_MEMBER", "Sample", "Method", "arg", "res", "res",
-                        "arg", "InnerClass", "i", "InnerClass", "i", "InnerMethod",
-                        "length", "res", "AbstractMethod", "test", "InnerClass",
-                        "String", "InnerMethod", "System", "out", "print", "main",
-                        "String", "args", "num1", "num2", "num1", "num2", "num1",
-                        "System", "out", "println", "ArithmeticException", "e",
-                        "System", "out", "println", "System", "out", "println"
-                },
-                termsFor);
+    public void sampleTest() throws IOException {
+        try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/java/Sample.jav");
+             InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
+            String[] termsFor = getTermsFor(r);
+            assertArrayEquals(
+                    new String[] {
+                            "org", "opensolaris", "opengrok", "analysis", "java", "Sample",
+                            "String", "MY_MEMBER", "Sample", "Method", "arg", "res", "res",
+                            "arg", "InnerClass", "i", "InnerClass", "i", "InnerMethod",
+                            "length", "res", "AbstractMethod", "test", "InnerClass",
+                            "String", "InnerMethod", "System", "out", "print", "main",
+                            "String", "args", "num1", "num2", "num1", "num2", "num1",
+                            "System", "out", "println", "ArithmeticException", "e",
+                            "System", "out", "println", "System", "out", "println"
+                    },
+                    termsFor);
+        }
     }
 }

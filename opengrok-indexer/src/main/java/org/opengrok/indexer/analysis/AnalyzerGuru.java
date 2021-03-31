@@ -187,20 +187,17 @@ public class AnalyzerGuru {
     /**
      * Descending string length comparator for magics.
      */
-    private static final Comparator<String> descStrlenComparator =
-        new Comparator<String>() {
-        @Override public int compare(String s1, String s2) {
-            // DESC: s2 length <=> s1 length
-            int cmp = Integer.compare(s2.length(), s1.length());
-            if (cmp != 0) {
-                return cmp;
-            }
-
-            // the Comparator must also be "consistent with equals", so check
-            // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
-            cmp = s1.compareTo(s2);
+    private static final Comparator<String> descStrlenComparator = (s1, s2) -> {
+        // DESC: s2 length <=> s1 length
+        int cmp = Integer.compare(s2.length(), s1.length());
+        if (cmp != 0) {
             return cmp;
         }
+
+        // the Comparator must also be "consistent with equals", so check
+        // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
+        cmp = s1.compareTo(s2);
+        return cmp;
     };
 
     /**

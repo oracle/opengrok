@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.provider.service.impl;
 
@@ -394,7 +394,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(cronDefinition));
 
         Optional<Duration> d = executionTime.timeToNextExecution(now);
-        if (!d.isPresent()) {
+        if (d.isEmpty()) {
             throw new IllegalStateException("Cannot determine time to next execution");
         }
 

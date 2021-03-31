@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -53,7 +53,7 @@ class SCCSHistoryParser {
     private Date rdate;
     private String author;
     private String comment;
-    private SCCSRepository repository;
+    private final SCCSRepository repository;
 
     SCCSHistoryParser(SCCSRepository repository) {
         this.repository = repository;
@@ -83,7 +83,7 @@ class SCCSHistoryParser {
         active = true;
         field = 0;
 
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        ArrayList<HistoryEntry> entries = new ArrayList<>();
         while (next()) {
             HistoryEntry entry = new HistoryEntry();
             entry.setRevision(getRevision());
@@ -204,11 +204,7 @@ class SCCSHistoryParser {
                             d = in.read();
                             if (d == ' ') {
                                 dt = in.read();
-                                if (dt == 'R') {
-                                    active = false;
-                                } else {
-                                    active = true;
-                                }
+                                active = dt != 'R';
                                 passRecord = true;
                                 field = 1;
                             } else {

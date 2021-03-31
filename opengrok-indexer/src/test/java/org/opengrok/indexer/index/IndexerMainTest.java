@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -59,11 +59,11 @@ public class IndexerMainTest {
         ThreadGroup mainGroup = Thread.currentThread().getThreadGroup();
         Thread[] threads = new Thread[mainGroup.activeCount()];
         mainGroup.enumerate(threads);
-        for (int i = 0; i < threads.length; i++) {
-            if (threads[i] == null || threads[i].getName() == null) {
+        for (Thread thread : threads) {
+            if (thread == null || thread.getName() == null) {
                 continue;
             }
-            assertFalse(threads[i].getName().contains("renamed-handling"));
+            assertFalse(thread.getName().contains("renamed-handling"));
         }
     }
 

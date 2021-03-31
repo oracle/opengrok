@@ -51,7 +51,7 @@ import static org.junit.Assert.assertTrue;
 
 public class SystemControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Override
     protected Application configure() {

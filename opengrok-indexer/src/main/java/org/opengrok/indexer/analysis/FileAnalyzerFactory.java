@@ -18,14 +18,13 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -82,7 +81,7 @@ public class FileAnalyzerFactory extends AnalyzerFactory {
         if (a == null) {
             return Collections.emptyList();
         }
-        return Collections.unmodifiableList(Arrays.asList(a));
+        return List.of(a);
     }
 
     @Override

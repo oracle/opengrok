@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
@@ -31,7 +31,7 @@ package opengrok.auth.plugin.decoders;
  */
 public class FakeOSSOHeaderDecoder extends OSSOHeaderDecoder {
 
-    private final String PREFIX = "fake-";
+    private static final String PREFIX = "fake-";
     
     public FakeOSSOHeaderDecoder() {
         OSSO_COOKIE_TIMESTAMP_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_COOKIE_TIMESTAMP_HEADER;

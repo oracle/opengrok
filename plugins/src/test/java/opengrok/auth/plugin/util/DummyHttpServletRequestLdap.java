@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -53,7 +53,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
     private final Map<String, String> headers = new HashMap<>();
     private final Map<String, Object> attrs = new HashMap<>();
-    private HttpSession sessions = new HttpSession() {
+    private final HttpSession sessions = new HttpSession() {
 
         private final Map<String, Object> attrs = new HashMap<>();
 
