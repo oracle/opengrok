@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -79,6 +80,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.HostUtil;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.Statistics;
@@ -161,8 +163,35 @@ public final class Indexer {
 
         boolean createDict = false;
 
+        int CONNECT_TIMEOUT = 1000;  // in milliseconds
+
         try {
             argv = parseOptions(argv);
+
+            if (webappURI != null) {
+                boolean connectWorks = false;
+                try {
+                    for (InetAddress addr : InetAddress.getAllByName(HostUtil.urlToHostname(webappURI))) {
+                        int port = HostUtil.urlToPort(webappURI);
+                        if (port < 0) {
+                            LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
+                            break;
+                        }
+                        if (HostUtil.isReachable(addr, port, CONNECT_TIMEOUT)) {
+                            LOGGER.log(Level.FINE, "URI " + webappURI + " is reachable via " + addr.toString());
+                            connectWorks = true;
+                            break;
+                        }
+                    }
+                } catch (URISyntaxException e) {
+                    LOGGER.log(Level.WARNING, String.format("URI not valid: %s", webappURI), e);
+                }
+
+                if (!connectWorks) {
+                    LOGGER.log(Level.SEVERE, webappURI + " is not reachable.");
+                    System.exit(1);
+                }
+            }
 
             /*
              * Attend to disabledRepositories here in case exitWithHelp() will
