@@ -35,10 +35,10 @@ import junit.framework.AssertionFailedError;
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *

@@ -23,7 +23,7 @@
 package opengrok.auth.plugin.ldap;
 
 import opengrok.auth.plugin.configuration.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.naming.directory.SearchControls;
@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;

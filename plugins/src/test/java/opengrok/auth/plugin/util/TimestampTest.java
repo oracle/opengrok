@@ -18,13 +18,16 @@
  */
 
  /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Date;
-import org.junit.Assert;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -52,7 +55,7 @@ public class TimestampTest {
         };
 
         for (int i = 0; i < tests.length; i++) {
-            Assert.assertEquals(expected[i], Timestamp.decodeTimeCookie(tests[i]).getTime());
+            assertEquals(expected[i], Timestamp.decodeTimeCookie(tests[i]).getTime());
         }
     }
 
@@ -69,11 +72,8 @@ public class TimestampTest {
         };
 
         for (String test : tests) {
-            try {
-                Timestamp.decodeTimeCookie(test).getTime();
-                Assert.fail("Decoding should throw an exception - invalid format");
-            } catch (Exception e) {
-            }
+            assertThrows(Exception.class, () -> Timestamp.decodeTimeCookie(test).getTime(),
+                    "Decoding should throw an exception - invalid format");
         }
     }
 
@@ -97,7 +97,7 @@ public class TimestampTest {
         };
 
         for (int i = 0; i < tests.length; i++) {
-            Assert.assertEquals(expected[i], Timestamp.encodeTimeCookie(tests[i]));
+            assertEquals(expected[i], Timestamp.encodeTimeCookie(tests[i]));
         }
     }
 }
