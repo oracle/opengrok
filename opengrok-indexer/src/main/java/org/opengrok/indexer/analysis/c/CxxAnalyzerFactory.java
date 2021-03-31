@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.c;
 
@@ -26,23 +26,25 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class CxxAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "C++";
-    
+
+    private static final String NAME = "C++";
+
     private static final String[] SUFFIXES = {
-        "CPP",
-        "HPP",
-        "CC",
-        "C++",
-        "HH",
-        "CXX",
-        "HXX",
-        "TXX",
-        "TCC"
+            "CPP",
+            "HPP",
+            "CC",
+            "C++",
+            "HH",
+            "CXX",
+            "HXX",
+            "TXX",
+            "TCC",
+            "CU",
+            "CUH"
     };
 
     public CxxAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override
