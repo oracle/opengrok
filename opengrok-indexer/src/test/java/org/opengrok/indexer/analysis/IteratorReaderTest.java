@@ -18,10 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
+
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,11 +32,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Do basic testing of the IteratorReader class.
@@ -58,18 +59,18 @@ public class IteratorReaderTest {
      * Test that we get an error immediately when constructing a token stream
      * where the list is {@code null}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFailfastOnNull() {
-        new IteratorReader((List<String>) null);
+        assertThrows(IllegalArgumentException.class, () -> new IteratorReader((List<String>) null));
     }
 
     /**
      * Test that an {@code IllegalArgumentException} is thrown immediately also
      * when using the constructor that takes an {@code Iterator}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFailfastOnNullIterator() {
-        new IteratorReader((Iterator<String>) null);
+        assertThrows(IllegalArgumentException.class, () -> new IteratorReader((Iterator<String>) null));
     }
 
     /**

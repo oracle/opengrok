@@ -23,13 +23,14 @@
  */
 package org.opengrok.indexer.analysis.lua;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import java.io.InputStream;
 import java.util.List;
-import org.junit.Test;
 
 /**
  * Tests the {@link LuaSymbolTokenizer} class.
@@ -44,10 +45,10 @@ public class LuaSymbolTokenizerTest {
     public void testLuaSymbolStream() throws Exception {
         InputStream luares = getClass().getClassLoader().getResourceAsStream(
             "analysis/lua/sample.lua");
-        assertNotNull("despite sample.lua as resource,", luares);
+        assertNotNull(luares, "despite sample.lua as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/lua/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(LuaSymbolTokenizer.class, luares, expectedSymbols);

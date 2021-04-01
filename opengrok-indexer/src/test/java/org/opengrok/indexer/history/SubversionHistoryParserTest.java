@@ -23,20 +23,20 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
@@ -45,12 +45,12 @@ public class SubversionHistoryParserTest {
 
     private SubversionHistoryParser instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new SubversionHistoryParser();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -65,7 +65,7 @@ public class SubversionHistoryParserTest {
                 "<log>\n" + "</log>");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     /**
@@ -221,16 +221,12 @@ public class SubversionHistoryParserTest {
                 assertEquals(author, e.getAuthor());
 
                 Date actualDateTime = Date.from(date.actualDateTime.atZone(ZoneOffset.systemDefault()).toInstant());
-                assertEquals(date.dateTimeString, actualDateTime, e.getDate());
+                assertEquals(actualDateTime, e.getDate(), date.dateTimeString);
                 assertEquals(1, e.getFiles().size());
                 assertEquals(Paths.get(Paths.get("/" + file).toUri()).toFile().toString(), e.getFiles().first());
-                if (date.expectedException) {
-                    fail("Should throw an IO exception for " + date.dateTimeString);
-                }
+                assertFalse(date.expectedException, "Should throw an IO exception for " + date.dateTimeString);
             } catch (IOException ex) {
-                if (!date.expectedException) {
-                    fail("Should not throw an IO exception for " + date.dateTimeString);
-                }
+                assertTrue(date.expectedException, "Should not throw an IO exception for " + date.dateTimeString);
             }
         }
     }

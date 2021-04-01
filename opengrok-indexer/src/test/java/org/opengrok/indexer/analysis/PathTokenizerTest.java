@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test class for PathTokenizer.
@@ -56,17 +56,15 @@ public class PathTokenizerTest {
                 dots++;
                 break;
             }
-            assertTrue("too many tokens", count < expectedTokens.length);
+            assertTrue(count < expectedTokens.length, "too many tokens");
             String expected = expectedTokens[count];
-            assertEquals("term", expected, term.toString());
-            assertEquals("start", inputText.indexOf(expected), offset.startOffset());
-            assertEquals("end",
-                    inputText.indexOf(expected) + expected.length(),
-                    offset.endOffset());
+            assertEquals(expected, term.toString(), "term");
+            assertEquals(inputText.indexOf(expected), offset.startOffset(), "start");
+            assertEquals(inputText.indexOf(expected) + expected.length(), offset.endOffset(), "end");
             count++;
         }
         tokenizer.end();
         tokenizer.close();
-        assertEquals("wrong number of tokens", expectedTokens.length, count + dots);
+        assertEquals(expectedTokens.length, count + dots, "wrong number of tokens");
     }
 }

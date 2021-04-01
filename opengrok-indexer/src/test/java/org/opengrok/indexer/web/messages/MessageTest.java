@@ -18,51 +18,51 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.messages;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessageTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest() {
-        new Message(null, null, null, null);
+        assertThrows(IllegalArgumentException.class, () -> new Message(null, null, null, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest2() {
-        new Message("", null, null, null);
+        assertThrows(IllegalArgumentException.class, () -> new Message("", null, null, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest3() {
-        new Message("test", null, null, null);
+        assertThrows(IllegalArgumentException.class, () -> new Message("test", null, null, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest4() {
-        new Message("test", Collections.emptySet(), null, null);
+        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest5() {
-        new Message("test", Collections.singleton("test"), null, Duration.ofMinutes(-1));
+        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.singleton("test"), null, Duration.ofMinutes(-1)));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createBadMessageTest6() {
-        new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1));
+        assertThrows(IllegalArgumentException.class, () -> new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1)));
     }
 
     @Test
@@ -72,7 +72,6 @@ public class MessageTest {
                 Message.MessageLevel.INFO,
                 Duration.ofMinutes(1));
         String jsonString = m.toJSON();
-        assertEquals(new HashSet<>(Arrays.asList("messageLevel", "duration", "text", "tags")),
-                getTopLevelJSONFields(jsonString));
+        assertEquals(Set.of("messageLevel", "duration", "text", "tags"), getTopLevelJSONFields(jsonString));
     }
 }

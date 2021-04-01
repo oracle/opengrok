@@ -24,11 +24,13 @@ package org.opengrok.indexer.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Represents a container for tests of {@link JarAnalyzerFactory}.
@@ -43,12 +45,11 @@ public class JarAnalyzerFactoryTest {
     public void testJarWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/javajar.bin");
-        assertNotNull("javajar.bin should be available,", res);
+        assertNotNull(res, "javajar.bin should be available,");
 
         // assert that it is matched
         AnalyzerFactory fac = AnalyzerGuru.find(res);
-        assertNotNull("javajar.bin should have factory", fac);
-        assertSame("should be JarAnalyzerFactory", fac.getClass(),
-            JarAnalyzerFactory.class);
+        assertNotNull(fac, "javajar.bin should have factory");
+        assertSame(fac.getClass(), JarAnalyzerFactory.class, "should be JarAnalyzerFactory");
     }
 }

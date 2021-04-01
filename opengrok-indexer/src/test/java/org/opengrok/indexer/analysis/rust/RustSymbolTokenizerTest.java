@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.rust;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class RustSymbolTokenizerTest {
     public void testRustSymbolStream() throws Exception {
         InputStream rsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/rust/sample.rs");
-        assertNotNull("despite sample.rs as resource,", rsres);
+        assertNotNull(rsres, "despite sample.rs as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/rust/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(RustSymbolTokenizer.class, rsres, expectedSymbols);

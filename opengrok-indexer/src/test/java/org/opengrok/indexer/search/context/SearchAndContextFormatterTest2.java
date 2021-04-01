@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -38,14 +38,10 @@ import java.util.TreeSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.junit.AfterClass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
@@ -57,6 +53,9 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 import org.opengrok.indexer.util.IOUtils;
@@ -78,7 +77,7 @@ public class SearchAndContextFormatterTest2 {
     private static File configFile;
     private static boolean originalProjectsEnabled;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
@@ -86,9 +85,9 @@ public class SearchAndContextFormatterTest2 {
         env.setProjectsEnabled(true);
 
         File sourceRoot = createTemporaryDirectory("srcroot");
-        assertTrue("sourceRoot.isDirectory()", sourceRoot.isDirectory());
+        assertTrue(sourceRoot.isDirectory(), "sourceRoot.isDirectory()");
         File dataroot = createTemporaryDirectory("dataroot");
-        assertTrue("dataroot.isDirectory()", dataroot.isDirectory());
+        assertTrue(dataroot.isDirectory(), "dataroot.isDirectory()");
 
         repository1 = new TestRepository();
         repository1.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
@@ -101,14 +100,14 @@ public class SearchAndContextFormatterTest2 {
         File symlink1 = new File(sourceRoot.getCanonicalFile(), SYMLINK1);
         Files.createSymbolicLink(Paths.get(symlink1.getPath()),
                 Paths.get(repository1.getSourceRoot()));
-        assertTrue("symlink1.exists()", symlink1.exists());
+        assertTrue(symlink1.exists(), "symlink1.exists()");
 
         // Create symlink #2 underneath source root.
         final String SYMLINK2 = "symlink2";
         File symlink2 = new File(sourceRoot.getCanonicalFile(), SYMLINK2);
         Files.createSymbolicLink(Paths.get(symlink2.getPath()),
                 Paths.get(repository2.getSourceRoot()));
-        assertTrue("symlink2.exists()", symlink2.exists());
+        assertTrue(symlink2.exists(), "symlink2.exists()");
 
         Set<String> allowedSymlinks = new HashSet<>();
         allowedSymlinks.add(symlink1.getAbsolutePath());
@@ -126,7 +125,7 @@ public class SearchAndContextFormatterTest2 {
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
 
         Project proj1 = env.getProjects().get(SYMLINK1);
-        assertNotNull("symlink1 project", proj1);
+        assertNotNull(proj1, "symlink1 project");
         proj1.setTabSize(TABSIZE);
 
         Indexer.getInstance().doIndexerExecution(true, null, null);
@@ -136,7 +135,7 @@ public class SearchAndContextFormatterTest2 {
         RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         env.setAllowedSymlinks(new HashSet<>());
@@ -170,10 +169,10 @@ public class SearchAndContextFormatterTest2 {
         instance.setFreetext("Hello");
         instance.setFile("renamed2.c");
         int noHits = instance.search();
-        assertTrue("noHits should be positive", noHits > 0);
+        assertTrue(noHits > 0, "noHits should be positive");
         String[] frags = getFirstFragments(instance);
-        assertNotNull("getFirstFragments() should return something", frags);
-        assertEquals("frags should have one element", 1, frags.length);
+        assertNotNull(frags, "getFirstFragments() should return something");
+        assertEquals(1, frags.length, "frags should have one element");
         assertNotNull("frags[0] should be defined", frags[0]);
 
         final String CTX =

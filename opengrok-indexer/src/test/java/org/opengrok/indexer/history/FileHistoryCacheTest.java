@@ -18,17 +18,20 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 
 import java.io.File;
@@ -39,14 +42,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
-import org.opengrok.indexer.condition.UnixPresent;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -71,13 +72,10 @@ public class FileHistoryCacheTest {
     private boolean savedIsHandleHistoryOfRenamedFiles;
     private boolean savedIsTagsEnabled;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
     /**
      * Set up the test environment with repositories and a cache instance.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResourceAsStream("repositories.zip"));
@@ -94,7 +92,7 @@ public class FileHistoryCacheTest {
     /**
      * Clean up after the test. Remove the test repositories.
      */
-    @After
+    @AfterEach
     public void tearDown() {
         repositories.destroy();
         repositories = null;
@@ -117,14 +115,13 @@ public class FileHistoryCacheTest {
      * @param isdir was the history generated for a directory
      * @throws AssertionError if the two entries don't match
      */
-    private void assertSameEntries(
-            List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
-        assertEquals("Unexpected size", expected.size(), actual.size());
+    private void assertSameEntries(List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
+        assertEquals(expected.size(), actual.size(), "Unexpected size");
         Iterator<HistoryEntry> actualIt = actual.iterator();
         for (HistoryEntry expectedEntry : expected) {
             assertSameEntry(expectedEntry, actualIt.next(), isdir);
         }
-        assertFalse("More entries than expected", actualIt.hasNext());
+        assertFalse(actualIt.hasNext(), "More entries than expected");
     }
 
     /**
@@ -152,7 +149,7 @@ public class FileHistoryCacheTest {
      * Basic tests for the {@code store()} method on cache with disabled
      * handling of renamed files.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testStoreAndGetNotRenamed() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -178,7 +175,7 @@ public class FileHistoryCacheTest {
      * The last history entry before the import is important as it needs to be
      * retagged when old history is merged with the new one.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
@@ -203,8 +200,7 @@ public class FileHistoryCacheTest {
 
         // Check that the changesets were indeed applied and indexed.
         History updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals("Unexpected number of history entries",
-                15, updatedHistory.getHistoryEntries().size());
+        assertEquals(15, updatedHistory.getHistoryEntries().size(), "Unexpected number of history entries");
 
         // Verify tags in fileHistory for main.c which is the most interesting
         // file from the repository from the perspective of tags.
@@ -212,21 +208,16 @@ public class FileHistoryCacheTest {
         assertTrue(main.exists());
         History retrievedHistoryMainC = cache.get(main, repo, true);
         List<HistoryEntry> entries = retrievedHistoryMainC.getHistoryEntries();
-        assertEquals("Unexpected number of entries for main.c",
-                3, entries.size());
+        assertEquals(3, entries.size(), "Unexpected number of entries for main.c");
         HistoryEntry e0 = entries.get(0);
-        assertEquals("Unexpected revision for entry 0", "13:3d386f6bd848",
-                e0.getRevision());
-        assertEquals("Invalid tag list for revision 13", "tag3", e0.getTags());
+        assertEquals("13:3d386f6bd848", e0.getRevision(), "Unexpected revision for entry 0");
+        assertEquals("tag3", e0.getTags(), "Invalid tag list for revision 13");
         HistoryEntry e1 = entries.get(1);
-        assertEquals("Unexpected revision for entry 1", "2:585a1b3f2efb",
-                e1.getRevision());
-        assertEquals("Invalid tag list for revision 2",
-                "tag2, tag1, start_of_novel", e1.getTags());
+        assertEquals("2:585a1b3f2efb", e1.getRevision(), "Unexpected revision for entry 1");
+        assertEquals("tag2, tag1, start_of_novel", e1.getTags(), "Invalid tag list for revision 2");
         HistoryEntry e2 = entries.get(2);
-        assertEquals("Unexpected revision for entry 2", "1:f24a5fd7a85d",
-                e2.getRevision());
-        assertNull("Invalid tag list for revision 1", e2.getTags());
+        assertEquals("1:f24a5fd7a85d", e2.getRevision(), "Unexpected revision for entry 2");
+        assertNull(e2.getTags(), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
         File dir = new File(cache.getRepositoryHistDataDirname(repo));
@@ -238,9 +229,9 @@ public class FileHistoryCacheTest {
         History freshHistory = repo.getHistory(reposRoot);
         cache.store(freshHistory, repo);
         History updatedHistoryFromScratch = cache.get(reposRoot, repo, true);
-        assertEquals("Unexpected number of history entries",
-                freshHistory.getHistoryEntries().size(),
-                updatedHistoryFromScratch.getHistoryEntries().size());
+        assertEquals(freshHistory.getHistoryEntries().size(),
+                updatedHistoryFromScratch.getHistoryEntries().size(),
+                "Unexpected number of history entries");
 
         // Verify that the result for the directory is the same as incremental
         // reindex.
@@ -255,9 +246,9 @@ public class FileHistoryCacheTest {
     /**
      * Basic tests for the {@code store()} and {@code get()} methods.
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     public void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
 
@@ -281,7 +272,7 @@ public class FileHistoryCacheTest {
 
         List<HistoryEntry> entries = retrievedHistory.getHistoryEntries();
 
-        assertEquals("Unexpected number of entries", 2, entries.size());
+        assertEquals(2, entries.size(), "Unexpected number of entries");
 
         final String TROND = "Trond Norbye <trond.norbye@sun.com>";
 
@@ -307,7 +298,7 @@ public class FileHistoryCacheTest {
 
         entries = retrievedHistory.getHistoryEntries();
 
-        assertEquals("Unexpected number of entries", 6, entries.size());
+        assertEquals(6, entries.size(), "Unexpected number of entries");
 
         // test get history for directory
         // Need to refresh history to store since the file lists were stripped
@@ -379,8 +370,8 @@ public class FileHistoryCacheTest {
      * - change+rename the file again
      * - incremental reindex
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testRenameFileThenDoIncrementalReindex() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -507,8 +498,8 @@ public class FileHistoryCacheTest {
      * (i.e. there should not be history entries from the default branch made
      * there after the branch was created).
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testRenamedFilePlusChangesBranched() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -633,7 +624,7 @@ public class FileHistoryCacheTest {
     /**
      * Make sure produces correct history where several files are renamed in a single commit.
      */
-    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @EnabledForRepository(SUBVERSION)
     @Test
     public void testMultipleRenamedFiles() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
@@ -690,7 +681,7 @@ public class FileHistoryCacheTest {
     /**
      * Make sure produces correct history for a renamed and moved file in Subversion.
      */
-    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @EnabledForRepository(SUBVERSION)
     @Test
     public void testRenamedFile() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
@@ -782,8 +773,7 @@ public class FileHistoryCacheTest {
     /*
      * Functional test for the FetchHistoryWhenNotInCache configuration option.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.SCCSInstalled.class)
+    @EnabledForRepository({MERCURIAL, SCCS})
     @Test
     public void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
@@ -807,8 +797,8 @@ public class FileHistoryCacheTest {
     /**
      * Test history when activating PathAccepter for ignoring files.
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testStoreAndTryToGetIgnored() throws Exception {
         env.getIgnoredNames().add("f:Make*");
@@ -826,15 +816,15 @@ public class FileHistoryCacheTest {
 
         // test get history for single file
         File makefile = new File(reposRoot, "Makefile");
-        assertTrue("" + makefile + " should exist", makefile.exists());
+        assertTrue(makefile.exists(), "" + makefile + " should exist");
 
         History retrievedHistory = cache.get(makefile, repo, true);
-        assertNull("history for Makefile should be null", retrievedHistory);
+        assertNull(retrievedHistory, "history for Makefile should be null");
 
         // Gross that we can break encapsulation, but oh well.
         env.getIgnoredNames().clear();
         cache.store(historyToStore, repo);
         retrievedHistory = cache.get(makefile, repo, true);
-        assertNotNull("history for Makefile should not be null", retrievedHistory);
+        assertNotNull(retrievedHistory, "history for Makefile should not be null");
     }
 }

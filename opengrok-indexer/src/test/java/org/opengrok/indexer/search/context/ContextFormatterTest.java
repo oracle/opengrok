@@ -26,11 +26,11 @@ import java.util.Collections;
 
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.util.BytesRef;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 /**
@@ -57,20 +57,20 @@ public class ContextFormatterTest {
     public void testLineMatchFormatted() {
         final String WORD = "gravida";
         int woff = DOC.indexOf(WORD);
-        assertTrue(WORD, woff >= 0);
+        assertTrue(woff >= 0, WORD);
 
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
         p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         // First, test with contextCount==0
         ContextArgs args = new ContextArgs((short) 0, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_0 =
                 "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
@@ -84,7 +84,7 @@ public class ContextFormatterTest {
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_1 = "<a class=\"s\" href=\"http://example.com#2\"><span class=\"l\">" +
                 "2</span> Mauris vel tortor vel nisl efficitur fermentum nec vel" +
@@ -104,7 +104,7 @@ public class ContextFormatterTest {
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());
         p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         /**
          * We're using the entire document, but see how it behaves with
@@ -114,7 +114,7 @@ public class ContextFormatterTest {
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC2);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOC2CTX =
                 "<a class=\"s\" href=\"http://example.com#1\"><span class=\"l\">" +
@@ -131,20 +131,20 @@ public class ContextFormatterTest {
     public void testDualElidedMatchFormatted() {
         final String WORD = "dignissim";
         int woff = DOC.indexOf(WORD);
-        assertTrue(WORD, woff >= 0);
+        assertTrue(woff >= 0, WORD);
 
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
         p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         // First, test with contextCount==0
         ContextArgs args = new ContextArgs((short) 0, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_0 = "<a class=\"s\" href=\"http://example.com#6\"><span class=\"l\">" +
                 "6</span> &hellip;putate ipsum sed laoreet. Nam maximus libero" +
@@ -158,7 +158,7 @@ public class ContextFormatterTest {
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_1 = "<a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
                 "5</span> </a><br/>" +
@@ -178,7 +178,7 @@ public class ContextFormatterTest {
         fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\"><span class=\"l\">" +
                 "5</span> </a><br/>" +
@@ -195,20 +195,20 @@ public class ContextFormatterTest {
     public void testLeftElidedMatchFormatted() {
         final String WORD = "ultricies";
         int woff = DOC.indexOf(WORD);
-        assertTrue(WORD, woff >= 0);
+        assertTrue(woff >= 0, WORD);
 
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
         p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         // First, test with contextCount==0
         ContextArgs args = new ContextArgs((short) 0, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_0 =
                 "<a class=\"s\" href=\"http://example.com#6\"><span " +
@@ -224,7 +224,7 @@ public class ContextFormatterTest {
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_1 =
                 "<a class=\"s\" href=\"http://example.com#5\"><span " +
@@ -246,7 +246,7 @@ public class ContextFormatterTest {
         fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\">" +
                 "<span class=\"l\">5</span> </a><br/>" +
@@ -264,20 +264,20 @@ public class ContextFormatterTest {
     public void testRightElidedMatchFormatted() {
         final String WORD = "Maecenas";
         int woff = DOC.indexOf(WORD);
-        assertTrue(WORD, woff >= 0);
+        assertTrue(woff >= 0, WORD);
 
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
         p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         // First, test with contextCount==0
         ContextArgs args = new ContextArgs((short) 0, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_0 = "<a class=\"s\" href=\"http://example.com#6\"><span " +
                 "class=\"l\">6</span> ----<b>Maecenas</b> vitae " +
@@ -291,7 +291,7 @@ public class ContextFormatterTest {
         fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_1 =
                 "<a class=\"s\" href=\"http://example.com#5\"><span " +
@@ -312,7 +312,7 @@ public class ContextFormatterTest {
         fmt.setMoreLimit(2);
         fmt.setMoreUrl("http://example.com/more");
         res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOCCTX_2M = "<a class=\"s\" href=\"http://example.com#5\"><span " +
                 "class=\"l\">5</span> </a><br/>" +
@@ -330,7 +330,7 @@ public class ContextFormatterTest {
     public void testBoundsProblemFormatted() {
         final String PHRASE = "efficitur vitae";
         int phOff = DOC.indexOf(PHRASE);
-        assertTrue(PHRASE, phOff >= 0);
+        assertTrue(phOff >= 0, PHRASE);
 
         // Create a slightly-longer word of all '*'.
         final int LF_CHAR_COUNT = 1;
@@ -341,14 +341,14 @@ public class ContextFormatterTest {
         p.setStartOffset(phOff);
         p.setEndOffset(phOff + STARS.length());
         p.addMatch(phOff, p.getEndOffset(), new BytesRef(STARS), 1);
-        assertEquals("getNumMatches()", 1, p.getNumMatches());
+        assertEquals(1, p.getNumMatches(), "getNumMatches()");
 
         // Test with contextCount==0
         ContextArgs args = new ContextArgs((short) 0, (short) 10);
         ContextFormatter fmt = new ContextFormatter(args);
         fmt.setUrl("http://example.com");
         Object res = fmt.format(new Passage[] {p}, DOC);
-        assertNotNull("format() result", res);
+        assertNotNull(res, "format() result");
 
         final String DOC_CTX_0 = "<a class=\"s\" href=\"http://example.com#3\"><span class=\"l\">" +
                 "3</span> Mauris diam nisl, tincidunt nec gravida sit" +

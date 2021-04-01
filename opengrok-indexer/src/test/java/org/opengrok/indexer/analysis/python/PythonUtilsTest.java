@@ -22,9 +22,10 @@
  */
 package org.opengrok.indexer.analysis.python;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.StringUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Represents a test class for {@link PythonUtils}.
@@ -35,14 +36,14 @@ public class PythonUtilsTest {
     public void shouldMatchLongstringApostrophe() {
         final String value = "1-2-3'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
-        assertEquals("long-string apostrophe", 5, i);
+        assertEquals(5, i, "long-string apostrophe");
     }
 
     @Test
     public void shouldMatchInitialLongstringApostrophe() {
         final String value = "'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
-        assertEquals("initial long-string apostrophe", 0, i);
+        assertEquals(0, i, "initial long-string apostrophe");
     }
 
     @Test
@@ -51,7 +52,7 @@ public class PythonUtilsTest {
         // value: \'1-2-3\''''
         final String value = "\\'1-2-3\\''''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
-        assertEquals("long-string apostrophe after quoted apostrophe", 9, i);
+        assertEquals(9, i, "long-string apostrophe after quoted apostrophe");
     }
 
     @Test
@@ -60,7 +61,7 @@ public class PythonUtilsTest {
         // value: \\'''
         final String value = "\\\\'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
-        assertEquals("long-string apostrophe after backslashes", 2, i);
+        assertEquals(2, i, "long-string apostrophe after backslashes");
     }
 
     @Test
@@ -69,6 +70,6 @@ public class PythonUtilsTest {
         // value: \\\'''
         final String value = "\\\\\\'''";
         int i = StringUtils.patindexOf(value, PythonUtils.LONGSTRING_APOS);
-        assertEquals("three apostrophes after backslashes", -1, i);
+        assertEquals(-1, i, "three apostrophes after backslashes");
     }
 }

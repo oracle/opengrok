@@ -32,28 +32,20 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.condition.DeliberateRuntimeException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class AuthorizationFrameworkTest {
 
     private static final Random RANDOM = new Random();
 
-    private final StackSetup setup;
-
-    public AuthorizationFrameworkTest(StackSetup setup) {
-        this.setup = setup;
-    }
-
-    @Parameterized.Parameters
     public static StackSetup[][] params() {
         return new StackSetup[][]{
             // -------------------------------------------------------------- //
@@ -739,8 +731,9 @@ public class AuthorizationFrameworkTest {
         };
     }
 
-    @Test
-    public void testPluginsGeneric() {
+    @ParameterizedTest
+    @MethodSource("params")
+    public void testPluginsGeneric(StackSetup setup) {
         AuthorizationFramework framework = new AuthorizationFramework(null, setup.stack);
         framework.loadAllPlugins(setup.stack);
 
@@ -752,15 +745,13 @@ public class AuthorizationFrameworkTest {
             try {
                 // group test
                 actual = framework.isAllowed(innerSetup.request, (Group) innerSetup.entity);
-                Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, entityName),
-                        innerSetup.expected,
-                        actual);
+                assertEquals(innerSetup.expected, actual,
+                        String.format(format, setup.toString(), innerSetup.expected, actual, entityName));
             } catch (ClassCastException ex) {
                 // project test
                 actual = framework.isAllowed(innerSetup.request, (Project) innerSetup.entity);
-                Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, entityName),
-                        innerSetup.expected,
-                        actual);
+                assertEquals(innerSetup.expected, actual,
+                        String.format(format, setup.toString(), innerSetup.expected, actual, entityName));
             }
         }
     }

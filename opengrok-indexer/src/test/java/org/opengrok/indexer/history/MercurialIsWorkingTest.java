@@ -22,9 +22,9 @@
  */
 package org.opengrok.indexer.history;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -41,12 +41,12 @@ import static org.opengrok.indexer.history.RepositoryFactoryTest.testNotWorkingR
 public class MercurialIsWorkingTest {
     private static TestRepository repository = new TestRepository();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         if (repository != null) {
             repository.destroy();

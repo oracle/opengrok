@@ -23,14 +23,6 @@
  */
 package org.opengrok.indexer.configuration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -42,11 +34,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.JFlexXref;
 import org.opengrok.indexer.analysis.plain.PlainXref;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
@@ -55,6 +47,13 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test the RuntimeEnvironment class.
@@ -65,24 +64,21 @@ public class RuntimeEnvironmentTest {
 
     private static File originalConfig;
 
-    public RuntimeEnvironmentTest() {
-    }
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         // preserve the original
         originalConfig = File.createTempFile("config", ".xml");
         RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
         // restore the configuration
         RuntimeEnvironment.getInstance().readConfiguration(originalConfig);
         originalConfig.delete();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Create a default configuration
         Configuration config = new Configuration();
@@ -205,18 +201,18 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String instanceCtags = instance.getCtags();
         assertNotNull(instanceCtags);
-        assertTrue("instance ctags should equals 'ctags' or the sys property",
-            instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
+        assertTrue(instanceCtags.equals("ctags") || instanceCtags.equals(
+                System.getProperty("org.opengrok.indexer.analysis.Ctags")),
+                "instance ctags should equals 'ctags' or the sys property");
         String path = "/usr/bin/ctags";
         instance.setCtags(path);
         assertEquals(path, instance.getCtags());
 
         instance.setCtags(null);
         instanceCtags = instance.getCtags();
-        assertTrue("instance ctags should equals 'ctags' or the sys property",
-            instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
+        assertTrue(instanceCtags.equals("ctags") || instanceCtags.equals(
+                System.getProperty("org.opengrok.indexer.analysis.Ctags")),
+                "instance ctags should equals 'ctags' or the sys property");
     }
 
     @Test
@@ -330,12 +326,8 @@ public class RuntimeEnvironmentTest {
             "\\sbug=(\\d+[a-t])*(\\W*)"
         };
         for (String test : tests) {
-            try {
-                instance.setBugPattern(test);
-                assertEquals(test, instance.getBugPattern());
-            } catch (IllegalArgumentException ex) {
-                fail("The pattern '" + test + "' should not throw an exception");
-            }
+            instance.setBugPattern(test);
+            assertEquals(test, instance.getBugPattern());
         }
     }
 
@@ -351,11 +343,8 @@ public class RuntimeEnvironmentTest {
             "\\b[a-z]+\\b" // does not contain a group
         };
         for (String test : tests) {
-            try {
-                instance.setBugPattern(test);
-                fail("The pattern '" + test + "' should throw an exception");
-            } catch (IllegalArgumentException ignored) {
-            }
+            assertThrows(IllegalArgumentException.class, () -> instance.setBugPattern(test),
+                    "The pattern '" + test + "' should throw an exception");
         }
     }
 
@@ -378,12 +367,8 @@ public class RuntimeEnvironmentTest {
             "\\sreview=(\\d+[a-t])*(\\W*)"
         };
         for (String test : tests) {
-            try {
-                instance.setReviewPattern(test);
-                assertEquals(test, instance.getReviewPattern());
-            } catch (IllegalArgumentException ex) {
-                fail("The pattern '" + test + "' should not throw an exception");
-            }
+            instance.setReviewPattern(test);
+            assertEquals(test, instance.getReviewPattern());
         }
     }
 
@@ -399,11 +384,8 @@ public class RuntimeEnvironmentTest {
             "\\b[a-z]+\\b" // does not contain a group
         };
         for (String test : tests) {
-            try {
-                instance.setReviewPattern(test);
-                fail("The pattern '" + test + "' should throw an exception");
-            } catch (IllegalArgumentException ignored) {
-            }
+            assertThrows(IllegalArgumentException.class, () -> instance.setReviewPattern(test),
+                    "The pattern '" + test + "' should throw an exception");
         }
     }
 
@@ -449,14 +431,15 @@ public class RuntimeEnvironmentTest {
         assertTrue(instance.isIndexVersionedFilesOnly());
     }
 
-    @Test(expected = Throwable.class)
+    @Test
     public void testXMLencdec() throws IOException {
         Configuration c = new Configuration();
         String m = c.getXMLRepresentationAsString();
         Configuration o = Configuration.makeXMLStringAsConfiguration(m);
         assertNotNull(o);
         m = m.replace('a', 'm');
-        Configuration.makeXMLStringAsConfiguration(m);
+        String finalM = m;
+        assertThrows(Throwable.class, () -> Configuration.makeXMLStringAsConfiguration(finalM));
     }
 
     @Test
@@ -723,7 +706,7 @@ public class RuntimeEnvironmentTest {
      *
      * @throws IOException I/O exception
      */
-    @Test(expected = IOException.class)
+    @Test
     public void testAuthorizationFlagDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
@@ -742,7 +725,7 @@ public class RuntimeEnvironmentTest {
                 + "\t</void>\n"
                 + " </object>\n"
                 + "</java>";
-        Configuration.makeXMLStringAsConfiguration(confString);
+        assertThrows(IOException.class, () -> Configuration.makeXMLStringAsConfiguration(confString));
     }
 
     /**
@@ -750,7 +733,7 @@ public class RuntimeEnvironmentTest {
      *
      * @throws IOException I/O exception
      */
-    @Test(expected = IOException.class)
+    @Test
     public void testAuthorizationDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
@@ -769,7 +752,7 @@ public class RuntimeEnvironmentTest {
                 + "\t</void>\n"
                 + " </object>\n"
                 + "</java>";
-        Configuration.makeXMLStringAsConfiguration(confString);
+        assertThrows(IOException.class, () -> Configuration.makeXMLStringAsConfiguration(confString));
     }
 
     @Test
@@ -885,8 +868,8 @@ public class RuntimeEnvironmentTest {
         } catch (ForbiddenSymlinkException e) {
             expex = e;
         }
-        assertNotNull("getPathRelativeToSourceRoot() should have thrown " +
-                "IOexception for symlink that is not allowed", expex);
+        assertNotNull(expex, "getPathRelativeToSourceRoot() should have thrown " +
+                "IOexception for symlink that is not allowed");
 
         // Allow the symlink and retest.
         env.setAllowedSymlinks(new HashSet<>(Arrays.asList(symlink.getPath())));
@@ -920,23 +903,23 @@ public class RuntimeEnvironmentTest {
         env.getProjectRepositoriesMap().put(project1, Arrays.asList(repository1));
         env.getProjectRepositoriesMap().put(project2, Arrays.asList(repo2));
 
-        Assert.assertEquals(2, env.getProjects().size());
-        Assert.assertEquals(2, env.getRepositories().size());
-        Assert.assertEquals(2, env.getProjectRepositoriesMap().size());
-        Assert.assertEquals(2, env.getGroups().size());
+        assertEquals(2, env.getProjects().size());
+        assertEquals(2, env.getRepositories().size());
+        assertEquals(2, env.getProjectRepositoriesMap().size());
+        assertEquals(2, env.getGroups().size());
 
         // populate groups for the first time
         env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
 
-        Assert.assertEquals(2, env.getProjects().size());
-        Assert.assertEquals(2, env.getRepositories().size());
-        Assert.assertEquals(2, env.getProjectRepositoriesMap().size());
-        Assert.assertEquals(2, env.getGroups().size());
+        assertEquals(2, env.getProjects().size());
+        assertEquals(2, env.getRepositories().size());
+        assertEquals(2, env.getProjectRepositoriesMap().size());
+        assertEquals(2, env.getGroups().size());
 
-        Assert.assertEquals(0, group1.getProjects().size());
-        Assert.assertEquals(1, group1.getRepositories().size());
-        Assert.assertEquals(0, group2.getProjects().size());
-        Assert.assertEquals(2, group2.getRepositories().size());
+        assertEquals(0, group1.getProjects().size());
+        assertEquals(1, group1.getRepositories().size());
+        assertEquals(0, group2.getProjects().size());
+        assertEquals(2, group2.getRepositories().size());
 
         // remove a single repository object => project1 will become a simple project
         env.getProjectRepositoriesMap().remove(project1);
@@ -945,13 +928,13 @@ public class RuntimeEnvironmentTest {
         // populate groups for the second time
         env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjects().values()));
 
-        Assert.assertEquals(2, env.getProjects().size());
-        Assert.assertEquals(1, env.getRepositories().size());
-        Assert.assertEquals(1, env.getProjectRepositoriesMap().size());
-        Assert.assertEquals(2, env.getGroups().size());
-        Assert.assertEquals(1, group1.getProjects().size());
-        Assert.assertEquals(0, group1.getRepositories().size());
-        Assert.assertEquals(1, group2.getProjects().size());
-        Assert.assertEquals(1, group2.getRepositories().size());
+        assertEquals(2, env.getProjects().size());
+        assertEquals(1, env.getRepositories().size());
+        assertEquals(1, env.getProjectRepositoriesMap().size());
+        assertEquals(2, env.getGroups().size());
+        assertEquals(1, group1.getProjects().size());
+        assertEquals(0, group1.getRepositories().size());
+        assertEquals(1, group2.getProjects().size());
+        assertEquals(1, group2.getRepositories().size());
     }
 }

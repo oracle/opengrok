@@ -32,15 +32,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.After;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.FileUtilities;
@@ -57,20 +57,20 @@ public class IndexCheckTest {
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private Path oldIndexDataDir;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResourceAsStream("/org/opengrok/indexer/history/repositories.zip"));
         oldIndexDataDir = null;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         repository.destroy();
 
@@ -112,21 +112,22 @@ public class IndexCheckTest {
         testIndexVersion(false, new ArrayList<>());
     }
 
-    @Test(expected = IndexCheck.IndexVersionException.class)
+    @Test
     public void testIndexVersionOldIndex() throws Exception {
         oldIndexDataDir = Files.createTempDirectory("data");
         Path indexPath = oldIndexDataDir.resolve("index");
         Files.createDirectory(indexPath);
         File indexDir = new File(indexPath.toString());
-        assertTrue("index directory check", indexDir.isDirectory());
+        assertTrue(indexDir.isDirectory(), "index directory check");
         URL oldIndex = getClass().getResource("/index/oldindex.zip");
-        assertNotNull("resource needs to be non null", oldIndex);
+        assertNotNull(oldIndex, "resource needs to be non null");
         File archive = new File(oldIndex.getPath());
-        assertTrue("archive exists", archive.isFile());
+        assertTrue(archive.isFile(), "archive exists");
         FileUtilities.extractArchive(archive, indexDir);
         env.setDataRoot(oldIndexDataDir.toString());
         env.setProjectsEnabled(false);
         assertFalse(IndexCheck.check(new ArrayList<>()));
-        IndexCheck.checkDir(indexDir);
+
+        assertThrows(IndexCheck.IndexVersionException.class, () -> IndexCheck.checkDir(indexDir));
     }
 }

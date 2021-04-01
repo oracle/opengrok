@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.javascript;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -59,10 +60,10 @@ public class JavaScriptSymbolTokenizerTest {
     private void testSymbols(String codeResource, String symbolsResource) throws Exception {
         InputStream jsres = getClass().getClassLoader().getResourceAsStream(
                 codeResource);
-        assertNotNull(String.format("Unable to find %s as a resource", codeResource), jsres);
+        assertNotNull(jsres, String.format("Unable to find %s as a resource", codeResource));
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
                 symbolsResource);
-        assertNotNull(String.format("Unable to find %s as a resource", symbolsResource), symres);
+        assertNotNull(symres, String.format("Unable to find %s as a resource", symbolsResource));
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(JavaScriptSymbolTokenizer.class, jsres, expectedSymbols);

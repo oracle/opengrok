@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -38,17 +38,18 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.PlatformUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
@@ -57,7 +58,7 @@ public class UtilTest {
 
     private static Locale savedLocale;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         // Some of the methods have different results in different locales.
         // Set locale to en_US for these tests.
@@ -65,7 +66,7 @@ public class UtilTest {
         Locale.setDefault(Locale.US);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         Locale.setDefault(savedLocale);
         savedLocale = null;
@@ -267,8 +268,8 @@ public class UtilTest {
             String[] strings = Util.diffline(
                     new StringBuilder(tests[i][0]),
                     new StringBuilder(tests[i][1]));
-            assertEquals("" + i + "," + 0, tests[i][2], strings[0]);
-            assertEquals("" + i + "," + 1, tests[i][3], strings[1]);
+            assertEquals(tests[i][2], strings[0], "" + i + "," + 0);
+            assertEquals(tests[i][3], strings[1], "" + i + "," + 1);
         }
     }
 
@@ -332,13 +333,13 @@ public class UtilTest {
          */
         for (int i = 0; i < 10; i++) {
             for (int j = 1; j <= 5; j++) {
-                assertTrue("Contains page " + j, Util.createSlider(i * 10, 10, 55).contains(">" + j + "<"));
+                assertTrue(Util.createSlider(i * 10, 10, 55).contains(">" + j + "<"), "Contains page " + j);
             }
         }
 
-        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 4).contains(">1<"));
-        assertFalse("Does not contain page 5", Util.createSlider(0, 10, 2).contains(">5<"));
-        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 0).contains(">1<"));
+        assertFalse(Util.createSlider(0, 10, 4).contains(">1<"), "Does not contain page 1");
+        assertFalse(Util.createSlider(0, 10, 2).contains(">5<"), "Does not contain page 5");
+        assertFalse(Util.createSlider(0, 10, 0).contains(">1<"), "Does not contain page 1");
     }
 
     @Test
@@ -442,14 +443,14 @@ public class UtilTest {
         assertTrue(link.contains("data-id=\"123456\""));
     }
 
-    @Test(expected = MalformedURLException.class)
-    public void testBuildLinkInvalidUrl1() throws URISyntaxException, MalformedURLException {
-        Util.buildLink("link", "www.example.com"); // invalid protocol
+    @Test
+    public void testBuildLinkInvalidUrl1() {
+        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
-    @Test(expected = URISyntaxException.class)
-    public void testBuildLinkInvalidUrl2() throws URISyntaxException, MalformedURLException {
-        Util.buildLink("link", "http://www.exa\"mp\"le.com"); // invalid authority
+    @Test
+    public void testBuildLinkInvalidUrl2() {
+        assertThrows(URISyntaxException.class, () -> Util.buildLink("link", "http://www.exa\"mp\"le.com")); // invalid authority
     }
 
     @Test
@@ -540,9 +541,9 @@ public class UtilTest {
         assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getQueryParamsNullTest() {
-        Util.getQueryParams(null);
+        assertThrows(IllegalArgumentException.class, () -> Util.getQueryParams(null));
     }
 
     @Test

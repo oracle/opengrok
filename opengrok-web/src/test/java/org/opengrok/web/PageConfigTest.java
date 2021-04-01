@@ -45,14 +45,12 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.TestPlugin;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
-import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
@@ -113,7 +111,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
@@ -260,7 +257,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -276,7 +272,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetRevisionLocation() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -303,7 +298,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetRevisionLocationNullQuery() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -330,7 +324,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
@@ -371,7 +364,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetAnnotation() {
         final String[] revisions = {"aa35c258", "bb74b7e8"};
 
@@ -487,7 +479,7 @@ public class PageConfigTest {
      * @throws IOException I/O exception
      */
     @Test
-    @ConditionalRun(UnixPresent.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     public void testCheckSourceRootExistence4() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);

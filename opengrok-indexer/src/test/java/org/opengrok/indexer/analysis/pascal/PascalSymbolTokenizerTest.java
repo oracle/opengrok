@@ -23,13 +23,14 @@
  */
 package org.opengrok.indexer.analysis.pascal;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import java.io.InputStream;
 import java.util.List;
-import org.junit.Test;
 
 /**
  * Tests the {@link PascalSymbolTokenizer} class.
@@ -44,10 +45,10 @@ public class PascalSymbolTokenizerTest {
     public void testPascalSymbolStream() throws Exception {
         InputStream pasres = getClass().getClassLoader().getResourceAsStream(
             "analysis/pascal/sample.pas");
-        assertNotNull("despite sample.pas as resource,", pasres);
+        assertNotNull(pasres, "despite sample.pas as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/pascal/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(PascalSymbolTokenizer.class, pasres, expectedSymbols);

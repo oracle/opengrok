@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.scala;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class ScalaSymbolTokenizerTest {
     public void testScalaSymbolStream() throws Exception {
         InputStream scalares = getClass().getClassLoader().getResourceAsStream(
             "analysis/scala/sample.scala");
-        assertNotNull("despite samplescalakt as resource,", scalares);
+        assertNotNull(scalares, "despite samplescalakt as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/scala/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(ScalaSymbolTokenizer.class, scalares, expectedSymbols);

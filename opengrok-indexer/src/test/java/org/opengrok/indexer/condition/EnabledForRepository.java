@@ -18,28 +18,22 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.condition;
 
-import java.lang.annotation.Documented;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@ExtendWith({EnabledOnRepositoryCondition.class})
+public @interface EnabledForRepository {
 
-/**
- * Annotation allowing the {@link ConditionalRun} to be repeatable annotation.
- *
- * @author Krystof Tulinger
- */
-@Retention(value = RUNTIME)
-@Documented
-@Inherited
-@Target(value = {ElementType.METHOD, ElementType.TYPE, ElementType.PACKAGE})
-public @interface ConditionalRunRepeatable {
+    RepositoryInstalled.Type[] value();
 
-    ConditionalRun[] value();
 }

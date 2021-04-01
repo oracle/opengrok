@@ -22,21 +22,21 @@
  */
 package org.opengrok.indexer.authorization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import jakarta.servlet.http.HttpSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.

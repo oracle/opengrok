@@ -22,14 +22,14 @@
  */
 package org.opengrok.indexer.util;
 
+import org.junit.jupiter.api.Test;
+
 import java.text.ParseException;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GetoptTest {
 
@@ -89,25 +89,9 @@ public class GetoptTest {
         String[] argv = new String[] {"-a"};
         Getopt instance = new Getopt(argv, "a:");
 
-        try {
-            instance.parse();
-            fail("Parse shall not allow missing arguments");
-        } catch (ParseException exp) {
-            if (!exp.getMessage().contains("requires an argument")) {
-                // not the exception we expected
-                throw exp;
-            }
-        }
+        assertThrows(ParseException.class, instance::parse);
 
-        instance = new Getopt(argv, "b");
-        try {
-            instance.parse();
-            fail("Parse shall not allow unknown arguments");
-        } catch (ParseException exp) {
-            if (!exp.getMessage().contains("Unknown argument: ")) {
-                // not the exception we expected
-                throw exp;
-            }
-        }
+        Getopt instance2 = new Getopt(argv, "b");
+        assertThrows(ParseException.class, instance2::parse);
     }
 }

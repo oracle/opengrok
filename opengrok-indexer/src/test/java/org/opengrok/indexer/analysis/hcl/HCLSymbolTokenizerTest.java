@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.hcl;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
@@ -47,9 +47,9 @@ public class HCLSymbolTokenizerTest {
 
     private void testSymbols(String codeResource, String symbolsResource) throws Exception {
         InputStream hclRes = getClass().getClassLoader().getResourceAsStream(codeResource);
-        assertNotNull("Should get resource " + codeResource, hclRes);
+        assertNotNull(hclRes, "Should get resource " + codeResource);
         InputStream symRes = getClass().getClassLoader().getResourceAsStream(symbolsResource);
-        assertNotNull("Should get resource " + symbolsResource, symRes);
+        assertNotNull(symRes, "Should get resource " + symbolsResource);
 
         List<String> expectedSymbols = readSampleSymbols(symRes);
         assertSymbolStream(HCLSymbolTokenizer.class, hclRes, expectedSymbols);

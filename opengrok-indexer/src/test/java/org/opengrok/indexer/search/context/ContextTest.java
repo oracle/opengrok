@@ -18,15 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
@@ -41,14 +36,19 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.Hit;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.w3c.dom.Document;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContextTest {
 
@@ -59,13 +59,13 @@ public class ContextTest {
      */
     private boolean savedQuickContextScanFlag;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // Save initial value of the quick context scan flag.
         savedQuickContextScanFlag = RuntimeEnvironment.getInstance().isQuickContextScan();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         // Restore the initial value of the quick context scan flag.
         RuntimeEnvironment.getInstance().setQuickContextScan(savedQuickContextScanFlag);
@@ -280,11 +280,10 @@ public class ContextTest {
         StringWriter out = new StringWriter();
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
-        assertTrue("No match found", match);
+        assertTrue(match, "No match found");
         String s = out.toString();
-        assertTrue("Match not written to Writer",
-                s.contains(" this is a <b>test</b>"));
-        assertTrue("No match on line #1", s.contains("href=\"#1\""));
+        assertTrue(s.contains(" this is a <b>test</b>"), "Match not written to Writer");
+        assertTrue(s.contains("href=\"#1\""), "No match on line #1");
     }
 
     /**
@@ -307,11 +306,10 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
         Context c = new Context(qb.build(), qb);
 
-        boolean match
-                = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
-        assertTrue("No match found", match);
+        boolean match = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
+        assertTrue(match, "No match found");
         String s = out.toString();
-        assertTrue("No [all...] link", s.contains(">[all...]</a>"));
+        assertTrue(s.contains(">[all...]</a>"), "No [all...] link");
     }
 
     /**
@@ -337,11 +335,11 @@ public class ContextTest {
 
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
-        assertTrue("No match found", match);
+        assertTrue(match, "No match found");
         String s = out.toString();
-        assertTrue("Match not listed", s.contains("<b>search_for_me</b>"));
-        assertFalse("Line not truncated", s.contains("should not be found"));
-        assertTrue("Ellipsis not found", s.contains("&hellip;"));
+        assertTrue(s.contains("<b>search_for_me</b>"), "Match not listed");
+        assertFalse(s.contains("should not be found"), "Line not truncated");
+        assertTrue(s.contains("&hellip;"), "Ellipsis not found");
     }
 
     /**
@@ -363,9 +361,8 @@ public class ContextTest {
         // element so that the StringWriter contains a valid XML document.
         QueryBuilder qb = new QueryBuilder().setFreetext("\"a b c\"");
         Context c = new Context(qb.build(), qb);
-        assertTrue(
-                "No match found",
-                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null));
+        assertTrue(c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null),
+                "No match found");
 
         // Close the XML document body
         out.append("\n</document>");
@@ -459,7 +456,7 @@ public class ContextTest {
         ArrayList<Hit> hits = new ArrayList<>();
         assertEquals(lines.length != 0,
                 context.getContext(in, null, "", "", "", defs, false, builder.isDefSearch(), hits));
-        assertEquals("Unexpected number of hits", lines.length, hits.size());
+        assertEquals(lines.length, hits.size(), "Unexpected number of hits");
         for (int i = 0; i < lines.length; i++) {
             assertEquals(Integer.toString(lines[i]), hits.get(i).getLineno());
             assertEquals(tags[i], hits.get(i).getTag());
@@ -500,11 +497,12 @@ public class ContextTest {
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
 
         if (expectWordInContext == null) {
-            assertFalse("Match found", match);
+            assertFalse(match, "Match found");
         } else {
-            assertTrue("No match found", match);
+            assertTrue(match, "No match found");
             String s = out.toString();
-            assertTrue("Searched word '" + expectWordInContext + "' not in context", s.contains("<b>" + expectWordInContext + "</b>"));
+            assertTrue(s.contains("<b>" + expectWordInContext + "</b>"),
+                    "Searched word '" + expectWordInContext + "' not in context");
         }
     }
 }

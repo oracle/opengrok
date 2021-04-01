@@ -22,9 +22,8 @@
  */
 package org.opengrok.indexer.util;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.IOException;
@@ -45,34 +44,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test the behavior of the {@code HeadHandler} class. The main aspect to check is that the
  * input stream is read whole.
  */
-@RunWith(Parameterized.class)
 public class HeadHandlerTest {
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        List<Object[]> tests = new ArrayList<>();
+
+    public static Collection<int[]> data() {
+        List<int[]> tests = new ArrayList<>();
         for (int i = 0; i < ThreadLocalRandom.current().nextInt(4, 8); i++) {
-            tests.add(new Object[]{ThreadLocalRandom.current().nextInt(2, 10),
+            tests.add(new int[]{ThreadLocalRandom.current().nextInt(2, 10),
                     ThreadLocalRandom.current().nextInt(1, 10),
                     HeadHandler.getBufferedReaderSize() * ThreadLocalRandom.current().nextInt(1, 40)});
         }
         return tests;
     }
 
-    private final int lineCnt;
-    private final int headLineCnt;
-    private final int totalCharCount;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(HeadHandlerTest.class);
-
-    /**
-     * @param lineCnt number of lines to generate
-     * @param headLineCnt maximum number of lines to get
-     */
-    public HeadHandlerTest(int lineCnt, int headLineCnt, int totalCharCount) {
-        this.lineCnt = lineCnt;
-        this.headLineCnt = headLineCnt;
-        this.totalCharCount = totalCharCount;
-    }
 
     private static class RandomInputStream extends InputStream {
         private final int maxCharCount;
@@ -149,8 +133,12 @@ public class HeadHandlerTest {
         }
     }
 
-    @Test
-    public void testHeadHandler() throws IOException {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testHeadHandler(int[] data) throws IOException {
+        int lineCnt = data[0];
+        int headLineCnt = data[1];
+        int totalCharCount = data[2];
         LOGGER.log(Level.INFO, "testing HeadHandler with: {0}/{1}/{2}",
                 new Object[]{lineCnt, headLineCnt, totalCharCount});
 

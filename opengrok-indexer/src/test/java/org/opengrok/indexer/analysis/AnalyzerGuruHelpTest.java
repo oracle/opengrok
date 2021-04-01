@@ -22,10 +22,10 @@
  */
 package org.opengrok.indexer.analysis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link AnalyzerGuruHelp}.
@@ -34,8 +34,8 @@ public class AnalyzerGuruHelpTest {
     @Test
     public void shouldCreateReadableUsage() {
         String usage = AnalyzerGuruHelp.getUsage();
-        assertFalse("usage is not empty", usage.isEmpty());
-        assertTrue("usage contains \"*.\"", usage.contains("*."));
-        assertTrue("usage contains \"#!\"", usage.contains("#!"));
+        assertFalse(usage.isEmpty(), "usage is not empty");
+        assertTrue(usage.contains("*."), "usage contains \"*.\"");
+        assertTrue(usage.contains("#!"), "usage contains \"#!\"");
     }
 }

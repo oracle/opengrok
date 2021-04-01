@@ -30,16 +30,14 @@ import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.regex.PatternSyntaxException;
-import junit.framework.AssertionFailedError;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GroupTest {
 
@@ -63,11 +61,8 @@ public class GroupTest {
 
         // verify that the write didn'abcd fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
             // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -78,11 +73,8 @@ public class GroupTest {
 
         // verify that the read didn'abcd fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
             // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
     }
 
@@ -103,13 +95,9 @@ public class GroupTest {
         try {
             Group g = new Group();
             g.setPattern(pattern);
-            if (!valid) {
-                fail("Pattern \"" + pattern + "\" is invalid regex pattern, exception expected.");
-            }
+            assertTrue(valid, "Pattern \"" + pattern + "\" is invalid regex pattern, exception expected.");
         } catch (PatternSyntaxException ex) {
-            if (valid) {
-                fail("Pattern \"" + pattern + "\" is valid regex pattern, exception thrown.");
-            }
+            assertFalse(valid, "Pattern \"" + pattern + "\" is valid regex pattern, exception thrown.");
         }
     }
 
@@ -123,32 +111,32 @@ public class GroupTest {
         Project t = new Project("abcd");
 
         // basic matching
-        assertTrue("Should match pattern", g.match(t));
+        assertTrue(g.match(t), "Should match pattern");
 
         t.setName("abcde");
 
-        assertFalse("Shouldn't match, pattern is shorter", g.match(t));
+        assertFalse(g.match(t), "Shouldn't match, pattern is shorter");
 
         g.setPattern("abcd.");
 
-        assertTrue("Should match pattern", g.match(t));
+        assertTrue(g.match(t), "Should match pattern");
 
         g.setPattern("a.*");
 
-        assertTrue("Should match pattern", g.match(t));
+        assertTrue(g.match(t), "Should match pattern");
 
         g.setPattern("ab|cd");
 
-        assertFalse("Shouldn't match pattern", g.match(t));
+        assertFalse(g.match(t), "Shouldn't match pattern");
 
         t.setName("ab");
         g.setPattern("ab|cd");
 
-        assertTrue("Should match pattern", g.match(t));
+        assertTrue(g.match(t), "Should match pattern");
 
         t.setName("cd");
 
-        assertTrue("Should match pattern", g.match(t));
+        assertTrue(g.match(t), "Should match pattern");
     }
 
     @Test
@@ -220,16 +208,16 @@ public class GroupTest {
     public void testEquality() {
         Group g1 = new Group();
         Group g2 = new Group();
-        assertEquals("null == null", g1, g2);
+        assertEquals(g1, g2, "null == null");
 
         g1 = new Group("name");
         g2 = new Group("other");
-        assertNotEquals("\"name\" != \"other\"", g1, g2);
+        assertNotEquals(g1, g2, "\"name\" != \"other\"");
 
         g1 = new Group("name");
         g2 = new Group("NAME");
-        assertEquals("\"name\" == \"NAME\"", g1, g2);
-        assertEquals("\"name\" == \"name\"", g1, g1);
-        assertEquals("\"NAME\" == \"NAME\"", g2, g2);
+        assertEquals(g1, g2, "\"name\" == \"NAME\"");
+        assertEquals(g1, g1, "\"name\" == \"name\"");
+        assertEquals(g2, g2, "\"NAME\" == \"NAME\"");
     }
 }

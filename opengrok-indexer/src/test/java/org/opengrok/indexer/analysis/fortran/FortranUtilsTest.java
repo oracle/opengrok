@@ -22,9 +22,10 @@
  */
 package org.opengrok.indexer.analysis.fortran;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.StringUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Represents a test class for {@link FortranUtils}.
@@ -36,7 +37,7 @@ public class FortranUtilsTest {
         final String value = "''1-2-3'";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
-        assertEquals("unquoted apostrophe", 7, i);
+        assertEquals(7, i, "unquoted apostrophe");
     }
 
     @Test
@@ -44,7 +45,7 @@ public class FortranUtilsTest {
         final String value = "'''''";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
-        assertEquals("unquoted apostrophe after apostrophes", 4, i);
+        assertEquals(4, i, "unquoted apostrophe after apostrophes");
     }
 
     @Test
@@ -52,7 +53,7 @@ public class FortranUtilsTest {
         final String value = "''''";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
-        assertEquals("escaped apostrophe pairs", -1, i);
+        assertEquals(-1, i, "escaped apostrophe pairs");
     }
 
     @Test
@@ -60,6 +61,6 @@ public class FortranUtilsTest {
         final String value = "'";
         int i = StringUtils.patindexOf(value,
             FortranUtils.CHARLITERAL_APOS_DELIMITER);
-        assertEquals("initial apostrophe", 0, i);
+        assertEquals(0, i, "initial apostrophe");
     }
 }
