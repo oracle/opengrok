@@ -22,17 +22,25 @@
  */
 package org.opengrok.indexer.util;
 
+import org.opengrok.indexer.logger.LoggerFactory;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class to provide simple host/address methods.
  */
 public class HostUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostUtil.class);
+
     private HostUtil() {
         // private to enforce static
     }
@@ -73,4 +81,25 @@ public class HostUtil {
         return true;
     }
 
+    public static boolean isReachable(String webappURI, int timeOutMillis) {
+        boolean connectWorks = false;
+        try {
+            for (InetAddress addr : InetAddress.getAllByName(HostUtil.urlToHostname(webappURI))) {
+                int port = HostUtil.urlToPort(webappURI);
+                if (port <= 0) {
+                    LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
+                    break;
+                }
+                if (HostUtil.isReachable(addr, port, timeOutMillis)) {
+                    LOGGER.log(Level.FINE, "URI " + webappURI + " is reachable via " + addr.toString());
+                    connectWorks = true;
+                    break;
+                }
+            }
+        } catch (URISyntaxException | UnknownHostException e) {
+            LOGGER.log(Level.WARNING, String.format("URI not valid: %s", webappURI), e);
+        }
+
+        return connectWorks;
+    }
 }
