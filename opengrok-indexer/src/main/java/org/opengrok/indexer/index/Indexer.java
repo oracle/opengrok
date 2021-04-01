@@ -79,6 +79,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.HostUtil;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.Statistics;
@@ -161,8 +162,17 @@ public final class Indexer {
 
         boolean createDict = false;
 
+        int CONNECT_TIMEOUT = 1000;  // in milliseconds
+
         try {
             argv = parseOptions(argv);
+
+            if (webappURI != null) {
+                if (!HostUtil.isReachable(webappURI, CONNECT_TIMEOUT)) {
+                    System.err.println(webappURI + " is not reachable.");
+                    System.exit(1);
+                }
+            }
 
             /*
              * Attend to disabledRepositories here in case exitWithHelp() will
