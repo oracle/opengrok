@@ -24,11 +24,13 @@ package org.opengrok.indexer.analysis.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Represents a container for tests of {@link ZipAnalyzerFactory}.
@@ -41,14 +43,12 @@ public class ZipAnalyzerFactoryTest {
      */
     @Test
     public void testZipWrtAnalyzerGuru() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "analysis/archive/zip.bin");
-        assertNotNull("zip.bin should be available,", res);
+        InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/archive/zip.bin");
+        assertNotNull(res, "zip.bin should be available,");
 
         // assert that it is matched
         AnalyzerFactory fac = AnalyzerGuru.find(res);
-        assertNotNull("zip.bin should have factory", fac);
-        assertSame("should be ZipAnalyzerFactory", fac.getClass(),
-            ZipAnalyzerFactory.class);
+        assertNotNull(fac, "zip.bin should have factory");
+        assertSame(fac.getClass(), ZipAnalyzerFactory.class, "should be ZipAnalyzerFactory");
     }
 }

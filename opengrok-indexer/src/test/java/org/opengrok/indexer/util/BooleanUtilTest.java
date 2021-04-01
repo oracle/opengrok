@@ -19,78 +19,51 @@
 
 package org.opengrok.indexer.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BooleanUtilTest {
 
-  // Test written by Diffblue Cover.
-  @Test
-  public void isBooleanInputNotNullOutputFalse() {
+    // Test written by Diffblue Cover.
+    @Test
+    public void isBooleanInputNotNullOutputFalse() {
+        final String value = "3";
+        final boolean actual = BooleanUtil.isBoolean(value);
+        assertFalse(actual);
+    }
 
-    // Arrange
-    final String value = "3";
+    // Test written by Diffblue Cover.
+    @Test
+    public void isBooleanInputNotNullOutputTrue() {
+        final String value = "1";
+        final boolean actual = BooleanUtil.isBoolean(value);
+        assertTrue(actual);
+    }
 
-    // Act
-    final boolean actual = BooleanUtil.isBoolean(value);
+    // Test written by Diffblue Cover.
+    @Test
+    public void isBooleanInputNotNullOutputTrue2() {
+        final String value = "faLSe";
+        final boolean actual = BooleanUtil.isBoolean(value);
+        assertTrue(actual);
+    }
 
-    // Assert result
-    Assert.assertFalse(actual);
-  }
+    // Test written by Diffblue Cover.
+    @Test
+    public void toIntegerInputFalseOutputZero() {
+        final boolean b = false;
+        final int actual = BooleanUtil.toInteger(b);
+        assertEquals(0, actual);
+    }
 
-  // Test written by Diffblue Cover.
-  @Test
-  public void isBooleanInputNotNullOutputTrue() {
-
-    // Arrange
-    final String value = "1";
-
-    // Act
-    final boolean actual = BooleanUtil.isBoolean(value);
-
-    // Assert result
-    Assert.assertTrue(actual);
-  }
-
-  // Test written by Diffblue Cover.
-  @Test
-  public void isBooleanInputNotNullOutputTrue2() {
-
-    // Arrange
-    final String value = "faLSe";
-
-    // Act
-    final boolean actual = BooleanUtil.isBoolean(value);
-
-    // Assert result
-    Assert.assertTrue(actual);
-  }
-
-  // Test written by Diffblue Cover.
-  @Test
-  public void toIntegerInputFalseOutputZero() {
-
-    // Arrange
-    final boolean b = false;
-
-    // Act
-    final int actual = BooleanUtil.toInteger(b);
-
-    // Assert result
-    Assert.assertEquals(0, actual);
-  }
-
-  // Test written by Diffblue Cover.
-  @Test
-  public void toIntegerInputTrueOutputPositive() {
-
-    // Arrange
-    final boolean b = true;
-
-    // Act
-    final int actual = BooleanUtil.toInteger(b);
-
-    // Assert result
-    Assert.assertEquals(1, actual);
-  }
+    // Test written by Diffblue Cover.
+    @Test
+    public void toIntegerInputTrueOutputPositive() {
+        final boolean b = true;
+        final int actual = BooleanUtil.toInteger(b);
+        assertEquals(1, actual);
+    }
 }

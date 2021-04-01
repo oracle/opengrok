@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.python;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class PythonSymbolTokenizerTest {
     public void testPythonSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
             "analysis/python/sample.py");
-        assertNotNull("despite sample.py as resource,", pyres);
+        assertNotNull(pyres, "despite sample.py as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/python/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(PythonSymbolTokenizer.class, pyres, expectedSymbols);

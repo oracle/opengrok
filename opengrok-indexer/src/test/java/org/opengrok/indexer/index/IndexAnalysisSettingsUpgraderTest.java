@@ -22,18 +22,18 @@
  */
 package org.opengrok.indexer.index;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a test container for {@link IndexAnalysisSettingsUpgrader}.
@@ -67,29 +67,29 @@ public class IndexAnalysisSettingsUpgraderTest {
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();
         IndexAnalysisSettings3 vLatest = upgrader.upgrade(bin, 3);
-        assertNotNull("should get non-null from upgrader", vLatest);
-        assertEquals("should have same projectName", PROJECT_NAME, vLatest.getProjectName());
-        assertEquals("should have same tabSize", TABSIZE, (int) vLatest.getTabSize());
-        assertEquals("should have same analyzerGuruVersion", ANALYZER_GURU_VERSION,
-                (long) vLatest.getAnalyzerGuruVersion());
-        assertEquals("should have expected analyzer versions",
-                vLatest.getAnalyzersVersions().size(), actAnalyzersVersionNos.size());
+        assertNotNull(vLatest, "should get non-null from upgrader");
+        assertEquals(PROJECT_NAME, vLatest.getProjectName(), "should have same projectName");
+        assertEquals(TABSIZE, (int) vLatest.getTabSize(), "should have same tabSize");
+        assertEquals(ANALYZER_GURU_VERSION, (long) vLatest.getAnalyzerGuruVersion(),
+                "should have same analyzerGuruVersion");
+        assertEquals(vLatest.getAnalyzersVersions().size(), actAnalyzersVersionNos.size(),
+                "should have expected analyzer versions");
 
         Object[] expectedVersionKeys = actAnalyzersVersionNos.keySet().stream().sorted().toArray();
-        assertArrayEquals("analyzer versions keysets should be equal",
-                expectedVersionKeys,
-                vLatest.getAnalyzersVersions().keySet().stream().sorted().toArray());
-        assertArrayEquals("analyzer versions values should be equal",
-                getMapValues(actAnalyzersVersionNos, expectedVersionKeys),
-                getMapValues(vLatest.getAnalyzersVersions(), expectedVersionKeys));
+        assertArrayEquals(expectedVersionKeys,
+                vLatest.getAnalyzersVersions().keySet().stream().sorted().toArray(),
+                "analyzer versions keysets should be equal");
+        assertArrayEquals(getMapValues(actAnalyzersVersionNos, expectedVersionKeys),
+                getMapValues(vLatest.getAnalyzersVersions(), expectedVersionKeys),
+                "analyzer versions values should be equal");
 
         Object[] expectedSymlinkKeys = TEST_MAPPED_SYMLINKS.keySet().stream().sorted().toArray();
-        assertArrayEquals("index symlinks keysets should be equal",
-                expectedSymlinkKeys,
-                vLatest.getIndexedSymlinks().keySet().stream().sorted().toArray());
-        assertArrayEquals("index symlinks values should be equal",
-                getMapValues(TEST_MAPPED_SYMLINKS, expectedSymlinkKeys),
-                getMapValues(vLatest.getIndexedSymlinks(), expectedSymlinkKeys));
+        assertArrayEquals(expectedSymlinkKeys,
+                vLatest.getIndexedSymlinks().keySet().stream().sorted().toArray(),
+                "index symlinks keysets should be equal");
+        assertArrayEquals(getMapValues(TEST_MAPPED_SYMLINKS, expectedSymlinkKeys),
+                getMapValues(vLatest.getIndexedSymlinks(), expectedSymlinkKeys),
+                "index symlinks values should be equal");
     }
 
     @Test
@@ -105,14 +105,13 @@ public class IndexAnalysisSettingsUpgraderTest {
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();
         IndexAnalysisSettings3 v3 = upgrader.upgrade(bin, 2);
-        assertNotNull("should get non-null from upgrader", v3);
-        assertEquals("should have same projectName", PROJECT_NAME, v3.getProjectName());
-        assertEquals("should have same tabSize", TABSIZE, (int) v3.getTabSize());
-        assertEquals("should have same analyzerGuruVersion", ANALYZER_GURU_VERSION,
-                (long) v3.getAnalyzerGuruVersion());
-        assertEquals("should have expected analyzer versions",
-                v3.getAnalyzersVersions().size(), actAnalyzersVersionNos.size());
-        assertTrue("should have no indexedSymlinks", v3.getIndexedSymlinks().isEmpty());
+        assertNotNull(v3, "should get non-null from upgrader");
+        assertEquals(PROJECT_NAME, v3.getProjectName(), "should have same projectName");
+        assertEquals(TABSIZE, (int) v3.getTabSize(), "should have same tabSize");
+        assertEquals(ANALYZER_GURU_VERSION, (long) v3.getAnalyzerGuruVersion(), "should have same analyzerGuruVersion");
+        assertEquals(v3.getAnalyzersVersions().size(), actAnalyzersVersionNos.size(),
+                "should have expected analyzer versions");
+        assertTrue(v3.getIndexedSymlinks().isEmpty(), "should have no indexedSymlinks");
     }
 
     @Test
@@ -130,7 +129,7 @@ public class IndexAnalysisSettingsUpgraderTest {
         } catch (ClassCastException e) {
             // expected
         }
-        assertNull("should not have produced an instance", res);
+        assertNull(res, "should not have produced an instance");
     }
 
     @Test
@@ -145,7 +144,7 @@ public class IndexAnalysisSettingsUpgraderTest {
             assertTrue(e.getMessage().startsWith("Too old version"));
             passed = true;
         }
-        assertTrue("should have thrown on too-old version", passed);
+        assertTrue(passed, "should have thrown on too-old version");
     }
 
     private static <K, V> Object[] getMapValues(Map<K, V> map, Object[] keys) {

@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.fortran;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class FortranSymbolTokenizerTest {
     public void testFortranSymbolStream() throws Exception {
         InputStream fres = getClass().getClassLoader().getResourceAsStream(
             "analysis/fortran/sample.f");
-        assertNotNull("despite sample.f as resource,", fres);
+        assertNotNull(fres, "despite sample.f as resource,");
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/fortran/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", wdsres);
+        assertNotNull(wdsres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(wdsres);
         assertSymbolStream(FortranSymbolTokenizer.class, fres, expectedSymbols);

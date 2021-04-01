@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.ruby;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class RubySymbolTokenizerTest {
     public void testRubySymbolStream() throws Exception {
         InputStream rbres = getClass().getClassLoader().getResourceAsStream(
             "analysis/ruby/sample.rb");
-        assertNotNull("despite sample.rb as resource,", rbres);
+        assertNotNull(rbres, "despite sample.rb as resource,");
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/ruby/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", wdsres);
+        assertNotNull(wdsres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(wdsres);
         assertSymbolStream(RubySymbolTokenizer.class, rbres, expectedSymbols);

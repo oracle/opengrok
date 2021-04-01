@@ -26,13 +26,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.search.QueryBuilder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Represents a test class for {@link IndexAnalysisSettings}.
@@ -44,7 +44,7 @@ public class IndexAnalysisSettingsTest {
     private static final int TABSIZE = 17;
     private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         ANALYZER_VERSIONS.put("abc", 6L);
         ANALYZER_VERSIONS.put("ABC", 45L);
@@ -54,8 +54,8 @@ public class IndexAnalysisSettingsTest {
     @Test
     public void shouldAffirmINDEX_ANALYSIS_SETTINGS_OBJUID() {
         String objuid = QueryBuilder.normalizeDirPath("58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
-        assertEquals("IndexAnalysisSettingsDao objuid", objuid,
-                IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID);
+        assertEquals(objuid, IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID,
+                "IndexAnalysisSettingsDao objuid");
     }
 
     @Test
@@ -65,9 +65,9 @@ public class IndexAnalysisSettingsTest {
 
         IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
         assertNotNull(res);
-        assertNull("projectName", res.getProjectName());
-        assertNull("tabSize", res.getTabSize());
-        assertNull("analyzerGuruVersion", res.getAnalyzerGuruVersion());
+        assertNull(res.getProjectName(), "projectName");
+        assertNull(res.getTabSize(), "tabSize");
+        assertNull(res.getAnalyzerGuruVersion(), "analyzerGuruVersion");
     }
 
     @Test
@@ -81,8 +81,8 @@ public class IndexAnalysisSettingsTest {
 
         IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
         assertNotNull(res);
-        assertEquals("projectName", PROJECT_NAME, res.getProjectName());
-        assertEquals("tabSize", TABSIZE, (int) res.getTabSize());
-        assertEquals("analyzerGuruVersion", ANALYZER_GURU_VERSION, (long) res.getAnalyzerGuruVersion());
+        assertEquals(PROJECT_NAME, res.getProjectName(), "projectName");
+        assertEquals(TABSIZE, (int) res.getTabSize(), "tabSize");
+        assertEquals(ANALYZER_GURU_VERSION, (long) res.getAnalyzerGuruVersion(), "analyzerGuruVersion");
     }
 }

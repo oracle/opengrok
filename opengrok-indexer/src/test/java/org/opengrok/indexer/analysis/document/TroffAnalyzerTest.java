@@ -23,9 +23,6 @@
  */
 package org.opengrok.indexer.analysis.document;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.File;
@@ -34,12 +31,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import org.apache.lucene.document.Document;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jens Elkner
@@ -58,7 +58,7 @@ public class TroffAnalyzerTest {
      *
      * @throws java.lang.Exception exception
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         factory = new TroffAnalyzerFactory();
         assertNotNull(factory);
@@ -71,9 +71,7 @@ public class TroffAnalyzerTest {
         String file = System.getProperty("opengrok.test.troff.doc",
                 repository.getSourceRoot() + "/document/foobar.1");
         File f = new File(file);
-        if (!(f.canRead() && f.isFile())) {
-            fail("troff testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "troff testfile " + f + " not found");
         CharArrayWriter w = new CharArrayWriter((int) f.length());
         Util.dump(w, f, false);
         content = w.toString();
@@ -82,7 +80,7 @@ public class TroffAnalyzerTest {
     /**
      * @throws java.lang.Exception exception
      */
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() throws Exception {
         factory = null;
         analyzer = null;

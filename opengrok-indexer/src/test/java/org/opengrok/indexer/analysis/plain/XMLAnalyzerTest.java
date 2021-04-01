@@ -26,12 +26,12 @@ package org.opengrok.indexer.analysis.plain;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class XMLAnalyzerTest {
     @Test

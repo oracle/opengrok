@@ -23,28 +23,28 @@
  */
 package org.opengrok.indexer.index;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class IndexerMainTest {
     private TestRepository repository;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repository.destroy();
     }

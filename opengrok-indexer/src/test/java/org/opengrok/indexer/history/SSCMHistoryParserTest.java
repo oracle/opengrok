@@ -22,16 +22,16 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -41,12 +41,12 @@ public class SSCMHistoryParserTest {
 
     SSCMHistoryParser instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new SSCMHistoryParser(new SSCMRepository());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -60,7 +60,7 @@ public class SSCMHistoryParserTest {
     public void parseEmpty() throws IOException {
         History result = instance.parse("");
         assertNotNull(result);
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     /**
@@ -106,7 +106,7 @@ public class SSCMHistoryParserTest {
         assertNotNull(result);
         // History entries that do not increment version number are not included
         //  (no file changes)
-        assertEquals("Should contain four history entries", 4, result.getHistoryEntries().size());
+        assertEquals(4, result.getHistoryEntries().size(), "Should contain four history entries");
         // History entries are reversed (newest first)
         {
             HistoryEntry e0 = result.getHistoryEntries().get(0);

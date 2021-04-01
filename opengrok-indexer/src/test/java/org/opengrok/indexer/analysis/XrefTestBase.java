@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -33,7 +33,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.indexer.util.StreamUtils.readerFromResource;
 
@@ -87,7 +87,7 @@ public abstract class XrefTestBase {
 
         String messagePrefix = factory.getClass().getName();
         assertLinesEqual(messagePrefix + " xref", expected, gotten);
-        assertEquals(messagePrefix + " LOC", expectedLOC, actLOC);
+        assertEquals(expectedLOC, actLOC, messagePrefix + " LOC");
     }
 
     private int writeXref(

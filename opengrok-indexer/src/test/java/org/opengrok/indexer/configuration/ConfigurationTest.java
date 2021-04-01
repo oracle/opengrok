@@ -35,15 +35,15 @@ import java.util.LinkedList;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import junit.framework.AssertionFailedError;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.ClassUtil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.xml.sax.Attributes;
 import org.xml.sax.ext.DefaultHandler2;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *
@@ -63,9 +63,9 @@ public class ConfigurationTest {
                 if ((prop = attr.getValue("property")) != null) {
                     for (Field f : Group.class.getDeclaredFields()) {
                         if (Modifier.isTransient(f.getModifiers())) {
-                            Assert.assertNotEquals("'" + f.getName() +
+                            assertNotEquals(prop, f.getName(), "'" + f.getName() +
                                     "' field is transient and yet is present in XML " +
-                                    "encoding of Group object", prop, f.getName());
+                                    "encoding of Group object");
                         }
                     }
                 }
@@ -161,11 +161,8 @@ public class ConfigurationTest {
 
             // verify that the read didn't fail
             if (!exceptions.isEmpty()) {
-                AssertionFailedError afe = new AssertionFailedError(
-                        "Got " + exceptions.size() + " exception(s)");
                 // Can only chain one of the exceptions. Take the first one.
-                afe.initCause(exceptions.getFirst());
-                throw afe;
+                throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
             }
 
             assertEquals(oldCfg.getGroups(), cfg.getGroups());

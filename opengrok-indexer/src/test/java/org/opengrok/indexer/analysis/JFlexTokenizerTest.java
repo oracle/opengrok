@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -28,7 +28,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.c.CSymbolTokenizer;
 import org.opengrok.indexer.analysis.c.CxxSymbolTokenizer;
 import org.opengrok.indexer.analysis.document.TroffFullTokenizer;
@@ -44,9 +44,9 @@ import org.opengrok.indexer.analysis.sh.ShSymbolTokenizer;
 import org.opengrok.indexer.analysis.tcl.TclSymbolTokenizer;
 import org.opengrok.indexer.analysis.uue.UuencodeFullTokenizer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for JFlexTokenizer.
@@ -110,18 +110,16 @@ public class JFlexTokenizerTest {
 
         int count = 0;
         while (tokenizer.incrementToken()) {
-            assertTrue("too many tokens", count < expectedTokens.length);
+            assertTrue(count < expectedTokens.length, "too many tokens");
             String expected = expectedTokens[count];
-            assertEquals("term", expected, term.toString());
-            assertEquals("start",
-                    inputText.indexOf(expected), offset.startOffset());
-            assertEquals("end",
-                    inputText.indexOf(expected) + expected.length(),
-                    offset.endOffset());
+            assertEquals(expected, term.toString(), "term");
+            assertEquals(inputText.indexOf(expected), offset.startOffset(), "start");
+            assertEquals(inputText.indexOf(expected) + expected.length(),
+                    offset.endOffset(), "end");
             count++;
         }
 
-        assertEquals("wrong number of tokens", expectedTokens.length, count);
+        assertEquals(expectedTokens.length, count, "wrong number of tokens");
     }
 
     /**

@@ -23,14 +23,15 @@
  */
 package org.opengrok.indexer.configuration;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test include file functionality for web application.
@@ -43,7 +44,7 @@ public class IncludeFilesTest {
     static final String CONTENT_2 = "bar";
     static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         includeRoot = Files.createTempDirectory("include_root");
         env.setIncludeRoot(includeRoot.toString());

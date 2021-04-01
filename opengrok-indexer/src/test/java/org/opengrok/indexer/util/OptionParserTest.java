@@ -22,20 +22,19 @@
  */
 package org.opengrok.indexer.util;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import java.lang.reflect.Field;
 import java.text.ParseException;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.index.Indexer;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author shaehn
@@ -44,14 +43,14 @@ public class OptionParserTest {
 
     int actionCounter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         actionCounter = 0;
     }
 
     // Scan parser should ignore all options it does not recognize.
     @Test
-    public void scanParserIgnoreUnrecognizableOptions() {
+    public void scanParserIgnoreUnrecognizableOptions() throws ParseException {
 
         String configPath = "/the/config/path";
 
@@ -62,19 +61,15 @@ public class OptionParserTest {
             });
         });
 
-        try {
-            String[] args = {"-a", "-b", "-R", configPath};
-            scanner.parse(args);
-            assertEquals(1, actionCounter);
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        String[] args = {"-a", "-b", "-R", configPath};
+        scanner.parse(args);
+        assertEquals(1, actionCounter);
     }
 
     // Validate that option can have multiple names
     // with both short and long versions.
     @Test
-    public void optionNameAliases() {
+    public void optionNameAliases() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -84,18 +79,13 @@ public class OptionParserTest {
             });
         });
 
-        try {
-            String[] args = {"-?"};
-            opts.parse(args);
-            assertEquals(1, actionCounter);
+        String[] args = {"-?"};
+        opts.parse(args);
+        assertEquals(1, actionCounter);
 
-            String[] args2 = {"--help"};
-            opts.parse(args2);
-            assertEquals(2, actionCounter);
-
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        String[] args2 = {"--help"};
+        opts.parse(args2);
+        assertEquals(2, actionCounter);
     }
 
     // Show that parser will throw exception
@@ -141,7 +131,7 @@ public class OptionParserTest {
     // it is glued next to the option (eg. -xValue), or comes
     // as a following argument (eg. -x Value)
     @Test
-    public void shortOptionValue() {
+    public void shortOptionValue() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("-a=VALUE").execute(v -> {
@@ -150,24 +140,19 @@ public class OptionParserTest {
             });
         });
 
-        try {
-            String[] separateValue = {"-a", "3"};
-            opts.parse(separateValue);
-            assertEquals(1, actionCounter);
+        String[] separateValue = {"-a", "3"};
+        opts.parse(separateValue);
+        assertEquals(1, actionCounter);
 
-            String[] joinedValue = {"-a3"};
-            opts.parse(joinedValue);
-            assertEquals(2, actionCounter);
-
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        String[] joinedValue = {"-a3"};
+        opts.parse(joinedValue);
+        assertEquals(2, actionCounter);
     }
 
     // Validate the ability of parser to convert
     // string option values into internal data types.
     @Test
-    public void testSupportedDataCoercion() {
+    public void testSupportedDataCoercion() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -203,45 +188,40 @@ public class OptionParserTest {
             });
         });
 
-        try {
-            String[] integer = {"--int", "3"};
-            opts.parse(integer);
-            assertEquals(1, actionCounter);
+        String[] integer = {"--int", "3"};
+        opts.parse(integer);
+        assertEquals(1, actionCounter);
 
-            String[] floats = {"--float", "3.23"};
-            opts.parse(floats);
-            assertEquals(2, actionCounter);
+        String[] floats = {"--float", "3.23"};
+        opts.parse(floats);
+        assertEquals(2, actionCounter);
 
-            String[] doubles = {"--double", "3.23"};
-            opts.parse(doubles);
-            assertEquals(3, actionCounter);
+        String[] doubles = {"--double", "3.23"};
+        opts.parse(doubles);
+        assertEquals(3, actionCounter);
 
-            actionCounter = 0;
-            String[] verity = {"-t", "true", "-t", "True", "-t", "on", "-t", "ON", "-t", "yeS"};
-            opts.parse(verity);
-            assertEquals(5, actionCounter);
+        actionCounter = 0;
+        String[] verity = {"-t", "true", "-t", "True", "-t", "on", "-t", "ON", "-t", "yeS"};
+        opts.parse(verity);
+        assertEquals(5, actionCounter);
 
-            actionCounter = 0;
-            String[] falsehood = {"-f", "false", "-f", "FALSE", "-f", "oFf", "-f", "no", "-f", "NO"};
-            opts.parse(falsehood);
-            assertEquals(5, actionCounter);
+        actionCounter = 0;
+        String[] falsehood = {"-f", "false", "-f", "FALSE", "-f", "oFf", "-f", "no", "-f", "NO"};
+        opts.parse(falsehood);
+        assertEquals(5, actionCounter);
 
-            try {  // test illegal value to Boolean
-                String[] liar = {"--truth", "liar"};
-                opts.parse(liar);
-            } catch (ParseException e) {
-                String msg = e.getMessage();
-                assertEquals("Failed to parse (liar) as value of [-t, --truth]", msg);
-            }
-
-            actionCounter = 0;
-            String[] array = {"-a", "a,b,c"};
-            opts.parse(array);
-            assertEquals(1, actionCounter);
-
+        try {  // test illegal value to Boolean
+            String[] liar = {"--truth", "liar"};
+            opts.parse(liar);
         } catch (ParseException e) {
-            fail(e.getMessage());
+            String msg = e.getMessage();
+            assertEquals("Failed to parse (liar) as value of [-t, --truth]", msg);
         }
+
+        actionCounter = 0;
+        String[] array = {"-a", "a,b,c"};
+        opts.parse(array);
+        assertEquals(1, actionCounter);
     }
 
     // Make sure that option can take specific addOption of values
@@ -306,7 +286,7 @@ public class OptionParserTest {
 
     // Verify option may have non-required value
     @Test
-    public void missingValueOnOptionAllowed() {
+    public void missingValueOnOptionAllowed() throws ParseException {
 
         OptionParser opts = OptionParser.execute(parser -> {
 
@@ -336,37 +316,33 @@ public class OptionParserTest {
             });
         });
 
-        try {
-            String[] args1 = {"--value", "hasOne"};
-            opts.parse(args1);
-            assertEquals(1, actionCounter);
+        String[] args1 = {"--value", "hasOne"};
+        opts.parse(args1);
+        assertEquals(1, actionCounter);
 
-            String[] args2 = {"--value"};
-            opts.parse(args2);
-            assertEquals(2, actionCounter);
+        String[] args2 = {"--value"};
+        opts.parse(args2);
+        assertEquals(2, actionCounter);
 
-            String[] args3 = {"-ohasOne"};
-            opts.parse(args3);
-            assertEquals(3, actionCounter);
+        String[] args3 = {"-ohasOne"};
+        opts.parse(args3);
+        assertEquals(3, actionCounter);
 
-            String[] args4 = {"-o"};
-            opts.parse(args4);
-            assertEquals(4, actionCounter);
+        String[] args4 = {"-o"};
+        opts.parse(args4);
+        assertEquals(4, actionCounter);
 
-            String[] args5 = {"-v", "hasOne"};
-            opts.parse(args5);
-            assertEquals(5, actionCounter);
+        String[] args5 = {"-v", "hasOne"};
+        opts.parse(args5);
+        assertEquals(5, actionCounter);
 
-            String[] args6 = {"-v"};
-            opts.parse(args6);
-            assertEquals(6, actionCounter);
+        String[] args6 = {"-v"};
+        opts.parse(args6);
+        assertEquals(6, actionCounter);
 
-            String[] args7 = {"--value", "-o", "hasOne"};
-            opts.parse(args7);
-            assertEquals(8, actionCounter);
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        String[] args7 = {"--value", "-o", "hasOne"};
+        opts.parse(args7);
+        assertEquals(8, actionCounter);
     }
 
     // Verify default option summary
@@ -410,35 +386,27 @@ public class OptionParserTest {
 
     // Allow user to enter an initial substring to long option names
     @Test
-    public void allowInitialSubstringOptionNames() {
+    public void allowInitialSubstringOptionNames() throws ParseException {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help-me-out").execute(v -> actionCounter++);
         });
 
-        try {
-            String[] args = {"--help"};
-            opts.parse(args);
-            assertEquals(1, actionCounter);
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        String[] args = {"--help"};
+        opts.parse(args);
+        assertEquals(1, actionCounter);
     }
 
     // Specific test to evalutate the internal option candidate method
     @Test
-    public void testInitialSubstringOptionNames() {
+    public void testInitialSubstringOptionNames() throws ParseException {
         OptionParser opts = OptionParser.execute(parser -> {
             parser.on("--help-me-out");
             parser.on("--longOption");
         });
 
-        try {
-            assertEquals("--longOption", opts.candidate("--l", 0));
-            assertEquals("--help-me-out", opts.candidate("--h", 0));
-            assertNull(opts.candidate("--thisIsUnknownOption", 0));
-        } catch (ParseException e) {
-            fail(e.getMessage());
-        }
+        assertEquals("--longOption", opts.candidate("--l", 0));
+        assertEquals("--help-me-out", opts.candidate("--h", 0));
+        assertNull(opts.candidate("--thisIsUnknownOption", 0));
     }
 
     // Catch duplicate option names in parser construction.
@@ -473,35 +441,28 @@ public class OptionParserTest {
 
     // Fail options put into Indexer.java that do not have a description.
     @Test
-    public void catchIndexerOptionsWithoutDescription() throws NoSuchFieldException, IllegalAccessException {
+    public void catchIndexerOptionsWithoutDescription() throws NoSuchFieldException, IllegalAccessException, ParseException {
         String[] argv = {"---unitTest"};
-        try {
-            Indexer.parseOptions(argv);
+        Indexer.parseOptions(argv);
 
-            // Use reflection to get the option parser from Indexer.
-            Field f = Indexer.class.getDeclaredField("optParser");
-            f.setAccessible(true);
-            OptionParser op = (OptionParser) f.get(Indexer.class);
+        // Use reflection to get the option parser from Indexer.
+        Field f = Indexer.class.getDeclaredField("optParser");
+        f.setAccessible(true);
+        OptionParser op = (OptionParser) f.get(Indexer.class);
 
-            for (OptionParser.Option o : op.getOptionList()) {
-                if (o.description == null) {
-                    fail("'" + o.names.get(0) + "' option needs description");
-                } else if (o.description.toString().isEmpty()) {
-                    fail("'" + o.names.get(0) + "' option needs non-empty description");
-                }
-            }
+        for (OptionParser.Option o : op.getOptionList()) {
+            assertNotNull(o.description, "'" + o.names.get(0) + "' option needs description");
+            assertFalse(o.description.toString().isEmpty(),
+                    "'" + o.names.get(0) + "' option needs non-empty description");
+        }
 
-            // This just tests that the description is actually null.
-            op = OptionParser.execute(parser -> {
-                parser.on("--help-me-out");
-            });
+        // This just tests that the description is actually null.
+        op = OptionParser.execute(parser -> {
+            parser.on("--help-me-out");
+        });
 
-            for (OptionParser.Option o : op.getOptionList()) {
-                assertNull(o.description);
-            }
-
-        } catch (ParseException e) {
-            fail(e.getMessage());
+        for (OptionParser.Option o : op.getOptionList()) {
+            assertNull(o.description);
         }
     }
 }

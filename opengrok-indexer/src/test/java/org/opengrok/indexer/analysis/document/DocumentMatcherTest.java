@@ -25,11 +25,13 @@ package org.opengrok.indexer.analysis.document;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Represents a container for tests of {@link DocumentMatcher} subclasses.
@@ -44,7 +46,7 @@ public class DocumentMatcherTest {
     public void testMdocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/sync.1m");
-        assertNotNull("despite inclusion locally,", res);
+        assertNotNull(res, "despite inclusion locally,");
 
         byte[] buf = readSignature(res);
 
@@ -52,13 +54,12 @@ public class DocumentMatcherTest {
 
         // assert that it is troff-like
         fac = TroffAnalyzerFactory.MATCHER.isMagic(buf, res);
-        assertNotNull("though sync.1m is mdoc(5),", fac);
-        assertSame("though sync.1m is troff-like mdoc(5)",
-            TroffAnalyzerFactory.DEFAULT_INSTANCE, fac);
+        assertNotNull(fac, "though sync.1m is mdoc(5),");
+        assertSame(TroffAnalyzerFactory.DEFAULT_INSTANCE, fac, "though sync.1m is troff-like mdoc(5)");
 
         // assert that it is not mandoc
         fac = MandocAnalyzerFactory.MATCHER.isMagic(buf, res);
-        assertNull("though sync.1m is troff-like mdoc(5),", fac);
+        assertNull(fac, "though sync.1m is troff-like mdoc(5),");
     }
 
     /**
@@ -69,7 +70,7 @@ public class DocumentMatcherTest {
     public void testMandocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/catman.1m");
-        assertNotNull("despite inclusion locally,", res);
+        assertNotNull(res, "despite inclusion locally,");
 
         byte[] buf = readSignature(res);
 
@@ -77,16 +78,14 @@ public class DocumentMatcherTest {
 
         // assert that it is mandoc-like
         fac = MandocAnalyzerFactory.MATCHER.isMagic(buf, res);
-        assertNotNull("though catman.1m is mandoc(5),", fac);
-        assertSame("though catman.1m is mandoc(5)",
-            MandocAnalyzerFactory.DEFAULT_INSTANCE, fac);
+        assertNotNull(fac, "though catman.1m is mandoc(5),");
+        assertSame(MandocAnalyzerFactory.DEFAULT_INSTANCE, fac, "though catman.1m is mandoc(5)");
 
         // assert that it is also troff-like (though mandoc will win in the
         // AnalyzerGuru)
         fac = TroffAnalyzerFactory.MATCHER.isMagic(buf, res);
-        assertNotNull("though catman.1m is mandoc(5),", fac);
-        assertSame("though catman.1m is mandoc(5)",
-            TroffAnalyzerFactory.DEFAULT_INSTANCE, fac);
+        assertNotNull(fac, "though catman.1m is mandoc(5),");
+        assertSame(TroffAnalyzerFactory.DEFAULT_INSTANCE, fac, "though catman.1m is mandoc(5)");
     }
 
     /**
@@ -98,7 +97,7 @@ public class DocumentMatcherTest {
     public void testMandocBOMDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "analysis/document/utf16le.1m");
-        assertNotNull("despite inclusion locally,", res);
+        assertNotNull(res, "despite inclusion locally,");
 
         byte[] buf = readSignature(res);
 
@@ -106,9 +105,8 @@ public class DocumentMatcherTest {
 
         // assert that it is mandoc-like
         fac = MandocAnalyzerFactory.MATCHER.isMagic(buf, res);
-        assertNotNull("though utf16le.1m is mandoc(5),", fac);
-        assertSame("though utf16le.1m is mandoc(5)",
-            MandocAnalyzerFactory.DEFAULT_INSTANCE, fac);
+        assertNotNull(fac, "though utf16le.1m is mandoc(5),");
+        assertSame(MandocAnalyzerFactory.DEFAULT_INSTANCE, fac, "though utf16le.1m is mandoc(5)");
     }
 
     private static byte[] readSignature(InputStream in) throws IOException {

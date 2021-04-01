@@ -22,10 +22,10 @@
  */
 package org.opengrok.indexer.history;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link RepositoriesHelp}.
@@ -34,8 +34,7 @@ public class RepositoriesHelpTest {
     @Test
     public void shouldCreateReadableUsage() {
         String helpText = RepositoriesHelp.getText();
-        assertFalse("help text should not be empty", helpText.isEmpty());
-        assertTrue("help text should contain 'git (GitRepository)'",
-                helpText.contains("git (GitRepository)"));
+        assertFalse(helpText.isEmpty(), "help text should not be empty");
+        assertTrue(helpText.contains("git (GitRepository)"), "help text should contain 'git (GitRepository)'");
     }
 }

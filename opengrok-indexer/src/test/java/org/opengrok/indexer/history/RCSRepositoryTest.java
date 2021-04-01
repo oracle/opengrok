@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -26,27 +26,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.RCS;
 
 /**
  * @author Vladimir Kotal
  */
-@ConditionalRun(RepositoryInstalled.RCSInstalled.class)
+@EnabledForRepository(RCS)
 public class RCSRepositoryTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static TestRepository repository = new TestRepository();
 
@@ -57,12 +52,12 @@ public class RCSRepositoryTest {
      */
     private static final String[] REVISIONS = {"1.2", "1.1"};
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         repository.create(RCSRepositoryTest.class.getResourceAsStream("repositories.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         repository = null;

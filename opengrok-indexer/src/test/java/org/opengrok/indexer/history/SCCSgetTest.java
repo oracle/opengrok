@@ -22,6 +22,11 @@
  */
 package org.opengrok.indexer.history;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,13 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test the SCCSget class.
@@ -47,7 +48,7 @@ public class SCCSgetTest {
     private File sccsfile;
     private File sccsdir;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         // Check to see if we have sccs..
         Process p = null;
@@ -83,7 +84,7 @@ public class SCCSgetTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         if (!haveSccs) {
             return;
@@ -91,9 +92,7 @@ public class SCCSgetTest {
         try {
             sccsdir = File.createTempFile("s.test", "sccs");
             sccsdir.delete();
-            if (!sccsdir.mkdirs()) {
-                fail("Failed to set up the test-directory");
-            }
+            assertTrue(sccsdir.mkdirs(), "Failed to set up the test-directory");
             sccsfile = new File(sccsdir, "s.note.txt");
             InputStream in = getClass().getResourceAsStream("/history/s.note.txt");
             FileOutputStream out = new FileOutputStream(sccsfile);
@@ -115,7 +114,7 @@ public class SCCSgetTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (sccsfile != null) {
             sccsfile.delete();

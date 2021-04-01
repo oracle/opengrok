@@ -22,13 +22,13 @@
  */
 package org.opengrok.indexer.util;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link CtagsUtil}.
@@ -39,9 +39,9 @@ public class CtagsUtilTest {
     public void getLanguages() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<String> result = CtagsUtil.getLanguages(env.getCtags());
-        assertNotNull("should get Ctags languages", result);
-        assertTrue("Ctags languages should contains C++", result.contains("C++"));
+        assertNotNull(result, "should get Ctags languages");
+        assertTrue(result.contains("C++"), "Ctags languages should contains C++");
         // Test that the [disabled] tag is stripped for OldC.
-        assertTrue("Ctags languages should contains OldC", result.contains("OldC"));
+        assertTrue(result.contains("OldC"), "Ctags languages should contains OldC");
     }
 }

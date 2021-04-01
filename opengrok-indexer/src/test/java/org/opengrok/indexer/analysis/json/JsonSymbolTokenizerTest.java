@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.json;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class JsonSymbolTokenizerTest {
     public void testJsonSymbolStream() throws Exception {
         InputStream jres = getClass().getClassLoader().getResourceAsStream(
             "analysis/json/sample.json");
-        assertNotNull("despite sample.json as resource,", jres);
+        assertNotNull(jres, "despite sample.json as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/json/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(JsonSymbolTokenizer.class, jres, expectedSymbols);

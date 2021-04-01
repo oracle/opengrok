@@ -18,10 +18,12 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.condition;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.opengrok.indexer.history.BazaarRepository;
 import org.opengrok.indexer.history.BitKeeperRepository;
 import org.opengrok.indexer.history.CVSRepository;
@@ -33,86 +35,33 @@ import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.SCCSRepository;
 import org.opengrok.indexer.history.SubversionRepository;
 
-/**
- * A template {@link org.opengrok.indexer.condition.RunCondition} that will disable certain tests
- * if the repository is not working - generally means not available through the CLI.
- * 
- * Each run condition can be forced on with the system property <b>junit-force-{name}=true</b> or <b>junit-force-all=true</b>
- */
-public abstract class RepositoryInstalled implements RunCondition {
+public class RepositoryInstalled {
 
-    private final String name;
-    private final Repository repository;
+    private static final String FORCE_ALL_PROPERTY = "junit-force-all";
 
-    public RepositoryInstalled(String name, Repository repository) {
-        this.name = name;
-        this.repository = repository;
-    }
+    public enum Type {
+        BITKEEPER(new BitKeeperRepository()),
+        MERCURIAL(new MercurialRepository()),
+        GIT(new GitRepository()),
+        RCS(new RCSRepository()),
+        BAZAAR(new BazaarRepository()),
+        CVS(new CVSRepository()),
+        PERFORCE(new PerforceRepository()),
+        SUBVERSION(new SubversionRepository()),
+        SCCS(new SCCSRepository());
 
-    @Override
-    public boolean isSatisfied() {
-        if (Boolean.getBoolean(forceSystemProperty())) {
-            return true;
+        private final Supplier<Boolean> satisfied;
+
+        Type(Repository repository) {
+            satisfied = Suppliers.memoize(() -> Boolean.getBoolean(FORCE_ALL_PROPERTY) || repository.isWorking());
         }
-        return repository.isWorking();
-    }
 
-    private String forceSystemProperty() {
-        return String.format("junit-force-%s", name);
-    }
-
-    public static class BitKeeperInstalled extends RepositoryInstalled {
-        public BitKeeperInstalled() {
-            super("bitkeeper", new BitKeeperRepository());
+        public boolean isSatisfied() {
+            return satisfied.get();
         }
     }
 
-    public static class MercurialInstalled extends RepositoryInstalled {
-        public MercurialInstalled() {
-            super("mercurial", new MercurialRepository());
-        }
-    }
-
-    public static class GitInstalled extends RepositoryInstalled {
-        public GitInstalled() {
-            super("git", new GitRepository());
-        }
-    }
-
-    public static class RCSInstalled extends RepositoryInstalled {
-        public RCSInstalled() {
-            super("rcs", new RCSRepository());
-        }
-    }
-    
-    public static class BazaarInstalled extends RepositoryInstalled {
-        public BazaarInstalled() {
-            super("bazaar", new BazaarRepository());
-        }
-    }
-
-    public static class CvsInstalled extends RepositoryInstalled {
-        public CvsInstalled() {
-            super("cvs", new CVSRepository());
-        }
-    }
-
-    public static class PerforceInstalled extends RepositoryInstalled {
-        public PerforceInstalled() {
-            super("perforce", new PerforceRepository());
-        }
-    }
-
-    public static class SubversionInstalled extends RepositoryInstalled {
-        public SubversionInstalled() {
-            super("svn", new SubversionRepository());
-        }
-    }
-
-    public static class SCCSInstalled extends RepositoryInstalled {
-        public SCCSInstalled() {
-            super("sccs", new SCCSRepository());
-        }
+    private RepositoryInstalled() {
     }
 
 }

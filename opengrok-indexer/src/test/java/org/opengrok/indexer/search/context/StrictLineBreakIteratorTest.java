@@ -22,9 +22,11 @@
  */
 package org.opengrok.indexer.search.context;
 
+import org.junit.jupiter.api.Test;
+
 import java.text.BreakIterator;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Represents a container for tests of {@link StrictLineBreakIterator}.
@@ -37,13 +39,12 @@ public class StrictLineBreakIteratorTest {
         BreakIterator it = BreakIterator.getLineInstance();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator current()", 0, it.current());
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 8, it.next());
-        assertEquals("StrictLineBreakIterator next()", 11, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator current()", 11, it.current());
+        assertEquals(0, it.current(), "StrictLineBreakIterator current()");
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(8, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.current(), "StrictLineBreakIterator current()");
     }
 
     @Test
@@ -52,13 +53,12 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator current()", 0, it.current());
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 8, it.next());
-        assertEquals("StrictLineBreakIterator next()", 11, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator current()", 11, it.current());
+        assertEquals(0, it.current(), "StrictLineBreakIterator current()");
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(8, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.current(), "StrictLineBreakIterator current()");
     }
 
     @Test
@@ -67,14 +67,13 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator current()", 0, it.current());
-        assertEquals("StrictLineBreakIterator next()", 1, it.next());
-        assertEquals("StrictLineBreakIterator next()", 5, it.next());
-        assertEquals("StrictLineBreakIterator next()", 9, it.next());
-        assertEquals("StrictLineBreakIterator next()", 12, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator current()", 12, it.current());
+        assertEquals(0, it.current(), "StrictLineBreakIterator current()");
+        assertEquals(1, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(5, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(9, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(12, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(12, it.current(), "StrictLineBreakIterator current()");
     }
 
     @Test
@@ -83,12 +82,11 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator next()", 5, it.next());
-        assertEquals("StrictLineBreakIterator next()", 10, it.next());
-        assertEquals("StrictLineBreakIterator next()", 13, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator current()", 13, it.current());
+        assertEquals(5, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(10, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(13, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(13, it.current(), "StrictLineBreakIterator current()");
     }
 
     @Test
@@ -97,12 +95,11 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 8, it.next());
-        assertEquals("StrictLineBreakIterator next()", 11, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator current()", 11, it.current());
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(8, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.current(), "StrictLineBreakIterator current()");
     }
 
     @Test
@@ -111,12 +108,11 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 5, it.next());
-        assertEquals("StrictLineBreakIterator next()", 10, it.next());
-        assertEquals("StrictLineBreakIterator next()", 13, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(5, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(10, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(13, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
     }
 
     @Test
@@ -125,23 +121,21 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 8, it.next());
-        assertEquals("StrictLineBreakIterator previous()", 4, it.previous());
-        assertEquals("StrictLineBreakIterator previous()", 0, it.previous());
-        assertEquals("StrictLineBreakIterator previous()", BreakIterator.DONE,
-            it.previous());
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
-        assertEquals("StrictLineBreakIterator next()", 8, it.next());
-        assertEquals("StrictLineBreakIterator next()", 11, it.next());
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(8, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(4, it.previous(), "StrictLineBreakIterator previous()");
+        assertEquals(0, it.previous(), "StrictLineBreakIterator previous()");
+        assertEquals(BreakIterator.DONE, it.previous(), "StrictLineBreakIterator previous()");
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(8, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(11, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
 
-        assertEquals("StrictLineBreakIterator first()", 0, it.first());
-        assertEquals("StrictLineBreakIterator next()", 4, it.next());
+        assertEquals(0, it.first(), "StrictLineBreakIterator first()");
+        assertEquals(4, it.next(), "StrictLineBreakIterator next()");
 
-        assertEquals("StrictLineBreakIterator last()", 11, it.last());
-        assertEquals("StrictLineBreakIterator previous()", 8, it.previous());
+        assertEquals(11, it.last(), "StrictLineBreakIterator last()");
+        assertEquals(8, it.previous(), "StrictLineBreakIterator previous()");
     }
 
     @Test
@@ -150,11 +144,9 @@ public class StrictLineBreakIteratorTest {
         StrictLineBreakIterator it = new StrictLineBreakIterator();
         it.setText(DOC);
 
-        assertEquals("StrictLineBreakIterator next()", BreakIterator.DONE,
-            it.next());
-        assertEquals("StrictLineBreakIterator first()", 0, it.first());
-        assertEquals("StrictLineBreakIterator last()", DOC.length(), it.last());
-        assertEquals("StrictLineBreakIterator previous()", BreakIterator.DONE,
-            it.previous());
+        assertEquals(BreakIterator.DONE, it.next(), "StrictLineBreakIterator next()");
+        assertEquals(0, it.first(), "StrictLineBreakIterator first()");
+        assertEquals(DOC.length(), it.last(), "StrictLineBreakIterator last()");
+        assertEquals(BreakIterator.DONE, it.previous(), "StrictLineBreakIterator previous()");
     }
 }
