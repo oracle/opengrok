@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.messages;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -37,21 +37,22 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.web.messages.JSONUtils.getTopLevelJSONFields;
 
 public class MessagesContainerTest {
 
     private MessagesContainer container;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         container = new MessagesContainer();
         container.startExpirationTimer();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         container.stopExpirationTimer();
     }
@@ -68,9 +69,9 @@ public class MessagesContainerTest {
         assertEquals(m, container.getMessages("test").first().getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addNullTest() {
-        container.addMessage(null);
+        assertThrows(IllegalArgumentException.class, () -> container.addMessage(null));
     }
 
     @Test
@@ -154,9 +155,9 @@ public class MessagesContainerTest {
         assertTrue(container.getMessages("test").isEmpty());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getMessagesNullTest() {
-        container.getMessages(null);
+        assertThrows(IllegalArgumentException.class, () -> container.getMessages(null));
     }
 
     /**

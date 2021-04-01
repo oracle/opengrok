@@ -18,18 +18,15 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Chris Ross <cross@distal.com>.
  */
 package org.opengrok.indexer.history;
 
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 
@@ -39,8 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.PERFORCE;
 import static org.opengrok.indexer.history.PerforceRepository.protectPerforceFilename;
 import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceFilename;
 
@@ -50,14 +48,11 @@ import static org.opengrok.indexer.history.PerforceRepository.unprotectPerforceF
  */
 public class PerforceRepositoryTest {
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
     private static boolean skip;
     private static List<File> files;
     private static final File root = new File("/var/opengrok/src/p4foo");
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         if (!root.exists()) {
             skip = true;
@@ -110,7 +105,7 @@ public class PerforceRepositoryTest {
      * </ul><p>
      */
     @Test
-    @ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
+    @EnabledForRepository(PERFORCE)
     public void testHistoryAndAnnotations() throws Exception {
         if (skip) {
             return;
@@ -122,19 +117,17 @@ public class PerforceRepositoryTest {
         for (File f : files) {
             if (instance.fileHasHistory(f)) {
                 History history = instance.getHistory(f);
-                assertNotNull("Failed to get history for: " + f.getAbsolutePath(), history);
+                assertNotNull(history, "Failed to get history for: " + f.getAbsolutePath());
 
                 for (HistoryEntry entry : history.getHistoryEntries()) {
                     String revision = entry.getRevision();
                     InputStream in = instance.getHistoryGet(
                             f.getParent(), f.getName(), revision);
-                    assertNotNull("Failed to get revision " + revision +
-                            " of " + f.getAbsolutePath(), in);
+                    assertNotNull(in, "Failed to get revision " + revision +
+                            " of " + f.getAbsolutePath());
 
                     if (instance.fileHasAnnotation(f)) {
-                        assertNotNull(
-                                "Failed to annotate: " + f.getAbsolutePath(),
-                                instance.annotate(f, revision));
+                        assertNotNull(instance.annotate(f, revision), "Failed to annotate: " + f.getAbsolutePath());
                     }
                 }
             }
@@ -156,7 +149,7 @@ public class PerforceRepositoryTest {
 
         for (SimpleImmutableEntry<String, String> ent : testmap) {
             String prot = protectPerforceFilename(ent.getKey());
-            assertEquals("Improper protected filename, " + prot + " != " + ent.getValue(), ent.getValue(), prot);
+            assertEquals(ent.getValue(), prot, "Improper protected filename, " + prot + " != " + ent.getValue());
         }
     }
 
@@ -175,7 +168,7 @@ public class PerforceRepositoryTest {
 
         for (SimpleImmutableEntry<String, String> ent : testmap) {
             String u = unprotectPerforceFilename(ent.getValue());
-            assertEquals("Bad unprotected filename for " + ent.getValue(), ent.getKey(), u);
+            assertEquals(ent.getKey(), u, "Bad unprotected filename for " + ent.getValue());
         }
     }
 }

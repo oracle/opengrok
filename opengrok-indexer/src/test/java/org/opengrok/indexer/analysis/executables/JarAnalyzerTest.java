@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -26,10 +26,10 @@ package org.opengrok.indexer.analysis.executables;
 import java.io.File;
 import java.util.Collections;
 import java.util.TreeSet;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.authorization.AuthorizationFrameworkReloadTest;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.Indexer;
@@ -38,6 +38,8 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.DefaultIndexChangedListener;
 import org.opengrok.indexer.index.IndexChangedListener;
 import org.opengrok.indexer.search.SearchEngine;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link JarAnalyzer} and
@@ -54,7 +56,7 @@ public class JarAnalyzerTest {
     private static File configFile;
     private static boolean originalProjectsEnabled;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
@@ -84,7 +86,7 @@ public class JarAnalyzerTest {
         env.readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         if (repository != null) {
@@ -100,8 +102,7 @@ public class JarAnalyzerTest {
         SearchEngine instance = new SearchEngine();
         instance.setFile(TESTPLUGINS_JAR);
         int noHits = instance.search();
-        assertTrue("noHits for " + TESTPLUGINS_JAR + " should be positive",
-            noHits > 0);
+        assertTrue(noHits > 0, "noHits for " + TESTPLUGINS_JAR + " should be positive");
         instance.destroy();
     }
 }

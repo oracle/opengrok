@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.vb;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class VBSymbolTokenizerTest {
     public void testClojureSymbolStream() throws Exception {
         InputStream clsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/vb/sample.cls");
-        assertNotNull("despite sample.cls as resource,", clsres);
+        assertNotNull(clsres, "despite sample.cls as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/vb/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(VBSymbolTokenizer.class, clsres, expectedSymbols);

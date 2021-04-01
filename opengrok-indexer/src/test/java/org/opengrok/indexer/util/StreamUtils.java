@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Represents a container for stream utility methods.
@@ -98,7 +98,7 @@ public class StreamUtils {
 
         InputStream res = StreamUtils.class.getClassLoader().
             getResourceAsStream(tagsResourceName);
-        assertNotNull(tagsResourceName + " as resource", res);
+        assertNotNull(res, tagsResourceName + " as resource");
 
         BufferedReader in = new BufferedReader(new InputStreamReader(
             res, StandardCharsets.UTF_8));
@@ -142,7 +142,7 @@ public class StreamUtils {
 
         InputStream res = StreamUtils.class.getClassLoader().
                 getResourceAsStream(resourceName);
-        assertNotNull(resourceName + " should be gettable", res);
+        assertNotNull(res, resourceName + " should be gettable");
         return IOUtils.createBOMStrippedReader(res, "UTF-8");
     }
 
@@ -158,7 +158,7 @@ public class StreamUtils {
             public InputStream getStream() {
                 InputStream res = StreamUtils.class.getClassLoader().
                     getResourceAsStream(resourceName);
-                assertNotNull("resource " + resourceName, res);
+                assertNotNull(res, "resource " + resourceName);
                 return new BufferedInputStream(res);
             }
         };

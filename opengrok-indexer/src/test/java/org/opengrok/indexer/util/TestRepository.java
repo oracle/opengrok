@@ -23,10 +23,6 @@
  */
 package org.opengrok.indexer.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,6 +30,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A source repository to be used during a test.
@@ -87,9 +87,9 @@ public class TestRepository {
      */
     public void purgeData() {
         if (dataRoot != null) {
-            assertTrue("should delete dataRoot", FileUtilities.removeDirs(dataRoot));
-            assertFalse("dataRoot should not exist", dataRoot.exists());
-            assertTrue("should recreate dataRoot", dataRoot.mkdir());
+            assertTrue(FileUtilities.removeDirs(dataRoot), "should delete dataRoot");
+            assertFalse(dataRoot.exists(), "dataRoot should not exist");
+            assertTrue(dataRoot.mkdir(), "should recreate dataRoot");
         }
     }
 
@@ -161,7 +161,7 @@ public class TestRepository {
                 assertTrue(sourceBundle.delete());
             }
 
-            assertNotNull("inputBundle should not be null", inputBundle);
+            assertNotNull(inputBundle, "inputBundle should not be null");
             FileOutputStream out = new FileOutputStream(sourceBundle);
             FileUtilities.copyFile(inputBundle, out);
             out.close();

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.javascript;
@@ -26,7 +26,8 @@ package org.opengrok.indexer.analysis.javascript;
 import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 
 import java.io.IOException;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
 
 /**

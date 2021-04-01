@@ -22,12 +22,13 @@
  */
 package org.opengrok.indexer.util;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.StreamSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Represents a container for tests of {@link LineBreaker}.
@@ -36,7 +37,7 @@ public class LineBreakerTest {
 
     private static LineBreaker brkr;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         brkr = new LineBreaker();
     }
@@ -45,31 +46,31 @@ public class LineBreakerTest {
     public void shouldSplitEmptyStringIntoOneLine() throws IOException {
         StreamSource src = StreamSource.fromString("");
         brkr.reset(src);
-        assertEquals("split count", 1, brkr.count());
-        assertEquals("split offset", 0, brkr.getOffset(0));
+        assertEquals(1, brkr.count(), "split count");
+        assertEquals(0, brkr.getOffset(0), "split offset");
 
-        assertEquals("split find-index", 0, brkr.findLineIndex(0));
-        assertEquals("split find-index", -1, brkr.findLineIndex(1));
+        assertEquals(0, brkr.findLineIndex(0), "split find-index");
+        assertEquals(-1, brkr.findLineIndex(1), "split find-index");
     }
 
     @Test
     public void shouldSplitEndingLFsIntoOneMoreLine() throws IOException {
         StreamSource src = StreamSource.fromString("abc\ndef\n");
         brkr.reset(src);
-        assertEquals("split count", 3, brkr.count());
-        assertEquals("split offset", 0, brkr.getOffset(0));
-        assertEquals("split offset", 4, brkr.getOffset(1));
-        assertEquals("split offset", 8, brkr.getOffset(2));
+        assertEquals(3, brkr.count(), "split count");
+        assertEquals(0, brkr.getOffset(0), "split offset");
+        assertEquals(4, brkr.getOffset(1), "split offset");
+        assertEquals(8, brkr.getOffset(2), "split offset");
     }
 
     @Test
     public void shouldSplitDocsWithNoLastLF() throws IOException {
         StreamSource src = StreamSource.fromString("abc\r\ndef");
         brkr.reset(src);
-        assertEquals("split count", 2, brkr.count());
-        assertEquals("split offset", 0, brkr.getOffset(0));
-        assertEquals("split offset", 5, brkr.getOffset(1));
-        assertEquals("split offset", 8, brkr.getOffset(2));
+        assertEquals(2, brkr.count(), "split count");
+        assertEquals(0, brkr.getOffset(0), "split offset");
+        assertEquals(5, brkr.getOffset(1), "split offset");
+        assertEquals(8, brkr.getOffset(2), "split offset");
     }
 
     @Test
@@ -80,16 +81,16 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString(INPUT);
 
         brkr.reset(src);
-        assertEquals("split count", 5, brkr.count());
-        assertEquals("split offset", 0, brkr.getOffset(0));
-        assertEquals("split offset", 4, brkr.getOffset(1));
-        assertEquals("split offset", 9, brkr.getOffset(2));
-        assertEquals("split offset", 15, brkr.getOffset(3));
-        assertEquals("split offset", 20, brkr.getOffset(4));
+        assertEquals(5, brkr.count(), "split count");
+        assertEquals(0, brkr.getOffset(0), "split offset");
+        assertEquals(4, brkr.getOffset(1), "split offset");
+        assertEquals(9, brkr.getOffset(2), "split offset");
+        assertEquals(15, brkr.getOffset(3), "split offset");
+        assertEquals(20, brkr.getOffset(4), "split offset");
 
-        assertEquals("split find-index", 3, brkr.findLineIndex(19));
-        assertEquals("split find-index", 4, brkr.findLineIndex(20));
-        assertEquals("split find-index", 4, brkr.findLineIndex(21));
+        assertEquals(3, brkr.findLineIndex(19), "split find-index");
+        assertEquals(4, brkr.findLineIndex(20), "split find-index");
+        assertEquals(4, brkr.findLineIndex(21), "split find-index");
     }
 
     @Test
@@ -102,18 +103,18 @@ public class LineBreakerTest {
         StreamSource src = StreamSource.fromString(INPUT);
 
         brkr.reset(src);
-        assertEquals("split count", 11, brkr.count());
-        assertEquals("split offset", 0, brkr.getOffset(0));
-        assertEquals("split offset", 2, brkr.getOffset(1));
-        assertEquals("split offset", 4, brkr.getOffset(2));
-        assertEquals("split offset", 7, brkr.getOffset(3));
-        assertEquals("split offset", 9, brkr.getOffset(4));
-        assertEquals("split offset", 10, brkr.getOffset(5));
-        assertEquals("split offset", 12, brkr.getOffset(6));
-        assertEquals("split offset", 13, brkr.getOffset(7));
-        assertEquals("split offset", 15, brkr.getOffset(8));
-        assertEquals("split offset", 16, brkr.getOffset(9));
-        assertEquals("split offset", 19, brkr.getOffset(10));
-        assertEquals("split offset", 23, brkr.getOffset(11));
+        assertEquals(11, brkr.count(), "split count");
+        assertEquals(0, brkr.getOffset(0), "split offset");
+        assertEquals(2, brkr.getOffset(1), "split offset");
+        assertEquals(4, brkr.getOffset(2), "split offset");
+        assertEquals(7, brkr.getOffset(3), "split offset");
+        assertEquals(9, brkr.getOffset(4), "split offset");
+        assertEquals(10, brkr.getOffset(5), "split offset");
+        assertEquals(12, brkr.getOffset(6), "split offset");
+        assertEquals(13, brkr.getOffset(7), "split offset");
+        assertEquals(15, brkr.getOffset(8), "split offset");
+        assertEquals(16, brkr.getOffset(9), "split offset");
+        assertEquals(19, brkr.getOffset(10), "split offset");
+        assertEquals(23, brkr.getOffset(11), "split offset");
     }
 }

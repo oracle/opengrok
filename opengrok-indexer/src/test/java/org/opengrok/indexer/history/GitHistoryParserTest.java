@@ -18,15 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,11 +32,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
@@ -51,13 +50,13 @@ public class GitHistoryParserTest {
     private final String gitISODatePattern = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static TestRepository repository = new TestRepository();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         repository = null;
@@ -73,7 +72,7 @@ public class GitHistoryParserTest {
 
         History result = instance.parse("");
         assertNotNull(result);
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     @Test
@@ -85,15 +84,15 @@ public class GitHistoryParserTest {
         }
 
         History gitHistory = instance.getHistory();
-        assertNotNull("should parse git-log-HEAD.txt", gitHistory);
+        assertNotNull(gitHistory, "should parse git-log-HEAD.txt");
         List<HistoryEntry> entries = gitHistory.getHistoryEntries();
-        assertEquals("git-log-HEAD.txt entries", 2, entries.size());
+        assertEquals(2, entries.size(), "git-log-HEAD.txt entries");
 
         HistoryEntry e1 = entries.get(1);
-        assertEquals("entries[1] revision", "90691f35", e1.getRevision());
+        assertEquals("90691f35", e1.getRevision(), "entries[1] revision");
 
         HistoryEntry e0 = entries.get(0);
-        assertEquals("entries[0] revision", "3595fbc9", e0.getRevision());
+        assertEquals("3595fbc9", e0.getRevision(), "entries[0] revision");
     }
 
     @Test
@@ -105,17 +104,17 @@ public class GitHistoryParserTest {
         }
 
         History gitHistory = instance.getHistory();
-        assertNotNull("should parse git-log-merged-file.txt", gitHistory);
+        assertNotNull(gitHistory, "should parse git-log-merged-file.txt");
         List<HistoryEntry> entries = gitHistory.getHistoryEntries();
-        assertEquals("git-log-merged-file.txt entries", 1, entries.size());
+        assertEquals(1, entries.size(), "git-log-merged-file.txt entries");
 
         final String MERGE_REV = "4c3d5e8e";
         HistoryEntry e0 = entries.get(0);
-        assertEquals("entries[0] revision", MERGE_REV, e0.getRevision());
+        assertEquals(MERGE_REV, e0.getRevision(), "entries[0] revision");
 
         SortedSet<String> f0 = e0.getFiles();
-        assertEquals("e[0] files size", 1, f0.size());
-        assertEquals("e[0] files[0]", "/contrib/serf/STATUS", Util.fixPathIfWindows(f0.first()));
+        assertEquals(1, f0.size(), "e[0] files size");
+        assertEquals("/contrib/serf/STATUS", Util.fixPathIfWindows(f0.first()), "e[0] files[0]");
     }
 
     /**
@@ -169,7 +168,7 @@ public class GitHistoryParserTest {
 
         History result = instance.parse(output);
         assertNotNull(result);
-        assertEquals("Should contain three history entries", 3, result.getHistoryEntries().size());
+        assertEquals(3, result.getHistoryEntries().size(), "Should contain three history entries");
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
@@ -235,7 +234,7 @@ public class GitHistoryParserTest {
 
         History result = instance.parse(output);
         assertNotNull(result);
-        assertEquals("Should contain two history entries", 2, result.getHistoryEntries().size());
+        assertEquals(2, result.getHistoryEntries().size(), "Should contain two history entries");
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
@@ -322,7 +321,7 @@ public class GitHistoryParserTest {
                 filename2 + "\n";
         History result = instance.parse(output);
         assertNotNull(result);
-        assertEquals("Should contain two history entries", 2, result.getHistoryEntries().size());
+        assertEquals(2, result.getHistoryEntries().size(), "Should contain two history entries");
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
@@ -343,7 +342,7 @@ public class GitHistoryParserTest {
     }
 
     @Test
-    public void testDateFormats() {
+    public void testDateFormats() throws IOException, ParseException {
         GitHistoryParser instance = new GitHistoryParser(false);
 
         String[][] dates = new String[][] {
@@ -351,39 +350,33 @@ public class GitHistoryParserTest {
         };
 
         for (String[] strings : dates) {
-            try {
-                String commitId = "1a23456789abcdef123456789abcderf123456789";
-                String author = "username <username@asfdsaf-23412-sadf-cxvdsfg3123-sfasdf>";
-                String date = strings[0];
-                String format = strings[1];
-                Date parsedDate = new SimpleDateFormat(format).parse(date);
-                String output
-                        = "commit " + commitId + "\n"
-                        + "Author:     " + author + "\n"
-                        + "AuthorDate: " + date + "\n"
-                        + "Commit:     " + author + "\n"
-                        + "CommitDate: " + date + "\n"
-                        + "\n"
-                        + "    patch from somebody <user.name@example.com>:\n"
-                        + "    \n"
-                        + "    commit message.\n"
-                        + "    \n"
-                        + "    \n"
-                        + "    git-svn-id: http://host.example.com/svn/product/trunk/server@324-fdws-2342-fsdaf-gds-234\n";
+            String commitId = "1a23456789abcdef123456789abcderf123456789";
+            String author = "username <username@asfdsaf-23412-sadf-cxvdsfg3123-sfasdf>";
+            String date = strings[0];
+            String format = strings[1];
+            Date parsedDate = new SimpleDateFormat(format).parse(date);
+            String output
+                    = "commit " + commitId + "\n"
+                    + "Author:     " + author + "\n"
+                    + "AuthorDate: " + date + "\n"
+                    + "Commit:     " + author + "\n"
+                    + "CommitDate: " + date + "\n"
+                    + "\n"
+                    + "    patch from somebody <user.name@example.com>:\n"
+                    + "    \n"
+                    + "    commit message.\n"
+                    + "    \n"
+                    + "    \n"
+                    + "    git-svn-id: http://host.example.com/svn/product/trunk/server@324-fdws-2342-fsdaf-gds-234\n";
 
-                History result = instance.parse(output);
-                assertNotNull(result);
-                assertEquals("Should contain one history entry", 1, result.getHistoryEntries().size());
-                HistoryEntry e0 = result.getHistoryEntries().get(0);
-                assertEquals(commitId, e0.getRevision());
-                assertEquals(author, e0.getAuthor());
-                assertEquals("The date " + parsedDate + " should be equal to the parsed date " + e0.getDate(), parsedDate, e0.getDate());
-                assertEquals(0, e0.getFiles().size());
-            } catch (ParseException ex) {
-                fail("Should not throw a parse exception" + ex);
-            } catch (IOException ex) {
-                fail("Should not throw an IO exception" + ex);
-            }
+            History result = instance.parse(output);
+            assertNotNull(result);
+            assertEquals(1, result.getHistoryEntries().size(), "Should contain one history entry");
+            HistoryEntry e0 = result.getHistoryEntries().get(0);
+            assertEquals(commitId, e0.getRevision());
+            assertEquals(author, e0.getAuthor());
+            assertEquals(parsedDate, e0.getDate(), "The date " + parsedDate + " should be equal to the parsed date " + e0.getDate());
+            assertEquals(0, e0.getFiles().size());
         }
     }
 }

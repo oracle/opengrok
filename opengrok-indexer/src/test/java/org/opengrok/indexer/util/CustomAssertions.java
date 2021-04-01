@@ -31,10 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
@@ -96,8 +97,8 @@ public class CustomAssertions {
             diffLines.clear();
         }
 
-        assertEquals(messagePrefix + "--should have no diffs", 0, ndiffs);
-        assertEquals(messagePrefix + "--number of lines", expecteds.length, actuals.length);
+        assertEquals(0, ndiffs, messagePrefix + "--should have no diffs");
+        assertEquals(expecteds.length, actuals.length, messagePrefix + "--number of lines");
     }
 
     /**
@@ -130,7 +131,7 @@ public class CustomAssertions {
 
             String cutValue = input.substring(offs.startOffset(),
                 offs.endOffset());
-            assertEquals("cut term" + (1 + count), cutValue, termValue);
+            assertEquals(cutValue, termValue, "cut term" + (1 + count));
             ++count;
         }
 
@@ -139,20 +140,19 @@ public class CustomAssertions {
             // 1-based offset to accord with line #
             if (count >= expectedTokens.size()) {
                 printTokens(tokens);
-                assertTrue("too many tokens at term" + (1 + count) + ": " +
-                    token, count < expectedTokens.size());
+                assertTrue(count < expectedTokens.size(), "too many tokens at term" + (1 + count) + ": " + token);
             }
             String expected = expectedTokens.get(count);
             if (!token.equals(expected)) {
                 printTokens(tokens);
-                assertEquals("term" + (1 + count), expected, token);
+                assertEquals(expected, token, "term" + (1 + count));
             }
             count++;
         }
 
         if (expectedTokens.size() != count) {
             printTokens(tokens);
-            assertEquals("wrong number of tokens", expectedTokens.size(), count);
+            assertEquals(expectedTokens.size(), count, "wrong number of tokens");
         }
     }
 

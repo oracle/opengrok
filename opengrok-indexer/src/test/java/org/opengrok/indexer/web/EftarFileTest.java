@@ -22,16 +22,16 @@
  */
 package org.opengrok.indexer.web;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JUnit test to test the EftarFile-system.
@@ -42,7 +42,7 @@ public class EftarFileTest {
 
     private static final String PATH_STRING = "/path";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
 
         eftar = File.createTempFile("paths", ".eftar");
@@ -62,7 +62,7 @@ public class EftarFileTest {
         ef.create(descriptions, outputFile);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         if (eftar != null) {
             eftar.delete();
@@ -90,7 +90,7 @@ public class EftarFileTest {
             match.setLength(offset);
             match.append(ii);
 
-            assertEquals("description for path " + sb.toString(), match.toString(), er.get(sb.toString()));
+            assertEquals(match.toString(), er.get(sb.toString()), "description for path " + sb.toString());
         }
         er.close();
     }

@@ -23,12 +23,11 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -140,7 +139,7 @@ public class AnnotationTest {
         annotation.addLine("1.0", "Me", true);
         annotation.addLine("1.1", "Me", true);
         annotation.addLine("1.2", "Me", true);
-        Assert.assertEquals(3, annotation.getColors().size());
+        assertEquals(3, annotation.getColors().size());
     }
 
     @Test
@@ -151,11 +150,11 @@ public class AnnotationTest {
         annotation.addLine("1.2", "Me", true);
         annotation.addFileVersion("1.0", 3);
         annotation.addFileVersion("1.2", 2);
-        Assert.assertEquals(3, annotation.getColors().size());
+        assertEquals(3, annotation.getColors().size());
         // tracked by history entries
-        Assert.assertEquals("rgb(234, 255, 226)", annotation.getColors().get("1.0"));
-        Assert.assertEquals("rgb(213, 220, 233)", annotation.getColors().get("1.2"));
+        assertEquals("rgb(234, 255, 226)", annotation.getColors().get("1.0"));
+        assertEquals("rgb(213, 220, 233)", annotation.getColors().get("1.2"));
         // 1.1 us untracked by history entries (no addFileVersion called)
-        Assert.assertEquals("rgb(255, 191, 195)", annotation.getColors().get("1.1"));
+        assertEquals("rgb(255, 191, 195)", annotation.getColors().get("1.1"));
     }
 }

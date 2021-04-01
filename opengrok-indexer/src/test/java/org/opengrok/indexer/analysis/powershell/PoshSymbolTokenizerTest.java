@@ -23,11 +23,12 @@
  */
 package org.opengrok.indexer.analysis.powershell;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class PoshSymbolTokenizerTest {
     public void testPowerShellSymbolStream() throws Exception {
         InputStream psres = getClass().getClassLoader().getResourceAsStream(
             "analysis/powershell/sample.psm1");
-        assertNotNull("despite sample.psm1 as resource,", psres);
+        assertNotNull(psres, "despite sample.psm1 as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/powershell/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(PoshSymbolTokenizer.class, psres, expectedSymbols);

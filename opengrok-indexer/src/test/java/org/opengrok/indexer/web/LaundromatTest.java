@@ -22,13 +22,13 @@
  */
 package org.opengrok.indexer.web;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LaundromatTest {
 
@@ -74,7 +74,7 @@ public class LaundromatTest {
 
         Map<String, String[]> laundry = Laundromat.launderLog(testMap);
 
-        HashMap<String, String[]> expected = new HashMap<>();
+        Map<String, String[]> expected = new HashMap<>();
         expected.put("a", null);
         expected.put("b", new String[]{TEST_CONTENT_LOG_LAUNDRY});
         expected.put(TEST_CONTENT_LOG_LAUNDRY, new String[]{"c", "d"});
@@ -82,7 +82,7 @@ public class LaundromatTest {
         expected.put("<FF>i<LF>", new String[]{"k", "j"});
         expected.put("l<TAB><CR>", null);
 
-        assertEquals("maps″ should be equal", hashedValues(expected), hashedValues(laundry));
+        assertEquals(hashedValues(expected), hashedValues(laundry), "maps″ should be equal");
     }
 
     private Map<String, Integer> hashedValues(Map<String, String[]> map) {

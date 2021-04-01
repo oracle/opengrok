@@ -43,55 +43,52 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.URIish;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
 /**
  * @author austvik
  */
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@EnabledForRepository(GIT)
 public class GitRepositoryTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static TestRepository repository = new TestRepository();
     private GitRepository instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         repository.create(GitRepositoryTest.class.getResourceAsStream("repositories.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         repository = null;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new GitRepository();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -167,7 +164,7 @@ public class GitRepositoryTest {
             ver = gitrepo.determineCurrentVersion();
             assertNotNull(ver);
             // Not able to set commit ID and date so only check the rest.
-            assertTrue("ends with author and commit comment", ver.endsWith(authorName + " " + comment));
+            assertTrue(ver.endsWith(authorName + " " + comment), "ends with author and commit comment");
 
             FileUtilities.removeDirs(cloneRoot);
         }
@@ -179,7 +176,7 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String branch = gitrepo.determineBranch();
-        Assert.assertNotNull(branch);
+        assertNotNull(branch);
         assertEquals("master", branch);
     }
 
@@ -203,7 +200,7 @@ public class GitRepositoryTest {
             File cloneRoot = gitClone.getRepository().getWorkTree();
             gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
             branch = gitrepo.determineBranch();
-            Assert.assertNotNull(branch);
+            assertNotNull(branch);
             assertEquals("foo", branch);
 
             FileUtilities.removeDirs(cloneRoot);
@@ -215,7 +212,7 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String parent = gitrepo.determineParent();
-        Assert.assertNull(parent);
+        assertNull(parent);
     }
 
     @Test
@@ -238,7 +235,7 @@ public class GitRepositoryTest {
             File cloneRoot = gitClone.getRepository().getWorkTree();
             gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
             parent = gitrepo.determineParent();
-            Assert.assertNotNull(parent);
+            assertNotNull(parent);
             assertEquals(uri, parent);
 
             FileUtilities.removeDirs(cloneRoot);
@@ -277,14 +274,9 @@ public class GitRepositoryTest {
         for (String[] test : tests) {
             try {
                 repository.parse(test[0]);
-                if (test[1] != null) {
-                    Assert.fail("Shouldn't be able to parse the date: " + test[0]);
-                }
+                assertNull(test[1], "Shouldn't be able to parse the date: " + test[0]);
             } catch (ParseException ex) {
-                if (test[1] == null) {
-                    // no exception
-                    Assert.fail("Shouldn't throw a parsing exception for date: " + test[0]);
-                }
+                assertNotNull(test[1], "Shouldn't throw a parsing exception for date: " + test[0]);
             }
         }
     }
@@ -319,12 +311,9 @@ public class GitRepositoryTest {
             String file = Paths.get(root.getCanonicalPath(), test[0]).toString();
             String changeset = test[1];
             String expectedName = test[2];
-            try {
-                String originalName = gitrepo.findOriginalName(file, changeset);
-                Assert.assertEquals(expectedName, originalName);
-            } catch (IOException ex) {
-                Assert.fail(String.format("Looking for original name of %s in %s shouldn't fail", file, changeset));
-            }
+
+            String originalName = gitrepo.findOriginalName(file, changeset);
+            assertEquals(expectedName, originalName);
         }
     }
 
@@ -377,8 +366,8 @@ public class GitRepositoryTest {
         testAnnotationOfFile(gitrepo, renamedFile, "1086eaf5", revSet);
     }
 
-    @Test(expected = IOException.class)
-    public void testInvalidRenamedFiles() throws Exception {
+    @Test
+    public void testInvalidRenamedFiles() {
         String[][] tests = new String[][] {
                 {"", "67dfbe26"},
                 {"moved/renamed2.c", ""},
@@ -387,15 +376,16 @@ public class GitRepositoryTest {
                 {"moved/renamed2.c", null}
 
         };
-        File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        assertThrows(IOException.class, () -> {
+            File root = new File(repository.getSourceRoot(), "git");
+            GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        for (String[] test : tests) {
-            String file = test[0];
-            String changeset = test[1];
-            gitrepo.findOriginalName(file, changeset);
-        }
+            for (String[] test : tests) {
+                String file = test[0];
+                String changeset = test[1];
+                gitrepo.findOriginalName(file, changeset);
+            }
+        });
     }
 
     /**
@@ -506,39 +496,13 @@ public class GitRepositoryTest {
         InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(),
                 fname, cset);
         if (content == null) {
-            Assert.assertNull(
-                    String.format("Expecting the revision %s for file %s does not exist",
-                            cset,
-                            fname
-                    ),
-                    input
-            );
+            assertNull(input, String.format("Expecting the revision %s for file %s does not exist", cset, fname));
         } else {
-            Assert.assertNotNull(
-                    String.format("Expecting the revision %s for file %s does exist",
-                            cset,
-                            fname
-                    ),
-                    input
-            );
+            assertNotNull(input, String.format("Expecting the revision %s for file %s does exist", cset, fname));
             int len = input.read(buffer);
-            Assert.assertNotEquals(
-                    String.format("Expecting the revision %s for file %s does have some content",
-                            cset,
-                            fname
-                    ),
-                    -1,
-                    len
-            );
+            assertNotEquals(-1, len, String.format("Expecting the revision %s for file %s does have some content", cset, fname));
             String str = new String(buffer, 0, len);
-            Assert.assertEquals(
-                    String.format("Expecting the revision %s for file %s does match the expected content",
-                            cset,
-                            fname
-                    ),
-                    content,
-                    str
-            );
+            assertEquals(content, str, String.format("Expecting the revision %s for file %s does match the expected content", cset, fname));
         }
     }
 
@@ -550,55 +514,54 @@ public class GitRepositoryTest {
                 = (GitRepository) RepositoryFactory.getRepository(root);
 
         History history = gitrepo.getHistory(root);
-        Assert.assertNotNull(history);
-        Assert.assertNotNull(history.getHistoryEntries());
-        Assert.assertEquals(8, history.getHistoryEntries().size());
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(8, history.getHistoryEntries().size());
 
-        Assert.assertNotNull(history.getRenamedFiles());
-        Assert.assertEquals(3, history.getRenamedFiles().size());
+        assertNotNull(history.getRenamedFiles());
+        assertEquals(3, history.getRenamedFiles().size());
 
-        Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved/renamed.c"));
-        Assert.assertFalse(history.isRenamed("non-existent.c"));
-        Assert.assertFalse(history.isRenamed("renamed.c"));
+        assertTrue(history.isRenamed("moved/renamed2.c"));
+        assertTrue(history.isRenamed("moved2/renamed2.c"));
+        assertTrue(history.isRenamed("moved/renamed.c"));
+        assertFalse(history.isRenamed("non-existent.c"));
+        assertFalse(history.isRenamed("renamed.c"));
 
-        Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
-        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
-        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
-        Assert.assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
-        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
-        Assert.assertEquals("aa35c258", history.getHistoryEntries().get(5).getRevision());
-        Assert.assertEquals("84821564", history.getHistoryEntries().get(6).getRevision());
-        Assert.assertEquals("bb74b7e8", history.getHistoryEntries().get(7).getRevision());
+        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
+        assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
+        assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
+        assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
+        assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+        assertEquals("aa35c258", history.getHistoryEntries().get(5).getRevision());
+        assertEquals("84821564", history.getHistoryEntries().get(6).getRevision());
+        assertEquals("bb74b7e8", history.getHistoryEntries().get(7).getRevision());
     }
 
     @Test
     public void testRenamedSingleHistory() throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
         History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c"));
-        Assert.assertNotNull(history);
-        Assert.assertNotNull(history.getHistoryEntries());
-        Assert.assertEquals(5, history.getHistoryEntries().size());
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(5, history.getHistoryEntries().size());
 
-        Assert.assertNotNull(history.getRenamedFiles());
-        Assert.assertEquals(3, history.getRenamedFiles().size());
+        assertNotNull(history.getRenamedFiles());
+        assertEquals(3, history.getRenamedFiles().size());
 
-        Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
-        Assert.assertTrue(history.isRenamed("moved/renamed.c"));
-        Assert.assertFalse(history.isRenamed("non-existent.c"));
-        Assert.assertFalse(history.isRenamed("renamed.c"));
+        assertTrue(history.isRenamed("moved/renamed2.c"));
+        assertTrue(history.isRenamed("moved2/renamed2.c"));
+        assertTrue(history.isRenamed("moved/renamed.c"));
+        assertFalse(history.isRenamed("non-existent.c"));
+        assertFalse(history.isRenamed("renamed.c"));
 
-        Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
-        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
-        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
-        Assert.assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
-        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
+        assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
+        assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
+        assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
+        assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
     }
 
     @Test

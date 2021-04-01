@@ -18,14 +18,16 @@
  */
 
 /*
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
-import org.junit.Assert;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for the {@code StringUtils} class.
@@ -104,9 +106,9 @@ public class StringUtilsTest {
 
         for (int i = 0; i < tests.length; i++) {
             int index = StringUtils.nthIndexOf((String) tests[i][0], (String) tests[i][1], (Integer) tests[i][2]);
-            assertEquals(String.format("%d-th occurrence of \"%s\" in \"%s\" should start at %d but started at %d",
-                    tests[i][2], tests[i][1], tests[i][0], indices[i], index),
-                    index, indices[i]);
+            assertEquals(index, indices[i],
+                    String.format("%d-th occurrence of \"%s\" in \"%s\" should start at %d but started at %d",
+                    tests[i][2], tests[i][1], tests[i][0], indices[i], index));
         }
     }
 
@@ -114,27 +116,27 @@ public class StringUtilsTest {
     public void uriShouldNotCountAnyPushback() {
         String uri = "http://www.example.com";
         int n = StringUtils.countURIEndingPushback(uri);
-        assertEquals(uri + " pushback", 0, n);
+        assertEquals(0, n, uri + " pushback");
     }
 
     @Test
     public void uriAtSentenceEndShouldCountPushback() {
         String uri = "http://www.example.com.";
         int n = StringUtils.countURIEndingPushback(uri);
-        assertEquals(uri + " pushback", 1, n);
+        assertEquals(1, n, uri + " pushback");
     }
 
     @Test
     public void uriEmptyShouldNotCountAnyPushback() {
         String uri = "";
         int n = StringUtils.countURIEndingPushback(uri);
-        assertEquals("empty pushback", 0, n);
+        assertEquals(0, n, "empty pushback");
     }
 
     @Test
     public void testIsAlphanumeric() {
-        Assert.assertTrue(StringUtils.isAlphanumeric("foo123"));
-        Assert.assertFalse(StringUtils.isAlphanumeric("foo_123"));
+        assertTrue(StringUtils.isAlphanumeric("foo123"));
+        assertFalse(StringUtils.isAlphanumeric("foo_123"));
     }
 
     @Test
@@ -143,7 +145,7 @@ public class StringUtilsTest {
         // value: \'1-2-3\''
         final String value = "\\'1-2-3\\''";
         int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
-        assertEquals("unquoted apostrophe", 9, i);
+        assertEquals(9, i, "unquoted apostrophe");
     }
 
     @Test
@@ -152,7 +154,7 @@ public class StringUtilsTest {
         // value: \\'
         final String value = "\\\\'";
         int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
-        assertEquals("unquoted apostrophe after backslashes", 2, i);
+        assertEquals(2, i, "unquoted apostrophe after backslashes");
     }
 
     @Test
@@ -161,13 +163,13 @@ public class StringUtilsTest {
         // value: \\\'
         final String value = "\\\\\\'";
         int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
-        assertEquals("quoted apostrophe after backslashes", -1, i);
+        assertEquals(-1, i, "quoted apostrophe after backslashes");
     }
 
     @Test
     public void shouldMatchInitialApostrophe() {
         final String value = "'";
         int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
-        assertEquals("initial apostrophe", 0, i);
+        assertEquals(0, i, "initial apostrophe");
     }
 }

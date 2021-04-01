@@ -31,14 +31,10 @@ import java.util.TreeSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
-import org.junit.AfterClass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -49,6 +45,9 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 /**
@@ -63,7 +62,7 @@ public class SearchAndContextFormatterTest {
     private static TestRepository repository;
     private static File configFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
@@ -87,7 +86,7 @@ public class SearchAndContextFormatterTest {
         RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         configFile.delete();
@@ -99,10 +98,10 @@ public class SearchAndContextFormatterTest {
         instance.setFreetext("embedded");
         instance.setFile("main.c");
         int noHits = instance.search();
-        assertTrue("noHits should be positive", noHits > 0);
+        assertTrue(noHits > 0, "noHits should be positive");
         String[] frags = getFirstFragments(instance);
-        assertNotNull("getFirstFragments() should return something", frags);
-        assertEquals("frags should have one element", 1, frags.length);
+        assertNotNull(frags, "getFirstFragments() should return something");
+        assertEquals(1, frags.length, "frags should have one element");
 
         final String CTX =
                 "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +

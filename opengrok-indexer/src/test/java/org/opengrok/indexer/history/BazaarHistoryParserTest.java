@@ -26,15 +26,15 @@ package org.opengrok.indexer.history;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.PlatformUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
@@ -43,7 +43,7 @@ public class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
             RuntimeEnvironment.getInstance().setSourceRoot("");
@@ -54,7 +54,7 @@ public class BazaarHistoryParserTest {
         instance = new BazaarHistoryParser(bzrRepo);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -68,7 +68,7 @@ public class BazaarHistoryParserTest {
         History result = instance.parse("");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     @Test

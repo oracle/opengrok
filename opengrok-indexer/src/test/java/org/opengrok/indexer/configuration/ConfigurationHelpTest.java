@@ -22,9 +22,10 @@
  */
 package org.opengrok.indexer.configuration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link ConfigurationHelp}.
@@ -33,9 +34,8 @@ public class ConfigurationHelpTest {
     @Test
     public void shouldCreateReadableUsage() {
         String samples = ConfigurationHelp.getSamples();
-        assertFalse("samples are not empty", samples.isEmpty());
-        assertTrue("samples contains \"<?\"", samples.contains("<?"));
-        assertTrue("samples contains \"user-defined\"",
-            samples.contains("user-defined"));
+        assertFalse(samples.isEmpty(), "samples are not empty");
+        assertTrue(samples.contains("<?"), "samples contains \"<?\"");
+        assertTrue(samples.contains("user-defined"), "samples contains \"user-defined\"");
     }
 }

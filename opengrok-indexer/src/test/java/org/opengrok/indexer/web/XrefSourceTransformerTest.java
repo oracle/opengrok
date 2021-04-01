@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Represents a container for tests of {@link XrefSourceTransformer}.
@@ -55,7 +55,7 @@ public class XrefSourceTransformerTest {
     XrefSourceTransformer xform;
     StringWriter out;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         StringReader rdr = new StringReader(XREF_FRAG_DFLT);
         // Test the normal path of dummy-first then actual data.
@@ -72,7 +72,7 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=null", XREF_FRAG_DFLT, res);
+        assertEquals(XREF_FRAG_DFLT, res, "context=null");
     }
 
     @Test
@@ -81,7 +81,7 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=source", XREF_FRAG_DFLT, res);
+        assertEquals(XREF_FRAG_DFLT, res, "context=source");
     }
 
     @Test
@@ -90,7 +90,7 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=/source", XREF_FRAG_DFLT, res);
+        assertEquals(XREF_FRAG_DFLT, res, "context=/source");
     }
 
     @Test
@@ -99,7 +99,7 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=/source/", XREF_FRAG_DFLT, res);
+        assertEquals(XREF_FRAG_DFLT, res, "context=/source/");
     }
 
     @Test
@@ -108,7 +108,7 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=svc", XREF_FRAG_SVC, res);
+        assertEquals(XREF_FRAG_SVC, res, "context=svc");
     }
 
     @Test
@@ -117,6 +117,6 @@ public class XrefSourceTransformerTest {
         while (xform.yylex()) {
         }
         String res = out.toString();
-        assertEquals("context=/", XREF_FRAG_ROOT, res);
+        assertEquals(XREF_FRAG_ROOT, res, "context=/");
     }
 }

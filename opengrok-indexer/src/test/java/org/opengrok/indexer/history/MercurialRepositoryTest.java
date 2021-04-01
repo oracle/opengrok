@@ -23,12 +23,9 @@
  */
 package org.opengrok.indexer.history;
 
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -41,19 +38,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
  * Tests for MercurialRepository.
  */
-@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@EnabledForRepository(MERCURIAL)
 public class MercurialRepositoryTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * Revision numbers present in the Mercurial test repository, in the order
@@ -90,7 +85,7 @@ public class MercurialRepositoryTest {
         repository.create(getClass().getResourceAsStream("repositories.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (repository != null) {
             repository.destroy();
@@ -172,12 +167,10 @@ public class MercurialRepositoryTest {
 
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
-        if (exitCode != 0) {
-            fail("hg command '" + cmdargs.toString() + "' failed."
-                    + "\nexit code: " + exitCode
-                    + "\nstdout:\n" + exec.getOutputString()
-                    + "\nstderr:\n" + exec.getErrorString());
-        }
+        assertEquals(0, exitCode, "hg command '" + cmdargs.toString() + "' failed."
+                + "\nexit code: " + exitCode
+                + "\nstdout:\n" + exec.getOutputString()
+                + "\nstderr:\n" + exec.getErrorString());
     }
 
     /**
@@ -315,8 +308,7 @@ public class MercurialRepositoryTest {
     public void testGetHistoryWithNoSuchRevision() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Get the sequence number and the hash from one of the revisions.
         String[] revisionParts = REVISIONS[1].split(":");
@@ -326,17 +318,6 @@ public class MercurialRepositoryTest {
 
         // Construct a revision identifier that doesn't exist.
         String constructedRevision = (number + 1) + ":" + hash;
-        try {
-            mr.getHistory(root, constructedRevision);
-            fail("getHistory() should have failed");
-        } catch (HistoryException he) {
-            String msg = he.getMessage();
-            if (msg != null && msg.contains("not found in the repository")) {
-                // expected exception, do nothing
-            } else {
-                // unexpected exception, rethrow it
-                throw he;
-            }
-        }
+        assertThrows(HistoryException.class, () -> mr.getHistory(root, constructedRevision));
     }
 }

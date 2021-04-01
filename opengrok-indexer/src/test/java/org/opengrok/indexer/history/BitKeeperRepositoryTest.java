@@ -25,10 +25,11 @@ package org.opengrok.indexer.history;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BITKEEPER;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -39,24 +40,18 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.TreeSet;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Tests for BitKeeperRepository.
  * @author James Service &lt;jas2701@googlemail.com&gt;
  */
-@ConditionalRun(RepositoryInstalled.BitKeeperInstalled.class)
+@EnabledForRepository(BITKEEPER)
 public class BitKeeperRepositoryTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private TestRepository testRepo;
     private BitKeeperRepository bkRepo;
@@ -69,7 +64,7 @@ public class BitKeeperRepositoryTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         try {
             testRepo = new TestRepository();
@@ -84,7 +79,7 @@ public class BitKeeperRepositoryTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (testRepo != null) {
             testRepo.destroy();
@@ -98,16 +93,16 @@ public class BitKeeperRepositoryTest {
         final List<HistoryEntry> entries = history.getHistoryEntries();
         final List<String> renames = history.getRenamedFiles();
 
-        assertTrue("File history has no entries.", entries.size() > 0);
+        assertTrue(entries.size() > 0, "File history has no entries.");
 
         // Since we are not supporting directory histories
         // each entry must have only one file in its list.
         for (final HistoryEntry entry : entries) {
-            assertNotNull("File history has missing revision.", entry.getRevision());
-            assertNotNull("File history has missing author.", entry.getAuthor());
-            assertNotNull("File history has missing date.", entry.getDate());
-            assertNotNull("File history has missing message.", entry.getMessage());
-            assertEquals("File history has invalid file list.", entry.getFiles().size(), 1);
+            assertNotNull(entry.getRevision(), "File history has missing revision.");
+            assertNotNull(entry.getAuthor(), "File history has missing author.");
+            assertNotNull(entry.getDate(), "File history has missing date.");
+            assertNotNull(entry.getMessage(), "File history has missing message.");
+            assertEquals(entry.getFiles().size(), 1, "File history has invalid file list.");
         }
 
         // Validate that the renamed files list corresponds
@@ -119,12 +114,12 @@ public class BitKeeperRepositoryTest {
         final String currentName = entries.get(0).getFiles().first();
         final TreeSet<String> pastNames = new TreeSet<>(renames);
         pastNames.add(currentName);
-        assertEquals("File history has incorrect rename list.", fileNames, pastNames);
+        assertEquals(fileNames, pastNames, "File history has incorrect rename list.");
     }
 
     @Test
     public void testGetHistory() throws Exception {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
             final File file = new File(bkRepo.getDirectoryName(), bkFile);
@@ -137,14 +132,14 @@ public class BitKeeperRepositoryTest {
 
             // Passing 1.2 to get History should remove 1.1 and 1.2
             // revisions from each file, so check number of entries.
-            assertEquals("Partial file history is wrong size", fullHistory.getHistoryEntries().size(),
-                    (partHistory.getHistoryEntries().size() + 2));
+            assertEquals(fullHistory.getHistoryEntries().size(),
+                    (partHistory.getHistoryEntries().size() + 2), "Partial file history is wrong size");
         }
     }
 
     @Test
     public void testGetHistoryInvalid() {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");
 
@@ -154,7 +149,7 @@ public class BitKeeperRepositoryTest {
         } catch (final HistoryException e) {
             caughtFull = true;
         }
-        assertTrue("No exception thrown by getHistory with fake file", caughtFull);
+        assertTrue(caughtFull, "No exception thrown by getHistory with fake file");
 
         boolean caughtPart = false;
         try {
@@ -162,7 +157,7 @@ public class BitKeeperRepositoryTest {
         } catch (final HistoryException e) {
             caughtPart = true;
         }
-        assertTrue("No exception thrown by getHistory with fake file", caughtPart);
+        assertTrue(caughtPart, "No exception thrown by getHistory with fake file");
     }
 
     private static String readStream(InputStream stream) {
@@ -172,47 +167,47 @@ public class BitKeeperRepositoryTest {
 
     @Test
     public void testGetHistoryGet() {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
             final String currentVersion = readStream(bkRepo.getHistoryGet(bkRepo.getDirectoryName(), bkFile, "+"));
             final String firstVersion = readStream(bkRepo.getHistoryGet(bkRepo.getDirectoryName(), bkFile, "1.1"));
 
-            assertNotNull("Nothing returned by getHistoryGet.", currentVersion);
-            assertNotNull("Nothing returned by getHistoryGet.", firstVersion);
+            assertNotNull(currentVersion, "Nothing returned by getHistoryGet.");
+            assertNotNull(firstVersion, "Nothing returned by getHistoryGet.");
             assertThat("Files returned by getHistoryGet are incorrect.", currentVersion, not(equalTo(firstVersion)));
         }
     }
 
     @Test
     public void testGetHistoryGetInvalid() {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
-        assertNull("Something returned by getHistoryGet with fake file",
-                bkRepo.getHistoryGet(bkRepo.getDirectoryName(), "fakename.cpp", "+"));
-        assertNull("Something returned by getHistoryGet with fake file",
-                bkRepo.getHistoryGet(bkRepo.getDirectoryName(), "fakename.cpp", "1.1"));
+        assertNull(bkRepo.getHistoryGet(bkRepo.getDirectoryName(), "fakename.cpp", "+"),
+                "Something returned by getHistoryGet with fake file");
+        assertNull(bkRepo.getHistoryGet(bkRepo.getDirectoryName(), "fakename.cpp", "1.1"),
+                "Something returned by getHistoryGet with fake file");
     }
 
     @Test
     public void testAnnotation() throws Exception {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         for (final String bkFile : bkFiles) {
             final File file = new File(bkRepo.getDirectoryName(), bkFile);
             final Annotation currentVersion = bkRepo.annotate(file, "+");
             final Annotation firstVersion = bkRepo.annotate(file, "1.1");
 
-            assertEquals("Wrong file returned by annotate.", currentVersion.getFilename(), file.getName());
-            assertEquals("Wrong file returned by annotate.", firstVersion.getFilename(), file.getName());
-            assertTrue("Incorrect revisions returned by annotate.", currentVersion.getRevisions().size() > 1);
-            assertEquals("Incorrect revisions returned by annotate.", 1, firstVersion.getRevisions().size());
+            assertEquals(currentVersion.getFilename(), file.getName(), "Wrong file returned by annotate.");
+            assertEquals(firstVersion.getFilename(), file.getName(), "Wrong file returned by annotate.");
+            assertTrue(currentVersion.getRevisions().size() > 1, "Incorrect revisions returned by annotate.");
+            assertEquals(1, firstVersion.getRevisions().size(), "Incorrect revisions returned by annotate.");
         }
     }
 
     @Test
     public void testAnnotationInvalid() {
-        assertNotNull("Couldn't read bitkeeper test repository.", bkRepo);
+        assertNotNull(bkRepo, "Couldn't read bitkeeper test repository.");
 
         final File file = new File(bkRepo.getDirectoryName(), "fakename.cpp");
 
@@ -222,7 +217,7 @@ public class BitKeeperRepositoryTest {
         } catch (final IOException e) {
             caughtCurrent = true;
         }
-        assertTrue("No exception thrown by annotate with fake file", caughtCurrent);
+        assertTrue(caughtCurrent, "No exception thrown by annotate with fake file");
 
         boolean caughtFirst = false;
         try {
@@ -230,6 +225,6 @@ public class BitKeeperRepositoryTest {
         } catch (final IOException e) {
             caughtFirst = true;
         }
-        assertTrue("No exception thrown by annotate with fake file", caughtFirst);
+        assertTrue(caughtFirst, "No exception thrown by annotate with fake file");
     }
 }

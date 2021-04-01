@@ -18,18 +18,19 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.util.Calendar;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
@@ -142,8 +143,8 @@ public class PerforceHistoryParserTest {
             HistoryEntry entry, int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(entry.getDate());
-        assertEquals("year", year, cal.get(Calendar.YEAR));
-        assertEquals("month", month, cal.get(Calendar.MONTH));
-        assertEquals("day", day, cal.get(Calendar.DAY_OF_MONTH));
+        assertEquals(year, cal.get(Calendar.YEAR), "year");
+        assertEquals(month, cal.get(Calendar.MONTH), "month");
+        assertEquals(day, cal.get(Calendar.DAY_OF_MONTH), "day");
     }
 }

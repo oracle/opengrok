@@ -23,17 +23,15 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
@@ -47,15 +45,12 @@ import java.util.stream.Collectors;
 /**
  * @author austvik
  */
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@EnabledForRepository(GIT)
 public class GitRepositoryOctopusTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static TestRepository repository = new TestRepository();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(GitRepositoryOctopusTest.class.getResourceAsStream(
@@ -63,7 +58,7 @@ public class GitRepositoryOctopusTest {
         RuntimeEnvironment.getInstance().setMergeCommitsEnabled(true);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         repository = null;
@@ -170,15 +165,15 @@ public class GitRepositoryOctopusTest {
         GitRepository gitRepo = (GitRepository) RepositoryFactory.getRepository(root);
 
         History history = gitRepo.getHistory(root);
-        assertNotNull("git-octopus getHistory()", history);
+        assertNotNull(history, "git-octopus getHistory()");
 
         List<HistoryEntry> entries = history.getHistoryEntries();
-        assertNotNull("git-octopus getHistoryEntries()", entries);
+        assertNotNull(entries, "git-octopus getHistoryEntries()");
 
         /*
          * git-octopus has four-way merge, but GitHistoryParser condenses.
          */
-        assertEquals("git-octopus log entries", 4, entries.size());
+        assertEquals(4, entries.size(), "git-octopus log entries");
 
         SortedSet<String> allFiles = new TreeSet<>();
         for (HistoryEntry entry : entries) {
@@ -186,17 +181,17 @@ public class GitRepositoryOctopusTest {
                     collect(Collectors.toList()));
         }
 
-        assertTrue("should contain /git-octopus/d", allFiles.contains("/git-octopus/d"));
-        assertTrue("should contain /git-octopus/c", allFiles.contains("/git-octopus/c"));
-        assertTrue("should contain /git-octopus/b", allFiles.contains("/git-octopus/b"));
-        assertTrue("should contain /git-octopus/a", allFiles.contains("/git-octopus/a"));
-        assertEquals("git-octopus files from log", 4, allFiles.size());
+        assertTrue(allFiles.contains("/git-octopus/d"), "should contain /git-octopus/d");
+        assertTrue(allFiles.contains("/git-octopus/c"), "should contain /git-octopus/c");
+        assertTrue(allFiles.contains("/git-octopus/b"), "should contain /git-octopus/b");
+        assertTrue(allFiles.contains("/git-octopus/a"), "should contain /git-octopus/a");
+        assertEquals(4, allFiles.size(), "git-octopus files from log");
 
         HistoryEntry first = entries.get(0);
-        assertEquals("should be merge commit hash", "206f862b", first.getRevision());
-        assertEquals("should be merge commit message",
-                "Merge branches 'file_a', 'file_b' and 'file_c' into master, and add d",
-                first.getMessage());
-        assertEquals("git-octopus files for merge", 4, first.getFiles().size());
+        assertEquals("206f862b", first.getRevision(), "should be merge commit hash");
+        assertEquals("Merge branches 'file_a', 'file_b' and 'file_c' into master, and add d",
+                first.getMessage(),
+                "should be merge commit message");
+        assertEquals(4, first.getFiles().size(), "git-octopus files for merge");
     }
 }

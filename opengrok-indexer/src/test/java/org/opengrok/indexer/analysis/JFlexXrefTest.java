@@ -35,11 +35,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.document.Document;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.c.CXref;
 import org.opengrok.indexer.analysis.c.CxxXref;
 import org.opengrok.indexer.analysis.csharp.CSharpXref;
@@ -58,6 +56,8 @@ import org.opengrok.indexer.analysis.sql.SQLXref;
 import org.opengrok.indexer.analysis.tcl.TclXref;
 import org.opengrok.indexer.analysis.uue.UuencodeXref;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import org.opengrok.indexer.util.TestRepository;
 import org.xml.sax.InputSource;
@@ -77,7 +77,7 @@ public class JFlexXrefTest {
     private static final String FIRST_LINE_PREAMBLE =
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         repository = new TestRepository();
@@ -85,7 +85,7 @@ public class JFlexXrefTest {
                 "/org/opengrok/indexer/index/source.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -138,7 +138,7 @@ public class JFlexXrefTest {
         xref.write(out);
         if (EXP_N != xref.getLineNumber()) {
             System.out.println(out.toString());
-            assertEquals("xref line count", EXP_N, xref.getLineNumber());
+            assertEquals(EXP_N, xref.getLineNumber(), "xref line count");
         }
     }
 
@@ -187,7 +187,7 @@ public class JFlexXrefTest {
             xref.write(out);
             String outstr = out.toString();
             boolean hasAnchor = outstr.contains("\" name=\"bug15890\"/><a href=");
-            assertTrue("No bug15890 anchor found for " + path + ":\n" + outstr, hasAnchor);
+            assertTrue(hasAnchor, "No bug15890 anchor found for " + path + ":\n" + outstr);
         }
     }
 
@@ -325,8 +325,8 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         JFlexXref xref = new JFlexXref(new CxxXref(in));
         xref.write(out);
-        assertTrue("Link to search for definition of class not found",
-                   out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""));
+        assertTrue(out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""),
+                "Link to search for definition of class not found");
     }
 
     /**
@@ -349,12 +349,10 @@ public class JFlexXrefTest {
         String[] result = xout.split("\n");
 
         // The single-quote on line 2 shouldn't start a string literal.
-        assertTrue("Line 2 of:\n" + xout, result[1].endsWith(
-            "This shouldn&apos;t cause any problem."));
+        assertTrue(result[1].endsWith("This shouldn&apos;t cause any problem."), "Line 2 of:\n" + xout);
 
         // The string literal on line 4 should be recognized as one.
-        assertTrue("Line 4 of:\n" + xout,
-            result[3].endsWith("=<span class=\"s\">&apos;some string&apos;</span>"));
+        assertTrue(result[3].endsWith("=<span class=\"s\">&apos;some string&apos;</span>"), "Line 4 of:\n" + xout);
     }
 
     /**

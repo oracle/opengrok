@@ -18,20 +18,21 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SuggesterConfigTest {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRebuildParallelismNegative() {
         SuggesterConfig sconfig = new SuggesterConfig();
-        sconfig.setRebuildThreadPoolSizeInNcpuPercent(-1);
+        assertThrows(IllegalArgumentException.class, () -> sconfig.setRebuildThreadPoolSizeInNcpuPercent(-1));
     }
 
     @Test

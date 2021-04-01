@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -35,7 +35,7 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.archive.ZipAnalyzer;
 import org.opengrok.indexer.analysis.c.CxxAnalyzerFactory;
 import org.opengrok.indexer.analysis.document.MandocAnalyzer;
@@ -49,13 +49,13 @@ import org.opengrok.indexer.analysis.plain.XMLAnalyzer;
 import org.opengrok.indexer.analysis.sh.ShAnalyzer;
 import org.opengrok.indexer.analysis.sh.ShAnalyzerFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for the functionality provided by the AnalyzerGuru class.
@@ -98,7 +98,7 @@ public class AnalyzerGuruTest {
                 '/', '/', ' ', (byte) 0xC2, (byte) 0xA9};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite BOM as precise match,", PlainAnalyzer.class, fa.getClass());
+        assertSame(PlainAnalyzer.class, fa.getClass(), "despite BOM as precise match,");
     }
 
     @Test
@@ -118,8 +118,7 @@ public class AnalyzerGuruTest {
                 0, '#', 0, ' ', (byte) 0xC2, (byte) 0xA9};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite BOM as precise match,", PlainAnalyzer.class,
-                fa.getClass());
+        assertSame(PlainAnalyzer.class, fa.getClass(), "despite BOM as precise match,");
     }
 
     @Test
@@ -128,7 +127,7 @@ public class AnalyzerGuruTest {
                 '#', 0, ' ', 0, (byte) 0xA9, (byte) 0xC2};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite BOM as precise match,", PlainAnalyzer.class, fa.getClass());
+        assertSame(PlainAnalyzer.class, fa.getClass(), "despite BOM as precise match,");
     }
 
     @Test
@@ -254,49 +253,44 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldNotThrowGettingCsprojOpening() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/a.csproj");
-        assertNotNull("despite embedded a.csproj,", res);
-        assertSame("despite normal a.csproj,", XMLAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(res, "dummy").getClass());
+        assertNotNull(res, "despite embedded a.csproj,");
+        assertSame(XMLAnalyzer.class, AnalyzerGuru.getAnalyzer(res, "dummy").getClass(), "despite normal a.csproj,");
     }
 
     @Test
     public void shouldMatchPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "#!/usr/bin/perl -w".getBytes(StandardCharsets.US_ASCII));
-        assertSame("despite Perl hashbang,", PerlAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+        assertSame(PerlAnalyzer.class, AnalyzerGuru.getAnalyzer(in, "dummy").getClass(), "despite Perl hashbang,");
     }
 
     @Test
     public void shouldMatchPerlHashbangSpaced() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "\n\t #!  /usr/bin/perl -w".getBytes(StandardCharsets.US_ASCII));
-        assertSame("despite Perl hashbang,", PerlAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+        assertSame(PerlAnalyzer.class, AnalyzerGuru.getAnalyzer(in, "dummy").getClass(), "despite Perl hashbang,");
     }
 
     @Test
     public void shouldMatchEnvPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "#!/usr/bin/env perl -w".getBytes(StandardCharsets.US_ASCII));
-        assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+        assertSame(PerlAnalyzer.class, AnalyzerGuru.getAnalyzer(in, "dummy").getClass(), "despite env hashbang with perl,");
     }
 
     @Test
     public void shouldMatchEnvPerlHashbangSpaced() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "\n\t #!  /usr/bin/env\t perl -w".getBytes(StandardCharsets.US_ASCII));
-        assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+        assertSame(PerlAnalyzer.class, AnalyzerGuru.getAnalyzer(in, "dummy").getClass(),
+                "despite env hashbang with perl,");
     }
 
     @Test
     public void shouldNotMatchEnvLFPerlHashbang() throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(
                 "#!/usr/bin/env\nperl".getBytes(StandardCharsets.US_ASCII));
-        assertNotSame("despite env hashbang LF,", PerlAnalyzer.class,
-                AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+        assertNotSame(PerlAnalyzer.class, AnalyzerGuru.getAnalyzer(in, "dummy").getClass(), "despite env hashbang LF,");
     }
 
     @Test
@@ -305,7 +299,7 @@ public class AnalyzerGuruTest {
                 (byte) 0x06};
         ByteArrayInputStream in = new ByteArrayInputStream(elfmt);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite \\177ELF magic,", ELFAnalyzer.class, fa.getClass());
+        assertSame(ELFAnalyzer.class, fa.getClass(), "despite \\177ELF magic,");
     }
 
     @Test
@@ -313,14 +307,14 @@ public class AnalyzerGuruTest {
         String oldMagic = "\312\376\272\276";      // cafebabe?
         String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
                 (byte) 0xBA, (byte) 0xBE}, StandardCharsets.UTF_8);
-        assertNotEquals("despite octal string, escape it as unicode,", oldMagic, newMagic);
+        assertNotEquals(oldMagic, newMagic, "despite octal string, escape it as unicode,");
 
         // 0xCAFEBABE (4), minor (2), major (2)
         byte[] dotclass = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE,
                 (byte) 0, (byte) 1, (byte) 0, (byte) 0x34};
         ByteArrayInputStream in = new ByteArrayInputStream(dotclass);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite 0xCAFEBABE magic,", JavaClassAnalyzer.class, fa.getClass());
+        assertSame(JavaClassAnalyzer.class, fa.getClass(), "despite 0xCAFEBABE magic,");
     }
 
     @Test
@@ -328,7 +322,7 @@ public class AnalyzerGuruTest {
         byte[] mandoc = {' ', '\n', '.', '\"', '\n', '.', 'T', 'H', (byte) 0x20, '\n'};
         ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite .TH magic,", TroffAnalyzer.class, fa.getClass());
+        assertSame(TroffAnalyzer.class, fa.getClass(), "despite .TH magic,");
     }
 
     @Test
@@ -336,6 +330,6 @@ public class AnalyzerGuruTest {
         byte[] mandoc = {'\n', ' ', '.', '\"', '\n', '.', 'D', 'd', (byte) 0x20, '\n'};
         ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
         AbstractAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        assertSame("despite .Dd magic,", MandocAnalyzer.class, fa.getClass());
+        assertSame(MandocAnalyzer.class, fa.getClass(), "despite .Dd magic,");
     }
 }

@@ -34,9 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -73,9 +70,6 @@ import static org.junit.Assert.assertTrue;
 import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
-@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
-@ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
 public class ProjectsControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

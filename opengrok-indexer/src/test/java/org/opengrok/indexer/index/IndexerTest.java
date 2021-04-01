@@ -24,11 +24,13 @@
  */
 package org.opengrok.indexer.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,17 +54,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -82,22 +80,19 @@ public class IndexerTest {
 
     TestRepository repository;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repository.destroy();
     }
@@ -163,7 +158,7 @@ public class IndexerTest {
 
         // p2 should not be in the project list anymore
         for (Project p : newProjects) {
-            assertNotEquals("p2 not removed", p.getPath(), p2.getPath());
+            assertNotEquals(p.getPath(), p2.getPath(), "p2 not removed");
         }
 
         // p1 should be there
@@ -174,13 +169,12 @@ public class IndexerTest {
                 break;
             }
         }
-        assertNotNull("p1 not in list", newP1);
+        assertNotNull(newP1, "p1 not in list");
 
         // The properties of p1 should be preserved
-        assertEquals("project path", p1.getPath(), newP1.getPath());
-        assertEquals("project name",
-                p1.getName(), newP1.getName());
-        assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
+        assertEquals(p1.getPath(), newP1.getPath(), "project path");
+        assertEquals(p1.getName(), newP1.getName(), "project name");
+        assertEquals(p1.getTabSize(), newP1.getTabSize(), "project tabsize");
     }
 
     /**
@@ -312,8 +306,7 @@ public class IndexerTest {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File f = new File(env.getDataRootPath(),
                         TandemPath.join("historycache" + path, ".gz"));
-                Assert.assertTrue(String.format("history cache file %s should be preserved", f),
-                        f.exists());
+                assertTrue(f.exists(), String.format("history cache file %s should be preserved", f));
             }
             removedFiles.add(path);
         }
@@ -330,7 +323,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     public void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -349,15 +342,15 @@ public class IndexerTest {
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener(path);
         idb.addIndexChangedListener(listener);
         idb.update();
-        Assert.assertEquals(5, listener.filesToAdd.size());
+        assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
         File historyFile = new File(env.getDataRootPath(),
                 TandemPath.join("historycache" + path, ".gz"));
-        Assert.assertTrue(String.format("history cache for %s has to exist", path), historyFile.exists());
+        assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial", "bar.txt");
-        Assert.assertTrue(bar.exists());
+        assertTrue(bar.exists());
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {
             bw.write("foo\n");
         }
@@ -373,8 +366,7 @@ public class IndexerTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @EnabledForRepository({MERCURIAL, GIT})
     public void testSetRepositories() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -447,13 +439,12 @@ public class IndexerTest {
         listener.reset();
         repository.addDummyFile(ppath);
         idb.update();
-        assertEquals("No new file added", 1, listener.files.size());
+        assertEquals(1, listener.files.size(), "No new file added");
         repository.removeDummyFile(ppath);
         idb.update();
-        assertEquals("(added)files changed unexpectedly", 1, listener.files.size());
-        assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
-        assertEquals("Should have added then removed the same file",
-                listener.files.peek(), listener.removedFiles.peek());
+        assertEquals(1, listener.files.size(), "(added)files changed unexpectedly");
+        assertEquals(1, listener.removedFiles.size(), "Didn't remove the dummy file");
+        assertEquals(listener.files.peek(), listener.removedFiles.peek(), "Should have added then removed the same file");
     }
 
     /**

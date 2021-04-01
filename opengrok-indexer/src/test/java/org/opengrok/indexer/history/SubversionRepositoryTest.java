@@ -18,15 +18,17 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>. 
  */
 package org.opengrok.indexer.history;
 
+import org.junit.jupiter.api.Test;
+
 import java.text.ParseException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SubversionRepositoryTest {
 
@@ -58,14 +60,9 @@ public class SubversionRepositoryTest {
         for (String[] test : tests) {
             try {
                 repository.parse(test[0]);
-                if (test[1] != null) {
-                    Assert.fail("Shouldn't be able to parse the date: " + test[0]);
-                }
+                assertNull(test[1], "Shouldn't be able to parse the date: " + test[0]);
             } catch (ParseException ex) {
-                if (test[1] == null) {
-                    // no exception
-                    Assert.fail("Shouldn't throw a parsing exception for date: " + test[0]);
-                }
+                assertNotNull(test[1], "Shouldn't throw a parsing exception for date: " + test[0]);
             }
         }
     }

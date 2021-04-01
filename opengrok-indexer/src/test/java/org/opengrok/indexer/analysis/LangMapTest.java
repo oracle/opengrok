@@ -22,15 +22,15 @@
  */
 package org.opengrok.indexer.analysis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link LangMap}.
@@ -41,7 +41,7 @@ public class LangMapTest {
     public void testEmptyMap() {
         LangMap map = new LangTreeMap();
         List<String> args = map.getCtagsArgs();
-        assertTrue("args should be empty", args.isEmpty());
+        assertTrue(args.isEmpty(), "args should be empty");
     }
 
     @Test
@@ -49,8 +49,8 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         map.add("Makefile", "Sh");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have one all-case Makefile entry",
-                new Object[]{"--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"}, args.toArray());
+        assertArrayEquals(new Object[]{"--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"}, args.toArray(),
+                "args should have one all-case Makefile entry");
     }
 
     @Test
@@ -60,12 +60,11 @@ public class LangMapTest {
         map.add(".FOO", "XML");
         map.add(".B", "Basic");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have specific, multiple entries",
-                new Object[]{
-                        "--langmap=Basic:+.b.B",
-                        "--langmap=XML:+.foo.Foo.FOO",
-                        "--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"
-                }, args.toArray());
+        assertArrayEquals(new Object[] {
+                "--langmap=Basic:+.b.B",
+                "--langmap=XML:+.foo.Foo.FOO",
+                "--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"
+        }, args.toArray(), "args should have specific, multiple entries");
     }
 
     @Test
@@ -73,8 +72,7 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         map.add("groß", "Sh");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have one original-case groß entry",
-                new Object[]{"--langmap=Sh:+(groß*)"}, args.toArray());
+        assertArrayEquals(new Object[]{"--langmap=Sh:+(groß*)"}, args.toArray(), "args should have one original-case groß entry");
     }
 
     @Test
@@ -89,12 +87,11 @@ public class LangMapTest {
 
         LangMap map3 = map1.mergeSecondary(map2);
         List<String> args = map3.getCtagsArgs();
-        assertArrayEquals("args should have specific, multiple entries",
-                new Object[]{
-                        "--langmap=Basic:+.b.B",
-                        "--langmap=C++:+.zzz.Zzz.ZZZ",
-                        "--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"
-                }, args.toArray());
+        assertArrayEquals(new Object[] {
+                "--langmap=Basic:+.b.B",
+                "--langmap=C++:+.zzz.Zzz.ZZZ",
+                "--langmap=Sh:+([mM][aA][kK][eE][fF][iI][lL][eE]*)"
+        }, args.toArray(), "args should have specific, multiple entries");
     }
 
     @Test
@@ -108,12 +105,11 @@ public class LangMapTest {
 
         LangMap map3 = map1.mergeSecondary(map2);
         List<String> args = map3.getCtagsArgs();
-        assertArrayEquals("args should have specific, multiple entries",
-                new Object[]{
-                        "--langmap=C++:+.zzz.Zzz.ZZZ",
-                        "--map-all=-.b",
-                        "--map-all=-.B"
-                }, args.toArray());
+        assertArrayEquals(new Object[] {
+                "--langmap=C++:+.zzz.Zzz.ZZZ",
+                "--map-all=-.b",
+                "--map-all=-.B"
+        }, args.toArray(), "args should have specific, multiple entries");
     }
 
     @Test
@@ -121,8 +117,8 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         map.exclude("Makefile");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have one all-case Makefile entry",
-                new Object[]{"--map-all=-([mM][aA][kK][eE][fF][iI][lL][eE]*)"}, args.toArray());
+        assertArrayEquals(new Object[]{"--map-all=-([mM][aA][kK][eE][fF][iI][lL][eE]*)"}, args.toArray(),
+                "args should have one all-case Makefile entry");
     }
 
     @Test
@@ -130,11 +126,10 @@ public class LangMapTest {
         LangMap map = new LangTreeMap();
         map.exclude(".d");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have specific, multiple entries",
-                new Object[]{
-                        "--map-all=-.d",
-                        "--map-all=-.D"
-                }, args.toArray());
+        assertArrayEquals(new Object[] {
+                "--map-all=-.d",
+                "--map-all=-.D"
+        }, args.toArray(), "args should have specific, multiple entries");
     }
 
     @Test
@@ -143,8 +138,7 @@ public class LangMapTest {
         map.exclude(".d");
         map.add(".d", "D");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have a specified entry",
-                new Object[]{"--langmap=D:+.d.D"}, args.toArray());
+        assertArrayEquals(new Object[]{"--langmap=D:+.d.D"}, args.toArray(), "args should have a specified entry");
     }
 
     @Test
@@ -153,11 +147,10 @@ public class LangMapTest {
         map.add(".d", "D");
         map.exclude(".d");
         List<String> args = map.getCtagsArgs();
-        assertArrayEquals("args should have specific, multiple entries",
-                new Object[]{
-                        "--map-all=-.d",
-                        "--map-all=-.D"
-                }, args.toArray());
+        assertArrayEquals(new Object[] {
+                "--map-all=-.d",
+                "--map-all=-.D"
+        }, args.toArray(), "args should have specific, multiple entries");
     }
 
     @Test

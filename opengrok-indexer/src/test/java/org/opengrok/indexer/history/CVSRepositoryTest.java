@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -32,32 +32,27 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 
 /**
  *
  * @author austvik
  */
-@ConditionalRun(RepositoryInstalled.CvsInstalled.class)
+@EnabledForRepository(CVS)
 public class CVSRepositoryTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     CVSRepository instance;
 
@@ -82,7 +77,7 @@ public class CVSRepositoryTest {
         runCvsCommand(root, "-d", cvsroot.getAbsolutePath(), "checkout", "cvsrepo");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
 
@@ -92,7 +87,7 @@ public class CVSRepositoryTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new CVSRepository();
     }
@@ -110,12 +105,10 @@ public class CVSRepositoryTest {
         Collections.addAll(cmdargs, args);
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
-        if (exitCode != 0) {
-            fail("cvs command '" + cmdargs.toString() + "'failed."
-                    + "\nexit code: " + exitCode
-                    + "\nstdout:\n" + exec.getOutputString()
-                    + "\nstderr:\n" + exec.getErrorString());
-        }
+        assertEquals(0, exitCode, "cvs command '" + cmdargs.toString() + "'failed."
+                + "\nexit code: " + exitCode
+                + "\nstdout:\n" + exec.getOutputString()
+                + "\nstderr:\n" + exec.getErrorString());
     }
 
     /**

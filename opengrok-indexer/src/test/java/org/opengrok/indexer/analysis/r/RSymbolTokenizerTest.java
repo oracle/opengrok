@@ -23,10 +23,10 @@
  */
 package org.opengrok.indexer.analysis.r;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.StreamUtils;
 
 import java.io.InputStream;
@@ -44,10 +44,10 @@ public class RSymbolTokenizerTest {
     public void testPerlSymbolStream() throws Exception {
         InputStream rlangRes = getClass().getClassLoader().getResourceAsStream(
                 "analysis/r/sample.r");
-        assertNotNull("should read sample.r as resource,", rlangRes);
+        assertNotNull(rlangRes, "should read sample.r as resource,");
         InputStream symbolsRes = getClass().getClassLoader().getResourceAsStream(
                 "analysis/r/samplesymbols.txt");
-        assertNotNull("should read samplesymbols.txt as resource,", symbolsRes);
+        assertNotNull(symbolsRes, "should read samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = StreamUtils.readSampleSymbols(symbolsRes);
         assertSymbolStream(RSymbolTokenizer.class, rlangRes, expectedSymbols);

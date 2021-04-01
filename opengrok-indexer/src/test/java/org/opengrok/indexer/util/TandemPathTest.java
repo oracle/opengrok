@@ -22,12 +22,12 @@
  */
 package org.opengrok.indexer.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TandemPathTest {
 
@@ -54,7 +54,7 @@ public class TandemPathTest {
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "EOowLBTrxWMrXUnR2y818jr7LlP-DReUhteosu_8AoY=.zip";
         File expected = new File("dir", aNewName);
-        assertEquals("255 ASCII characters", expected.toString(), newName);
+        assertEquals(expected.toString(), newName, "255 ASCII characters");
     }
 
     @Test
@@ -72,6 +72,6 @@ public class TandemPathTest {
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.zip";
         File expected = new File("dir", aNewName);
-        assertEquals("254 ASCII characters", expected.toString(), newName);
+        assertEquals(expected.toString(), newName, "254 ASCII characters");
     }
 }

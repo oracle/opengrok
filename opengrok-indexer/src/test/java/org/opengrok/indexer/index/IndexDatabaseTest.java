@@ -32,17 +32,10 @@ import java.util.TreeSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -53,6 +46,12 @@ import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Unit tests for the {@code IndexDatabase} class.
  */
@@ -60,7 +59,7 @@ public class IndexDatabaseTest {
 
     private static TestRepository repository;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -86,7 +85,7 @@ public class IndexDatabaseTest {
         indexer.doIndexerExecution(true, null, null);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
         repository.destroy();
     }
@@ -127,11 +126,9 @@ public class IndexDatabaseTest {
             File dataFile = new File(dataDir, TandemPath.join(fileName, ".gz"));
 
             if (shouldExist) {
-                Assert.assertTrue("file " + fileName + " not found in " + dirName,
-                        dataFile.exists());
+                assertTrue(dataFile.exists(), "file " + fileName + " not found in " + dirName);
             } else {
-                Assert.assertFalse("file " + fileName + " found in " + dirName,
-                        dataFile.exists());
+                assertFalse(dataFile.exists(), "file " + fileName + " found in " + dirName);
             }
         }
     }
@@ -156,7 +153,7 @@ public class IndexDatabaseTest {
         // definitions.
         String fileName = "header.h";
         File gitRoot = new File(repository.getSourceRoot(), projectName);
-        Assert.assertTrue(new File(gitRoot, fileName).exists());
+        assertTrue(new File(gitRoot, fileName).exists());
 
         // Check that the file was indexed successfully in terms of generated data.
         checkDataExistence(projectName + File.separator + fileName, true);
@@ -166,17 +163,17 @@ public class IndexDatabaseTest {
          * Initially was 6, then IndexAnalysisSettings added 1, then
          * NumLinesLOCAggregator added 3.
          */
-        Assert.assertEquals("Lucene number of documents", 10, origNumFiles);
+        assertEquals(10, origNumFiles, "Lucene number of documents");
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
         file.delete();
-        Assert.assertFalse("file " + fileName + " not removed", file.exists());
+        assertFalse(file.exists(), "file " + fileName + " not removed");
         idb.update();
 
         // Check that the data for the file has been removed.
         checkDataExistence(projectName + File.separator + fileName, false);
-        Assert.assertEquals(origNumFiles - 1, idb.getNumFiles());
+        assertEquals(origNumFiles - 1, idb.getNumFiles());
     }
 
     /**
@@ -190,11 +187,11 @@ public class IndexDatabaseTest {
         instance.setFile("c");
         instance.search();
         ScoreDoc[] scoredocs = instance.scoreDocs();
-        assertTrue("need some search hits to perform the check", scoredocs.length > 0);
+        assertTrue(scoredocs.length > 0, "need some search hits to perform the check");
         for (ScoreDoc sd : scoredocs) {
             Document doc = instance.doc(sd.doc);
-            assertFalse("PATH field should not contain backslash characters",
-                    doc.getField(QueryBuilder.PATH).stringValue().contains("\\"));
+            assertFalse(doc.getField(QueryBuilder.PATH).stringValue().contains("\\"),
+                    "PATH field should not contain backslash characters");
         }
     }
 

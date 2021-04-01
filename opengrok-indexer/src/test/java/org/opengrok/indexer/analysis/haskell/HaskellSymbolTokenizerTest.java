@@ -23,13 +23,13 @@
  */
 package org.opengrok.indexer.analysis.haskell;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import java.io.IOException;
@@ -93,10 +93,10 @@ public class HaskellSymbolTokenizerTest {
     public void testHaskellSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sample2.hs");
-        assertNotNull("despite sample.py as resource,", pyres);
+        assertNotNull(pyres, "despite sample.py as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sample2symbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(HaskellSymbolTokenizer.class, pyres, expectedSymbols);

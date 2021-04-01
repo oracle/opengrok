@@ -24,12 +24,14 @@ package org.opengrok.indexer.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Represents a container for tests of {@link JavaClassAnalyzerFactory}.
@@ -44,13 +46,12 @@ public class JavaClassAnalyzerFactoryTest {
     public void testJavaClassWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/javaclass.bin");
-        assertNotNull("despite inclusion locally,", res);
+        assertNotNull(res, "despite inclusion locally,");
 
         // assert that it is matched
         AnalyzerFactory fac = AnalyzerGuru.find(res);
-        assertNotNull("javaclass.bin should have factory", fac);
-        assertSame("should be JavaClassAnalyzerFactory", fac.getClass(),
-            JavaClassAnalyzerFactory.class);
+        assertNotNull(fac, "javaclass.bin should have factory");
+        assertSame(fac.getClass(), JavaClassAnalyzerFactory.class, "should be JavaClassAnalyzerFactory");
     }
 
     /**
@@ -61,12 +62,11 @@ public class JavaClassAnalyzerFactoryTest {
     public void testDylibCafebabeWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/executables/fat.dylib");
-        assertNotNull("despite inclusion locally,", res);
+        assertNotNull(res, "despite inclusion locally,");
 
         AnalyzerFactory fac = AnalyzerGuru.find(res);
         if (fac != null) {
-            assertNotSame("should not be JavaClassAnalyzerFactory",
-                fac.getClass(), JavaClassAnalyzerFactory.class);
+            assertNotSame(fac.getClass(), JavaClassAnalyzerFactory.class, "should not be JavaClassAnalyzerFactory");
         }
     }
 }

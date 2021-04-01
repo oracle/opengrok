@@ -18,36 +18,35 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class GroupsTest {
 
     Configuration cfg;
 
-    @Before
-    public void setUp() {
-        try {
-            cfg = Configuration.makeXMLStringAsConfiguration(BASIC_CONFIGURATION);
-        } catch (IOException ex) {
-            Assert.fail("setUp method should not throw an exception");
-        }
+    @BeforeEach
+    public void setUp() throws IOException {
+        cfg = Configuration.makeXMLStringAsConfiguration(BASIC_CONFIGURATION);
     }
 
     @Test
     public void testBasicConfiguration() {
-        Assert.assertEquals("Initial configuration should contain 6 groups",
-                6, cfg.getGroups().size());
+        assertEquals(6, cfg.getGroups().size(), "Initial configuration should contain 6 groups");
     }
 
     @Test
@@ -58,82 +57,82 @@ public class GroupsTest {
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "random not existing group"});
 
-        Assert.assertEquals(6, cfg.getGroups().size());
+        assertEquals(6, cfg.getGroups().size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "apache"});
 
-        Assert.assertEquals(5, cfg.getGroups().size());
+        assertEquals(5, cfg.getGroups().size());
 
         invokeMethod("deleteGroup",
                 new Class<?>[]{Set.class, String.class},
                 new Object[]{groups, "ctags"});
 
-        Assert.assertEquals(1, cfg.getGroups().size());
+        assertEquals(1, cfg.getGroups().size());
     }
 
     @Test
     public void testAddGroup() {
         Set<Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "new fantastic group");
-        Assert.assertNull(grp);
+        assertNull(grp);
 
         invokeMethod("modifyGroup",
                 new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", null});
 
-        Assert.assertEquals(7, groups.size());
+        assertEquals(7, groups.size());
 
         grp = findGroup(groups, "new fantastic group");
-        Assert.assertNotNull(grp);
-        Assert.assertEquals(grp.getName(), "new fantastic group");
-        Assert.assertEquals(grp.getPattern(), "some pattern");
+        assertNotNull(grp);
+        assertEquals(grp.getName(), "new fantastic group");
+        assertEquals(grp.getPattern(), "some pattern");
     }
 
     @Test
     public void testAddGroupToParent() {
         Set<Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "apache");
-        Assert.assertNotNull(grp);
+        assertNotNull(grp);
 
         grp = findGroup(groups, "new fantastic group");
-        Assert.assertNull(grp);
+        assertNull(grp);
 
         invokeMethod("modifyGroup",
                 new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "new fantastic group", "some pattern", "apache"});
 
-        Assert.assertEquals(7, groups.size());
+        assertEquals(7, groups.size());
 
         grp = findGroup(groups, "apache");
-        Assert.assertNotNull(grp);
-        Assert.assertEquals(1, grp.getSubgroups().size());
-        Assert.assertEquals(1, grp.getDescendants().size());
+        assertNotNull(grp);
+        assertEquals(1, grp.getSubgroups().size());
+        assertEquals(1, grp.getDescendants().size());
 
         grp = findGroup(groups, "new fantastic group");
-        Assert.assertNotNull(grp);
-        Assert.assertNotNull(grp.getParent());
-        Assert.assertEquals(grp.getName(), "new fantastic group");
-        Assert.assertEquals(grp.getPattern(), "some pattern");
+        assertNotNull(grp);
+        assertNotNull(grp.getParent());
+        assertEquals(grp.getName(), "new fantastic group");
+        assertEquals(grp.getPattern(), "some pattern");
     }
 
     @Test
     public void testModifyGroup() {
         Set<Group> groups = cfg.getGroups();
         Group grp = findGroup(groups, "apache");
-        Assert.assertNotNull(grp);
-        Assert.assertEquals(grp.getName(), "apache");
-        Assert.assertEquals(grp.getPattern(), "apache-.*");
+        assertNotNull(grp);
+        assertEquals(grp.getName(), "apache");
+        assertEquals(grp.getPattern(), "apache-.*");
 
         invokeMethod("modifyGroup",
                 new Class<?>[]{Set.class, String.class, String.class, String.class},
                 new Object[]{groups, "apache", "different pattern", null});
 
         grp = findGroup(groups, "apache");
-        Assert.assertNotNull(grp);
-        Assert.assertEquals(grp.getName(), "apache");
-        Assert.assertEquals(grp.getPattern(), "different pattern");
+        assertNotNull(grp);
+        assertEquals(grp.getName(), "apache");
+        assertEquals(grp.getPattern(), "different pattern");
     }
 
     @Test
@@ -164,10 +163,8 @@ public class GroupsTest {
 
         String output = os.toString();
 
-        Assert.assertEquals(
-                "it expects that \"" + match + "\" will match " + expectedlines + " records",
-                expectedlines + 1,
-                output.split("\\r?\\n").length
+        assertEquals(expectedlines + 1, output.split("\\r?\\n").length,
+                "it expects that \"" + match + "\" will match " + expectedlines + " records"
         );
     }
 
@@ -177,8 +174,7 @@ public class GroupsTest {
             method.setAccessible(true);
             method.invoke(null, values);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            Assert.fail("invokeMethod should not throw an exception");
+            throw new RuntimeException(ex);
         }
     }
 

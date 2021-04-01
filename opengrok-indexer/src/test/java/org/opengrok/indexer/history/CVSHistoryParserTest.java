@@ -22,13 +22,13 @@
  */
 package org.opengrok.indexer.history;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -38,12 +38,12 @@ public class CVSHistoryParserTest {
 
     CVSHistoryParser instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new CVSHistoryParser();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -56,7 +56,7 @@ public class CVSHistoryParserTest {
     public void parseEmpty() throws Exception {
         History result = instance.parse("");
         assertNotNull(result);
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     /**
@@ -121,9 +121,7 @@ public class CVSHistoryParserTest {
         assertEquals(revId3, e2.getRevision());
         assertEquals(author1, e2.getAuthor());
         assertEquals(0, e2.getFiles().size());
-        assertTrue("Should contain comment of both lines: line 1",
-            e2.getMessage().contains("some"));
-        assertTrue("Should contain comment of both lines: line 2",
-            e2.getMessage().contains("two"));
+        assertTrue(e2.getMessage().contains("some"), "Should contain comment of both lines: line 1");
+        assertTrue(e2.getMessage().contains("two"), "Should contain comment of both lines: line 2");
     }
 }

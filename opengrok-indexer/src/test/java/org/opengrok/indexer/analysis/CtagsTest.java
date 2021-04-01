@@ -18,18 +18,20 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.File;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -40,7 +42,7 @@ public class CtagsTest {
     private static Ctags ctags;
     private static TestRepository repository;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -59,7 +61,7 @@ public class CtagsTest {
         ctags.setCTagsExtraOptionsFile(extraOptionsFile);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -83,8 +85,8 @@ public class CtagsTest {
      */
     @Test
     public void testDoCtags() throws Exception {
-     Definitions result = getDefs("bug16070/arguments.c");
-     assertEquals(13, result.numberOfSymbols());     
+        Definitions result = getDefs("bug16070/arguments.c");
+        assertEquals(13, result.numberOfSymbols());
     }
 
     /**
@@ -102,13 +104,13 @@ public class CtagsTest {
         int count = 0;
         for (Definitions.Tag tag : result.getTags()) {
             if (tag.type.startsWith("method")) {
-                assertTrue("too many methods", count < names.length);
-                assertEquals("method name", names[count], tag.symbol);
-                assertEquals("method line", lines[count], tag.line);
+                assertTrue(count < names.length, "too many methods");
+                assertEquals(names[count], tag.symbol, "method name");
+                assertEquals(lines[count], tag.line, "method line");
                 count++;
             }
         }
-        assertEquals("method count", names.length, count);
+        assertEquals(names.length, count, "method count");
     }
 
     /**
@@ -127,12 +129,12 @@ public class CtagsTest {
         int count = 0;
         for (Definitions.Tag tag : result.getTags()) {
             if (tag.type.startsWith("function")) {
-                assertTrue("too many functions", count < names.length);
-                assertEquals("function name", names[count], tag.symbol);
-                assertEquals("function line", lines[count], tag.line);
+                assertTrue(count < names.length, "too many functions");
+                assertEquals(names[count], tag.symbol, "function name");
+                assertEquals(lines[count], tag.line, "function line");
                 count++;
             }
         }
-        assertEquals("function count", names.length, count);
+        assertEquals(names.length, count, "function count");
     }       
 }
