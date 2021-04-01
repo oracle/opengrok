@@ -83,13 +83,15 @@ public class HostUtil {
 
     public static boolean isReachable(String webappURI, int timeOutMillis) {
         boolean connectWorks = false;
+
         try {
+            int port = HostUtil.urlToPort(webappURI);
+            if (port <= 0) {
+                LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
+                return false;
+            }
+
             for (InetAddress addr : InetAddress.getAllByName(HostUtil.urlToHostname(webappURI))) {
-                int port = HostUtil.urlToPort(webappURI);
-                if (port <= 0) {
-                    LOGGER.log(Level.SEVERE, "invalid port number for " + webappURI);
-                    break;
-                }
                 if (HostUtil.isReachable(addr, port, timeOutMillis)) {
                     LOGGER.log(Level.FINE, "URI " + webappURI + " is reachable via " + addr.toString());
                     connectWorks = true;
