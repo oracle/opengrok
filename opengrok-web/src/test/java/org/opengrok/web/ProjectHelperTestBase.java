@@ -32,11 +32,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
 import org.opengrok.indexer.authorization.TestPlugin;
@@ -46,6 +45,9 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepoRepository;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProjectHelperTestBase {
 
@@ -142,9 +144,8 @@ public class ProjectHelperTestBase {
             field.setAccessible(true);
             return (Map<Project, List<RepositoryInfo>>) field.get(RuntimeEnvironment.getInstance());
         } catch (Throwable ex) {
-            Assert.fail("invoking getRepositoriesMap should not throw an exception");
+            throw new AssertionError("invoking getRepositoriesMap should not throw an exception");
         }
-        return null;
     }
 
     protected static void setRepositoriesMap(Map<Project, List<RepositoryInfo>> map) {
@@ -153,7 +154,7 @@ public class ProjectHelperTestBase {
             field.setAccessible(true);
             field.set(RuntimeEnvironment.getInstance(), map);
         } catch (Throwable ex) {
-            Assert.fail("invoking getRepositoriesMap should not throw an exception");
+            throw new AssertionError("invoking getRepositoriesMap should not throw an exception");
         }
     }
 
@@ -202,7 +203,7 @@ public class ProjectHelperTestBase {
      *  allowed_ungrouped_repository_2_1, allowed_ungrouped_repository_3_1
      * </pre>
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         env = RuntimeEnvironment.getInstance();
         groups = env.getGroups();
@@ -241,7 +242,7 @@ public class ProjectHelperTestBase {
         env.setRepositories(rps);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         setRepositoriesMap(repositories_map);
         env.setProjects(projects);
@@ -258,13 +259,13 @@ public class ProjectHelperTestBase {
         };
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        Assert.assertEquals("Should contain 4 groups", 4, env.getGroups().size());
-        Assert.assertEquals("Should contain 40 project", 40, env.getProjects().size());
-        Assert.assertEquals("Should contain 20 repositories", 20, env.getRepositories().size());
-        Assert.assertNotNull("Repository map should not be null", env.getProjectRepositoriesMap());
-        Assert.assertEquals("Repository map should contain 20 project", 20, env.getProjectRepositoriesMap().size());
+        assertEquals(4, env.getGroups().size(), "Should contain 4 groups");
+        assertEquals(40, env.getProjects().size(), "Should contain 40 project");
+        assertEquals(20, env.getRepositories().size(), "Should contain 20 repositories");
+        assertNotNull(env.getProjectRepositoriesMap(), "Repository map should not be null");
+        assertEquals(20, env.getProjectRepositoriesMap().size(), "Repository map should contain 20 project");
 
         env.setAuthorizationFramework(new AuthorizationFramework());
         env.getAuthorizationFramework().reload();
@@ -287,7 +288,7 @@ public class ProjectHelperTestBase {
         helper = cfg.getProjectHelper();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         env.getAuthorizationFramework().removeAll();
     }

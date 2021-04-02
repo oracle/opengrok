@@ -40,9 +40,9 @@ import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.spi.TestContainer;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
@@ -60,9 +60,9 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MessagesControllerTest extends OGKJerseyTest {
 
@@ -148,13 +148,13 @@ public class MessagesControllerTest extends OGKJerseyTest {
         return new CustomGrizzlyTestContainerFactory();
     }
 
-    @Before
+    @BeforeEach
     public void setupMessageListener() throws Exception {
         setMessageContainer(env, new MessagesContainer());
         env.startExpirationTimer();
     }
 
-    @After
+    @AfterEach
     public void tearDownMessageListener() {
         env.stopExpirationTimer();
     }
