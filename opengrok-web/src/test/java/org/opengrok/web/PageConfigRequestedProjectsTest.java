@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -30,16 +30,17 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PageConfigRequestedProjectsTest {
 
@@ -49,7 +50,7 @@ public class PageConfigRequestedProjectsTest {
     private Set<Group> oldGroups;
     private AuthorizationStack oldPluginStack;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         oldProjects = env.getProjects();
         oldGroups = env.getGroups();
@@ -86,7 +87,7 @@ public class PageConfigRequestedProjectsTest {
         env.applyConfig(false, CommandTimeoutType.INDEXER);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         env.setProjects(oldProjects);
         env.setGroups(oldGroups);
@@ -98,7 +99,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-1")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-1")), cfg.getRequestedProjects());
     }
 
     @Test
@@ -106,7 +107,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-3", "project-6"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-1", "project-3", "project-6")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-1", "project-3", "project-6")), cfg.getRequestedProjects());
     }
 
     @Test
@@ -115,7 +116,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(), cfg.getRequestedProjects());
 
         env.getProjects().get("project-1").setIndexed(true);
     }
@@ -126,7 +127,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-3", "project-6"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-3", "project-6")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-3", "project-6")), cfg.getRequestedProjects());
 
         env.getProjects().get("project-1").setIndexed(true);
     }
@@ -136,7 +137,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-1", "project-2", "project-3")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-1", "project-2", "project-3")), cfg.getRequestedProjects());
     }
 
     @Test
@@ -144,7 +145,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(null, new String[]{"group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-7", "project-8", "project-9")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
 
     @Test
@@ -152,7 +153,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        assertEquals(new HashSet<>(Arrays.asList(
                 "project-1", "project-2", "project-3",
                 "project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
@@ -162,7 +163,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-6"}, new String[]{"group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        assertEquals(new HashSet<>(Arrays.asList(
                 "project-1", "project-6",
                 "project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
@@ -173,7 +174,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-6"}, new String[]{"no-group", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        assertEquals(new HashSet<>(Arrays.asList(
                 "project-1", "project-6",
                 "project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
@@ -183,7 +184,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, new String[]{"group-1-2-3", "group-7-8-9"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList(
+        assertEquals(new HashSet<>(Arrays.asList(
                 "project-1", "project-2", "project-3",
                 "project-7", "project-8", "project-9")), cfg.getRequestedProjects());
     }
@@ -194,7 +195,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(Arrays.asList("project-2", "project-3")), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(Arrays.asList("project-2", "project-3")), cfg.getRequestedProjects());
 
         env.getProjects().get("project-1").setIndexed(true);
     }
@@ -207,7 +208,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(), cfg.getRequestedProjects());
     }
 
     /**
@@ -218,7 +219,7 @@ public class PageConfigRequestedProjectsTest {
         final HttpServletRequest request = createRequest(null, new String[]{"no-group"});
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new HashSet<>(), cfg.getRequestedProjects());
+        assertEquals(new HashSet<>(), cfg.getRequestedProjects());
     }
 
     @Test
@@ -227,7 +228,7 @@ public class PageConfigRequestedProjectsTest {
         Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+        assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     @Test
@@ -236,7 +237,7 @@ public class PageConfigRequestedProjectsTest {
         Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+        assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     @Test
@@ -245,7 +246,7 @@ public class PageConfigRequestedProjectsTest {
         Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+        assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     @Test
@@ -254,7 +255,7 @@ public class PageConfigRequestedProjectsTest {
         Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
-        Assert.assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
+        assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
     }
 
     /**

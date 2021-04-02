@@ -23,7 +23,9 @@
  */
 package org.opengrok.web.api.v1.controller;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -35,8 +37,7 @@ import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
@@ -146,7 +147,7 @@ public class ConfigurationControllerTest extends OGKJerseyTest {
 
         setValue("chattyStatusPage", value);
 
-        Assert.assertTrue(env.isChattyStatusPage());
+        assertTrue(env.isChattyStatusPage());
     }
 
     @Test
@@ -161,7 +162,7 @@ public class ConfigurationControllerTest extends OGKJerseyTest {
 
         setValue("chattyStatusPage", value);
 
-        Assert.assertFalse(env.isChattyStatusPage());
+        assertFalse(env.isChattyStatusPage());
     }
 
     @Test

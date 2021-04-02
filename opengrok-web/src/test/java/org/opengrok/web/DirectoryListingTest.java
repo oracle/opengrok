@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
@@ -35,9 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -48,10 +49,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -137,13 +137,13 @@ public class DirectoryListingTest {
 
             if (subdirs != null && subdirs.size() > 0) {
                 // this is a directory
-                assertTrue("Failed to create a directory", file.mkdirs());
+                assertTrue(file.mkdirs(), "Failed to create a directory");
                 for (FileEntry entry : subdirs) {
                     entry.name = name + File.separator + entry.name;
                     entry.create();
                 }
             } else {
-                assertTrue("Failed to create file", file.createNewFile());
+                assertTrue(file.createNewFile(), "Failed to create file");
             }
 
             long val = lastModified;
@@ -151,8 +151,7 @@ public class DirectoryListingTest {
                 val = System.currentTimeMillis();
             }
 
-            assertTrue("Failed to set modification time",
-                    file.setLastModified(val));
+            assertTrue(file.setLastModified(val), "Failed to set modification time");
 
             if (subdirs == null && size > 0) {
                 try (FileOutputStream out = new FileOutputStream(file)) {
@@ -180,7 +179,7 @@ public class DirectoryListingTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         directory = Files.createTempDirectory("directory").toFile();
 
@@ -208,7 +207,7 @@ public class DirectoryListingTest {
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if (directory != null && directory.exists()) {
             removeDirectory(directory);
@@ -324,7 +323,7 @@ public class DirectoryListingTest {
         if (len < 5) {
             return;
         }
-        assertEquals("list.jsp table <td> count", 7, len);
+        assertEquals(7, len, "list.jsp table <td> count");
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
@@ -340,7 +339,7 @@ public class DirectoryListingTest {
             }
         }
 
-        fail("Could not find a match for: " + entry.name);
+        throw new AssertionError("Could not find a match for: " + entry.name);
     }
 
     /**
@@ -358,10 +357,10 @@ public class DirectoryListingTest {
                 Arrays.asList(directory.list()));
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        assertNotNull("DocumentBuilderFactory is null", factory);
+        assertNotNull(factory, "DocumentBuilderFactory is null");
 
         DocumentBuilder builder = factory.newDocumentBuilder();
-        assertNotNull("DocumentBuilder is null", builder);
+        assertNotNull(builder, "DocumentBuilder is null");
 
         out.append("</start>\n");
         String str = out.toString();

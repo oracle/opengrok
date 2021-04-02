@@ -28,12 +28,12 @@ import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -63,21 +63,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
+@EnabledForRepository({MERCURIAL, GIT, SUBVERSION})
 public class ProjectsControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Mock
     private SuggesterService suggesterService;
@@ -94,7 +95,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
                 });
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -109,7 +110,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -192,12 +193,10 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         Set<String> directoryNames = HistoryGuru.getInstance().
                 getRepositories().stream().map(RepositoryInfo::getDirectoryName).
                 collect(Collectors.toSet());
-        assertTrue("though it should contain the top root,",
-                directoryNames.contains(repoPath) || directoryNames.contains(
-                        mercurialRoot.getCanonicalPath()));
-        assertTrue("though it should contain the sub-root,",
-                directoryNames.contains(subRepoPath) || directoryNames.contains(
-                        mercurialSubRoot.getCanonicalPath()));
+        assertTrue(directoryNames.contains(repoPath) || directoryNames.contains(
+                mercurialRoot.getCanonicalPath()), "though it should contain the top root,");
+        assertTrue(directoryNames.contains(subRepoPath) || directoryNames.contains(
+                mercurialSubRoot.getCanonicalPath()), "though it should contain the sub-root,");
 
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
@@ -361,7 +360,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         assertNotNull(project);
         List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
         assertNotNull(riList);
-        assertEquals("there should be just 1 repository", 1, riList.size());
+        assertEquals(1, riList.size(), "there should be just 1 repository");
         RepositoryInfo ri = riList.get(0);
         assertNotNull(ri);
         assertTrue(ri.getCurrentVersion().contains("8b340409b3a8"));
@@ -386,8 +385,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
         markIndexed(projectName);
 
-        assertTrue("indexed flag should be set to true",
-                env.getProjects().get(projectName).isIndexed());
+        assertTrue(env.getProjects().get(projectName).isIndexed(), "indexed flag should be set to true");
 
         // Test that the "indexed" message triggers refresh of current version
         // info in related repositories.
@@ -395,8 +393,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
         assertNotNull(riList);
         ri = riList.get(0);
         assertNotNull(ri);
-        assertTrue("current version should be refreshed",
-                ri.getCurrentVersion().contains("c78fa757c524"));
+        assertTrue(ri.getCurrentVersion().contains("c78fa757c524"), "current version should be refreshed");
     }
 
     private void markIndexed(final String project) {

@@ -26,10 +26,10 @@ package org.opengrok.web.api.v1.controller;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -48,13 +48,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
+@EnabledForRepository(GIT)
 public class AnnotationControllerTest extends OGKJerseyTest {
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -65,7 +64,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         return new ResourceConfig(AnnotationController.class);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -87,7 +86,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
                 null); // repositories - needed when refreshing history partially
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();

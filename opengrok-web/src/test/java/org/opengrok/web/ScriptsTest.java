@@ -18,21 +18,21 @@
  */
 
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.web.Scripts.Script;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -42,7 +42,7 @@ public class ScriptsTest {
 
     private Scripts scripts;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         scripts = new Scripts();
     }
@@ -118,9 +118,8 @@ public class ScriptsTest {
 
         int prev = -1;
         for (Script s : scripts) {
-            if (prev > s.getPriority()) {
-                fail("The scripts must be sorted in ascending order by the priority, " + prev + " > " + s.getPriority());
-            }
+            assertTrue(prev <= s.getPriority(),
+                    "The scripts must be sorted in ascending order by the priority, " + prev + " > " + s.getPriority());
             prev = s.getPriority();
         }
 
@@ -131,13 +130,12 @@ public class ScriptsTest {
                     && !s.getKey().equals("diff")) {
                 continue;
             }
-            assertTrue(scripts.toHtml() + " must contain <script type=\"text/javascript\""
+            assertTrue(scripts.toHtml().contains("<script type=\"text/javascript\""
                     + " src=\"/" + s.getValue().getScriptData() + "\""
-                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>",
-                    scripts.toHtml()
-                            .contains("<script type=\"text/javascript\""
-                                    + " src=\"/" + s.getValue().getScriptData() + "\""
-                                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
+                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"),
+                    scripts.toHtml() + " must contain <script type=\"text/javascript\""
+                            + " src=\"/" + s.getValue().getScriptData() + "\""
+                            + " data-priority=\"" + s.getValue().getPriority() + "\"></script>");
         }
     }
 
@@ -153,9 +151,8 @@ public class ScriptsTest {
 
         int prev = -1;
         for (Script s : scripts) {
-            if (prev > s.getPriority()) {
-                fail("The scripts must be sorted in ascending order by the priority, " + prev + " > " + s.getPriority());
-            }
+            assertTrue(prev <= s.getPriority(),
+                    "The scripts must be sorted in ascending order by the priority, " + prev + " > " + s.getPriority());
             prev = s.getPriority();
         }
 
@@ -166,13 +163,12 @@ public class ScriptsTest {
                     && !s.getKey().equals("diff")) {
                 continue;
             }
-            assertTrue(scripts.toHtml() + " must contain <script type=\"text/javascript\""
+            assertTrue(scripts.toHtml().contains("<script type=\"text/javascript\""
                     + " src=\"" + contextPath + '/' + s.getValue().getScriptData() + "\""
-                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>",
-                    scripts.toHtml()
-                            .contains("<script type=\"text/javascript\""
-                                    + " src=\"" + contextPath + '/' + s.getValue().getScriptData() + "\""
-                                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
+                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"),
+                    scripts.toHtml() + " must contain <script type=\"text/javascript\""
+                            + " src=\"" + contextPath + '/' + s.getValue().getScriptData() + "\""
+                            + " data-priority=\"" + s.getValue().getPriority() + "\"></script>");
         }
     }
 

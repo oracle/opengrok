@@ -18,17 +18,10 @@
  */
 
 /*
- * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,17 +33,16 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
 import org.opengrok.indexer.authorization.TestPlugin;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
@@ -58,16 +50,23 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+
 /**
- * Unit tests for the {@code PageConfig} class.
+ * Unit tests for the {@code PageConfig} class.
  */
 public class PageConfigTest {
     private static TestRepository repository = new TestRepository();
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(
@@ -75,7 +74,7 @@ public class PageConfigTest {
         RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
         repository.destroy();
         repository = null;
@@ -111,6 +110,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(MERCURIAL)
     public void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
@@ -257,6 +257,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(GIT)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -272,6 +273,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(GIT)
     public void testGetRevisionLocation() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -298,6 +300,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(GIT)
     public void testGetRevisionLocationNullQuery() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -324,6 +327,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(GIT)
     public void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
@@ -364,6 +368,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @EnabledForRepository(GIT)
     public void testGetAnnotation() {
         final String[] revisions = {"aa35c258", "bb74b7e8"};
 
@@ -408,9 +413,8 @@ public class PageConfigTest {
                 assertTrue(Arrays.asList(revisions).contains(tmp));
             }
 
-            assertEquals("The version should be reflected through the revision",
-                    revisions.length - i,
-                    annotation.getFileVersion(revisions[i]));
+            assertEquals(revisions.length - i, annotation.getFileVersion(revisions[i]),
+                    "The version should be reflected through the revision");
 
             PageConfig.cleanup(req);
         }
@@ -418,39 +422,41 @@ public class PageConfigTest {
 
     /**
      * Test the case when the source root is null.
-     * @throws IOException I/O exception
      */
-    @Test(expected = FileNotFoundException.class)
-    public void testCheckSourceRootExistence1() throws IOException {
-        HttpServletRequest req = new DummyHttpServletRequest();
-        PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        System.out.println(path);
-        RuntimeEnvironment.getInstance().setSourceRoot(null);
-        try {
-            cfg.checkSourceRootExistence();
-        } finally {
-            RuntimeEnvironment.getInstance().setSourceRoot(path);
-            PageConfig.cleanup(req);
-        }
+    @Test
+    public void testCheckSourceRootExistence1() {
+        assertThrows(FileNotFoundException.class, () -> {
+            HttpServletRequest req = new DummyHttpServletRequest();
+            PageConfig cfg = PageConfig.get(req);
+            String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+            System.out.println(path);
+            RuntimeEnvironment.getInstance().setSourceRoot(null);
+            try {
+                cfg.checkSourceRootExistence();
+            } finally {
+                RuntimeEnvironment.getInstance().setSourceRoot(path);
+                PageConfig.cleanup(req);
+            }
+        });
     }
 
     /**
      * Test the case when source root is empty.
-     * @throws IOException I/O exception
      */
-    @Test(expected = FileNotFoundException.class)
-    public void testCheckSourceRootExistence2() throws IOException {
-        HttpServletRequest req = new DummyHttpServletRequest();
-        PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        RuntimeEnvironment.getInstance().setSourceRoot("");
-        try {
-            cfg.checkSourceRootExistence();
-        } finally {
-            RuntimeEnvironment.getInstance().setSourceRoot(path);
-            PageConfig.cleanup(req);
-        }
+    @Test
+    public void testCheckSourceRootExistence2() {
+        assertThrows(FileNotFoundException.class, () -> {
+            HttpServletRequest req = new DummyHttpServletRequest();
+            PageConfig cfg = PageConfig.get(req);
+            String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+            RuntimeEnvironment.getInstance().setSourceRoot("");
+            try {
+                cfg.checkSourceRootExistence();
+            } finally {
+                RuntimeEnvironment.getInstance().setSourceRoot(path);
+                PageConfig.cleanup(req);
+            }
+        });
     }
 
     /**
@@ -465,11 +471,8 @@ public class PageConfigTest {
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
-        try {
-            cfg.checkSourceRootExistence();
-            fail("This should throw an exception when the file does not exist");
-        } catch (IOException ex) {
-        }
+        assertThrows(IOException.class, () -> cfg.checkSourceRootExistence(),
+                "This should throw an exception when the file does not exist");
         RuntimeEnvironment.getInstance().setSourceRoot(path);
         PageConfig.cleanup(req);
     }
@@ -488,13 +491,10 @@ public class PageConfigTest {
         Files.delete(temp.toPath());
         Files.createDirectories(temp.toPath());
         // skip the test if the implementation does not permit setting permissions
-        Assume.assumeTrue(temp.setReadable(false));
+        assumeTrue(temp.setReadable(false));
         RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
-        try {
-            cfg.checkSourceRootExistence();
-            fail("This should throw an exception when the file is not readable");
-        } catch (IOException ex) {
-        }
+        assertThrows(IOException.class, () -> cfg.checkSourceRootExistence(),
+                "This should throw an exception when the file is not readable");
         RuntimeEnvironment.getInstance().setSourceRoot(path);
 
         PageConfig.cleanup(req);
