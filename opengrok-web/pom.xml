@@ -152,6 +152,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
             <version>${jersey.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -162,11 +168,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

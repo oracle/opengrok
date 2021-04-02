@@ -26,12 +26,12 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.web.api.v1.filter.CorsFilter;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;

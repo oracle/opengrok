@@ -24,23 +24,20 @@ package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.Response;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.opengrok.web.api.v1.filter.CorsFilter.ALLOW_CORS_HEADER;
 import static org.opengrok.web.api.v1.filter.CorsFilter.CORS_REQUEST_HEADER;
 
 public class SearchControllerTest extends OGKJerseyTest {
-    @ClassRule
-    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -51,7 +48,7 @@ public class SearchControllerTest extends OGKJerseyTest {
         return new RestApp();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
@@ -65,7 +62,7 @@ public class SearchControllerTest extends OGKJerseyTest {
         env.getSuggesterConfig().setRebuildCronConfig(null);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
     }

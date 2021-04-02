@@ -22,9 +22,10 @@
  */
 package org.opengrok.web.util;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 
@@ -34,13 +35,13 @@ import java.util.UUID;
 public class FileUtilTest {
 
     @Test
-    public void shouldThrowOnNullArgument() throws FileNotFoundException {
+    public void shouldThrowOnNullArgument() {
         assertThrows(NoPathParameterException.class, () -> FileUtil.toFile(null),
                 "toFile(null)");
     }
 
     @Test
-    public void shouldThrowOnMissingFile() throws NoPathParameterException {
+    public void shouldThrowOnMissingFile() {
         assertThrows(FileNotFoundException.class, () -> FileUtil.toFile(
                 UUID.randomUUID().toString()), "toFile(randomUUID)");
     }
