@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -54,13 +54,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     </path>
 
     <property name="git" value="git"/>
-
-    <target name="-collect-lex-lexh">
-        <mkdir dir="${tgt.dir}"/>
-        <copy todir="${tgt.dir}" flatten="true">
-            <fileset dir="${src.dir}" includes="**/*.lex,**/*.lexh"/>
-        </copy>
-    </target>
 
     <target name="-post-compile-test">
         <antcall target="-create-svn-repository"/>
