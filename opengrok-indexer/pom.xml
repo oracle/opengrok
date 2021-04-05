@@ -253,9 +253,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <lexDefinitions>
-                                <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
-                            </lexDefinitions>
                             <encodingName>${project.build.sourceEncoding}</encodingName>
                         </configuration>
                     </execution>
@@ -366,20 +363,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
                 <executions>
-                    <execution>
-                        <id>collect-lex-lexh</id>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <target>
-                                <property name="src.dir" value="src/main/resources"/>
-                                <property name="tgt.dir" value="${basedir}/target/jflex-sources"/>
-                                <ant target="-collect-lex-lexh"/>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>build-config-files</id>
                         <phase>process-test-classes</phase>
