@@ -77,9 +77,11 @@ public class FileExtraZipper {
     private Map<String, NullableNumLinesLOC> indexExtraByName(List<NullableNumLinesLOC> extras) {
         Map<String, NullableNumLinesLOC> byPath = new HashMap<>();
         for (NullableNumLinesLOC extra : extras) {
-            File f = new File(extra.getPath());
-            String filename = f.getName();
-            byPath.put(filename, extra);
+            if (extra.getPath() != null) {
+                File f = new File(extra.getPath());
+                String filename = f.getName();
+                byPath.put(filename, extra);
+            }
         }
         return byPath;
     }
