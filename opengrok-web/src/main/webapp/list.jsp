@@ -234,12 +234,10 @@ document.pageReady.push(function() { pageReadyList();});
     } else if (rev.length() != 0) {
         // requesting a revision
         File xrefFile;
-        if (cfg.isLatestRevision(rev) &&
-                (xrefFile = cfg.findDataFile()) != null) {
+        if (cfg.isLatestRevision(rev) && (xrefFile = cfg.findDataFile()) != null) {
             if (cfg.annotate()) {
                 // annotate
-                BufferedInputStream bin =
-                        new BufferedInputStream(new FileInputStream(resourceFile));
+                BufferedInputStream bin = new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
                     AnalyzerFactory a = AnalyzerGuru.find(basename);
                     AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
@@ -301,7 +299,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
 </div><%
             }
         } else {
-            // requesting a previous revision or needed to generate xref on the fly (economy mode).
+            // requesting a previous revision or needed to generate xref on the fly
+            // (either economy mode is enabled or the cfg.findDataFile() call above failed).
             AnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
