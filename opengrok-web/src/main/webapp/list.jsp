@@ -266,7 +266,7 @@ document.pageReady.push(function() { pageReadyList();});
                         // find the definitions in the index.
                         Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                         Annotation annotation = cfg.getAnnotation();
-                        // SRCROOT is read with UTF-8 as a default.
+                        // Data under source root is read with UTF-8 as a default.
                         r = IOUtils.createBOMStrippedReader(bin,
                             StandardCharsets.UTF_8.name());
                         AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
@@ -312,8 +312,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                         in = new BufferedInputStream(new FileInputStream(resourceFile));
                     } else {
                         tempf = File.createTempFile("ogtags", basename);
-                        if (HistoryGuru.getInstance().getRevision(tempf,
-                                resourceFile.getParent(), basename, rev)) {
+                        if (HistoryGuru.getInstance().getRevision(tempf, resourceFile.getParent(), basename, rev)) {
                             in = new BufferedInputStream(new FileInputStream(tempf));
                         } else {
                             tempf.delete();
@@ -346,8 +345,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         <pre><%
                             if (g == AbstractAnalyzer.Genre.PLAIN) {
                                 Definitions defs = null;
-                                ObjectPool<Ctags> ctagsPool = cfg.getEnv().
-                                        getIndexerParallelizer().getCtagsPool();
+                                ObjectPool<Ctags> ctagsPool = cfg.getEnv().getIndexerParallelizer().getCtagsPool();
                                 int tries = 2;
                                 while (cfg.getEnv().isWebappCtags()) {
                                     Ctags ctags = ctagsPool.get();
@@ -358,8 +356,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                         break;
                                     } catch (InterruptedException ex) {
                                         if (--tries > 0) {
-                                            LOGGER.log(Level.WARNING,
-                                                    "doCtags() interrupted--{0}",
+                                            LOGGER.log(Level.WARNING, "doCtags() interrupted--{0}",
                                                     ex.getMessage());
                                             continue;
                                         }
@@ -376,11 +373,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 Annotation annotation = cfg.getAnnotation();
                                 //not needed yet
                                 //annotation.writeTooltipMap(out);
-                                // SRCROOT is read with UTF-8 as a default.
-                                r = IOUtils.createBOMStrippedReader(in,
-                                    StandardCharsets.UTF_8.name());
-                                AnalyzerGuru.writeDumpedXref(
-                                        request.getContextPath(),
+                                // The data under source root is read with UTF-8 as a default.
+                                r = IOUtils.createBOMStrippedReader(in, StandardCharsets.UTF_8.name());
+                                AnalyzerGuru.writeDumpedXref(request.getContextPath(),
                                         a, r, out,
                                         defs, annotation, project);
                             } else if (g == AbstractAnalyzer.Genre.IMAGE) {
@@ -388,13 +383,13 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"/>
         <pre><%
                             } else if (g == AbstractAnalyzer.Genre.HTML) {
-                                /**
+                                /*
                                  * For backward compatibility, read the
                                  * OpenGrok-produced document using the system
                                  * default charset.
                                  */
                                 r = new InputStreamReader(in);
-                                /**
+                                /*
                                  * dumpXref() is also useful here for
                                  * translating links.
                                  */
@@ -444,8 +439,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             }
         }
     } else {
-        // requesting cross referenced file
-
+        // Requesting cross referenced file with no known revision.
         File xrefFile = cfg.findDataFile();
         if (xrefFile != null) {
 %>
