@@ -1202,18 +1202,16 @@ public final class PageConfig {
                 : "";
     }
 
-    private File checkFile(File dir, String name, boolean compressed) {
+    private File checkFile(File file, File dir, String name, boolean compressed) {
         File f;
         if (compressed) {
             f = new File(dir, TandemPath.join(name, ".gz"));
-            if (f.exists() && f.isFile()
-                    && f.lastModified() >= resourceFile.lastModified()) {
+            if (f.exists() && f.isFile() && f.lastModified() >= file.lastModified()) {
                 return f;
             }
         }
         f = new File(dir, name);
-        if (f.exists() && f.isFile()
-                && f.lastModified() >= resourceFile.lastModified()) {
+        if (f.exists() && f.isFile() && f.lastModified() >= file.lastModified()) {
             return f;
         }
         return null;
@@ -1224,20 +1222,8 @@ public final class PageConfig {
         if (!lresourceFile.canRead()) {
             lresourceFile = new File(PATH_SEPARATOR_STRING);
         }
-        File f;
-        if (compressed) {
-            f = new File(dir, TandemPath.join(name, ".gz"));
-            if (f.exists() && f.isFile()
-                    && f.lastModified() >= lresourceFile.lastModified()) {
-                return f;
-            }
-        }
-        f = new File(dir, name);
-        if (f.exists() && f.isFile()
-                && f.lastModified() >= lresourceFile.lastModified()) {
-            return f;
-        }
-        return null;
+
+        return checkFile(lresourceFile, dir, name, compressed);
     }
 
     /**
@@ -1280,7 +1266,7 @@ public final class PageConfig {
      * @return {@code null} if not found, the file otherwise.
      */
     public File findDataFile() {
-        return checkFile(new File(getEnv().getDataRootPath() + Prefix.XREF_P),
+        return checkFile(resourceFile, new File(getEnv().getDataRootPath() + Prefix.XREF_P),
                 getPath(), env.isCompressXref());
     }
 
