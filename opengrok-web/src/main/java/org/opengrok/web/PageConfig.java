@@ -125,6 +125,8 @@ public final class PageConfig {
     // cookie name
     public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
 
+    public static final String DUMMY_REVISION = "unknown";
+
     // query parameters
     protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
