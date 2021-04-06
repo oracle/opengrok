@@ -45,8 +45,7 @@ public class FileExtraZipper {
      * @param extras some OpenGrok-analyzed extra metadata
      * @return a list of the same size as {@code files}
      */
-    public List<DirectoryEntry> zip(File dir, List<String> files,
-        List<FileExtra> extras) {
+    public List<DirectoryEntry> zip(File dir, List<String> files, List<FileExtra> extras) {
 
         if (extras == null) {
             return files.stream().map(f ->
@@ -75,9 +74,11 @@ public class FileExtraZipper {
     private Map<String, FileExtra> indexExtraByName(List<FileExtra> extras) {
         Map<String, FileExtra> byPath = new HashMap<>();
         for (FileExtra extra : extras) {
-            File f = new File(extra.getFilepath());
-            String filename = f.getName();
-            byPath.put(filename, extra);
+            if (extra.getFilepath() != null) {
+                File f = new File(extra.getFilepath());
+                String filename = f.getName();
+                byPath.put(filename, extra);
+            }
         }
         return byPath;
     }
