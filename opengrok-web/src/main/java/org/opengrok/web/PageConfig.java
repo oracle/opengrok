@@ -1202,19 +1202,29 @@ public final class PageConfig {
                 : "";
     }
 
+    private File checkFileInner(File file, File dir, String name) {
+        File f = new File(dir, name);
+        if (f.exists() && f.isFile()) {
+            if (f.lastModified() >= file.lastModified()) {
+                return f;
+            } else {
+                LOGGER.log(Level.WARNING, "file ''{0}'' is newer than ''{1}''", new Object[]{file, f});
+            }
+        }
+
+        return null;
+    }
+
     private File checkFile(File file, File dir, String name, boolean compressed) {
         File f;
         if (compressed) {
-            f = new File(dir, TandemPath.join(name, ".gz"));
-            if (f.exists() && f.isFile() && f.lastModified() >= file.lastModified()) {
+            f = checkFileInner(file, dir, TandemPath.join(name, ".gz"));
+            if (f != null) {
                 return f;
             }
         }
-        f = new File(dir, name);
-        if (f.exists() && f.isFile() && f.lastModified() >= file.lastModified()) {
-            return f;
-        }
-        return null;
+
+        return checkFileInner(file, dir, name);
     }
 
     private File checkFileResolve(File dir, String name, boolean compressed) {
