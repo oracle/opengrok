@@ -53,7 +53,7 @@ public class HistoryClassLoader extends ClassLoader {
     @Override
     public Class<?> loadClass(final String name) throws ClassNotFoundException {
         if (!allowedClasses.contains(name)) {
-            throw new IllegalAccessError(name + " is not allowed to be used in configuration");
+            throw new IllegalAccessError(name + " is not allowed to be used in History object");
         }
 
         return getClass().getClassLoader().loadClass(name);
