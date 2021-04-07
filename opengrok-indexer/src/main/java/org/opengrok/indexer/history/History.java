@@ -123,4 +123,22 @@ public class History {
     public Set<String> getRenamedFiles() {
         return renamedFiles;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        History that = (History) o;
+        return this.getHistoryEntries().equals(that.getHistoryEntries()) &&
+                this.getRenamedFiles().equals(that.getRenamedFiles());
+    }
+
+    @Override
+    public int hashCode() {
+        return getHistoryEntries().hashCode() * getRenamedFiles().hashCode();
+    }
 }
