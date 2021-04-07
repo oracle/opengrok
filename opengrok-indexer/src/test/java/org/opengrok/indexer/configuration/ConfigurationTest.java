@@ -26,16 +26,22 @@ package org.opengrok.indexer.configuration;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.util.ClassUtil;
 
 import org.xml.sax.Attributes;
@@ -44,6 +50,7 @@ import org.xml.sax.ext.DefaultHandler2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -168,4 +175,62 @@ public class ConfigurationTest {
             assertEquals(oldCfg.getGroups(), cfg.getGroups());
         }
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
+                    "    <void method=\"exec\">\n" +
+                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
+                    "        <void index=\"0\">\n" +
+                    "          <string>/usr/bin/nc</string>\n" +
+                    "        </void>\n" +
+                    "        <void index=\"1\">\n" +
+                    "          <string>-l</string>\n" +
+                    "        </void>\n" +
+                    "      </array>\n" +
+                    "    </void>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
+                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
+                    "      <void index=\"0\"> \n" +
+                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
+                    "      </void>\n" +
+                    "    </array>\n" +
+                    "    <void method=\"start\"/>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class = \"java.io.FileOutputStream\"> \n" +
+                    "    <string>opengrok_test.txt</string>\n" +
+                    "    <method name = \"write\">\n" +
+                    "      <array class=\"byte\" length=\"3\">\n" +
+                    "        <void index=\"0\"><byte>96</byte></void>\n" +
+                    "        <void index=\"1\"><byte>96</byte></void>\n" +
+                    "        <void index=\"2\"><byte>96</byte></void>\n" +
+                    "      </array>\n" +
+                    "    </method>\n" +
+                    "    <method name=\"close\"/>\n" +
+                    "  </object>\n" +
+                    "</java>"
+    })
+    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
+        assertThrows(IllegalAccessError.class, () -> Configuration.makeXMLStringAsConfiguration(exploit));
+    }
+
+    @Test
+    void testLoadingValidConfiguration() throws IOException {
+        try (var bf = new BufferedReader(new InputStreamReader(ConfigurationTest.class.getClassLoader()
+                .getResourceAsStream("configuration/valid_configuration.xml")))) {
+            String xml = bf.lines().collect(Collectors.joining(System.lineSeparator()));
+            var config = Configuration.makeXMLStringAsConfiguration(xml);
+            assertEquals("/opt/opengrok_data", config.getDataRoot());
+        }
+    }
+
 }
