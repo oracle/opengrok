@@ -734,7 +734,7 @@ public class RuntimeEnvironmentTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testAuthorizationDecodeInvalid() throws IOException {
+    void testAuthorizationDecodeInvalid() {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
@@ -752,7 +752,7 @@ public class RuntimeEnvironmentTest {
                 + "\t</void>\n"
                 + " </object>\n"
                 + "</java>";
-        assertThrows(IOException.class, () -> Configuration.makeXMLStringAsConfiguration(confString));
+        assertThrows(IllegalAccessError.class, () -> Configuration.makeXMLStringAsConfiguration(confString));
     }
 
     @Test
