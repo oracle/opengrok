@@ -1418,7 +1418,8 @@ public final class Configuration {
         final LinkedList<Exception> exceptions = new LinkedList<>();
         ExceptionListener listener = exceptions::addLast;
 
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener)) {
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener,
+                new ConfigurationClassLoader())) {
             ret = d.readObject();
         }
 

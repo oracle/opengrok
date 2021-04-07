@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="11.0.8" class="java.beans.XMLDecoder">
+    <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
+        <void property="ctags">
+            <string>/usr/local/bin/ctags</string>
+        </void>
+        <void property="dataRoot">
+            <string>/opt/opengrok_data</string>
+        </void>
+        <void id="IgnoredNames0" property="ignoredNames">
+            <void id="IgnoredDirs0" property="ignoredDirs">
+                <void property="items">
+                    <void method="add">
+                        <string>.git</string>
+                    </void>
+                    <void method="add">
+                        <string>.hg</string>
+                    </void>
+                    <void method="add">
+                        <string>.repo</string>
+                    </void>
+                    <void method="add">
+                        <string>.bk</string>
+                    </void>
+                    <void method="add">
+                        <string>.bzr</string>
+                    </void>
+                    <void method="add">
+                        <string>.svn</string>
+                    </void>
+                    <void method="add">
+                        <string>SCCS</string>
+                    </void>
+                    <void method="add">
+                        <string>.razor</string>
+                    </void>
+                    <void method="add">
+                        <string>RCS</string>
+                    </void>
+                    <void method="add">
+                        <string>CVS</string>
+                    </void>
+                    <void method="add">
+                        <string>CVSROOT</string>
+                    </void>
+                </void>
+            </void>
+            <void id="IgnoredFiles0" property="ignoredFiles">
+                <void property="items">
+                    <void method="add">
+                        <string>.git</string>
+                    </void>
+                    <void method="add">
+                        <string>.hgtags</string>
+                    </void>
+                    <void method="add">
+                        <string>.hgignore</string>
+                    </void>
+                    <void method="add">
+                        <string>.cvsignore</string>
+                    </void>
+                    <void method="add">
+                        <string>.p4config</string>
+                    </void>
+                </void>
+            </void>
+        </void>
+        <void property="projects">
+            <void method="put">
+                <string>opengrok</string>
+                <object class="org.opengrok.indexer.configuration.Project">
+                    <void property="historyEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="indexed">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="mergeCommitsEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="name">
+                        <string>opengrok</string>
+                    </void>
+                    <void property="path">
+                        <string>/opengrok</string>
+                    </void>
+                </object>
+            </void>
+            <void method="put">
+                <string>cuda-samples</string>
+                <object class="org.opengrok.indexer.configuration.Project">
+                    <void property="historyEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="indexed">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="mergeCommitsEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="name">
+                        <string>cuda-samples</string>
+                    </void>
+                    <void property="path">
+                        <string>/cuda-samples</string>
+                    </void>
+                </object>
+            </void>
+            <void method="put">
+                <string>CudaSift</string>
+                <object class="org.opengrok.indexer.configuration.Project">
+                    <void property="historyEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="indexed">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="mergeCommitsEnabled">
+                        <boolean>true</boolean>
+                    </void>
+                    <void property="name">
+                        <string>CudaSift</string>
+                    </void>
+                    <void property="path">
+                        <string>/CudaSift</string>
+                    </void>
+                </object>
+            </void>
+        </void>
+        <void property="projectsEnabled">
+            <boolean>true</boolean>
+        </void>
+        <void property="sourceRoot">
+            <string>/opt/opengrok_src</string>
+        </void>
+        <void id="SuggesterConfig0" property="suggesterConfig">
+            <void property="allowedFields">
+                <void method="clear"/>
+                <void method="add">
+                    <string>defs</string>
+                </void>
+                <void method="add">
+                    <string>path</string>
+                </void>
+                <void method="add">
+                    <string>hist</string>
+                </void>
+                <void method="add">
+                    <string>refs</string>
+                </void>
+                <void method="add">
+                    <string>type</string>
+                </void>
+                <void method="add">
+                    <string>full</string>
+                </void>
+            </void>
+        </void>
+    </object>
+</java>
