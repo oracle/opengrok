@@ -161,7 +161,8 @@ public class Configuration implements Serializable {
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
 
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, null, Configuration.class.getClassLoader())) {
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, null,
+                new PluginConfigurationClassLoader())) {
             ret = d.readObject();
         }
 

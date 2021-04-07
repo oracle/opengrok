@@ -27,6 +27,8 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,9 +38,12 @@ import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -98,5 +103,61 @@ public class ConfigurationTest {
             afe.initCause(exceptions.getFirst());
             throw afe;
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
+                    "    <void method=\"exec\">\n" +
+                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
+                    "        <void index=\"0\">\n" +
+                    "          <string>/usr/bin/nc</string>\n" +
+                    "        </void>\n" +
+                    "        <void index=\"1\">\n" +
+                    "          <string>-l</string>\n" +
+                    "        </void>\n" +
+                    "      </array>\n" +
+                    "    </void>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
+                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
+                    "      <void index=\"0\"> \n" +
+                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
+                    "      </void>\n" +
+                    "    </array>\n" +
+                    "    <void method=\"start\"/>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class = \"java.io.FileOutputStream\"> \n" +
+                    "    <string>opengrok_test.txt</string>\n" +
+                    "    <method name = \"write\">\n" +
+                    "      <array class=\"byte\" length=\"3\">\n" +
+                    "        <void index=\"0\"><byte>96</byte></void>\n" +
+                    "        <void index=\"1\"><byte>96</byte></void>\n" +
+                    "        <void index=\"2\"><byte>96</byte></void>\n" +
+                    "      </array>\n" +
+                    "    </method>\n" +
+                    "    <method name=\"close\"/>\n" +
+                    "  </object>\n" +
+                    "</java>"
+    })
+    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
+        assertThrows(IllegalAccessError.class, () -> Configuration.makeXMLStringAsConfiguration(exploit));
+    }
+
+    @Test
+    void testReadCacheValid() throws IOException {
+        File testFile = new File(ConfigurationTest.class.getClassLoader().
+                getResource("opengrok/auth/plugin/configuration/plugin-config.xml").getFile());
+        Configuration config = Configuration.read(testFile);
+        assertNotNull(config);
+        assertEquals(2, config.getServers().size());
     }
 }
