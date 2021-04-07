@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_65" class="java.beans.XMLDecoder">
         <object class="opengrok.auth.plugin.configuration.Configuration">
+                <void property="webHooks">
+                 <object class="opengrok.auth.plugin.util.WebHooks">
+                  <void property="fail">
+                   <object class="opengrok.auth.plugin.util.WebHook">
+                    <void property="URI">
+                     <string>http://localhost:8080/source/api/v1/messages</string>
+                    </void>
+                    <void property="content">
+                     <string>{ "tags": [ "main" ], "messageLevel": "error", "text": "LDAP failed", "duration": "PT1M" }</string>
+                    </void>
+                   </object>
+                  </void>
+                 </object>
+                </void>
+
                 <void property="interval">
                         <int>900000</int>
                 </void>

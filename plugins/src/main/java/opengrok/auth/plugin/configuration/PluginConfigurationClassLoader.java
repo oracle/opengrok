@@ -23,6 +23,8 @@
 package opengrok.auth.plugin.configuration;
 
 import opengrok.auth.plugin.ldap.LdapServer;
+import opengrok.auth.plugin.util.WebHook;
+import opengrok.auth.plugin.util.WebHooks;
 
 import java.beans.XMLDecoder;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ public class PluginConfigurationClassLoader extends ClassLoader {
             LdapServer.class,
             String.class,
             TreeSet.class,
+            WebHook.class,
+            WebHooks.class,
             XMLDecoder.class
     ).stream().map(Class::getName).collect(Collectors.toSet());
 
