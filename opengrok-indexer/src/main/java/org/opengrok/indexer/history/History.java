@@ -24,7 +24,11 @@
 package org.opengrok.indexer.history;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Class representing the history of a file.
@@ -37,19 +41,19 @@ public class History {
      * SCMs) during cache creation.
      * These are relative to repository root.
      */
-    private List<String> renamedFiles = new ArrayList<>();
+    private final Set<String> renamedFiles;
     
     public History() {
         this(new ArrayList<>());
     }
 
     History(List<HistoryEntry> entries) {
-        this.entries = entries;
+        this(entries, Collections.emptyList());
     }
 
     History(List<HistoryEntry> entries, List<String> renamed) {
         this.entries = entries;
-        this.renamedFiles = renamed;
+        this.renamedFiles = new HashSet<>(renamed);
     }
     
     /**
@@ -83,8 +87,8 @@ public class History {
         offset = Math.max(offset, 0);
         limit = offset + limit > entries.size() ? entries.size() - offset : limit;
         return entries.subList(offset, offset + limit);
-    }    
-    
+    }
+
     /**
      * Check if at least one history entry has a file list.
      *
@@ -92,12 +96,9 @@ public class History {
      * file list, {@code false} otherwise
      */
     public boolean hasFileList() {
-        for (HistoryEntry entry : entries) {
-            if (!entry.getFiles().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        return entries.stream()
+                .map(HistoryEntry::getFiles)
+                .anyMatch(files -> !files.isEmpty());
     }
 
     /**
@@ -107,24 +108,19 @@ public class History {
      * tag list, {@code false} otherwise
      */
     public boolean hasTags() {
-        // TODO Use a private variable instead of for loop?
-        for (HistoryEntry entry : entries) {
-            if (entry.getTags() != null) {
-                return true;
-            }
-        }
-        return false;
+        return entries.stream()
+                .map(HistoryEntry::getTags)
+                .anyMatch(Objects::nonNull);
     }
 
     /**
      * Gets a value indicating if {@code file} is in the list of renamed files.
-     * TODO: Warning -- this does a slow {@link List} search.
      */
     public boolean isRenamed(String file) {
         return renamedFiles.contains(file);
     }
 
-    public List<String> getRenamedFiles() {
+    public Set<String> getRenamedFiles() {
         return renamedFiles;
     }
 }

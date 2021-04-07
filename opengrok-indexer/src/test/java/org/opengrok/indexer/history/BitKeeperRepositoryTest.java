@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.junit.jupiter.api.AfterEach;
@@ -91,7 +92,7 @@ public class BitKeeperRepositoryTest {
 
     private static void validateHistory(History history) {
         final List<HistoryEntry> entries = history.getHistoryEntries();
-        final List<String> renames = history.getRenamedFiles();
+        final Set<String> renames = history.getRenamedFiles();
 
         assertTrue(entries.size() > 0, "File history has no entries.");
 
