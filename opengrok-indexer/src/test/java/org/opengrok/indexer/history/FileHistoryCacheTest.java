@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
@@ -35,6 +36,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Iterator;
@@ -47,6 +49,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
@@ -826,5 +830,61 @@ public class FileHistoryCacheTest {
         cache.store(historyToStore, repo);
         retrievedHistory = cache.get(makefile, repo, true);
         assertNotNull(retrievedHistory, "history for Makefile should not be null");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
+                    "    <void method=\"exec\">\n" +
+                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
+                    "        <void index=\"0\">\n" +
+                    "          <string>/usr/bin/nc</string>\n" +
+                    "        </void>\n" +
+                    "        <void index=\"1\">\n" +
+                    "          <string>-l</string>\n" +
+                    "        </void>\n" +
+                    "      </array>\n" +
+                    "    </void>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
+                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
+                    "      <void index=\"0\"> \n" +
+                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
+                    "      </void>\n" +
+                    "    </array>\n" +
+                    "    <void method=\"start\"/>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class = \"java.io.FileOutputStream\"> \n" +
+                    "    <string>opengrok_test.txt</string>\n" +
+                    "    <method name = \"write\">\n" +
+                    "      <array class=\"byte\" length=\"3\">\n" +
+                    "        <void index=\"0\"><byte>96</byte></void>\n" +
+                    "        <void index=\"1\"><byte>96</byte></void>\n" +
+                    "        <void index=\"2\"><byte>96</byte></void>\n" +
+                    "      </array>\n" +
+                    "    </method>\n" +
+                    "    <method name=\"close\"/>\n" +
+                    "  </object>\n" +
+                    "</java>"
+    })
+    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
+        assertThrows(IllegalAccessError.class, () -> FileHistoryCache.readCache(exploit));
+    }
+
+    @Test
+    void testReadCacheValid() throws IOException {
+        File testFile = new File(FileHistoryCacheTest.class.getClassLoader().
+                getResource("history/FileHistoryCache.java.gz").getFile());
+        History history = FileHistoryCache.readCache(testFile);
+        assertNotNull(history);
+        assertEquals(30, history.getHistoryEntries().size());
     }
 }
