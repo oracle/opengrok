@@ -27,7 +27,6 @@ import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
 
 import java.beans.XMLDecoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
