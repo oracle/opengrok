@@ -225,9 +225,9 @@ public class ConfigurationTest {
 
     @Test
     void testLoadingValidConfiguration() throws IOException {
-        try (var bf = new BufferedReader(new InputStreamReader(ConfigurationTest.class.getClassLoader()
+        try (var br = new BufferedReader(new InputStreamReader(ConfigurationTest.class.getClassLoader()
                 .getResourceAsStream("configuration/valid_configuration.xml")))) {
-            String xml = bf.lines().collect(Collectors.joining(System.lineSeparator()));
+            String xml = br.lines().collect(Collectors.joining(System.lineSeparator()));
             var config = Configuration.makeXMLStringAsConfiguration(xml);
             assertEquals("/opt/opengrok_data", config.getDataRoot());
         }
