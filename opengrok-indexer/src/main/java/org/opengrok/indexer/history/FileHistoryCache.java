@@ -32,11 +32,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.NoSuchFileException;
@@ -236,13 +238,24 @@ class FileHistoryCache implements HistoryCache {
         return new File(TandemPath.join(sb.toString(), ".gz"));
     }
 
+    private static XMLDecoder getDecoder(InputStream in) {
+        return new XMLDecoder(in, null, null, new HistoryClassLoader());
+    }
+
+    // for testing
+    static History readCache(String xmlconfig) {
+        final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
+        try (XMLDecoder d = getDecoder(in)) {
+            return (History) d.readObject();
+        }
+    }
+
     /**
      * Read history from a file.
      */
-    private static History readCache(File file) throws IOException {
+    static History readCache(File file) throws IOException {
         try (FileInputStream in = new FileInputStream(file);
-            XMLDecoder d = new XMLDecoder(new GZIPInputStream(
-                new BufferedInputStream(in)))) {
+            XMLDecoder d = getDecoder(new GZIPInputStream(new BufferedInputStream(in)))) {
             return (History) d.readObject();
         }
     }
