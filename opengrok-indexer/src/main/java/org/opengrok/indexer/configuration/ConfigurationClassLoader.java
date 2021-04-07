@@ -35,6 +35,7 @@ import java.beans.XMLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -53,15 +54,18 @@ public class ConfigurationClassLoader extends ClassLoader {
             AuthorizationStack.class,
             Collections.class,
             Configuration.class,
+            Enum.class,
             Filter.class,
             Group.class,
             HashMap.class,
+            HashSet.class,
             IAuthorizationPlugin.class,
             IgnoredNames.class,
             LuceneLockName.class,
             Project.class,
             RemoteSCM.class,
             RepositoryInfo.class,
+            Set.class,
             StatsdConfig.class,
             StatsdFlavor.class,
             String.class,
