@@ -29,10 +29,7 @@ import opengrok.auth.plugin.util.WebHooks;
 import java.beans.XMLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -42,14 +39,10 @@ import java.util.stream.Collectors;
 public class PluginConfigurationClassLoader extends ClassLoader {
 
     private static final Set<String> allowedClasses = Set.of(
-            ArrayList.class,
             Collections.class,
             Configuration.class,
-            Date.class,
-            HashMap.class,
             LdapServer.class,
             String.class,
-            TreeSet.class,
             WebHook.class,
             WebHooks.class,
             XMLDecoder.class
