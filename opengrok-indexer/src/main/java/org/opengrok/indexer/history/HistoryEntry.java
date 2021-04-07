@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.history;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -82,6 +83,12 @@ public class HistoryEntry {
         this.message = new StringBuffer(message);
         this.active = active;
         this.files = new TreeSet<>();
+    }
+
+    public HistoryEntry(String revision, Date date, String author,
+                        String tags, String message, boolean active, Collection<String> files) {
+        this(revision, date, author, tags, message, active);
+        this.files.addAll(files);
     }
 
     public String getLine() {
@@ -206,5 +213,29 @@ public class HistoryEntry {
      */
     public void stripTags() {
         tags = null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        HistoryEntry that = (HistoryEntry) o;
+        return this.getAuthor().equals(that.getAuthor()) &&
+                this.getRevision().equals(that.getRevision()) &&
+                this.getDate().equals(that.getDate()) &&
+                this.getMessage().equals(that.getMessage()) &&
+                this.getFiles().equals(that.getFiles()) &&
+                (this.getTags() != null && that.getTags() != null ?
+                        this.getTags().equals(that.getTags()) : this.getTags() == null && that.getTags() == null);
+    }
+
+    @Override
+    public int hashCode() {
+        return getAuthor().hashCode() + getRevision().hashCode() + getDate().hashCode() + getMessage().hashCode() +
+                getFiles().hashCode() + (getTags() != null ? getTags().hashCode() : 0);
     }
 }

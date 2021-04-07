@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.eclipse.jgit.api.Git;
@@ -507,11 +508,58 @@ public class GitRepositoryTest {
     }
 
     @Test
+    public void testHistory() throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(root);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(8, history.getHistoryEntries().size());
+        assertEquals(0, history.getRenamedFiles().size());
+
+        History expectedHistory = new History(List.of(
+                new HistoryEntry("84599b3c", new Date(1485438707000L),
+                        "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                    "    renaming directories\n\n", true,
+                        Set.of("/git/moved2/renamed2.c")),
+                new HistoryEntry("67dfbe26", new Date(1485263397000L),
+                        "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                        "    renaming renamed -> renamed2\n\n", true,
+                        Set.of("/git/moved/renamed2.c")),
+                new HistoryEntry("1086eaf5", new Date(1485263368000L),
+                        "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                        "     adding some lines into renamed.c\n\n", true,
+                        Set.of("/git/moved/renamed.c")),
+                new HistoryEntry("b6413947", new Date(1485263264000L),
+                        "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                        "    moved renamed.c to new location\n\n", true,
+                        Set.of("/git/moved/renamed.c")),
+                new HistoryEntry("ce4c98ec", new Date(1485263232000L),
+                        "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                        "    adding simple file for renamed file testing\n\n", true,
+                        Set.of("/git/renamed.c")),
+                new HistoryEntry("aa35c258", new Date(1218571965000L),
+                        "Trond Norbye <trond@sunray-srv.norbye.org>", null,
+                        "    Add lint make target and fix lint warnings\n\n", true,
+                        Set.of("/git/Makefile", "/git/main.c")),
+                new HistoryEntry("84821564", new Date(1218571643000L),
+                        "Trond Norbye <trond@sunray-srv.norbye.org>", null,
+                        "    Add the result of a make on Solaris x86\n\n", true,
+                        Set.of("/git/main.o", "/git/testsprog")),
+                new HistoryEntry("bb74b7e8", new Date(1218571573000L),
+                        "Trond Norbye <trond@sunray-srv.norbye.org>", null,
+                        "    Added a small test program\n\n", true,
+                        Set.of("/git/Makefile", "/git/header.h", "/git/main.c"))));
+        assertEquals(expectedHistory, history);
+    }
+
+    @Test
     public void testRenamedHistory() throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
         History history = gitrepo.getHistory(root);
         assertNotNull(history);
