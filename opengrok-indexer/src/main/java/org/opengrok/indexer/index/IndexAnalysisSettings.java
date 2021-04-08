@@ -22,9 +22,12 @@
  */
 package org.opengrok.indexer.index;
 
+import org.opengrok.indexer.util.WhitelistObjectInputFilter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -41,6 +44,8 @@ import java.util.Map;
 public final class IndexAnalysisSettings implements Serializable {
 
     private static final long serialVersionUID = 1172403004716059609L;
+
+    private static final ObjectInputFilter serialFilter = new WhitelistObjectInputFilter(IndexAnalysisSettings.class);
 
     private String projectName;
 
@@ -136,9 +141,10 @@ public final class IndexAnalysisSettings implements Serializable {
      * OutputStream.
      */
     public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        new ObjectOutputStream(bytes).writeObject(this);
-        return bytes.toByteArray();
+        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(bytes)) {
+            oos.writeObject(this);
+            return bytes.toByteArray();
+        }
     }
 
     /**
@@ -152,11 +158,11 @@ public final class IndexAnalysisSettings implements Serializable {
      * @throws ClassCastException if the array contains an object of another
      * type than {@code IndexAnalysisSettings}
      */
-    public static IndexAnalysisSettings deserialize(byte[] bytes)
-            throws IOException, ClassNotFoundException {
-        ObjectInputStream in = new ObjectInputStream(
-            new ByteArrayInputStream(bytes));
-        return (IndexAnalysisSettings) in.readObject();
+    public static IndexAnalysisSettings deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            in.setObjectInputFilter(serialFilter);
+            return (IndexAnalysisSettings) in.readObject();
+        }
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException,
