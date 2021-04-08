@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -53,8 +55,12 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.Constants;
@@ -67,14 +73,18 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.io.CountingOutputStream;
+import org.eclipse.jgit.util.io.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.Version;
 
@@ -586,17 +596,124 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        History result = new GitHistoryParser(isHandleRenamedFiles()).parse(file, this, sinceRevision);
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        final List<HistoryEntry> entries = new ArrayList<>();
+        final List<String> renamedFiles = new ArrayList<>();
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            try (Git git = new Git(repository)) {
+
+                // TODO: does log() take current branch into account ?
+                LogCommand log = git.log();
+                if (sinceRevision != null) {
+                    log.addRange(repository.resolve(sinceRevision), repository.resolve("HEAD"));
+                }
+
+                String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
+                if (!getDirectoryNameRelative().equals(relativePath)) {
+                    log.addPath(getRepoRelativePath(file));
+                }
+
+                Iterable<RevCommit> commits = log.call();
+                for (RevCommit commit : commits) {
+                    int numParents = commit.getParentCount();
+                    if (numParents > 1 && !isMergeCommitsEnabled()) {
+                        continue;
+                    }
+
+                    HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                            new Date((long) commit.getCommitTime() * 1000),
+                            commit.getAuthorIdent().getName() +
+                                    " <" + commit.getAuthorIdent().getEmailAddress() + ">",
+                            null, commit.getFullMessage(), true);
+
+                    SortedSet<String> files = new TreeSet<>();
+                    if (numParents == 1) {
+                        getFiles(repository, git, commit.getParent(0), commit, files, renamedFiles);
+                    } else if (numParents == 0) { // first commit (TODO: could be dangling ?)
+                        try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                            treeWalk.addTree(commit.getTree());
+                            treeWalk.setRecursive(true);
+
+                            while (treeWalk.next()) {
+                                files.add(getDirectoryNameRelative() + "/" + treeWalk.getPathString());
+                            }
+                        }
+                    } else {
+                        getFiles(repository, git, commit.getParent(0), commit, files, renamedFiles);
+                    }
+
+                    historyEntry.setFiles(files);
+                    entries.add(historyEntry);
+                }
+            } catch (NoHeadException e) {
+                // TODO
+                e.printStackTrace();
+            } catch (GitAPIException e) {
+                // TODO
+                e.printStackTrace();
+            } catch (ForbiddenSymlinkException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        History result = new History(entries, renamedFiles);
+
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
-        if (env.isTagsEnabled()) {
+        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
             assignTagsInHistory(result);
         }
+
         return result;
+    }
+
+    private void getFiles(org.eclipse.jgit.lib.Repository repository, Git git,
+                          RevCommit oldCommit, RevCommit newCommit,
+                          Set<String> files, List<String> renamedFiles)
+            throws IOException {
+
+        OutputStream outputStream = NullOutputStream.INSTANCE;
+        try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+            formatter.setRepository(git.getRepository());
+            formatter.setDetectRenames(true);
+
+            List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, oldCommit),
+                    prepareTreeParser(repository, newCommit));
+
+            for (DiffEntry diff : diffs) {
+                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME) {
+                    if (isHandleRenamedFiles()) {
+                        renamedFiles.add(diff.getNewPath());
+                    } else {
+                        files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
+                    }
+                } else {
+                    // TODO: !DELETE ?
+                    files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
+                }
+            }
+        }
+    }
+
+    private static AbstractTreeIterator prepareTreeParser(org.eclipse.jgit.lib.Repository repository,
+                                                          RevCommit commit) throws IOException {
+        // from the commit we can build the tree which allows us to construct the TreeParser
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevTree tree = walk.parseTree(commit.getTree().getId());
+
+            CanonicalTreeParser treeParser = new CanonicalTreeParser();
+            try (ObjectReader reader = repository.newObjectReader()) {
+                treeParser.reset(reader, tree.getId());
+            }
+
+            walk.dispose();
+
+            return treeParser;
+        }
     }
 
     @Override
