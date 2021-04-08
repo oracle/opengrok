@@ -169,11 +169,7 @@ public class GitRepositoryOctopusTest {
 
         List<HistoryEntry> entries = history.getHistoryEntries();
         assertNotNull(entries, "git-octopus getHistoryEntries()");
-
-        /*
-         * git-octopus has four-way merge, but GitHistoryParser condenses.
-         */
-        assertEquals(4, entries.size(), "git-octopus log entries");
+        assertEquals(5, entries.size(), "git-octopus log entries");
 
         SortedSet<String> allFiles = new TreeSet<>();
         for (HistoryEntry entry : entries) {
