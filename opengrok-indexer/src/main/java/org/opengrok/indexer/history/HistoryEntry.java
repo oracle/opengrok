@@ -224,6 +224,7 @@ public class HistoryEntry {
             return false;
         }
         HistoryEntry that = (HistoryEntry) o;
+        // TODO: more robust w.r.t. null
         return this.getAuthor().equals(that.getAuthor()) &&
                 this.getRevision().equals(that.getRevision()) &&
                 this.getDate().equals(that.getDate()) &&

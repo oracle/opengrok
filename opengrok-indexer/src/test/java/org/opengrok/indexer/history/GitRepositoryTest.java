@@ -519,10 +519,10 @@ public class GitRepositoryTest {
         assertEquals(8, history.getHistoryEntries().size());
         assertEquals(0, history.getRenamedFiles().size());
 
-        History expectedHistory = new History(List.of(
+        List<HistoryEntry> entries = List.of(
                 new HistoryEntry("84599b3c", new Date(1485438707000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
-                    "    renaming directories\n\n", true,
+                        "    renaming directories\n\n", true,
                         Set.of("/git/moved2/renamed2.c")),
                 new HistoryEntry("67dfbe26", new Date(1485263397000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
@@ -536,7 +536,7 @@ public class GitRepositoryTest {
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
                         "    moved renamed.c to new location\n\n", true,
                         Set.of("/git/moved/renamed.c")),
-                new HistoryEntry("ce4c98ec", new Date(1485263232000L),
+                new HistoryEntry("ce4c98ec", new Date(1485263232000L),  // start in the sub-test below
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
                         "    adding simple file for renamed file testing\n\n", true,
                         Set.of("/git/renamed.c")),
@@ -551,7 +551,17 @@ public class GitRepositoryTest {
                 new HistoryEntry("bb74b7e8", new Date(1218571573000L),
                         "Trond Norbye <trond@sunray-srv.norbye.org>", null,
                         "    Added a small test program\n\n", true,
-                        Set.of("/git/Makefile", "/git/header.h", "/git/main.c"))));
+                        Set.of("/git/Makefile", "/git/header.h", "/git/main.c")));
+        History expectedHistory = new History(entries);
+        assertEquals(expectedHistory, history);
+
+        // Retry with start changeset.
+        history = gitrepo.getHistory(root, "ce4c98ec");
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(4, history.getHistoryEntries().size());
+        assertEquals(0, history.getRenamedFiles().size());
+        expectedHistory = new History(entries.subList(0, 4));
         assertEquals(expectedHistory, history);
     }
 
