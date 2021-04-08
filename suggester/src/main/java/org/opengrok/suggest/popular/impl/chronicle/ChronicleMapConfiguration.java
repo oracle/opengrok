@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.popular.impl.chronicle;
 
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter.Status;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -96,6 +97,9 @@ public class ChronicleMapConfiguration implements Serializable {
             return null;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+            ois.setObjectInputFilter(filterInfo ->
+                    filterInfo.serialClass() == null || filterInfo.serialClass() == ChronicleMapConfiguration.class ?
+                            Status.ALLOWED : Status.REJECTED);
             return (ChronicleMapConfiguration) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Could not load chronicle map configuration", e);
