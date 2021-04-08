@@ -22,9 +22,12 @@
  */
 package org.opengrok.indexer.analysis;
 
+import org.opengrok.indexer.util.WhitelistObjectInputFilter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -37,6 +40,12 @@ import java.util.TreeSet;
 public class Scopes implements Serializable {
 
     private static final long serialVersionUID = 1191703801007779489L;
+
+    private static final ObjectInputFilter serialFilter = new WhitelistObjectInputFilter(
+            Scopes.class,
+            TreeSet.class,
+            Scope.class
+    );
 
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.
@@ -164,10 +173,10 @@ public class Scopes implements Serializable {
      * @throws ClassCastException if the array contains an object of another
      * type than {@code Definitions}
      */
-    public static Scopes deserialize(byte[] bytes)
-            throws IOException, ClassNotFoundException {
-        ObjectInputStream in
-                = new ObjectInputStream(new ByteArrayInputStream(bytes));
-        return (Scopes) in.readObject();
+    public static Scopes deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            in.setObjectInputFilter(serialFilter);
+            return (Scopes) in.readObject();
+        }
     }
 }

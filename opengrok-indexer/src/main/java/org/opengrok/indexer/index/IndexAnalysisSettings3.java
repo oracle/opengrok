@@ -22,9 +22,12 @@
  */
 package org.opengrok.indexer.index;
 
+import org.opengrok.indexer.util.WhitelistObjectInputFilter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -41,6 +44,8 @@ import java.util.Map;
 public final class IndexAnalysisSettings3 implements Serializable {
 
     private static final long serialVersionUID = -4700122690707062276L;
+
+    private static final ObjectInputFilter serialFilter = new WhitelistObjectInputFilter(IndexAnalysisSettings3.class);
 
     private String projectName;
 
@@ -162,9 +167,10 @@ public final class IndexAnalysisSettings3 implements Serializable {
      * OutputStream.
      */
     public byte[] serialize() throws IOException {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        new ObjectOutputStream(bytes).writeObject(this);
-        return bytes.toByteArray();
+        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream(); var oos = new ObjectOutputStream(bytes)) {
+            oos.writeObject(this);
+            return bytes.toByteArray();
+        }
     }
 
     /**
@@ -178,11 +184,11 @@ public final class IndexAnalysisSettings3 implements Serializable {
      * @throws ClassCastException if the array contains an object of another
      * type than {@code IndexAnalysisSettings}
      */
-    public static IndexAnalysisSettings3 deserialize(byte[] bytes)
-            throws IOException, ClassNotFoundException {
-        ObjectInputStream in = new ObjectInputStream(
-            new ByteArrayInputStream(bytes));
-        return (IndexAnalysisSettings3) in.readObject();
+    public static IndexAnalysisSettings3 deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            in.setObjectInputFilter(serialFilter);
+            return (IndexAnalysisSettings3) in.readObject();
+        }
     }
 
     @SuppressWarnings("Duplicates")

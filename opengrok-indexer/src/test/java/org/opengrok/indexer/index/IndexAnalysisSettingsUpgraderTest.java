@@ -23,6 +23,7 @@
 package org.opengrok.indexer.index;
 
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ import org.opengrok.indexer.analysis.AnalyzerGuru;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -123,13 +124,8 @@ public class IndexAnalysisSettingsUpgraderTest {
         byte[] bin = obj.serialize();
 
         IndexAnalysisSettingsUpgrader upgrader = new IndexAnalysisSettingsUpgrader();
-        IndexAnalysisSettings3 res = null;
-        try {
-            res = upgrader.upgrade(bin, 3); // wrong version
-        } catch (ClassCastException e) {
-            // expected
-        }
-        assertNull(res, "should not have produced an instance");
+        assertThrows(InvalidClassException.class, () -> upgrader.upgrade(bin, 3),
+                "should not have produced an instance");
     }
 
     @Test
