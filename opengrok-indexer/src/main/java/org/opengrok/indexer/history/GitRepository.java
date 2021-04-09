@@ -614,6 +614,7 @@ public class GitRepository extends Repository {
                     log.addPath(getRepoRelativePath(file));
                 }
 
+                // TODO: convert log to RevWalk (with FollowFilter for renamed file handling)
                 Iterable<RevCommit> commits = log.call();
                 for (RevCommit commit : commits) {
                     int numParents = commit.getParentCount();
@@ -629,7 +630,7 @@ public class GitRepository extends Repository {
 
                     SortedSet<String> files = new TreeSet<>();
                     if (numParents == 1) {
-                        getFiles(repository, git, commit.getParent(0), commit, files, renamedFiles);
+                        getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
                     } else if (numParents == 0) { // first commit (TODO: could be dangling ?)
                         try (TreeWalk treeWalk = new TreeWalk(repository)) {
                             treeWalk.addTree(commit.getTree());
@@ -640,7 +641,7 @@ public class GitRepository extends Repository {
                             }
                         }
                     } else {
-                        getFiles(repository, git, commit.getParent(0), commit, files, renamedFiles);
+                        getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
                     }
 
                     historyEntry.setFiles(files);
@@ -671,14 +672,14 @@ public class GitRepository extends Repository {
         return result;
     }
 
-    private void getFiles(org.eclipse.jgit.lib.Repository repository, Git git,
+    private void getFiles(org.eclipse.jgit.lib.Repository repository,
                           RevCommit oldCommit, RevCommit newCommit,
                           Set<String> files, List<String> renamedFiles)
             throws IOException {
 
         OutputStream outputStream = NullOutputStream.INSTANCE;
         try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-            formatter.setRepository(git.getRepository());
+            formatter.setRepository(repository);
             formatter.setDetectRenames(true);
 
             List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, oldCommit),
