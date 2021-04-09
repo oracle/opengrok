@@ -20,18 +20,18 @@
 /*
  * Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opengrok.indexer.index;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
 import org.opengrok.indexer.analysis.AccumulatedNumLinesLOC;
 import org.opengrok.indexer.analysis.NumLinesLOC;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumLinesLOCAggregatorTest {
 
@@ -44,27 +44,27 @@ public class NumLinesLOCAggregatorTest {
         aggtor.iterator().forEachRemaining(counts::add);
         counts.sort(Comparator.comparingInt(o -> o.getPath().length()));
 
-        assertEquals("agg count", 4, counts.size());
+        assertEquals(4, counts.size(), "agg count");
 
         AccumulatedNumLinesLOC entry = counts.get(0);
-        assertEquals("counts[0] path", "/", entry.getPath());
-        assertEquals("counts[0] numLines", 2, entry.getNumLines());
-        assertEquals("counts[0] LOC", 1, entry.getLOC());
+        assertEquals("/", entry.getPath(), "counts[0] path");
+        assertEquals(2, entry.getNumLines(), "counts[0] numLines");
+        assertEquals(1, entry.getLOC(), "counts[0] LOC");
 
         entry = counts.get(1);
-        assertEquals("counts[1] path", "/a", entry.getPath());
-        assertEquals("counts[1] numLines", 2, entry.getNumLines());
-        assertEquals("counts[1] LOC", 1, entry.getLOC());
+        assertEquals("/a", entry.getPath(), "counts[1] path");
+        assertEquals(2, entry.getNumLines(), "counts[1] numLines");
+        assertEquals(1, entry.getLOC(), "counts[1] LOC");
 
         entry = counts.get(2);
-        assertEquals("counts[2] path", "/a/b", entry.getPath());
-        assertEquals("counts[2] numLines", 2, entry.getNumLines());
-        assertEquals("counts[2] LOC", 1, entry.getLOC());
+        assertEquals("/a/b", entry.getPath(), "counts[2] path");
+        assertEquals(2, entry.getNumLines(), "counts[2] numLines");
+        assertEquals(1, entry.getLOC(), "counts[2] LOC");
 
         entry = counts.get(3);
-        assertEquals("counts[2] path", "/a/b/c", entry.getPath());
-        assertEquals("counts[2] numLines", 2, entry.getNumLines());
-        assertEquals("counts[2] LOC", 1, entry.getLOC());
+        assertEquals("/a/b/c", entry.getPath(), "counts[2] path");
+        assertEquals(2, entry.getNumLines(), "counts[2] numLines");
+        assertEquals(1, entry.getLOC(), "counts[2] LOC");
     }
 
     @Test
@@ -78,26 +78,26 @@ public class NumLinesLOCAggregatorTest {
         counts.sort(Comparator.comparingInt((AccumulatedNumLinesLOC o) ->
                 o.getPath().length()).thenComparing(AccumulatedNumLinesLOC::getPath));
 
-        assertEquals("agg count", 4, counts.size());
+        assertEquals(4, counts.size(), "agg count");
 
         AccumulatedNumLinesLOC entry = counts.get(0);
-        assertEquals("counts[0] path", "/", entry.getPath());
-        assertEquals("counts[0] numLines", 18, entry.getNumLines());
-        assertEquals("counts[0] LOC", 11, entry.getLOC());
+        assertEquals("/", entry.getPath(), "counts[0] path");
+        assertEquals(18, entry.getNumLines(), "counts[0] numLines");
+        assertEquals(11, entry.getLOC(), "counts[0] LOC");
 
         entry = counts.get(1);
-        assertEquals("counts[1] path", "/a", entry.getPath());
-        assertEquals("counts[1] numLines", 18, entry.getNumLines());
-        assertEquals("counts[1] LOC", 11, entry.getLOC());
+        assertEquals("/a", entry.getPath(), "counts[1] path");
+        assertEquals(18, entry.getNumLines(), "counts[1] numLines");
+        assertEquals(11, entry.getLOC(), "counts[1] LOC");
 
         entry = counts.get(2);
-        assertEquals("counts[2] path", "/a/b", entry.getPath());
-        assertEquals("counts[2] numLines", 2, entry.getNumLines());
-        assertEquals("counts[2] LOC", 1, entry.getLOC());
+        assertEquals("/a/b", entry.getPath(), "counts[2] path");
+        assertEquals(2, entry.getNumLines(), "counts[2] numLines");
+        assertEquals(1, entry.getLOC(), "counts[2] LOC");
 
         entry = counts.get(3);
-        assertEquals("counts[2] path", "/a/c", entry.getPath());
-        assertEquals("counts[2] numLines", 5, entry.getNumLines());
-        assertEquals("counts[2] LOC", 3, entry.getLOC());
+        assertEquals("/a/c", entry.getPath(), "counts[2] path");
+        assertEquals(5, entry.getNumLines(), "counts[2] numLines");
+        assertEquals(3, entry.getLOC(), "counts[2] LOC");
     }
 }
