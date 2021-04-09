@@ -25,6 +25,7 @@ package opengrok.auth.plugin;
 import opengrok.auth.plugin.ldap.LdapServer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.opengrok.web.api.v1.controller.PortChecker;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,6 +33,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -79,9 +81,24 @@ public class LdapServerTest {
 
     @Test
     public void testIsReachable() throws IOException, InterruptedException, URISyntaxException {
-        // Start simple TCP server on port 6336. It has to be > 1024 to avoid BindException
-        // due to permission denied.
-        int testPort = 6336;
+        final int testPortBase = 6336;    // It has to be > 1024 to avoid BindException due to permission denied.
+        final int randomRange = 49152;
+        int triesCount = 0;
+        final int MAX_PORT_TRIES = 20;
+        Random rand = new Random();
+        int testPort;
+        while (true) {
+            testPort = testPortBase + rand.nextInt(randomRange);
+            if (PortChecker.available(testPort)) {
+                break;
+            }
+            if (++triesCount > MAX_PORT_TRIES) {
+                throw new RuntimeException("Could not find an available port after " +
+                        MAX_PORT_TRIES + " tries");
+            }
+        }
+
+        // Start simple TCP server on test port.
         InetAddress localhostAddr = InetAddress.getLocalHost();
         ServerSocket serverSocket = new ServerSocket(testPort, 1, localhostAddr);
         Thread thread = new Thread(() -> {
@@ -108,7 +125,7 @@ public class LdapServerTest {
         assertNotNull(socket);
         assertTrue(socket.isConnected());
 
-        // Mock getAddresses() to return single localhost IP address.
+        // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
         LdapServer serverSpy = Mockito.spy(server);
         Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
