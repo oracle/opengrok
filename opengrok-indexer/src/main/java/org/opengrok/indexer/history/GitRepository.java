@@ -63,12 +63,14 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -76,7 +78,10 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.io.CountingOutputStream;
 import org.eclipse.jgit.util.io.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -600,63 +605,70 @@ public class GitRepository extends Repository {
         final List<HistoryEntry> entries = new ArrayList<>();
         final List<String> renamedFiles = new ArrayList<>();
 
-        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            try (Git git = new Git(repository)) {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
 
-                // TODO: does log() take current branch into account ?
-                LogCommand log = git.log();
-                if (sinceRevision != null) {
-                    log.addRange(repository.resolve(sinceRevision), repository.resolve("HEAD"));
-                }
+            // TODO: does the walk take current branch into account ?
 
-                String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
-                if (!getDirectoryNameRelative().equals(relativePath)) {
-                    log.addPath(getRepoRelativePath(file));
-                }
-
-                // TODO: convert log to RevWalk (with FollowFilter for renamed file handling)
-                Iterable<RevCommit> commits = log.call();
-                for (RevCommit commit : commits) {
-                    int numParents = commit.getParentCount();
-                    if (numParents > 1 && !isMergeCommitsEnabled()) {
-                        continue;
-                    }
-
-                    HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                            new Date((long) commit.getCommitTime() * 1000),
-                            commit.getAuthorIdent().getName() +
-                                    " <" + commit.getAuthorIdent().getEmailAddress() + ">",
-                            null, commit.getFullMessage(), true);
-
-                    SortedSet<String> files = new TreeSet<>();
-                    if (numParents == 1) {
-                        getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
-                    } else if (numParents == 0) { // first commit (TODO: could be dangling ?)
-                        try (TreeWalk treeWalk = new TreeWalk(repository)) {
-                            treeWalk.addTree(commit.getTree());
-                            treeWalk.setRecursive(true);
-
-                            while (treeWalk.next()) {
-                                files.add(getDirectoryNameRelative() + "/" + treeWalk.getPathString());
-                            }
-                        }
-                    } else {
-                        getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
-                    }
-
-                    historyEntry.setFiles(files);
-                    entries.add(historyEntry);
-                }
-            } catch (NoHeadException e) {
-                // TODO
-                e.printStackTrace();
-            } catch (GitAPIException e) {
-                // TODO
-                e.printStackTrace();
-            } catch (ForbiddenSymlinkException e) {
-                e.printStackTrace();
+            if (sinceRevision != null) {
+                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
             }
-        } catch (IOException e) {
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+
+            String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
+            if (!getDirectoryNameRelative().equals(relativePath)) {
+                if (isHandleRenamedFiles()) {
+                    Config config = repository.getConfig();
+                    config.setBoolean("diff", null, "renames", true);
+                    org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+                    FollowFilter followFilter = FollowFilter.create(getRepoRelativePath(file), dc);
+                    walk.setTreeFilter(followFilter);
+                } else {
+                    // TODO: untested, should be simpler (taken from LogCommand)
+                    List<PathFilter> pathFilters = new ArrayList<>();
+                    pathFilters.add(PathFilter.create(getRepoRelativePath(file)));
+                    List<TreeFilter> filters = new ArrayList<>();
+                    filters.add(AndTreeFilter.create(PathFilterGroup.create(pathFilters), TreeFilter.ANY_DIFF));
+                    if (filters.size() == 1) {
+                        filters.add(TreeFilter.ANY_DIFF);
+                    }
+
+                    walk.setTreeFilter(AndTreeFilter.create(filters));
+                }
+            }
+
+            for (RevCommit commit : walk) {
+                int numParents = commit.getParentCount();
+                if (numParents > 1 && !isMergeCommitsEnabled()) {
+                    continue;
+                }
+
+                HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                        new Date((long) commit.getCommitTime() * 1000),
+                        commit.getAuthorIdent().getName() +
+                                " <" + commit.getAuthorIdent().getEmailAddress() + ">",
+                        null, commit.getFullMessage(), true);
+
+                SortedSet<String> files = new TreeSet<>();
+                if (numParents == 1) {
+                    getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+                } else if (numParents == 0) { // first commit (TODO: could be dangling ?)
+                    try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                        treeWalk.addTree(commit.getTree());
+                        treeWalk.setRecursive(true);
+
+                        while (treeWalk.next()) {
+                            files.add(getDirectoryNameRelative() + "/" + treeWalk.getPathString());
+                        }
+                    }
+                } else {
+                    getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+                }
+
+                historyEntry.setFiles(files);
+                entries.add(historyEntry);
+            }
+        } catch (IOException | ForbiddenSymlinkException e) {
             e.printStackTrace();
         }
 
