@@ -40,12 +40,12 @@ org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
 org.opengrok.indexer.analysis.AbstractAnalyzer,
 org.opengrok.indexer.analysis.AnalyzerFactory,
+org.opengrok.indexer.analysis.NullableNumLinesLOC,
 org.opengrok.indexer.history.Annotation,
 org.opengrok.indexer.index.IndexDatabase,
 org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.search.DirectoryExtraReader,
-org.opengrok.indexer.search.FileExtra,
 org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.ForbiddenSymlinkException,
 org.opengrok.indexer.util.IOUtils,
@@ -158,7 +158,7 @@ document.pageReady.push(function() { pageReadyList();});
         DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
-            List<FileExtra> extras = null;
+            List<NullableNumLinesLOC> extras = null;
             SearchHelper searchHelper = cfg.prepareInternalSearch();
             /*
              * N.b. searchHelper.destroy() is called via

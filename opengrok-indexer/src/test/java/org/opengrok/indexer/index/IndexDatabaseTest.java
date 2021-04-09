@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
@@ -158,7 +158,12 @@ public class IndexDatabaseTest {
         // Check that the file was indexed successfully in terms of generated data.
         checkDataExistence(projectName + File.separator + fileName, true);
         origNumFiles = idb.getNumFiles();
-        assertEquals(7, origNumFiles);
+
+        /*
+         * Initially was 6, then IndexAnalysisSettings added 1, then
+         * NumLinesLOCAggregator added 3.
+         */
+        assertEquals(10, origNumFiles, "Lucene number of documents");
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);

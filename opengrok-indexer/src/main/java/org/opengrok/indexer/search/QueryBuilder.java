@@ -64,7 +64,8 @@ public class QueryBuilder {
     /**
      * Fields we use in Lucene: internal ones.
      */
-    public static final String U = "u";
+    public static final String D = "d"; // Directory key
+    public static final String U = "u"; // File and timestamp key
     public static final String TAGS = "tags";
     public static final String T = "t";
     public static final String FULLPATH = "fullpath";
@@ -213,20 +214,31 @@ public class QueryBuilder {
 
     /**
      * Transform {@code path} to ensure any {@link File#separatorChar} is
-     * represented as '/', that there is a trailing '/', and then to hash using
-     * SHA-1 and formatted in a private encoding using only letters [g-u].
+     * represented as '/', that there is a trailing '/' if {@code path} is not
+     * empty, and then hash using SHA-1 and formatted in a private encoding
+     * using only letters [g-u].
      * @param path a defined value
      * @return a defined, transformed value
      */
     public static String normalizeDirPath(String path) {
-        String norm1 = path.replace(File.separatorChar, '/');
-        String norm2 = norm1.endsWith("/") ? norm1 : norm1 + "/";
+        String norm2;
+        if (path.length() > 0) {
+            String norm1 = path.replace(File.separatorChar, '/');
+            norm2 = norm1.endsWith("/") ? norm1 : norm1 + "/";
+        } else {
+            norm2 = path;
+        }
 
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance(DIRPATH_HASH_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            return norm2;
+            /*
+             * This will not happen since "Every implementation of the Java
+             * platform is required to support the following standard
+             * MessageDigest algorithms: MD5, SHA-1, SHA-256."
+             */
+            throw new RuntimeException(e);
         }
         byte[] hash = digest.digest(norm2.getBytes(StandardCharsets.UTF_8));
 

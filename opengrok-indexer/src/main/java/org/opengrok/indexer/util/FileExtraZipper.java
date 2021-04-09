@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -28,12 +28,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.search.DirectoryEntry;
-import org.opengrok.indexer.search.FileExtra;
 
 /**
- * Represents a transformer of lists of files and {@link FileExtra} instances
- * to zip them into a list of {@link DirectoryEntry} instances.
+ * Represents a transformer of lists of files and
+ * {@link NullableNumLinesLOC} instances to zip them into a list of
+ * {@link DirectoryEntry} instances.
  */
 public class FileExtraZipper {
 
@@ -45,7 +47,7 @@ public class FileExtraZipper {
      * @param extras some OpenGrok-analyzed extra metadata
      * @return a list of the same size as {@code files}
      */
-    public List<DirectoryEntry> zip(File dir, List<String> files, List<FileExtra> extras) {
+    public List<DirectoryEntry> zip(File dir, List<String> files, List<NullableNumLinesLOC> extras) {
 
         if (extras == null) {
             return files.stream().map(f ->
@@ -53,12 +55,12 @@ public class FileExtraZipper {
                 Collectors.toList());
         }
 
-        Map<String, FileExtra> byName = indexExtraByName(extras);
+        Map<String, NullableNumLinesLOC> byName = indexExtraByName(extras);
 
         List<DirectoryEntry> result = new ArrayList<>(files.size());
         for (String file : files) {
             File fileobj = new File(dir, file);
-            FileExtra extra = findExtra(byName, fileobj);
+            NullableNumLinesLOC extra = findExtra(byName, fileobj);
             DirectoryEntry entry = new DirectoryEntry(fileobj, extra);
             result.add(entry);
         }
@@ -66,16 +68,16 @@ public class FileExtraZipper {
         return result;
     }
 
-    private FileExtra findExtra(Map<String, FileExtra> byName, File fileobj) {
+    private NullableNumLinesLOC findExtra(Map<String, NullableNumLinesLOC> byName, File fileobj) {
         String key = fileobj.getName();
         return byName.get(key);
     }
 
-    private Map<String, FileExtra> indexExtraByName(List<FileExtra> extras) {
-        Map<String, FileExtra> byPath = new HashMap<>();
-        for (FileExtra extra : extras) {
-            if (extra.getFilepath() != null) {
-                File f = new File(extra.getFilepath());
+    private Map<String, NullableNumLinesLOC> indexExtraByName(List<NullableNumLinesLOC> extras) {
+        Map<String, NullableNumLinesLOC> byPath = new HashMap<>();
+        for (NullableNumLinesLOC extra : extras) {
+            if (extra.getPath() != null) {
+                File f = new File(extra.getPath());
                 String filename = f.getName();
                 byPath.put(filename, extra);
             }

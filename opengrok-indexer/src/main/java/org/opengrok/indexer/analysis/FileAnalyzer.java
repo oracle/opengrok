@@ -201,23 +201,16 @@ public class FileAnalyzer extends AbstractAnalyzer {
     }
 
     /**
-     * Add a field to store document number of lines.
-     * @param doc the target document
-     * @param value the number of lines
+     * Add fields to store document number-of-lines and lines-of-code (LOC).
      */
     @Override
-    protected void addNumLines(Document doc, int value)  {
-        doc.add(new StoredField(QueryBuilder.NUML, value));
-    }
+    protected void addNumLinesLOC(Document doc, NumLinesLOC counts) {
+        doc.add(new StoredField(QueryBuilder.NUML, counts.getNumLines()));
+        doc.add(new StoredField(QueryBuilder.LOC, counts.getLOC()));
 
-    /**
-     * Add a field to store document lines-of-code.
-     * @param doc the target document
-     * @param value the loc
-     */
-    @Override
-    protected void addLOC(Document doc, int value)  {
-        doc.add(new StoredField(QueryBuilder.LOC, value));
+        if (countsAggregator != null) {
+            countsAggregator.register(counts);
+        }
     }
 
     private JFlexTokenizer createPlainSymbolTokenizer() {

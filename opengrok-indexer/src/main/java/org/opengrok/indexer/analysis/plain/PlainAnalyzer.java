@@ -36,6 +36,7 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.OGKTextVecField;
 import org.opengrok.indexer.analysis.Scopes;
@@ -157,8 +158,8 @@ public class PlainAnalyzer extends TextAnalyzer {
                         scopesSerialized));
                 }
 
-                addNumLines(doc, xref.getLineNumber());
-                addLOC(doc, xref.getLOC());
+                String path = doc.get(QueryBuilder.PATH);
+                addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
             } finally {
                 if (nullWriter != null) {
                     nullWriter.close();

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
 
@@ -29,6 +29,7 @@ import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
@@ -82,8 +83,8 @@ public class XMLAnalyzer extends TextAnalyzer {
                 args.setProject(project);
                 Xrefer xref = writeXref(args);
 
-                addNumLines(doc, xref.getLineNumber());
-                addLOC(doc, xref.getLOC());
+                String path = doc.get(QueryBuilder.PATH);
+                addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
             }
         }
     }

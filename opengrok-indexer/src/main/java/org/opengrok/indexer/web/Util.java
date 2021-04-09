@@ -598,8 +598,19 @@ public final class Util {
      * @return a readable string
      */
     public static String readableCount(long count) {
+        return readableCount(count, false);
+    }
+
+    /**
+     * Convert the specified {@code count} into a human readable string.
+     * @param isKnownDirectory a value indicating if {@code count} is known to
+     *                         be for a directory
+     * @param count value to convert.
+     * @return a readable string
+     */
+    public static String readableCount(long count, boolean isKnownDirectory) {
         NumberFormat formatter = (NumberFormat) COUNT_FORMATTER.clone();
-        if (count < BOLD_COUNT_THRESHOLD) {
+        if (isKnownDirectory || count < BOLD_COUNT_THRESHOLD) {
             return formatter.format(count);
         } else {
             return "<b>" + formatter.format(count) + "</b>";
