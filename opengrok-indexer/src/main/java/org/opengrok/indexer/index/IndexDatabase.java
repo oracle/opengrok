@@ -536,7 +536,7 @@ public class IndexDatabase {
                      * so it suffices to put the fake directly under the root.
                      */
                     if (!isWithDirectoryCounts) {
-                        final String ROOT_FAKE_FILE = "/.foo";
+                        final String ROOT_FAKE_FILE = "/.OpenGrok_fake_file";
                         countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
                     }
                     NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
