@@ -871,11 +871,11 @@ public final class Indexer {
             die("Repositories were specified; history is off however");
         }
 
-        if (! new File(cfg.getSourceRoot()).canRead()) {
+        if (!new File(cfg.getSourceRoot()).canRead()) {
             die("Source root '" + cfg.getSourceRoot() + "' must be readable");
         }
 
-        if (! new File(cfg.getDataRoot()).canWrite()) {
+        if (!new File(cfg.getDataRoot()).canWrite()) {
             die("Data root '" + cfg.getDataRoot() + "' must be writable");
         }
     }
