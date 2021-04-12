@@ -870,6 +870,14 @@ public final class Indexer {
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
             die("Repositories were specified; history is off however");
         }
+
+        if (! new File(cfg.getSourceRoot()).canRead()) {
+            die("Source root '" + cfg.getSourceRoot() + "' must be readable");
+        }
+
+        if (! new File(cfg.getDataRoot()).canWrite()) {
+            die("Data root '" + cfg.getDataRoot() + "' must be writable");
+        }
     }
 
     private static void die(String message) {
