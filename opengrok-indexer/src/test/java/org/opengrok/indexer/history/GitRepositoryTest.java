@@ -515,11 +515,6 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(root);
-        assertNotNull(history);
-        assertNotNull(history.getHistoryEntries());
-        assertEquals(8, history.getHistoryEntries().size());
-
         List<HistoryEntry> entries = List.of(
                 new HistoryEntry("84599b3c", new Date(1485438707000L),
                         "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
@@ -553,29 +548,34 @@ public class GitRepositoryTest {
                         "Trond Norbye <trond@sunray-srv.norbye.org>", null,
                         "    Added a small test program\n\n", true,
                         Set.of("/git/Makefile", "/git/header.h", "/git/main.c")));
-        History expectedHistory = new History(entries);
-        assertEquals(expectedHistory, history);
 
+        List<String> expectedRenamedFiles = List.of("moved/renamed2.c", "moved2/renamed2.c", "moved/renamed.c");
+
+        History history = gitrepo.getHistory(root);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(entries.size(), history.getHistoryEntries().size());
+
+        History expectedHistory;
         if (renamedHandling) {
-            assertNotNull(history.getRenamedFiles());
-            assertEquals(3, history.getRenamedFiles().size());
-
-            assertTrue(history.isRenamed("moved/renamed2.c"));
-            assertTrue(history.isRenamed("moved2/renamed2.c"));
-            assertTrue(history.isRenamed("moved/renamed.c"));
-            assertFalse(history.isRenamed("non-existent.c"));
-            assertFalse(history.isRenamed("renamed.c"));
+            expectedHistory = new History(entries, expectedRenamedFiles);
         } else {
-            assertEquals(0, history.getRenamedFiles().size());
+            expectedHistory = new History(entries);
         }
+        assertEquals(expectedHistory, history);
 
         // Retry with start changeset.
         history = gitrepo.getHistory(root, "ce4c98ec");
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(4, history.getHistoryEntries().size());
-        assertEquals(0, history.getRenamedFiles().size());
-        expectedHistory = new History(entries.subList(0, 4));
+        if (renamedHandling) {
+            expectedHistory = new History(entries.subList(0, 4), expectedRenamedFiles);
+            assertEquals(expectedRenamedFiles.size(), history.getRenamedFiles().size());
+        } else {
+            expectedHistory = new History(entries.subList(0, 4));
+            assertEquals(0, history.getRenamedFiles().size());
+        }
         assertEquals(expectedHistory, history);
     }
 

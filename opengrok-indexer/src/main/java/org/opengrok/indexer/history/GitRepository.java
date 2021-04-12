@@ -696,14 +696,11 @@ public class GitRepository extends Repository {
                     prepareTreeParser(repository, newCommit));
 
             for (DiffEntry diff : diffs) {
-                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME) {  // TODO: add COPY ?
-                    if (isHandleRenamedFiles()) {
-                        renamedFiles.add(diff.getNewPath());
-                    } else {
-                        files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
-                    }
-                } else if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
+                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
                     files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
+                }
+                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {  // TODO: add COPY ?
+                    renamedFiles.add(diff.getNewPath());
                 }
             }
         }
