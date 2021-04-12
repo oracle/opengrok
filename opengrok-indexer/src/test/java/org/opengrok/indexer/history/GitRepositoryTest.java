@@ -48,6 +48,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -506,9 +508,10 @@ public class GitRepositoryTest {
         }
     }
 
-    @Test
-    public void testHistory() throws Exception {
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testHistory(boolean renamedHandling) throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(renamedHandling);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
@@ -516,7 +519,6 @@ public class GitRepositoryTest {
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(8, history.getHistoryEntries().size());
-        assertEquals(0, history.getRenamedFiles().size());
 
         List<HistoryEntry> entries = List.of(
                 new HistoryEntry("84599b3c", new Date(1485438707000L),
@@ -554,6 +556,19 @@ public class GitRepositoryTest {
         History expectedHistory = new History(entries);
         assertEquals(expectedHistory, history);
 
+        if (renamedHandling) {
+            assertNotNull(history.getRenamedFiles());
+            assertEquals(3, history.getRenamedFiles().size());
+
+            assertTrue(history.isRenamed("moved/renamed2.c"));
+            assertTrue(history.isRenamed("moved2/renamed2.c"));
+            assertTrue(history.isRenamed("moved/renamed.c"));
+            assertFalse(history.isRenamed("non-existent.c"));
+            assertFalse(history.isRenamed("renamed.c"));
+        } else {
+            assertEquals(0, history.getRenamedFiles().size());
+        }
+
         // Retry with start changeset.
         history = gitrepo.getHistory(root, "ce4c98ec");
         assertNotNull(history);
@@ -562,36 +577,6 @@ public class GitRepositoryTest {
         assertEquals(0, history.getRenamedFiles().size());
         expectedHistory = new History(entries.subList(0, 4));
         assertEquals(expectedHistory, history);
-    }
-
-    @Test
-    public void testRenamedHistory() throws Exception {
-        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
-        File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
-
-        History history = gitrepo.getHistory(root);
-        assertNotNull(history);
-        assertNotNull(history.getHistoryEntries());
-        assertEquals(8, history.getHistoryEntries().size());
-
-        assertNotNull(history.getRenamedFiles());
-        assertEquals(3, history.getRenamedFiles().size());
-
-        assertTrue(history.isRenamed("moved/renamed2.c"));
-        assertTrue(history.isRenamed("moved2/renamed2.c"));
-        assertTrue(history.isRenamed("moved/renamed.c"));
-        assertFalse(history.isRenamed("non-existent.c"));
-        assertFalse(history.isRenamed("renamed.c"));
-
-        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
-        assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
-        assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
-        assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
-        assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
-        assertEquals("aa35c258", history.getHistoryEntries().get(5).getRevision());
-        assertEquals("84821564", history.getHistoryEntries().get(6).getRevision());
-        assertEquals("bb74b7e8", history.getHistoryEntries().get(7).getRevision());
     }
 
     @Test
