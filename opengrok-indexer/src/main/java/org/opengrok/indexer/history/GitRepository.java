@@ -642,7 +642,7 @@ public class GitRepository extends Repository {
                 }
 
                 HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                        new Date((long) commit.getCommitTime() * 1000),
+                        commit.getAuthorIdent().getWhen(),
                         commit.getAuthorIdent().getName() +
                                 " <" + commit.getAuthorIdent().getEmailAddress() + ">",
                         null, commit.getFullMessage(), true);
