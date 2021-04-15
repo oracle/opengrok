@@ -50,7 +50,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
@@ -63,12 +62,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
 /**
  * @author austvik
  */
-@EnabledForRepository(GIT)
 public class GitRepositoryTest {
 
     private static TestRepository repository = new TestRepository();
@@ -368,8 +365,7 @@ public class GitRepositoryTest {
         Collections.addAll(revSet, revisions);
 
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(false);
         File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
@@ -382,8 +378,7 @@ public class GitRepositoryTest {
         Collections.addAll(revSet, revisions);
 
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
         File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
@@ -396,8 +391,7 @@ public class GitRepositoryTest {
         Collections.addAll(revSet, revisions);
 
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         gitrepo.setHandleRenamedFiles(true);
         File renamedFile = Paths.get(root.getAbsolutePath(), "moved2", "renamed2.c").toFile();
         testAnnotationOfFile(gitrepo, renamedFile, "1086eaf5", revSet);
@@ -526,8 +520,7 @@ public class GitRepositoryTest {
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
-        GitRepository gitrepo
-                = (GitRepository) RepositoryFactory.getRepository(root);
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         byte[] buffer = new byte[4096];
 
         InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(),
