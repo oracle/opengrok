@@ -191,7 +191,8 @@ public class HistoryEntry {
 
     @Override
     public String toString() {
-        return getLine();
+        return String.join(" ",
+                getRevision(), getDate().toString(), getAuthor(), getMessage(), getFiles().toString());
     }
 
     /**
@@ -246,6 +247,7 @@ public class HistoryEntry {
                 checkEquals(this.getRevision(), that.getRevision()) &&
                 checkEquals(this.getDate(), that.getDate()) &&
                 checkEquals(this.getMessage(), that.getMessage()) &&
+                checkEquals(this.getFiles(), that.getFiles()) &&
                 checkEquals(this.getTags(), that.getTags());
     }
 
