@@ -27,7 +27,6 @@ package org.opengrok.indexer.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -55,7 +54,6 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
