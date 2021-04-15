@@ -141,4 +141,9 @@ public class History {
     public int hashCode() {
         return getHistoryEntries().hashCode() * getRenamedFiles().hashCode();
     }
+
+    @Override
+    public String toString() {
+        return this.getHistoryEntries().toString() + ", renamed files: " + this.getRenamedFiles().toString();
+    }
 }
