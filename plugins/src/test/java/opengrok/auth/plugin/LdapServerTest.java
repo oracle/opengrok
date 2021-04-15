@@ -81,48 +81,49 @@ public class LdapServerTest {
     public void testIsReachable() throws IOException, InterruptedException, URISyntaxException {
         // Start simple TCP server on test port.
         InetAddress localhostAddr = InetAddress.getLocalHost();
-        ServerSocket serverSocket = new ServerSocket(0, 1, localhostAddr);
-        Thread thread = new Thread(() -> {
-            try {
-                while (true) {
-                    Socket client = serverSocket.accept();
-                    client.close();
+        try (ServerSocket serverSocket = new ServerSocket(0, 1, localhostAddr)) {
+            Thread thread = new Thread(() -> {
+                try {
+                    while (true) {
+                        Socket client = serverSocket.accept();
+                        client.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+            });
 
-        int testPort = serverSocket.getLocalPort();
-        thread.start();
-        Socket socket = null;
-        for (int i = 0; i < 3; i++) {
-            try {
-                socket = new Socket(localhostAddr, testPort);
-            } catch (IOException e) {
-                Thread.sleep(1000);
+            int testPort = serverSocket.getLocalPort();
+            thread.start();
+            Socket socket = null;
+            for (int i = 0; i < 3; i++) {
+                try {
+                    socket = new Socket(localhostAddr, testPort);
+                } catch (IOException e) {
+                    Thread.sleep(1000);
+                }
             }
+
+            assertNotNull(socket);
+            assertTrue(socket.isConnected());
+
+            // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
+            LdapServer server = new LdapServer("ldaps://foo.bar.com");
+            LdapServer serverSpy = Mockito.spy(server);
+            Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
+            doReturn(testPort).when(serverSpy).getPort();
+
+            // Test reachability.
+            boolean reachable = serverSpy.isReachable();
+            serverSocket.close();
+            thread.join(5000);
+            thread.interrupt();
+            assertTrue(reachable);
+
+            // Test non-reachability.
+            reachable = serverSpy.isReachable();
+            assertFalse(reachable);
         }
-
-        assertNotNull(socket);
-        assertTrue(socket.isConnected());
-
-        // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
-        LdapServer server = new LdapServer("ldaps://foo.bar.com");
-        LdapServer serverSpy = Mockito.spy(server);
-        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
-        doReturn(testPort).when(serverSpy).getPort();
-
-        // Test reachability.
-        boolean reachable = serverSpy.isReachable();
-        serverSocket.close();
-        thread.join(5000);
-        thread.interrupt();
-        assertTrue(reachable);
-
-        // Test non-reachability.
-        reachable = serverSpy.isReachable();
-        assertFalse(reachable);
     }
 
     @Test
