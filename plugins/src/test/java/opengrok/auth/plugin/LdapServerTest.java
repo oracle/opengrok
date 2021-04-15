@@ -81,7 +81,7 @@ public class LdapServerTest {
     public void testIsReachable() throws IOException, InterruptedException, URISyntaxException {
         // Start simple TCP server on test port.
         InetAddress localhostAddr = InetAddress.getLoopbackAddress();
-        try (ServerSocket serverSocket = new ServerSocket(0, 1, localhostAddr)) {
+        try (ServerSocket serverSocket = new ServerSocket(0, 1)) {
             Thread thread = new Thread(() -> {
                 try {
                     while (true) {
