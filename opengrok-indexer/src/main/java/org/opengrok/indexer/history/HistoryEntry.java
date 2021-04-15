@@ -233,10 +233,19 @@ public class HistoryEntry {
         }
         HistoryEntry that = (HistoryEntry) o;
 
+        String thisMessage = this.getMessage();
+        if (thisMessage != null) {
+            thisMessage = thisMessage.stripLeading().stripTrailing();
+        }
+        String thatMessage = that.getMessage();
+        if (thatMessage != null) {
+            thatMessage = thatMessage.stripLeading().stripTrailing();
+        }
+
         return checkEquals(this.getAuthor(), that.getAuthor()) &&
                 checkEquals(this.getRevision(), that.getRevision()) &&
                 checkEquals(this.getDate(), that.getDate()) &&
-                checkEquals(this.getMessage(), that.getMessage()) &&
+                checkEquals(thisMessage, thatMessage) &&
                 checkEquals(this.getFiles(), that.getFiles()) &&
                 checkEquals(this.getTags(), that.getTags());
     }
