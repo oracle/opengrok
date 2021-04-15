@@ -92,7 +92,7 @@ public class HistoryEntry {
     }
 
     public String getLine() {
-        return revision + " " + date + " " + author + " " + message + "\n";
+        return getRevision() + " " + getDate() + " " + getAuthor() + " " + getMessage() + "\n";
     }
 
     public void dump() {
