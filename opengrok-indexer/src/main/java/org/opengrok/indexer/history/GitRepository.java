@@ -541,10 +541,10 @@ public class GitRepository extends Repository {
                     Config config = repository.getConfig();
                     config.setBoolean("diff", null, "renames", true);
                     org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
-                    FollowFilter followFilter = FollowFilter.create(getRepoRelativePath(file), dc);
+                    FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
                     walk.setTreeFilter(followFilter);
                 } else {
-                    walk.setTreeFilter(PathFilter.create(getRepoRelativePath(file)));
+                    walk.setTreeFilter(PathFilter.create(getGitFilePath(getRepoRelativePath(file))));
                 }
             }
 
