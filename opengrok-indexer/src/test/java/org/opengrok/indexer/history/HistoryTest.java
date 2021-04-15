@@ -57,13 +57,4 @@ public class HistoryTest {
         assertEquals(1, historySmaller.getHistoryEntries().size());
         assertNotEquals(history, historySmaller);
     }
-
-    @Test
-    public void testToString() {
-        History history = new History(entries);
-        String expectedString = "[84599b3c Thu Jan 26 14:51:47 CET 2017 Kryštof Tulinger <krystof.tulinger@oracle.com> renaming directories\n" +
-                ", 67dfbe26 Tue Jan 24 14:09:57 CET 2017 Kryštof Tulinger <krystof.tulinger@oracle.com> renaming renamed -> renamed2\n" +
-                "], renamed files: []";
-        assertEquals(expectedString, history.toString());
-    }
 }
