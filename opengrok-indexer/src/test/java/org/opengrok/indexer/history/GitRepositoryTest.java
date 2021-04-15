@@ -214,9 +214,7 @@ public class GitRepositoryTest {
         // Clone the test repository and create new branch there.
         // Clone under source root to avoid problems with prohibited symlinks.
         File root = new File(repository.getSourceRoot(), "git");
-        File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
-        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
-        String branch;
+        File localPath = new File(repository.getSourceRoot(), "testGetHistoryInBranch");
         String cloneUrl = root.toURI().toString();
         try (Git gitClone = Git.cloneRepository()
                 .setURI(cloneUrl)
@@ -227,7 +225,7 @@ public class GitRepositoryTest {
             assertNotNull(ref);
 
             File cloneRoot = gitClone.getRepository().getWorkTree();
-            gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
+            GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
 
             History history = gitrepo.getHistory(cloneRoot);
             assertNotNull(history);
