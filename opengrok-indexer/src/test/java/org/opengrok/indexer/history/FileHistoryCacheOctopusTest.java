@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
@@ -47,6 +48,8 @@ public class FileHistoryCacheOctopusTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        RuntimeEnvironment.getInstance().setMergeCommitsEnabled(true);
+
         repositories = new TestRepository();
         repositories.create(getClass().getResourceAsStream("/history/git-octopus.zip"));
 
