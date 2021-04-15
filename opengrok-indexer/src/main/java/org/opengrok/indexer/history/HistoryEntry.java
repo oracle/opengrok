@@ -223,6 +223,14 @@ public class HistoryEntry {
         return (o1 == null && o2 == null);
     }
 
+    private int getHashCode(Object o) {
+        if (o == null) {
+            return 0;
+        }
+
+        return o.hashCode();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -252,7 +260,7 @@ public class HistoryEntry {
 
     @Override
     public int hashCode() {
-        return getAuthor().hashCode() + getRevision().hashCode() + getDate().hashCode() + getMessage().hashCode() +
-                getFiles().hashCode() + (getTags() != null ? getTags().hashCode() : 0);
+        return getHashCode(getAuthor()) + getHashCode(getRevision()) + getHashCode(getDate()) +
+                getHashCode(getMessage()) + getHashCode(getFiles()) + getHashCode(getTags());
     }
 }
