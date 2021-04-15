@@ -26,8 +26,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -268,5 +271,41 @@ public class HistoryEntryTest {
                 historyAuthor, null, historyMessage, true);
         assertNotSame(e, instance);
         assertEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsWithFilesInstance() {
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(File.separator + Paths.get("foo", "main.o"),
+                        File.separator + Paths.get("foo", "testsprog")));
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsWithFilesPositive() {
+        Set<String> files = Set.of(File.separator + Paths.get("foo", "main.o"),
+                File.separator + Paths.get("foo", "testsprog"));
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true, files);
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true, files);
+        assertNotSame(e1, e2);
+        assertEquals(e1, e2);
+    }
+
+    @Test
+    public void testEqualsWithFilesNegative() {
+        String file1 = File.separator + Paths.get("foo", "main.o");
+        String file2 = File.separator + Paths.get("foo", "testsprog");
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(file1, file2));
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(file1, file2 + "X"));
+        assertNotSame(e1, e2);
+        assertNotEquals(e1, e2);
     }
 }
