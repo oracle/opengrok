@@ -595,6 +595,14 @@ public class GitRepository extends Repository {
         return result;
     }
 
+    private static String getNativePath(String path) {
+        if (!File.separator.equals("/")) {
+            return path.replace("/", File.separator);
+        }
+
+        return path;
+    }
+
     private void getFiles(org.eclipse.jgit.lib.Repository repository,
                           RevCommit oldCommit, RevCommit newCommit,
                           Set<String> files, List<String> renamedFiles)
@@ -610,10 +618,10 @@ public class GitRepository extends Repository {
 
             for (DiffEntry diff : diffs) {
                 if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
-                    files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
+                    files.add(getDirectoryNameRelative() + File.separator + getNativePath(diff.getNewPath()));
                 }
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(diff.getNewPath());
+                    renamedFiles.add(getNativePath(diff.getNewPath()));
                 }
             }
         }
