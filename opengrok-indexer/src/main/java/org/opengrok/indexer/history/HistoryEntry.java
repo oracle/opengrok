@@ -92,7 +92,8 @@ public class HistoryEntry {
     }
 
     public String getLine() {
-        return getRevision() + " " + getDate() + " " + getAuthor() + " " + getMessage() + "\n";
+        return String.join(" ",
+                getRevision(), getDate().toString(), getAuthor(), message, "\n");
     }
 
     public void dump() {
