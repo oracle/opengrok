@@ -606,8 +606,6 @@ public class GitRepository extends Repository {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
-            // TODO: does the walk take current branch into account ?
-
             if (sinceRevision != null) {
                 walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
             }
@@ -622,16 +620,7 @@ public class GitRepository extends Repository {
                     FollowFilter followFilter = FollowFilter.create(getRepoRelativePath(file), dc);
                     walk.setTreeFilter(followFilter);
                 } else {
-                    // TODO: untested, should be simpler (taken from LogCommand)
-                    List<PathFilter> pathFilters = new ArrayList<>();
-                    pathFilters.add(PathFilter.create(getRepoRelativePath(file)));
-                    List<TreeFilter> filters = new ArrayList<>();
-                    filters.add(AndTreeFilter.create(PathFilterGroup.create(pathFilters), TreeFilter.ANY_DIFF));
-                    if (filters.size() == 1) {
-                        filters.add(TreeFilter.ANY_DIFF);
-                    }
-
-                    walk.setTreeFilter(AndTreeFilter.create(filters));
+                    walk.setTreeFilter(PathFilter.create(getRepoRelativePath(file)));
                 }
             }
 
@@ -650,7 +639,7 @@ public class GitRepository extends Repository {
                 SortedSet<String> files = new TreeSet<>();
                 if (numParents == 1) {
                     getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
-                } else if (numParents == 0) { // first commit (TODO: could be dangling ?)
+                } else if (numParents == 0) { // first commit
                     try (TreeWalk treeWalk = new TreeWalk(repository)) {
                         treeWalk.addTree(commit.getTree());
                         treeWalk.setRecursive(true);
@@ -699,7 +688,7 @@ public class GitRepository extends Repository {
                 if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
                     files.add(getDirectoryNameRelative() + "/" + diff.getNewPath());
                 }
-                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {  // TODO: add COPY ?
+                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
                     renamedFiles.add(diff.getNewPath());
                 }
             }

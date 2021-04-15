@@ -27,6 +27,7 @@ package org.opengrok.indexer.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -54,6 +55,7 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -204,6 +206,43 @@ public class GitRepositoryTest {
             branch = gitrepo.determineBranch();
             assertNotNull(branch);
             assertEquals("foo", branch);
+
+            FileUtilities.removeDirs(cloneRoot);
+        }
+    }
+
+    @Test
+    public void testGetHistoryInBranch() throws Exception {
+        // Clone the test repository and create new branch there.
+        // Clone under source root to avoid problems with prohibited symlinks.
+        File root = new File(repository.getSourceRoot(), "git");
+        File localPath = new File(repository.getSourceRoot(), "gitCloneTestDetermineBranch");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+        String branch;
+        String cloneUrl = root.toURI().toString();
+        try (Git gitClone = Git.cloneRepository()
+                .setURI(cloneUrl)
+                .setDirectory(localPath)
+                .call()) {
+
+            Ref ref = gitClone.checkout().setCreateBranch(true).setName("foo").call();
+            assertNotNull(ref);
+
+            File cloneRoot = gitClone.getRepository().getWorkTree();
+            gitrepo = (GitRepository) RepositoryFactory.getRepository(cloneRoot);
+
+            History history = gitrepo.getHistory(cloneRoot);
+            assertNotNull(history);
+            int numEntries = history.getHistoryEntries().size();
+            assertTrue(numEntries > 0);
+
+            RevCommit commit = gitClone.commit().
+                    setAuthor("Snufkin", "snufkin@moomin.valley").
+                    setMessage("fresh commit on a new branch").setAllowEmpty(true).call();
+            assertNotNull(commit);
+
+            history = gitrepo.getHistory(cloneRoot);
+            assertEquals(numEntries + 1, history.getHistoryEntries().size());
 
             FileUtilities.removeDirs(cloneRoot);
         }
@@ -577,6 +616,19 @@ public class GitRepositoryTest {
             assertEquals(0, history.getRenamedFiles().size());
         }
         assertEquals(expectedHistory, history);
+    }
+
+    @Test
+    public void testSingleHistory() throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c"));
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(1, history.getHistoryEntries().size());
+        assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
     }
 
     @Test
