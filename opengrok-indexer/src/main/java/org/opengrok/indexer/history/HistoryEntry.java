@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -215,6 +215,14 @@ public class HistoryEntry {
         tags = null;
     }
 
+    private boolean checkEquals(Object o1, Object o2) {
+        if (o1 != null && o2 != null) {
+            return o1.equals(o2);
+        }
+
+        return (o1 == null && o2 == null);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -224,14 +232,13 @@ public class HistoryEntry {
             return false;
         }
         HistoryEntry that = (HistoryEntry) o;
-        // TODO: more robust w.r.t. null
-        return this.getAuthor().equals(that.getAuthor()) &&
-                this.getRevision().equals(that.getRevision()) &&
-                this.getDate().equals(that.getDate()) &&
-                this.getMessage().equals(that.getMessage()) &&
-                this.getFiles().equals(that.getFiles()) &&
-                (this.getTags() != null && that.getTags() != null ?
-                        this.getTags().equals(that.getTags()) : this.getTags() == null && that.getTags() == null);
+
+        return checkEquals(this.getAuthor(), that.getAuthor()) &&
+                checkEquals(this.getRevision(), that.getRevision()) &&
+                checkEquals(this.getDate(), that.getDate()) &&
+                checkEquals(this.getMessage(), that.getMessage()) &&
+                checkEquals(this.getFiles(), that.getFiles()) &&
+                checkEquals(this.getTags(), that.getTags());
     }
 
     @Override
