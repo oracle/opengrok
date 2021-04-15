@@ -569,7 +569,7 @@ public class GitRepository extends Repository {
                         treeWalk.setRecursive(true);
 
                         while (treeWalk.next()) {
-                            files.add(getDirectoryNameRelative() + File.separator +
+                            files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
                                     getNativePath(treeWalk.getPathString()));
                         }
                     }
@@ -619,7 +619,8 @@ public class GitRepository extends Repository {
 
             for (DiffEntry diff : diffs) {
                 if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
-                    files.add(getDirectoryNameRelative() + File.separator + getNativePath(diff.getNewPath()));
+                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getNewPath()));
                 }
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
                     renamedFiles.add(getNativePath(diff.getNewPath()));
