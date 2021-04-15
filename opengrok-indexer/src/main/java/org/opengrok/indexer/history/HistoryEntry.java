@@ -231,6 +231,14 @@ public class HistoryEntry {
         return o.hashCode();
     }
 
+    private static String stripMessage(String message) {
+        if (message == null) {
+            return null;
+        }
+
+        return message.stripLeading().stripTrailing();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -243,11 +251,11 @@ public class HistoryEntry {
 
         String thisMessage = this.getMessage();
         if (thisMessage != null) {
-            thisMessage = thisMessage.stripLeading().stripTrailing();
+            thisMessage = stripMessage(thisMessage);
         }
         String thatMessage = that.getMessage();
         if (thatMessage != null) {
-            thatMessage = thatMessage.stripLeading().stripTrailing();
+            thatMessage = stripMessage(thatMessage);
         }
 
         return checkEquals(this.getAuthor(), that.getAuthor()) &&
@@ -261,6 +269,6 @@ public class HistoryEntry {
     @Override
     public int hashCode() {
         return getHashCode(getAuthor()) + getHashCode(getRevision()) + getHashCode(getDate()) +
-                getHashCode(getMessage()) + getHashCode(getFiles()) + getHashCode(getTags());
+                getHashCode(stripMessage(getMessage())) + getHashCode(getFiles()) + getHashCode(getTags());
     }
 }
