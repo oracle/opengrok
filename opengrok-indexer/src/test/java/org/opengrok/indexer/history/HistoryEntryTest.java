@@ -32,6 +32,7 @@ import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -248,9 +249,23 @@ public class HistoryEntryTest {
     }
 
     @Test
-    public void testEquals() {
-        // TODO: add tests with nulls
+    public void testEqualsCopyConstructor() {
         HistoryEntry e = new HistoryEntry(instance);
+        assertNotSame(e, instance);
+        assertEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsEmpty() {
+        HistoryEntry e = new HistoryEntry();
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
+    }
+
+    @Test
+    public void testEquals() {
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true);
         assertNotSame(e, instance);
         assertEquals(e, instance);
     }
