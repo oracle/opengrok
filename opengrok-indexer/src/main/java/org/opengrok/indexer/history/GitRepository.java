@@ -569,7 +569,8 @@ public class GitRepository extends Repository {
                         treeWalk.setRecursive(true);
 
                         while (treeWalk.next()) {
-                            files.add(getDirectoryNameRelative() + "/" + treeWalk.getPathString());
+                            files.add(getDirectoryNameRelative() + File.separator +
+                                    getNativePath(treeWalk.getPathString()));
                         }
                     }
                 } else {
