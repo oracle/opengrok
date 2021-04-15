@@ -619,7 +619,8 @@ public class GitRepositoryTest {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c"));
+        History history = gitrepo.getHistory(new File(root.getAbsolutePath(),
+                Paths.get("moved2", "renamed2.c").toString()));
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(1, history.getHistoryEntries().size());
@@ -640,9 +641,9 @@ public class GitRepositoryTest {
         assertNotNull(history.getRenamedFiles());
         assertEquals(3, history.getRenamedFiles().size());
 
-        assertTrue(history.isRenamed("moved/renamed2.c"));
-        assertTrue(history.isRenamed("moved2/renamed2.c"));
-        assertTrue(history.isRenamed("moved/renamed.c"));
+        assertTrue(history.isRenamed(Paths.get("moved", "renamed2.c").toString()));
+        assertTrue(history.isRenamed(Paths.get("moved2", "renamed2.c").toString()));
+        assertTrue(history.isRenamed(Paths.get("moved", "renamed.c").toString()));
         assertFalse(history.isRenamed("non-existent.c"));
         assertFalse(history.isRenamed("renamed.c"));
 
