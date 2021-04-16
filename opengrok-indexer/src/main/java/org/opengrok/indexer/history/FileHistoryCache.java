@@ -150,6 +150,7 @@ class FileHistoryCache implements HistoryCache {
 
         storeFile(hist, file, repository, !renamed);
 
+        // TODO: readjust for per partes history indexing
         statRepoHist.report(LOGGER, Level.FINER,
                 String.format("Done storing history cache for '%s'", filename),
                 "filehistorycache.history.store");
@@ -437,14 +438,6 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        LOGGER.log(Level.FINE,
-            "Storing history for repository {0}",
-            new Object[] {repository.getDirectoryName()});
-
-        // Firstly store the history for the top-level directory.
-        doFileHistory(repository.getDirectoryName(), history.getHistoryEntries(),
-                repository, env.getSourceRootFile(), null, false);
-
         HashMap<String, List<HistoryEntry>> map = new HashMap<>();
         HashMap<String, Boolean> acceptanceCache = new HashMap<>();
 
@@ -513,7 +506,8 @@ class FileHistoryCache implements HistoryCache {
             fileHistoryCount++;
         }
 
-        LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
+        LOGGER.log(Level.FINE, "Stored history for {0} files in repository ''{1}''",
+                new Object[]{fileHistoryCount, repository.getDirectoryName()});
 
         if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
@@ -735,7 +729,8 @@ class FileHistoryCache implements HistoryCache {
      * @param repository repository
      * @param rev latest revision which has been just indexed
      */
-    private void storeLatestCachedRevision(Repository repository, String rev) {
+    @Override
+    public void storeLatestCachedRevision(Repository repository, String rev) {
         Writer writer = null;
 
         try {

@@ -53,6 +53,7 @@ import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 import org.jetbrains.annotations.NotNull;
+import org.opengrok.indexer.util.Statistics;
 
 /**
  * An interface for an external repository.
@@ -141,8 +142,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return partial history for file
      * @throws HistoryException on error accessing the history
      */
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
+    History getHistory(File file, String sinceRevision) throws HistoryException {
 
         // If we want an incremental history update and get here, warn that
         // it may be slow.
@@ -361,8 +361,8 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @throws HistoryException on error
      */
-    final void createCache(HistoryCache cache, String sinceRevision)
-            throws HistoryException {
+    final void createCache(HistoryCache cache, String sinceRevision) throws HistoryException {
+
         if (!isWorking()) {
             return;
         }
@@ -370,8 +370,7 @@ public abstract class Repository extends RepositoryInfo {
         // If we don't have a directory parser, we can't create the cache
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
-            LOGGER.log(
-                    Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Skipping creation of history cache for {0}, since retrieval "
                             + "of history for directories is not implemented for this "
                             + "repository type.", getDirectoryName());
@@ -381,31 +380,45 @@ public abstract class Repository extends RepositoryInfo {
         File directory = new File(getDirectoryName());
 
         History history;
-        try {
+        if (!(this instanceof RepositoryPerPartesHistory)) {
             history = getHistory(directory, sinceRevision);
-        } catch (HistoryException he) {
-            if (sinceRevision == null) {
-                // Failed to get full history, so fail.
-                throw he;
+            finishCreateCache(cache, history);
+            return;
+        }
+
+        // To avoid storing complete History memory, split the work into multiple chunks.
+        RepositoryPerPartesHistory repo = (RepositoryPerPartesHistory) this;
+        List<String> boundaryChangesets = repo.getBoundaryChangesetIDs(sinceRevision);
+        int cnt = 0;
+        for (String tillRevision: boundaryChangesets) {
+            Statistics stat = new Statistics();
+            history = repo.getHistory(directory, sinceRevision, tillRevision);
+            if (history.getHistoryEntries().size() == 0) {
+                // TODO
+                break;
             }
-            // Failed to get partial history. This may have been caused
-            // by changes in the revision numbers since the last update
-            // (bug #14724) so we'll try to regenerate the cache from
-            // scratch instead.
-            LOGGER.log(Level.WARNING,
-                    "Failed to get partial history. Attempting to "
-                    + "recreate the history cache from scratch.", he);
-            history = null;
+
+            finishCreateCache(cache, history);
+            sinceRevision = tillRevision;
+
+            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
+                    ++cnt, boundaryChangesets.size(), this.getDirectoryName()));
         }
 
-        if (sinceRevision != null && history == null) {
-            // Failed to get partial history, now get full history instead.
-            history = getHistory(directory);
-            // Got full history successfully. Clear the history cache so that
-            // we can recreate it from scratch.
-            cache.clear(this);
+        /*
+         * Need to reset the latest cachedRevision as the last finishCreateCache() above
+         * wrote the changeset ID of the last part.
+         * TODO: probably not necessary now ?
+         */
+        try {
+            // TODO: does not work well if finishStore() failed
+            cache.storeLatestCachedRevision(this, repo.determineCurrentVersionId());
+        } catch (IOException e) {
+            throw new HistoryException(e);
         }
+    }
 
+    private void finishCreateCache(HistoryCache cache, History history) throws HistoryException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
