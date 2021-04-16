@@ -96,7 +96,7 @@ import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
  * Access to a Git repository.
  *
  */
-public class GitRepository extends RepositoryPerPartesHistory {
+public class GitRepository extends RepositoryWithPerPartesHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
@@ -810,14 +810,6 @@ public class GitRepository extends RepositoryPerPartesHistory {
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             return repository.getBranch();
-        }
-    }
-
-    // TODO: add test for this
-    public String determineCurrentVersionId() throws IOException {
-        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
-            Ref head = repository.exactRef(Constants.HEAD);
-            return getCommit(repository, head).getId().abbreviate(GIT_ABBREV_LEN).name();
         }
     }
 
