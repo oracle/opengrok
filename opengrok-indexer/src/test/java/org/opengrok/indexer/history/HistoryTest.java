@@ -24,6 +24,8 @@ package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -36,15 +38,18 @@ public class HistoryTest {
             new HistoryEntry("84599b3c", new Date(1485438707000L),
                     "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
                     "    renaming directories\n\n", true,
-                    Set.of("/git/moved2/renamed2.c")),
+                    Set.of(File.separator + Paths.get("git", "moved2", "renamed2.c"))),
             new HistoryEntry("67dfbe26", new Date(1485263397000L),
                     "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
                     "    renaming renamed -> renamed2\n\n", true,
-                    Set.of("/git/moved/renamed2.c")));
+                    Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))));
 
     @Test
     public void testEqualsRenamed() {
-        History history = new History(entries, List.of("moved/renamed2.c", "moved2/renamed2.c", "moved/renamed.c"));
+        History history = new History(entries,
+                List.of(Paths.get("moved", "renamed2.c").toString(),
+                        Paths.get("moved2", "renamed2.c").toString(),
+                        Paths.get("moved", "renamed.c").toString()));
         History historyNoRenames = new History(entries);
         assertNotEquals(history, historyNoRenames);
     }
