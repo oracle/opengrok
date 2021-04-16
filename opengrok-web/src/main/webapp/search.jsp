@@ -63,9 +63,13 @@ include file="projects.jspf"
             Util.appendQuery(url, QueryParameters.HIST_SEARCH_PARAM, qb.getHist());
             Util.appendQuery(url, QueryParameters.TYPE_SEARCH_PARAM, qb.getType());
         }
-        if (sh.projects != null && sh.projects.size() != 0) {
-            Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM,
-                    PageConfig.get(request).getRequestedProjectsAsString());
+        if (sh.projects != null && !sh.projects.isEmpty()) {
+            if (Boolean.parseBoolean(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH))) {
+                Util.appendQuery(url, QueryParameters.ALL_PROJECT_SEARCH, Boolean.TRUE.toString());
+            } else {
+                Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM,
+                        PageConfig.get(request).getRequestedProjectsAsString());
+            }
         }
         return url;
     }
