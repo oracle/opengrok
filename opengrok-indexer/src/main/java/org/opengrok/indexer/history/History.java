@@ -133,8 +133,8 @@ public class History {
             return false;
         }
         History that = (History) o;
-        return this.getHistoryEntries().equals(that.getHistoryEntries()) &&
-                this.getRenamedFiles().equals(that.getRenamedFiles());
+        return Objects.equals(this.getHistoryEntries(), that.getHistoryEntries()) &&
+                Objects.equals(this.getRenamedFiles(), that.getRenamedFiles());
     }
 
     @Override

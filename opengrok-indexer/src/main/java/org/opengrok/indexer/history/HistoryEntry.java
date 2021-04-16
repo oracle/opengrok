@@ -25,6 +25,7 @@ package org.opengrok.indexer.history;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -217,14 +218,6 @@ public class HistoryEntry {
         tags = null;
     }
 
-    private boolean checkEquals(Object o1, Object o2) {
-        if (o1 != null && o2 != null) {
-            return o1.equals(o2);
-        }
-
-        return (o1 == null && o2 == null);
-    }
-
     private int getHashCode(Object o) {
         if (o == null) {
             return 0;
@@ -243,12 +236,12 @@ public class HistoryEntry {
         }
         HistoryEntry that = (HistoryEntry) o;
 
-        return checkEquals(this.getAuthor(), that.getAuthor()) &&
-                checkEquals(this.getRevision(), that.getRevision()) &&
-                checkEquals(this.getDate(), that.getDate()) &&
-                checkEquals(this.getMessage(), that.getMessage()) &&
-                checkEquals(this.getFiles(), that.getFiles()) &&
-                checkEquals(this.getTags(), that.getTags());
+        return Objects.equals(this.getAuthor(), that.getAuthor()) &&
+                Objects.equals(this.getRevision(), that.getRevision()) &&
+                Objects.equals(this.getDate(), that.getDate()) &&
+                Objects.equals(this.getMessage(), that.getMessage()) &&
+                Objects.equals(this.getFiles(), that.getFiles()) &&
+                Objects.equals(this.getTags(), that.getTags());
     }
 
     @Override
