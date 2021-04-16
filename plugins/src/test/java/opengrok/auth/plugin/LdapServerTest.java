@@ -78,7 +78,7 @@ public class LdapServerTest {
     }
 
     @Test
-    public void testIsReachable() throws IOException, InterruptedException, URISyntaxException {
+    public void testIsReachablePositive() throws IOException, InterruptedException, URISyntaxException {
         // Start simple TCP server on test port.
         InetAddress localhostAddr = InetAddress.getLoopbackAddress();
         try (ServerSocket serverSocket = new ServerSocket(0, 1)) {
@@ -115,15 +115,25 @@ public class LdapServerTest {
 
             // Test reachability.
             boolean reachable = serverSpy.isReachable();
-            serverSocket.close();
-            thread.join(5000);
-            thread.interrupt();
             assertTrue(reachable);
 
-            // Test non-reachability.
-            reachable = serverSpy.isReachable();
-            assertFalse(reachable);
+            thread.interrupt();
+            thread.join(5000);
         }
+    }
+
+    @Test
+    void testsReachableNegative() throws Exception {
+        InetAddress localhostAddr = InetAddress.getLoopbackAddress();
+
+        // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
+        LdapServer server = new LdapServer("ldaps://foo.bar.com");
+        LdapServer serverSpy = Mockito.spy(server);
+        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
+        // port 0 should not be reachable.
+        doReturn(0).when(serverSpy).getPort();
+
+        assertFalse(serverSpy.isReachable());
     }
 
     @Test
