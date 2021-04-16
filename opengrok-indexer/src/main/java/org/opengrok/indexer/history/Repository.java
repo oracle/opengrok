@@ -380,14 +380,14 @@ public abstract class Repository extends RepositoryInfo {
         File directory = new File(getDirectoryName());
 
         History history;
-        if (!(this instanceof RepositoryPerPartesHistory)) {
+        if (!(this instanceof RepositoryWithPerPartesHistory)) {
             history = getHistory(directory, sinceRevision);
             finishCreateCache(cache, history);
             return;
         }
 
         // To avoid storing complete History memory, split the work into multiple chunks.
-        RepositoryPerPartesHistory repo = (RepositoryPerPartesHistory) this;
+        RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) this;
         List<String> boundaryChangesets = repo.getBoundaryChangesetIDs(sinceRevision);
         int cnt = 0;
         for (String tillRevision: boundaryChangesets) {
@@ -403,18 +403,6 @@ public abstract class Repository extends RepositoryInfo {
 
             stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
                     ++cnt, boundaryChangesets.size(), this.getDirectoryName()));
-        }
-
-        /*
-         * Need to reset the latest cachedRevision as the last finishCreateCache() above
-         * wrote the changeset ID of the last part.
-         * TODO: probably not necessary now ?
-         */
-        try {
-            // TODO: does not work well if finishStore() failed
-            cache.storeLatestCachedRevision(this, repo.determineCurrentVersionId());
-        } catch (IOException e) {
-            throw new HistoryException(e);
         }
     }
 

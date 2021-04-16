@@ -26,12 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class RepositoryPerPartesHistory extends Repository {
+public abstract class RepositoryWithPerPartesHistory extends Repository {
     private static final long serialVersionUID = -3433255821312805064L;
 
     abstract History getHistory(File directory, String sinceRevision, String tillRevision) throws HistoryException;
 
     abstract List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException;
-
-    abstract String determineCurrentVersionId() throws IOException;
 }
