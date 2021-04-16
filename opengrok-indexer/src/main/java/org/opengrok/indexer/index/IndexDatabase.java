@@ -1271,7 +1271,7 @@ public class IndexDatabase {
 
                             // If the term's path matches path of currently processed file,
                             // it is clear that the file has been modified and thus
-                            // removeFile() will be followed by call to addFile() below.
+                            // removeFile() will be followed by call to addFile() in indexParallel().
                             // In such case, instruct removeFile() not to remove history
                             // cache for the file so that incremental history cache
                             // generation works.
