@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
@@ -86,6 +87,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.Version;
 
 import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
@@ -94,7 +96,7 @@ import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
  * Access to a Git repository.
  *
  */
-public class GitRepository extends Repository {
+public class GitRepository extends RepositoryPerPartesHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
@@ -524,6 +526,51 @@ public class GitRepository extends Repository {
 
     @Override
     History getHistory(File file, String sinceRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, null);
+    }
+
+    // TODO: add test
+    public List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException {
+        List<String> result = new ArrayList<>();
+        final int maxCount = 1024;  // TODO
+
+        Statistics stat = new Statistics();
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
+
+            if (sinceRevision != null) {
+                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+            }
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+
+            int cnt = 0;
+            String lastId = null;
+            for (RevCommit commit : walk) {
+                if (cnt != 0 && cnt % maxCount == 0) {
+                    // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
+                    lastId = commit.getId().name();
+                    result.add(lastId);
+                }
+                cnt++;
+            }
+        } catch (IOException e) {
+            throw new HistoryException(e);
+        }
+
+        // The changesets need to go from oldest to newest.
+        Collections.reverse(result);
+
+        // Add null to finish the last step in Repository#createCache().
+        result.add(null);
+
+        stat.report(LOGGER, Level.FINE,
+                String.format("done getting boundary changesets for ''%s'' (%d entries)",
+                        getDirectoryName(), result.size()));
+
+        return result;
+    }
+
+    public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
         final List<HistoryEntry> entries = new ArrayList<>();
         final List<String> renamedFiles = new ArrayList<>();
 
@@ -533,7 +580,12 @@ public class GitRepository extends Repository {
             if (sinceRevision != null) {
                 walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
             }
-            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+
+            if (tillRevision != null) {
+                walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
+            } else {
+                walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+            }
 
             String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
             if (!getDirectoryNameRelative().equals(relativePath)) {
@@ -758,6 +810,14 @@ public class GitRepository extends Repository {
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             return repository.getBranch();
+        }
+    }
+
+    // TODO: add test for this
+    public String determineCurrentVersionId() throws IOException {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            Ref head = repository.exactRef(Constants.HEAD);
+            return getCommit(repository, head).getId().abbreviate(GIT_ABBREV_LEN).name();
         }
     }
 
