@@ -581,7 +581,7 @@ public class GitRepository extends Repository {
                 entries.add(historyEntry);
             }
         } catch (IOException | ForbiddenSymlinkException e) {
-            LOGGER.log(Level.WARNING, String.format("failed to get history for ''%s''", file), e);
+            throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
         }
 
         History result = new History(entries, renamedFiles);
