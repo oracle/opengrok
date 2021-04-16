@@ -246,7 +246,7 @@ public class HistoryEntry {
 
     @Override
     public int hashCode() {
-        return getHashCode(getAuthor()) + getHashCode(getRevision()) + getHashCode(getDate()) +
-                getHashCode(getMessage()) + getHashCode(getFiles()) + getHashCode(getTags());
+        return Objects.hash(getHashCode(getAuthor()), getHashCode(getRevision()), getHashCode(getDate()),
+                getHashCode(getMessage()), getHashCode(getFiles()), getHashCode(getTags()));
     }
 }
