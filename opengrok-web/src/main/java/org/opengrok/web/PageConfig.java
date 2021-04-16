@@ -128,7 +128,6 @@ public final class PageConfig {
     public static final String DUMMY_REVISION = "unknown";
 
     // query parameters
-    protected static final String ALL_PROJECT_SEARCH = "searchall";
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
     private static final String DEBUG_PARAM_NAME = "debug";
@@ -800,17 +799,7 @@ public final class PageConfig {
      */
     public String getRequestedProjectsAsString() {
         if (requestedProjectsString == null) {
-            Set<String> projects = getRequestedProjects();
-            if (projects.isEmpty()) {
-                requestedProjectsString = "";
-            } else {
-                StringBuilder buf = new StringBuilder();
-                for (String name : projects) {
-                    buf.append(name).append(',');
-                }
-                buf.setLength(buf.length() - 1);
-                requestedProjectsString = buf.toString();
-            }
+            requestedProjectsString = String.join(",", getRequestedProjects());
         }
         return requestedProjectsString;
     }
@@ -842,15 +831,15 @@ public final class PageConfig {
      * </ol>
      *
      * @return a possible empty set of project names but never {@code null}.
-     * @see #ALL_PROJECT_SEARCH
+     * @see QueryParameters#ALL_PROJECT_SEARCH
      * @see #PROJECT_PARAM_NAME
      * @see #GROUP_PARAM_NAME
      * @see #OPEN_GROK_PROJECT
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
-            requestedProjects
-                    = getRequestedProjects(ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
+            requestedProjects = getRequestedProjects(
+                    QueryParameters.ALL_PROJECT_SEARCH, PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }

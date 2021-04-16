@@ -229,6 +229,12 @@ public class QueryParameters {
      */
     public static final String WINDOW_HASH_PARAM_EQ = WINDOW_HASH_PARAM + "=";
 
+    /**
+     * Parameter to be used when searching all projects. Useful when instance has too many projects and the resulting
+     * URL consisting of all projects could be too long.
+     */
+    public static final String ALL_PROJECT_SEARCH = "searchall";
+
     /* private to enforce static */
     private QueryParameters() {
     }

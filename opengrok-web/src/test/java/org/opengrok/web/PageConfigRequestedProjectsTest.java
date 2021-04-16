@@ -39,6 +39,7 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.QueryParameters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -225,7 +226,7 @@ public class PageConfigRequestedProjectsTest {
     @Test
     public void testSelectAllProjects() {
         final HttpServletRequest request = createRequest(null, null);
-        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+        Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
         assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
@@ -234,7 +235,7 @@ public class PageConfigRequestedProjectsTest {
     @Test
     public void testSelectAllProjectsOverrideProjectParam() {
         final HttpServletRequest request = createRequest(new String[]{"project-1", "project-2"}, null);
-        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+        Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
         assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
@@ -243,7 +244,7 @@ public class PageConfigRequestedProjectsTest {
     @Test
     public void testSelectAllProjectsOverrideGroupParam() {
         final HttpServletRequest request = createRequest(null, new String[]{"group-1-2-3"});
-        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+        Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
         assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
@@ -252,7 +253,7 @@ public class PageConfigRequestedProjectsTest {
     @Test
     public void testSelectAllOverrideNonExistentProject() {
         final HttpServletRequest request = createRequest(new String[]{"no-project"}, null);
-        Mockito.when(request.getParameter(PageConfig.ALL_PROJECT_SEARCH)).thenReturn("true");
+        Mockito.when(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH)).thenReturn("true");
 
         final PageConfig cfg = PageConfig.get(request);
         assertEquals(new TreeSet<>(env.getProjectNames()), cfg.getRequestedProjects());
