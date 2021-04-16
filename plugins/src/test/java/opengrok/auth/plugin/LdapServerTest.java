@@ -80,7 +80,7 @@ public class LdapServerTest {
     @Test
     public void testIsReachablePositive() throws IOException, InterruptedException, URISyntaxException {
         // Start simple TCP server on test port.
-        InetAddress localhostAddr = InetAddress.getLoopbackAddress();
+        InetAddress loopbackAddress = InetAddress.getLoopbackAddress();
         try (ServerSocket serverSocket = new ServerSocket(0, 1)) {
             Thread thread = new Thread(() -> {
                 try {
@@ -98,7 +98,7 @@ public class LdapServerTest {
             Socket socket = null;
             for (int i = 0; i < 3; i++) {
                 try {
-                    socket = new Socket(localhostAddr, testPort);
+                    socket = new Socket(loopbackAddress, testPort);
                 } catch (IOException e) {
                     Thread.sleep(1000);
                 }
@@ -110,7 +110,7 @@ public class LdapServerTest {
             // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
             LdapServer server = new LdapServer("ldaps://foo.bar.com");
             LdapServer serverSpy = Mockito.spy(server);
-            Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
+            Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{loopbackAddress});
             doReturn(testPort).when(serverSpy).getPort();
 
             // Test reachability.
@@ -124,12 +124,12 @@ public class LdapServerTest {
 
     @Test
     void testsReachableNegative() throws Exception {
-        InetAddress localhostAddr = InetAddress.getLoopbackAddress();
+        InetAddress loopbackAddress = InetAddress.getLoopbackAddress();
 
         // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
         LdapServer serverSpy = Mockito.spy(server);
-        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{localhostAddr});
+        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{loopbackAddress});
         // port 0 should not be reachable.
         doReturn(0).when(serverSpy).getPort();
 
