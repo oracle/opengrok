@@ -207,7 +207,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryInBranch() throws Exception {
+    void testGetHistoryInBranch() throws Exception {
         // Clone the test repository and create new branch there.
         // Clone under source root to avoid problems with prohibited symlinks.
         File root = new File(repository.getSourceRoot(), "git");
