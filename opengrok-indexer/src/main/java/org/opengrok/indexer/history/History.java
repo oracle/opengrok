@@ -139,7 +139,7 @@ public class History {
 
     @Override
     public int hashCode() {
-        return getHistoryEntries().hashCode() * getRenamedFiles().hashCode();
+        return Objects.hash(getHistoryEntries().hashCode(), getRenamedFiles().hashCode());
     }
 
     @Override
