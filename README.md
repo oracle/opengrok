@@ -25,7 +25,7 @@ your source tree. It can understand various program file formats and
 version control histories of many source code management systems.
 
 Official page of the project is on:
-<http://opengrok.github.com/OpenGrok/>
+<https://oracle.github.io/opengrok/>
 
 ## 2. OpenGrok install and setup
 

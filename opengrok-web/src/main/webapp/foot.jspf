@@ -42,7 +42,7 @@ org.opengrok.indexer.web.Prefix"
     
         %>
     <div id="footer">
-<p><a href="http://opengrok.github.com/OpenGrok/"
+<p><a href="https://oracle.github.io/opengrok/"
  title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)"><span id="fti"></span></a></p>
 <% if(dateForLastIndexRun != null) { %>
 <p>Last Index update <%= dateForLastIndexRun %></p>
