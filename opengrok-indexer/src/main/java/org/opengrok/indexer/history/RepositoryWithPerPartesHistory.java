@@ -31,5 +31,10 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
 
     abstract History getHistory(File directory, String sinceRevision, String tillRevision) throws HistoryException;
 
+    public int getPerPartesCount() {
+        return 128;
+    }
+
+    // TODO: iterator ?
     abstract List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException;
 }
