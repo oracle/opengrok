@@ -42,10 +42,12 @@ org.opengrok.indexer.web.Prefix"
     
         %>
     <div id="footer">
-<p><a href="https://oracle.github.io/opengrok/"
- title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)"><span id="fti"></span></a></p>
+<p><a href="https://oracle.github.io/opengrok/" class="link-no-decoration"
+      title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)">
+    <span id="served-by">served&nbsp;by&nbsp;</span><span class="logo logo-gray-color">{</span><span class="logo logo-blue-color">Open</span><span class="logo logo-gray-color">Grok</span>
+</a></p>
 <% if(dateForLastIndexRun != null) { %>
-<p>Last Index update <%= dateForLastIndexRun %></p>
+<p>Last Index Update: <%= dateForLastIndexRun %></p>
 <%}%>
     <%= cfg.getEnv().getIncludeFiles().getFooterIncludeFileContent(false) %>
     <%
