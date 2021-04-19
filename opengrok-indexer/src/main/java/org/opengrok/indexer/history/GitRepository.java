@@ -532,8 +532,9 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     // TODO: add test
     public List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException {
         List<String> result = new ArrayList<>();
-        final int maxCount = 1024;  // TODO
+        final int maxCount = getPerPartesCount();
 
+        LOGGER.log(Level.FINE, "getting boundary changesets for ''{0}''", getDirectoryName());
         Statistics stat = new Statistics();
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
