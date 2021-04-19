@@ -575,8 +575,8 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception", ex);
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
-                renamedFileHistoryCount.intValue());
+        LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
+                new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
         finishStore(repository, latestRev);
     }
 
