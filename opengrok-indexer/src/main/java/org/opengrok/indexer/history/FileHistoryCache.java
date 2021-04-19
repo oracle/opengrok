@@ -112,9 +112,7 @@ class FileHistoryCache implements HistoryCache {
             throws HistoryException {
 
         File file = new File(root, filename);
-        // Only store directory history for the top-level directory.
-        if (file.isDirectory() && !filename.equals(repository.getDirectoryName())) {
-            LOGGER.log(Level.FINE, "Not storing history cache for {0}: not top level directory", file);
+        if (file.isDirectory()) {
             return;
         }
 
