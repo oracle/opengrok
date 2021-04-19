@@ -367,7 +367,7 @@ public abstract class Repository extends RepositoryInfo {
             return;
         }
 
-        // If we don't have a directory parser, we can't create the cache
+        // If it is not possible to get history for a directory, we can't create the cache
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
             LOGGER.log(Level.INFO,
