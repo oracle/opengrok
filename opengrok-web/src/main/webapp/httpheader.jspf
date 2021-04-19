@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
@@ -45,8 +45,8 @@ org.opengrok.web.Scripts"
     PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
-    String dstyle = styleDir + '/' + "style-1.0.0.min.css";
-    String pstyle = styleDir + '/' + "print-1.0.0.min.css";
+    String dstyle = styleDir + '/' + "style-1.0.1.min.css";
+    String pstyle = styleDir + '/' + "print-1.0.1.min.css";
     String mstyle = styleDir + '/' + "mandoc-1.0.0.min.css";
 %><!DOCTYPE html>
 <html lang="en"

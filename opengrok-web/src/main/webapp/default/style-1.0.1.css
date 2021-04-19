@@ -287,9 +287,8 @@ html.diff #whole_header {
     width: 171px;
     height: 40px;
     float: left;
-    background-image: url(./img/combined.png);
+    background-image: url(./img/Logo.png);
     background-repeat: no-repeat;
-    background-position: 0 0;
     margin: 0 0 0.5ex 0;
 }
 
@@ -1072,23 +1071,43 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     text-align: center;
 }
 
-#fti { /* servedby.png */
-    display: inline-block;
-    width: 208px;
-    height: 45px;
-    vertical-align: middle;
-    background-image: url(./img/combined.png);
-    background-repeat: no-repeat;
-    background-position: -171px 0;
+@font-face {
+    font-family: SunSans;
+    src: url('./font/SunSansRegular.woff2');
 }
+
+.link-no-decoration {
+    text-decoration: none !important;
+}
+
+.logo {
+    font-family: SunSans, sans-serif;
+    font-size: 1.6153846153846154em;
+    vertical-align: middle;
+}
+
+.logo-gray-color {
+    color: #656664;
+}
+
+.logo-blue-color {
+    color: #4783A3;
+}
+
+#served-by {
+    color: #B8BAB7;
+    font-family: SunSans, sans-serif;
+    font-size: 1.1538461538461537em;
+    vertical-align: middle;
+}
+
 #rssi { /* rss.png */
     display: inline-block;
     width: 80px;
     height: 15px;
     vertical-align: middle;
-    background-image: url(./img/combined.png);
+    background-image: url(./img/rss.png);
     background-repeat: no-repeat;
-    background-position: -379px 0;
 }
 /* ############### end of footer ############## */
 
