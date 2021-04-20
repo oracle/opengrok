@@ -187,5 +187,5 @@ org.opengrok.indexer.web.QueryParameters"
 </div><%
     }
 }
-%>
 /* ---------------------- xref.jspf end --------------------- */
+%>
