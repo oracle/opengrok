@@ -56,7 +56,11 @@ org.opengrok.web.Scripts"
 <meta name="robots" content="noindex,nofollow" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="generator" content="{OpenGrok <%=Info.getVersion()%> (<%=Info.getRevision()%>)" />
-<link rel="icon" href="<%=styleDir%>/img/icon.png" type="image/png" />
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="<%=styleDir%>/img/favicon.svg">
+<link rel="mask-icon" href="<%=styleDir%>/img/mask-icon.svg" color="#000000">
+<link rel="apple-touch-icon" href="<%=styleDir%>/img/apple-touch-icon.png">
+<link rel="manifest" href="<%=styleDir%>/manifest.json">
 <link rel="stylesheet" type="text/css" media="all"
     title="Default" href="<%= dstyle %>" />
 <link rel="alternate stylesheet" type="text/css" media="all"
