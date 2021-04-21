@@ -33,11 +33,13 @@ See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
 ### 2. 1. Updating
 
-OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is x.y.z and change in any component is interpreted as:
+OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is *major.minor.micro* and change in any component is interpreted as:
 
- - x - major backwards incompatible update
- - y - full clean reindex of your repositories is needed (e. g. index format has changed)
- - z - redeploy web application
+ - major - major backwards incompatible update
+ - minor - full clean reindex of your repositories is needed (e. g. index format has changed)
+ - micro - redeploy web application
+
+Generally it is possible to go backward only within the micro version.
 
 ## 3. Information for developers
 
