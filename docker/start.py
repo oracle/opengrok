@@ -30,6 +30,9 @@ import threading
 import time
 from pathlib import Path
 from requests import get, ConnectionError
+from flask import Flask
+from flask_httpauth import HTTPTokenAuth
+from waitress import serve
 
 from opengrok_tools.utils.log import get_console_logger, \
     get_log_level, get_class_basename
@@ -61,6 +64,36 @@ OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_BASE_DIR, "etc",
                                     "configuration.xml")
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
+
+expected_token = None
+
+sleep_event = threading.Event()
+app = Flask(__name__)
+auth = HTTPTokenAuth(scheme='Bearer')
+
+
+@auth.verify_token
+def verify_token(token):
+    if expected_token is None:
+        return "yes"
+
+    if token is not None and token == expected_token:
+        return "yes"
+
+
+@app.route('/reindex')
+@auth.login_required
+def index():
+    # Signal the sync/indexer thread.
+    sleep_event.set()
+    sleep_event.clear()
+
+    return "Reindex triggered"
+
+
+def rest_function(logger, rest_port):
+    logger.info("Starting REST app on port {}".format(rest_port))
+    serve(app, host="0.0.0.0", port=rest_port)
 
 
 def set_url_root(logger, url_root):
@@ -230,7 +263,14 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
 
     wait_for_tomcat(logger, uri)
 
+    periodic_sync = True
+    if sync_period is None or sync_period == 0:
+        periodic_sync = False
+
     while True:
+        if not periodic_sync:
+            sleep_event.wait()
+
         indexer_options = ['-s', OPENGROK_SRC_ROOT,
                            '-d', OPENGROK_DATA_ROOT,
                            '-c', '/usr/local/bin/ctags',
@@ -246,9 +286,10 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
                           jar=OPENGROK_JAR, doprint=True)
         indexer.execute()
 
-        sleep_seconds = sync_period * 60
-        logger.info("Sleeping for {} seconds".format(sleep_seconds))
-        time.sleep(sleep_seconds)
+        if periodic_sync:
+            sleep_seconds = sync_period * 60
+            logger.info("Sleeping for {} seconds".format(sleep_seconds))
+            time.sleep(sleep_seconds)
 
 
 def project_syncer(logger, loglevel, uri, config_path, sync_period,
@@ -262,7 +303,14 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
 
     set_config_value(logger, 'projectsEnabled', 'true', uri)
 
+    periodic_sync = True
+    if sync_period is None or sync_period == 0:
+        periodic_sync = False
+
     while True:
+        if not periodic_sync:
+            sleep_event.wait()
+
         refresh_projects(logger, uri)
 
         if os.environ.get('OPENGROK_SYNC_YML'):  # debug only
@@ -298,9 +346,10 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
 
         save_config(logger, uri, config_path)
 
-        sleep_seconds = sync_period * 60
-        logger.info("Sleeping for {} seconds".format(sleep_seconds))
-        time.sleep(sleep_seconds)
+        if periodic_sync:
+            sleep_seconds = sync_period * 60
+            logger.info("Sleeping for {} seconds".format(sleep_seconds))
+            time.sleep(sleep_seconds)
 
 
 def create_bare_config(logger, extra_indexer_options=None):
@@ -333,6 +382,21 @@ def create_bare_config(logger, extra_indexer_options=None):
         raise Exception("Failed to create bare configuration")
 
 
+def get_num_from_env(logger, env_name, default_value):
+    value = default_value
+    env_str = os.environ.get(env_name)
+    if env_str:
+        try:
+            n = int(env_str)
+            if n >= 0:
+                value = n
+        except ValueError:
+            logger.error("{} is not a number: {}".
+                         format(env_name, env_str))
+
+    return value
+
+
 def main():
     log_level = os.environ.get('OPENGROK_LOG_LEVEL')
     if log_level:
@@ -347,17 +411,7 @@ def main():
     logger.debug("URI = {}".format(uri))
 
     # default period for syncing (in minutes)
-    sync_period = 10
-    sync_env = os.environ.get('SYNC_TIME_MINUTES')
-    if sync_env:
-        try:
-            n = int(sync_env)
-            if n >= 0:
-                sync_period = n
-        except ValueError:
-            logger.error("SYNC_TIME_MINUTES is not a number: {}".
-                         format(sync_env))
-
+    sync_period = get_num_from_env(logger, 'SYNC_TIME_MINUTES', 10)
     if sync_period == 0:
         logger.info("synchronization disabled")
     else:
@@ -390,34 +444,36 @@ def main():
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
         create_bare_config(logger, extra_indexer_options.split())
 
-    if sync_period > 0:
-        if use_projects:
-            num_workers = multiprocessing.cpu_count()
-            workers_env = os.environ.get('WORKERS')
-            if workers_env:
-                try:
-                    n = int(workers_env)
-                    if n > 0:
-                        num_workers = n
-                except ValueError:
-                    logger.error("WORKERS is not a number: {}".
-                                 format(workers_env))
+    if use_projects:
+        num_workers = get_num_from_env(logger, 'WORKERS',
+                                       multiprocessing.cpu_count())
+        logger.info('Number of sync workers: {}'.format(num_workers))
 
-            logger.info('Number of sync workers: {}'.format(num_workers))
+        worker_function = project_syncer
+        syncer_args = (logger, log_level, uri,
+                       OPENGROK_CONFIG_FILE,
+                       sync_period, num_workers, env)
+    else:
+        worker_function = indexer_no_projects
+        syncer_args = (logger, uri, OPENGROK_CONFIG_FILE, sync_period,
+                       extra_indexer_options)
 
-            worker_function = project_syncer
-            syncer_args = (logger, log_level, uri,
-                           OPENGROK_CONFIG_FILE,
-                           sync_period, num_workers, env)
-        else:
-            worker_function = indexer_no_projects
-            syncer_args = (logger, uri, OPENGROK_CONFIG_FILE, sync_period,
-                           extra_indexer_options)
+    logger.debug("Starting sync thread")
+    thread = threading.Thread(target=worker_function, name="Sync thread",
+                              args=syncer_args)
+    thread.start()
 
-        logger.debug("Starting sync thread")
-        thread = threading.Thread(target=worker_function, name="Sync thread",
-                                  args=syncer_args)
-        thread.start()
+    rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
+    token = os.environ.get('REST_TOKEN')
+    global expected_token
+    if token:
+        logger.debug("Setting expected token for REST endpoint"
+                     "on port {} to '{}'".format(rest_port, token))
+        expected_token = token
+    logger.debug("Starting REST thread")
+    thread = threading.Thread(target=rest_function, name="REST thread",
+                              args=(logger, rest_port))
+    thread.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
