@@ -6,6 +6,34 @@ body {
     margin: 0;
 }
 
+@font-face {
+    font-family: "JetBrainsMono";
+    src: url("./font/JetBrainsMono-Regular.woff2");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "JetBrainsMono";
+    src: url("./font/JetBrainsMono-Bold.woff2");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "JetBrainsMono";
+    src: url("./font/JetBrainsMono-Italic.woff2");
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "JetBrainsMono";
+    src: url("./font/JetBrainsMono-BoldItalic.woff2");
+    font-weight: bold;
+    font-style: italic;
+}
+
 a {
     text-decoration: none;
 }
@@ -102,7 +130,10 @@ label {
 
 .pre { /* the diff content */
     white-space: pre-wrap;
-    font-family: monospace;
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
+    line-height: 1.5;
     margin: 0;
 }
 
@@ -303,7 +334,9 @@ html.diff #whole_header {
 }
 
 #Masthead {
-    font-family: monospace; /* ala <kbd> */
+    font-family: JetBrainsMono, monospace; /* ala <kbd> */
+    font-size: 13px;
+    font-variant-ligatures: none;
     clear: left;
     margin-bottom: 1ex;
     margin-left: 1ex;
@@ -538,7 +571,9 @@ table#revisions {
 
 #revisions td:first-child {
     /* rev number - git/mercurial revs numbers look bad with prop. fonts */
-    font-family: monospace;
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
     text-align: right;
 }
 
@@ -550,7 +585,9 @@ table#revisions {
 
 #revisions td > div {
     /* modified file list in comment column */
-    font-family: monospace;
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
     text-align: left;
     float: left;
 }
@@ -682,7 +719,9 @@ table#revisions tbody tr td p {
 
 /* directory listing */
 table#dirlist { /* the "Name" column */
-    font-family: monospace;
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
     border-style: none;
     border-collapse: collapse;
 }
@@ -733,7 +772,17 @@ div[id^='src'] {
 }
 
 div[id^='src'] pre {
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
+    line-height: 1.5;
     margin: 0;
+}
+
+#more pre {
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
 }
 
 /* hidden line number/annotation block */
@@ -787,7 +836,7 @@ div[id^='src'] .n  { /* numbers/label      */ color: #a52a2a;                   
 div[id^='src'] .s  { /* strings            */ color: green;                                             }
 div[id^='src'] .c  { /* comment            */ color: #666;                                              }
 div[id^='src'] .b  { /* heading/title/bold */ color: #000;       font-weight: bold;                     }
-div[id^='src'] .k  { /* block display      */ color: #000;       font-family: monospace;                }
+div[id^='src'] .k  { /* block display      */ color: #000;                                              }
 div[id^='src'] a.d { /* symbol definition  */ color: #909;       font-weight: bold;                     }
 
 a.xlbl           { /* label              */ color: red;       font-weight: bold; background-color: yellow }
@@ -841,8 +890,9 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 
 .window {
     position: fixed;
+    font-family: JetBrainsMono, monospace;
     font-size: 12px;
-    font-family: monospace;
+    font-variant-ligatures: none;
     overflow: hidden;
     z-index: 10;
 }
@@ -1024,7 +1074,10 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 #results .con { /* 3rd column: line number + matched line contents */
-    font-size: small;
+    font-family: JetBrainsMono, monospace;
+    font-size: 13px;
+    font-variant-ligatures: none;
+    line-height: 1.5;
 }
 
 #results .con .all {

@@ -45,7 +45,7 @@ org.opengrok.web.Scripts"
     PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
-    String dstyle = styleDir + '/' + "style-1.0.1.min.css";
+    String dstyle = styleDir + '/' + "style-1.0.2.min.css";
     String pstyle = styleDir + '/' + "print-1.0.1.min.css";
     String mstyle = styleDir + '/' + "mandoc-1.0.0.min.css";
 %><!DOCTYPE html>
