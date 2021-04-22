@@ -55,6 +55,9 @@ RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
 
 RUN python3 -m pip install /opengrok/tools/opengrok-tools*
 
+# for /reindex REST endpoint handled by start.py
+RUN python3 -m pip install Flask Flask-HTTPAuth waitress
+
 # environment variables
 ENV SRC_ROOT /opengrok/src
 ENV DATA_ROOT /opengrok/data
