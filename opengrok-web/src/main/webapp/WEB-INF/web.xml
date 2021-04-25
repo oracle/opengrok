@@ -47,11 +47,17 @@
             <param-value>max-age=86400</param-value>
         </init-param>
     </filter>
+    <filter>
+        <filter-name>ExpiresOneYearFilter</filter-name>
+        <filter-class>org.opengrok.web.ResponseHeaderFilter</filter-class>
+        <init-param>
+            <param-name>Cache-Control</param-name>
+            <param-value>max-age=31536000</param-value>
+        </init-param>
+    </filter>
     <filter-mapping>
         <filter-name>ExpiresOneDayFilter</filter-name>
-        <url-pattern>/default/*</url-pattern>
-        <url-pattern>/js/*</url-pattern>
-        <url-pattern>/webjars/*</url-pattern>
+        <url-pattern>/manifest.json</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <filter-mapping>
@@ -63,6 +69,13 @@
         <url-pattern>/error</url-pattern>
         <url-pattern>/enoent</url-pattern>
         <url-pattern>/eforbidden</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>ExpiresOneYearFilter</filter-name>
+        <url-pattern>/default/*</url-pattern>
+        <url-pattern>/js/*</url-pattern>
+        <url-pattern>/webjars/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <filter>

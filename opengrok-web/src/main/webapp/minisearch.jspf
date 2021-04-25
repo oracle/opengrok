@@ -97,7 +97,7 @@ org.opengrok.indexer.web.Util"%><%
 	<%
     }
         %><li><input type="text" id="search" name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
-                  class="q" /></li>
+                  class="q" aria-label="Search"/></li>
             <li><input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();

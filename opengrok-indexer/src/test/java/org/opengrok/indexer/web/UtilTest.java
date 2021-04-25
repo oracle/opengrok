@@ -389,6 +389,7 @@ public class UtilTest {
         assertTrue(Util.linkify("https://example.com", true).contains("target=\"_blank\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2", true).contains("target=\"_blank\""));
         assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("target=\"_blank\""));
+        assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("rel=\"noreferrer\""));
 
         assertFalse(Util.linkify("http://www.example.com", false).contains("target=\"_blank\""));
         assertFalse(Util.linkify("https://example.com", false).contains("target=\"_blank\""));
@@ -467,26 +468,29 @@ public class UtilTest {
         String expected
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per "
-                + "<a href=\"http://www.example.com?bug=12345698\" target=\"_blank\">12345698</a> ut labore et dolore magna "
+                + "<a href=\"http://www.example.com?bug=12345698\" rel=\"noreferrer\" target=\"_blank\">12345698</a>"
+                + " ut labore et dolore magna "
                 + "aliqua. bug3333fff Ut enim ad minim veniam, quis nostrud exercitation "
                 + "ullamco laboris nisi ut aliquip ex ea introduced in "
-                + "<a href=\"http://www.example.com?bug=9791216541\" target=\"_blank\">9791216541</a> commodo consequat. "
+                + "<a href=\"http://www.example.com?bug=9791216541\" rel=\"noreferrer\" target=\"_blank\">9791216541</a>"
+                + " commodo consequat. "
                 + "Duis aute irure dolor in reprehenderit in voluptate velit "
                 + "esse cillum dolore eu fixes "
-                + "<a href=\"http://www.example.com?bug=132469187\" target=\"_blank\">132469187</a> fugiat nulla pariatur. Excepteur sint "
+                + "<a href=\"http://www.example.com?bug=132469187\" rel=\"noreferrer\" target=\"_blank\">132469187</a>"
+                + " fugiat nulla pariatur. Excepteur sint "
                 + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
         String expected2
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
                 + "aliqua. "
-                + "<a href=\"http://www.other-example.com?bug=3333\" target=\"_blank\">bug3333fff</a>"
+                + "<a href=\"http://www.other-example.com?bug=3333\" rel=\"noreferrer\" target=\"_blank\">bug3333fff</a>"
                 + " Ut enim ad minim veniam, quis nostrud exercitation "
                 + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
                 + "Duis aute irure dolor in reprehenderit in voluptate velit "
                 + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
                 + "occaecat "
-                + "<a href=\"http://www.other-example.com?bug=6478\" target=\"_blank\">bug6478abc</a>"
+                + "<a href=\"http://www.other-example.com?bug=6478\" rel=\"noreferrer\" target=\"_blank\">bug6478abc</a>"
                 + " cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
 

@@ -1072,8 +1072,9 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 @font-face {
+    font-display: swap;
     font-family: SunSans;
-    src: url('./font/SunSansRegular.woff2');
+    src: url('./font/SunSansRegular.woff2') format('woff2');
 }
 
 .link-no-decoration {

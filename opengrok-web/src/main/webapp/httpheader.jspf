@@ -45,7 +45,7 @@ org.opengrok.web.Scripts"
     PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
-    String dstyle = styleDir + '/' + "style-1.0.1.min.css";
+    String dstyle = styleDir + '/' + "style-1.0.2.min.css";
     String pstyle = styleDir + '/' + "print-1.0.1.min.css";
     String mstyle = styleDir + '/' + "mandoc-1.0.0.min.css";
 %><!DOCTYPE html>
@@ -60,7 +60,8 @@ org.opengrok.web.Scripts"
 <link rel="icon" href="<%=styleDir%>/img/favicon.svg">
 <link rel="mask-icon" href="<%=styleDir%>/img/mask-icon.svg" color="#000000">
 <link rel="apple-touch-icon" href="<%=styleDir%>/img/apple-touch-icon.png">
-<link rel="manifest" href="<%=styleDir%>/manifest.json">
+<link rel="manifest" href="<%=ctxPath%>/manifest.json">
+<link rel="preload" href="<%=styleDir%>/font/SunSansRegular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" type="text/css" media="all"
     title="Default" href="<%= dstyle %>" />
 <link rel="alternate stylesheet" type="text/css" media="all"
