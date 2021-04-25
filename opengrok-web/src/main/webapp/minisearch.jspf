@@ -80,7 +80,7 @@ org.opengrok.indexer.web.Util"%><%
               <span id="line"></span>Line#</a></li>
           <li><a href="#" class="scopes-toggle"
             title="Show or hide scopes window.">
-              <span id="line"><%-- TODO: give its own id --%></span>Scopes#</a></li>
+              <span id="scopes"></span>Scopes#</a></li>
         <li><a href="#" id="navigate"
             title="Show or hide symbol list.">
               <span id="defbox"></span>Navigate#</a></li><%
