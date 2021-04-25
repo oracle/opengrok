@@ -29,28 +29,26 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
-public class LdapServerTest {
+class LdapServerTest {
 
     @Test
-    public void testInvalidURI() {
+    void testInvalidURI() {
         LdapServer server = new LdapServer("foo:/\\/\\foo.bar");
         assertFalse(server.isReachable());
     }
 
     @Test
-    public void testGetPort() throws URISyntaxException {
+    void testGetPort() throws URISyntaxException {
         LdapServer server = new LdapServer("ldaps://foo.bar");
         assertEquals(636, server.getPort());
 
@@ -62,7 +60,7 @@ public class LdapServerTest {
     }
 
     @Test
-    public void testSetGetUsername() {
+    void testSetGetUsername() {
         LdapServer server = new LdapServer();
 
         assertNull(server.getUsername());
@@ -78,47 +76,21 @@ public class LdapServerTest {
     }
 
     @Test
-    public void testIsReachablePositive() throws IOException, InterruptedException, URISyntaxException {
+    void testIsReachablePositive() throws IOException, URISyntaxException {
         // Start simple TCP server on test port.
         InetAddress loopbackAddress = InetAddress.getLoopbackAddress();
         try (ServerSocket serverSocket = new ServerSocket(0, 1)) {
-            Thread thread = new Thread(() -> {
-                try {
-                    while (true) {
-                        Socket client = serverSocket.accept();
-                        client.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
             int testPort = serverSocket.getLocalPort();
-            thread.start();
-            Socket socket = null;
-            for (int i = 0; i < 3; i++) {
-                try {
-                    socket = new Socket(loopbackAddress, testPort);
-                } catch (IOException e) {
-                    Thread.sleep(1000);
-                }
-            }
-
-            assertNotNull(socket);
-            assertTrue(socket.isConnected());
 
             // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
             LdapServer server = new LdapServer("ldaps://foo.bar.com");
             LdapServer serverSpy = Mockito.spy(server);
-            Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{loopbackAddress});
+            doReturn(new InetAddress[] {loopbackAddress}).when(serverSpy).getAddresses(any());
             doReturn(testPort).when(serverSpy).getPort();
 
             // Test reachability.
             boolean reachable = serverSpy.isReachable();
             assertTrue(reachable);
-
-            thread.interrupt();
-            thread.join(5000);
         }
     }
 
@@ -129,7 +101,7 @@ public class LdapServerTest {
         // Mock getAddresses() to return single localhost IP address and getPort() to return the test port.
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
         LdapServer serverSpy = Mockito.spy(server);
-        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{loopbackAddress});
+        doReturn(new InetAddress[]{loopbackAddress}).when(serverSpy).getAddresses(any());
         // port 0 should not be reachable.
         doReturn(0).when(serverSpy).getPort();
 
@@ -137,15 +109,15 @@ public class LdapServerTest {
     }
 
     @Test
-    public void testEmptyAddressArray() throws UnknownHostException {
+    void testEmptyAddressArray() throws UnknownHostException {
         LdapServer server = new LdapServer("ldaps://foo.bar.com");
         LdapServer serverSpy = Mockito.spy(server);
-        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{});
+        doReturn(new InetAddress[]{}).when(serverSpy).getAddresses(any());
         assertFalse(serverSpy.isReachable());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         LdapServer server = new LdapServer("ldaps://foo.bar.com", "foo", "bar");
         server.setConnectTimeout(2000);
         server.setReadTimeout(1000);
