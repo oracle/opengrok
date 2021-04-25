@@ -34,9 +34,9 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class WebHookTest extends JerseyTest {
+class WebHookTest extends JerseyTest {
     private static final String PREFIX = "service";
     private static int requests;
 
@@ -65,7 +65,7 @@ public class WebHookTest extends JerseyTest {
     }
 
     @Test
-    public void testPost() throws ExecutionException, InterruptedException {
+    void testPost() throws ExecutionException, InterruptedException {
         assertEquals(0, requests);
         WebHook hook = new WebHook(getBaseUri() + PREFIX, "{}");
         Future<String> future = hook.post();

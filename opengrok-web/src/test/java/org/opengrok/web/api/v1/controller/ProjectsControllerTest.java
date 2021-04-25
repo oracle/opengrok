@@ -31,8 +31,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
@@ -73,8 +74,9 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
+@ExtendWith(MockitoExtension.class)
 @EnabledForRepository({MERCURIAL, GIT, SUBVERSION})
-public class ProjectsControllerTest extends OGKJerseyTest {
+class ProjectsControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -85,7 +87,6 @@ public class ProjectsControllerTest extends OGKJerseyTest {
 
     @Override
     protected Application configure() {
-        MockitoAnnotations.initMocks(this);
         return new ResourceConfig(ProjectsController.class)
                 .register(new AbstractBinder() {
                     @Override
@@ -123,7 +124,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAddInherit() {
+    void testAddInherit() {
         assertTrue(env.getRepositories().isEmpty());
         assertTrue(env.getProjects().isEmpty());
         assertTrue(env.isHandleHistoryOfRenamedFiles());
@@ -149,7 +150,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
      * from configuration. Ideally, this should test all properties of Project.
      */
     @Test
-    public void testAdd() throws Exception {
+    void testAdd() throws Exception {
         assertTrue(env.getRepositories().isEmpty());
         assertTrue(env.getProjects().isEmpty());
 
@@ -223,7 +224,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
      * the repository list is refreshed.
      */
     @Test
-    public void testRepositoryRefresh() throws Exception {
+    void testRepositoryRefresh() throws Exception {
         addProject("mercurial");
 
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
@@ -252,7 +253,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
      * the delete handling performs removal of the index data.
      */
     @Test
-    public void testDelete() throws Exception {
+    void testDelete() throws Exception {
         String[] projectsToDelete = {"git", "svn"};
 
         // Add a group matching the project to be added.
@@ -347,7 +348,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testIndexed() throws IOException {
+    void testIndexed() throws IOException {
         String projectName = "mercurial";
 
         // When a project is added, it should be marked as not indexed.
@@ -405,7 +406,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testList() {
+    void testList() {
         addProject("mercurial");
         markIndexed("mercurial");
 
@@ -432,7 +433,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetReposForNonExistentProject() throws Exception {
+    void testGetReposForNonExistentProject() throws Exception {
         GenericType<List<String>> type = new GenericType<>() {
         };
 
@@ -447,7 +448,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetRepos() throws Exception {
+    void testGetRepos() throws Exception {
         GenericType<List<String>> type = new GenericType<>() {
         };
 
@@ -489,7 +490,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testSetGet() throws Exception {
+    void testSetGet() throws Exception {
         assertTrue(env.isHandleHistoryOfRenamedFiles());
         String[] projects = new String[] {"mercurial", "git"};
 
@@ -537,7 +538,7 @@ public class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testListFiles() throws IOException, IndexerException {
+    void testListFiles() throws IOException, IndexerException {
         final String projectName = "mercurial";
         GenericType<List<String>> type = new GenericType<>() {
         };

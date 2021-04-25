@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.AssertionFailedError;
 import opengrok.auth.plugin.ldap.LdapServer;
 import opengrok.auth.plugin.util.WebHook;
 import opengrok.auth.plugin.util.WebHooks;
@@ -49,10 +48,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author Krystof Tulinger
  */
-public class ConfigurationTest {
+class ConfigurationTest {
 
     @Test
-    public void testEncodeDecode() {
+    void testEncodeDecode() {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
@@ -80,11 +79,7 @@ public class ConfigurationTest {
 
         // verify that the write didn't fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
-            // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError( "Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -97,11 +92,7 @@ public class ConfigurationTest {
         dec.close();
         // verify that the read didn't fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
-            // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError( "Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
     }
 

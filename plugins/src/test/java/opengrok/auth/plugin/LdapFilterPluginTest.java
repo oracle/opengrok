@@ -30,10 +30,10 @@ import opengrok.auth.plugin.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LdapFilterPluginTest {
+class LdapFilterPluginTest {
 
     private LdapFilterPlugin plugin;
 
@@ -43,7 +43,7 @@ public class LdapFilterPluginTest {
     }
 
     @Test
-    public void expandFilterTest1() {
+    void expandFilterTest1() {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList("james@bond")));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("bondjame")));
@@ -70,7 +70,7 @@ public class LdapFilterPluginTest {
     }
 
     @Test
-    public void expandFilterTest2() {
+    void expandFilterTest2() {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList("james@bond")));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("bondjame")));
@@ -100,12 +100,12 @@ public class LdapFilterPluginTest {
     }
 
     @Test
-    public void testLoadTransforms() {
+    void testLoadTransforms() {
         plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase");
     }
 
     @Test
-    public void testLoadTransformsNegative() {
+    void testLoadTransformsNegative() {
         assertThrows(UnsupportedOperationException.class, () -> plugin.loadTransforms("foo:toUpperCase,ugly:nice"));
     }
 }
