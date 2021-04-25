@@ -1507,6 +1507,7 @@ public final class Util {
                 attrs.put("title", String.format("Link to %s", Util.encode(url)));
                 if (newTab) {
                     attrs.put("target", "_blank");
+                    attrs.put("rel", "noreferrer");
                 }
                 return buildLink(url, attrs);
             } catch (URISyntaxException | MalformedURLException ex) {
@@ -1587,6 +1588,7 @@ public final class Util {
         attrs.put("href", url);
         if (newTab) {
             attrs.put("target", "_blank");
+            attrs.put("rel", "noreferrer");
         }
         return buildLink(name, attrs);
     }

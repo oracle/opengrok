@@ -291,6 +291,7 @@ document.domReady.push(function() {domReadyHistory();});
                 </a></td>
             <td><%
                 %><input type="radio"
+                        aria-label="From"
                         data-revision-1="<%= (start + count) %>"
                         data-revision-2="<%= revision2 %>"
                         data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
@@ -308,6 +309,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %>/><%
 
                 %><input type="radio"
+                        aria-label="To"
                         data-revision-1="<%= revision1 %>"
                         data-revision-2="<%= (start + count) %>"
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"

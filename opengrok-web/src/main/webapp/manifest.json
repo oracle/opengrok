@@ -2,10 +2,12 @@
   "name": "OpenGrok - a wicked fast source browser",
   "short_name": "OpenGrok",
   "icons": [{
-    "src": "./img/google-touch-icon.png",
-    "sizes": "512x512"
+    "src": "./default/img/google-touch-icon.png",
+    "sizes": "512x512",
+    "purpose": "any maskable"
   }],
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "display": "fullscreen"
+  "display": "fullscreen",
+  "start_url": "./"
 }
