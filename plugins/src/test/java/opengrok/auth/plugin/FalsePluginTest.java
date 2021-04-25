@@ -30,12 +30,12 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.util.RandomString;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Represents a container for tests of {@link FalsePlugin}.
  */
-public class FalsePluginTest {
+class FalsePluginTest {
 
     private FalsePlugin plugin;
 
@@ -45,40 +45,40 @@ public class FalsePluginTest {
     }
 
     @Test
-    public void shouldNotThrowOnLoadIfNullArgument() {
+    void shouldNotThrowOnLoadIfNullArgument() {
         plugin.load(null);
     }
 
     @Test
-    public void shouldUnload() {
+    void shouldUnload() {
         plugin.unload();
     }
 
     @Test
-    public void shouldNotAllowRandomUserForAnyProject() {
+    void shouldNotAllowRandomUserForAnyProject() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomString.generateUpper(8)));
 
         Project randomProject = new Project(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow rando for random project 1", projectAllowed);
+        assertFalse(projectAllowed, "should not allow rando for random project 1");
 
         randomProject = new Project(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertFalse("should not allow rando for random project 2", projectAllowed);
+        assertFalse(projectAllowed, "should not allow rando for random project 2");
     }
 
     @Test
-    public void shouldNotAllowRandomUserForAnyGroup() {
+    void shouldNotAllowRandomUserForAnyGroup() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomString.generateUpper(8)));
 
         Group randomGroup = new Group(RandomString.generateUpper(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow rando for random group 1", projectAllowed);
+        assertFalse(projectAllowed, "should not allow rando for random group 1");
 
         randomGroup = new Group(RandomString.generateUpper(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertFalse("should not allow rando for random group 2", projectAllowed);
+        assertFalse(projectAllowed, "should not allow rando for random group 2");
     }
 }
