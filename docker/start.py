@@ -458,15 +458,17 @@ def main():
         out_file = None
         with tempfile.NamedTemporaryFile(mode='w+', delete=False,
                                          prefix='merged_config') as tmp_out:
+            out_file = tmp_out.name
             merge_config_files(read_only_config_file, OPENGROK_CONFIG_FILE,
                                tmp_out, jar=OPENGROK_JAR, loglevel=log_level)
-            out_file = tmp_out.name
 
         if out_file and os.path.getsize(out_file) > 0:
             shutil.move(tmp_out.name, OPENGROK_CONFIG_FILE)
         else:
             logger.warning('Failed to merge read-only configuration, '
                            'leaving the original in place')
+            if out_file:
+                os.remove(out_file)
 
     if use_projects:
         num_workers = get_num_from_env(logger, 'WORKERS',
