@@ -270,9 +270,6 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
         periodic_sync = False
 
     while True:
-        if not periodic_sync:
-            sleep_event.wait()
-
         indexer_options = ['-s', OPENGROK_SRC_ROOT,
                            '-d', OPENGROK_DATA_ROOT,
                            '-c', '/usr/local/bin/ctags',
@@ -292,6 +289,8 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
             sleep_seconds = sync_period * 60
             logger.info("Sleeping for {} seconds".format(sleep_seconds))
             time.sleep(sleep_seconds)
+        elif not periodic_sync:
+            sleep_event.wait()
 
 
 def project_syncer(logger, loglevel, uri, config_path, sync_period,
@@ -310,9 +309,6 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
         periodic_sync = False
 
     while True:
-        if not periodic_sync:
-            sleep_event.wait()
-
         refresh_projects(logger, uri)
 
         if os.environ.get('OPENGROK_SYNC_YML'):  # debug only
@@ -352,6 +348,8 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
             sleep_seconds = sync_period * 60
             logger.info("Sleeping for {} seconds".format(sleep_seconds))
             time.sleep(sleep_seconds)
+        elif not periodic_sync:
+            sleep_event.wait()
 
 
 def create_bare_config(logger, extra_indexer_options=None):
@@ -412,10 +410,9 @@ def main():
     logger.debug("URL_ROOT = {}".format(url_root))
     logger.debug("URI = {}".format(uri))
 
-    # default period for syncing (in minutes)
     sync_period = get_num_from_env(logger, 'SYNC_PERIOD_MINUTES', 10)
     if sync_period == 0:
-        logger.info("synchronization disabled")
+        logger.info("periodic synchronization disabled")
     else:
         logger.info("synchronization period = {} minutes".format(sync_period))
 
