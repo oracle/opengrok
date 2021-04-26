@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import argparse
@@ -37,6 +37,41 @@ from .utils.exitvals import (
 """
 
 
+def merge_config_files(read_only, current, out_file, jar,
+                       loglevel=logging.INFO):
+
+    return config_merge_wrapper([read_only, current], jar=jar,
+                                out_file=out_file, loglevel=loglevel)
+
+
+def config_merge_wrapper(options, loglevel=logging.INFO,
+                         jar=None, java=None, java_opts=None,
+                         doprint=False, out_file=None):
+
+    # Avoid using utils.log.get_console_level() since the stdout of the program
+    # is interpreted as data.
+    logger = logging.getLogger(__name__)
+    logger.setLevel(loglevel)
+
+    cmd = Java(options, classpath=jar, java=java,
+               java_opts=java_opts, redirect_stderr=False,
+               main_class='org.opengrok.indexer.configuration.ConfigMerge',
+               logger=logger, doprint=doprint)
+    cmd.execute()
+    ret = cmd.getretcode()
+    if ret is None or ret != SUCCESS_EXITVAL:
+        logger.error(cmd.geterroutput())
+        logger.error("command failed (return code {})".format(ret))
+        return FAILURE_EXITVAL
+    else:
+        if out_file:
+            out_file.write(cmd.getoutputstr())
+        else:
+            print(cmd.getoutputstr())
+
+    return SUCCESS_EXITVAL
+
+
 def main():
     parser = argparse.ArgumentParser(description='Java wrapper for project '
                                                  'configuration merging',
@@ -47,24 +82,10 @@ def main():
     except ValueError as e:
         fatal(e)
 
-    # Avoid using utils.log.get_console_level() since the stdout of the program
-    # is interpreted as data.
-    logger = logging.getLogger(__name__)
-    logger.setLevel(args.loglevel)
-
-    cmd = Java(args.options, classpath=args.jar, java=args.java,
-               java_opts=args.java_opts, redirect_stderr=False,
-               main_class='org.opengrok.indexer.configuration.ConfigMerge',
-               logger=logger, doprint=args.doprint)
-    cmd.execute()
-    ret = cmd.getretcode()
-    if ret is None or ret != SUCCESS_EXITVAL:
-        logger.error(cmd.geterroutput())
-        logger.error("command failed (return code {})".format(ret))
-        sys.exit(FAILURE_EXITVAL)
-    else:
-        print(cmd.getoutputstr())
+    return config_merge_wrapper(options=args.options, loglevel=args.loglevel,
+                                jar=args.jar, java=args.java,
+                                java_opts=args.java_opts, doprint=args.doprint)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

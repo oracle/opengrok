@@ -83,6 +83,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 `AVOID_PROJECTS` | empty | run in project less configuration. Set to non empty value disables projects.
 `REST_PORT` | 5000 | TCP port where simple REST app listens for GET requests on `/reindex` to trigger manual reindex.
 `REST_TOKEN` | None | if set, the REST app will require this token as Bearer token in order to trigger reindex.
+`READONLY_CONFIG_FILE` | None | if set, the configuration will be merged with configuration from this file. This is run when the container starts.
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e SYNC_PERIOD_MINUTES=30`
 

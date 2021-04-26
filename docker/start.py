@@ -26,6 +26,7 @@ import logging
 import multiprocessing
 import shutil
 import subprocess
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -39,6 +40,7 @@ from opengrok_tools.utils.log import get_console_logger, \
 from opengrok_tools.deploy import deploy_war
 from opengrok_tools.utils.indexer import Indexer
 from opengrok_tools.sync import do_sync
+from opengrok_tools.config_merge import merge_config_files
 from opengrok_tools.utils.opengrok import list_projects, \
     add_project, delete_project, get_configuration, set_config_value
 from opengrok_tools.utils.readconfig import read_config
@@ -443,6 +445,28 @@ def main():
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
         create_bare_config(logger, extra_indexer_options.split())
+
+    #
+    # If there is read-only configuration file, merge it with current
+    # configuration.
+    #
+    read_only_config_file = os.environ.get('READONLY_CONFIG_FILE')
+    if read_only_config_file and os.path.exists(read_only_config_file):
+        logger.info('Merging read-only configuration from \'{}\' with current '
+                    'configuration in \'{}\''.format(read_only_config_file,
+                                                     OPENGROK_CONFIG_FILE))
+        out_file = None
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False,
+                                         prefix='merged_config') as tmp_out:
+            merge_config_files(read_only_config_file, OPENGROK_CONFIG_FILE,
+                               tmp_out, jar=OPENGROK_JAR, loglevel=log_level)
+            out_file = tmp_out.name
+
+        if out_file and os.path.getsize(out_file) > 0:
+            shutil.move(tmp_out.name, OPENGROK_CONFIG_FILE)
+        else:
+            logger.warning('Failed to merge read-only configuration, '
+                           'leaving the original in place')
 
     if use_projects:
         num_workers = get_num_from_env(logger, 'WORKERS',
