@@ -413,7 +413,7 @@ def main():
     logger.debug("URI = {}".format(uri))
 
     # default period for syncing (in minutes)
-    sync_period = get_num_from_env(logger, 'SYNC_TIME_MINUTES', 10)
+    sync_period = get_num_from_env(logger, 'SYNC_PERIOD_MINUTES', 10)
     if sync_period == 0:
         logger.info("synchronization disabled")
     else:

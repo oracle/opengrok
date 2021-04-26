@@ -75,7 +75,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 
 | Docker Environment Var. | Default value | Description |
 | ----------------------- | ------------- | ----------- |
-`SYNC_TIME_MINUTES` | 10 | Period of automatic synchronization (i.e. mirroring + reindexing) in minutes. Setting to `0` will disable automatic syncing.
+`SYNC_PERIOD_MINUTES` | 10 | Period of automatic synchronization (i.e. mirroring + reindexing) in minutes. Setting to `0` will disable automatic syncing.
 `INDEXER_OPT` | empty | pass **extra** options to OpenGrok Indexer. The default set of indexer options is: `--remote on -P -H -W`. For example, `-i d:vendor` will remove all the `*/vendor/*` files from the index. You can check the indexer options on https://github.com/oracle/opengrok/wiki/Python-scripts-transition-guide
 `NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
 `URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
