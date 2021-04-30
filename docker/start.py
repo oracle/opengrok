@@ -487,7 +487,6 @@ def main():
                        extra_indexer_options)
 
     logger.debug("Starting sync thread")
-    global sync_thread
     sync_thread = threading.Thread(target=worker_function, name="Sync thread",
                                    args=syncer_args, daemon=True)
     sync_thread.start()
@@ -500,7 +499,6 @@ def main():
                      "on port {} to '{}'".format(rest_port, token))
         expected_token = token
     logger.debug("Starting REST thread")
-    global rest_thread
     rest_thread = threading.Thread(target=rest_function, name="REST thread",
                                    args=(logger, rest_port), daemon=True)
     rest_thread.start()
