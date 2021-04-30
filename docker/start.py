@@ -26,6 +26,7 @@ import logging
 import multiprocessing
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -207,6 +208,9 @@ def refresh_projects(logger, uri):
     Ensure each immediate source root subdirectory is a project.
     """
     webapp_projects = list_projects(logger, uri)
+    if not webapp_projects:
+        return
+
     logger.debug('Projects from the web app: {}'.format(webapp_projects))
     src_root = OPENGROK_SRC_ROOT
 
@@ -321,28 +325,29 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
             raise Exception("no sync config")
 
         projects = list_projects(logger, uri)
-        #
-        # The driveon=True is needed for the initial indexing of newly
-        # added project, otherwise the incoming check in the opengrok-mirror
-        # program would short circuit it.
-        #
-        if env:
-            logger.info('Merging commands with environment')
-            commands = merge_commands_env(config["commands"], env)
-            logger.debug(config['commands'])
-        else:
-            commands = config["commands"]
+        if projects:
+            #
+            # The driveon=True is needed for the initial indexing of newly
+            # added project, otherwise the incoming check in the
+            # opengrok-mirror program would short circuit it.
+            #
+            if env:
+                logger.info('Merging commands with environment')
+                commands = merge_commands_env(config["commands"], env)
+                logger.debug(config['commands'])
+            else:
+                commands = config["commands"]
 
-        logger.info("Sync starting")
-        do_sync(loglevel, commands, config.get('cleanup'),
-                projects, config.get("ignore_errors"), uri,
-                numworkers, driveon=True, logger=logger, print_output=True)
-        logger.info("Sync done")
+            logger.info("Sync starting")
+            do_sync(loglevel, commands, config.get('cleanup'),
+                    projects, config.get("ignore_errors"), uri,
+                    numworkers, driveon=True, logger=logger, print_output=True)
+            logger.info("Sync done")
 
-        # Workaround for https://github.com/oracle/opengrok/issues/1670
-        Path(os.path.join(OPENGROK_DATA_ROOT, 'timestamp')).touch()
+            # Workaround for https://github.com/oracle/opengrok/issues/1670
+            Path(os.path.join(OPENGROK_DATA_ROOT, 'timestamp')).touch()
 
-        save_config(logger, uri, config_path)
+            save_config(logger, uri, config_path)
 
         if periodic_sync:
             sleep_seconds = sync_period * 60
@@ -482,9 +487,10 @@ def main():
                        extra_indexer_options)
 
     logger.debug("Starting sync thread")
-    thread = threading.Thread(target=worker_function, name="Sync thread",
-                              args=syncer_args)
-    thread.start()
+    global sync_thread
+    sync_thread = threading.Thread(target=worker_function, name="Sync thread",
+                                   args=syncer_args, daemon=True)
+    sync_thread.start()
 
     rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
     token = os.environ.get('REST_TOKEN')
@@ -494,14 +500,26 @@ def main():
                      "on port {} to '{}'".format(rest_port, token))
         expected_token = token
     logger.debug("Starting REST thread")
-    thread = threading.Thread(target=rest_function, name="REST thread",
-                              args=(logger, rest_port))
-    thread.start()
+    global rest_thread
+    rest_thread = threading.Thread(target=rest_function, name="REST thread",
+                                   args=(logger, rest_port), daemon=True)
+    rest_thread.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
-    subprocess.run([os.path.join(tomcat_root, 'bin', 'catalina.sh'), 'run'])
+    global tomcat_popen
+    tomcat_popen = subprocess.Popen([os.path.join(tomcat_root, 'bin',
+                                                  'catalina.sh'),
+                                    'run'])
+    tomcat_popen.wait()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        global tomcat_popen
+        print("Terminating Tomcat {}".format(tomcat_popen))
+        tomcat_popen.terminate()
+
+        sys.exit(1)
