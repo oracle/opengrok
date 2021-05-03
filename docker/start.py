@@ -402,6 +402,32 @@ def get_num_from_env(logger, env_name, default_value):
     return value
 
 
+def check_index_and_wipe_out(logger):
+    """
+    Check index by running the indexer. If the index does not match
+    currently running version and the CHECK_INDEX environment variable
+    is non empty, wipe out the directories under data root.
+    """
+    check_index = os.environ.get('CHECK_INDEX')
+    if check_index and os.path.exists(OPENGROK_CONFIG_FILE):
+        logger.info('Checking if index matches current version')
+        indexer_options = ['-R', OPENGROK_CONFIG_FILE, '--checkIndex']
+        indexer = Indexer(indexer_options, logger=logger,
+                          jar=OPENGROK_JAR, doprint=True)
+        indexer.execute()
+        if indexer.getretcode() == 1:
+            logger.info('Wiping out data root')
+            root = OPENGROK_DATA_ROOT
+            for entry in os.listdir(root):
+                path = os.path.join(root, entry)
+                if os.path.isdir(path):
+                    try:
+                        logger.info("Removing '{}'".format(path))
+                        shutil.rmtree(path)
+                    except Exception as e:
+                        logger.error("cannot delete '{}': {}".format(path, e))
+
+
 def main():
     log_level = os.environ.get('OPENGROK_LOG_LEVEL')
     if log_level:
@@ -447,6 +473,12 @@ def main():
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
         create_bare_config(logger, extra_indexer_options.split())
+
+    #
+    # Index check needs read-only configuration so it is placed
+    # right after create_bare_config().
+    #
+    check_index_and_wipe_out(logger)
 
     #
     # If there is read-only configuration file, merge it with current
