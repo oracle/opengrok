@@ -3,7 +3,7 @@
 #
 # Build and optionally push new image to Docker hub.
 #
-# When pushing, this script uses the following Travis secure variables:
+# When pushing, this script uses the following secure variables:
 #  - DOCKER_USERNAME
 #  - DOCKER_PASSWORD
 #
