@@ -84,6 +84,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 `REST_PORT` | 5000 | TCP port where simple REST app listens for GET requests on `/reindex` to trigger manual reindex.
 `REST_TOKEN` | None | if set, the REST app will require this token as Bearer token in order to trigger reindex.
 `READONLY_CONFIG_FILE` | None | if set, the configuration will be merged with configuration from this file. This is run when the container starts.
+`CHECK_INDEX` | None | if set, the format of the index will be checked first. **If the index is not compatible with the currently running version, the data root will be wiped out and reindex from scratch will be performed.**
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e SYNC_PERIOD_MINUTES=30`
 

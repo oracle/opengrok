@@ -279,6 +279,8 @@ public final class Indexer {
                             " under the data root and reindex\n");
                     System.exit(1);
                 }
+
+                System.exit(0);
             }
 
             // Let repository types to add items to ignoredNames.
