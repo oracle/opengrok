@@ -516,7 +516,8 @@ public final class Indexer {
                 canonicalRoots.add(root);
             });
 
-            parser.on("--checkIndex", "Check index.").execute(v -> checkIndex = true);
+            parser.on("--checkIndex", "Check index, exit with 0 on success,",
+                    "with 1 on failure.").execute(v -> checkIndex = true);
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
