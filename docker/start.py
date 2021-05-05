@@ -43,7 +43,7 @@ from opengrok_tools.utils.indexer import Indexer
 from opengrok_tools.sync import do_sync
 from opengrok_tools.config_merge import merge_config_files
 from opengrok_tools.utils.opengrok import list_projects, \
-    add_project, delete_project, get_configuration, set_config_value
+    add_project, delete_project, get_configuration
 from opengrok_tools.utils.readconfig import read_config
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 
@@ -306,8 +306,6 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
 
     wait_for_tomcat(logger, uri)
 
-    set_config_value(logger, 'projectsEnabled', 'true', uri)
-
     periodic_sync = True
     if sync_period is None or sync_period == 0:
         periodic_sync = False
@@ -357,7 +355,7 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
             sleep_event.wait()
 
 
-def create_bare_config(logger, extra_indexer_options=None):
+def create_bare_config(logger, use_projects, extra_indexer_options=None):
     """
     Create bare configuration file with a few basic settings.
     """
@@ -369,6 +367,7 @@ def create_bare_config(logger, extra_indexer_options=None):
                        '-c', '/usr/local/bin/ctags',
                        '--remote', 'on',
                        '-H',
+                       '-S',
                        '-W', OPENGROK_CONFIG_FILE,
                        '--noIndex']
 
@@ -376,6 +375,8 @@ def create_bare_config(logger, extra_indexer_options=None):
         if type(extra_indexer_options) is not list:
             raise Exception("extra_indexer_options has to be a list")
         indexer_options.extend(extra_indexer_options)
+    if use_projects:
+        indexer_options.append('-P')
     indexer = Indexer(indexer_options,
                       jar=OPENGROK_JAR,
                       logger=logger, doprint=True)
@@ -446,7 +447,7 @@ def main():
     #
     if not os.path.exists(OPENGROK_CONFIG_FILE) or \
             os.path.getsize(OPENGROK_CONFIG_FILE) == 0:
-        create_bare_config(logger, extra_indexer_options.split())
+        create_bare_config(logger, use_projects, extra_indexer_options.split())
 
     #
     # If there is read-only configuration file, merge it with current
