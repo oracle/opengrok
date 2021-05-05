@@ -24,6 +24,7 @@
 import os
 import logging
 import multiprocessing
+import signal
 import shutil
 import subprocess
 import sys
@@ -545,12 +546,16 @@ def main():
     tomcat_popen.wait()
 
 
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        global tomcat_popen
-        print("Terminating Tomcat {}".format(tomcat_popen))
-        tomcat_popen.terminate()
+def signal_handler(signum, frame):
+    global tomcat_popen
+    print("Terminating Tomcat {}".format(tomcat_popen))
+    tomcat_popen.terminate()
 
-        sys.exit(1)
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
+    main()
