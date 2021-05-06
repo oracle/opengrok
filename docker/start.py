@@ -558,6 +558,8 @@ def main():
 
 
 def signal_handler(signum, frame):
+    print("Received signal {}".format(signum))
+
     global tomcat_popen
     print("Terminating Tomcat {}".format(tomcat_popen))
     tomcat_popen.terminate()
