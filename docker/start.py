@@ -564,7 +564,7 @@ def signal_handler(signum, frame):
     print("Terminating Tomcat {}".format(tomcat_popen))
     tomcat_popen.terminate()
 
-    sys.exit(1)
+    sys.exit(0)
 
 
 if __name__ == "__main__":
