@@ -74,6 +74,7 @@ expected_token = None
 sleep_event = threading.Event()
 app = Flask(__name__)
 auth = HTTPTokenAuth(scheme='Bearer')
+REINDEX_POINT = '/reindex'
 
 
 @auth.verify_token
@@ -85,7 +86,7 @@ def verify_token(token):
         return "yes"
 
 
-@app.route('/reindex')
+@app.route(REINDEX_POINT)
 @auth.login_required
 def index():
     # Signal the sync/indexer thread.
@@ -295,6 +296,8 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
             logger.info("Sleeping for {} seconds".format(sleep_seconds))
             time.sleep(sleep_seconds)
         elif not periodic_sync:
+            logger.info("Waiting for reindex trigger on {} endpoint".
+                        format(REINDEX_POINT))
             sleep_event.wait()
 
 
@@ -353,6 +356,8 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
             logger.info("Sleeping for {} seconds".format(sleep_seconds))
             time.sleep(sleep_seconds)
         elif not periodic_sync:
+            logger.info("Waiting for reindex trigger on {} endpoint".
+                        format(REINDEX_POINT))
             sleep_event.wait()
 
 
