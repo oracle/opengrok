@@ -530,17 +530,21 @@ def main():
                                    args=syncer_args, daemon=True)
     sync_thread.start()
 
-    rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
-    token = os.environ.get('REST_TOKEN')
-    global expected_token
-    if token:
-        logger.debug("Setting expected token for REST endpoint"
-                     "on port {} to '{}'".format(rest_port, token))
-        expected_token = token
-    logger.debug("Starting REST thread")
-    rest_thread = threading.Thread(target=rest_function, name="REST thread",
-                                   args=(logger, rest_port), daemon=True)
-    rest_thread.start()
+    if sync_period == 0:
+        rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
+        token = os.environ.get('REST_TOKEN')
+        global expected_token
+        if token:
+            logger.debug("Setting expected token for REST endpoint"
+                         "on port {}".format(rest_port))
+            expected_token = token
+        logger.debug("Starting REST thread to listen for requests "
+                     "on port {} on the {} endpoint".
+                     format(rest_port, REINDEX_POINT))
+        rest_thread = threading.Thread(target=rest_function,
+                                       name="REST thread",
+                                       args=(logger, rest_port), daemon=True)
+        rest_thread.start()
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
