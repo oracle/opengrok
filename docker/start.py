@@ -77,6 +77,12 @@ auth = HTTPTokenAuth(scheme='Bearer')
 REINDEX_POINT = '/reindex'
 
 
+def trigger_reindex():
+    # Signal the sync/indexer thread.
+    sleep_event.set()
+    sleep_event.clear()
+
+
 @auth.verify_token
 def verify_token(token):
     if expected_token is None:
@@ -89,9 +95,7 @@ def verify_token(token):
 @app.route(REINDEX_POINT)
 @auth.login_required
 def index():
-    # Signal the sync/indexer thread.
-    sleep_event.set()
-    sleep_event.clear()
+    trigger_reindex()
 
     return "Reindex triggered"
 
@@ -263,17 +267,12 @@ def merge_commands_env(commands, env):
     return commands
 
 
-def indexer_no_projects(logger, uri, config_path, sync_period,
-                        extra_indexer_options):
+def indexer_no_projects(logger, uri, config_path, extra_indexer_options):
     """
     Project less indexer
     """
 
     wait_for_tomcat(logger, uri)
-
-    periodic_sync = True
-    if sync_period is None or sync_period == 0:
-        periodic_sync = False
 
     while True:
         indexer_options = ['-s', OPENGROK_SRC_ROOT,
@@ -291,28 +290,26 @@ def indexer_no_projects(logger, uri, config_path, sync_period,
                           jar=OPENGROK_JAR, doprint=True)
         indexer.execute()
 
-        if periodic_sync:
-            sleep_seconds = sync_period * 60
-            logger.info("Sleeping for {} seconds".format(sleep_seconds))
-            time.sleep(sleep_seconds)
-        elif not periodic_sync:
-            logger.info("Waiting for reindex trigger on {} endpoint".
-                        format(REINDEX_POINT))
-            sleep_event.wait()
+        logger.info("Waiting for reindex to be triggered")
+        sleep_event.wait()
 
 
-def project_syncer(logger, loglevel, uri, config_path, sync_period,
-                   numworkers, env):
+def timeout_loop(logger, sync_period):
+    while True:
+        sleep_seconds = sync_period * 60
+        logger.info("Sleeping for {} seconds".format(sleep_seconds))
+        time.sleep(sleep_seconds)
+
+        trigger_reindex()
+
+
+def project_syncer(logger, loglevel, uri, config_path, numworkers, env):
     """
     Wrapper for running opengrok-sync.
     To be run in a thread/process in the background.
     """
 
     wait_for_tomcat(logger, uri)
-
-    periodic_sync = True
-    if sync_period is None or sync_period == 0:
-        periodic_sync = False
 
     while True:
         refresh_projects(logger, uri)
@@ -351,14 +348,8 @@ def project_syncer(logger, loglevel, uri, config_path, sync_period,
 
             save_config(logger, uri, config_path)
 
-        if periodic_sync:
-            sleep_seconds = sync_period * 60
-            logger.info("Sleeping for {} seconds".format(sleep_seconds))
-            time.sleep(sleep_seconds)
-        elif not periodic_sync:
-            logger.info("Waiting for reindex trigger on {} endpoint".
-                        format(REINDEX_POINT))
-            sleep_event.wait()
+        logger.info("Waiting for reindex to be triggered")
+        sleep_event.wait()
 
 
 def create_bare_config(logger, use_projects, extra_indexer_options=None):
@@ -433,6 +424,30 @@ def check_index_and_wipe_out(logger):
                         shutil.rmtree(path)
                     except Exception as e:
                         logger.error("cannot delete '{}': {}".format(path, e))
+
+
+def start_rest_thread(logger):
+    rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
+    token = os.environ.get('REST_TOKEN')
+    global expected_token
+    if token:
+        logger.debug("Setting expected token for REST endpoint"
+                     "on port {}".format(rest_port))
+        expected_token = token
+    logger.debug("Starting REST thread to listen for requests "
+                 "on port {} on the {} endpoint".
+                 format(rest_port, REINDEX_POINT))
+    rest_thread = threading.Thread(target=rest_function,
+                                   name="REST thread",
+                                   args=(logger, rest_port), daemon=True)
+    rest_thread.start()
+
+
+def start_timeout_thread(logger, sync_period):
+    thread = threading.Thread(target=timeout_loop,
+                              name="Timeout thread",
+                              args=(logger, sync_period), daemon=True)
+    thread.start()
 
 
 def main():
@@ -519,10 +534,10 @@ def main():
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,
                        OPENGROK_CONFIG_FILE,
-                       sync_period, num_workers, env)
+                       num_workers, env)
     else:
         worker_function = indexer_no_projects
-        syncer_args = (logger, uri, OPENGROK_CONFIG_FILE, sync_period,
+        syncer_args = (logger, uri, OPENGROK_CONFIG_FILE,
                        extra_indexer_options)
 
     logger.debug("Starting sync thread")
@@ -530,21 +545,8 @@ def main():
                                    args=syncer_args, daemon=True)
     sync_thread.start()
 
-    if sync_period == 0:
-        rest_port = get_num_from_env(logger, 'REST_PORT', 5000)
-        token = os.environ.get('REST_TOKEN')
-        global expected_token
-        if token:
-            logger.debug("Setting expected token for REST endpoint"
-                         "on port {}".format(rest_port))
-            expected_token = token
-        logger.debug("Starting REST thread to listen for requests "
-                     "on port {} on the {} endpoint".
-                     format(rest_port, REINDEX_POINT))
-        rest_thread = threading.Thread(target=rest_function,
-                                       name="REST thread",
-                                       args=(logger, rest_port), daemon=True)
-        rest_thread.start()
+    start_rest_thread(logger)
+    start_timeout_thread(logger, sync_period)
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
