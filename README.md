@@ -58,3 +58,5 @@ There are Slack channels on https://opengrok.slack.com/
 ## 6. Run as container
 
 You can run OpenGrok as a Docker container as described [here](docker/README.md).
+
+In fact, http://demo.opengrok.org/ is using the Docker image.
