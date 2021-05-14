@@ -23,7 +23,6 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
