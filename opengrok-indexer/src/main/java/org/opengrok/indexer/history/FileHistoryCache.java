@@ -167,14 +167,9 @@ class FileHistoryCache implements HistoryCache {
             LOGGER.log(Level.FINER, e.getMessage());
             return false;
         }
-        String shortestfile = filename.substring(repodir.length() + 1);
 
-        if (repository instanceof RepositoryWithPerPartesHistory) {
-            RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) repository;
-            return (repo.isRenamed(shortestfile));
-        } else {
-            return (history.isRenamed(shortestfile));
-        }
+        String shortestfile = filename.substring(repodir.length() + 1);
+        return history.isRenamed(shortestfile);
     }
 
     static class FilePersistenceDelegate extends PersistenceDelegate {
@@ -499,6 +494,7 @@ class FileHistoryCache implements HistoryCache {
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
+                // TODO: this should not be really needed
                 if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
                     renamedFiles.add(map_entry.getKey());
                     continue;
