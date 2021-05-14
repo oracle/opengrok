@@ -662,14 +662,18 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     prepareTreeParser(repository, newCommit));
 
             for (DiffEntry diff : diffs) {
-                // The renamed files should not be part of 'files' because their history is handled differently.
-                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator + diff.getNewPath());
-                } else if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
+                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
                     if (files != null) {
                         files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
                                 getNativePath(diff.getNewPath()));
                     }
+                }
+
+                // TODO: The renamed files should not be part of 'files' because their history is handled differently.
+                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
+                    // TODO: FileHistoryCache#isRenamedFile() assumes the renamed files do not contain this:
+                    //  getNativePath(getDirectoryNameRelative()) + File.separator +
+                    renamedFiles.add(diff.getNewPath());
                 }
             }
         }
