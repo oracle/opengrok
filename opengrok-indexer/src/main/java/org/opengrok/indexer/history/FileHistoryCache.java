@@ -167,9 +167,9 @@ class FileHistoryCache implements HistoryCache {
             LOGGER.log(Level.FINER, e.getMessage());
             return false;
         }
-
         String shortestfile = filename.substring(repodir.length() + 1);
-        return history.isRenamed(shortestfile);
+
+        return (history.isRenamed(shortestfile));
     }
 
     static class FilePersistenceDelegate extends PersistenceDelegate {
