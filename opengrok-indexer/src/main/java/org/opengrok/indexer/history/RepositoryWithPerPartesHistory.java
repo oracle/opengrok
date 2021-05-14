@@ -49,16 +49,6 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         return 128;
     }
 
-    private Set<String> renamedFiles = new HashSet<>();
-
-    public boolean isRenamed(String filePath) {
-        return renamedFiles.contains(filePath);
-    }
-
-    public void setRenamedFiles(Set<String> renamedFiles) {
-        this.renamedFiles = renamedFiles;
-    }
-
     public abstract void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor v)
             throws HistoryException;
 }
