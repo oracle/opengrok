@@ -71,8 +71,7 @@ interface HistoryCache {
      * @param repository The repository whose history to store
      * @throws HistoryException if the history cannot be stored
      */
-    void store(History history, Repository repository)
-            throws HistoryException;
+    void store(History history, Repository repository) throws HistoryException;
 
     /**
      * Optimize how the history is stored on disk. This method is typically
@@ -85,16 +84,6 @@ interface HistoryCache {
      * @throws HistoryException if an error happens during optimization
      */
     void optimize() throws HistoryException;
-
-    /**
-     * Check if the specified directory is present in the cache.
-     * @param directory the directory to check
-     * @param repository the repository in which the directory is stored
-     * @return {@code true} if the directory is in the cache, {@code false}
-     * otherwise
-     */
-    boolean hasCacheForDirectory(File directory, Repository repository)
-            throws HistoryException;
 
     /**
      * Check if the specified file is present in the cache.

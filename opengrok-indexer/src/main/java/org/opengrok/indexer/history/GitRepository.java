@@ -33,8 +33,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,7 +87,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
-import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.Version;
 
 import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
@@ -529,13 +528,11 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return getHistory(file, sinceRevision, null);
     }
 
-    // TODO: add test
-    public List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException {
-        List<String> result = new ArrayList<>();
-        final int maxCount = getPerPartesCount();
+    public int getPerPartesCount() {
+        return 512;
+    }
 
-        LOGGER.log(Level.FINE, "getting boundary changesets for ''{0}''", getDirectoryName());
-        Statistics stat = new Statistics();
+    public void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor v) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
@@ -544,36 +541,19 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             }
             walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
 
-            int cnt = 0;
-            String lastId = null;
             for (RevCommit commit : walk) {
-                if (cnt != 0 && cnt % maxCount == 0) {
-                    // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
-                    lastId = commit.getId().name();
-                    result.add(lastId);
-                }
-                cnt++;
+                // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
+                v.visit(commit.getId().name());
             }
         } catch (IOException e) {
             throw new HistoryException(e);
         }
-
-        // The changesets need to go from oldest to newest.
-        Collections.reverse(result);
-
-        // Add null to finish the last step in Repository#createCache().
-        result.add(null);
-
-        stat.report(LOGGER, Level.FINE,
-                String.format("done getting boundary changesets for ''%s'' (%d entries)",
-                        getDirectoryName(), result.size()));
-
-        return result;
     }
 
+    // TODO: could this miss some renamed files at the boundaries ? add test for this
     public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
         final List<HistoryEntry> entries = new ArrayList<>();
-        final List<String> renamedFiles = new ArrayList<>();
+        final Set<String> renamedFiles = new HashSet<>();
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
@@ -657,26 +637,39 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return path;
     }
 
+    /**
+     * Assemble list of files that changed between 2 commits.
+     * @param repository repository object
+     * @param oldCommit parent commit
+     * @param newCommit new commit (the mehotd assumes oldCommit is its parent)
+     * @param files set of files that changed (excludes renamed files)
+     * @param renamedFiles set of renamed files (if renamed handling is enabled)
+     * @throws IOException on I/O problem
+     */
     private void getFiles(org.eclipse.jgit.lib.Repository repository,
                           RevCommit oldCommit, RevCommit newCommit,
-                          Set<String> files, List<String> renamedFiles)
+                          Set<String> files, Set<String> renamedFiles)
             throws IOException {
 
         OutputStream outputStream = NullOutputStream.INSTANCE;
         try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
             formatter.setRepository(repository);
-            formatter.setDetectRenames(true);
+            if (isHandleRenamedFiles()) {
+                formatter.setDetectRenames(true);
+            }
 
             List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, oldCommit),
                     prepareTreeParser(repository, newCommit));
 
             for (DiffEntry diff : diffs) {
-                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
-                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                            getNativePath(diff.getNewPath()));
-                }
+                // The renamed files should not be part of 'files' because their history is handled differently.
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(getNativePath(diff.getNewPath()));
+                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator + diff.getNewPath());
+                } else if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
+                    if (files != null) {
+                        files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                                getNativePath(diff.getNewPath()));
+                    }
                 }
             }
         }
