@@ -386,23 +386,21 @@ public abstract class Repository extends RepositoryInfo {
             return;
         }
 
-        // To avoid storing complete History memory, split the work into multiple chunks.
+        // For repositories that supports this, avoid storing complete History in memory
+        // (which can be sizeable, at least for the initial indexing, esp. if merge changeset support is enabled),
+        // by splitting the work into multiple chunks.
         RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) this;
-        List<String> boundaryChangesets = repo.getBoundaryChangesetIDs(sinceRevision);
+        BoundaryChangesets boundaryChangesets = new BoundaryChangesets(repo);
+        List<String> boundaryChangesetList = boundaryChangesets.getBoundaryChangesetIDs(sinceRevision);
         int cnt = 0;
-        for (String tillRevision: boundaryChangesets) {
+        for (String tillRevision: boundaryChangesetList) {
             Statistics stat = new Statistics();
             history = repo.getHistory(directory, sinceRevision, tillRevision);
-            if (history.getHistoryEntries().size() == 0) {
-                // TODO
-                break;
-            }
-
             finishCreateCache(cache, history);
             sinceRevision = tillRevision;
 
             stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
-                    ++cnt, boundaryChangesets.size(), this.getDirectoryName()));
+                    ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }
     }
 

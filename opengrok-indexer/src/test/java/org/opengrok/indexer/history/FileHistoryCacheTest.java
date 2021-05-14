@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
@@ -246,24 +245,6 @@ public class FileHistoryCacheTest {
         History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
         assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
                 retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
-    }
-
-    /**
-     * TODO
-     * move this to RepositoryTest ?
-     */
-    @Test
-    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-    @EnabledForRepository(GIT)
-    public void testIncrementalStore() throws Exception {
-        File reposRoot = new File(repositories.getSourceRoot(), "git");
-
-        Repository repo = RepositoryFactory.getRepository(reposRoot);
-        History historyToStore = repo.getHistory(reposRoot);
-
-        repo.createCache(cache, null);
-
-        // TODO
     }
 
     /**

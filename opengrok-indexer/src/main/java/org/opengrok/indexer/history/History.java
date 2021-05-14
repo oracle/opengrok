@@ -41,7 +41,7 @@ public class History {
      * SCMs) during cache creation.
      * These are relative to repository root.
      */
-    private final Set<String> renamedFiles;
+    private Set<String> renamedFiles;
     
     public History() {
         this(new ArrayList<>());
@@ -55,7 +55,12 @@ public class History {
         this.entries = entries;
         this.renamedFiles = new HashSet<>(renamed);
     }
-    
+
+    History(List<HistoryEntry> entries, Set<String> renamed) {
+        this.entries = entries;
+        this.renamedFiles = renamed;
+    }
+
     /**
      * Set the list of log entries for the file. The first entry is the most
      * recent one.

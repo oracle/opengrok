@@ -23,18 +23,42 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * Repositories extending this class will benefit from per partes history
+ * indexing which saves memory.
+ */
 public abstract class RepositoryWithPerPartesHistory extends Repository {
     private static final long serialVersionUID = -3433255821312805064L;
 
-    abstract History getHistory(File directory, String sinceRevision, String tillRevision) throws HistoryException;
+    /**
+     * @param file file to retrieve history for
+     * @param sinceRevision start revision
+     * @param tillRevision end revision
+     * @return history object
+     * @throws HistoryException if history retrieval fails
+     */
+    abstract History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException;
 
+    /**
+     * @return maximum number of entries to retrieve
+     */
     public int getPerPartesCount() {
         return 128;
     }
 
-    // TODO: iterator ?
-    abstract List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException;
+    private Set<String> renamedFiles = new HashSet<>();
+
+    public boolean isRenamed(String filePath) {
+        return renamedFiles.contains(filePath);
+    }
+
+    public void setRenamedFiles(Set<String> renamedFiles) {
+        this.renamedFiles = renamedFiles;
+    }
+
+    public abstract void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor v)
+            throws HistoryException;
 }

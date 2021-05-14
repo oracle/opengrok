@@ -50,10 +50,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -159,15 +161,19 @@ class FileHistoryCache implements HistoryCache {
 
         String repodir;
         try {
-            repodir = env.getPathRelativeToSourceRoot(
-                new File(repository.getDirectoryName()));
+            repodir = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
         } catch (ForbiddenSymlinkException e) {
             LOGGER.log(Level.FINER, e.getMessage());
             return false;
         }
         String shortestfile = filename.substring(repodir.length() + 1);
 
-        return (history.isRenamed(shortestfile));
+        if (repository instanceof RepositoryWithPerPartesHistory) {
+            RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) repository;
+            return (repo.isRenamed(shortestfile));
+        } else {
+            return (history.isRenamed(shortestfile));
+        }
     }
 
     static class FilePersistenceDelegate extends PersistenceDelegate {
@@ -424,8 +430,8 @@ class FileHistoryCache implements HistoryCache {
      * @param repository repository object
      */
     @Override
-    public void store(History history, Repository repository)
-            throws HistoryException {
+    public void store(History history, Repository repository) throws HistoryException {
+
         final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
         String latestRev = null;
@@ -512,25 +518,31 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        /*
-         * Now handle renamed files (in parallel).
-         */
-        HashMap<String, List<HistoryEntry>> renamedMap = new HashMap<>();
-        for (final Map.Entry<String, List<HistoryEntry>> mapEntry : map.entrySet()) {
-            try {
-                if (isRenamedFile(mapEntry.getKey(), repository, history)) {
-                    renamedMap.put(mapEntry.getKey(), mapEntry.getValue());
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                    "isRenamedFile() got exception ", ex);
-            }
+        storeRenamed(history, repository);
+
+        finishStore(repository, latestRev);
+    }
+
+    /**
+     * handle renamed files (in parallel).
+     * @param history history
+     * @param repository repository
+     */
+    public void storeRenamed(History history, Repository repository) throws HistoryException {
+        final File root = env.getSourceRootFile();
+        Set<String> renamedFiles = history.getRenamedFiles();
+        if (renamedFiles.isEmpty()) {
+            return;
         }
+
+        renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
+                collect(Collectors.toSet());
+
         // The directories for the renamed files have to be created before
         // the actual files otherwise storeFile() might be racing for
         // mkdirs() if there are multiple renamed files from single directory
         // handled in parallel.
-        for (final String file : renamedMap.keySet()) {
+        for (final String file : renamedFiles) {
             File cache;
             try {
                 cache = getCachedFile(new File(env.getSourceRootPath() + file));
@@ -542,27 +554,27 @@ class FileHistoryCache implements HistoryCache {
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 LOGGER.log(Level.WARNING,
-                   "Unable to create cache directory ' {0} '.", dir);
+                        "Unable to create cache directory ' {0} '.", dir);
             }
         }
         final Repository repositoryF = repository;
-        final CountDownLatch latch = new CountDownLatch(renamedMap.size());
+        final CountDownLatch latch = new CountDownLatch(renamedFiles.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
-        for (final Map.Entry<String, List<HistoryEntry>> mapEntry : renamedMap.entrySet()) {
+        for (final String file : renamedFiles) {
             env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
-                    try {
-                        doFileHistory(mapEntry.getKey(), mapEntry.getValue(),
+                try {
+                    doFileHistory(file, null,
                             repositoryF,
-                            new File(env.getSourceRootPath() + mapEntry.getKey()),
+                            new File(env.getSourceRootPath() + file),
                             root, true);
-                        renamedFileHistoryCount.getAndIncrement();
-                    } catch (Exception ex) {
-                        // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING,
+                    renamedFileHistoryCount.getAndIncrement();
+                } catch (Exception ex) {
+                    // We want to catch any exception since we are in thread.
+                    LOGGER.log(Level.WARNING,
                             "doFileHistory() got exception ", ex);
-                    } finally {
-                        latch.countDown();
-                    }
+                } finally {
+                    latch.countDown();
+                }
             });
         }
 
@@ -575,7 +587,6 @@ class FileHistoryCache implements HistoryCache {
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
                 new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
-        finishStore(repository, latestRev);
     }
 
     @Override
@@ -654,34 +665,6 @@ class FileHistoryCache implements HistoryCache {
     private boolean isUpToDate(File file, File cachedFile) {
         return cachedFile != null && cachedFile.exists() &&
                 file.lastModified() <= cachedFile.lastModified();
-    }
-
-    /**
-     * Check if the directory is in the cache.
-     * @param directory the directory to check
-     * @return {@code true} if the directory is in the cache
-     */
-    @Override
-    public boolean hasCacheForDirectory(File directory, Repository repository)
-            throws HistoryException {
-        assert directory.isDirectory();
-        Repository repos = HistoryGuru.getInstance().getRepository(directory);
-        if (repos == null) {
-            return true;
-        }
-        File dir = env.getDataRootFile();
-        dir = new File(dir, FileHistoryCache.HISTORY_CACHE_DIR_NAME);
-        try {
-            dir = new File(dir, env.getPathRelativeToSourceRoot(
-                new File(repos.getDirectoryName())));
-        } catch (ForbiddenSymlinkException e) {
-            LOGGER.log(Level.FINER, e.getMessage());
-            return false;
-        } catch (IOException e) {
-            throw new HistoryException("Could not resolve " +
-                    repos.getDirectoryName() + " relative to source root", e);
-        }
-        return dir.exists();
     }
 
     @Override
