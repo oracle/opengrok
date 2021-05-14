@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -444,6 +445,7 @@ class FileHistoryCache implements HistoryCache {
 
         HashMap<String, List<HistoryEntry>> map = new HashMap<>();
         HashMap<String, Boolean> acceptanceCache = new HashMap<>();
+        Set<String> renamedFiles = new HashSet<>();
 
         /*
          * Go through all history entries for this repository (acquired through
@@ -497,8 +499,8 @@ class FileHistoryCache implements HistoryCache {
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (handleRenamedFiles &&
-                        isRenamedFile(map_entry.getKey(), repository, history)) {
+                if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
+                    renamedFiles.add(map_entry.getKey());
                     continue;
                 }
             } catch (IOException ex) {
@@ -518,19 +520,18 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        storeRenamed(history, repository);
+        storeRenamed(renamedFiles, repository);
 
         finishStore(repository, latestRev);
     }
 
     /**
      * handle renamed files (in parallel).
-     * @param history history
+     * @param renamedFiles set of renamed file paths
      * @param repository repository
      */
-    public void storeRenamed(History history, Repository repository) throws HistoryException {
+    public void storeRenamed(Set<String> renamedFiles, Repository repository) throws HistoryException {
         final File root = env.getSourceRootFile();
-        Set<String> renamedFiles = history.getRenamedFiles();
         if (renamedFiles.isEmpty()) {
             return;
         }
