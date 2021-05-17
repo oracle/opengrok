@@ -68,7 +68,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
-import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 
 /**
