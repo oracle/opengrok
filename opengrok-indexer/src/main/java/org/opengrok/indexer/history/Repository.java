@@ -399,8 +399,9 @@ public abstract class Repository extends RepositoryInfo {
             finishCreateCache(cache, history);
             sinceRevision = tillRevision;
 
-            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
-                    ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
+            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache (%s, %s) " +
+                    "for repository ''%s''", ++cnt, boundaryChangesetList.size(), sinceRevision, tillRevision,
+                    this.getDirectoryName()));
         }
     }
 
