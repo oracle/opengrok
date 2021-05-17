@@ -129,6 +129,16 @@ public class History {
         return renamedFiles;
     }
 
+    /**
+     * Strip files and tags from history entries.
+     * @see HistoryEntry#strip()
+     */
+    public void strip() {
+        for (HistoryEntry ent : this.getHistoryEntries()) {
+            ent.strip();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
