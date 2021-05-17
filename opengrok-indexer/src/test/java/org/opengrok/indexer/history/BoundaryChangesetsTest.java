@@ -22,15 +22,13 @@
  */
 package org.opengrok.indexer.history;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
@@ -77,7 +75,7 @@ public class BoundaryChangesetsTest {
         assertThrows(RuntimeException.class, () -> new BoundaryChangesets(gitSpyRepository));
     }
 
-    private static Stream<ImmutablePair<Integer, List<String>>> provideMapsForTestPerPartesHistory() {
+    private static Stream<ImmutableTriple<Integer, String, List<String>>> provideMapsForTestPerPartesHistory() {
         // Cannot use List.of() because of the null element.
         List<String> expectedChangesets2 = new ArrayList<>();
         expectedChangesets2.add("8482156421620efbb44a7b6f0eb19d1f191163c7");
@@ -89,8 +87,15 @@ public class BoundaryChangesetsTest {
         expectedChangesets4.add("ce4c98ec1d22473d4aa799c046c2a90ae05832f1");
         expectedChangesets4.add(null);
 
-        return Stream.of(ImmutablePair.of(2, expectedChangesets2),
-                ImmutablePair.of(4, expectedChangesets4));
+        List<String> expectedChangesets2Middle = new ArrayList<>();
+        expectedChangesets2Middle.add("ce4c98ec1d22473d4aa799c046c2a90ae05832f1");
+        expectedChangesets2Middle.add("1086eaf5bca6d5a056097aa76017a8ab0eade20f");
+        expectedChangesets2Middle.add(null);
+
+        return Stream.of(ImmutableTriple.of(2, null, expectedChangesets2),
+                ImmutableTriple.of(4, null, expectedChangesets4),
+                ImmutableTriple.of(2, "aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a",
+                        expectedChangesets2Middle));
     }
 
     /**
@@ -99,15 +104,14 @@ public class BoundaryChangesetsTest {
      */
     @ParameterizedTest
     @MethodSource("provideMapsForTestPerPartesHistory")
-    void testBasic(ImmutablePair<Integer, List<String>> expectedChangesetsPair) throws Exception {
+    void testBasic(ImmutableTriple<Integer, String, List<String>> integerListImmutableTriple) throws Exception {
         GitRepository gitSpyRepository = Mockito.spy(gitRepository);
-        Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(expectedChangesetsPair.getLeft());
+        Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(integerListImmutableTriple.getLeft());
 
         BoundaryChangesets boundaryChangesets = new BoundaryChangesets(gitSpyRepository);
-        // TODO test also with non-null sinceRevision
         List<String> boundaryChangesetList = boundaryChangesets.
-                getBoundaryChangesetIDs(null);
-        assertEquals(expectedChangesetsPair.getRight().size(), boundaryChangesetList.size());
-        assertEquals(expectedChangesetsPair.getRight(), boundaryChangesetList);
+                getBoundaryChangesetIDs(integerListImmutableTriple.getMiddle());
+        assertEquals(integerListImmutableTriple.getRight().size(), boundaryChangesetList.size());
+        assertEquals(integerListImmutableTriple.getRight(), boundaryChangesetList);
     }
 }
