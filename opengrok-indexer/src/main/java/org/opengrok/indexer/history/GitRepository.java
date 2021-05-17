@@ -673,7 +673,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
                     // TODO: FileHistoryCache#isRenamedFile() assumes the renamed files do not contain this:
                     //  getNativePath(getDirectoryNameRelative()) + File.separator +
-                    renamedFiles.add(diff.getNewPath());
+                    renamedFiles.add(getNativePath(diff.getNewPath()));
                 }
             }
         }
