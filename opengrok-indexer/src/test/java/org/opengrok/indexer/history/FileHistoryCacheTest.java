@@ -733,6 +733,8 @@ public class FileHistoryCacheTest {
 
         env.setHandleHistoryOfRenamedFiles(true);
         Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        History history = repository.getHistory(repositoryRoot);
+        assertEquals(1, history.getRenamedFiles().size());
         GitRepository gitRepository = (GitRepository) repository;
         GitRepository gitSpyRepository = Mockito.spy(gitRepository);
         Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(maxCount);
