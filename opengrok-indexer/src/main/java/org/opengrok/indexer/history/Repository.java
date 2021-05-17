@@ -392,16 +392,17 @@ public abstract class Repository extends RepositoryInfo {
         RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) this;
         BoundaryChangesets boundaryChangesets = new BoundaryChangesets(repo);
         List<String> boundaryChangesetList = boundaryChangesets.getBoundaryChangesetIDs(sinceRevision);
+        LOGGER.log(Level.FINE, "boundary changesets: {0}", boundaryChangesetList);
         int cnt = 0;
         for (String tillRevision: boundaryChangesetList) {
             Statistics stat = new Statistics();
+            LOGGER.log(Level.FINE, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision}); // TODO FINEST
             history = repo.getHistory(directory, sinceRevision, tillRevision);
             finishCreateCache(cache, history);
             sinceRevision = tillRevision;
 
-            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache (%s, %s) " +
-                    "for repository ''%s''", ++cnt, boundaryChangesetList.size(), sinceRevision, tillRevision,
-                    this.getDirectoryName()));
+            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
+                    ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
         }
     }
 
