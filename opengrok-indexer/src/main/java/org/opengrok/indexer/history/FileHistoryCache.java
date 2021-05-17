@@ -102,16 +102,40 @@ class FileHistoryCache implements HistoryCache {
     }
 
     /**
-     * Generate history cache for single file or directory.
+     * Generate history cache for single renamed file.
+     * @param filename file path
+     * @param repository repository
+     * @param root root
+     * @param tillRevision end revision
+     */
+    public void doRenamedFileHistory(String filename, File file, Repository repository, File root, String tillRevision)
+            throws HistoryException {
+
+        History history;
+
+        if (tillRevision != null) {
+            if (!(repository instanceof RepositoryWithPerPartesHistory)) {
+                throw new RuntimeException("cannot use non null tillRevision on repository");
+            }
+
+            RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) repository;
+            history = repo.getHistory(file, null, tillRevision);
+        } else {
+            history = repository.getHistory(file);
+        }
+
+        doFileHistory(filename, history, repository, root, true);
+    }
+
+    /**
+     * Generate history cache for single file.
      * @param filename name of the file
-     * @param historyEntries list of HistoryEntry objects forming the (incremental) history of the file
+     * @param history history
      * @param repository repository object in which the file belongs
-     * @param srcFile file object
      * @param root root of the source repository
      * @param renamed true if the file was renamed in the past
      */
-    private void doFileHistory(String filename, List<HistoryEntry> historyEntries,
-            Repository repository, File srcFile, File root, boolean renamed)
+    private void doFileHistory(String filename, History history, Repository repository, File root, boolean renamed)
             throws HistoryException {
 
         File file = new File(root, filename);
@@ -119,42 +143,16 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        Statistics statRepoHist = new Statistics();
-
-        /*
-         * If the file was renamed (in the changesets that are being indexed),
-         * its history is not stored in the historyEntries so it needs to be acquired
-         * directly from the repository.
-         * This ensures that complete history of the file (across renames) will be saved.
-         */
-        History hist;
-        if (renamed) {
-            hist = repository.getHistory(srcFile);
-        } else {
-            hist = new History(historyEntries);
-        }
-
         // File based history cache does not store files for individual
         // changesets so strip them unless it is history for the repository.
-        for (HistoryEntry ent : hist.getHistoryEntries()) {
-            if (file.isDirectory()) {
-                ent.stripTags();
-            } else {
-                ent.strip();
-            }
-        }
+        history.strip();
 
         // Assign tags to changesets they represent.
         if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
-            repository.assignTagsInHistory(hist);
+            repository.assignTagsInHistory(history);
         }
 
-        storeFile(hist, file, repository, !renamed);
-
-        // TODO: readjust for per partes history indexing
-        statRepoHist.report(LOGGER, Level.FINER,
-                String.format("Done storing history cache for '%s'", filename),
-                "filehistorycache.history.store");
+        storeFile(history, file, repository, !renamed);
     }
 
     private boolean isRenamedFile(String filename, Repository repository, History history)
@@ -406,14 +404,19 @@ class FileHistoryCache implements HistoryCache {
             // failure), do not create the CachedRevision file as this would
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
-                "Could not store history for repository {0}",
-                repository.getDirectoryName());
+                "Could not store history for repository {0}: {1} is not a directory",
+                new Object[]{repository.getDirectoryName(), histDir});
         } else {
             storeLatestCachedRevision(repository, latestRev);
             LOGGER.log(Level.FINE,
                 "Done storing history for repository {0}",
                 repository.getDirectoryName());
         }
+    }
+
+    @Override
+    public void store(History history, Repository repository) throws HistoryException {
+        store(history, repository, null);
     }
 
     /**
@@ -426,7 +429,7 @@ class FileHistoryCache implements HistoryCache {
      * @param repository repository object
      */
     @Override
-    public void store(History history, Repository repository) throws HistoryException {
+    public void store(History history, Repository repository, String tillRevision) throws HistoryException {
 
         final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
@@ -494,7 +497,7 @@ class FileHistoryCache implements HistoryCache {
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                // TODO: this should not be really needed
+                // TODO: this should not be really needed. The history object should have a list of renamed files.
                 if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
                     renamedFiles.add(map_entry.getKey());
                     continue;
@@ -503,8 +506,8 @@ class FileHistoryCache implements HistoryCache {
                LOGGER.log(Level.WARNING, "isRenamedFile() got exception", ex);
             }
 
-            doFileHistory(map_entry.getKey(), map_entry.getValue(),
-                    repository, null, root, false);
+            doFileHistory(map_entry.getKey(), new History(map_entry.getValue()),
+                    repository, root, false);
             fileHistoryCount++;
         }
 
@@ -512,11 +515,12 @@ class FileHistoryCache implements HistoryCache {
                 new Object[]{fileHistoryCount, repository.getDirectoryName()});
 
         if (!handleRenamedFiles) {
+            // TODO: if there are no regular (not renamed files) this will produce warning
             finishStore(repository, latestRev);
             return;
         }
 
-        storeRenamed(renamedFiles, repository);
+        storeRenamed(renamedFiles, repository, tillRevision);
 
         finishStore(repository, latestRev);
     }
@@ -526,7 +530,7 @@ class FileHistoryCache implements HistoryCache {
      * @param renamedFiles set of renamed file paths
      * @param repository repository
      */
-    public void storeRenamed(Set<String> renamedFiles, Repository repository) throws HistoryException {
+    public void storeRenamed(Set<String> renamedFiles, Repository repository, String tillRevision) throws HistoryException {
         final File root = env.getSourceRootFile();
         if (renamedFiles.isEmpty()) {
             return;
@@ -560,10 +564,9 @@ class FileHistoryCache implements HistoryCache {
         for (final String file : renamedFiles) {
             env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
                 try {
-                    doFileHistory(file, null,
-                            repositoryF,
+                    doRenamedFileHistory(file,
                             new File(env.getSourceRootPath() + file),
-                            root, true);
+                            repositoryF, root, tillRevision);
                     renamedFileHistoryCount.getAndIncrement();
                 } catch (Exception ex) {
                     // We want to catch any exception since we are in thread.

@@ -382,7 +382,7 @@ public abstract class Repository extends RepositoryInfo {
         History history;
         if (!(this instanceof RepositoryWithPerPartesHistory)) {
             history = getHistory(directory, sinceRevision);
-            finishCreateCache(cache, history);
+            finishCreateCache(cache, history, null);
             return;
         }
 
@@ -398,7 +398,7 @@ public abstract class Repository extends RepositoryInfo {
             Statistics stat = new Statistics();
             LOGGER.log(Level.FINE, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision}); // TODO FINEST
             history = repo.getHistory(directory, sinceRevision, tillRevision);
-            finishCreateCache(cache, history);
+            finishCreateCache(cache, history, tillRevision);
             sinceRevision = tillRevision;
 
             stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
@@ -406,7 +406,7 @@ public abstract class Repository extends RepositoryInfo {
         }
     }
 
-    private void finishCreateCache(HistoryCache cache, History history) throws HistoryException {
+    private void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
@@ -414,7 +414,7 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         if (history != null) {
-            cache.store(history, this);
+            cache.store(history, this, tillRevision);
         }
     }
 

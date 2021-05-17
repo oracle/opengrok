@@ -73,6 +73,8 @@ interface HistoryCache {
      */
     void store(History history, Repository repository) throws HistoryException;
 
+    void store(History history, Repository repository, String tillRevision) throws HistoryException;
+
     /**
      * Optimize how the history is stored on disk. This method is typically
      * called after the cache has been populated, or after large modifications
