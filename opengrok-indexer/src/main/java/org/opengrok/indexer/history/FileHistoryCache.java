@@ -487,6 +487,11 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
+        File histDataDir = new File(getRepositoryHistDataDirname(repository));
+        if (!histDataDir.isDirectory() && !histDataDir.mkdirs()) {
+            LOGGER.log(Level.WARNING, "cannot create history cache directory for XXX");
+        }
+
         /*
          * Now traverse the list of files from the hash map built above
          * and for each file store its history (saved in the value of the
@@ -515,7 +520,6 @@ class FileHistoryCache implements HistoryCache {
                 new Object[]{fileHistoryCount, repository.getDirectoryName()});
 
         if (!handleRenamedFiles) {
-            // TODO: if there are no regular (not renamed files) this will produce warning
             finishStore(repository, latestRev);
             return;
         }
