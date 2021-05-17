@@ -36,7 +36,9 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION
 import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Iterator;
@@ -44,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +54,7 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
@@ -680,6 +684,63 @@ public class FileHistoryCacheTest {
         entriesConstruct.add(e2);
         histConstruct.setHistoryEntries(entriesConstruct);
         assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
+    }
+
+    private void changeFileAndCommit(Git git, File file, String comment) throws Exception {
+        String authorName = "Foo Bar";
+        String authorEmail = "foo@bar.com";
+
+        try (FileOutputStream fos = new FileOutputStream(file, true)) {
+            fos.write(comment.getBytes(StandardCharsets.UTF_8));
+        }
+
+        git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3, 4})
+    void testRenamedFileHistoryWithPerPartes(int maxCount) throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "gitRenamedPerPartes");
+        assertTrue(repositoryRoot.mkdir());
+        File fooFile = new File(repositoryRoot, "foo.txt");
+        if (!fooFile.createNewFile()) {
+            throw new IOException("Could not create file " + fooFile);
+        }
+        File barFile = new File(repositoryRoot, "bar.txt");
+
+        try (FileOutputStream fos = new FileOutputStream(fooFile)) {
+            fos.write("foo bar foo bar foo bar".getBytes(StandardCharsets.UTF_8));
+        }
+
+        try (Git git = Git.init().setDirectory(repositoryRoot).call()) {
+            git.add().addFilepattern("foo.txt").call();
+            changeFileAndCommit(git, fooFile, "initial");
+
+            changeFileAndCommit(git, fooFile, "1");
+            changeFileAndCommit(git, fooFile, "2");
+            changeFileAndCommit(git, fooFile, "3");
+
+            // git mv
+            assertTrue(fooFile.renameTo(barFile));
+            git.add().addFilepattern("bar.txt").call();
+            git.rm().addFilepattern("foo.txt").call();
+            git.commit().setMessage("rename").setAuthor("foo", "foo@bar").setAll(true).call();
+
+            changeFileAndCommit(git, barFile, "4");
+            changeFileAndCommit(git, barFile, "5");
+            changeFileAndCommit(git, barFile, "6");
+        }
+
+        env.setHandleHistoryOfRenamedFiles(true);
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        GitRepository gitRepository = (GitRepository) repository;
+        GitRepository gitSpyRepository = Mockito.spy(gitRepository);
+        Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(maxCount);
+        gitSpyRepository.createCache(cache, null);
+
+        assertTrue(barFile.isFile());
+        History updatedHistory = cache.get(barFile, gitSpyRepository, false);
+        assertEquals(8, updatedHistory.getHistoryEntries().size());
     }
 
     /**
