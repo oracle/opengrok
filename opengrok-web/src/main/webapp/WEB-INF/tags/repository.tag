@@ -32,7 +32,7 @@ Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
 <%@ attribute name="repositoryInfo" required="true" type="org.opengrok.indexer.history.RepositoryInfo" %>
 <%@ attribute name="isFirst" required="true" type="java.lang.Boolean" %>
 
-<c:set var="isSubrepository" value="${!repositoryInfo.getDirectoryNameRelative().equals(project.getPath())}"/>
+<c:set var="isSubrepository" value="${!Util.fixPathIfWindows(repositoryInfo.getDirectoryNameRelative()).equals(project.getPath())}"/>
 <c:set var="name" value="${project.name}"/>
 <c:set var="defaultLength" value="${Integer.valueOf(10)}"/>
 <c:set var="NA" value="N/A"/>
