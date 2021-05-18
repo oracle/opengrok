@@ -74,6 +74,10 @@ public class BoundaryChangesetsTest {
         assertThrows(RuntimeException.class, () -> new BoundaryChangesets(gitSpyRepository));
     }
 
+    /**
+     * Used to supply test data for testing {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}
+     * @return triplets of (maximum count, start revision, list of expected revisions)
+     */
     private static Stream<ImmutableTriple<Integer, String, List<String>>> provideMapsForTestPerPartesHistory() {
         // Cannot use List.of() because of the null element.
         List<String> expectedChangesets2 = new ArrayList<>();
