@@ -56,7 +56,6 @@ import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -639,13 +638,7 @@ public class GitRepositoryTest {
         assertEquals(5, history.getHistoryEntries().size());
 
         assertNotNull(history.getRenamedFiles());
-        assertEquals(3, history.getRenamedFiles().size());
-
-        assertTrue(history.isRenamed(Paths.get("moved", "renamed2.c").toString()));
-        assertTrue(history.isRenamed(Paths.get("moved2", "renamed2.c").toString()));
-        assertTrue(history.isRenamed(Paths.get("moved", "renamed.c").toString()));
-        assertFalse(history.isRenamed("non-existent.c"));
-        assertFalse(history.isRenamed("renamed.c"));
+        assertEquals(0, history.getRenamedFiles().size());
 
         assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
         assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());

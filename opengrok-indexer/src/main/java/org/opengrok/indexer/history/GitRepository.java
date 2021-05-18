@@ -555,6 +555,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         final List<HistoryEntry> entries = new ArrayList<>();
         final Set<String> renamedFiles = new HashSet<>();
 
+        boolean isDirectory = file.isDirectory();
+
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
@@ -593,24 +595,12 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                                 " <" + commit.getAuthorIdent().getEmailAddress() + ">",
                         null, commit.getFullMessage(), true);
 
-                SortedSet<String> files = new TreeSet<>();
-                if (numParents == 1) {
-                    getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
-                } else if (numParents == 0) { // first commit
-                    try (TreeWalk treeWalk = new TreeWalk(repository)) {
-                        treeWalk.addTree(commit.getTree());
-                        treeWalk.setRecursive(true);
-
-                        while (treeWalk.next()) {
-                            files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                                    getNativePath(treeWalk.getPathString()));
-                        }
-                    }
-                } else {
-                    getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+                if (isDirectory) {
+                    SortedSet<String> files = new TreeSet<>();
+                    getFilesForCommit(renamedFiles, repository, commit, numParents, files);
+                    historyEntry.setFiles(files);
                 }
 
-                historyEntry.setFiles(files);
                 entries.add(historyEntry);
             }
         } catch (IOException | ForbiddenSymlinkException e) {
@@ -627,6 +617,25 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         }
 
         return result;
+    }
+
+    private void getFilesForCommit(Set<String> renamedFiles, org.eclipse.jgit.lib.Repository repository,
+                                   RevCommit commit, int numParents, SortedSet<String> files) throws IOException {
+        if (numParents == 1) {
+            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+        } else if (numParents == 0) { // first commit
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(commit.getTree());
+                treeWalk.setRecursive(true);
+
+                while (treeWalk.next()) {
+                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(treeWalk.getPathString()));
+                }
+            }
+        } else {
+            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+        }
     }
 
     private static String getNativePath(String path) {
