@@ -698,7 +698,7 @@ public class FileHistoryCacheTest {
     }
 
     /**
-     * Renamed files need special treatment when given repository support per partes history retrieval.
+     * Renamed files need special treatment when given repository supports per partes history retrieval.
      * Specifically, when a file is detected as renamed, its history needs to be retrieved with upper bound,
      * otherwise there would be duplicate history entries if there were subsequent changes to the file
      * in the following history chunks. This test prevents that.
