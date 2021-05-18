@@ -23,7 +23,6 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.util.Set;
 
 /**
  * Repositories extending this class will benefit from per partes history
