@@ -532,7 +532,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return 512;
     }
 
-    public void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor v) throws HistoryException {
+    public void accept(String sinceRevision, IChangesetVisitor v) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
