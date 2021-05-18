@@ -501,7 +501,6 @@ class FileHistoryCache implements HistoryCache {
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                // TODO: this should not be really needed. The history object should have a list of renamed files.
                 if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
                     renamedFiles.add(map_entry.getKey());
                     continue;

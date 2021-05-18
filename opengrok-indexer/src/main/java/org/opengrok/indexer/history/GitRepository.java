@@ -678,7 +678,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     }
                 }
 
-                // TODO: The renamed files should not be part of 'files' because their history is handled differently.
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
                     renamedFiles.add(getNativePath(diff.getNewPath()));
                 }
