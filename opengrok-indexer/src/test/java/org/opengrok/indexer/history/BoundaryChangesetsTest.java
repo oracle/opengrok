@@ -75,7 +75,7 @@ public class BoundaryChangesetsTest {
     }
 
     /**
-     * Used to supply test data for testing {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}
+     * Used to supply test data for testing {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}.
      * @return triplets of (maximum count, start revision, list of expected revisions)
      *
      * The test expects this sequence of changesets:
