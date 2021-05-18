@@ -42,7 +42,6 @@ public class BoundaryChangesets implements IChangesetVisitor {
     private int cnt = 0;
     private String lastId = null;
     private final List<String> result = new ArrayList<>();
-    final Set<String> renamedFiles = new HashSet<>();
 
     private final int maxCount;
     private final RepositoryWithPerPartesHistory repository;
@@ -63,11 +62,6 @@ public class BoundaryChangesets implements IChangesetVisitor {
         cnt = 0;
         lastId = null;
         result.clear();
-        renamedFiles.clear();
-    }
-
-    public Set<String> getRenamedFiles() {
-        return Collections.unmodifiableSet(renamedFiles);
     }
 
     /**
@@ -81,7 +75,7 @@ public class BoundaryChangesets implements IChangesetVisitor {
         LOGGER.log(Level.FINE, "getting boundary changesets for ''{0}''", repository.getDirectoryName());
         Statistics stat = new Statistics();
 
-        repository.accept(sinceRevision, renamedFiles, this);
+        repository.accept(sinceRevision, this);
 
         // The changesets need to go from oldest to newest.
         Collections.reverse(result);
