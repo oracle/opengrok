@@ -116,12 +116,12 @@ public class FileHistoryCacheTest {
     }
 
     /**
-     * Assert that two HistoryEntry objects are equal.
+     * Assert that two lists of HistoryEntry objects are equal.
      *
-     * @param expected the expected entry
-     * @param actual the actual entry
+     * @param expected the expected list of entries
+     * @param actual the actual list of entries
      * @param isdir was the history generated for a directory
-     * @throws AssertionError if the two entries don't match
+     * @throws AssertionError if the two lists don't match
      */
     private void assertSameEntries(List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
         assertEquals(expected.size(), actual.size(), "Unexpected size");
@@ -133,12 +133,12 @@ public class FileHistoryCacheTest {
     }
 
     /**
-     * Assert that two lists of HistoryEntry objects are equal.
+     * Assert that two HistoryEntry objects are equal.
      *
-     * @param expected the expected list of entries
-     * @param actual the actual list of entries
+     * @param expected the expected instance
+     * @param actual the actual instance
      * @param isdir was the history generated for directory
-     * @throws AssertionError if the two lists don't match
+     * @throws AssertionError if the two instances don't match
      */
     private void assertSameEntry(HistoryEntry expected, HistoryEntry actual, boolean isdir) {
         assertEquals(expected.getAuthor(), actual.getAuthor());
