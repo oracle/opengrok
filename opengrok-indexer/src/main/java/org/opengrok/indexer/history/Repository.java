@@ -397,7 +397,7 @@ public abstract class Repository extends RepositoryInfo {
         int cnt = 0;
         for (String tillRevision: boundaryChangesetList) {
             Statistics stat = new Statistics();
-            LOGGER.log(Level.FINE, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision}); // TODO FINEST
+            LOGGER.log(Level.FINEST, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision});
             history = repo.getHistory(directory, sinceRevision, tillRevision);
             finishCreateCache(cache, history, tillRevision);
             sinceRevision = tillRevision;
