@@ -102,7 +102,7 @@ public class BoundaryChangesetsTest {
     }
 
     /**
-     * Indirect test of {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}.
+     * Test of {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}.
      * @throws Exception on error
      */
     @ParameterizedTest
