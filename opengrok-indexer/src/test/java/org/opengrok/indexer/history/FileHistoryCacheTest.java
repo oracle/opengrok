@@ -716,6 +716,8 @@ public class FileHistoryCacheTest {
         }
         File barFile = new File(repositoryRoot, "bar.txt");
 
+        // Looks like the file needs to have content of some length for the add/rm below
+        // to be detected as file rename by the [J]Git heuristics.
         try (FileOutputStream fos = new FileOutputStream(fooFile)) {
             fos.write("foo bar foo bar foo bar".getBytes(StandardCharsets.UTF_8));
         }
