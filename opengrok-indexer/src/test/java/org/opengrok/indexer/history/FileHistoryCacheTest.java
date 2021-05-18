@@ -628,7 +628,6 @@ public class FileHistoryCacheTest {
                 updatedHistory.getHistoryEntries(), false);
     }
 
-
     /**
      * Make sure produces correct history where several files are renamed in a single commit.
      */
