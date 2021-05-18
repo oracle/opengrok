@@ -90,7 +90,6 @@ public class BoundaryChangesets implements IChangesetVisitor {
         return result;
     }
 
-    // TODO: non-public ?
     @Override
     public void visit(String id) {
         if (cnt != 0 && cnt % maxCount == 0) {
