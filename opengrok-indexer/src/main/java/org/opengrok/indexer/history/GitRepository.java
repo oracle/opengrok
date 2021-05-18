@@ -532,7 +532,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return 512;
     }
 
-    public void accept(String sinceRevision, IChangesetVisitor v) throws HistoryException {
+    public void accept(String sinceRevision, IChangesetVisitor visitor) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
@@ -543,7 +543,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
             for (RevCommit commit : walk) {
                 // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
-                v.visit(commit.getId().name());
+                visitor.visit(commit.getId().name());
             }
         } catch (IOException e) {
             throw new HistoryException(e);
