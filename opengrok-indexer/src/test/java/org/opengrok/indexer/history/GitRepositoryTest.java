@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
@@ -645,6 +646,63 @@ public class GitRepositoryTest {
         assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
         assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
         assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+    }
+
+    @Test
+    void testGetHistorySinceTillNullNull() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(root, null, null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(8, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of("84599b3c", "67dfbe26", "1086eaf5", "b6413947", "ce4c98ec", "aa35c258", "84821564",
+                "bb74b7e8"), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillNullRev() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(root, null, "ce4c98ec");
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(4, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of("ce4c98ec", "aa35c258", "84821564", "bb74b7e8"), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillRevNull() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(root, "aa35c258", null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(5, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of("84599b3c", "67dfbe26", "1086eaf5", "b6413947", "ce4c98ec"), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillRevRev() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
+
+        History history = gitrepo.getHistory(root, "ce4c98ec", "1086eaf5");
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(2, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of("1086eaf5", "b6413947"), revisions);
     }
 
     @Test
