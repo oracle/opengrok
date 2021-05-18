@@ -49,7 +49,6 @@ public class BoundaryChangesets implements IChangesetVisitor {
     public BoundaryChangesets(RepositoryWithPerPartesHistory repository) {
         this.repository = repository;
         this.maxCount = repository.getPerPartesCount();
-        // TODO: what if there is just one incoming changeset ?
         if (maxCount <= 1) {
             throw new RuntimeException(String.format("per partes count for repository ''%s'' " +
                     "must be stricly greater than 1", repository.getDirectoryName()));
