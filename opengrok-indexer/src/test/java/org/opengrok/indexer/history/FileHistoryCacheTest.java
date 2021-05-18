@@ -827,7 +827,6 @@ public class FileHistoryCacheTest {
                 updatedHistory.getHistoryEntries(), false);
     }
 
-
     private void checkNoHistoryFetchRepo(String reponame, String filename,
             boolean hasHistory, boolean historyFileExists) throws Exception {
 
