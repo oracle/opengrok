@@ -77,6 +77,17 @@ public class BoundaryChangesetsTest {
     /**
      * Used to supply test data for testing {@link BoundaryChangesets#getBoundaryChangesetIDs(String)}
      * @return triplets of (maximum count, start revision, list of expected revisions)
+     *
+     * The test expects this sequence of changesets:
+     *
+     * 84599b3cccb3eeb5aa9aec64771678d6526bcecb (HEAD -> master) renaming directories
+     * 67dfbe2648c94a8825671b0f2c132828d0d43079 renaming renamed -> renamed2
+     * 1086eaf5bca6d5a056097aa76017a8ab0eade20f adding some lines into renamed.c
+     * b6413947a59f481ddc0a05e0d181731233557f6e moved renamed.c to new location
+     * ce4c98ec1d22473d4aa799c046c2a90ae05832f1 adding simple file for renamed file testing
+     * aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a Add lint make target and fix lint warnings
+     * 8482156421620efbb44a7b6f0eb19d1f191163c7 Add the result of a make on Solaris x86
+     * bb74b7e849170c31dc1b1b5801c83bf0094a3b10 Added a small test program
      */
     private static Stream<ImmutableTriple<Integer, String, List<String>>> provideMapsForTestPerPartesHistory() {
         // Cannot use List.of() because of the null element.
