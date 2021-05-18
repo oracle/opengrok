@@ -697,6 +697,13 @@ public class FileHistoryCacheTest {
         git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
     }
 
+    /**
+     * Renamed files need special treatment when given repository support per partes
+     * history retrieval. Specifically, when a file is detected as renamed, its history needs to be retrieved
+     * with upper bound, otherwise there would be duplicate history entries. This test prevents that.
+     * @param maxCount maximum number of changesets to store in one go
+     * @throws Exception on error
+     */
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4})
     void testRenamedFileHistoryWithPerPartes(int maxCount) throws Exception {
