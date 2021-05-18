@@ -720,6 +720,11 @@ public class FileHistoryCacheTest {
             fos.write("foo bar foo bar foo bar".getBytes(StandardCharsets.UTF_8));
         }
 
+        // Create a series of commits to one (renamed) file:
+        //  - add the file
+        //  - bunch of content commits to the file
+        //  - rename the file
+        //  - bunch of content commits to the renamed file
         try (Git git = Git.init().setDirectory(repositoryRoot).call()) {
             git.add().addFilepattern("foo.txt").call();
             changeFileAndCommit(git, fooFile, "initial");
