@@ -106,9 +106,6 @@ interface HistoryCache {
     String getLatestCachedRevision(Repository repository)
             throws HistoryException;
 
-    // TODO
-    void storeLatestCachedRevision(Repository repository, String version);
-
     /**
      * Get the last modified times for all files and subdirectories in the
      * specified directory.

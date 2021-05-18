@@ -712,8 +712,7 @@ class FileHistoryCache implements HistoryCache {
      * @param repository repository
      * @param rev latest revision which has been just indexed
      */
-    @Override
-    public void storeLatestCachedRevision(Repository repository, String rev) {
+    private void storeLatestCachedRevision(Repository repository, String rev) {
         Writer writer = null;
 
         try {
