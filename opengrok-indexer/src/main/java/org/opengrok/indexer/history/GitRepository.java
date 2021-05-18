@@ -550,7 +550,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         }
     }
 
-    // TODO: could this miss some renamed files at the boundaries ? add test for this
     public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
         final List<HistoryEntry> entries = new ArrayList<>();
         final Set<String> renamedFiles = new HashSet<>();

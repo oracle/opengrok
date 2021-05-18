@@ -32,13 +32,17 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 
 public class RepositoryWithPerPartesHistoryTest {
@@ -97,5 +101,30 @@ public class RepositoryWithPerPartesHistoryTest {
         tillRevisions.add("b6413947a59f481ddc0a05e0d181731233557f6e");
         tillRevisions.add(null);
         assertEquals(tillRevisions, stringArgumentCaptor2.getAllValues());
+    }
+
+    /**
+     * Test a (perceived) corner case to simulate there is exactly one "incoming" changeset
+     * for a repository with per partes history handling. This changeset has to be stored in history cache.
+     * @throws Exception on error
+     */
+    @Test
+    void testPseudoIncomingChangeset() throws Exception {
+        FileHistoryCache cache = new FileHistoryCache();
+        GitRepository gitSpyRepository = Mockito.spy(gitRepository);
+        Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(3);
+        List<HistoryEntry> historyEntries = gitRepository.getHistory(new File(gitRepository.getDirectoryName())).
+                getHistoryEntries();
+        assertFalse(historyEntries.isEmpty());
+
+        gitSpyRepository.createCache(cache, historyEntries.get(1).getRevision());
+        Mockito.verify(gitSpyRepository, times(1)).
+                getHistory(any(), anyString(), isNull());
+        assertEquals(historyEntries.get(0).getRevision(), cache.getLatestCachedRevision(gitSpyRepository));
+        History cachedHistory = cache.get(Paths.get(gitRepository.getDirectoryName(), "moved2", "renamed2.c").toFile(),
+                gitSpyRepository, false);
+        assertNotNull(cachedHistory);
+        assertEquals(1, cachedHistory.getHistoryEntries().size());
+        assertEquals(historyEntries.get(0).getRevision(), cachedHistory.getHistoryEntries().get(0).getRevision());
     }
 }
