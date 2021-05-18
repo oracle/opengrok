@@ -103,7 +103,8 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean hasHistoryForDirectories();
 
     /**
-     * Get the history log for the specified file or directory.
+     * Get the history for the specified file or directory.
+     * It is expected that {@link History#getRenamedFiles()} and {@link HistoryEntry#getFiles()} are empty for files.
      *
      * @param file the file to get the history for
      * @return history log for file

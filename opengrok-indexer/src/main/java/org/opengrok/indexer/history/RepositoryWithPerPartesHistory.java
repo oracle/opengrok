@@ -33,9 +33,11 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
     private static final long serialVersionUID = -3433255821312805064L;
 
     /**
+     * Just like for {@link Repository#getHistory(File)} it is expected that the lists of (renamed) files
+     * individual files (i.e. not directory) are empty.
      * @param file file to retrieve history for
-     * @param sinceRevision start revision
-     * @param tillRevision end revision
+     * @param sinceRevision start revision (non inclusive)
+     * @param tillRevision end revision (inclusive)
      * @return history object
      * @throws HistoryException if history retrieval fails
      */
@@ -48,6 +50,13 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         return 128;
     }
 
-    public abstract void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor v)
+    /**
+     * Traverse the changesets using the visitor pattern.
+     * @param sinceRevision start revision
+     * @param renamedFiles end revision
+     * @param visitor object implementing the {@link IChangesetVisitor} interface
+     * @throws HistoryException on error during history retrieval
+     */
+    public abstract void accept(String sinceRevision, Set<String> renamedFiles, IChangesetVisitor visitor)
             throws HistoryException;
 }
