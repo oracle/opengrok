@@ -26,6 +26,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -73,7 +74,8 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         // (which can be sizeable, at least for the initial indexing, esp. if merge changeset support is enabled),
         // by splitting the work into multiple chunks.
         BoundaryChangesets boundaryChangesets = new BoundaryChangesets(this);
-        List<String> boundaryChangesetList = boundaryChangesets.getBoundaryChangesetIDs(sinceRevision);
+        List<String> boundaryChangesetList = new ArrayList<>(boundaryChangesets.getBoundaryChangesetIDs(sinceRevision));
+        boundaryChangesetList.add(null);    // to finish the last step in the cycle below
         LOGGER.log(Level.FINE, "boundary changesets: {0}", boundaryChangesetList);
         int cnt = 0;
         for (String tillRevision: boundaryChangesetList) {

@@ -95,12 +95,12 @@ public class BoundaryChangesetsTest {
         // Cannot use List.of() because of the null element.
         List<String> expectedChangesets2 = Arrays.asList("8482156421620efbb44a7b6f0eb19d1f191163c7",
                 "ce4c98ec1d22473d4aa799c046c2a90ae05832f1",
-                "1086eaf5bca6d5a056097aa76017a8ab0eade20f", null);
+                "1086eaf5bca6d5a056097aa76017a8ab0eade20f");
 
-        List<String> expectedChangesets4 = Arrays.asList("ce4c98ec1d22473d4aa799c046c2a90ae05832f1", null);
+        List<String> expectedChangesets4 = Arrays.asList("ce4c98ec1d22473d4aa799c046c2a90ae05832f1");
 
         List<String> expectedChangesets2Middle = Arrays.asList("ce4c98ec1d22473d4aa799c046c2a90ae05832f1",
-                "1086eaf5bca6d5a056097aa76017a8ab0eade20f", null);
+                "1086eaf5bca6d5a056097aa76017a8ab0eade20f");
 
         return Stream.of(ImmutableTriple.of(2, null, expectedChangesets2),
                 ImmutableTriple.of(4, null, expectedChangesets4),
