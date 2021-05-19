@@ -30,6 +30,7 @@ import java.io.File;
  */
 public abstract class RepositoryWithPerPartesHistory extends Repository {
     private static final long serialVersionUID = -3433255821312805064L;
+    public static final int MAX_CHANGESETS = 128;
 
     /**
      * Just like for {@link Repository#getHistory(File)} it is expected that the lists of (renamed) files
@@ -46,7 +47,7 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * @return maximum number of entries to retrieve
      */
     public int getPerPartesCount() {
-        return 128;
+        return MAX_CHANGESETS;
     }
 
     /**
