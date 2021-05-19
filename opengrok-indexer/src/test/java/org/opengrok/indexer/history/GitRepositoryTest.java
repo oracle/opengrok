@@ -294,27 +294,6 @@ public class GitRepositoryTest {
         assertTrue(result);
     }
 
-    @Test
-    public void testDateFormats() {
-        String[][] tests = new String[][] {
-                {"abcd", "expected exception"},
-                {"2016-01-01 10:00:00", "expected exception"},
-                {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "expected exception"},
-                {"2017-07-25T13:17:44+02:00", null},
-        };
-
-        final GitRepository repository = new GitRepository();
-
-        for (String[] test : tests) {
-            try {
-                repository.parse(test[0]);
-                assertNull(test[1], "Shouldn't be able to parse the date: " + test[0]);
-            } catch (ParseException ex) {
-                assertNotNull(test[1], "Shouldn't throw a parsing exception for date: " + test[0]);
-            }
-        }
-    }
-
     /**
      * For the following renamed tests the structure in the git repo is as following:
      * <pre>
