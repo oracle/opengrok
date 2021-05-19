@@ -135,6 +135,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
 
     public static final int GIT_ABBREV_LEN = 8;
+    public static final int MAX_CHANGESETS = 512;
 
     public GitRepository() {
         type = "git";
@@ -529,7 +530,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     public int getPerPartesCount() {
-        return 512;
+        return MAX_CHANGESETS;
     }
 
     public void accept(String sinceRevision, IChangesetVisitor visitor) throws HistoryException {
