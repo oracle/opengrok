@@ -61,7 +61,7 @@ public class BoundaryChangesets {
 
     /**
      * @param sinceRevision start revision ID
-     * @return list of revision IDs denoting the intervals
+     * @return immutable list of revision IDs denoting the intervals
      * @throws HistoryException if there is problem traversing the changesets in the repository
      */
     public synchronized List<String> getBoundaryChangesetIDs(String sinceRevision) throws HistoryException {
@@ -75,14 +75,11 @@ public class BoundaryChangesets {
         // The changesets need to go from oldest to newest.
         Collections.reverse(result);
 
-        // Add null to finish the last step in Repository#createCache().
-        result.add(null);
-
         stat.report(LOGGER, Level.FINE,
                 String.format("done getting boundary changesets for ''%s'' (%d entries)",
                         repository.getDirectoryName(), result.size()));
 
-        return result;
+        return List.copyOf(result);
     }
 
     private void visit(String id) {
