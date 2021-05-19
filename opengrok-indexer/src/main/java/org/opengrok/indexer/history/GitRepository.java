@@ -127,13 +127,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     public GitRepository() {
         type = "git";
-        /*
-         * This should match the 'iso-strict' format used by
-         * {@code getHistoryLogExecutor}.
-         */
-        datePatterns = new String[] {
-            "yyyy-MM-dd'T'HH:mm:ssXXX"
-        };
 
         ignoredDirs.add(".git");
         ignoredFiles.add(".git");
