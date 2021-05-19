@@ -53,7 +53,6 @@ import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 import org.jetbrains.annotations.NotNull;
-import org.opengrok.indexer.util.Statistics;
 
 /**
  * An interface for an external repository.
