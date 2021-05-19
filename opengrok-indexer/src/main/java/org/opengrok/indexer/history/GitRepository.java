@@ -69,6 +69,7 @@ import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -584,8 +585,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             }
 
             for (RevCommit commit : walk) {
-                int numParents = commit.getParentCount();
-                if (numParents > 1 && !isMergeCommitsEnabled()) {
+                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                     continue;
                 }
 
@@ -597,7 +597,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
                 if (isDirectory) {
                     SortedSet<String> files = new TreeSet<>();
-                    getFilesForCommit(renamedFiles, repository, commit, numParents, files);
+                    getFilesForCommit(renamedFiles, files, commit, repository);
                     historyEntry.setFiles(files);
                 }
 
@@ -619,8 +619,19 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return result;
     }
 
-    private void getFilesForCommit(Set<String> renamedFiles, org.eclipse.jgit.lib.Repository repository,
-                                   RevCommit commit, int numParents, SortedSet<String> files) throws IOException {
+    /**
+     * Accumulate list of changed files and renamed files (if enabled) for given commit
+     * @param renamedFiles result containing the renamed files in this commit
+     * @param files result containing changed files in this commit
+     * @param commit RevCommit object
+     * @param repository repository object
+     * @throws IOException on error traversing the commit tree
+     */
+    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> files, RevCommit commit,
+                                   Repository repository) throws IOException {
+
+        int numParents = commit.getParentCount();
+
         if (numParents == 1) {
             getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
         } else if (numParents == 0) { // first commit
