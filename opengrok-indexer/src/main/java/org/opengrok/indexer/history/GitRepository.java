@@ -24,7 +24,6 @@
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +36,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -52,8 +50,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
@@ -283,17 +279,17 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     /**
-     * Get the name of file in given revision. The returned file name is relative
-     * to the repository root.
+     * Get the name of file in given revision. The returned file name is relative to the repository root.
+     * Assumes renamed file hanndling is on.
      *
-     * @param fullpath  file path
-     * @param changeset changeset
+     * @param fullpath full file path
+     * @param changeset revision ID (could be short)
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
      * @see #getPathRelativeToCanonicalRepositoryRoot(String)
      */
-    String findOriginalName(String fullpath, String changeset)
-            throws IOException {
+    String findOriginalName(String fullpath, String changeset) throws IOException {
+
         if (fullpath == null || fullpath.isEmpty()) {
             throw new IOException(String.format("Invalid file path string: %s", fullpath));
         }
@@ -303,63 +299,57 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     fullpath, changeset));
         }
 
-        String fileInRepo = getPathRelativeToCanonicalRepositoryRoot(fullpath);
+        String fileInRepo = getGitFilePath(getPathRelativeToCanonicalRepositoryRoot(fullpath));
 
-        /*
-         * Get the list of file renames for given file to the specified
-         * revision.
-         */
-        String[] argv = {
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
-            "log",
-            "--follow",
-            "--summary",
-            ABBREV_LOG,
-            "--abbrev-commit",
-            "--name-status",
-            "--pretty=format:commit %h%n%d",
-            "--",
-            fileInRepo
-        };
+        String originalFile = fileInRepo;
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
 
-        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        int status = executor.exec();
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+            walk.markUninteresting(walk.lookupCommit(repository.resolve(changeset)));
 
-        String originalFile = null;
-        try (BufferedReader in = new BufferedReader(newLogReader(executor.getOutputStream()))) {
-            String line;
-            String rev = null;
-            Matcher m;
-            Pattern pattern = Pattern.compile("^R\\d+\\s(.*)\\s(.*)");
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("commit ")) {
-                    rev = line.substring(7);
+            Config config = repository.getConfig();
+            config.setBoolean("diff", null, "renames", true);
+            org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+            FollowFilter followFilter = FollowFilter.create(getGitFilePath(fileInRepo), dc);
+            walk.setTreeFilter(followFilter);
+
+            for (RevCommit commit : walk) {
+                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                     continue;
                 }
 
-                if (changeset.equals(rev)) {
-                    if (originalFile == null) {
-                        originalFile = fileInRepo;
-                    }
+                if (commit.getId().getName().startsWith(changeset)) {
                     break;
                 }
 
-                if ((m = pattern.matcher(line)).find()) {
-                    // git output paths with forward slashes so transform it if needed
-                    originalFile = Paths.get(m.group(1)).toString();
+                if (commit.getParentCount() >= 1) {
+                    OutputStream outputStream = NullOutputStream.INSTANCE;
+                    try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+                        formatter.setRepository(repository);
+                        formatter.setDetectRenames(true);
+
+                        List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, commit.getParent(0)),
+                                prepareTreeParser(repository, commit));
+
+                        for (DiffEntry diff : diffs) {
+                            if (diff.getChangeType() == DiffEntry.ChangeType.RENAME &&
+                                    originalFile.equals(diff.getNewPath())) {
+                                originalFile = diff.getOldPath();
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        if (status != 0 || originalFile == null) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status), changeset});
+        if (originalFile == null) {
+            LOGGER.log(Level.WARNING, "Failed to get original name in revision {0} for: \"{1}\"",
+                    new Object[]{changeset, fullpath});
             return null;
         }
 
-        return originalFile;
+        return getNativePath(originalFile);
     }
 
     /**

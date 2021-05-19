@@ -501,8 +501,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         byte[] buffer = new byte[4096];
 
-        InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(),
-                fname, cset);
+        InputStream input = gitrepo.getHistoryGet(root.getCanonicalPath(), fname, cset);
         if (content == null) {
             assertNull(input, String.format("Expecting the revision %s for file %s does not exist", cset, fname));
         } else {
