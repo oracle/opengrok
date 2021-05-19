@@ -23,6 +23,7 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 /**
  * Repositories extending this class will benefit from per partes history
@@ -56,5 +57,5 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * @param visitor object implementing the {@link ChangesetVisitorInterface} interface
      * @throws HistoryException on error during history retrieval
      */
-    public abstract void accept(String sinceRevision, ChangesetVisitorInterface visitor) throws HistoryException;
+    public abstract void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException;
 }

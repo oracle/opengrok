@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -534,7 +535,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return MAX_CHANGESETS;
     }
 
-    public void accept(String sinceRevision, ChangesetVisitorInterface visitor) throws HistoryException {
+    public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 
@@ -545,7 +546,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
             for (RevCommit commit : walk) {
                 // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
-                visitor.visit(commit.getId().name());
+                visitor.accept(commit.getId().name());
             }
         } catch (IOException e) {
             throw new HistoryException(e);

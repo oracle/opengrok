@@ -34,9 +34,9 @@ import java.util.logging.Logger;
 /**
  * Helper class to split sequence of VCS changesets into number of intervals.
  * This is then used in {@link Repository#createCache(HistoryCache, String)}
- * to store history in chunks, for VCS repositories that supports this.
+ * to store history in chunks, for VCS repositories that support this.
  */
-public class BoundaryChangesets implements ChangesetVisitorInterface {
+public class BoundaryChangesets {
     private int cnt = 0;
     private final List<String> result = new ArrayList<>();
 
@@ -70,7 +70,7 @@ public class BoundaryChangesets implements ChangesetVisitorInterface {
         LOGGER.log(Level.FINE, "getting boundary changesets for ''{0}''", repository.getDirectoryName());
         Statistics stat = new Statistics();
 
-        repository.accept(sinceRevision, this);
+        repository.accept(sinceRevision, this::visit);
 
         // The changesets need to go from oldest to newest.
         Collections.reverse(result);
@@ -85,8 +85,7 @@ public class BoundaryChangesets implements ChangesetVisitorInterface {
         return result;
     }
 
-    @Override
-    public void visit(String id) {
+    private void visit(String id) {
         if (cnt != 0 && cnt % maxCount == 0) {
             result.add(id);
         }
