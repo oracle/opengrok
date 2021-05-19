@@ -82,7 +82,6 @@ import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
 
@@ -97,20 +96,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
     private static final long serialVersionUID = -6126297612958508386L;
-    /**
-     * The property name used to obtain the client command for this repository.
-     */
-    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.git";
-    /**
-     * The command to use to access the repository if none was given explicitly.
-     */
-    public static final String CMD_FALLBACK = "git";
-
-    /**
-     * Arguments to shorten git IDs.
-     */
-    private static final int CSET_LEN = 8;
-    private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
 
     /**
      * This is a static replacement for 'working' field. Effectively, check if git is working once in a JVM
@@ -129,9 +114,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     private static boolean isGitWorking() {
-        String repoCommand = getCommand(GitRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
-        Executor exec = new Executor(new String[] {repoCommand, "--version"});
-        return (exec.exec(false) == 0);
+        return true;
     }
 
     /**
