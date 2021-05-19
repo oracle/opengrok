@@ -534,7 +534,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return MAX_CHANGESETS;
     }
 
-    public void accept(String sinceRevision, IChangesetVisitor visitor) throws HistoryException {
+    public void accept(String sinceRevision, ChangesetVisitorInterface visitor) throws HistoryException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
              RevWalk walk = new RevWalk(repository)) {
 

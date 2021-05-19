@@ -22,6 +22,6 @@
  */
 package org.opengrok.indexer.history;
 
-public interface IChangesetVisitor {
+public interface ChangesetVisitorInterface {
     void visit(String id);
 }

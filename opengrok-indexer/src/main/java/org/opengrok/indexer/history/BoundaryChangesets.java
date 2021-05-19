@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * This is then used in {@link Repository#createCache(HistoryCache, String)}
  * to store history in chunks, for VCS repositories that supports this.
  */
-public class BoundaryChangesets implements IChangesetVisitor {
+public class BoundaryChangesets implements ChangesetVisitorInterface {
     private int cnt = 0;
     private final List<String> result = new ArrayList<>();
 
