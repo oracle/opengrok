@@ -82,7 +82,7 @@ public class BoundaryChangesets {
                 String.format("done getting boundary changesets for ''%s'' (%d entries)",
                         repository.getDirectoryName(), result.size()));
 
-        return result;
+        return List.copyOf(result);
     }
 
     private void visit(String id) {
