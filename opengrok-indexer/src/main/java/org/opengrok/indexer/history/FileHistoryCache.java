@@ -488,7 +488,7 @@ class FileHistoryCache implements HistoryCache {
 
         File histDataDir = new File(getRepositoryHistDataDirname(repository));
         if (!histDataDir.isDirectory() && !histDataDir.mkdirs()) {
-            LOGGER.log(Level.WARNING, "cannot create history cache directory for XXX");
+            LOGGER.log(Level.WARNING, "cannot create history cache directory for ''{0}''", histDataDir);
         }
 
         /*
