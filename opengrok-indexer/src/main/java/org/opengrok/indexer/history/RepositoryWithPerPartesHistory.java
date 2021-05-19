@@ -22,8 +22,14 @@
  */
 package org.opengrok.indexer.history;
 
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Statistics;
+
 import java.io.File;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Repositories extending this class will benefit from per partes history
@@ -32,6 +38,8 @@ import java.util.function.Consumer;
 public abstract class RepositoryWithPerPartesHistory extends Repository {
     private static final long serialVersionUID = -3433255821312805064L;
     public static final int MAX_CHANGESETS = 128;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryWithPerPartesHistory.class);
 
     /**
      * Just like for {@link Repository#getHistory(File)} it is expected that the lists of (renamed) files
@@ -58,4 +66,24 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
      * @throws HistoryException on error during history retrieval
      */
     public abstract void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException;
+
+    @Override
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+        // For repositories that supports this, avoid storing complete History in memory
+        // (which can be sizeable, at least for the initial indexing, esp. if merge changeset support is enabled),
+        // by splitting the work into multiple chunks.
+        BoundaryChangesets boundaryChangesets = new BoundaryChangesets(this);
+        List<String> boundaryChangesetList = boundaryChangesets.getBoundaryChangesetIDs(sinceRevision);
+        LOGGER.log(Level.FINE, "boundary changesets: {0}", boundaryChangesetList);
+        int cnt = 0;
+        for (String tillRevision: boundaryChangesetList) {
+            Statistics stat = new Statistics();
+            LOGGER.log(Level.FINEST, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision});
+            finishCreateCache(cache, getHistory(directory, sinceRevision, tillRevision), tillRevision);
+            sinceRevision = tillRevision;
+
+            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
+                    ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
+        }
+    }
 }
