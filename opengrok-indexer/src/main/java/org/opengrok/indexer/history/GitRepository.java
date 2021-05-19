@@ -620,7 +620,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     /**
-     * Accumulate list of changed files and renamed files (if enabled) for given commit
+     * Accumulate list of changed files and renamed files (if enabled) for given commit.
      * @param renamedFiles result containing the renamed files in this commit
      * @param files result containing changed files in this commit
      * @param commit RevCommit object
