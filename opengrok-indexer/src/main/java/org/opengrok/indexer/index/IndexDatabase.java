@@ -1665,9 +1665,10 @@ public class IndexDatabase {
     /**
      * @param file File object of a file under source root
      * @return Document object for the file or {@code null}
+     * @throws IOException on I/O error
+     * @throws ParseException on problem with building Query
      */
-    public static Document getDocument(File file)
-            throws IOException, ParseException {
+    public static Document getDocument(File file) throws IOException, ParseException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
         try {
