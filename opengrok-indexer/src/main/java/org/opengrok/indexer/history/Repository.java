@@ -349,6 +349,10 @@ public abstract class Repository extends RepositoryInfo {
         return history_revision;
     }
 
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+        finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+    }
+
     /**
      * Create a history log cache for all files in this repository.
      * {@code getHistory()} is used to fetch the history for the entire
@@ -380,34 +384,10 @@ public abstract class Repository extends RepositoryInfo {
 
         File directory = new File(getDirectoryName());
 
-        History history;
-        if (!(this instanceof RepositoryWithPerPartesHistory)) {
-            history = getHistory(directory, sinceRevision);
-            finishCreateCache(cache, history, null);
-            return;
-        }
-
-        // For repositories that supports this, avoid storing complete History in memory
-        // (which can be sizeable, at least for the initial indexing, esp. if merge changeset support is enabled),
-        // by splitting the work into multiple chunks.
-        RepositoryWithPerPartesHistory repo = (RepositoryWithPerPartesHistory) this;
-        BoundaryChangesets boundaryChangesets = new BoundaryChangesets(repo);
-        List<String> boundaryChangesetList = boundaryChangesets.getBoundaryChangesetIDs(sinceRevision);
-        LOGGER.log(Level.FINE, "boundary changesets: {0}", boundaryChangesetList);
-        int cnt = 0;
-        for (String tillRevision: boundaryChangesetList) {
-            Statistics stat = new Statistics();
-            LOGGER.log(Level.FINEST, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision});
-            history = repo.getHistory(directory, sinceRevision, tillRevision);
-            finishCreateCache(cache, history, tillRevision);
-            sinceRevision = tillRevision;
-
-            stat.report(LOGGER, Level.FINE, String.format("finished chunk %d/%d of history cache for repository ''%s''",
-                    ++cnt, boundaryChangesetList.size(), this.getDirectoryName()));
-        }
+        doCreateCache(cache, sinceRevision, directory);
     }
 
-    private void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
+    void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
