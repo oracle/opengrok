@@ -38,7 +38,6 @@ import java.util.logging.Logger;
  */
 public class BoundaryChangesets implements IChangesetVisitor {
     private int cnt = 0;
-    private String lastId = null;
     private final List<String> result = new ArrayList<>();
 
     private final int maxCount;
@@ -57,7 +56,6 @@ public class BoundaryChangesets implements IChangesetVisitor {
 
     private void reset() {
         cnt = 0;
-        lastId = null;
         result.clear();
     }
 
@@ -90,8 +88,7 @@ public class BoundaryChangesets implements IChangesetVisitor {
     @Override
     public void visit(String id) {
         if (cnt != 0 && cnt % maxCount == 0) {
-            lastId = id;
-            result.add(lastId);
+            result.add(id);
         }
         cnt++;
     }
