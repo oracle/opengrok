@@ -41,7 +41,7 @@ public class History {
      * SCMs) during cache creation.
      * These are relative to repository root.
      */
-    private Set<String> renamedFiles;
+    private final Set<String> renamedFiles;
     
     public History() {
         this(new ArrayList<>());
