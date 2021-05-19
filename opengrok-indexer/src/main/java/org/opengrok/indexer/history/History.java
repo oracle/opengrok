@@ -120,6 +120,8 @@ public class History {
 
     /**
      * Gets a value indicating if {@code file} is in the list of renamed files.
+     * @param file file path
+     * @return is file renamed
      */
     public boolean isRenamed(String file) {
         return renamedFiles.contains(file);
