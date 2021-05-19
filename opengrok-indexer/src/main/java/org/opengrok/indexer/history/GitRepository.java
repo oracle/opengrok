@@ -89,7 +89,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
-import org.opengrok.indexer.util.Version;
 
 import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
@@ -118,19 +117,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
 
     /**
-     * All git commands that emit date that needs to be parsed by
-     * {@code getDateFormat()} should use this option.
-     */
-    private static final String GIT_DATE_OPT = "--date=iso8601-strict";
-
-    /**
-     * Minimum git version which supports the date format.
-     *
-     * @see #GIT_DATE_OPT
-     */
-    private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
-
-    /**
      * This is a static replacement for 'working' field. Effectively, check if git is working once in a JVM
      * instead of calling it for every GitRepository instance.
      */
@@ -156,16 +142,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     private static boolean isGitWorking() {
         String repoCommand = getCommand(GitRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
         Executor exec = new Executor(new String[] {repoCommand, "--version"});
-        if (exec.exec(false) == 0) {
-            final String outputVersion = exec.getOutputString();
-            final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
-            try {
-                return Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
-            } catch (NumberFormatException ex) {
-                LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
-            }
-        }
-        return false;
+        return (exec.exec(false) == 0);
     }
 
     /**
