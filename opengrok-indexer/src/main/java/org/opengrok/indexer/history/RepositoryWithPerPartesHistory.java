@@ -54,7 +54,7 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
     /**
      * Traverse the changesets using the visitor pattern.
      * @param sinceRevision start revision
-     * @param visitor object implementing the {@link ChangesetVisitorInterface} interface
+     * @param visitor consumer of revisions
      * @throws HistoryException on error during history retrieval
      */
     public abstract void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException;
