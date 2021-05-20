@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 import org.junit.jupiter.api.AfterEach;
@@ -77,7 +76,7 @@ public class IndexerRepoTest {
      * Test it is possible to disable history per project.
      */
     @Test
-    @EnabledForRepository({MERCURIAL, GIT})
+    @EnabledForRepository(MERCURIAL)
     public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(true);
     }
@@ -86,7 +85,7 @@ public class IndexerRepoTest {
      * Test it is possible to enable history per project.
      */
     @Test
-    @EnabledForRepository({MERCURIAL, GIT})
+    @EnabledForRepository(MERCURIAL)
     public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(false);
     }

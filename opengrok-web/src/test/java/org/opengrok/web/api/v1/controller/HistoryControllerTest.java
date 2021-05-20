@@ -29,7 +29,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -48,10 +47,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
-@EnabledForRepository(GIT)
 public class HistoryControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

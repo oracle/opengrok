@@ -44,10 +44,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
-@EnabledForRepository({MERCURIAL, GIT})
+@EnabledForRepository(MERCURIAL)
 public class RepositoriesControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

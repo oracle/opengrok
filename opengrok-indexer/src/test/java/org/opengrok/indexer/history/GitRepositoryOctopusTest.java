@@ -26,12 +26,10 @@ package org.opengrok.indexer.history;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
@@ -45,7 +43,6 @@ import java.util.stream.Collectors;
 /**
  * @author austvik
  */
-@EnabledForRepository(GIT)
 public class GitRepositoryOctopusTest {
 
     private static TestRepository repository = new TestRepository();

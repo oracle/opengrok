@@ -26,7 +26,6 @@ package org.opengrok.indexer.history;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -35,7 +34,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
 /**
  * Test file-based history cache with for git-octopus.
@@ -65,7 +63,6 @@ public class FileHistoryCacheOctopusTest {
         cache = null;
     }
 
-    @EnabledForRepository(GIT)
     @Test
     public void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "git-octopus");

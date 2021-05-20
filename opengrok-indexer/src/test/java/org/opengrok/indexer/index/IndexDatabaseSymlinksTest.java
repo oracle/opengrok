@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Represents a container for additional tests of {@link IndexDatabase} for symlinks.
  */
 @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
-@EnabledForRepository({RepositoryInstalled.Type.GIT, RepositoryInstalled.Type.MERCURIAL})
+@EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
 public class IndexDatabaseSymlinksTest {
 
     private static RuntimeEnvironment env;

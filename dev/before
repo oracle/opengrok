@@ -3,7 +3,6 @@
 echo "SCM versions:"
 if command -v bk; then bk --version; fi
 if command -v hg; then hg --version; fi
-if command -v git; then git --version; fi
 if command -v svn; then svn --version; fi
 if command -v cvs; then cvs --version; fi
 if command -v mtn; then mtn --version; fi

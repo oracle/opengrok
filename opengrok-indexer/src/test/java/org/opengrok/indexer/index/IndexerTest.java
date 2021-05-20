@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 import java.io.BufferedWriter;
@@ -366,7 +365,7 @@ public class IndexerTest {
     }
 
     @Test
-    @EnabledForRepository({MERCURIAL, GIT})
+    @EnabledForRepository(MERCURIAL)
     public void testSetRepositories() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

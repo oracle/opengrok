@@ -57,7 +57,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
@@ -257,7 +256,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -273,7 +271,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testGetRevisionLocation() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -300,7 +297,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testGetRevisionLocationNullQuery() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -327,7 +323,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testGetLatestRevisionNotValid() {
         DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
             @Override
@@ -368,7 +363,6 @@ public class PageConfigTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testGetAnnotation() {
         final String[] revisions = {"aa35c258", "bb74b7e8"};
 
