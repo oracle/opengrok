@@ -36,6 +36,11 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
+    - name: Checkout Universal ctags
+      uses: actions/checkout@v2
+      with:
+        repository: universal-ctags/ctags
+        path: ctags
     - name: Install pre-requisites
       run: ./dev/before_install
     - name: Before build actions

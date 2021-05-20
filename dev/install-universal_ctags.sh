@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #
 # Clone Universal ctags Github repository and compile from source.
 #
