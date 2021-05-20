@@ -83,7 +83,6 @@ import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.LazilyInstantiate;
 
 import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
@@ -97,12 +96,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     private static final long serialVersionUID = -6126297612958508386L;
 
-    /**
-     * This is a static replacement for 'working' field. Effectively, check if git is working once in a JVM
-     * instead of calling it for every GitRepository instance.
-     */
-    private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
-
     public static final int GIT_ABBREV_LEN = 8;
     public static final int MAX_CHANGESETS = 512;
 
@@ -111,10 +104,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
         ignoredDirs.add(".git");
         ignoredFiles.add(".git");
-    }
-
-    private static boolean isGitWorking() {
-        return true;
     }
 
     /**
@@ -452,11 +441,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     @Override
     public boolean isWorking() {
-        if (working == null) {
-            working = GIT_IS_WORKING.get();
-        }
-
-        return working;
+        return true;
     }
 
     @Override
