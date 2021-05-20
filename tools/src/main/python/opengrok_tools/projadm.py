@@ -207,7 +207,10 @@ def project_delete(logger, project, uri, doit=True, deletesource=False,
         logger.debug("Removing directory tree {}".format(sourcedir))
         if doit:
             logger.info("Removing source code under {}".format(sourcedir))
-            shutil.rmtree(sourcedir)
+            try:
+                shutil.rmtree(sourcedir)
+            except Exception as e:
+                logger.error("Failed to remove {}: {}".format(sourcedir, e))
 
 
 def main():
