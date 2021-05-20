@@ -82,7 +82,6 @@ class FileHistoryCache implements HistoryCache {
 
     private static final String HISTORY_CACHE_DIR_NAME = "historycache";
     private static final String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
-    private static final String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
     private final PathAccepter pathAccepter = env.getPathAccepter();
     private boolean historyIndexDone = false;
@@ -224,10 +223,6 @@ class FileHistoryCache implements HistoryCache {
                 add = File.separator;
             }
             sb.append(add);
-            if (file.isDirectory()) {
-                sb.append(File.separator);
-                sb.append(DIRECTORY_FILE_PREFIX);
-            }
         } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to " +
                     "source root for " + file, e);
