@@ -29,7 +29,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
@@ -50,9 +49,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 
-@EnabledForRepository(GIT)
 public class AnnotationControllerTest extends OGKJerseyTest {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

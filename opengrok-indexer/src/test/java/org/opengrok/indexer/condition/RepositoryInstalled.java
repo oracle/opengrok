@@ -27,7 +27,6 @@ import com.google.common.base.Suppliers;
 import org.opengrok.indexer.history.BazaarRepository;
 import org.opengrok.indexer.history.BitKeeperRepository;
 import org.opengrok.indexer.history.CVSRepository;
-import org.opengrok.indexer.history.GitRepository;
 import org.opengrok.indexer.history.MercurialRepository;
 import org.opengrok.indexer.history.PerforceRepository;
 import org.opengrok.indexer.history.RCSRepository;
@@ -42,7 +41,6 @@ public class RepositoryInstalled {
     public enum Type {
         BITKEEPER(new BitKeeperRepository()),
         MERCURIAL(new MercurialRepository()),
-        GIT(new GitRepository()),
         RCS(new RCSRepository()),
         BAZAAR(new BazaarRepository()),
         CVS(new CVSRepository()),

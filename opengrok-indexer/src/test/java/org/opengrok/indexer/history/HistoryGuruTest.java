@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
-import static org.opengrok.indexer.condition.RepositoryInstalled.Type.GIT;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 
@@ -152,7 +151,6 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         final int numReposOrig = instance.getRepositories().size();
@@ -177,7 +175,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @EnabledForRepository({CVS, GIT})
+    @EnabledForRepository(CVS)
     public void testAddSubRepositoryNotNestable() {
         HistoryGuru instance = HistoryGuru.getInstance();
 
@@ -251,7 +249,6 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @EnabledForRepository(GIT)
     public void testScanningDepth() throws IOException {
         String topLevelDirName = "scanDepthTest";
         File repoRoot = new File(repository.getSourceRoot(), topLevelDirName);
