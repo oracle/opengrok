@@ -67,7 +67,6 @@ def get_SCM_properties(logger):
         'svn': '-Dorg.opengrok.indexer.history.Subversion',
         'sccs': '-Dorg.opengrok.indexer.history.SCCS',
         'cleartool': '-Dorg.opengrok.indexer.history.ClearCase',
-        'git': '-Dorg.opengrok.indexer.history.git',
         'p4': '-Dorg.opengrok.indexer.history.Perforce',
         'mtn': '-Dorg.opengrok.indexer.history.Monotone',
         'blame': '-Dorg.opengrok.indexer.history.RCS',
