@@ -444,6 +444,7 @@ def start_rest_thread(logger):
 
 
 def start_timeout_thread(logger, sync_period):
+    logger.debug("Starting timeout thread")
     thread = threading.Thread(target=timeout_loop,
                               name="Timeout thread",
                               args=(logger, sync_period), daemon=True)
@@ -546,7 +547,8 @@ def main():
     sync_thread.start()
 
     start_rest_thread(logger)
-    start_timeout_thread(logger, sync_period)
+    if sync_period > 0:
+        start_timeout_thread(logger, sync_period)
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")
