@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -312,5 +313,58 @@ public class MercurialRepositoryTest {
         // Construct a revision identifier that doesn't exist.
         String constructedRevision = (number + 1) + ":" + hash;
         assertThrows(HistoryException.class, () -> mr.getHistory(root, constructedRevision));
+    }
+
+    // TODO: also for (renamed) file
+    @Test
+    void testGetHistorySinceTillNullNull() throws Exception {
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History history = hgRepo.getHistory(root, null, null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(10, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of(REVISIONS), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillNullRev() throws Exception {
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History history = hgRepo.getHistory(root, null, REVISIONS[4]);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(6, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 4, REVISIONS.length)), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillRevNull() throws Exception {
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History history = hgRepo.getHistory(root, REVISIONS[3], null);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(3, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 0, 3)), revisions);
+    }
+
+    @Test
+    void testGetHistorySinceTillRevRev() throws Exception {
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History history = hgRepo.getHistory(root, REVISIONS[7], REVISIONS[2]);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(5, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 2, 7)), revisions);
     }
 }
