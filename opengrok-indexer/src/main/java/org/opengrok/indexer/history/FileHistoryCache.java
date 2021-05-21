@@ -537,6 +537,8 @@ class FileHistoryCache implements HistoryCache {
 
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
+        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}''",
+                new Object[]{renamedFiles.size(), repository.getDirectoryName()});
 
         // The directories for the renamed files have to be created before
         // the actual files otherwise storeFile() might be racing for
