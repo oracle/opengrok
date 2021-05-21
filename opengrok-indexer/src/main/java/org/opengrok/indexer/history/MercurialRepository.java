@@ -57,6 +57,8 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
 
     private static final long serialVersionUID = 1L;
 
+    public static final int MAX_CHANGESETS = 256;
+
     /**
      * The property name used to obtain the client command for this repository.
      */
@@ -143,6 +145,10 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         }
 
         return executor.getOutputString().trim();
+    }
+
+    public int getPerPartesCount() {
+        return MAX_CHANGESETS;
     }
 
     private String getRevisionNum(String changeset) throws HistoryException {
