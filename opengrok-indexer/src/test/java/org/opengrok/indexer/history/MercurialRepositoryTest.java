@@ -102,8 +102,7 @@ public class MercurialRepositoryTest {
     @Test
     public void testGetHistory() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         History hist = mr.getHistory(root);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length, entries.size());
@@ -230,8 +229,7 @@ public class MercurialRepositoryTest {
     @Test
     public void testGetHistoryGet() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         String exp_str = "This will be a first novel of mine.\n"
                 + "\n"
                 + "Chapter 1.\n"
@@ -261,8 +259,7 @@ public class MercurialRepositoryTest {
     @Test
     public void testgetHistoryGetForAll() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         for (String rev : REVISIONS_novel) {
             InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
@@ -279,8 +276,7 @@ public class MercurialRepositoryTest {
     @Test
     public void testGetHistoryGetRenamed() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
 
