@@ -192,7 +192,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
                 } else {
                     // If this is non-default branch we would like to get the changesets
                     // on that branch and also follow any changesets from the parent branch.
-                    stringBuilder.append("'" + getBranch() + "'");
+                    stringBuilder.append("'").append(getBranch()).append("'");
                 }
                 if (!revisionsOnly) {
                     stringBuilder.append(")");
