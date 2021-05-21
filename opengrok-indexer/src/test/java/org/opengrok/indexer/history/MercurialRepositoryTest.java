@@ -125,8 +125,7 @@ public class MercurialRepositoryTest {
         runHgCommand(root, "import",
                 Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
 
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         History hist = mr.getHistory(new File(root, "subdir"));
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(1, entries.size());
