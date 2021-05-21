@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 class MercurialHistoryParserRevisionsOnly implements Executor.StreamHandler {
@@ -46,9 +47,9 @@ class MercurialHistoryParserRevisionsOnly implements Executor.StreamHandler {
             int status = executor.exec(true, this);
 
             if (status != 0) {
-                throw new HistoryException("Failed to get revisions for: \"" +
-                        file.getAbsolutePath() +
-                        "\" Exit code: " + status); // TODO log sinceRevision
+                throw new HistoryException(
+                        String.format("Failed to get revisions for: \"%s\" since revision %s Exit code: %d",
+                                file.getAbsolutePath(), sinceRevision, status));
             }
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
