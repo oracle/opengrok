@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 /**
@@ -314,7 +316,6 @@ public class MercurialRepositoryTest {
         assertThrows(HistoryException.class, () -> mr.getHistory(root, constructedRevision));
     }
 
-    // TODO: also for (renamed) file
     @Test
     void testGetHistorySinceTillNullNull() throws Exception {
         File root = new File(repository.getSourceRoot(), "mercurial");
@@ -359,6 +360,22 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
         History history = hgRepo.getHistory(root, REVISIONS[7], REVISIONS[2]);
+        assertNotNull(history);
+        assertNotNull(history.getHistoryEntries());
+        assertEquals(5, history.getHistoryEntries().size());
+        List<String> revisions = history.getHistoryEntries().stream().map(HistoryEntry::getRevision).
+                collect(Collectors.toList());
+        assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 2, 7)), revisions);
+    }
+
+    @Test
+    void testGetHistoryRenamedFileTillRev() throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        File file = new File(root, "novel.txt");
+        assertTrue(file.exists() && file.isFile());
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History history = hgRepo.getHistory(file, null, "7:db1394c05268");
         assertNotNull(history);
         assertNotNull(history.getHistoryEntries());
         assertEquals(5, history.getHistoryEntries().size());
