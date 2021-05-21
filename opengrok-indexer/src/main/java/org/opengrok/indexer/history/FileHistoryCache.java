@@ -492,6 +492,8 @@ class FileHistoryCache implements HistoryCache {
          * hash map entry for the file) in a file. Skip renamed files
          * which will be handled separately below.
          */
+        LOGGER.log(Level.FINE, "Storing history for {0} files in repository ''{1}''",
+                new Object[]{map.entrySet().size(), repository.getDirectoryName()});
         final File root = env.getSourceRootFile();
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
