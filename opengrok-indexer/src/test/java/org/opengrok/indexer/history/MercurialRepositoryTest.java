@@ -24,6 +24,7 @@
 package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.util.Executor;
@@ -85,6 +86,11 @@ public class MercurialRepositoryTest {
         repository.create(getClass().getResourceAsStream("repositories.zip"));
     }
 
+    @BeforeEach
+    public void setup() throws IOException {
+        setUpTestRepository();
+    }
+
     @AfterEach
     public void tearDown() {
         if (repository != null) {
@@ -95,7 +101,6 @@ public class MercurialRepositoryTest {
 
     @Test
     public void testGetHistory() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -114,7 +119,6 @@ public class MercurialRepositoryTest {
 
     @Test
     public void testGetHistorySubdir() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
 
         // Add a subdirectory with some history.
@@ -135,10 +139,8 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testGetHistoryPartial() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr
-                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
         // Get all but the oldest revision.
         History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
         List<HistoryEntry> entries = hist.getHistoryEntries();
@@ -180,7 +182,6 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testGetHistoryBranch() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
 
         // Branch the repo and add one changeset.
@@ -228,7 +229,6 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testGetHistoryGet() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -260,7 +260,6 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testgetHistoryGetForAll() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -279,7 +278,6 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testGetHistoryGetRenamed() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -306,7 +304,6 @@ public class MercurialRepositoryTest {
      */
     @Test
     public void testGetHistoryWithNoSuchRevision() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr = (MercurialRepository) RepositoryFactory.getRepository(root);
 
