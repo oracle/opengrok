@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,7 @@ import org.opengrok.indexer.util.LazilyInstantiate;
  * Access to a Mercurial repository.
  *
  */
-public class MercurialRepository extends Repository {
+public class MercurialRepository extends RepositoryWithPerPartesHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MercurialRepository.class);
 
@@ -81,6 +82,7 @@ public class MercurialRepository extends Repository {
     static final String END_OF_ENTRY
             = "mercurial_history_end_of_entry";
 
+    private static final String TEMPLATE_REVS = "{rev}\\n";
     private static final String TEMPLATE_STUB
             = CHANGESET + "{rev}:{node|short}\\n"
             + USER + "{author}\\n" + DATE + "{date|isodate}\\n"
@@ -151,12 +153,14 @@ public class MercurialRepository extends Repository {
      * @param sinceRevision the oldest changeset to return from the executor, or
      *                  {@code null} if all changesets should be returned.
      *                  For files this does not apply and full history is returned.
+     * @param tillRevision end revision
+     * @param revisionsOnly get only revision numbers
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(File file, String sinceRevision)
+    Executor getHistoryLogExecutor(File file, String sinceRevision, String tillRevision, boolean revisionsOnly)
             throws HistoryException, IOException {
+
         String filename = getRepoRelativePath(file);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -166,15 +170,14 @@ public class MercurialRepository extends Repository {
         if (file.isDirectory()) {
             // If this is non-default branch we would like to get the changesets
             // on that branch and also follow any changesets from the parent branch.
+            // TODO tillRevision
             if (sinceRevision != null) {
                 cmd.add("-r");
                 String[] parts = sinceRevision.split(":");
                 if (parts.length == 2) {
                     cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
                 } else {
-                    throw new HistoryException(
-                            "Don't know how to parse changeset identifier: "
-                            + sinceRevision);
+                    throw new HistoryException("Don't know how to parse changeset identifier: " + sinceRevision);
                 }
             } else {
                 cmd.add("-r");
@@ -197,10 +200,14 @@ public class MercurialRepository extends Repository {
         }
 
         cmd.add("--template");
-        if (file.isDirectory()) {
-            cmd.add(this.isHandleRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
+        if (revisionsOnly) {
+            cmd.add(TEMPLATE_REVS);
         } else {
-            cmd.add(FILE_TEMPLATE);
+            if (file.isDirectory()) {
+                cmd.add(this.isHandleRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
+            } else {
+                cmd.add(FILE_TEMPLATE);
+            }
         }
 
         if (!filename.isEmpty()) {
@@ -259,7 +266,7 @@ public class MercurialRepository extends Repository {
      * @param fullpath file path
      * @param full_rev_to_find revision number (in the form of
      * {rev}:{node|short})
-     * @returns original filename
+     * @return original filename
      */
     private String findOriginalName(String fullpath, String full_rev_to_find)
             throws IOException {
@@ -511,9 +518,17 @@ public class MercurialRepository extends Repository {
         return getHistory(file, null);
     }
 
+    public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
+        new MercurialHistoryParserRevisionsOnly(this, visitor).
+                parse(new File(getDirectoryName()), sinceRevision);
+    }
+
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, null);
+    }
+
     @Override
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
+    History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // Note that the filtering of revisions based on sinceRevision is done
         // in the history log executor by passing appropriate options to
@@ -522,8 +537,7 @@ public class MercurialRepository extends Repository {
         // for file, the file is renamed and its complete history is fetched
         // so no sinceRevision filter is needed.
         // See findOriginalName() code for more details.
-        History result = new MercurialHistoryParser(this).parse(file,
-                sinceRevision);
+        History result = new MercurialHistoryParser(this).parse(file, sinceRevision, tillRevision);
         
         // Assign tags to changesets they represent.
         // We don't need to check if this repository supports tags,
