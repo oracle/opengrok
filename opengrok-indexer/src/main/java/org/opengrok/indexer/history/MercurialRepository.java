@@ -145,6 +145,15 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         return executor.getOutputString().trim();
     }
 
+    private String getRevisionNum(String changeset) throws HistoryException {
+        String[] parts = changeset.split(":");
+        if (parts.length == 2) {
+            return parts[0];
+        } else {
+            throw new HistoryException("Don't know how to parse changeset identifier: " + changeset);
+        }
+    }
+
     /**
      * Get an executor to be used for retrieving the history log for the named
      * file or directory.
@@ -168,17 +177,27 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         cmd.add("log");
 
         if (file.isDirectory()) {
-            // If this is non-default branch we would like to get the changesets
-            // on that branch and also follow any changesets from the parent branch.
-            // TODO tillRevision
-            if (sinceRevision != null) {
-                cmd.add("-r");
-                String[] parts = sinceRevision.split(":");
-                if (parts.length == 2) {
-                    cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
-                } else {
-                    throw new HistoryException("Don't know how to parse changeset identifier: " + sinceRevision);
+            if ((sinceRevision != null) || (tillRevision != null)) {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("-r");
+                if (!revisionsOnly) {
+                    stringBuilder.append("reverse(");
                 }
+                if (sinceRevision != null) {
+                    stringBuilder.append(getRevisionNum(sinceRevision));
+                }
+                stringBuilder.append("::");
+                if (tillRevision != null) {
+                    stringBuilder.append(getRevisionNum(tillRevision));
+                } else {
+                    // If this is non-default branch we would like to get the changesets
+                    // on that branch and also follow any changesets from the parent branch.
+                    stringBuilder.append("'" + getBranch() + "'");
+                }
+                if (!revisionsOnly) {
+                    stringBuilder.append(")");
+                }
+                cmd.add(stringBuilder.toString());
             } else {
                 cmd.add("-r");
                 cmd.add("reverse(0::'" + getBranch() + "')");
