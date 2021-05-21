@@ -33,6 +33,7 @@ import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +71,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * @param file the file or directory to get history for
      * @param sinceRevision the changeset right before the first one to fetch, or
      * {@code null} if all changesets should be fetched
+     * @param tillRevision end revision or {@code null}
      * @return history for the specified file or directory
      * @throws HistoryException if an error happens when parsing the history
      */
@@ -97,7 +99,22 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
+        // TODO: add comment
+        if (repository.isHandleRenamedFiles() && file.isFile() && tillRevision != null) {
+            removeChangesets(entries, tillRevision);
+        }
+
         return new History(entries, renamedFiles);
+    }
+
+    private void removeChangesets(List<HistoryEntry> entries, String tillRevision) {
+        for (Iterator<HistoryEntry> iter = entries.listIterator(); iter.hasNext(); ) {
+            HistoryEntry entry = iter.next();
+            if (entry.getRevision().equals(tillRevision)) {
+                break;
+            }
+            iter.remove();
+        }
     }
 
     /**
