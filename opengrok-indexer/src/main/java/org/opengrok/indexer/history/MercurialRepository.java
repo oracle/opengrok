@@ -82,9 +82,9 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
     static final String END_OF_ENTRY
             = "mercurial_history_end_of_entry";
 
-    private static final String TEMPLATE_REVS = "{rev}:\\n"; // use colon so that getRevisionNum() works
+    private static final String TEMPLATE_REVS = "{rev}:{node|short}\\n";
     private static final String TEMPLATE_STUB
-            = CHANGESET + "{rev}:{node|short}\\n"
+            = CHANGESET + TEMPLATE_REVS
             + USER + "{author}\\n" + DATE + "{date|isodate}\\n"
             + DESCRIPTION + "{desc|strip|obfuscate}\\n";
 
@@ -177,9 +177,10 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         cmd.add("log");
 
         if (file.isDirectory()) {
+            // Note: assumes one of them is not null
             if ((sinceRevision != null) || (tillRevision != null)) {
+                cmd.add("-r");
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("-r");
                 if (!revisionsOnly) {
                     stringBuilder.append("reverse(");
                 }
@@ -208,13 +209,29 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
             // when handling renamed files)
             // It is not needed to filter on a branch as 'hg log' will follow
             // the active branch.
+            // TODO: revisit:
             // Due to behavior of recent Mercurial versions, it is not possible
             // to filter the changesets of a file based on revision.
             // For files this does not matter since if getHistory() is called
             // for a file, the file has to be renamed so we want its complete history
             // if renamed file handling is enabled for this repository.
+            // TODO: why no reverse() ?
             if (this.isHandleRenamedFiles()) {
                 cmd.add("--follow");
+            }
+
+            // Note: assumes one of them is not null
+            if ((sinceRevision != null) || (tillRevision != null)) {
+                cmd.add("-r");
+                StringBuilder stringBuilder = new StringBuilder();
+                if (sinceRevision != null) {
+                    stringBuilder.append(getRevisionNum(sinceRevision));
+                }
+                stringBuilder.append(":");
+                if (tillRevision != null) {
+                    stringBuilder.append(getRevisionNum(tillRevision));
+                }
+                cmd.add(stringBuilder.toString());
             }
         }
 
