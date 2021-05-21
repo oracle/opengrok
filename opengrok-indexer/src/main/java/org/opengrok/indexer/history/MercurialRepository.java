@@ -209,14 +209,18 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
             // when handling renamed files)
             // It is not needed to filter on a branch as 'hg log' will follow
             // the active branch.
-            // TODO: revisit:
             // Due to behavior of recent Mercurial versions, it is not possible
             // to filter the changesets of a file based on revision.
             // For files this does not matter since if getHistory() is called
             // for a file, the file has to be renamed so we want its complete history
             // if renamed file handling is enabled for this repository.
-            // TODO: why no reverse() ?
+            //
+            // Getting history for individual files should only be done when generating history for renamed files
+            // so the fact that filtering on sinceRevision does not work does not matter there as history
+            // from the initial changeset is needed. The tillRevision filtering works.
+
             if (this.isHandleRenamedFiles()) {
+                // When using --follow, the returned revisions are from newest to oldest, hence no reverse() is needed.
                 cmd.add("--follow");
             }
 
