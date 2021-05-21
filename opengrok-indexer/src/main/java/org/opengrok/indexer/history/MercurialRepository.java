@@ -82,7 +82,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
     static final String END_OF_ENTRY
             = "mercurial_history_end_of_entry";
 
-    private static final String TEMPLATE_REVS = "{rev}\\n";
+    private static final String TEMPLATE_REVS = "{rev}:\\n";
     private static final String TEMPLATE_STUB
             = CHANGESET + "{rev}:{node|short}\\n"
             + USER + "{author}\\n" + DATE + "{date|isodate}\\n"
