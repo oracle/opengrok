@@ -76,7 +76,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     History parse(File file, String sinceRevision, String tillRevision) throws HistoryException {
         isDir = file.isDirectory();
         try {
-            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision,false);
+            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false);
             int status = executor.exec(true, this);
 
             if (status != 0) {
