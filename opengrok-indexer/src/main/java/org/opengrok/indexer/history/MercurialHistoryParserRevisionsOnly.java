@@ -59,10 +59,11 @@ class MercurialHistoryParserRevisionsOnly implements Executor.StreamHandler {
 
     @Override
     public void processStream(InputStream input) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        String s;
-        while ((s = in.readLine()) != null) {
-            visitor.accept(s);
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
+            String s;
+            while ((s = in.readLine()) != null) {
+                visitor.accept(s);
+            }
         }
     }
 }
