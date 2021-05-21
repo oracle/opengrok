@@ -99,7 +99,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
-        // TODO: add comment
+        // See getHistoryLogExecutor() for explanation.
         if (repository.isHandleRenamedFiles() && file.isFile() && tillRevision != null) {
             removeChangesets(entries, tillRevision);
         }

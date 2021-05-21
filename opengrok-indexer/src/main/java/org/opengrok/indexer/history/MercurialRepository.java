@@ -224,7 +224,8 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
             // Getting history for individual files should only be done when generating history for renamed files
             // so the fact that filtering on sinceRevision does not work does not matter there as history
             // from the initial changeset is needed. The tillRevision filtering works however not
-            // in combination with --follow.
+            // in combination with --follow so the filtering is done in MercurialHistoryParser.parse().
+            // Even if the revision filtering worked, this approach would be probably faster and consumed less memory.
             if (this.isHandleRenamedFiles()) {
                 // When using --follow, the returned revisions are from newest to oldest, hence no reverse() is needed.
                 cmd.add("--follow");
