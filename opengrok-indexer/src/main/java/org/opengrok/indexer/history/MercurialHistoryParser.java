@@ -68,15 +68,15 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * specified one.
      *
      * @param file the file or directory to get history for
-     * @param changeset the changeset right before the first one to fetch, or
+     * @param sinceRevision the changeset right before the first one to fetch, or
      * {@code null} if all changesets should be fetched
      * @return history for the specified file or directory
      * @throws HistoryException if an error happens when parsing the history
      */
-    History parse(File file, String changeset) throws HistoryException {
+    History parse(File file, String sinceRevision, String tillRevision) throws HistoryException {
         isDir = file.isDirectory();
         try {
-            Executor executor = repository.getHistoryLogExecutor(file, changeset);
+            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision,false);
             int status = executor.exec(true, this);
 
             if (status != 0) {
@@ -93,8 +93,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         // from the list, since only the ones following it should be returned.
         // Also check that the specified changeset was found, otherwise throw
         // an exception.
-        if (changeset != null) {
-            repository.removeAndVerifyOldestChangeset(entries, changeset);
+        if (sinceRevision != null) {
+            repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
         return new History(entries, renamedFiles);
