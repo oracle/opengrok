@@ -186,8 +186,7 @@ public abstract class Repository extends RepositoryInfo {
     void removeAndVerifyOldestChangeset(List<HistoryEntry> entries,
             String revision)
             throws HistoryException {
-        HistoryEntry entry
-                = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
+        HistoryEntry entry = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
 
         // TODO We should check more thoroughly that the changeset is the one
         // we expected it to be, since some SCMs may change the revision
