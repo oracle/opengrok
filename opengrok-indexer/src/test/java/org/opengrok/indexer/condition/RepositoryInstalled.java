@@ -22,8 +22,6 @@
  */
 package org.opengrok.indexer.condition;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import org.opengrok.indexer.history.BazaarRepository;
 import org.opengrok.indexer.history.BitKeeperRepository;
 import org.opengrok.indexer.history.CVSRepository;
@@ -33,6 +31,7 @@ import org.opengrok.indexer.history.RCSRepository;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.SCCSRepository;
 import org.opengrok.indexer.history.SubversionRepository;
+import org.opengrok.indexer.util.LazilyInstantiate;
 
 public class RepositoryInstalled {
 
@@ -48,10 +47,10 @@ public class RepositoryInstalled {
         SUBVERSION(new SubversionRepository()),
         SCCS(new SCCSRepository());
 
-        private final Supplier<Boolean> satisfied;
+        private final LazilyInstantiate<Boolean> satisfied;
 
         Type(Repository repository) {
-            satisfied = Suppliers.memoize(() -> Boolean.getBoolean(FORCE_ALL_PROPERTY) || repository.isWorking());
+            satisfied = LazilyInstantiate.using(() -> Boolean.getBoolean(FORCE_ALL_PROPERTY) || repository.isWorking());
         }
 
         public boolean isSatisfied() {
