@@ -53,6 +53,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <groupId>${project.groupId}</groupId>
             <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
+            <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
