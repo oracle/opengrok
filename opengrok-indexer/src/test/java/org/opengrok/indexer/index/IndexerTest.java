@@ -57,6 +57,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.condition.EnabledForRepository;
@@ -451,39 +452,32 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
+    @EnabledIf("mkfifoInPath")
     public void testBug11896() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Executor executor;
 
-        boolean test = true;
-        if (FileUtilities.findProgInPath("mkfifo") == null) {
-            System.out.println("Error: mkfifo not found in PATH !\n");
-            test = false;
-        }
+        executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
+        executor.exec(true);
 
-        if (test) {
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            Executor executor;
+        executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
+        executor.exec(true);
 
-            executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
-            executor.exec(true);
+        Project project = new Project("testBug11896");
+        project.setPath("/testBug11896");
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+        MyIndexChangeListener listener = new MyIndexChangeListener();
+        idb.addIndexChangedListener(listener);
+        System.out.println("Trying to index a special file - FIFO in this case.");
+        idb.update();
+        assertEquals(0, listener.files.size());
+    }
 
-            executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
-            executor.exec(true);
-
-            Project project = new Project("testBug11896");
-            project.setPath("/testBug11896");
-            IndexDatabase idb = new IndexDatabase(project);
-            assertNotNull(idb);
-            MyIndexChangeListener listener = new MyIndexChangeListener();
-            idb.addIndexChangedListener(listener);
-            System.out.println("Trying to index a special file - FIFO in this case.");
-            idb.update();
-            assertEquals(0, listener.files.size());
-
-        } else {
-            System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
-        }
+    boolean mkfifoInPath() {
+        return FileUtilities.findProgInPath("mkfifo") != null;
     }
 
     /**
