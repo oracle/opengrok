@@ -217,7 +217,6 @@ Portions Copyright (c) 2020-2020, Lubos Kosco <tarzanek@gmail.com>.
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>20.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>

@@ -180,6 +180,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>21.0.0</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
