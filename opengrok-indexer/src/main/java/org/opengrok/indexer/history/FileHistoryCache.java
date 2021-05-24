@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -437,7 +436,6 @@ class FileHistoryCache implements HistoryCache {
 
         HashMap<String, List<HistoryEntry>> map = new HashMap<>();
         HashMap<String, Boolean> acceptanceCache = new HashMap<>();
-        Set<String> renamedFiles = new HashSet<>();
 
         /*
          * Go through all history entries for this repository (acquired through
@@ -499,7 +497,6 @@ class FileHistoryCache implements HistoryCache {
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
-                    renamedFiles.add(map_entry.getKey());
                     continue;
                 }
             } catch (IOException ex) {
@@ -519,7 +516,7 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        storeRenamed(renamedFiles, repository, tillRevision);
+        storeRenamed(history.getRenamedFiles(), repository, tillRevision);
 
         finishStore(repository, latestRev);
     }
@@ -535,7 +532,8 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
+        renamedFiles = renamedFiles.stream().map(e -> repository.getDirectoryNameRelative() + File.separator + e).
+                filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
         LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}''",
                 new Object[]{renamedFiles.size(), repository.getDirectoryName()});
