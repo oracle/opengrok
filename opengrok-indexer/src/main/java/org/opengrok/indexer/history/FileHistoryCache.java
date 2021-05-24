@@ -152,21 +152,6 @@ class FileHistoryCache implements HistoryCache {
         storeFile(history, file, repository, !renamed);
     }
 
-    private boolean isRenamedFile(String filename, Repository repository, History history)
-            throws IOException {
-
-        String repodir;
-        try {
-            repodir = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
-        } catch (ForbiddenSymlinkException e) {
-            LOGGER.log(Level.FINER, e.getMessage());
-            return false;
-        }
-        String shortestfile = filename.substring(repodir.length() + 1);
-
-        return (history.isRenamed(shortestfile));
-    }
-
     static class FilePersistenceDelegate extends PersistenceDelegate {
         @Override
         protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -495,12 +480,8 @@ class FileHistoryCache implements HistoryCache {
         final File root = env.getSourceRootFile();
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
-            try {
-                if (handleRenamedFiles && isRenamedFile(map_entry.getKey(), repository, history)) {
-                    continue;
-                }
-            } catch (IOException ex) {
-               LOGGER.log(Level.WARNING, "isRenamedFile() got exception", ex);
+            if (handleRenamedFiles && history.isRenamed(map_entry.getKey())) {
+                continue;
             }
 
             doFileHistory(map_entry.getKey(), new History(map_entry.getValue()),
