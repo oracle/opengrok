@@ -33,8 +33,10 @@ import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -56,7 +58,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private final MercurialRepository repository;
     private final String mydir;
     private boolean isDir;
-    private final List<String> renamedFiles = new ArrayList<>();
+    private final Set<String> renamedFiles = new HashSet<>();
 
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
@@ -184,8 +186,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                       */
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
-                     if (!move[0].isEmpty() && f.exists() &&
-                         !renamedFiles.contains(repository.getDirectoryNameRelative() + File.separator + move[0])) {
+                     if (!move[0].isEmpty() && f.exists()) {
                              renamedFiles.add(repository.getDirectoryNameRelative() + File.separator + move[0]);
                      }
                 }
