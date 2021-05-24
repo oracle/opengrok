@@ -133,7 +133,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     // so intern them to reduce the memory footprint.
                     entry.addFile(path.intern());
                     if (isRenamed) {
-                        renamedFiles.add(file.getAbsolutePath().substring(home.length() + 1));
+                        renamedFiles.add(path.intern());
                     }
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);

@@ -558,9 +558,10 @@ public class GitRepositoryTest {
                                 File.separator + Paths.get("git", "header.h"),
                                 File.separator + Paths.get("git", "main.c"))));
 
-        List<String> expectedRenamedFiles = List.of(Paths.get("moved", "renamed2.c").toString(),
-                Paths.get("moved2", "renamed2.c").toString(),
-                Paths.get("moved", "renamed.c").toString());
+        List<String> expectedRenamedFiles = List.of(
+                File.separator + Paths.get("git", "moved", "renamed2.c"),
+                File.separator + Paths.get("git", "moved2", "renamed2.c"),
+                File.separator + Paths.get("git", "moved", "renamed.c"));
 
         History history = gitrepo.getHistory(root);
         assertNotNull(history);
