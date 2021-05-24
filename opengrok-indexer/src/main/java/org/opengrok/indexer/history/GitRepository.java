@@ -623,7 +623,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 }
 
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(getNativePath(diff.getNewPath()));
+                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getNewPath()));
                 }
             }
         }

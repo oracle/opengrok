@@ -170,7 +170,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         }
                     }
                 }
-            } else if (s.startsWith(MercurialRepository.FILE_COPIES) &&
+            } else if (repository.isHandleRenamedFiles() && s.startsWith(MercurialRepository.FILE_COPIES) &&
                 entry != null && isDir) {
                 /*
                  * 'file_copies:' should be present only for directories but
@@ -185,8 +185,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
                      if (!move[0].isEmpty() && f.exists() &&
-                         !renamedFiles.contains(move[0])) {
-                             renamedFiles.add(move[0]);
+                         !renamedFiles.contains(repository.getDirectoryNameRelative() + File.separator + move[0])) {
+                             renamedFiles.add(repository.getDirectoryNameRelative() + File.separator + move[0]);
                      }
                 }
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {
