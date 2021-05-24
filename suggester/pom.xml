@@ -87,6 +87,11 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
 
         <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
             <version>3.20.84</version>
@@ -94,6 +99,14 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
                 <exclusion>
                     <groupId>com.sun.java</groupId>
                     <artifactId>tools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.intellij</groupId>
+                    <artifactId>annotations</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

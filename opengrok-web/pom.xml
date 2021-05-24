@@ -196,6 +196,10 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
