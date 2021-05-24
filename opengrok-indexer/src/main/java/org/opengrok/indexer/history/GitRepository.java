@@ -75,7 +75,9 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.io.CountingOutputStream;
 import org.eclipse.jgit.util.io.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -509,7 +511,9 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
                     walk.setTreeFilter(followFilter);
                 } else {
-                    walk.setTreeFilter(PathFilter.create(getGitFilePath(getRepoRelativePath(file))));
+                    walk.setTreeFilter(AndTreeFilter.create(
+                            PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
+                            TreeFilter.ANY_DIFF));
                 }
             }
 
