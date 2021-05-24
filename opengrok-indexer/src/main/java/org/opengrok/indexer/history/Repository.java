@@ -383,6 +383,8 @@ public abstract class Repository extends RepositoryInfo {
         File directory = new File(getDirectoryName());
 
         doCreateCache(cache, sinceRevision, directory);
+
+        LOGGER.log(Level.FINE, "Done storing history cache for repository {0}", getDirectoryName());
     }
 
     void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
