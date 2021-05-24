@@ -402,9 +402,6 @@ class FileHistoryCache implements HistoryCache {
                 new Object[]{repository.getDirectoryName(), histDir});
         } else {
             storeLatestCachedRevision(repository, latestRev);
-            LOGGER.log(Level.FINE,
-                "Done storing history for repository {0}",
-                repository.getDirectoryName());
         }
     }
 
