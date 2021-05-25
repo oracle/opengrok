@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -44,12 +44,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexerParallelizer;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.IOUtils;
-import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.SourceSplitter;
 
 /**
@@ -210,7 +210,7 @@ public class Ctags implements Resettable {
     }
 
     private void run() throws IOException {
-        String commandStr = Executor.escapeForShell(command, false, PlatformUtils.isWindows());
+        String commandStr = Executor.escapeForShell(command, false, SystemUtils.IS_OS_WINDOWS);
         LOGGER.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);

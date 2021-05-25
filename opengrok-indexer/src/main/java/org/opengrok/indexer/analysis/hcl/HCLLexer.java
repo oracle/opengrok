@@ -94,7 +94,7 @@ public abstract class HCLLexer extends JFlexSymbolMatcher
         }
 
         // Trim any whitespace, which is allowed by HCL after the HERE op.
-        remaining = remaining.replaceFirst("^\\s+", "");
+        remaining = remaining.stripLeading();
 
         Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
         if (!m.find()) {
@@ -128,7 +128,7 @@ public abstract class HCLLexer extends JFlexSymbolMatcher
      * @return true if the Here state ended
      */
     public boolean maybeHereEnd(String capture) throws IOException {
-        String trimmed = capture.replaceFirst("^\\s+", "");
+        String trimmed = capture.stripLeading();
         HereDocSettings settings = dataHead.hereSettings.peek();
         assert settings != null;
 

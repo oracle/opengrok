@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -70,14 +70,18 @@ public class TestRepository {
     }
 
     public void destroy() {
-        if (sourceRoot != null) {
-            FileUtilities.removeDirs(sourceRoot);
-        }
-        if (externalRoot != null) {
-            FileUtilities.removeDirs(externalRoot);
-        }
-        if (dataRoot != null) {
-            FileUtilities.removeDirs(dataRoot);
+        try {
+            if (sourceRoot != null) {
+                IOUtils.removeRecursive(sourceRoot.toPath());
+            }
+            if (externalRoot != null) {
+                IOUtils.removeRecursive(externalRoot.toPath());
+            }
+            if (dataRoot != null) {
+                IOUtils.removeRecursive(dataRoot.toPath());
+            }
+        } catch (IOException ignore) {
+            // ignored
         }
     }
 
@@ -85,9 +89,9 @@ public class TestRepository {
      * Deletes the directory tree of {@link #getDataRoot()}, and then recreates
      * the empty directory afterward.
      */
-    public void purgeData() {
+    public void purgeData() throws IOException {
         if (dataRoot != null) {
-            assertTrue(FileUtilities.removeDirs(dataRoot), "should delete dataRoot");
+            IOUtils.removeRecursive(dataRoot.toPath());
             assertFalse(dataRoot.exists(), "dataRoot should not exist");
             assertTrue(dataRoot.mkdir(), "should recreate dataRoot");
         }

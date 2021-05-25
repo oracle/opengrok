@@ -36,6 +36,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.servlet.http.Part;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,8 +48,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.opengrok.indexer.util.RandomString.generate;
 
 /**
  * An dummy implementation of {@code HttpServletRequest} in which most methods
@@ -77,7 +76,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @Override
         public String getId() {
-            return generate(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.");
+            return RandomStringUtils.random(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.");
         }
 
         @Override

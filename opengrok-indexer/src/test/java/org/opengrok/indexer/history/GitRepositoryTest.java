@@ -52,7 +52,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,7 +109,7 @@ public class GitRepositoryTest {
             assertNotNull(gitrepo);
             String ver = gitrepo.determineCurrentVersion();
             assertNull(ver);
-            FileUtilities.removeDirs(emptyGitDir);
+            removeRecursive(emptyGitDir);
         }
     }
 
@@ -164,7 +164,7 @@ public class GitRepositoryTest {
             // Not able to set commit ID and date so only check the rest.
             assertTrue(ver.endsWith(authorName + " " + comment), "ends with author and commit comment");
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -201,7 +201,7 @@ public class GitRepositoryTest {
             assertNotNull(branch);
             assertEquals("foo", branch);
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -236,7 +236,7 @@ public class GitRepositoryTest {
             history = gitrepo.getHistory(cloneRoot);
             assertEquals(numEntries + 1, history.getHistoryEntries().size());
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -271,7 +271,7 @@ public class GitRepositoryTest {
             assertNotNull(parent);
             assertEquals(uri, parent);
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -700,7 +700,7 @@ public class GitRepositoryTest {
             gitrepo.buildTagList(new File(gitrepo.getDirectoryName()), CommandTimeoutType.INDEXER);
             assertEquals(0, gitrepo.getTagList().size());
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -740,7 +740,7 @@ public class GitRepositoryTest {
             expectedTags.add(tagEntry);
             assertEquals(expectedTags, tags);
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
         }
     }
 
@@ -777,7 +777,15 @@ public class GitRepositoryTest {
             expectedTags.add(tagEntry);
             assertEquals(expectedTags, tags);
 
-            FileUtilities.removeDirs(cloneRoot);
+            removeRecursive(cloneRoot);
+        }
+    }
+
+    private void removeRecursive(final File cloneRoot) {
+        try {
+            IOUtils.removeRecursive(cloneRoot.toPath());
+        } catch (IOException e) {
+            // ignore
         }
     }
 }

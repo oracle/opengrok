@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.util;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -99,7 +100,7 @@ public class CtagsUtil {
         Set<String> dirs = new HashSet<>(Arrays.asList(System.getProperty("java.io.tmpdir"),
                 System.getenv("TMPDIR"), System.getenv("TMP")));
 
-        if (PlatformUtils.isUnix()) {
+        if (SystemUtils.IS_OS_UNIX) {
             // hard-coded TMPDIR in Universal Ctags on Unix.
             dirs.add("/tmp");
         }

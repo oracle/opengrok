@@ -26,8 +26,6 @@ package org.opengrok.indexer.util;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for the {@code StringUtils} class.
@@ -131,12 +129,6 @@ public class StringUtilsTest {
         String uri = "";
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals(0, n, "empty pushback");
-    }
-
-    @Test
-    public void testIsAlphanumeric() {
-        assertTrue(StringUtils.isAlphanumeric("foo123"));
-        assertFalse(StringUtils.isAlphanumeric("foo_123"));
     }
 
     @Test

@@ -37,18 +37,6 @@ public class NumberUtil {
         }
     }
 
-    /**
-     * Parses the specified {@code value} without throwing a checked exception,
-     * returning a default 0.
-     */
-    public static long tryParseLongPrimitive(String value) {
-        Long parsed = tryParseLong(value);
-        if (parsed == null) {
-            return 0;
-        }
-        return parsed;
-    }
-
     /* private to enforce static */
     private NumberUtil() {
     }

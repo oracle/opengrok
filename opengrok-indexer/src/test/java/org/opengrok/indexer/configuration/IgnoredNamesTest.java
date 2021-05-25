@@ -41,7 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.c.CAnalyzerFactoryTest;
 import org.opengrok.indexer.history.RepositoryFactory;
-import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -206,6 +206,6 @@ public class IgnoredNamesTest {
         assertTrue(in2.ignore(bar));
 
         // Cleanup.
-        FileUtilities.removeDirs(tmpdir);
+        IOUtils.removeRecursive(tmpdir.toPath());
     }
 }

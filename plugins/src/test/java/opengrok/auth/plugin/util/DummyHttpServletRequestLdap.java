@@ -47,7 +47,7 @@ import jakarta.servlet.http.HttpUpgradeHandler;
 import jakarta.servlet.http.Part;
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
-import org.opengrok.indexer.util.RandomString;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
@@ -68,7 +68,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
             if ((user = (User) getAttribute(UserPlugin.REQUEST_ATTR)) != null) {
                 return user.getUsername();
             }
-            return RandomString.generate(5);
+            return RandomStringUtils.randomAlphanumeric(5);
         }
 
         @Override
