@@ -61,13 +61,13 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.PlatformUtils;
 
 /**
  * Class for useful functions.
@@ -846,14 +846,14 @@ public final class Util {
     }
 
     /**
-     * Sanitizes Windows path delimiters (if {@link PlatformUtils#isWindows()}
+     * Sanitizes Windows path delimiters (if {@link SystemUtils#IS_OS_WINDOWS}
      * is {@code true}) as
      * {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR} in order not
      * to conflict with the Lucene escape character and also so {@code path}
      * appears as a correctly formed URI in search results.
      */
     public static String fixPathIfWindows(String path) {
-        if (path != null && PlatformUtils.isWindows()) {
+        if (path != null && SystemUtils.IS_OS_WINDOWS) {
             return path.replace(File.separatorChar, PATH_SEPARATOR);
         }
         return path;

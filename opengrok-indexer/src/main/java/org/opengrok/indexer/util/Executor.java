@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -154,8 +155,7 @@ public class Executor {
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
-        final String cmd_str = escapeForShell(processBuilder.command(), false,
-                PlatformUtils.isWindows());
+        final String cmd_str = escapeForShell(processBuilder.command(), false, SystemUtils.IS_OS_WINDOWS);
         final String dir_str;
         Timer timer = null; // timer for timing out the process
 

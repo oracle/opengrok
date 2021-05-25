@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.StringUtils;
 
 /**
  * A History Parser for Razor.
@@ -100,7 +99,7 @@ class RazorHistoryParser {
 
             parseDebug("Processing '" + line + "'");
 
-            if (StringUtils.isOnlyWhitespace(line)) {
+            if (line.isBlank()) {
 
                 if (entry != null && entry.getDate() != null) {
                     entries.add(entry);

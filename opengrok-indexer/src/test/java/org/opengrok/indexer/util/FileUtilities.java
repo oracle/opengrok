@@ -62,7 +62,7 @@ public class FileUtilities {
                      * exception on creating the symlink.
                      */
                     if (file.isDirectory()) {
-                        removeDirs(file);
+                        IOUtils.removeRecursive(file.toPath());
                     } else if (file.exists()) {
                         file.delete();
                     }
@@ -80,17 +80,6 @@ public class FileUtilities {
                 }
             }
         }
-    }
-
-    public static boolean removeDirs(File root) {
-        for (File f : root.listFiles()) {
-            if (f.isDirectory()) {
-                removeDirs(f);
-            } else {
-                f.delete();
-            }
-        }
-        return root.delete();
     }
 
     public static void copyFile(InputStream in, OutputStream out) throws IOException {

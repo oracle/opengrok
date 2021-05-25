@@ -41,7 +41,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.util.PlatformUtils;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -162,11 +163,9 @@ public class UtilTest {
     }
 
     @Test
-    public void fixPathIfWindows() {
-        if (PlatformUtils.isWindows()) {
-            assertEquals("/var/opengrok",
-                    Util.fixPathIfWindows("\\var\\opengrok"));
-        }
+    @EnabledOnOs(OS.WINDOWS)
+    void fixPathIfWindows() {
+        assertEquals("/var/opengrok", Util.fixPathIfWindows("\\var\\opengrok"));
     }
 
     @Test

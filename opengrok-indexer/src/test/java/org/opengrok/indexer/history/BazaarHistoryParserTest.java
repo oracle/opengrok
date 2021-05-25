@@ -26,11 +26,11 @@ package org.opengrok.indexer.history;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.PlatformUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -148,20 +148,22 @@ public class BazaarHistoryParserTest {
         String revId1 = "1234";
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
-        String[] files = {
-                "/filename.ext",
-                "/directory",
-                "/directory/filename.ext",
-                "/directory/filename2.ext2",
-                "/otherdir/file.extension"
-        };
-        if (PlatformUtils.isWindows()) {
+        String[] files;
+        if (SystemUtils.IS_OS_WINDOWS) {
             files = new String[] {
                     "\\\\filename.ext",
                     "\\\\directory",
                     "\\\\directory\\filename.ext",
                     "\\\\directory\\filename2.ext2",
                     "\\\\otherdir\\file.extension"
+            };
+        } else {
+            files = new String[] {
+                    "/filename.ext",
+                    "/directory",
+                    "/directory/filename.ext",
+                    "/directory/filename2.ext2",
+                    "/otherdir/file.extension"
             };
         }
 

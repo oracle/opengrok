@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.index;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
@@ -41,7 +42,6 @@ import org.opengrok.indexer.analysis.AccumulatedNumLinesLOC;
 import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.search.QueryBuilder;
-import org.opengrok.indexer.util.NumberUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -169,8 +169,8 @@ class NumLinesLOCAccessor {
         if (docID != null) {
             Document doc = searcher.doc(docID);
             if (isAggregatingDeltas) {
-                extantLines = NumberUtil.tryParseLongPrimitive(doc.get(QueryBuilder.NUML));
-                extantLOC = NumberUtil.tryParseLongPrimitive(doc.get(QueryBuilder.LOC));
+                extantLines = NumberUtils.toLong(doc.get(QueryBuilder.NUML));
+                extantLOC = NumberUtils.toLong(doc.get(QueryBuilder.LOC));
             }
             writer.deleteDocuments(new Term(QueryBuilder.D, aggregate.getPath()));
         }

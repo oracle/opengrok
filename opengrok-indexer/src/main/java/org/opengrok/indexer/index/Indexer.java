@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -81,7 +82,6 @@ import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HostUtil;
 import org.opengrok.indexer.util.OptionParser;
-import org.opengrok.indexer.util.PlatformUtils;
 import org.opengrok.indexer.util.Statistics;
 
 /**
@@ -1237,7 +1237,7 @@ public final class Indexer {
 
     private static String getCtagsCommand() {
         Ctags ctags = CtagsUtil.newInstance(env);
-        return Executor.escapeForShell(ctags.getArgv(), true, PlatformUtils.isWindows());
+        return Executor.escapeForShell(ctags.getArgv(), true, SystemUtils.IS_OS_WINDOWS);
     }
 
     private enum HelpMode {

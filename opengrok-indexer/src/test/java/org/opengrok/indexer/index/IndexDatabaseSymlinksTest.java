@@ -82,7 +82,7 @@ public class IndexDatabaseSymlinksTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         repository.purgeData();
         env.setAllowedSymlinks(new HashSet<>());
         env.setCanonicalRoots(new HashSet<>());
