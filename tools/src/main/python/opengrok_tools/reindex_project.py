@@ -65,6 +65,8 @@ def get_config_file(logger, uri, headers=None, timeout=None):
     Get fresh configuration from the webapp and store it in temporary file.
     """
     config = get_configuration(logger, uri, headers=headers, timeout=timeout)
+    if config is None:
+        return None
 
     with tempfile.NamedTemporaryFile(delete=False) as tmpf:
         tmpf.write(config.encode())
@@ -109,6 +111,8 @@ def main():
     # Get files needed for per-project reindex.
     headers = get_headers(args.header)
     conf_file = get_config_file(logger, args.uri, headers=headers)
+    if conf_file is None:
+        fatal("could not get config file to run the indexer")
     logprop_file = None
     if args.template and args.pattern:
         logprop_file = get_logprop_file(logger, args.template, args.pattern,
