@@ -36,7 +36,7 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
-from .utils import is_exe, check_create_dir, get_int, is_web_uri
+from .utils import is_exe, check_create_dir, get_int, is_web_uri, get_bool
 from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
 from .command import Command
@@ -51,6 +51,7 @@ HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
 CMD_TIMEOUT_PROPERTY = 'command_timeout'
 IGNORED_REPOS_PROPERTY = 'ignored_repos'
 PROXY_PROPERTY = 'proxy'
+INCOMING_PROPERTY = 'incoming_check'
 COMMANDS_PROPERTY = 'commands'
 DISABLED_PROPERTY = 'disabled'
 DISABLED_REASON_PROPERTY = 'disabled-reason'
@@ -158,7 +159,7 @@ def get_project_properties(project_config, project_name, hookdir):
     :param project_name: name of the project
     :param hookdir: directory with hooks
     :return: list of properties: prehook, posthook, hook_timeout,
-    command_timeout, use_proxy, ignored_repos
+    command_timeout, use_proxy, ignored_repos, check_changes
     """
 
     prehook = None
@@ -167,6 +168,7 @@ def get_project_properties(project_config, project_name, hookdir):
     command_timeout = None
     use_proxy = False
     ignored_repos = None
+    check_changes = None
 
     logger = logging.getLogger(__name__)
 
@@ -213,11 +215,17 @@ def get_project_properties(project_config, project_name, hookdir):
             logger.debug("will use proxy")
             use_proxy = True
 
+        if project_config.get(INCOMING_PROPERTY):
+            check_changes = get_bool(logger, ("incoming check for project {}".
+                                              format(project_name)),
+                                     project_config.get(INCOMING_PROPERTY))
+            logger.debug("incoming check = {}".format(check_changes))
+
     if not ignored_repos:
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos
+        use_proxy, ignored_repos, check_changes
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -361,7 +369,7 @@ def mirror_project(config, project_name, check_changes, uri,
     :param uri
     :param source_root
     :param headers: optional dictionary of HTTP headers
-    :param timeout: optional timeount in seconds for API call response
+    :param timeout: optional timeout in seconds for API call response
     :return exit code
     """
 
@@ -371,7 +379,8 @@ def mirror_project(config, project_name, check_changes, uri,
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
-        ignored_repos = get_project_properties(project_config,
+        ignored_repos, \
+        check_changes_proj = get_project_properties(project_config,
                                                project_name,
                                                config.get(HOOKDIR_PROPERTY))
 
@@ -385,16 +394,15 @@ def mirror_project(config, project_name, check_changes, uri,
         proxy = config.get(PROXY_PROPERTY)
 
     # We want this to be logged to the log file (if any).
-    if project_config:
-        if project_config.get(DISABLED_PROPERTY):
-            handle_disabled_project(config, project_name,
-                                    project_config.
-                                    get(DISABLED_REASON_PROPERTY),
-                                    headers=headers,
-                                    timeout=timeout)
-            logger.info("Project '{}' disabled, exiting".
-                        format(project_name))
-            return CONTINUE_EXITVAL
+    if project_config and project_config.get(DISABLED_PROPERTY):
+        handle_disabled_project(config, project_name,
+                                project_config.
+                                get(DISABLED_REASON_PROPERTY),
+                                headers=headers,
+                                timeout=timeout)
+        logger.info("Project '{}' disabled, exiting".
+                    format(project_name))
+        return CONTINUE_EXITVAL
 
     #
     # Cache the repositories first. This way it will be known that
@@ -414,6 +422,9 @@ def mirror_project(config, project_name, check_changes, uri,
         logger.info("No repositories for project {}".
                     format(project_name))
         return CONTINUE_EXITVAL
+
+    if check_changes_proj is not None:
+        check_changes = check_changes_proj
 
     # Check if the project or any of its repositories have changed.
     if check_changes:

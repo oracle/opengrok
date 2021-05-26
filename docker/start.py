@@ -64,7 +64,8 @@ OPENGROK_LIB_DIR = os.path.join(OPENGROK_BASE_DIR, "lib")
 OPENGROK_DATA_ROOT = os.path.join(OPENGROK_BASE_DIR, "data")
 OPENGROK_SRC_ROOT = os.path.join(OPENGROK_BASE_DIR, "src")
 BODY_INCLUDE_FILE = os.path.join(OPENGROK_DATA_ROOT, "body_include")
-OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_BASE_DIR, "etc",
+OPENGROK_CONFIG_DIR = os.path.join(OPENGROK_BASE_DIR, "etc")
+OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_CONFIG_DIR,
                                     "configuration.xml")
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
@@ -531,6 +532,11 @@ def main():
         num_workers = get_num_from_env(logger, 'WORKERS',
                                        multiprocessing.cpu_count())
         logger.info('Number of sync workers: {}'.format(num_workers))
+
+        mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
+        if not os.path.exists(mirror_config):
+            with open(mirror_config, 'w') as fp:
+                pass
 
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,

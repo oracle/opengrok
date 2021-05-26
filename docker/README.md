@@ -71,6 +71,17 @@ The container exports ports 8080 for OpenGrok.
 
 The volume mounted to `/opengrok/src` should contain the projects you want to make searchable (in sub directories). You can use common revision control checkouts (git, svn, etc...) and OpenGrok will make history and blame information available.
 
+## Directories
+
+The image contains these directories:
+
+| Directory | Description |
+| --------- | ----------- |
+`/opengrok/etc` | stores the configuration for both web app and indexer
+`/opengrok/data` | data root - index data
+`/opengrok/src` | source root - input data
+`/scripts` | startup script and top level configuration. Do not override unless debugging.
+
 ## Environment Variables
 
 | Docker Environment Var. | Default value | Description |
@@ -80,7 +91,7 @@ The volume mounted to `/opengrok/src` should contain the projects you want to ma
 `NOMIRROR` | empty | To avoid the mirroring step, set the variable to non-empty value.
 `URL_ROOT` | `/` | Override the sub-URL that OpenGrok should run on.
 `WORKERS` | number of CPUs in the container | number of workers to use for syncing (applies only to setup with projects enabled)
-`AVOID_PROJECTS` | empty | run in project less configuration. Set to non empty value disables projects.
+`AVOID_PROJECTS` | empty | run in project less configuration. Set to non empty value disables projects. Also disables repository synchronization.
 `REST_PORT` | 5000 | TCP port where simple REST app listens for GET requests on `/reindex` to trigger manual reindex.
 `REST_TOKEN` | None | if set, the REST app will require this token as Bearer token in order to trigger reindex.
 `READONLY_CONFIG_FILE` | None | if set, the configuration will be merged with configuration from this file. This is run when the container starts.
