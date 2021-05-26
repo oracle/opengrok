@@ -99,6 +99,13 @@ The image contains these directories:
 
 To specify environment variable for `docker run`, use the `-e` option, e.g. `-e SYNC_PERIOD_MINUTES=30`
 
+## Repository synchronization
+
+To get more control over repository synchronization (enabled only when projects
+are enabled), the `/opengrok/etc/mirror.yml` configuration file can be modified
+as per the https://github.com/oracle/opengrok/wiki/Repository-synchronization
+wiki.
+
 ## OpenGrok Web-Interface
 
 The container has OpenGrok as default web app installed (accessible directly from `/`). With the above container setup, you can find it running on
