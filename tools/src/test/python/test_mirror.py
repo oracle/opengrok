@@ -45,7 +45,8 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
-    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY
+    CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
+    INCOMING_PROPERTY
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
 
 
@@ -119,11 +120,23 @@ def test_invalid_config_option():
     assert not check_configuration({"nonexistent": True})
 
 
-def test_valid_config():
+def test_valid_config_proxy():
     assert check_configuration({
         PROJECTS_PROPERTY: {"foo": {PROXY_PROPERTY: True}},
         PROXY_PROPERTY: "proxy"
     })
+
+
+def test_valid_config_incoming():
+    assert check_configuration({
+        PROJECTS_PROPERTY: {"foo": {INCOMING_PROPERTY: True}},
+        INCOMING_PROPERTY: "False"
+    })
+
+
+def test_project_config_incoming_valid():
+    assert check_project_configuration({'foo': {INCOMING_PROPERTY: "T"}})
+    assert check_project_configuration({'foo': {INCOMING_PROPERTY: "F"}})
 
 
 def test_empty_project_config():
