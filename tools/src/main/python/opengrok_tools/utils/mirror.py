@@ -477,7 +477,7 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     known_project_tunables = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
-                              DISABLED_REASON_PROPERTY]
+                              DISABLED_REASON_PROPERTY, INCOMING_PROPERTY]
 
     if not multiple_project_config:
         return True
@@ -557,7 +557,7 @@ def check_configuration(config):
     global_tunables = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY,
-                       DISABLED_CMD_PROPERTY]
+                       DISABLED_CMD_PROPERTY, INCOMING_PROPERTY]
     diff = set(config.keys()).difference(global_tunables)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
