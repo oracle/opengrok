@@ -536,7 +536,7 @@ def main():
         mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
         if not os.path.exists(mirror_config):
             with open(mirror_config, 'w') as fp:
-                pass
+                fp.write("# Empty config file for opengrok-mirror\n")
 
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,
