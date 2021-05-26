@@ -100,10 +100,14 @@ def get_int(logger, name, value):
 
 def get_bool(logger, name, value):
     """
-    If the supplied value is bool, return it. Otherwise return None.
+    If the supplied value is bool or its representation, return the bool value.
+    Otherwise return None.
     """
     if value is None:
         return None
+
+    if type(value) is bool:
+        return value
 
     try:
         return bool(util.strtobool(value))
