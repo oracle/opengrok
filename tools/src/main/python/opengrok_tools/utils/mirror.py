@@ -215,7 +215,7 @@ def get_project_properties(project_config, project_name, hookdir):
             logger.debug("will use proxy")
             use_proxy = True
 
-        if project_config.get(INCOMING_PROPERTY):
+        if project_config.get(INCOMING_PROPERTY) is not None:
             check_changes = get_bool(logger, ("incoming check for project {}".
                                               format(project_name)),
                                      project_config.get(INCOMING_PROPERTY))
@@ -263,6 +263,8 @@ def process_changes(repos, project_name, uri, headers=None):
     logger = logging.getLogger(__name__)
 
     changes_detected = False
+
+    logger.debug("Checking incoming changes for project {}".format(project_name))
 
     # check if the project is a new project - full index is necessary
     try:
