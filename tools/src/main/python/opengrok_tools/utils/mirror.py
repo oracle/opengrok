@@ -317,7 +317,8 @@ def run_command(cmd, project_name):
                             cmd.getoutputstr()))
 
 
-def handle_disabled_project(config, project_name, disabled_msg, headers=None, timeout=None):
+def handle_disabled_project(config, project_name, disabled_msg, headers=None,
+                            timeout=None):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
@@ -381,13 +382,19 @@ def mirror_project(config, project_name, check_changes, uri,
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
         ignored_repos, \
         check_changes_proj = get_project_properties(project_config,
-                                               project_name,
-                                               config.get(HOOKDIR_PROPERTY))
+                                                    project_name,
+                                                    config.
+                                                    get(HOOKDIR_PROPERTY))
 
     if not command_timeout:
         command_timeout = config.get(CMD_TIMEOUT_PROPERTY)
     if not hook_timeout:
         hook_timeout = config.get(HOOK_TIMEOUT_PROPERTY)
+
+    if check_changes_proj is None:
+        check_changes_config = config.get(INCOMING_PROPERTY)
+    else:
+        check_changes_config = check_changes_proj
 
     proxy = None
     if use_proxy:
@@ -423,8 +430,8 @@ def mirror_project(config, project_name, check_changes, uri,
                     format(project_name))
         return CONTINUE_EXITVAL
 
-    if check_changes_proj is not None:
-        check_changes = check_changes_proj
+    if check_changes_config is not None:
+        check_changes = check_changes_config
 
     # Check if the project or any of its repositories have changed.
     if check_changes:
