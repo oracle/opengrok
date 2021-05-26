@@ -448,8 +448,7 @@ def mirror_project(config, project_name, check_changes, uri,
     # is treated as failed, i.e. the program will return FAILURE_EXITVAL.
     #
     for repo in repos:
-        logger.info("Synchronizing repository {}".
-                    format(repo.path))
+        logger.info("Synchronizing repository {}".format(repo.path))
         if repo.sync() != SUCCESS_EXITVAL:
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
