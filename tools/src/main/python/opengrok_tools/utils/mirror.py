@@ -372,8 +372,8 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
 def get_mirror_retcode(ignore_errors, value):
     if ignore_errors:
         logger = logging.getLogger(__name__)
-        logger.info("error code is {} however '{}' is on, "
-                    "so returning success".format(IGNORE_ERR_PROPERTY, value))
+        logger.info("error code is {} however '{}' property is true, "
+                    "so returning success".format(value, IGNORE_ERR_PROPERTY))
         return SUCCESS_EXITVAL
 
     return value
