@@ -30,7 +30,7 @@ import tempfile
 
 import pytest
 import requests
-from mockito import verify, patch, spy2, mock, ANY, when
+from mockito import verify, patch, spy2, mock, ANY, when, unstub
 
 import opengrok_tools.mirror
 from conftest import posix_only, system_binary
@@ -240,7 +240,8 @@ def test_disabled_command_run():
 
 
 @pytest.mark.parametrize("hook_type", [HOOK_PRE_PROPERTY, HOOK_POST_PROPERTY])
-def test_ignore_errors(monkeypatch, hook_type):
+@pytest.mark.parametrize("per_project", [True, False])
+def test_ignore_errors(monkeypatch, hook_type, per_project):
     """
     Test that per project ignore errors property overrides failed hook.
     """
@@ -252,13 +253,22 @@ def test_ignore_errors(monkeypatch, hook_type):
     project_name = "foo"
     hook_dir = "/befelemepeseveze"
     hook_name = "nonexistent"
-    config = {
-        HOOKDIR_PROPERTY: hook_dir,
-        PROJECTS_PROPERTY: {
-            project_name: {IGNORE_ERR_PROPERTY: True,
-                           HOOKS_PROPERTY: {hook_type: hook_name}}
+    if per_project:
+        config = {
+            HOOKDIR_PROPERTY: hook_dir,
+            PROJECTS_PROPERTY: {
+                project_name: {IGNORE_ERR_PROPERTY: True,
+                               HOOKS_PROPERTY: {hook_type: hook_name}}
+            }
         }
-    }
+    else:
+        config = {
+            IGNORE_ERR_PROPERTY: True,
+            HOOKDIR_PROPERTY: hook_dir,
+            PROJECTS_PROPERTY: {
+                project_name: {HOOKS_PROPERTY: {hook_type: hook_name}}
+            }
+        }
 
     with monkeypatch.context() as m:
         mock_get_repos.called = False
@@ -271,6 +281,9 @@ def test_ignore_errors(monkeypatch, hook_type):
         verify(opengrok_tools.utils.mirror).\
             process_hook(hook_type, os.path.join(hook_dir, hook_name),
                          src_root, project_name, None, None)
+        # Necessary to disable the process_hook spy otherwise mockito will
+        # complain about recursive invocation.
+        unstub()
 
 
 def test_disabled_command_run_args():
