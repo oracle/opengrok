@@ -61,6 +61,8 @@ HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
 PROJECTS_PROPERTY = 'projects'
 DISABLED_CMD_PROPERTY = 'disabled_command'
+HOOK_PRE_PROPERTY = "pre"
+HOOK_POST_PROPERTY = "post"
 
 
 def get_repos_for_project(project_name, uri, source_root,
@@ -206,10 +208,10 @@ def get_project_properties(project_config, project_name, hookdir):
         hooks = project_config.get(HOOKS_PROPERTY)
         if hooks:
             for hookname in hooks:
-                if hookname == "pre":
+                if hookname == HOOK_PRE_PROPERTY:
                     prehook = os.path.join(hookdir, hooks['pre'])
                     logger.debug("pre-hook = {}".format(prehook))
-                elif hookname == "post":
+                elif hookname == HOOK_POST_PROPERTY:
                     posthook = os.path.join(hookdir, hooks['post'])
                     logger.debug("post-hook = {}".format(posthook))
 
@@ -465,8 +467,8 @@ def mirror_project(config, project_name, check_changes, uri,
         if r != SUCCESS_EXITVAL:
             return get_mirror_retcode(ignore_errors, r)
 
-    if not process_hook("pre", prehook, source_root, project_name, proxy,
-                        hook_timeout):
+    if not process_hook(HOOK_PRE_PROPERTY, prehook, source_root, project_name,
+                        proxy, hook_timeout):
         return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
     #
@@ -480,8 +482,8 @@ def mirror_project(config, project_name, check_changes, uri,
                          format(repo.path))
             ret = FAILURE_EXITVAL
 
-    if not process_hook("post", posthook, source_root, project_name, proxy,
-                        hook_timeout):
+    if not process_hook(HOOK_POST_PROPERTY, posthook, source_root, project_name,
+                        proxy, hook_timeout):
         return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
     return get_mirror_retcode(ignore_errors, ret)
