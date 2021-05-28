@@ -52,6 +52,7 @@ CMD_TIMEOUT_PROPERTY = 'command_timeout'
 IGNORED_REPOS_PROPERTY = 'ignored_repos'
 PROXY_PROPERTY = 'proxy'
 INCOMING_PROPERTY = 'incoming_check'
+IGNORE_ERR_PROPERTY = 'ignore_errors'
 COMMANDS_PROPERTY = 'commands'
 DISABLED_PROPERTY = 'disabled'
 DISABLED_REASON_PROPERTY = 'disabled-reason'
@@ -159,7 +160,7 @@ def get_project_properties(project_config, project_name, hookdir):
     :param project_name: name of the project
     :param hookdir: directory with hooks
     :return: list of properties: prehook, posthook, hook_timeout,
-    command_timeout, use_proxy, ignored_repos, check_changes
+    command_timeout, use_proxy, ignored_repos, check_changes, ignore_errors
     """
 
     prehook = None
@@ -169,6 +170,7 @@ def get_project_properties(project_config, project_name, hookdir):
     use_proxy = False
     ignored_repos = None
     check_changes = None
+    ignore_errors = None
 
     logger = logging.getLogger(__name__)
 
@@ -221,11 +223,17 @@ def get_project_properties(project_config, project_name, hookdir):
                                      project_config.get(INCOMING_PROPERTY))
             logger.debug("incoming check = {}".format(check_changes))
 
+        if project_config.get(IGNORE_ERR_PROPERTY) is not None:
+            ignore_errors = get_bool(logger, ("ignore errors for project {}".
+                                              format(project_name)),
+                                     project_config.get(IGNORE_ERR_PROPERTY))
+            logger.debug("ignore errors = {}".format(check_changes))
+
     if not ignored_repos:
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos, check_changes
+        use_proxy, ignored_repos, check_changes, ignore_errors
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -361,6 +369,16 @@ def handle_disabled_project(config, project_name, disabled_msg, headers=None,
             run_command(cmd, project_name)
 
 
+def get_mirror_retcode(ignore_errors, value):
+    if ignore_errors:
+        logger = logging.getLogger(__name__)
+        logger.info("error code is {} however '{}' is on, "
+                    "so returning success".format(IGNORE_ERR_PROPERTY, value))
+        return SUCCESS_EXITVAL
+
+    return value
+
+
 def mirror_project(config, project_name, check_changes, uri,
                    source_root, headers=None, timeout=None):
     """
@@ -383,7 +401,8 @@ def mirror_project(config, project_name, check_changes, uri,
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
         ignored_repos, \
-        check_changes_proj = get_project_properties(project_config,
+        check_changes_proj, \
+        ignore_errors_proj = get_project_properties(project_config,
                                                     project_name,
                                                     config.
                                                     get(HOOKDIR_PROPERTY))
@@ -397,6 +416,11 @@ def mirror_project(config, project_name, check_changes, uri,
         check_changes_config = config.get(INCOMING_PROPERTY)
     else:
         check_changes_config = check_changes_proj
+
+    if ignore_errors_proj is None:
+        ignore_errors = config.get(IGNORE_ERR_PROPERTY)
+    else:
+        ignore_errors = ignore_errors_proj
 
     proxy = None
     if use_proxy:
@@ -439,11 +463,11 @@ def mirror_project(config, project_name, check_changes, uri,
     if check_changes:
         r = process_changes(repos, project_name, uri, headers=headers)
         if r != SUCCESS_EXITVAL:
-            return r
+            return get_mirror_retcode(ignore_errors, r)
 
     if not process_hook("pre", prehook, source_root, project_name, proxy,
                         hook_timeout):
-        return FAILURE_EXITVAL
+        return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
     #
     # If one of the repositories fails to sync, the whole project sync
@@ -458,9 +482,9 @@ def mirror_project(config, project_name, check_changes, uri,
 
     if not process_hook("post", posthook, source_root, project_name, proxy,
                         hook_timeout):
-        return FAILURE_EXITVAL
+        return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
-    return ret
+    return get_mirror_retcode(ignore_errors, ret)
 
 
 def check_project_configuration(multiple_project_config, hookdir=False,
@@ -479,7 +503,8 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     known_project_tunables = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
-                              DISABLED_REASON_PROPERTY, INCOMING_PROPERTY]
+                              DISABLED_REASON_PROPERTY, INCOMING_PROPERTY,
+                              IGNORE_ERR_PROPERTY]
 
     if not multiple_project_config:
         return True
@@ -559,7 +584,9 @@ def check_configuration(config):
     global_tunables = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY,
-                       DISABLED_CMD_PROPERTY, INCOMING_PROPERTY]
+                       DISABLED_CMD_PROPERTY, INCOMING_PROPERTY,
+                       IGNORE_ERR_PROPERTY]
+
     diff = set(config.keys()).difference(global_tunables)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
