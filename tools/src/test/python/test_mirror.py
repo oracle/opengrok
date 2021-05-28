@@ -239,9 +239,43 @@ def test_disabled_command_run():
     verify(opengrok_tools.utils.mirror).run_command(ANY, project_name)
 
 
+@pytest.mark.parametrize("per_project", [True, False])
+def test_ignore_errors_sync(monkeypatch, per_project):
+    """
+    Test that ignore errors overrides failed repository sync().
+    """
+
+    mock_repo = mock(spec=GitRepository)
+    when(mock_repo).sync().thenReturn(FAILURE_EXITVAL)
+
+    def mock_get_repos(*args, **kwargs):
+        return [mock_repo]
+
+    project_name = "foo"
+    if per_project:
+        config = {
+            PROJECTS_PROPERTY: {
+                project_name: {IGNORE_ERR_PROPERTY: True}
+            }
+        }
+    else:
+        config = {
+            IGNORE_ERR_PROPERTY: True,
+        }
+
+    with monkeypatch.context() as m:
+        mock_get_repos.called = False
+        m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
+                  mock_get_repos)
+
+        src_root = "srcroot"
+        assert mirror_project(config, project_name, False,
+                              None, src_root) == SUCCESS_EXITVAL
+
+
 @pytest.mark.parametrize("hook_type", [HOOK_PRE_PROPERTY, HOOK_POST_PROPERTY])
 @pytest.mark.parametrize("per_project", [True, False])
-def test_ignore_errors(monkeypatch, hook_type, per_project):
+def test_ignore_errors_hooks(monkeypatch, hook_type, per_project):
     """
     Test that ignore errors property overrides failed hook.
     """
