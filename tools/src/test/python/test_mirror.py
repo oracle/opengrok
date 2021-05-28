@@ -39,14 +39,14 @@ from opengrok_tools.scm.git import GitRepository
 from opengrok_tools.scm.repository import RepositoryException
 from opengrok_tools.utils.command import Command
 from opengrok_tools.utils.exitvals import (
-    CONTINUE_EXITVAL, FAILURE_EXITVAL
+    CONTINUE_EXITVAL, FAILURE_EXITVAL, SUCCESS_EXITVAL
 )
 from opengrok_tools.utils.mirror import check_project_configuration, \
     check_configuration, mirror_project, run_command, get_repos_for_project, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
-    INCOMING_PROPERTY
+    INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, HOOKDIR_PROPERTY
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
 
 
@@ -236,6 +236,40 @@ def test_disabled_command_run():
     assert mirror_project(config, project_name, False,
                           None, None) == CONTINUE_EXITVAL
     verify(opengrok_tools.utils.mirror).run_command(ANY, project_name)
+
+
+def test_ignore_errors(monkeypatch):
+    """
+    Test that per project ignore errors property overrides failed pre hook.
+    """
+    def mock_get_repos(*args, **kwargs):
+        # Technically this function should return list of Repository objects
+        # however for this test this is not necessary.
+        return ['foo']
+
+    spy2(opengrok_tools.utils.mirror.process_hook)
+    project_name = "foo"
+    hook_dir = "/befelemepeseveze"
+    hook_name = "nonexistent"
+    config = {
+        HOOKDIR_PROPERTY: hook_dir,
+        PROJECTS_PROPERTY: {
+            project_name: {IGNORE_ERR_PROPERTY: True,
+                           HOOKS_PROPERTY: {HOOK_PRE_PROPERTY: hook_name}}
+        }
+    }
+
+    with monkeypatch.context() as m:
+        mock_get_repos.called = False
+        m.setattr("opengrok_tools.utils.mirror.get_repos_for_project",
+                  mock_get_repos)
+
+        src_root = "srcroot"
+        assert mirror_project(config, project_name, False,
+                              None, src_root) == SUCCESS_EXITVAL
+        verify(opengrok_tools.utils.mirror).\
+            process_hook(HOOK_PRE_PROPERTY, os.path.join(hook_dir, hook_name),
+                         src_root, project_name, None, None)
 
 
 def test_disabled_command_run_args():
