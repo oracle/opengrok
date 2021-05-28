@@ -46,7 +46,8 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     HOOKS_PROPERTY, PROXY_PROPERTY, IGNORED_REPOS_PROPERTY, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
-    INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, HOOKDIR_PROPERTY
+    INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, \
+    HOOKDIR_PROPERTY, HOOK_POST_PROPERTY
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
 
 
@@ -238,14 +239,14 @@ def test_disabled_command_run():
     verify(opengrok_tools.utils.mirror).run_command(ANY, project_name)
 
 
-def test_ignore_errors(monkeypatch):
+@pytest.mark.parametrize("hook_type", [HOOK_PRE_PROPERTY, HOOK_POST_PROPERTY])
+def test_ignore_errors(monkeypatch, hook_type):
     """
     Test that per project ignore errors property overrides failed pre hook.
     """
+
     def mock_get_repos(*args, **kwargs):
-        # Technically this function should return list of Repository objects
-        # however for this test this is not necessary.
-        return ['foo']
+        return [mock(spec=GitRepository)]
 
     spy2(opengrok_tools.utils.mirror.process_hook)
     project_name = "foo"
@@ -255,7 +256,7 @@ def test_ignore_errors(monkeypatch):
         HOOKDIR_PROPERTY: hook_dir,
         PROJECTS_PROPERTY: {
             project_name: {IGNORE_ERR_PROPERTY: True,
-                           HOOKS_PROPERTY: {HOOK_PRE_PROPERTY: hook_name}}
+                           HOOKS_PROPERTY: {hook_type: hook_name}}
         }
     }
 
@@ -268,7 +269,7 @@ def test_ignore_errors(monkeypatch):
         assert mirror_project(config, project_name, False,
                               None, src_root) == SUCCESS_EXITVAL
         verify(opengrok_tools.utils.mirror).\
-            process_hook(HOOK_PRE_PROPERTY, os.path.join(hook_dir, hook_name),
+            process_hook(hook_type, os.path.join(hook_dir, hook_name),
                          src_root, project_name, None, None)
 
 
