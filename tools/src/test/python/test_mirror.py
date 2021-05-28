@@ -243,7 +243,7 @@ def test_disabled_command_run():
 @pytest.mark.parametrize("per_project", [True, False])
 def test_ignore_errors(monkeypatch, hook_type, per_project):
     """
-    Test that per project ignore errors property overrides failed hook.
+    Test that ignore errors property overrides failed hook.
     """
 
     def mock_get_repos(*args, **kwargs):
