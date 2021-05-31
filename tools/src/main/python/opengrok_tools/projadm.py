@@ -214,6 +214,8 @@ def project_delete(logger, project, uri, doit=True, deletesource=False,
             logger.info("Removing source code under {}".format(sourcedir))
             try:
                 shutil.rmtree(sourcedir)
+            except FileNotFoundError:
+                pass
             except Exception as e:
                 logger.error("Failed to remove {}: {}".format(sourcedir, e))
 
