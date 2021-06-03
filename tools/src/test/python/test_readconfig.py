@@ -22,7 +22,6 @@
 #
 # Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
 #
-import os
 import tempfile
 from mockito import mock
 import logging
