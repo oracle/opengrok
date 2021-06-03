@@ -22,6 +22,7 @@
 #
 # Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
 #
+import os
 import tempfile
 from mockito import mock
 import logging
@@ -30,10 +31,11 @@ from opengrok_tools.utils.readconfig import read_config
 
 
 def test_read_config_empty_yaml():
-    with tempfile.NamedTemporaryFile(mode='w+t') as tmpf:
-        tmpf.file.write('#foo\n')
-        tmpf.flush()
-        res = read_config(mock(spec=logging.Logger), tmpf.name)
-        assert res is not None
-        assert type(res) == dict
-        assert len(res) == 0
+    tmpf = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+    tmpf.file.write('#foo\n')
+    tmpf.close()
+    res = read_config(mock(spec=logging.Logger), tmpf.name)
+    os.remove(tmpf.name)
+    assert res is not None
+    assert type(res) == dict
+    assert len(res) == 0
