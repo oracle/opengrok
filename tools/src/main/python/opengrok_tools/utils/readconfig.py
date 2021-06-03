@@ -62,6 +62,9 @@ def read_config(logger, inputfile):
                 # Not a valid YAML file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
             else:
+                if cfg is None:
+                    cfg = {}
+
                 return cfg
     except IOError as e:
         logger.error("cannot open '{}': {}".format(inputfile, e.strerror))
