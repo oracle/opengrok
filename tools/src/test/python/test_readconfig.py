@@ -30,8 +30,8 @@ from opengrok_tools.utils.readconfig import read_config
 
 
 def test_read_config_empty_yaml():
-    with tempfile.NamedTemporaryFile() as tmpf:
-        tmpf.file.write(b'#foo\n')
+    with tempfile.NamedTemporaryFile(mode='w+t') as tmpf:
+        tmpf.file.write('#foo\n')
         tmpf.flush()
         res = read_config(mock(spec=logging.Logger), tmpf.name)
         assert res is not None
