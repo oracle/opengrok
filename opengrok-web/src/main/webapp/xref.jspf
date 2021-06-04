@@ -56,7 +56,7 @@ org.opengrok.indexer.web.QueryParameters"
         InputStream in = null;
         File tempf = null;
         try {
-            if (rev.equals(DUMMY_REVISION)) {
+            if (rev.isBlank() || rev.equals(DUMMY_REVISION)) {
                 in = new BufferedInputStream(new FileInputStream(resourceFile));
             } else {
                 tempf = File.createTempFile("ogtags", basename);
