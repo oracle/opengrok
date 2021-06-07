@@ -660,7 +660,6 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
 
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
-        String line = null;
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
