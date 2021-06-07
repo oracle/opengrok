@@ -1211,12 +1211,10 @@ public final class Util {
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
-        try (InputStream iss = new BufferedInputStream(new FileInputStream(file))) {
-            try (Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) :
-                    new InputStreamReader(iss)) {
+        try (InputStream iss = new BufferedInputStream(new FileInputStream(file));
+            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) : new InputStreamReader(iss)) {
                 dumpXref(out, in, contextPath);
                 return true;
-            }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "An error occurred while piping file " + file, e);
         }
