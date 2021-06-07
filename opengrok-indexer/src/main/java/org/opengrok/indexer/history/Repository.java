@@ -137,6 +137,7 @@ public abstract class Repository extends RepositoryInfo {
         try {
             hist = HistoryGuru.getInstance().getHistory(file, false, ui);
         } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "failed to get history for {0}", file);
             return null;
         }
 
