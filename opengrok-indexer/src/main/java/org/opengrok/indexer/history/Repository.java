@@ -117,11 +117,7 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         List<HistoryEntry> hlist = hist.getHistoryEntries();
-        if (hlist == null) {
-            return null;
-        }
-
-        if (hlist.size() == 0) {
+        if (hlist == null || hlist.isEmpty()) {
             return null;
         }
 
