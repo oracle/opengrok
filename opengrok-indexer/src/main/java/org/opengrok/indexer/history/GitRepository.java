@@ -497,6 +497,11 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
+
+        if (numCommits == null || numCommits <= 0) {
+            return null;
+        }
+
         final List<HistoryEntry> entries = new ArrayList<>();
         final Set<String> renamedFiles = new HashSet<>();
 
