@@ -111,6 +111,42 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract History getHistory(File file) throws HistoryException;
 
+    HistoryEntry getLastHistoryEntry(History hist) {
+        if (hist == null) {
+            return null;
+        }
+
+        List<HistoryEntry> hlist = hist.getHistoryEntries();
+        if (hlist == null) {
+            return null;
+        }
+
+        if (hlist.size() == 0) {
+            return null;
+        }
+
+        return hlist.get(0);
+    }
+
+    /**
+     * This is generic implementation that retrieves the full history of given file
+     * and returns the latest history entry. This is obviously very inefficient, both in terms of memory and I/O.
+     * The extending classes are encouraged to implement their own version.
+     * @param file file
+     * @return last history entry or null
+     * @throws HistoryException on error
+     */
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        History hist;
+        try {
+            hist = HistoryGuru.getInstance().getHistory(file, false, ui);
+        } catch (HistoryException ex) {
+            return null;
+        }
+
+        return getLastHistoryEntry(hist);
+    }
+
     public Repository() {
         super();
         ignoredFiles = new ArrayList<>();

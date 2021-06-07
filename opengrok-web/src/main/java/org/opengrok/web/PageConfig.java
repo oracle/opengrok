@@ -1285,38 +1285,23 @@ public final class PageConfig {
         }
 
         // fallback
-        return getLastRevFromHistory();
+        try {
+            return getLastRevFromHistory();
+        } catch (HistoryException e) {
+            LOGGER.log(Level.WARNING, "cannot get latest revision for {0}", getPath());
+            return null;
+        }
     }
 
     @Nullable
-    private String getLastRevFromHistory() {
-        History hist;
-        try {
-            hist = HistoryGuru.getInstance().
-                    getHistory(new File(getEnv().getSourceRootFile(), getPath()), false, true);
-        } catch (HistoryException ex) {
-            return null;
+    private String getLastRevFromHistory() throws HistoryException {
+        HistoryEntry he = HistoryGuru.getInstance().
+                getLastHistoryEntry(new File(getEnv().getSourceRootFile(), getPath()), true);
+        if (he != null) {
+            return he.getRevision();
         }
 
-        if (hist == null) {
-            return null;
-        }
-
-        List<HistoryEntry> hlist = hist.getHistoryEntries();
-        if (hlist == null) {
-            return null;
-        }
-
-        if (hlist.size() == 0) {
-            return null;
-        }
-
-        HistoryEntry he = hlist.get(0);
-        if (he == null) {
-            return null;
-        }
-
-        return he.getRevision();
+        return null;
     }
 
     /**
