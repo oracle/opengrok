@@ -1196,31 +1196,31 @@ public final class Util {
      * {@link IOException}s get caught and logged, but not re-thrown.
      * @param out dump destination
      * @param file file to dump
-     * @param compressed if {@code true} the denoted file is assumed to be
-     * gzipped
+     * @param compressed if {@code true} the denoted file is assumed to be gzipped
      * @param contextPath an optional override of "/source/" as the context path
      * @return {@code true} on success (everything read and written)
      * @throws NullPointerException if a parameter is {@code null}.
      */
-    public static boolean dumpXref(Writer out, File file, boolean compressed,
-            String contextPath) {
+    public static boolean dumpXref(Writer out, File file, boolean compressed, String contextPath) {
+
         if (!file.exists()) {
             return false;
         }
-        /**
+
+        /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
-        try (InputStream iss = new BufferedInputStream(
-                new FileInputStream(file))) {
-            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(
-                iss)) : new InputStreamReader(iss);
-            dumpXref(out, in, contextPath);
-            return true;
+        try (InputStream iss = new BufferedInputStream(new FileInputStream(file))) {
+            try (Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) :
+                    new InputStreamReader(iss)) {
+                dumpXref(out, in, contextPath);
+                return true;
+            }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "An error occured while piping file " +
-                    file, e);
+            LOGGER.log(Level.WARNING, "An error occurred while piping file " + file, e);
         }
+
         return false;
     }
 
