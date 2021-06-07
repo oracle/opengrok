@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -160,6 +161,11 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         }
     }
 
+    Executor getHistoryLogExecutor(File file, String sinceRevision, String tillRevision, boolean revisionsOnly)
+            throws HistoryException, IOException {
+        return getHistoryLogExecutor(file, sinceRevision, tillRevision, revisionsOnly, null);
+    }
+
     /**
      * Get an executor to be used for retrieving the history log for the named
      * file or directory.
@@ -170,9 +176,11 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
      *                  For files this does not apply and full history is returned.
      * @param tillRevision end revision
      * @param revisionsOnly get only revision numbers
+     * @param numRevisions number of revisions to get
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(File file, String sinceRevision, String tillRevision, boolean revisionsOnly)
+    Executor getHistoryLogExecutor(File file, String sinceRevision, String tillRevision, boolean revisionsOnly,
+                                   Integer numRevisions)
             throws HistoryException, IOException {
 
         String filename = getRepoRelativePath(file);
@@ -243,6 +251,11 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
             }
         }
 
+        if (numRevisions != null && numRevisions > 0) {
+            cmd.add("-l");
+            cmd.add(numRevisions.toString());
+        }
+
         if (!filename.isEmpty()) {
             cmd.add("--");
             cmd.add(filename);
@@ -261,8 +274,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
      * error occurred and with non-zero {@code iterations} if some data was
      * transferred
      */
-    private HistoryRevResult getHistoryRev(
-            BufferSink sink, String fullpath, String rev) {
+    private HistoryRevResult getHistoryRev(BufferSink sink, String fullpath, String rev) {
 
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
@@ -271,9 +283,9 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         if (rev.indexOf(':') != -1) {
             revision = rev.substring(0, rev.indexOf(':'));
         }
+
         try {
-            String filename
-                    = fullpath.substring(getDirectoryName().length() + 1);
+            String filename = fullpath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {RepoCommand, "cat", "-r", revision, filename};
             Executor executor = new Executor(Arrays.asList(argv), directory,
@@ -289,6 +301,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE, "Failed to get history", exp);
         }
+
         return result;
     }
 
@@ -556,12 +569,25 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
                 parse(new File(getDirectoryName()), sinceRevision);
     }
 
+    @Nullable
+    @Override
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        History hist = getHistory(file, null, null, 1);
+        return getLastHistoryEntry(hist);
+    }
+
     History getHistory(File file, String sinceRevision) throws HistoryException {
         return getHistory(file, sinceRevision, null);
     }
 
     @Override
     History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, tillRevision, null);
+    }
+
+    History getHistory(File file, String sinceRevision, String tillRevision,
+                       Integer numRevisions) throws HistoryException {
+
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // Note that the filtering of revisions based on sinceRevision is done
         // in the history log executor by passing appropriate options to
@@ -570,7 +596,8 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         // for file, the file is renamed and its complete history is fetched
         // so no sinceRevision filter is needed.
         // See findOriginalName() code for more details.
-        History result = new MercurialHistoryParser(this).parse(file, sinceRevision, tillRevision);
+        History result = new MercurialHistoryParser(this).
+                parse(file, sinceRevision, tillRevision, numRevisions);
 
         // Assign tags to changesets they represent.
         // We don't need to check if this repository supports tags,

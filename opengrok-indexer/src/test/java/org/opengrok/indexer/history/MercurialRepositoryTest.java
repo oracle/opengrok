@@ -383,4 +383,15 @@ public class MercurialRepositoryTest {
                 collect(Collectors.toList());
         assertEquals(List.of(Arrays.copyOfRange(REVISIONS, 2, 7)), revisions);
     }
+
+    @Test
+    void testGetLastHistoryEntry() throws Exception {
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        File file = new File(root, "novel.txt");
+        assertTrue(file.exists() && file.isFile());
+        MercurialRepository hgRepo = (MercurialRepository) RepositoryFactory.getRepository(root);
+        HistoryEntry historyEntry = hgRepo.getLastHistoryEntry(file, true);
+        assertNotNull(historyEntry);
+        assertEquals("8:6a8c423f5624", historyEntry.getRevision());
+    }
 }
