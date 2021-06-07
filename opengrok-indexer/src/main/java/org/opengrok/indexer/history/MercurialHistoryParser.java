@@ -74,15 +74,15 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * @param sinceRevision the changeset right before the first one to fetch, or
      * {@code null} if all changesets should be fetched
      * @param tillRevision end revision or {@code null}
-     * @param numRevisions number of revisions to get
+     * @param numCommits number of revisions to get
      * @return history for the specified file or directory
      * @throws HistoryException if an error happens when parsing the history
      */
-    History parse(File file, String sinceRevision, String tillRevision, Integer numRevisions) throws HistoryException {
+    History parse(File file, String sinceRevision, String tillRevision, Integer numCommits) throws HistoryException {
         isDir = file.isDirectory();
         try {
             Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false,
-                    numRevisions);
+                    numCommits);
             int status = executor.exec(true, this);
 
             if (status != 0) {

@@ -586,7 +586,11 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
     }
 
     History getHistory(File file, String sinceRevision, String tillRevision,
-                       Integer numRevisions) throws HistoryException {
+                       Integer numCommits) throws HistoryException {
+
+        if (numCommits != null && numCommits <= 0) {
+            return null;
+        }
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         // Note that the filtering of revisions based on sinceRevision is done
@@ -597,7 +601,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         // so no sinceRevision filter is needed.
         // See findOriginalName() code for more details.
         History result = new MercurialHistoryParser(this).
-                parse(file, sinceRevision, tillRevision, numRevisions);
+                parse(file, sinceRevision, tillRevision, numCommits);
 
         // Assign tags to changesets they represent.
         // We don't need to check if this repository supports tags,
