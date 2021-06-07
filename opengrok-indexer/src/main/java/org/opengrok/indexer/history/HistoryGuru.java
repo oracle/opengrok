@@ -235,6 +235,11 @@ public final class HistoryGuru {
         return getHistory(file, true, true);
     }
 
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        final Repository repo = getRepository(file);
+        return repo.getLastHistoryEntry(file, ui);
+    }
+
     /**
      * Get the history for the specified file.
      *

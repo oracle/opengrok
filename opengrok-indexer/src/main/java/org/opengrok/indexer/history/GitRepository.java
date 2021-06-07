@@ -81,6 +81,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.io.CountingOutputStream;
 import org.eclipse.jgit.util.io.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -483,7 +484,24 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         }
     }
 
+    @Nullable
+    @Override
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        History hist = getHistory(file, null, null, 1);
+        return getLastHistoryEntry(hist);
+    }
+
     public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, tillRevision, null);
+    }
+
+    public History getHistory(File file, String sinceRevision, String tillRevision,
+                              Integer numCommits) throws HistoryException {
+
+        if (numCommits != null && numCommits <= 0) {
+            return null;
+        }
+
         final List<HistoryEntry> entries = new ArrayList<>();
         final Set<String> renamedFiles = new HashSet<>();
 
@@ -517,6 +535,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 }
             }
 
+            int num = 0;
             for (RevCommit commit : walk) {
                 if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                     continue;
@@ -535,6 +554,10 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 }
 
                 entries.add(historyEntry);
+
+                if (numCommits != null && ++num >= numCommits) {
+                    break;
+                }
             }
         } catch (IOException | ForbiddenSymlinkException e) {
             throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
