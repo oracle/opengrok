@@ -477,9 +477,9 @@ public final class PageConfig {
         return dirFileList;
     }
 
-    List<String> getSortedFiles(File[] files) {
+    private Comparator<File> getFileComparator() {
         if (getEnv().getListDirsFirst()) {
-            Arrays.sort(files, (f1, f2) -> {
+            return (f1, f2) -> {
                 if (f1.isDirectory() && !f2.isDirectory()) {
                     return -1;
                 } else if (!f1.isDirectory() && f2.isDirectory()) {
@@ -487,12 +487,14 @@ public final class PageConfig {
                 } else {
                     return f1.getName().compareTo(f2.getName());
                 }
-            });
+            };
         } else {
-            Arrays.sort(files, Comparator.comparing(File::getName));
-
+            return Comparator.comparing(File::getName);
         }
-        return Arrays.stream(files).map(File::getName).collect(Collectors.toList());
+    }
+
+    List<String> getSortedFiles(File[] files) {
+        return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).collect(Collectors.toList());
     }
 
     /**
