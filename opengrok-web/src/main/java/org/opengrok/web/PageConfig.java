@@ -446,28 +446,11 @@ public final class PageConfig {
             if (isDir() && getResourcePath().length() > 1) {
                 files = getResourceFile().listFiles();
             }
+
             if (files == null) {
                 dirFileList = Collections.emptyList();
             } else {
-                List<String> listOfFiles;
-                if (env.getListDirsFirst()) {
-                    Arrays.sort(files, (f1, f2) -> {
-                        if (f1.isDirectory() && f2.isDirectory()) {
-                            return f1.getName().compareTo(f2.getName());
-                        } else if (f1.isFile() && f2.isFile()) {
-                            return f1.getName().compareTo(f2.getName());
-                        } else {
-                            if (f1.isFile() && f2.isDirectory()) {
-                                return 1;
-                            } else {
-                                return -1;
-                            }
-                        }
-                    });
-                } else {
-                    Arrays.sort(files, Comparator.comparing(File::getName));
-                }
-                listOfFiles = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
+                List<String> listOfFiles = getSortedFiles(files);
 
                 if (env.hasProjects() && getPath().isEmpty()) {
                     /**
@@ -492,6 +475,21 @@ public final class PageConfig {
             }
         }
         return dirFileList;
+    }
+
+    List<String> getSortedFiles(File[] files) {
+        if (getEnv().getListDirsFirst()) {
+            List<String> listOfDirs = Arrays.stream(files).filter(File::isDirectory).map(File::getName).sorted().
+                    collect(Collectors.toList());
+            List<String> listOfFiles = Arrays.stream(files).filter(File::isFile).map(File::getName).sorted().
+                    collect(Collectors.toList());
+
+            listOfDirs.addAll(listOfFiles);
+            return listOfDirs;
+        } else {
+            Arrays.sort(files, Comparator.comparing(File::getName));
+            return Arrays.stream(files).map(File::getName).collect(Collectors.toList());
+        }
     }
 
     /**

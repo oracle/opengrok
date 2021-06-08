@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterAll;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+import org.mockito.Mockito;
 import org.opengrok.indexer.authorization.AuthControlFlag;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationPlugin;
@@ -217,6 +219,31 @@ public class PageConfigTest {
         env.setAuthorizationFramework(oldAuthorizationFramework);
         env.setSourceRoot(oldSourceRootPath);
         env.setProjects(oldProjects);
+    }
+
+    @Test
+    void testGetSortedFilesDirsFirst() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setListDirsFirst(true);
+        // Cannot spy/mock final class.
+        HttpServletRequest req = createRequest("/source", "/xref", "");
+        PageConfig pageConfig = PageConfig.get(req);
+
+        // Make sure the source root has just directories.
+        File sourceRootFile = new File(repository.getSourceRoot());
+        assertTrue(Arrays.stream(sourceRootFile.listFiles()).filter(File::isFile).
+                collect(Collectors.toSet()).isEmpty());
+
+        // Create regular file under source root.
+        File file = new File(sourceRootFile, "foo.txt");
+        assertTrue(file.createNewFile());
+        assertTrue(file.isFile());
+
+        // Make sure the regular file is last.
+        List<String> entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        assertNotNull(entries);
+        assertFalse(entries.isEmpty());
+        assertEquals("foo.txt", entries.get(entries.size() - 1));
     }
 
     @Test
