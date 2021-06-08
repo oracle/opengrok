@@ -220,6 +220,7 @@ public class PageConfigTest {
         env.setProjects(oldProjects);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Test
     void testGetSortedFilesDirsFirst() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -243,6 +244,9 @@ public class PageConfigTest {
         assertNotNull(entries);
         assertFalse(entries.isEmpty());
         assertEquals("foo.txt", entries.get(entries.size() - 1));
+
+        // Cleanup.
+        file.delete();
     }
 
     @Test
