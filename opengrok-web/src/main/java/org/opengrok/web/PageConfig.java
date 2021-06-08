@@ -479,17 +479,20 @@ public final class PageConfig {
 
     List<String> getSortedFiles(File[] files) {
         if (getEnv().getListDirsFirst()) {
-            List<String> listOfDirs = Arrays.stream(files).filter(File::isDirectory).map(File::getName).sorted().
-                    collect(Collectors.toList());
-            List<String> listOfFiles = Arrays.stream(files).filter(File::isFile).map(File::getName).sorted().
-                    collect(Collectors.toList());
-
-            listOfDirs.addAll(listOfFiles);
-            return listOfDirs;
+            Arrays.sort(files, (f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) {
+                    return -1;
+                } else if (!f1.isDirectory() && f2.isDirectory()) {
+                    return 1;
+                } else {
+                    return f1.getName().compareTo(f2.getName());
+                }
+            });
         } else {
             Arrays.sort(files, Comparator.comparing(File::getName));
-            return Arrays.stream(files).map(File::getName).collect(Collectors.toList());
+
         }
+        return Arrays.stream(files).map(File::getName).collect(Collectors.toList());
     }
 
     /**
