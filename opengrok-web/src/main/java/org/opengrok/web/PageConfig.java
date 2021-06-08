@@ -65,6 +65,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -493,6 +494,7 @@ public final class PageConfig {
         }
     }
 
+    @VisibleForTesting
     List<String> getSortedFiles(File[] files) {
         return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).collect(Collectors.toList());
     }
