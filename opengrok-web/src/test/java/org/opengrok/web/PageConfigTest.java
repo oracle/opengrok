@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -243,7 +245,19 @@ public class PageConfigTest {
         List<String> entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
         assertNotNull(entries);
         assertFalse(entries.isEmpty());
+        int numEntries = entries.size();
         assertEquals("foo.txt", entries.get(entries.size() - 1));
+
+        // Create symbolic link to non-existent target.
+        Path link = Path.of(sourceRootFile.getCanonicalPath(), "link");
+        Path target = Paths.get("/nonexistent");
+        Files.createSymbolicLink(link, target);
+
+        // XXX
+        entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        assertNotNull(entries);
+        assertFalse(entries.isEmpty());
+        assertEquals(numEntries + 1, entries.size());
 
         // Cleanup.
         file.delete();
