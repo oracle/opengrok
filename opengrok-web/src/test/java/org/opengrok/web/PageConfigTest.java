@@ -27,10 +27,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.AfterAll;
@@ -217,6 +220,50 @@ public class PageConfigTest {
         env.setAuthorizationFramework(oldAuthorizationFramework);
         env.setSourceRoot(oldSourceRootPath);
         env.setProjects(oldProjects);
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @Test
+    void testGetSortedFilesDirsFirst() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setListDirsFirst(true);
+        // Cannot spy/mock final class.
+        HttpServletRequest req = createRequest("/source", "/xref", "");
+        PageConfig pageConfig = PageConfig.get(req);
+
+        // Make sure the source root has just directories.
+        File sourceRootFile = new File(repository.getSourceRoot());
+        assertTrue(Arrays.stream(sourceRootFile.listFiles()).filter(File::isFile).
+                collect(Collectors.toSet()).isEmpty());
+
+        // Create regular file under source root.
+        File file = new File(sourceRootFile, "foo.txt");
+        assertTrue(file.createNewFile());
+        assertTrue(file.isFile());
+
+        // Make sure the regular file is last.
+        List<String> entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        assertNotNull(entries);
+        assertFalse(entries.isEmpty());
+        int numEntries = entries.size();
+        assertEquals("foo.txt", entries.get(entries.size() - 1));
+
+        // Create symbolic link to non-existent target.
+        Path link = Path.of(sourceRootFile.getCanonicalPath(), "link");
+        Path target = Paths.get("/nonexistent");
+        Files.createSymbolicLink(link, target);
+
+        // Check the symlink was sorted as file.
+        entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
+        assertNotNull(entries);
+        assertFalse(entries.isEmpty());
+        assertEquals(numEntries + 1, entries.size());
+        assertEquals("link", entries.get(entries.size() - 1));
+
+        // Cleanup.
+        file.delete();
+        link.toFile().delete();
     }
 
     @Test

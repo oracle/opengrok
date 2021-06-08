@@ -65,6 +65,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -446,28 +447,11 @@ public final class PageConfig {
             if (isDir() && getResourcePath().length() > 1) {
                 files = getResourceFile().listFiles();
             }
+
             if (files == null) {
                 dirFileList = Collections.emptyList();
             } else {
-                List<String> listOfFiles;
-                if (env.getListDirsFirst()) {
-                    Arrays.sort(files, (f1, f2) -> {
-                        if (f1.isDirectory() && f2.isDirectory()) {
-                            return f1.getName().compareTo(f2.getName());
-                        } else if (f1.isFile() && f2.isFile()) {
-                            return f1.getName().compareTo(f2.getName());
-                        } else {
-                            if (f1.isFile() && f2.isDirectory()) {
-                                return 1;
-                            } else {
-                                return -1;
-                            }
-                        }
-                    });
-                } else {
-                    Arrays.sort(files, Comparator.comparing(File::getName));
-                }
-                listOfFiles = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
+                List<String> listOfFiles = getSortedFiles(files);
 
                 if (env.hasProjects() && getPath().isEmpty()) {
                     /**
@@ -492,6 +476,27 @@ public final class PageConfig {
             }
         }
         return dirFileList;
+    }
+
+    private Comparator<File> getFileComparator() {
+        if (getEnv().getListDirsFirst()) {
+            return (f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) {
+                    return -1;
+                } else if (!f1.isDirectory() && f2.isDirectory()) {
+                    return 1;
+                } else {
+                    return f1.getName().compareTo(f2.getName());
+                }
+            };
+        } else {
+            return Comparator.comparing(File::getName);
+        }
+    }
+
+    @VisibleForTesting
+    List<String> getSortedFiles(File[] files) {
+        return Arrays.stream(files).sorted(getFileComparator()).map(File::getName).collect(Collectors.toList());
     }
 
     /**
