@@ -223,6 +223,7 @@ public class PageConfigTest {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @Test
     void testGetSortedFilesDirsFirst() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
