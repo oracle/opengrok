@@ -262,6 +262,7 @@ public class PageConfigTest {
 
         // Cleanup.
         file.delete();
+        link.toFile().delete();
     }
 
     @Test
