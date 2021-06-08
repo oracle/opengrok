@@ -253,11 +253,12 @@ public class PageConfigTest {
         Path target = Paths.get("/nonexistent");
         Files.createSymbolicLink(link, target);
 
-        // XXX
+        // Check the symlink was sorted as file.
         entries = pageConfig.getSortedFiles(sourceRootFile.listFiles());
         assertNotNull(entries);
         assertFalse(entries.isEmpty());
         assertEquals(numEntries + 1, entries.size());
+        assertEquals("link", entries.get(entries.size() - 1));
 
         // Cleanup.
         file.delete();
