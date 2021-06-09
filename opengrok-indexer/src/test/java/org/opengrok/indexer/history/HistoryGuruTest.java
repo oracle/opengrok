@@ -26,6 +26,7 @@ package org.opengrok.indexer.history;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
@@ -278,5 +279,12 @@ public class HistoryGuruTest {
         assertEquals(2, addedRepos.size(), "should add to increased max depth");
 
         env.setScanningDepth(originalScanDepth);
+    }
+
+    @Test
+    void testGetLastHistoryEntry() throws HistoryException {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        File file = new File("/nonexistent");
+        assertNull(instance.getLastHistoryEntry(file, true));
     }
 }
