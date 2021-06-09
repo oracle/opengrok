@@ -237,7 +237,10 @@ public final class HistoryGuru {
 
     public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
         final Repository repo = getRepository(file);
-        return repo.getLastHistoryEntry(file, ui);
+        if (repo != null) {
+            return repo.getLastHistoryEntry(file, ui);
+        }
+        return null;
     }
 
     /**
