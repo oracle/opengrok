@@ -19,7 +19,7 @@ RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml
 RUN sed -i 's:<module>tools</module>::g' /mvn/pom.xml
 
 RUN mkdir -p /mvn/opengrok-indexer/target/jflex-sources
-RUN mkdir -p /mvn/opengrok-web/src/main/webapp
+RUN mkdir -p /mvn/opengrok-web/src/main/webapp/js
 RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies
