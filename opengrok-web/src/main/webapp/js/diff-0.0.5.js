@@ -20,7 +20,7 @@
 /* global textInputHasFocus */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021 Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -44,9 +44,9 @@
                 title: 'Diff jumper',
                 draggable: false,
                 init: function ($window) {
-                    var $prev;
-                    var $next;
-                    var that = this;
+                    let $prev;
+                    let $next;
+                    const that = this;
 
                     // set initial position by the toggle button
                     that.options.$toggleButton.each(function () {
@@ -59,7 +59,7 @@
                     // bind animation features
                     that.options.$toggleButton.click(function (e) {
                         that.initChanges();
-                        var flag = $(this).data("animation-in-progress");
+                        const flag = $(this).data("animation-in-progress");
                         if (flag == "showing") {
                             that.$window.stop().animate({
                                 top: that.options.$content.scrollTop() +
@@ -85,7 +85,7 @@
                         return false;
                     });
 
-                    var $controls = $('<div class="pull-right">').
+                    const $controls = $('<div class="pull-right">').
                             append($prev = $('<a href="#" class="prev" title="Jump to previous chunk (shortcut b)"><< Previous</a>')).
                             append('<span class="pull-rigt"> | </span>').
                             append($next = $('<a href="#" class="next" title="Jump to next chunk (shortcut n)">Next >></a>')).
@@ -127,12 +127,12 @@
                             window();
                 },
                 load: function ($window) {
-                    var that = this;
+                    const that = this;
                     $(document).keypress(function (e) {
                         if (textInputHasFocus()) {
                             return true;
                         }
-                        var key = e.keyCode || e.which;
+                        const key = e.keyCode || e.which;
                         switch (key) {
                             case 110: // n
                                 that.nextHandler(e);
@@ -145,7 +145,7 @@
                     });
                 },
                 update: function (data) {
-                    var index = this.currentIndex < 0 ? 1 : (this.currentIndex + 1);
+                    const index = this.currentIndex < 0 ? 1 : (this.currentIndex + 1);
                     this.$summary.text(index + "/" + this.$changes.length + " chunks");
                 }
             }, options || {
@@ -177,14 +177,14 @@
                         return;
                     }
                     // is diff in table (udiff/sdiff) or just html text (new/old diff)?
-                    var isTable = this.options.$parent.find("table").length > 0;
+                    const isTable = this.options.$parent.find("table").length > 0;
                     // get all changes
                     this.$changes = isTable ? this.options.$parent.find(this.options.chunkSelector) :
                             this.options.$parent.find(this.options.addSelector + "," + this.options.delSelector);
                     this.$window.update();
                 },
                 progress: function (str) {
-                    var $span = $("<p>" + str + "</p>").animate({opacity: "0.2"}, 1000);
+                    const $span = $("<p>" + str + "</p>").animate({opacity: "0.2"}, 1000);
                     $span.hide('fast', function () {
                         $span.remove();
                     });
@@ -203,7 +203,7 @@
                 prevHandler: function (e) {
                     e.preventDefault();
                     this.initChanges();
-                    var $current = $(this.$changes[this.currentIndex - 1]);
+                    const $current = $(this.$changes[this.currentIndex - 1]);
 
                     if (!$current.length) {
                         this.$window.error("No previous chunk!");
@@ -219,7 +219,7 @@
                 nextHandler: function (e) {
                     e.preventDefault();
                     this.initChanges();
-                    var $current = $(this.$changes[this.currentIndex + 1]);
+                    const $current = $(this.$changes[this.currentIndex + 1]);
                     if (!$current.length) {
                         this.$window.error("No next chunk!");
                         return false;

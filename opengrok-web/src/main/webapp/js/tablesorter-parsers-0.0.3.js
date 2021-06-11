@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021 Oracle and/or its affiliates. All rights reserved.
  */
 $.tablesorter.addParser({
     id: 'dates',
@@ -27,13 +27,13 @@ $.tablesorter.addParser({
         return false;
     },
     format: function (s) {
-        var date = s.match(/^(\d{2})\-(\w{3})\-(\d{4})$/);
+        const date = s.match(/^(\d{2})\-(\w{3})\-(\d{4})$/);
         if (!date) {
             return new Date().getTime();
         }
-        var d = date[1];
-        var m = date[2];
-        var y = date[3];
+        const d = date[1];
+        const m = date[2];
+        const y = date[3];
         return new Date(m + ' ' + d + ' ' + y).getTime();
     },
     type: 'numeric'
@@ -65,14 +65,14 @@ $.tablesorter.addParser({
          * 1000,123 (wrong number of digits between the separator)
          * 1,123534435,134547435.165165165 (again)
          */
-        var parts = s.match(/^(\d{1,3}(?:[, ]?\d{1,3})*(?:\.\d+)?|\.\d+) ?(\w*)$/);
+        const parts = s.match(/^(\d{1,3}(?:[, ]?\d{1,3})*(?:\.\d+)?|\.\d+) ?(\w*)$/);
 
         if (parts === null || parts.length < 3) {
             return 0;
         }
 
-        var num = parts[1].replace(/[, ]/g, "");
-        var unit = parts[2];
+        const num = parts[1].replace(/[, ]/g, "");
+        const unit = parts[2];
 
         // convert to bytes
         if (unit == "KiB") {

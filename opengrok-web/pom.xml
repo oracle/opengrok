@@ -257,13 +257,39 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>com.github.blutorange</groupId>
+                <artifactId>closure-compiler-maven-plugin</artifactId>
+                <version>2.21.0</version>
+                <configuration>
+                    <baseSourceDir>${project.basedir}/src/main/webapp</baseSourceDir>
+                    <baseTargetDir>${project.build.directory}/source</baseTargetDir>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-minify</id>
+                        <configuration>
+                            <encoding>UTF-8</encoding>
+                            <sourceDir>js</sourceDir>
+                            <targetDir>js</targetDir>
+                            <includes>**/*.js</includes>
+                            <excludes>**/*.min.js</excludes>
+                            <skipMerge>true</skipMerge>
+                            <closureLanguageOut>ECMASCRIPT5</closureLanguageOut>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>yuicompressor-maven-plugin</artifactId>
                 <version>1.5.1</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>jslint</goal>
                             <goal>compress</goal>
                         </goals>
                     </execution>
@@ -271,6 +297,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <suffix>.min</suffix>
                     <excludes>
+                        <exclude>**/*.js</exclude>
                         <exclude>**/*min.js</exclude>
                         <exclude>**/*min.css</exclude>
                     </excludes>

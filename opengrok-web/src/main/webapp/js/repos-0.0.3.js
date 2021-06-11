@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021 Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -26,8 +26,8 @@
  */
 
 (function ($) {
-    var Accordion = function ($parent, options) {
-        var inner = {
+    const Accordion = function ($parent, options) {
+        const inner = {
             initialized: false,
             options: {},
             defaults: {
@@ -36,7 +36,7 @@
             },
             $panels: [],
             determineButtonsVisibility: function() {
-                var decision = inner.$panels.filter(":visible").length === inner.$panels.length;
+                const decision = inner.$panels.filter(":visible").length === inner.$panels.length;
                 return {
                     hide: decision ? inner.options.showAllSelector : inner.options.hideAllSelector,
                     show: decision ? inner.options.hideAllSelector : inner.options.showAllSelector
@@ -64,7 +64,7 @@
                         }
                     });
 
-                    var btn = inner.determineButtonsVisibility();
+                    const btn = inner.determineButtonsVisibility();
                     inner.options.parent.find(btn.hide).hide();
                     inner.options.parent.find(btn.show).show();
                     return false;
@@ -97,7 +97,7 @@
                 });
                 
                 
-                var btn = inner.determineButtonsVisibility();
+                const btn = inner.determineButtonsVisibility();
                 inner.options.parent.find(btn.hide).hide();
                 inner.options.parent.find(btn.show).show();
 
@@ -105,7 +105,7 @@
             }
         };
 
-        var init = (function ($parent, options) {
+        const init = (function ($parent, options) {
             if (inner.initialized) {
                 return;
             }
