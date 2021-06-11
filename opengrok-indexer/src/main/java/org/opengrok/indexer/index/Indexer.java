@@ -223,15 +223,12 @@ public final class Indexer {
             }
 
             // automatically allow symlinks that are directly in source root
-            String file = cfg.getSourceRoot();
-            if (file != null) {
-                File sourceRootFile = new File(file);
-                File[] projectDirs = sourceRootFile.listFiles();
-                if (projectDirs != null) {
-                    for (File projectDir : projectDirs) {
-                        if (!projectDir.getCanonicalPath().equals(projectDir.getAbsolutePath())) {
-                            allowedSymlinks.add(projectDir.getAbsolutePath());
-                        }
+            File sourceRootFile = new File(cfg.getSourceRoot());
+            File[] projectDirs = sourceRootFile.listFiles();
+            if (projectDirs != null) {
+                for (File projectDir : projectDirs) {
+                    if (!projectDir.getCanonicalPath().equals(projectDir.getAbsolutePath())) {
+                        allowedSymlinks.add(projectDir.getAbsolutePath());
                     }
                 }
             }
@@ -874,6 +871,13 @@ public final class Indexer {
             die("Repositories were specified; history is off however");
         }
 
+        if (cfg.getSourceRoot() == null) {
+            die("Please specify a SRC_ROOT with option -s !");
+        }
+        if (cfg.getDataRoot() == null) {
+            die("Please specify a DATA ROOT path");
+        }
+
         if (!new File(cfg.getSourceRoot()).canRead()) {
             die("Source root '" + cfg.getSourceRoot() + "' must be readable");
         }
@@ -985,14 +989,6 @@ public final class Indexer {
             boolean createHistoryCache,
             List<String> subFiles,
             List<String> repositories) throws IndexerException, IOException {
-
-        if (env.getDataRootPath() == null) {
-            throw new IndexerException("ERROR: Please specify a DATA ROOT path");
-        }
-
-        if (env.getSourceRootFile() == null) {
-            throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
-        }
 
         if (!env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Universal Ctags");
