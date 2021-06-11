@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -39,8 +39,8 @@
  * @author Krystof Tulinger
  */
 (function (w, $) {
-    var spaces = function () {
-        var inner = {
+    const spaces = function () {
+        const inner = {
             defaults: {
                 interval: 750,
                 selector: "a.l, a.hl",
@@ -57,13 +57,11 @@
             initialized: false,
             lock: false,
             binarySearch: function (array, key, compare) {
-                var lo = 0,
-                        hi = array.length - 1,
-                        mid,
-                        cmp;
+                let lo = 0;
+                let hi = array.length - 1;
                 while (lo <= hi) {
-                    mid = ((lo + hi) >> 1);
-                    cmp = compare(array[mid], key);
+                    const mid = ((lo + hi) >> 1);
+                    const cmp = compare(array[mid], key);
                     if (cmp === 0) {
                         return mid;
                     } else if (cmp < 0) {
@@ -76,25 +74,25 @@
             },
             handleScrollEvent: function () {
                 inner.lock = false;
-                
-                var myOffset = inner.$collection.first().offset() ? inner.$collection.first().offset().top : 0;
-                var myHeight = inner.$collection.first().height() || 0;
-                var parentOffset = inner.options.$parent.offset() ? inner.options.$parent.offset().top : 0;
-                var parentHeight = inner.options.$parent.height() || 0;
-                
-                var expectations = {
+
+                const myOffset = inner.$collection.first().offset() ? inner.$collection.first().offset().top : 0;
+                const myHeight = inner.$collection.first().height() || 0;
+                const parentOffset = inner.options.$parent.offset() ? inner.options.$parent.offset().top : 0;
+                const parentHeight = inner.options.$parent.height() || 0;
+
+                const expectations = {
                     // the first element in viewport
                     start: Math.floor(Math.abs(Math.min(myOffset - parentOffset, 0)) / myHeight),
                     // the last element in viewport
                     end: Math.ceil((Math.abs(Math.min(myOffset - parentOffset, 0)) + parentHeight) / myHeight)
                 };
 
-                var indices = {
+                const indices = {
                     start: 0,
                     end: inner.$collection.length
                 };
 
-                var cmp = function (a, key) {
+                const cmp = function (a, key) {
                     return $(a).attr("name") - key; // comparing the "name" attribute with the desired value
                 };
 
@@ -128,17 +126,15 @@
                     return;
                 }
 
-                var scrollHandler = function (e) {
+                const scrollHandler = function (e) {
                     if (inner.lock) {
                         return;
                     }
                     inner.lock = true;
                     setTimeout(inner.handleScrollEvent, inner.options.interval);
                 };
-                inner.options.$parent.
-                    scroll(scrollHandler).
-                    resize(scrollHandler).
-                    scroll(); // fire the event if user has not scrolled
+                // fire the event if user has not scrolled
+                inner.options.$parent.scroll(scrollHandler).resize(scrollHandler).scroll();
                 inner.initialized = true;
             }
         };
@@ -162,9 +158,9 @@
  * lead to incorrect positioning at the top of the page.
  */
 (function (document, history, location) {
-    var HISTORY_SUPPORT = !!(history && history.pushState);
+    const HISTORY_SUPPORT = !!(history && history.pushState);
 
-    var anchorScrolls = {
+    const anchorScrolls = {
         ANCHOR_REGEX: /^#[^ ]+$/,
         OFFSET_HEIGHT_PX: 90,
 
@@ -192,13 +188,11 @@
          * @return {Boolean} - Was the href an anchor.
          */
         scrollIfAnchor: function (href, pushToHistory) {
-            var match, anchorOffset;
-
             if (!this.ANCHOR_REGEX.test(href)) {
                 return false;
             }
 
-            match = document.getElementById(href.slice(1));
+            let match = document.getElementById(href.slice(1));
             if (!match) {
                 /**
                  * Match the elements with name="href", take the first match
@@ -208,7 +202,7 @@
             }
 
             if (match) {
-                anchorOffset = $(match.nextElementSibling).offset().top - this.getFixedOffset();
+                const anchorOffset = $(match.nextElementSibling).offset().top - this.getFixedOffset();
                 $('html, body').animate({scrollTop: anchorOffset});
 
                 location.hash = href;
@@ -235,7 +229,7 @@
          * If the click event's target was an anchor, fix the scroll position.
          */
         delegateAnchors: function (e) {
-            var elem = e.target;
+            const elem = e.target;
 
             if (this.scrollIfAnchor(elem.getAttribute('href'), true)) {
                 e.preventDefault();
@@ -248,8 +242,8 @@
 })(window.document, window.history, window.location);
 
 (function(window, $) {
-    var hash = function () {
-        var inner = {
+    const hash = function () {
+        const inner = {
             self: this,
             initialized: false,
             highlighted: [],
@@ -266,12 +260,12 @@
                 $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click(function (e) {
                     if(e.shiftKey) {
                         // shift pressed
-                        var val = inner.toInt($(this).attr("name"));
+                        const val = inner.toInt($(this).attr("name"));
                         if (!val) {
                             return false;
                         }
 
-                        var l = inner.getLinesParts(window.location.hash);
+                        const l = inner.getLinesParts(window.location.hash);
 
                         if (l.length == 2) {
                             window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(val, l[1]);
@@ -296,7 +290,7 @@
               if (!hashPart || hashPart === "") {
                   return hashPart;
               }
-              var s = hashPart.split("-");
+              const s = hashPart.split("-");
               if (s.length > 1 && inner.toInt(s[0]) && inner.toInt(s[1])) {
                   return [inner.toInt(s[0]), inner.toInt(s[1])];
               }
@@ -307,10 +301,10 @@
             },
 
             lines: function (urlPart) {
-                p = inner.getLinesParts(urlPart);
+                const p = inner.getLinesParts(urlPart);
                 if (p.length == 2) {
-                    var l = [];
-                    for (var i = Math.min(p[0],p[1]); i <= Math.max(p[0], p[1]); i++) {
+                    let l = [];
+                    for (let i = Math.min(p[0],p[1]); i <= Math.max(p[0], p[1]); i++) {
                         l.push(i);
                     }
                     return l;
@@ -321,28 +315,28 @@
             },
 
             reload: function(e){
-                for (var i = 0; i < inner.highlighted.length; i++) {
+                for (let i = 0; i < inner.highlighted.length; i++) {
                     // remove color
                     inner.highlighted[i].removeClass(inner.options.highlightedClass);
                 }
                 inner.highlighted = [];
 
-                var lines = inner.lines(window.location.hash);
+                const lines = inner.lines(window.location.hash);
 
                 if (lines.length < 1) {
                     // not a case of line highlighting
                     return;
                 }
-                for (var j = 0; j < lines.length; j++) {
+                for (let j = 0; j < lines.length; j++) {
                     // color
-                    var slc = inner.format(inner.options.linkSelectorTemplate, { "parent": inner.options.parent,
+                    const slc = inner.format(inner.options.linkSelectorTemplate, { "parent": inner.options.parent,
                                                                                   "n": lines[j] } );
-                    var el = $(slc).addClass(inner.options.highlightedClass);
+                    const el = $(slc).addClass(inner.options.highlightedClass);
                     inner.highlighted.push(el);
                 }
             },
             format: function(format) {
-                var args = Array.prototype.slice.call(arguments, 1);
+                let args = Array.prototype.slice.call(arguments, 1);
                 args = args.length > 0 ? typeof args[0] === "object" ? args[0] : args : args;
                 return format.replace(/{([a-zA-Z0-9_-]+)}/g, function(match, number) {
                   return typeof args[number] != 'undefined' ? args[number] : match;
@@ -355,10 +349,10 @@
                 if (!inner.options.autoScroll) {
                     return;
                 }
-                var lines = inner.getLinesParts(window.location.hash);
+                const lines = inner.getLinesParts(window.location.hash);
                 if (lines.length > 0) {
-                    var line = lines[0]; // first line
-                    var $line = $(inner.format(inner.options.linkSelectorTemplate, {
+                    const line = lines[0]; // first line
+                    const $line = $(inner.format(inner.options.linkSelectorTemplate, {
                         parent: inner.options.parent,
                         n: line
                     }));
@@ -397,7 +391,7 @@
  * General on-demand script downloader
  */
 (function (window, document, $) {
-    var script = function () {
+    const script = function () {
         this.scriptsDownloaded = {};
         this.defaults = {
             contextPath: window.contextPath
@@ -477,9 +471,9 @@
  * @author Kryštof Tulinger
  */
 (function (browserWindow, document, $, $script) {
-    var window = function () {
-        var Inner = function (options, context) {
-            var self = this;
+    const window = function () {
+        const Inner = function (options, context) {
+            const self = this;
             // private
             this.context = context;
             this.callbacks = {
@@ -526,7 +520,7 @@
                     return;
                 }
 
-                for (var i = 0; i < this.callbacks[name].length; i++) {
+                for (let i = 0; i < this.callbacks[name].length; i++) {
                     this.$window = (this.callbacks[name][i].callback.apply(
                             this.callbacks[name][i].context.call(this),
                             args || [this.$window])) || this.$window;
@@ -543,11 +537,11 @@
 
             // private
             this.cropPosition = function($w, position) {
-                var w = {
+                const w = {
                     height: $w.outerHeight(true),
                     width: $w.outerWidth(true)
                 };
-                var bw = {
+                const bw = {
                     height: $(browserWindow).outerHeight(true),
                     width: $(browserWindow).outerWidth(true),
                     yOffset: 0,
@@ -559,7 +553,7 @@
             };
 
             this.determinePosition = function () {
-                var position = {
+                const position = {
                     top: this.clientY,
                     left: this.clientX
                 };
@@ -590,15 +584,14 @@
             };
 
             this.addCallback('init', function ($window) {
-                var $top, $close, $header, $body;
-
-                $top = $("<div>").addClass('clearfix').
+                let $close;
+                const $top = $("<div>").addClass('clearfix').
                         append($("<div>").addClass("pull-left").append($("<b>").text(this.options.title || "Window"))).
                         append($("<div>").addClass('pull-right').append($close = $('<a href="#" class="minimize">x</a>')));
 
-                $header = $("<div>").addClass('window-header').append($top);
+                const $header = $("<div>").addClass('window-header').append($top);
 
-                $body = $("<div>").addClass("window-body").append(self.$errors = $('<div>').css('text-align', 'center'));
+                const $body = $("<div>").addClass("window-body").append(self.$errors = $('<div>').css('text-align', 'center'));
 
                 $window = $("<div>").
                         addClass('window').
@@ -637,7 +630,7 @@
                  * @returns self
                  */
                 $window.error = function (msg) {
-                    var $span = $("<p class='error'>" + msg + "</p>").
+                    const $span = $("<p class='error'>" + msg + "</p>").
                             animate({opacity: "0.2"}, 3000);
                     $span.hide('slow', function () {
                         $span.remove();
@@ -668,7 +661,7 @@
                  * @returns self
                  */
                 $window.toggle = function() {
-                    var action = this.is(':visible') ? this.hide : this.show;
+                    const action = this.is(':visible') ? this.hide : this.show;
                     return action.apply(this, arguments);
                 };
 
@@ -708,7 +701,7 @@
             });
 
             this.addCallback('load', function ($window) {
-                var that = this;
+                const that = this;
                 $(document).mousemove(function (e) {
                     that.clientX = e.clientX;
                     that.clientY = e.clientY;
@@ -791,9 +784,9 @@
                 google_url: 'https://www.google.com/search?q=',
                 project: undefined,
                 init: function ($window) {
-                    var $highlight, $unhighlight, $unhighlightAll, $prev, $next;
+                    let $highlight, $unhighlight, $unhighlightAll, $prev, $next;
 
-                    var $firstList = $("<ul>").
+                    let $firstList = $("<ul>").
                             append($("<li>").append(
                                     $highlight = $('<a href="#" title="Highlight">' +
                                             '<span>Highlight</span> <b class="symbol-name"></b></a>'))).
@@ -808,7 +801,7 @@
                     this.bindOnClick($unhighlight, this.unhighlight);
                     this.bindOnClick($unhighlightAll, this.unhighlightAll);
 
-                    var $secondList = $("<ul>").
+                    let $secondList = $("<ul>").
                             append($("<li>").append(
                                     $('<a class="search-defs" href="#" target="_blank">' +
                                             '<span>Search for definitions of</span> <b class="symbol-name"></b></a>'))).
@@ -822,12 +815,12 @@
                                     $('<a class="search-files" href="#" target="_blank">' +
                                             '<span>Search for file names that contain</span> <b class="symbol-name"></b></a>')));
 
-                    var $thirdList = $("<ul>").
+                    let $thirdList = $("<ul>").
                             append($("<li>").append(
                                     $('<a class="search-google" href="#" target="_blank">' +
                                             '<span>Google</span> <b class="symbol-name"></b></a>')));
 
-                    var $controls = $('<div class="pull-right">').
+                    let $controls = $('<div class="pull-right">').
                             append($next = $('<a href="#" title="next" class="pull-right">Next >></a>')).
                             append('<span class="pull-right"> | </span>').
                             append($prev = $('<a href="#" title="prev" class="pull-right"><< Prev </a>')).
@@ -854,12 +847,12 @@
                             window();
                 },
                 load: function ($window) {
-                    var that = this;
+                    const that = this;
                     $(document).keypress(function (e) {
                         if (textInputHasFocus()) {
                             return true;
                         }
-                        var key = e.which;
+                        const key = e.which;
                         switch (key) {
                             case 49: // 1
                                 if (that.symbol) {
@@ -965,7 +958,7 @@
                     if (this.$last_highlighted_current &&
                             this.$last_highlighted_current.text() === symbol &&
                             this.$last_highlighted_current.hasClass('symbol-highlighted')) {
-                        var i = this.getSymbols().index(this.$last_highlighted_current);
+                        const i = this.getSymbols().index(this.$last_highlighted_current);
                         this.$last_highlighted_jump = this.getSymbols().slice(0, i).filter('.symbol-highlighted').last();
                     }
                     return this.getSymbols().filter(".symbol-highlighted").filter(function () {
@@ -989,11 +982,11 @@
                     }
                 },
                 scrollToNextElement: function (direction) {
-                    var UP = -1;
-                    var DOWN = 1;
-                    var $highlighted = this.getSymbols().filter(".symbol-highlighted");
-                    var $el = $highlighted.length && this.$last_highlighted_current ? this.$last_highlighted_current : this.$current;
-                    var indexOfCurrent = this.getSymbols().index($el);
+                    const UP = -1;
+                    const DOWN = 1;
+                    const $highlighted = this.getSymbols().filter(".symbol-highlighted");
+                    let $el = $highlighted.length && this.$last_highlighted_current ? this.$last_highlighted_current : this.$current;
+                    const indexOfCurrent = this.getSymbols().index($el);
 
                     switch (direction) {
                         case DOWN:
@@ -1027,7 +1020,7 @@
                     this.changeSymbol($el);
                 },
                 bindOnClick: function ($el, callback, param) {
-                    var that = this;
+                    const that = this;
                     $el.click(function (e) {
                         e.preventDefault();
                         callback.call(that, param || that.symbol);
@@ -1052,7 +1045,7 @@
         return;
     }
     
-    var messagesWindow = function () {
+    const messagesWindow = function () {
         this.init = function (options, context) {
             $.messagesWindow = $window.create($.extend({
                 title: 'Messages Window',
@@ -1076,7 +1069,7 @@
 
                     // simulate show/toggle and move
                     $.each(['show', 'toggle'], function () {
-                        var old = $window[this];
+                        const old = $window[this];
                         $window[this] = function () {
                             return old.call($window).move();
                         };
@@ -1084,16 +1077,15 @@
                 },
                 update: function (data) {
                     this.$messages.empty();
-                    for (var i = 0; i < data.length; i++) {
-                        var tag = data[i];
+                    for (let tag of data) {
                         if (!tag || tag.messages.length === 0) {
                             continue;
                         }
                         this.$messages.append($("<h5>").
                                 addClass('message-group-caption').
                                 text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)));
-                        var $ul = $("<ul>").addClass('message-group limited');
-                        for (var j = 0; j < tag.messages.length; j++) {
+                        const $ul = $("<ul>").addClass('message-group limited');
+                        for (let j = 0; j < tag.messages.length; j++) {
                             if (!tag.messages[j]) {
                                 continue;
                             }
@@ -1128,7 +1120,7 @@
         return;
     }
 
-    var scopesWindow = function () {
+    const scopesWindow = function () {
         this.init = function (options, context) {
             $.scopesWindow = $window.create($.extend({
                 title: 'Scopes Window',
@@ -1149,8 +1141,8 @@
                     // override the hide and show to throw an event and run
                     // scope_on_scroll() for update
                     $.each(['hide', 'show'], function () {
-                        var event = this;
-                        var old = $window[event];
+                        const event = this;
+                        const old = $window[event];
                         $window[event] = function () {
                             var $toReturn = old.call($window).trigger(event);
                             if (!scope_on_scroll || typeof scope_on_scroll !== 'function') {
@@ -1198,7 +1190,7 @@
         return;
     }
 
-    var navigateWindow = function () {
+    const navigateWindow = function () {
         this.init = function (options, context) {
             $.navigateWindow = $window.create($.extend({
                 title: 'Navigate Window',
@@ -1215,7 +1207,7 @@
                             window();
                 },
                 load: function ($window) {
-                    var that = this;
+                    const that = this;
                     $window.css('top', this.getTopOffset() + 10 + 'px');
 
                     if ($.scopesWindow && $.scopesWindow.initialized) {
@@ -1242,8 +1234,8 @@
 
                     // override and show to throw an event and update position
                     $.each(['show'], function () {
-                        var event = this;
-                        var old = $window[event];
+                        const event = this;
+                        const old = $window[event];
                         $window[event] = function () {
                             return that.updatePosition(old.call($window).trigger(event));
                         };
@@ -1255,15 +1247,15 @@
                     that.updatePosition($window);
                 },
                 update: function (data) {
-                    var $ul;
+                    let $ul;
                     this.$content.empty();
-                    for (var i = 0; i < data.length; i++) {
+                    for (let i = 0; i < data.length; i++) {
                         this.$content.append($('<h4>').text(data[i][0]));
                         if (data[i][2].length === 0) {
                             continue;
                         }
                         this.$content.append($ul = $('<ul>'));
-                        for (var j = 0; j < data[i][2].length; j++) {
+                        for (let j = 0; j < data[i][2].length; j++) {
                             $ul.append($('<li>').append(this.buildLink(data[i][2][j][1], data[i][2][j][0], data[i][1])));
                         }
                     }
@@ -1290,7 +1282,7 @@
                         return $w;
                     }
 
-                    var a = {};
+                    const a = {};
                     a.top = this.getTopOffset() + 10;
                     if ($.scopesWindow &&
                             $.scopesWindow.initialized &&
@@ -1340,7 +1332,7 @@ function init_results_autohide() {
 
 function init_searchable_option_list() {
     function init_sol_on_type_combobox() {
-        var $type = $('#type');
+        const $type = $('#type');
         if ($type.length === 0) {
             return;
         }
@@ -1360,7 +1352,7 @@ function init_searchable_option_list() {
             resultsContainer: $("#type-select-container")
         });
     }
-    var searchableOptionListOptions = {
+    const searchableOptionListOptions = {
         maxHeight: '300px',
         showSelectionBelowList: false,
         showSelectAll: false,
@@ -1387,8 +1379,8 @@ function init_searchable_option_list() {
             // override the default onScroll positioning event if necessary
             onScroll: function () {
 
-                var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight() + 1,
-                        selectionContainerWidth = this.$innerContainer.outerWidth(false) - parseInt(this.$selectionContainer.css('border-left-width'), 10) - parseInt(this.$selectionContainer.css('border-right-width'), 10);
+                const posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight() + 1;
+                let selectionContainerWidth = this.$innerContainer.outerWidth(false) - parseInt(this.$selectionContainer.css('border-left-width'), 10) - parseInt(this.$selectionContainer.css('border-right-width'), 10);
 
                 if (this.$innerContainer.css('display') !== 'block') {
                     // container has a certain width
@@ -1412,7 +1404,7 @@ function init_searchable_option_list() {
         }
     };
 
-    var $project = $('#project');
+    const $project = $('#project');
     if ($project.length === 1) {
         $project.searchableOptionList(searchableOptionListOptions);
     } else {
@@ -1422,14 +1414,13 @@ function init_searchable_option_list() {
 
 function init_history_input() {
     $('input[data-revision-path]').click(function () {
-        var $this = $(this);
+        const $this = $(this);
         $("a.more").each(function () {
             $(this).attr('href', setParameter($(this).attr('href'), 'r1', $this.data('revision-1')));
             $(this).attr('href', setParameter($(this).attr('href'), 'r2', $this.data('revision-2')));
         });
 
-        var $revisions = $('input[data-revision-path]'),
-                index = -1;
+        const $revisions = $('input[data-revision-path]');
 
         // change the correct revision on every element
         // (every element keeps a track which revision is selected)
@@ -1447,7 +1438,7 @@ function init_history_input() {
         $this.prop('checked', true);
 
         // disable from top to r2
-        index = Math.max($revisions.index($("input[data-revision-path][data-diff-revision='r2']:checked")), 0);
+        let index = Math.max($revisions.index($("input[data-revision-path][data-diff-revision='r2']:checked")), 0);
         $revisions.slice(0, index).filter("[data-diff-revision='r1']").prop('disabled', true);
 
         // disable from bottom to r1
@@ -1479,7 +1470,7 @@ function init_tablesorter() {
 }
 
 function init_markdown_converter() {
-    var converter = null;
+    let converter = null;
     $('[data-markdown]').each(function () {
         var $that = $(this);
         $.script.loadScript('webjars/xss/1.0.8/dist/xss.min.js').done(function () {
@@ -1511,13 +1502,13 @@ function init_markdown_converter() {
 }
 
 window.onload = function () {
-    for (var i in document.pageReady) {
+    for (let i in document.pageReady) {
         document.pageReady[i]();
     }
 };
 
 $(document).ready(function () {
-    for (var i in this.domReady) {
+    for (let i in this.domReady) {
         document.domReady[i]();
     }
 
@@ -1554,7 +1545,7 @@ $(document).ready(function () {
      */
     if ($.messagesWindow.initialized) {
         $("[data-messages]").mouseenter(function () {
-            var data = $(this).data('messages') || [];
+            const data = $(this).data('messages') || [];
             $.messagesWindow.update(data);
             $.messagesWindow.show();
         }).mouseleave(function (e) {
@@ -1622,9 +1613,9 @@ function getParameter(p) {
         getParameter.params = window.location.search.substr(1).split("&").map(
                 function (x) { return x.split("="); });
     }
-    var params = getParameter.params;
+    const params = getParameter.params;
     // Then look for the parameter.
-    for (var i in params) {
+    for (let i in params) {
         if (params[i][0] === p && params[i].length > 1) {
             return decodeURIComponent(params[i][1]);
         }
@@ -1640,13 +1631,13 @@ function getParameter(p) {
  * @returns string the modified url
  */
 function setParameter(url, p, v) {
-    var base = url.substr(0, url.indexOf('?'));
-    var params = url.substr(base.length + 1).split("&").map(
+    const base = url.substr(0, url.indexOf('?'));
+    const params = url.substr(base.length + 1).split("&").map(
             function (x) {
                 return x.split("=");
             });
-    var found = false;
-    for (var i in params) {
+    let found = false;
+    for (let i in params) {
         if (params[i][0] === p && params[i].length > 1) {
             params[i][1] = encodeURIComponent(v);
             found = true;
@@ -1663,7 +1654,7 @@ function setParameter(url, p, v) {
 
 function domReadyMast() {
     if (!window.location.hash) {
-        var h = getParameter("h");
+        const h = getParameter("h");
         if (h && h !== "") {
             window.location.hash = h;
         } else {
@@ -1676,20 +1667,20 @@ function domReadyMast() {
     if (document.annotate) {
         $('a.r').tooltip({
             content: function () {
-                var element = $(this);
-                var title = element.attr("title") || "";
-                var parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
+                const element = $(this);
+                const title = element.attr("title") || "";
+                const parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
                 if (parts.length <= 0) {
                     return "";
                 }
-                var $el = $("<dl>");
-                for (var i = 0; i < parts.length; i++) {
-                    var definitions = parts[i].split(":");
+                const $el = $("<dl>");
+                for (let i = 0; i < parts.length; i++) {
+                    const definitions = parts[i].split(":");
                     if (definitions.length < 2) {
                         continue;
                     }
                     $("<dt>").text(definitions.shift().trim()).appendTo($el);
-                    var $dd = $("<dd>");
+                    const $dd = $("<dd>");
                     $.each(definitions.join(":").split("<br/>"), function (i, el) {
                         $dd.append(escapeHtml(el.trim()));
                         $dd.append($("<br/>"));
@@ -1746,17 +1737,17 @@ function initMinisearchAutocomplete(config) {
         return;
     }
 
-    var project = '';
+    let project = '';
 
     var projectElem = $('#minisearch-project');
     if (projectElem) {
         project = projectElem.val();
     }
 
-    var pathElem = $('#minisearch-path');
+    const pathElem = $('#minisearch-path');
 
     initAutocompleteForField('search', 'full', config, function (input, field) {
-        var caretPos = input.caret();
+        const caretPos = input.caret();
         if (!(typeof caretPos === 'number')) {
             console.error("Suggest: could not get caret position");
             return;
@@ -1776,12 +1767,12 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
         return;
     }
 
-    var text;
-    var identifier;
-    var time;
-    var partialResult;
+    let text;
+    let identifier;
+    let time;
+    let partialResult;
 
-    var input = $("#" + inputId);
+    const input = $("#" + inputId);
 
     if (!dataFunction) {
         dataFunction = getAutocompleteMenuData;
@@ -1789,7 +1780,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
     if (!errorElemId) {
         errorElemId = 'full';
     }
-    var errorElem = $('#' + errorElemId);
+    const errorElem = $('#' + errorElemId);
 
     input.autocomplete({
         source: function(request, response) {
@@ -1822,13 +1813,13 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
         },
         create: function () {
             $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
-                var listItem = getSuggestionListItem(item, config);
+                const listItem = getSuggestionListItem(item, config);
 
                 return listItem.appendTo(ul);
             };
 
             $(this).data('ui-autocomplete')._renderMenu = function (ul, items) {
-                var _this = this;
+                const _this = this;
                 $.each(items, function(index, item) {
                     _this._renderItemData(ul, item);
                 });
@@ -1870,7 +1861,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 return;
             }
             if (ui.content.length === 0 && !partialResult) {
-                var noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
+                const noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
                 ui.content.push(noMatchesFoundResult);
             }
         },
@@ -1889,7 +1880,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
 }
 
 function getAutocompleteMenuData(input, field) {
-    var caretPos = input.caret();
+    const caretPos = input.caret();
     if (!Number.isInteger(caretPos)) {
         console.error("Suggest: could not get caret position");
         return;
@@ -1908,18 +1899,18 @@ function getAutocompleteMenuData(input, field) {
 }
 
 function replaceValueWithSuggestion(input, queryText, identifier, suggestion) {
-    var pos = queryText.indexOf(identifier);
-    var phrase = escapeLuceneCharacters(suggestion);
+    const pos = queryText.indexOf(identifier);
+    const phrase = escapeLuceneCharacters(suggestion);
     input.val(queryText.replace(identifier, phrase));
     input.caret(pos + phrase.length);
 }
 
 function showError(errorText, errorElem) {
-    var parent = errorElem.parent();
+    const parent = errorElem.parent();
 
     parent.css('position', 'relative');
 
-    var span = parent.find('#autocomplete-error')[0];
+    let span = parent.find('#autocomplete-error')[0];
     if (!span) {
         span = $("<span>", {
             "class": "note-error important-note important-note-rounded",
@@ -1944,8 +1935,8 @@ function showError(errorText, errorElem) {
 }
 
 function hideError(errorElem) {
-    var parent = errorElem.parent();
-    var span = parent.find('#autocomplete-error')[0];
+    const parent = errorElem.parent();
+    const span = parent.find('#autocomplete-error')[0];
     if (span) {
         span.remove();
     }
@@ -1959,11 +1950,11 @@ function getSuggestionListItem(itemData, config) {
         });
     }
 
-    var listItem = $("<li>", {
+    const listItem = $("<li>", {
         "class": "ui-menu-item",
         style: "display: block;"
     });
-    var listItemChild = $("<div>", {
+    const listItemChild = $("<div>", {
         "class": "ui-menu-item-wrapper",
         style: "height: 20px; padding: 0;",
         tabindex: "-1"
@@ -1976,7 +1967,7 @@ function getSuggestionListItem(itemData, config) {
         style: "float: left; padding-left: 5px;"
     }).appendTo(listItemChild);
 
-    var projectInfoText = "";
+    let projectInfoText = "";
     if (config.showProjects) {
         if (itemData.projects.length > 1) {
             projectInfoText = 'Found in ' + itemData.projects.length + ' projects';
@@ -1985,7 +1976,7 @@ function getSuggestionListItem(itemData, config) {
         }
     }
 
-    var score = "";
+    let score = "";
     if (config.showScores) {
         score = ' (' + itemData.score + ')';
     }
@@ -1999,7 +1990,7 @@ function getSuggestionListItem(itemData, config) {
 
 function escapeLuceneCharacters(term) {
     // must escape: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
-    var pattern = /([\+\-\!\(\)\{\}\[\]\^\"\~\*\?\:\\]|&&|\|\|)/g;
+    const pattern = /([\+\-\!\(\)\{\}\[\]\^\"\~\*\?\:\\]|&&|\|\|)/g;
 
     return term.replace(pattern, "\\$1");
 }
@@ -2014,7 +2005,7 @@ function domReadyHistory() {
 }
 
 function get_annotations() {
-    var link = window.location.pathname + "?a=true";
+    let link = window.location.pathname + "?a=true";
     if (document.rev && document.rev()) {
         link += "&r=" + encodeURIComponent(document.rev());
     }
@@ -2069,8 +2060,8 @@ function lnshow() {
  *  Highlight keywords by changing the style of matching tags.
  */
 function highlightKeyword(keyword) {
-    var high_colors = [ "#ffff66", "#ffcccc", "#ccccff", "#99ff99", "#cc66ff" ];
-    var pattern = "a:contains('" + keyword + "')";
+    const high_colors = [ "#ffff66", "#ffcccc", "#ccccff", "#99ff99", "#cc66ff" ];
+    const pattern = "a:contains('" + keyword + "')";
     $(pattern).css({
         'text-decoration' : 'underline',
         'background-color' : high_colors[document.highlight_count % high_colors.length],
@@ -2085,20 +2076,20 @@ function highlightKeyword(keyword) {
  * @see HighlightKeyword
  */
 function add_highlight() {
-    var tbox = document.getElementById('input_highlight');
+    const tbox = document.getElementById('input_highlight');
     highlightKeyword(tbox.value);
 }
 
 function toggle_filelist() {
-    var $a = $('div.filelist');
-    var $b = $('div.filelist-hidden');
+    const $a = $('div.filelist');
+    const $b = $('div.filelist-hidden');
     $a.toggle().toggleClass('filelist').toggleClass('filelist-hidden');
     $b.toggle().toggleClass('filelist').toggleClass('filelist-hidden');
 }
 
 function toggle_revtags() {
-    var $a = $('tr.revtags, span.revtags');
-    var $b = $('tr.revtags-hidden, span.revtags-hidden');
+    const $a = $('tr.revtags, span.revtags');
+    const $b = $('tr.revtags-hidden, span.revtags-hidden');
     $a.toggle().toggleClass('revtags').toggleClass('revtags-hidden');
     $b.toggle().toggleClass('revtags').toggleClass('revtags-hidden');
 }
@@ -2108,8 +2099,8 @@ function toggle_revtags() {
  */
 function toggleCommon(closestType) {
   $(".rev-toggle-a").click(function() {
-    var toggleState = $(this).closest(closestType).attr("data-toggle-state");
-    var thisCell = $(this).closest("td");
+    const toggleState = $(this).closest(closestType).attr("data-toggle-state");
+    const thisCell = $(this).closest("td");
 
     if (toggleState === "less") {
       $(this).closest(closestType).attr("data-toggle-state", "more");
@@ -2196,7 +2187,7 @@ function fold(id) {
     $('#' + id + '_fold').toggle('fold');
 }
 
-var scope_timeout = null;
+let scope_timeout = null;
 /**
  * Function that is called when the #content div element is scrolled. Checks
  * if the top of the page is inside a function scope. If so, update the
@@ -2211,18 +2202,18 @@ function scope_on_scroll() {
         scope_timeout = null;
     }
     scope_timeout = setTimeout(function () {
-        var y = $('#whole_header').outerHeight() + 2;
-        var c = document.elementFromPoint(15, y + 1);
+        const y = $('#whole_header').outerHeight() + 2;
+        const c = document.elementFromPoint(15, y + 1);
 
         if ($(c).is('.l, .hl')) {
-            var $par = $(c).closest('.scope-body, .scope-head');
+            const $par = $(c).closest('.scope-body, .scope-head');
 
             if (!$par.length) {
                 return;
             }
 
-            var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
-            var $sig = $head.children().first();
+            const $head = $par.hasClass('scope-body') ? $par.prev() : $par;
+            const $sig = $head.children().first();
             if ($.scopesWindow.initialized) {
                 $.scopesWindow.update({
                     'id': $head.attr('id'),
@@ -2260,22 +2251,22 @@ function checkIsOnSearchPage() {
  * @param form the form containing the checkboxes
  */
 function preprocess_searched_projects(form) {
-    var sol = $('#project').searchableOptionList();
+    const sol = $('#project').searchableOptionList();
 
-    var $sel = sol.$selectionContainer;
+    const $sel = sol.$selectionContainer;
 
     /*
      * For all project search check if all project checkbox are checked and then uncheck them (they
      * would appear in the url) and add a hidden checkbox with searchall name.
      */
-    var allProjectsSearch = $.makeArray($sel.find('.sol-checkbox[name=project]')).every(function (checkbox) {
+    const allProjectsSearch = $.makeArray($sel.find('.sol-checkbox[name=project]')).every(function (checkbox) {
         return $(checkbox).is(':checked');
     });
 
     if (allProjectsSearch && $('#search_all_projects').length === 0) {
         $sel.find('.sol-checkbox').prop('checked', false);
-        var $input = $('<input>');
-        var $all = $input.
+        const $input = $('<input>');
+        const $all = $input.
             attr({
                 id: 'search_all_projects',
                 type: 'checkbox',
@@ -2294,7 +2285,7 @@ function preprocess_searched_projects(form) {
      * would appear in the URL) and then check the group checkbox.
      */
     $sel.find('.sol-optiongroup').each(function () {
-        var $el = $(this);
+        const $el = $(this);
 
         // handle "Other" group for ungrouped projects
         if ($el.find('.sol-optiongroup-label').text() === 'Other') {
@@ -2302,17 +2293,17 @@ function preprocess_searched_projects(form) {
             return;
         }
 
-        var checkboxs = $el.find('.sol-option .sol-checkbox');
-        for (var i = 0; i < checkboxs.length; i++) {
-            var checkbox = $(checkboxs[i]);
+        const checkboxs = $el.find('.sol-option .sol-checkbox');
+        for (let i = 0; i < checkboxs.length; i++) {
+            const checkbox = $(checkboxs[i]);
             if (!checkbox.is(":checked")) {
                 return;
             }
         }
 
         $el.find('.sol-checkbox[name=group]').prop('checked', true);
-        for (var j = 0; j < checkboxs.length; j++) {
-            var cb = $(checkboxs[j]);
+        for (let j = 0; j < checkboxs.length; j++) {
+            const cb = $(checkboxs[j]);
             cb.prop('checked', false);
         }
     });
@@ -2327,12 +2318,12 @@ function preprocess_searched_projects(form) {
  * @param {HTMLFormElement} form
  */
 function searchSubmit(form) {
-    var submitInitiator = '';
+    let submitInitiator = '';
     if (textInputHasFocus()) {
         submitInitiator = document.activeElement.getAttribute('id');
     }
     if (submitInitiator) {
-        var input = document.createElement('INPUT');
+        const input = document.createElement('INPUT');
         input.setAttribute('name', 'si');
         input.value = submitInitiator;
         input.type = 'hidden';
@@ -2350,9 +2341,9 @@ function searchSubmit(form) {
  * @see #searchSubmit
  */
 function restoreFocusAfterSearchSubmit() {
-    var siParam = getParameter('si');
+    const siParam = getParameter('si');
     if (siParam) {
-        var $input = $('input[type=text][id="' + siParam + '"]');
+        const $input = $('input[type=text][id="' + siParam + '"]');
         if ($input.length === 1) {
             $input[0].selectionStart = $input.val().length;
             $input[0].selectionEnd = $input[0].selectionStart;
@@ -2371,7 +2362,7 @@ function textInputHasFocus() {
 }
 
 function escapeHtml(string) { // taken from https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
-    var htmlEscapeMap = {
+    const htmlEscapeMap = {
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -2392,11 +2383,11 @@ function escapeHtml(string) { // taken from https://stackoverflow.com/questions/
  * @returns {string} cookie value
  */
 function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
+    const name = cname + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
         }
