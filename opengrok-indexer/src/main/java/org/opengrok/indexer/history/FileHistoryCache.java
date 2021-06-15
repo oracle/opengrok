@@ -521,7 +521,7 @@ class FileHistoryCache implements HistoryCache {
         final CountDownLatch latch = new CountDownLatch(renamedFiles.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
         for (final String file : renamedFiles) {
-            env.getIndexerParallelizer().getHistoryRenamedExecutor().submit(() -> {
+            env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
                 try {
                     doRenamedFileHistory(file,
                             new File(env.getSourceRootPath() + file),
