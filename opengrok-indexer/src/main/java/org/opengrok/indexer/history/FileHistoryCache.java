@@ -140,10 +140,6 @@ class FileHistoryCache implements HistoryCache {
             return;
         }
 
-        // File based history cache does not store files for individual
-        // changesets so strip them unless it is history for the repository.
-        history.strip();
-
         // Assign tags to changesets they represent.
         if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
             repository.assignTagsInHistory(history);
@@ -460,6 +456,9 @@ class FileHistoryCache implements HistoryCache {
                 list.add(e);
             }
         }
+
+        // File based history cache does not store files for individual changesets so strip them.
+        history.strip();
 
         File histDataDir = new File(getRepositoryHistDataDirname(repository));
         if (!histDataDir.isDirectory() && !histDataDir.mkdirs()) {
