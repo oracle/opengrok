@@ -466,6 +466,10 @@ class FileHistoryCache implements HistoryCache {
             LOGGER.log(Level.WARNING, "cannot create history cache directory for ''{0}''", histDataDir);
         }
 
+        Set<String> regularFiles = map.keySet().stream().
+                filter(e -> !history.isRenamed(e)).collect(Collectors.toSet());
+        createDirectoriesForFiles(regularFiles);
+
         /*
          * Now traverse the list of files from the hash map built above
          * and for each file store its history (saved in the value of the
@@ -475,18 +479,31 @@ class FileHistoryCache implements HistoryCache {
         LOGGER.log(Level.FINE, "Storing history for {0} files in repository ''{1}''",
                 new Object[]{map.entrySet().size(), repository.getDirectoryName()});
         final File root = env.getSourceRootFile();
-        int fileHistoryCount = 0;
-        for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
-            if (handleRenamedFiles && history.isRenamed(map_entry.getKey())) {
-                continue;
-            }
 
-            doFileHistory(map_entry.getKey(), new History(map_entry.getValue()),
-                    repository, root, false);
-            fileHistoryCount++;
+        final CountDownLatch latch = new CountDownLatch(regularFiles.size());
+        AtomicInteger fileHistoryCount = new AtomicInteger();
+        for (String file : regularFiles) {
+            env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
+                try {
+                    doFileHistory(file, new History(map.get(file)), repository, root, false);
+                    fileHistoryCount.getAndIncrement();
+                } catch (Exception ex) {
+                    // We want to catch any exception since we are in thread.
+                    LOGGER.log(Level.WARNING, "doFileHistory() got exception ", ex);
+                } finally {
+                    latch.countDown();
+                }
+            });
         }
 
-        LOGGER.log(Level.FINE, "Stored history for {0} files in repository ''{1}''",
+        // Wait for the executors to finish.
+        try {
+            // Wait for the executors to finish.
+            latch.await();
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, "latch exception", ex);
+        }
+        LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
                 new Object[]{fileHistoryCount, repository.getDirectoryName()});
 
         if (!handleRenamedFiles) {
