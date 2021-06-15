@@ -580,7 +580,7 @@ class FileHistoryCache implements HistoryCache {
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 LOGGER.log(Level.WARNING,
-                        "Unable to create cache directory ' {0} '.", dir);
+                        "Unable to create cache directory ''{0}''.", dir);
             }
         }
     }
