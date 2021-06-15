@@ -515,25 +515,8 @@ class FileHistoryCache implements HistoryCache {
         LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}''",
                 new Object[]{renamedFiles.size(), repository.getDirectoryName()});
 
-        // The directories for the renamed files have to be created before
-        // the actual files otherwise storeFile() might be racing for
-        // mkdirs() if there are multiple renamed files from single directory
-        // handled in parallel.
-        for (final String file : renamedFiles) {
-            File cache;
-            try {
-                cache = getCachedFile(new File(env.getSourceRootPath() + file));
-            } catch (ForbiddenSymlinkException ex) {
-                LOGGER.log(Level.FINER, ex.getMessage());
-                continue;
-            }
-            File dir = cache.getParentFile();
+        createDirectoriesForFiles(renamedFiles);
 
-            if (!dir.isDirectory() && !dir.mkdirs()) {
-                LOGGER.log(Level.WARNING,
-                        "Unable to create cache directory ' {0} '.", dir);
-            }
-        }
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamedFiles.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
@@ -563,6 +546,28 @@ class FileHistoryCache implements HistoryCache {
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
                 new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
+    }
+
+    private void createDirectoriesForFiles(Set<String> files) throws HistoryException {
+        // The directories for the files have to be created before
+        // the actual files otherwise storeFile() might be racing for
+        // mkdirs() if there are multiple files from single directory
+        // handled in parallel.
+        for (final String file : files) {
+            File cache;
+            try {
+                cache = getCachedFile(new File(env.getSourceRootPath() + file));
+            } catch (ForbiddenSymlinkException ex) {
+                LOGGER.log(Level.FINER, ex.getMessage());
+                continue;
+            }
+            File dir = cache.getParentFile();
+
+            if (!dir.isDirectory() && !dir.mkdirs()) {
+                LOGGER.log(Level.WARNING,
+                        "Unable to create cache directory ' {0} '.", dir);
+            }
+        }
     }
 
     @Override
