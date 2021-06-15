@@ -471,13 +471,12 @@ class FileHistoryCache implements HistoryCache {
         createDirectoriesForFiles(regularFiles);
 
         /*
-         * Now traverse the list of files from the hash map built above
-         * and for each file store its history (saved in the value of the
-         * hash map entry for the file) in a file. Skip renamed files
-         * which will be handled separately below.
+         * Now traverse the list of files from the hash map built above and for each file store its history
+         * (saved in the value of the hash map entry for the file) in a file.
+         * The renamed files will be handled separately.
          */
-        LOGGER.log(Level.FINE, "Storing history for {0} files in repository ''{1}''",
-                new Object[]{map.entrySet().size(), repository.getDirectoryName()});
+        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}''",
+                new Object[]{regularFiles.size(), repository.getDirectoryName()});
         final File root = env.getSourceRootFile();
 
         final CountDownLatch latch = new CountDownLatch(regularFiles.size());
