@@ -64,7 +64,7 @@ public class History implements Serializable {
         this.entries = entries;
     }
 
-    // TODO: use History entry identification (revision) as key ?
+    // revision to tag list. Individual tags are joined via TAGS_SEPARATOR.
     private Map<String, String> tags = new HashMap<>();
 
     public History() {
