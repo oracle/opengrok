@@ -23,6 +23,7 @@
  */
 package org.opengrok.indexer.history;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
@@ -38,16 +39,15 @@ import org.opengrok.indexer.logger.LoggerFactory;
  *
  * @author Trond Norbye
  */
-public class HistoryEntry {
+public class HistoryEntry implements Serializable {
 
-    static final String TAGS_SEPARATOR = ", ";
+    private static final long serialVersionUID = -1;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
 
     private String revision;
     private Date date;
     private String author;
-    private String tags;
 
     @SuppressWarnings("PMD.AvoidStringBufferField")
     private final StringBuffer message;
@@ -69,18 +69,15 @@ public class HistoryEntry {
         this.revision = that.revision;
         this.date = that.date;
         this.author = that.author;
-        this.tags = that.tags;
         this.message = that.message;
         this.active = that.active;
         this.files = that.files;
     }
 
-    public HistoryEntry(String revision, Date date, String author,
-            String tags, String message, boolean active) {
+    public HistoryEntry(String revision, Date date, String author, String message, boolean active) {
         this.revision = revision;
         setDate(date);
         this.author = author;
-        this.tags = tags;
         this.message = new StringBuffer(message);
         this.active = active;
         this.files = new TreeSet<>();
@@ -88,7 +85,7 @@ public class HistoryEntry {
 
     public HistoryEntry(String revision, Date date, String author,
                         String tags, String message, boolean active, Collection<String> files) {
-        this(revision, date, author, tags, message, active);
+        this(revision, date, author, message, active);
         this.files.addAll(files);
     }
 
@@ -100,7 +97,6 @@ public class HistoryEntry {
     public void dump() {
 
         LOGGER.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
-        LOGGER.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
         LOGGER.log(Level.FINE, "HistoryEntry : date           = {0}", date);
         LOGGER.log(Level.FINE, "HistoryEntry : author         = {0}", author);
         LOGGER.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
@@ -123,10 +119,6 @@ public class HistoryEntry {
     public String getAuthor() {
         return author;
     }
-    
-    public String getTags() {
-        return tags;
-    }
 
     public Date getDate() {
         return (date == null) ? null : (Date) date.clone();
@@ -142,10 +134,6 @@ public class HistoryEntry {
 
     public void setAuthor(String author) {
         this.author = author;
-    }
-    
-    public void setTags(String tags) {
-        this.tags = tags;
     }
 
     public final void setDate(Date date) {
@@ -201,7 +189,6 @@ public class HistoryEntry {
      */
     public void strip() {
         stripFiles();
-        stripTags();
     }
 
     /**
@@ -209,13 +196,6 @@ public class HistoryEntry {
      */
     public void stripFiles() {
         files.clear();
-    }
-
-    /**
-     * Remove tags.
-     */
-    public void stripTags() {
-        tags = null;
     }
 
     @Override
@@ -232,12 +212,11 @@ public class HistoryEntry {
                 Objects.equals(this.getRevision(), that.getRevision()) &&
                 Objects.equals(this.getDate(), that.getDate()) &&
                 Objects.equals(this.getMessage(), that.getMessage()) &&
-                Objects.equals(this.getFiles(), that.getFiles()) &&
-                Objects.equals(this.getTags(), that.getTags());
+                Objects.equals(this.getFiles(), that.getFiles());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAuthor(), getRevision(), getDate(), getMessage(), getFiles(), getTags());
+        return Objects.hash(getAuthor(), getRevision(), getDate(), getMessage(), getFiles());
     }
 }

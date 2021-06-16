@@ -71,7 +71,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
             List<HistoryEntry> entries = new ArrayList<>();
 
             entries.add(new HistoryEntry(
-                    "", new Date(), "OpenGrok", null, "Workspace Root", true));
+                    "", new Date(), "OpenGrok", "Workspace Root", true));
 
             history = new History(entries);
 

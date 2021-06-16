@@ -101,7 +101,6 @@ public class HistoryControllerTest extends OGKJerseyTest {
                 "1",
                 new Date(1245446973L / 60 * 60 * 1000),
                 "xyz",
-                null,
                 "foo",
                 true);
         HistoryEntryDTO entry1 = new HistoryEntryDTO(historyEntry);

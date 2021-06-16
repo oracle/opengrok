@@ -61,6 +61,7 @@ import java.util.zip.GZIPOutputStream;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -215,7 +216,7 @@ class FileHistoryCache implements HistoryCache {
         return new XMLDecoder(in, null, null, new HistoryClassLoader());
     }
 
-    // for testing
+    @TestOnly
     static History readCache(String xmlconfig) {
         final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
         try (XMLDecoder d = getDecoder(in)) {
@@ -312,9 +313,7 @@ class FileHistoryCache implements HistoryCache {
                 // retroactively tagging changesets from listOld so we resort
                 // to this somewhat crude solution.
                 if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
-                    for (HistoryEntry ent : history.getHistoryEntries()) {
-                        ent.setTags(null);
-                    }
+                    history.strip();
                     repo.assignTagsInHistory(history);
                 }
             }
