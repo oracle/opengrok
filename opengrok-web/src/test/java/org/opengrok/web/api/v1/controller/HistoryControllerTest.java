@@ -133,7 +133,7 @@ public class HistoryControllerTest extends OGKJerseyTest {
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
 
         History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
-        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start),
+        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start), repoHistory.getTags(),
                 start, size, repoHistory.getHistoryEntries().size()));
     }
 }
