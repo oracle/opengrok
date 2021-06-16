@@ -44,6 +44,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.eclipse.jgit.api.Git;
@@ -242,15 +244,15 @@ public class FileHistoryCacheTest {
                 updatedHistoryFromScratch.getHistoryEntries().size(),
                 "Unexpected number of history entries");
 
-        // Verify that the result for the directory is the same as incremental
-        // reindex.
+        // Verify that the result for the directory is the same as incremental reindex.
         assertSameEntries(updatedHistory.getHistoryEntries(),
                 updatedHistoryFromScratch.getHistoryEntries(), true);
         // Do the same for main.c.
         History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
         assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
                 retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
-        // TODO: check tags
+        assertEquals(Map.of("13:3d386f6bd848", "tag3", "2:585a1b3f2efb", "tag2, tag1, start_of_novel"),
+                retrievedUpdatedHistoryMainC.getTags());
     }
 
     /**
