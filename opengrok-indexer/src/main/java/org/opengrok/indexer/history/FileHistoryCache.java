@@ -307,12 +307,12 @@ class FileHistoryCache implements HistoryCache {
                 }
                 history = new History(listOld);
 
-                // Retag the last changesets in case there have been some new
+                // Retag the changesets in case there have been some new
                 // tags added to the repository. Technically we should just
                 // retag the last revision from the listOld however this
                 // does not solve the problem when listNew contains new tags
                 // retroactively tagging changesets from listOld so we resort
-                // to this somewhat crude solution.
+                // to this somewhat crude solution of retagging from scratch.
                 if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
                     history.strip();
                     repo.assignTagsInHistory(history);
