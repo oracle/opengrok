@@ -256,7 +256,7 @@ document.domReady.push(function() {domReadyHistory();});
                 if (rev == null || rev.length() == 0) {
                     rev = "";
                 }
-                String tags = entry.getTags();
+                String tags = hist.getTags().get(rev);
 
                 if (tags != null) {
 			int colspan;
