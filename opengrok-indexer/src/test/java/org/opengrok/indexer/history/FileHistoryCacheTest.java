@@ -218,13 +218,15 @@ public class FileHistoryCacheTest {
         assertEquals(3, entries.size(), "Unexpected number of entries for main.c");
         HistoryEntry e0 = entries.get(0);
         assertEquals("13:3d386f6bd848", e0.getRevision(), "Unexpected revision for entry 0");
-        // TODO assertEquals("tag3", e0.getTags(), "Invalid tag list for revision 13");
+        assertEquals("tag3", retrievedHistoryMainC.getTags().get(e0.getRevision()),
+                "Invalid tag list for revision 13");
         HistoryEntry e1 = entries.get(1);
         assertEquals("2:585a1b3f2efb", e1.getRevision(), "Unexpected revision for entry 1");
-        // TODO assertEquals("tag2, tag1, start_of_novel", e1.getTags(), "Invalid tag list for revision 2");
+        assertEquals("tag2, tag1, start_of_novel", retrievedHistoryMainC.getTags().get(e1.getRevision()),
+                "Invalid tag list for revision 2");
         HistoryEntry e2 = entries.get(2);
         assertEquals("1:f24a5fd7a85d", e2.getRevision(), "Unexpected revision for entry 2");
-        // TODO assertNull(e2.getTags(), "Invalid tag list for revision 1");
+        assertNull(retrievedHistoryMainC.getTags().get(e2.getRevision()), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
         File dir = new File(cache.getRepositoryHistDataDirname(repo));
