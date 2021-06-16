@@ -122,6 +122,7 @@ class FileHistoryCache implements HistoryCache {
             history = repository.getHistory(file);
         }
 
+        history.strip();
         doFileHistory(filename, history, repository, root, true);
     }
 
