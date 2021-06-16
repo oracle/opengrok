@@ -79,7 +79,7 @@ public final class HistoryController {
             this.revision = entry.getRevision();
             this.date = entry.getDate();
             this.author = entry.getAuthor();
-            this.tags = entry.getTags();
+            // TODO this.tags = entry.getTags();
             this.message = entry.getMessage();
             this.files = entry.getFiles();
         }

@@ -23,17 +23,25 @@
  */
 package org.opengrok.indexer.history;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 /**
  * Class representing the history of a file.
  */
-public class History {
+public class History implements Serializable {
+
+    private static final long serialVersionUID = -1;
+
+    static final String TAGS_SEPARATOR = ", ";
+
     /** Entries in the log. The first entry is the most recent one. */
     private List<HistoryEntry> entries;
     /** 
@@ -42,7 +50,23 @@ public class History {
      * These are relative to repository root.
      */
     private final Set<String> renamedFiles;
-    
+
+    // Needed for serialization
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
+    }
+
+    public void setEntries(List<HistoryEntry> entries) {
+        this.entries = entries;
+    }
+
+    // TODO: use History entry identification (revision) as key ?
+    private Map<String, String> tags = new HashMap<>();
+
     public History() {
         this(new ArrayList<>());
     }
@@ -113,9 +137,11 @@ public class History {
      * tag list, {@code false} otherwise
      */
     public boolean hasTags() {
-        return entries.stream()
-                .map(HistoryEntry::getTags)
-                .anyMatch(Objects::nonNull);
+        return !tags.isEmpty();
+    }
+
+    public void addTags(HistoryEntry entry, String newTags) {
+        tags.merge(entry.getRevision(), newTags, (a, b) -> a + TAGS_SEPARATOR + b);
     }
 
     /**
@@ -132,13 +158,15 @@ public class History {
     }
 
     /**
-     * Strip files and tags from history entries.
+     * Strip files and tags.
      * @see HistoryEntry#strip()
      */
     public void strip() {
         for (HistoryEntry ent : this.getHistoryEntries()) {
             ent.strip();
         }
+
+        tags.clear();
     }
 
     @Override
@@ -151,16 +179,18 @@ public class History {
         }
         History that = (History) o;
         return Objects.equals(this.getHistoryEntries(), that.getHistoryEntries()) &&
+                Objects.equals(this.getTags(), that.getTags()) &&
                 Objects.equals(this.getRenamedFiles(), that.getRenamedFiles());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHistoryEntries(), getRenamedFiles());
+        return Objects.hash(getHistoryEntries(), getTags(), getRenamedFiles());
     }
 
     @Override
     public String toString() {
-        return this.getHistoryEntries().toString() + ", renamed files: " + this.getRenamedFiles().toString();
+        return this.getHistoryEntries().toString() + ", renamed files: " + this.getRenamedFiles().toString() +
+                " , tags: " + getTags();
     }
 }

@@ -28,10 +28,14 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HistoryTest {
     private final List<HistoryEntry> entries = List.of(
@@ -61,5 +65,54 @@ public class HistoryTest {
         History historySmaller = new History(entries.subList(1, 2));
         assertEquals(1, historySmaller.getHistoryEntries().size());
         assertNotEquals(history, historySmaller);
+    }
+
+    @Test
+    void testAddTags() {
+        History history = new History();
+        HistoryEntry historyEntry = entries.get(0);
+        history.addTags(historyEntry, "foo");
+        assertEquals(history.getTags().get(historyEntry.getRevision()), "foo");
+        history.addTags(historyEntry, "bar");
+        assertEquals(history.getTags().get(historyEntry.getRevision()), "foo" + History.TAGS_SEPARATOR + "bar");
+    }
+
+    @Test
+    void testGetSetTags() {
+        History history = new History();
+        assertTrue(history.getTags().isEmpty());
+        Map<String, String> tags = new TreeMap<>();
+        tags.put("foo", "bar");
+        tags.put("bar", "foo");
+        history.setTags(tags);
+        assertFalse(history.getTags().isEmpty());
+        assertEquals(tags, history.getTags());
+    }
+
+    @Test
+    void testEqualsTagsEmpty() {
+        History history1 = new History();
+        History history2 = new History();
+        assertTrue(history1.getTags().isEmpty());
+        assertTrue(history2.getTags().isEmpty());
+        assertEquals(history1, history2);
+    }
+
+    @Test
+    void testEqualsTagsPositive() {
+        History history1 = new History();
+        History history2 = new History();
+        history1.setTags(Map.of("foo", "bar", "bar", "foo"));
+        history2.setTags(Map.of("foo", "bar", "bar", "foo"));
+        assertEquals(history1, history2);
+    }
+
+    @Test
+    void testEqualsTagsNegative() {
+        History history1 = new History();
+        History history2 = new History();
+        history1.setTags(Map.of("foo", "bar", "Bar", "foo"));
+        history2.setTags(Map.of("foo", "bar", "bar", "foo"));
+        assertNotEquals(history1, history2);
     }
 }

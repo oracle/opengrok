@@ -150,7 +150,6 @@ public class FileHistoryCacheTest {
         } else {
             assertEquals(0, actual.getFiles().size());
         }
-        assertEquals(expected.getTags(), actual.getTags());
     }
 
     /**
@@ -219,13 +218,13 @@ public class FileHistoryCacheTest {
         assertEquals(3, entries.size(), "Unexpected number of entries for main.c");
         HistoryEntry e0 = entries.get(0);
         assertEquals("13:3d386f6bd848", e0.getRevision(), "Unexpected revision for entry 0");
-        assertEquals("tag3", e0.getTags(), "Invalid tag list for revision 13");
+        // TODO assertEquals("tag3", e0.getTags(), "Invalid tag list for revision 13");
         HistoryEntry e1 = entries.get(1);
         assertEquals("2:585a1b3f2efb", e1.getRevision(), "Unexpected revision for entry 1");
-        assertEquals("tag2, tag1, start_of_novel", e1.getTags(), "Invalid tag list for revision 2");
+        // TODO assertEquals("tag2, tag1, start_of_novel", e1.getTags(), "Invalid tag list for revision 2");
         HistoryEntry e2 = entries.get(2);
         assertEquals("1:f24a5fd7a85d", e2.getRevision(), "Unexpected revision for entry 2");
-        assertNull(e2.getTags(), "Invalid tag list for revision 1");
+        // TODO assertNull(e2.getTags(), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
         File dir = new File(cache.getRepositoryHistDataDirname(repo));
@@ -249,6 +248,7 @@ public class FileHistoryCacheTest {
         History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
         assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
                 retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
+        // TODO: check tags
     }
 
     /**
@@ -329,7 +329,6 @@ public class FileHistoryCacheTest {
                 "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Return failure when executed with no arguments",
                 true);
         newEntry1.addFile("/mercurial/main.c");
@@ -337,7 +336,6 @@ public class FileHistoryCacheTest {
                 "11:bbb3ce75e1b8",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Do something else",
                 true);
         newEntry2.addFile("/mercurial/main.c");
@@ -418,42 +416,36 @@ public class FileHistoryCacheTest {
                 "13:e55a793086da",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Do something else",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "12:97b5392fec0d",
                 new Date(1393515253L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "rename2",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "11:5c203a0bc12b",
                 new Date(1393515291L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "rename1",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Return failure when executed with no arguments",
                 true);
         HistoryEntry e4 = new HistoryEntry(
                 "2:585a1b3f2efb",
                 new Date(1218571989L / 60 * 60 * 1000), // whole minutes only
                 "Trond Norbye <trond.norbye@sun.com>",
-                "start_of_novel",
                 "Add lint make target and fix lint warnings",
                 true);
         HistoryEntry e5 = new HistoryEntry(
                 "1:f24a5fd7a85d",
                 new Date(1218571413L / 60 * 60 * 1000), // whole minutes only
                 "Trond Norbye <trond.norbye@sun.com>",
-                null,
                 "Created a small dummy program",
                 true);
 
@@ -480,7 +472,7 @@ public class FileHistoryCacheTest {
         HistoryEntry e6 = new HistoryEntry(
                 "14:55c41cd4b348",
                 new Date(1489505558L / 60 * 60 * 1000), // whole minutes only
-                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", null, "rename + cstyle",
+                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", "rename + cstyle",
                 true);
         entriesConstruct = new LinkedList<>();
         entriesConstruct.add(e6);
@@ -560,56 +552,48 @@ public class FileHistoryCacheTest {
                 "15:709c7a27f9fa",
                 new Date(1489160275L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "novels are so last century. Let's write a blog !",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "10:c4518ca0c841",
                 new Date(1415483555L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "branched",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "8:6a8c423f5624",
                 new Date(1362586899L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "first words of the novel",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "7:db1394c05268",
                 new Date(1362586862L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                "start_of_novel",
                 "book sounds too boring, let's do a novel !",
                 true);
         HistoryEntry e4 = new HistoryEntry(
                 "6:e386b51ddbcc",
                 new Date(1362586839L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "stub of chapter 1",
                 true);
         HistoryEntry e5 = new HistoryEntry(
                 "5:8706402863c6",
                 new Date(1362586805L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "I decided to actually start writing a book based on the first plaintext file.",
                 true);
         HistoryEntry e6 = new HistoryEntry(
                 "4:e494d67af12f",
                 new Date(1362586747L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "first change",
                 true);
         HistoryEntry e7 = new HistoryEntry(
                 "3:2058725c1470",
                 new Date(1362586483L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "initial checking of text files",
                 true);
 
@@ -658,21 +642,18 @@ public class FileHistoryCacheTest {
                 "10",
                 DateUtils.parseDate("2020-03-28T07:24:43.921Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Rename FileA to FileZ and FileB to FileX in a single commit",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "7",
                 DateUtils.parseDate("2020-03-28T07:21:55.273Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Amend file A",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "6",
                 DateUtils.parseDate("2020-03-28T07:21:05.888Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Add file A",
                 true);
 
@@ -790,28 +771,24 @@ public class FileHistoryCacheTest {
                 "5",
                 DateUtils.parseDate("2020-03-28T07:20:11.821Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Moved file to subfolder and renamed",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "3",
                 DateUtils.parseDate("2020-03-28T07:19:03.145Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Edited content",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "2",
                 DateUtils.parseDate("2020-03-28T07:18:29.481Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Rename file",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "1",
                 DateUtils.parseDate("2020-03-28T07:17:54.756Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Add initial file",
                 true);
 

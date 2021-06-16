@@ -87,7 +87,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
-import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
+import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
 
 /**
  * Access to a Git repository.
@@ -545,7 +545,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                         commit.getAuthorIdent().getWhen(),
                         commit.getAuthorIdent().getName() +
                                 " <" + commit.getAuthorIdent().getEmailAddress() + ">",
-                        null, commit.getFullMessage(), true);
+                        commit.getFullMessage(), true);
 
                 if (isDirectory) {
                     SortedSet<String> files = new TreeSet<>();

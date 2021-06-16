@@ -104,7 +104,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 String commit = s.substring("revision".length()).trim();
                 entry.setRevision(commit);
                 if (tags.containsKey(commit)) {
-                    entry.setTags(tags.get(commit));
+                    history.addTags(entry, tags.get(commit));
                 }
                 state = ParseState.METADATA;
                 s = in.readLine();

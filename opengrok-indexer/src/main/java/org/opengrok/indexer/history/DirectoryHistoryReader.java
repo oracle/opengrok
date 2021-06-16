@@ -225,7 +225,7 @@ public class DirectoryHistoryReader {
 
         icomment = citer.next();
 
-        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, null, icomment.get(0), true);
+        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, icomment.get(0), true);
         currentEntry.setFiles(hash.get(idate).get(iauthor).get(icomment));
 
         return true;

@@ -23,7 +23,7 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
+import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.IOException;

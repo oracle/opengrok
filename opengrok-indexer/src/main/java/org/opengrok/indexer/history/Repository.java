@@ -23,8 +23,6 @@
  */
 package org.opengrok.indexer.history;
 
-import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -324,7 +322,6 @@ public abstract class Repository extends RepositoryInfo {
         TagEntry lastTagEntry = null;
         for (HistoryEntry ent : hist.getHistoryEntries()) {
             // Assign all tags created since the last revision
-            // Revision in this HistoryEntry must be already specified !
             // TODO: is there better way to do this? We need to "repeat"
             //   last element returned by call to next()
             while (lastTagEntry != null || it.hasNext()) {
@@ -332,11 +329,7 @@ public abstract class Repository extends RepositoryInfo {
                     lastTagEntry = it.next();
                 }
                 if (lastTagEntry.compareTo(ent) >= 0) {
-                    if (ent.getTags() == null) {
-                        ent.setTags(lastTagEntry.getTags());
-                    } else {
-                        ent.setTags(ent.getTags() + TAGS_SEPARATOR + lastTagEntry.getTags());
-                    }
+                    hist.addTags(ent, lastTagEntry.getTags());
                 } else {
                     break;
                 }
