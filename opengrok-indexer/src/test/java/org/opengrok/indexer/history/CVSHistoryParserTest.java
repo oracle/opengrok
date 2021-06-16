@@ -26,6 +26,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -114,7 +116,6 @@ public class CVSHistoryParserTest {
         assertEquals(0, e0.getFiles().size());
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(revId2, e1.getRevision());
-        // TODO assertEquals(tag1, e1.getTags());
         assertEquals(author2, e1.getAuthor());
         assertEquals(0, e1.getFiles().size());
         HistoryEntry e2 = result.getHistoryEntries().get(2);
@@ -123,5 +124,7 @@ public class CVSHistoryParserTest {
         assertEquals(0, e2.getFiles().size());
         assertTrue(e2.getMessage().contains("some"), "Should contain comment of both lines: line 1");
         assertTrue(e2.getMessage().contains("two"), "Should contain comment of both lines: line 2");
+
+        assertEquals(Map.of(revId2, tag1), result.getTags());
     }
 }
