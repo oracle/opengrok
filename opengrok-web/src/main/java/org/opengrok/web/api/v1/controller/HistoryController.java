@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.controller;
 
@@ -32,6 +32,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -45,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 
@@ -79,9 +81,12 @@ public final class HistoryController {
             this.revision = entry.getRevision();
             this.date = entry.getDate();
             this.author = entry.getAuthor();
-            // TODO this.tags = entry.getTags();
             this.message = entry.getMessage();
             this.files = entry.getFiles();
+        }
+
+        public void setTags(String tags) {
+            this.tags = tags;
         }
 
         // for testing
@@ -135,7 +140,7 @@ public final class HistoryController {
         @JsonProperty
         private int total;
 
-        // for testing
+        @TestOnly
         HistoryDTO() {
             this.entries = new ArrayList<>();
         }
@@ -147,7 +152,7 @@ public final class HistoryController {
             this.total = total;
         }
 
-        // for testing
+        @TestOnly
         public List<HistoryEntryDTO> getEntries() {
             return entries;
         }
@@ -181,9 +186,11 @@ public final class HistoryController {
         }
     }
 
-    static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries, int start, int count, int total) {
+    static HistoryDTO getHistoryDTO(List<HistoryEntry> historyEntries, Map<String, String> tags,
+                                    int start, int count, int total) {
         List<HistoryEntryDTO> entries = new ArrayList<>();
         historyEntries.stream().map(HistoryEntryDTO::new).forEach(entries::add);
+        entries.forEach(e -> e.setTags(tags.get(e.revision)));
         return new HistoryDTO(entries, start, count, total);
     }
 
@@ -205,7 +212,7 @@ public final class HistoryController {
             return null;
         }
 
-        return getHistoryDTO(history.getHistoryEntries(maxEntries, startIndex),
+        return getHistoryDTO(history.getHistoryEntries(maxEntries, startIndex), history.getTags(),
                 startIndex, maxEntries, history.getHistoryEntries().size());
     }
 }
