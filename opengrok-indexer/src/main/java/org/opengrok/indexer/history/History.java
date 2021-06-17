@@ -51,19 +51,6 @@ public class History implements Serializable {
      */
     private final Set<String> renamedFiles;
 
-    // Needed for serialization
-    public Map<String, String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Map<String, String> tags) {
-        this.tags = tags;
-    }
-
-    public void setEntries(List<HistoryEntry> entries) {
-        this.entries = entries;
-    }
-
     // revision to tag list. Individual tags are joined via TAGS_SEPARATOR.
     private Map<String, String> tags = new HashMap<>();
 
@@ -83,6 +70,20 @@ public class History implements Serializable {
     History(List<HistoryEntry> entries, Set<String> renamed) {
         this.entries = entries;
         this.renamedFiles = renamed;
+    }
+
+    // Needed for serialization.
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    // Needed for serialization.
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
+    }
+
+    public void setEntries(List<HistoryEntry> entries) {
+        this.entries = entries;
     }
 
     /**
