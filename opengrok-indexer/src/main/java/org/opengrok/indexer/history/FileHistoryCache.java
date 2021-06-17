@@ -496,7 +496,6 @@ class FileHistoryCache implements HistoryCache {
 
         // Wait for the executors to finish.
         try {
-            // Wait for the executors to finish.
             latch.await();
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception", ex);
