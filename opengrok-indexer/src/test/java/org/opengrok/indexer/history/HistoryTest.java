@@ -72,9 +72,9 @@ public class HistoryTest {
         History history = new History();
         HistoryEntry historyEntry = entries.get(0);
         history.addTags(historyEntry, "foo");
-        assertEquals(history.getTags().get(historyEntry.getRevision()), "foo");
+        assertEquals("foo", history.getTags().get(historyEntry.getRevision()));
         history.addTags(historyEntry, "bar");
-        assertEquals(history.getTags().get(historyEntry.getRevision()), "foo" + History.TAGS_SEPARATOR + "bar");
+        assertEquals("foo" + History.TAGS_SEPARATOR + "bar", history.getTags().get(historyEntry.getRevision()));
     }
 
     @Test
