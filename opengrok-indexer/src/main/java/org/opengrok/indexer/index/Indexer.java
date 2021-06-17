@@ -570,11 +570,11 @@ public final class Indexer {
                     "of threads will be set to the number of available CPUs. Assumes -H/--history.").execute(threadCount ->
                     cfg.setHistoryParallelism((Integer) threadCount));
 
-            parser.on("--historyRenamedThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation when dealing with renamed files.",
+            parser.on("--historyFileThreads", "=number", Integer.class,
+                    "The number of threads to use for history cache generation when dealing with files.",
                     "By default the number of threads will be set to the number of available CPUs.",
                     "Assumes --renamedHistory=on").execute(threadCount ->
-                    cfg.setHistoryRenamedParallelism((Integer) threadCount));
+                    cfg.setHistoryFileParallelism((Integer) threadCount));
 
             parser.on("-I", "--include", "=pattern",
                     "Only files matching this pattern will be examined. Pattern supports",

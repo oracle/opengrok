@@ -82,7 +82,7 @@ public class IndexerParallelizer implements AutoCloseable {
         createLazyCtagsPool();
         createLazyFixedExecutor();
         createLazyHistoryExecutor();
-        createLazyHistoryRenamedExecutor();
+        createLazyHistoryFileExecutor();
         createLazyCtagsWatcherExecutor();
     }
 
@@ -197,7 +197,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private void bounceHistoryRenamedExecutor() {
         if (lzHistoryFileExecutor.isActive()) {
             ExecutorService formerHistoryRenamedExecutor = lzHistoryFileExecutor.get();
-            createLazyHistoryRenamedExecutor();
+            createLazyHistoryFileExecutor();
             formerHistoryRenamedExecutor.shutdown();
         }
     }
@@ -240,9 +240,9 @@ public class IndexerParallelizer implements AutoCloseable {
                 Executors.newFixedThreadPool(env.getHistoryParallelism()));
     }
 
-    private void createLazyHistoryRenamedExecutor() {
+    private void createLazyHistoryFileExecutor() {
         lzHistoryFileExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
+                Executors.newFixedThreadPool(env.getHistoryFileParallelism()));
     }
 
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {
