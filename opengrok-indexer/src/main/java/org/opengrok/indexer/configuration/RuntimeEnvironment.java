@@ -1118,12 +1118,12 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Gets the value of {@link Configuration#getHistoryRenamedParallelism()} -- or
+     * Gets the value of {@link Configuration#getHistoryFileParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
      * @return a natural number &gt;= 1
      */
-    public int getHistoryRenamedParallelism() {
-        int parallelism = syncReadConfiguration(Configuration::getHistoryRenamedParallelism);
+    public int getHistoryFileParallelism() {
+        int parallelism = syncReadConfiguration(Configuration::getHistoryFileParallelism);
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
                 parallelism;
     }

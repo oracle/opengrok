@@ -193,7 +193,7 @@ public final class Configuration {
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
     private int historyParallelism;
-    private int historyRenamedParallelism;
+    private int historyFileParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -1154,12 +1154,12 @@ public final class Configuration {
         this.historyParallelism = Math.max(value, 0);
     }
 
-    public int getHistoryRenamedParallelism() {
-        return historyRenamedParallelism;
+    public int getHistoryFileParallelism() {
+        return historyFileParallelism;
     }
 
-    public void setHistoryRenamedParallelism(int value) {
-        this.historyRenamedParallelism = Math.max(value, 0);
+    public void setHistoryFileParallelism(int value) {
+        this.historyFileParallelism = Math.max(value, 0);
     }
 
     public boolean isTagsEnabled() {
