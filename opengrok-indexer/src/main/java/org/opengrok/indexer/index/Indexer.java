@@ -571,7 +571,7 @@ public final class Indexer {
                     cfg.setHistoryParallelism((Integer) threadCount));
 
             parser.on("--historyFileThreads", "=number", Integer.class,
-                    "The number of threads to use for history cache generation when dealing with files.",
+                    "The number of threads to use for history cache generation when dealing with individual files.",
                     "By default the number of threads will be set to the number of available CPUs.",
                     "Assumes --renamedHistory=on").execute(threadCount ->
                     cfg.setHistoryFileParallelism((Integer) threadCount));
