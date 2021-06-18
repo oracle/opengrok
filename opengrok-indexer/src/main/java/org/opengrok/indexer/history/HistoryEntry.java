@@ -181,7 +181,9 @@ public class HistoryEntry implements Serializable {
     /**
      * The method is kept only for backward compatibility to avoid warnings when deserializing objects
      * from the previous format. The tags were moved to the {@link History} class.
+     * Will be removed sometime after the OpenGrok 1.8.0 version.
      */
+    @Deprecated
     public void setTags(String tags) {
     }
 
