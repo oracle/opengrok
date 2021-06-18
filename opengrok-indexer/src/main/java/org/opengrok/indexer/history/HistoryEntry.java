@@ -178,6 +178,13 @@ public class HistoryEntry implements Serializable {
         this.files = files;
     }
 
+    /**
+     * The method is kept only for backward compatibility to avoid warnings when deserializing objects
+     * from the previous format. The tags were moved to the {@link History} class.
+     */
+    public void setTags(String tags) {
+    }
+
     @Override
     public String toString() {
         return String.join(" ",
