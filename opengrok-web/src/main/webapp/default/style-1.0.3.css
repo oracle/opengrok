@@ -1351,3 +1351,17 @@ td#typeLabelTd {
 .ui-autocomplete-loading {
     background:url('img/indicator.gif') no-repeat right center;
 }
+
+/** --------------- settings -------------------- */
+
+.local-setting {
+    background-color: inherit;
+}
+
+.header-half-bottom-margin {
+    margin-bottom: 0.5rem;
+}
+
+.no-margin-left {
+    margin-left: 0;
+}

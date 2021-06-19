@@ -1700,8 +1700,7 @@ function pageReadyMast() {
 }
 
 function domReadyMenu(minisearch) {
-    if (getCookie('OpenGrokSuggester.enabled') === 'false') {
-        console.log('Suggester disabled by a cookie');
+    if (getSettingsValue('suggester-enabled') === 'false') {
         return;
     }
 
@@ -2378,22 +2377,76 @@ function escapeHtml(string) { // taken from https://stackoverflow.com/questions/
 }
 
 /**
- * Taken from https://www.w3schools.com/js/js_cookies.asp .
- * @param cname cookie name to retrieve
- * @returns {string} cookie value
+ * Returns user-specific local settings for a provided key.
+ * @param key settings key
+ * @returns {string} settings value or {@code undefined} if not set
  */
-function getCookie(cname) {
-    const name = cname + "=";
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
+function getSettingsValue(key) {
+    return localStorage.getItem(key);
+}
+
+/**
+ * Event listener which stores user-specific settings change for an {@code input} element.
+ * @param el settings {@code input} element
+ */
+function onSettingsValueChange(el) {
+    let value = getSettingsInputValue(el);
+    localStorage.setItem(el.name, value);
+}
+
+/**
+ * Decodes a settings value from a settings {@code input} element.
+ * @param el settings {@code input} element
+ * @returns {string|*} settings value
+ */
+function getSettingsInputValue(el) {
+    if (el.type === 'checkbox') {
+        if (el.checked) {
+            return el.dataset.checkedValue;
+        } else {
+            return el.dataset.uncheckedValue;
         }
-        if (c.indexOf(name) === 0) {
-            return c.substring(name.length, c.length);
+    } else {
+        return el.value;
+    }
+}
+
+/**
+ * Resets all settings elements with class {@code local-setting} to their default values.
+ */
+function resetAllSettings() {
+    for (const el of document.getElementsByClassName('local-setting')) {
+        setDefaultSettingsValue(el);
+        onSettingsValueChange(el);
+    }
+}
+
+/**
+ * Sets a default value for a settings {@code input} element.
+ * @param el settings {@code input} element
+ */
+function setDefaultSettingsValue(el) {
+    if (el.type === 'checkbox') {
+        el.checked = el.dataset.defaultValue === el.dataset.checkedValue;
+    } else {
+        el.value = el.dataset.defaultValue;
+    }
+}
+
+/**
+ * Initializes all settings elements with {@code local-setting} class.
+ */
+function initSettings() {
+    for (const el of document.getElementsByClassName('local-setting')) {
+        const value = getSettingsValue(el.name);
+        if (value) {
+            if (el.type === 'checkbox') {
+                el.checked = el.dataset.checkedValue === value;
+            } else {
+                el.value = value;
+            }
+        } else {
+            setDefaultSettingsValue(el);
         }
     }
-    return "";
 }
