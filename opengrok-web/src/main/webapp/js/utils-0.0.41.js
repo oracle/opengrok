@@ -2426,10 +2426,19 @@ function resetAllSettings() {
  * @param el settings {@code input} element
  */
 function setDefaultSettingsValue(el) {
+    setSettingsInputValue(el, el.dataset.defaultValue);
+}
+
+/**
+ * Sets the settings {@code input} element value to the provided one.
+ * @param el element to change
+ * @param value value to set
+ */
+function setSettingsInputValue(el, value) {
     if (el.type === 'checkbox') {
-        el.checked = el.dataset.defaultValue === el.dataset.checkedValue;
+        el.checked = el.dataset.checkedValue === value;
     } else {
-        el.value = el.dataset.defaultValue;
+        el.value = value;
     }
 }
 
@@ -2440,11 +2449,7 @@ function initSettings() {
     for (const el of document.getElementsByClassName('local-setting')) {
         const value = getSettingsValue(el.name);
         if (value) {
-            if (el.type === 'checkbox') {
-                el.checked = el.dataset.checkedValue === value;
-            } else {
-                el.value = value;
-            }
+            setSettingsInputValue(el, value);
         } else {
             setDefaultSettingsValue(el);
         }
