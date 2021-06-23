@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
@@ -66,6 +67,11 @@ public class BoundaryChangesets {
     private void reset() {
         cnt = 0;
         result.clear();
+    }
+
+    @TestOnly
+    int getMaxCount() {
+        return maxCount;
     }
 
     /**
