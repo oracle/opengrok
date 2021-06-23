@@ -58,7 +58,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
 
     private static final long serialVersionUID = 1L;
 
-    public static final int MAX_CHANGESETS = 256;
+    public static final int MAX_CHANGESETS = 131072;
 
     /**
      * The property name used to obtain the client command for this repository.
