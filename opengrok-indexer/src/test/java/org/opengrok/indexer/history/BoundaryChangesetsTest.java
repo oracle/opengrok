@@ -83,9 +83,9 @@ public class BoundaryChangesetsTest {
         int maxCount = 42 * new Random().nextInt(100) + 1;
         assertNotEquals(0, maxCount);
         RuntimeEnvironment.getInstance().setHistoryChunkCount(maxCount);
-        GitRepository gitSpyRepository = Mockito.spy(gitRepository);
-        assertEquals(maxCount, new BoundaryChangesets(gitSpyRepository).getMaxCount());
+        int actualCount = new BoundaryChangesets(gitRepository).getMaxCount();
         RuntimeEnvironment.getInstance().setHistoryChunkCount(0);
+        assertEquals(maxCount, actualCount);
     }
 
     /**
