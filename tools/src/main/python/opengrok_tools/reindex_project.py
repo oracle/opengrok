@@ -63,6 +63,7 @@ def get_logprop_file(logger, template, pattern, project):
 def get_config_file(logger, uri, headers=None, timeout=None):
     """
     Get fresh configuration from the webapp and store it in temporary file.
+    Return file name on success, None on failure.
     """
     config = get_configuration(logger, uri, headers=headers, timeout=timeout)
     if config is None:
