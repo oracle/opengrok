@@ -80,7 +80,7 @@ public class BoundaryChangesetsTest {
 
     @Test
     void testMaxCountConfiguration() {
-        int maxCount = 42 * new Random().nextInt(100) + 1;
+        int maxCount = (RuntimeEnvironment.getInstance().getHistoryChunkCount() + 1) * 2;
         assertNotEquals(0, maxCount);
         RuntimeEnvironment.getInstance().setHistoryChunkCount(maxCount);
         int actualCount = new BoundaryChangesets(gitRepository).getMaxCount();
