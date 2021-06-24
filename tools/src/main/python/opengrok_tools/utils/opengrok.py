@@ -38,17 +38,17 @@ def get_repos(logger, project, uri, headers=None, timeout=None):
     """
 
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
-                                       urllib.parse.quote_plus(project),
-                                       'repositories'),
-                        headers=headers, timeout=timeout)
-    except Exception as e:
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
+                                         urllib.parse.quote_plus(project),
+                                         'repositories'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("could not get repositories for project '{}': {}".
-                     format(project, e))
+                     format(project, exception))
         return None
 
     ret = []
-    for line in r.json():
+    for line in res.json():
         ret.append(line.strip())
 
     return ret
@@ -61,15 +61,15 @@ def get_config_value(logger, name, uri, headers=None, timeout=None):
     Return string with the result on success, None on failure.
     """
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
-                                       urllib.parse.quote_plus(name)),
-                        headers=headers, timeout=timeout)
-    except Exception as e:
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
+                                         urllib.parse.quote_plus(name)),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("Cannot get the '{}' config value from the web "
-                     "application: {}".format(name, e))
+                     "application: {}".format(name, exception))
         return None
 
-    return r.text
+    return res.text
 
 
 def set_config_value(logger, name, value, uri, headers=None, timeout=None):
@@ -90,9 +90,9 @@ def set_config_value(logger, name, value, uri, headers=None, timeout=None):
         local_headers['Content-type'] = 'application/text'
         do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration', name),
                     data=value, headers=local_headers, timeout=timeout)
-    except Exception as e:
+    except Exception as exception:
         logger.error("Cannot set the '{}' config field to '{}' in the web "
-                     "application: {}".format(name, value, e))
+                     "application: {}".format(name, value, exception))
         return False
 
     return True
@@ -107,15 +107,15 @@ def get_repo_type(logger, repository, uri, headers=None, timeout=None):
     payload = {'repository': repository}
 
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
-                                       'property', 'type'), params=payload,
-                        headers=headers, timeout=None)
-    except Exception as e:
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
+                                         'property', 'type'), params=payload,
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("could not get repository type for '{}' from web"
-                     "application: {}".format(repository, e))
+                     "application: {}".format(repository, exception))
         return None
 
-    line = r.text
+    line = res.text
 
     idx = line.rfind(":")
     return line[idx + 1:]
@@ -123,23 +123,23 @@ def get_repo_type(logger, repository, uri, headers=None, timeout=None):
 
 def get_configuration(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'),
-                        headers=headers, timeout=timeout)
-    except Exception as e:
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error('could not get configuration from web application: {}'.
-                     format(e))
+                     format(exception))
         return None
 
-    return r.text
+    return res.text
 
 
 def set_configuration(logger, configuration, uri, headers=None, timeout=None):
     try:
         do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration'),
                     data=configuration, headers=headers, timeout=timeout)
-    except Exception as e:
+    except Exception as exception:
         logger.error('could not set configuration to web application: {}'.
-                     format(e))
+                     format(exception))
         return False
 
     return True
@@ -147,37 +147,37 @@ def set_configuration(logger, configuration, uri, headers=None, timeout=None):
 
 def list_projects(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET',
-                        get_uri(uri, 'api', 'v1', 'projects'),
-                        headers=headers, timeout=timeout)
-    except Exception as e:
+        res = do_api_call('GET',
+                          get_uri(uri, 'api', 'v1', 'projects'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("could not list projects from web application: {}".
-                     format(e))
+                     format(exception))
         return None
 
-    return r.json()
+    return res.json()
 
 
 def list_indexed_projects(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET',
-                        get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
-                        headers=headers, timeout=timeout)
-    except Exception as e:
+        res = do_api_call('GET',
+                          get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("could not list indexed projects from web application: {}".
-                     format(e))
+                     format(exception))
         return None
 
-    return r.json()
+    return res.json()
 
 
 def add_project(logger, project, uri, headers=None, timeout=None):
     try:
         do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
                     data=project, headers=headers, timeout=timeout)
-    except Exception as e:
+    except Exception as exception:
         logger.error("could not add project '{}' to web application: {}".
-                     format(project, e))
+                     format(project, exception))
         return False
 
     return True
@@ -188,9 +188,9 @@ def delete_project(logger, project, uri, headers=None, timeout=None):
         do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
                                       urllib.parse.quote_plus(project)),
                     headers=headers, timeout=timeout)
-    except Exception as e:
+    except Exception as exception:
         logger.error("could not delete project '{}' in web application: {}".
-                     format(project, e))
+                     format(project, exception))
         return False
 
     return True
