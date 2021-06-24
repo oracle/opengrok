@@ -176,8 +176,8 @@ def add_project(logger, project, uri, headers=None, timeout=None):
         do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
                     data=project, headers=headers, timeout=timeout)
     except Exception as e:
-        logger.error("could not add project '{}' for web application on {}: {}".
-                     format(project, uri, e))
+        logger.error("could not add project '{}' to web application: {}".
+                     format(project, e))
         return False
 
     return True
@@ -189,8 +189,8 @@ def delete_project(logger, project, uri, headers=None, timeout=None):
                                       urllib.parse.quote_plus(project)),
                     headers=headers, timeout=timeout)
     except Exception as e:
-        logger.error("could not delete project '{}' in web application on {}: {}".
-                     format(project, uri, e))
+        logger.error("could not delete project '{}' in web application: {}".
+                     format(project, e))
         return False
 
     return True
