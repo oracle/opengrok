@@ -91,7 +91,7 @@ def set_config_value(logger, name, value, uri, headers=None, timeout=None):
         do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration', name),
                     data=value, headers=local_headers, timeout=timeout)
     except Exception as e:
-        logger.error("Cannot set the '{}' config field to '{}' from the web "
+        logger.error("Cannot set the '{}' config field to '{}' in the web "
                      "application: {}".format(name, value, e))
         return False
 
