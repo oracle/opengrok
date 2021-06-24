@@ -244,8 +244,11 @@ def save_config(logger, uri, config_path):
     :param config_path: file path
     """
 
-    logger.info('Saving configuration to {}'.format(config_path))
     config = get_configuration(logger, uri)
+    if config is None:
+        return
+
+    logger.info('Saving configuration to {}'.format(config_path))
     with open(config_path, "w+") as config_file:
         config_file.write(config)
 
