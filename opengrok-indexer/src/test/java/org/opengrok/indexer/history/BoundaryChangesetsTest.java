@@ -36,7 +36,6 @@ import org.opengrok.indexer.util.TestRepository;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
