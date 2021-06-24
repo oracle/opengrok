@@ -22,6 +22,8 @@
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.TestOnly;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
 
@@ -47,16 +49,29 @@ public class BoundaryChangesets {
 
     public BoundaryChangesets(RepositoryWithPerPartesHistory repository) {
         this.repository = repository;
-        this.maxCount = repository.getPerPartesCount();
+
+        int globalPerPartesCount = RuntimeEnvironment.getInstance().getHistoryChunkCount();
+        if (globalPerPartesCount > 0) {
+            this.maxCount = globalPerPartesCount;
+        } else {
+            this.maxCount = repository.getPerPartesCount();
+        }
         if (maxCount <= 1) {
             throw new RuntimeException(String.format("per partes count for repository ''%s'' " +
                     "must be stricly greater than 1", repository.getDirectoryName()));
         }
+        LOGGER.log(Level.FINER, "using history cache chunks with {0} entries for repository {1}",
+                new Object[]{this.maxCount, repository});
     }
 
     private void reset() {
         cnt = 0;
         result.clear();
+    }
+
+    @TestOnly
+    int getMaxCount() {
+        return maxCount;
     }
 
     /**

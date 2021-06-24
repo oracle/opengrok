@@ -308,6 +308,8 @@ public final class Configuration {
     private String indexerAuthenticationToken;
     private boolean allowInsecureTokens;
 
+    private int historyChunkCount;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -1373,6 +1375,14 @@ public final class Configuration {
 
     public void setAllowInsecureTokens(boolean value) {
         this.allowInsecureTokens = value;
+    }
+
+    public int getHistoryChunkCount() {
+        return historyChunkCount;
+    }
+
+    public void setHistoryChunkCount(int historyChunkCount) {
+        this.historyChunkCount = historyChunkCount;
     }
 
     /**

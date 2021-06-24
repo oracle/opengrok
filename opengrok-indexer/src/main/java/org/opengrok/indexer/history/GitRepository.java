@@ -100,7 +100,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     private static final long serialVersionUID = -6126297612958508386L;
 
     public static final int GIT_ABBREV_LEN = 8;
-    public static final int MAX_CHANGESETS = 512;
+    public static final int MAX_CHANGESETS = 65536;
 
     public GitRepository() {
         type = "git";

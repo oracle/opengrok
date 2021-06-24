@@ -25,10 +25,12 @@ package org.opengrok.indexer.history;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,6 +75,16 @@ public class BoundaryChangesetsTest {
         GitRepository gitSpyRepository = Mockito.spy(gitRepository);
         Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(maxCount);
         assertThrows(RuntimeException.class, () -> new BoundaryChangesets(gitSpyRepository));
+    }
+
+    @Test
+    void testMaxCountConfiguration() {
+        int maxCount = (RuntimeEnvironment.getInstance().getHistoryChunkCount() + 1) * 2;
+        assertNotEquals(0, maxCount);
+        RuntimeEnvironment.getInstance().setHistoryChunkCount(maxCount);
+        int actualCount = new BoundaryChangesets(gitRepository).getMaxCount();
+        RuntimeEnvironment.getInstance().setHistoryChunkCount(0);
+        assertEquals(maxCount, actualCount);
     }
 
     /**

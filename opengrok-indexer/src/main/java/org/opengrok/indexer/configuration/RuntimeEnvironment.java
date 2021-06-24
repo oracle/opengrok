@@ -1360,6 +1360,14 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::getContextSurround);
     }
 
+    public int getHistoryChunkCount() {
+        return syncReadConfiguration(Configuration::getHistoryChunkCount);
+    }
+
+    public void setHistoryChunkCount(int chunkCount) {
+        syncWriteConfiguration(chunkCount, Configuration::setHistoryChunkCount);
+    }
+
     public Set<String> getDisabledRepositories() {
         return syncReadConfiguration(Configuration::getDisabledRepositories);
     }
