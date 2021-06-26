@@ -257,9 +257,6 @@ public final class Indexer {
                 }
             }
 
-            // Set updated configuration in RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesList, CommandTimeoutType.INDEXER);
-
             // Check version of index(es) versus current Lucene version and exit
             // with return code upon failure.
             if (checkIndex) {
@@ -268,7 +265,7 @@ public final class Indexer {
                     System.exit(1);
                 }
 
-                if (!IndexCheck.check(subFilesList)) {
+                if (!IndexCheck.check(cfg, subFilesList)) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
                             (subFilesList.size() > 0 ?
@@ -279,6 +276,9 @@ public final class Indexer {
 
                 System.exit(0);
             }
+
+            // Set updated configuration in RuntimeEnvironment.
+            env.setConfiguration(cfg, subFilesList, CommandTimeoutType.INDEXER);
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
