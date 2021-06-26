@@ -34,7 +34,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.jetbrains.annotations.NotNull;
+import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -52,8 +53,8 @@ public class IndexCheck {
 
         private static final long serialVersionUID = 5693446916108385595L;
 
-        private int luceneIndexVersion = -1;
-        private int indexVersion = -1;
+        private final int luceneIndexVersion;
+        private final int indexVersion;
 
         public IndexVersionException(String s, int luceneIndexVersion, int indexVersion) {
             super(s);
@@ -75,12 +76,12 @@ public class IndexCheck {
     
     /**
      * Check if version of index(es) matches major Lucene version.
+     * @param configuration configuration based on which to perform the check
      * @param subFilesList list of paths. If non-empty, only projects matching these paths will be checked.
      * @return true on success, false on failure
      */
-    public static boolean check(List<String> subFilesList) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
+    public static boolean check(@NotNull Configuration configuration, List<String> subFilesList) {
+        File indexRoot = new File(configuration.getDataRoot(), IndexDatabase.INDEX_DIR);
         LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
                 indexRoot);
         int ret = 0;
@@ -94,8 +95,8 @@ public class IndexCheck {
                 ret |= checkDirNoExceptions(new File(indexRoot, projectName));
             }
         } else {
-            if (env.isProjectsEnabled()) {
-                for (String projectName : env.getProjects().keySet()) {
+            if (configuration.isProjectsEnabled()) {
+                for (String projectName : configuration.getProjects().keySet()) {
                     LOGGER.log(Level.FINER,
                             "Checking Lucene index version in project {0}",
                             projectName);
@@ -115,7 +116,7 @@ public class IndexCheck {
         try {
             checkDir(dir);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Index check for directory " + dir.toString() + " failed", e);
+            LOGGER.log(Level.WARNING, "Index check for directory " + dir + " failed", e);
             return 1;
         }
 
@@ -141,7 +142,7 @@ public class IndexCheck {
 
         if (segVersion != Version.LATEST.major) {
             throw new IndexVersionException(
-                String.format("Directory %s has index version discrepancy", dir.toString()),
+                String.format("Directory %s has index version discrepancy", dir),
                     Version.LATEST.major, segVersion);
         }
     }
