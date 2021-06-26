@@ -1963,7 +1963,7 @@ function getSuggestionListItem(itemData, config) {
 
     $("<span>", {
         text: itemData.phrase,
-        style: "float: left; padding-left: 5px;"
+        style: "float: left; padding-left: 5px; max-height: 20px;"
     }).appendTo(listItemChild);
 
     let projectInfoText = "";
