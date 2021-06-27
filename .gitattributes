@@ -13,4 +13,4 @@
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
 
-/testdata/svndump/svnlog.dump text eol=lf
+/opengrok-indexer/src/test/resources/history/svnlog.dump text eol=lf

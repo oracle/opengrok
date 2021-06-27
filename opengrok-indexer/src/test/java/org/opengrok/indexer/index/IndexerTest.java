@@ -98,7 +98,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testXrefGeneration() throws Exception {
+    void testXrefGeneration() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -126,7 +126,7 @@ public class IndexerTest {
      * existing projects. Bug #16006.
      */
     @Test
-    public void testRescanProjects() throws Exception {
+    void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
         // some properties that we can verify after the rescan.
         Project p1 = new Project("java", "/java");
@@ -181,7 +181,7 @@ public class IndexerTest {
      * Test of doIndexerExecution method, of class Indexer.
      */
     @Test
-    public void testMain() {
+    void testMain() {
         System.out.println("Generate index by using command line options");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
@@ -229,7 +229,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
+    void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -324,7 +324,7 @@ public class IndexerTest {
      */
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testRemoveFileOnFileChange() throws Exception {
+    void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         TestRepository testrepo = new TestRepository();
@@ -367,7 +367,7 @@ public class IndexerTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testSetRepositories() throws Exception {
+    void testSetRepositories() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         TestRepository testrepo = new TestRepository();
@@ -375,7 +375,7 @@ public class IndexerTest {
         env.setSourceRoot(testrepo.getSourceRoot());
 
         env.setRepositories(testrepo.getSourceRoot());
-        assertEquals(9, env.getRepositories().size());
+        assertEquals(7, env.getRepositories().size());
 
         String[] repoNames = {"mercurial", "git"};
         env.setRepositories(Arrays.stream(repoNames).
@@ -384,7 +384,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testXref() throws IOException {
+    void testXref() throws IOException {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
@@ -403,7 +403,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testBug3430() throws Exception {
+    void testBug3430() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -423,7 +423,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testIncrementalIndexAddRemoveFile() throws Exception {
+    void testIncrementalIndexAddRemoveFile() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -453,7 +453,7 @@ public class IndexerTest {
      */
     @Test
     @EnabledIf("mkfifoInPath")
-    public void testBug11896() throws Exception {
+    void testBug11896() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -485,7 +485,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsSingleProject() throws Exception {
+    void testDefaultProjectsSingleProject() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -503,7 +503,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsNonExistent() throws Exception {
+    void testDefaultProjectsNonExistent() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -528,7 +528,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsAll() throws Exception {
+    void testDefaultProjectsAll() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
