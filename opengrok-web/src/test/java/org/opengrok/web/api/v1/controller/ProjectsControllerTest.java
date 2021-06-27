@@ -203,19 +203,14 @@ class ProjectsControllerTest extends OGKJerseyTest {
         // with single message.
 
         addProject("git");
-        addProject("svn");
 
-        assertEquals(3, env.getProjects().size());
-        assertEquals(4, env.getRepositories().size());
+        assertEquals(2, env.getProjects().size());
+        assertEquals(3, env.getRepositories().size());
         assertTrue(env.getProjects().containsKey("git"));
-        assertTrue(env.getProjects().containsKey("svn"));
 
         assertFalse(HistoryGuru.getInstance().getRepositories().stream().
                 map(RepositoryInfo::getDirectoryName).collect(Collectors.toSet()).
                 contains("git"));
-        assertFalse(HistoryGuru.getInstance().getRepositories().stream().
-                map(RepositoryInfo::getDirectoryName).collect(Collectors.toSet()).
-                contains("svn"));
     }
 
     /**
@@ -253,7 +248,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
      */
     @Test
     void testDelete() throws Exception {
-        String[] projectsToDelete = {"git", "svn"};
+        String[] projectsToDelete = {"git"};
 
         // Add a group matching the project to be added.
         String groupName = "gitgroup";
@@ -272,11 +267,10 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
         addProject("mercurial");
         addProject("git");
-        addProject("svn");
 
-        assertEquals(3, env.getProjects().size());
-        assertEquals(3, env.getRepositories().size());
-        assertEquals(3, env.getProjectRepositoriesMap().size());
+        assertEquals(2, env.getProjects().size());
+        assertEquals(2, env.getRepositories().size());
+        assertEquals(2, env.getProjectRepositoriesMap().size());
 
         // Check the group was populated properly.
         assertEquals(1, group.getRepositories().size());
@@ -289,11 +283,9 @@ class ProjectsControllerTest extends OGKJerseyTest {
         ArrayList<String> subFiles = new ArrayList<>();
         subFiles.add("/git");
         subFiles.add("/mercurial");
-        subFiles.add("/svn");
         ArrayList<String> repos = new ArrayList<>();
         repos.add("/git");
         repos.add("/mercurial");
-        repos.add("/svn");
         // This is necessary so that repositories in HistoryGuru get populated.
         // For per project reindex this is called from setConfiguration() because
         // of the -R option is present.
