@@ -57,9 +57,14 @@ Each OpenGrok release triggers creation of new Docker image.
 
 | Tag      | Note                                                    |
 | -------- |:--------------------------------------------------------|
-| `latest` | tracks the latest version                               |
+| `master` | corresponds to the latest commit in the OpenGrok repo   |
+| `latest` | tracks the latest [released version](https://github.com/oracle/opengrok/releases) |
 | `x.y.z`  | if you want to pin against a specific version           |
 | `x.y`    | stay on micro versions to avoid reindexing from scratch |
+
+If you want to stay on the bleeding edge, use the `opengrok/docker:master` image which is automatically refreshed whenever a commit is made to the OpenGrok source code repository. This allows to track the development. After all, this is what http://demo.opengrok.org/ is running.
+
+For other use cases, stick to the other image tags.
 
 ## How to run
 
