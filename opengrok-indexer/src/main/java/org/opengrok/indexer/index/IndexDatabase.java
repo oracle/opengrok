@@ -495,11 +495,10 @@ public class IndexDatabase {
 
                     IndexDownArgs args = new IndexDownArgs();
                     Statistics elapsed = new Statistics();
-                    if(dir.isEmpty()){
-                        String tempDir="'source root directory'";
+                    if (dir.isEmpty()) {
+                        String tempDir = "'source root directory'";
                         LOGGER.log(Level.INFO, "Starting traversal of directory {0}", tempDir);
-                    }
-                    else{
+                    } else {
                         LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
                     }
                     indexDown(sourceRoot, dir, args);
@@ -510,11 +509,10 @@ public class IndexDatabase {
 
                     args.cur_count = 0;
                     elapsed = new Statistics();
-                    if(dir.isEmpty()){
-                        String tempDir="'source root directory'";
+                    if (dir.isEmpty()) {
+                        String tempDir = "'source root directory'";
                         LOGGER.log(Level.INFO, "Starting indexing of directory {0}", tempDir);
-                    }
-                    else{
+                    } else {
                         LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     }
                     indexParallel(dir, args);
