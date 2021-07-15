@@ -56,7 +56,7 @@ import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-public class SearchAndContextFormatterTest {
+class SearchAndContextFormatterTest {
 
     private static RuntimeEnvironment env;
     private static TestRepository repository;
@@ -93,22 +93,21 @@ public class SearchAndContextFormatterTest {
     }
 
     @Test
-    public void testSearch() throws IOException {
+    void testSearch() throws IOException {
         SearchEngine instance = new SearchEngine();
-        instance.setFreetext("embedded");
-        instance.setFile("main.c");
+        instance.setFreetext("mt19937");
+        instance.setFile("bkexlib.cpp");
         int noHits = instance.search();
         assertTrue(noHits > 0, "noHits should be positive");
         String[] frags = getFirstFragments(instance);
         assertNotNull(frags, "getFirstFragments() should return something");
         assertEquals(1, frags.length, "frags should have one element");
 
-        final String CTX =
-                "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +
-                        "<a class=\"s\" href=\"/source/svn/c/main.c#10\"><span class=\"l\">10</span>    " +
-                        "Multi line comment, with <b>embedded</b> strange characters: &lt; &gt; &amp;,</a><br/>" +
-                        "<a class=\"s\" href=\"/source/svn/c/main.c#11\"><span class=\"l\">11</span>    " +
-                        "email address: testuser@example.com and even an URL:</a><br/>";
+        final String CTX = "<a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#12\"><span class=\"l\">12</span>"
+                + "     std::random_device rd;</a><br/><a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#13\">"
+                + "<span class=\"l\">13</span>     std::<b>mt19937</b> gen(rd());</a><br/><a class=\"s\" "
+                + "href=\"/source/bitkeeper/bkexlib.cpp#14\"><span class=\"l\">14</span>     "
+                + "std::uniform_int_distribution&lt;&gt; dis(0, RAND_MAX);</a><br/>";
         assertLinesEqual("ContextFormatter output", CTX, frags[0]);
         instance.destroy();
     }

@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Iterator;
@@ -60,6 +62,7 @@ import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -68,7 +71,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
-public class FileHistoryCacheTest {
+class FileHistoryCacheTest {
 
     private static final String SVN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -159,7 +162,7 @@ public class FileHistoryCacheTest {
      */
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndGetNotRenamed() throws Exception {
+    void testStoreAndGetNotRenamed() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
         History historyToStore = repo.getHistory(reposRoot);
@@ -185,7 +188,7 @@ public class FileHistoryCacheTest {
      */
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndGetIncrementalTags() throws Exception {
+    void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
         env.setTagsEnabled(true);
 
@@ -260,7 +263,7 @@ public class FileHistoryCacheTest {
     @Test
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
-    public void testStoreAndGet() throws Exception {
+    void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
 
         // The test expects support for renamed files.
@@ -382,7 +385,7 @@ public class FileHistoryCacheTest {
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testRenameFileThenDoIncrementalReindex() throws Exception {
+    void testRenameFileThenDoIncrementalReindex() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         History updatedHistory;
 
@@ -504,7 +507,7 @@ public class FileHistoryCacheTest {
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testRenamedFilePlusChangesBranched() throws Exception {
+    void testRenamedFilePlusChangesBranched() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         History updatedHistory;
 
@@ -620,7 +623,9 @@ public class FileHistoryCacheTest {
      */
     @EnabledForRepository(SUBVERSION)
     @Test
-    public void testMultipleRenamedFiles() throws Exception {
+    void testMultipleRenamedFiles() throws Exception {
+        createSvnRepository();
+
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
         History updatedHistory;
 
@@ -667,6 +672,31 @@ public class FileHistoryCacheTest {
         entriesConstruct.add(e2);
         histConstruct.setHistoryEntries(entriesConstruct);
         assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
+    }
+
+    private void createSvnRepository() throws Exception {
+        var svnLog = FileHistoryCacheTest.class.getResource("/history/svnlog.dump");
+        Path tempDir = Files.createTempDirectory("opengrok");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                IOUtils.removeRecursive(tempDir);
+            } catch (IOException e) {
+                // ignore
+            }
+        }));
+        String repo = tempDir.resolve("svn-repo").toString();
+        var svnCreateRepoProcess = new ProcessBuilder("svnadmin", "create", repo).start();
+        assertEquals(0, svnCreateRepoProcess.waitFor());
+
+        var svnLoadRepoFromDumpProcess = new ProcessBuilder("svnadmin", "load", repo)
+                .redirectInput(Paths.get(svnLog.toURI()).toFile())
+                .start();
+        assertEquals(0, svnLoadRepoFromDumpProcess.waitFor());
+
+        var svnCheckoutProcess = new ProcessBuilder("svn", "checkout", Path.of(repo).toUri().toString(),
+                Path.of(repositories.getSourceRoot()).resolve("subversion").toString())
+                .start();
+        assertEquals(0, svnCheckoutProcess.waitFor());
     }
 
     private void changeFileAndCommit(Git git, File file, String comment) throws Exception {
@@ -748,7 +778,9 @@ public class FileHistoryCacheTest {
      */
     @EnabledForRepository(SUBVERSION)
     @Test
-    public void testRenamedFile() throws Exception {
+    void testRenamedFile() throws Exception {
+        createSvnRepository();
+
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
         History updatedHistory;
 
@@ -835,7 +867,7 @@ public class FileHistoryCacheTest {
      */
     @EnabledForRepository({MERCURIAL, SCCS})
     @Test
-    public void testNoHistoryFetch() throws Exception {
+    void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
         env.setFetchHistoryWhenNotInCache(false);
 
@@ -860,7 +892,7 @@ public class FileHistoryCacheTest {
     @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndTryToGetIgnored() throws Exception {
+    void testStoreAndTryToGetIgnored() throws Exception {
         env.getIgnoredNames().add("f:Make*");
 
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
