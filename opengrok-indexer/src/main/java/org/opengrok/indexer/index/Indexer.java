@@ -81,6 +81,7 @@ import org.opengrok.indexer.logger.LoggerUtil;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.util.HostUtil;
+import org.opengrok.indexer.util.JavaVersionUtil;
 import org.opengrok.indexer.util.OptionParser;
 import org.opengrok.indexer.util.Statistics;
 
@@ -159,6 +160,11 @@ public final class Indexer {
         Executor.registerErrorHandler();
         List<String> subFiles = RuntimeEnvironment.getInstance().getSubFiles();
         ArrayList<String> subFilesList = new ArrayList<>();
+
+        if (!JavaVersionUtil.isSupportedVersion()) {
+            System.err.println("Java version not supported: " + System.getProperty("java.version"));
+            System.exit(1);
+        }
 
         boolean createDict = false;
 

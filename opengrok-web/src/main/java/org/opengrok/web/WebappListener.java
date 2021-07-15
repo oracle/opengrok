@@ -39,6 +39,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.index.IndexCheck;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.JavaVersionUtil;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
@@ -75,7 +76,12 @@ public final class WebappListener
 
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
-        
+
+        if (!JavaVersionUtil.isSupportedVersion()) {
+            LOGGER.log(Level.SEVERE, "Java version not supported: " + System.getProperty("java.version"));
+            throw new RuntimeException("unsupported Java version");
+        }
+
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
             throw new Error("CONFIGURATION parameter missing in the web.xml file");
