@@ -44,6 +44,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class RepositoryWithPerPartesHistoryTest {
     private TestRepository repositories;
@@ -126,5 +127,18 @@ public class RepositoryWithPerPartesHistoryTest {
         assertNotNull(cachedHistory);
         assertEquals(1, cachedHistory.getHistoryEntries().size());
         assertEquals(historyEntries.get(0).getRevision(), cachedHistory.getHistoryEntries().get(0).getRevision());
+    }
+
+    @Test
+    void testPerPartesOff() throws HistoryException {
+        FileHistoryCache cache = new FileHistoryCache();
+        FileHistoryCache spyCache = Mockito.spy(cache);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setHistoryCachePerPartesEnabled(false);
+        assertFalse(env.isHistoryCachePerPartesEnabled());
+        // Use non-null revision for better robustness (in case sinceRevision gets mixed up with tillRevision).
+        gitRepository.createCache(spyCache, "b6413947a59f481ddc0a05e0d181731233557f6e");
+        verify(spyCache, times(1)).store(any(), any(), isNull());
+        env.setHistoryCachePerPartesEnabled(true);
     }
 }

@@ -413,6 +413,13 @@ public abstract class Repository extends RepositoryInfo {
         LOGGER.log(Level.FINE, "Done storing history cache for repository {0}", getDirectoryName());
     }
 
+    /**
+     * Actually store the history in history cache
+     * @param cache history cache object
+     * @param history history to store
+     * @param tillRevision end revision (matters only for renamed files), can be null
+     * @throws HistoryException on error
+     */
     void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

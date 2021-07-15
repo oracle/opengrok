@@ -397,6 +397,7 @@ class FileHistoryCache implements HistoryCache {
      * corresponding source file.
      *
      * @param history history object to process into per-file histories
+     * @param tillRevision end revision
      * @param repository repository object
      */
     @Override

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -73,6 +73,14 @@ interface HistoryCache {
      */
     void store(History history, Repository repository) throws HistoryException;
 
+    /**
+     * Store potentially partial history for a repository.
+     *
+     * @param history The history to store
+     * @param repository The repository whose history to store
+     * @param tillRevision end revision (can be null)
+     * @throws HistoryException if the history cannot be stored
+     */
     void store(History history, Repository repository, String tillRevision) throws HistoryException;
 
     /**
