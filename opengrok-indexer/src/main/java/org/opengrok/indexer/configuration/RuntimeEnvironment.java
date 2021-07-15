@@ -1368,6 +1368,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(chunkCount, Configuration::setHistoryChunkCount);
     }
 
+    public boolean isHistoryCachePerPartesEnabled() {
+        return syncReadConfiguration(Configuration::isHistoryCachePerPartesEnabled);
+    }
+
+    public void setHistoryCachePerPartesEnabled(boolean enabled) {
+        syncWriteConfiguration(enabled, Configuration::setHistoryCachePerPartesEnabled);
+    }
+
     public Set<String> getDisabledRepositories() {
         return syncReadConfiguration(Configuration::getDisabledRepositories);
     }

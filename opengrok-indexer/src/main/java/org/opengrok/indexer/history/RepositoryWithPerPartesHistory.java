@@ -22,6 +22,7 @@
  */
 package org.opengrok.indexer.history;
 
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Statistics;
 
@@ -70,6 +71,13 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
 
     @Override
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+        if (!RuntimeEnvironment.getInstance().isHistoryCachePerPartesEnabled()) {
+            LOGGER.log(Level.INFO, "repository {0} supports per partes history cache creation however " +
+                    "it is disabled in the configuration. Generating history cache as whole.", this);
+            finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+            return;
+        }
+
         // For repositories that supports this, avoid storing complete History in memory
         // (which can be sizeable, at least for the initial indexing, esp. if merge changeset support is enabled),
         // by splitting the work into multiple chunks.

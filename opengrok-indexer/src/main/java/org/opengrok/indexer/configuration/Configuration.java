@@ -309,6 +309,7 @@ public final class Configuration {
     private boolean allowInsecureTokens;
 
     private int historyChunkCount;
+    private boolean historyCachePerPartesEnabled = true;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -1383,6 +1384,14 @@ public final class Configuration {
 
     public void setHistoryChunkCount(int historyChunkCount) {
         this.historyChunkCount = historyChunkCount;
+    }
+
+    public boolean isHistoryCachePerPartesEnabled() {
+        return historyCachePerPartesEnabled;
+    }
+
+    public void setHistoryCachePerPartesEnabled(boolean historyCachePerPartesEnabled) {
+        this.historyCachePerPartesEnabled = historyCachePerPartesEnabled;
     }
 
     /**
