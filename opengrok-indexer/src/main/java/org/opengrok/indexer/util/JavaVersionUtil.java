@@ -32,19 +32,7 @@ public class JavaVersionUtil {
      * @return integer
      */
     private static int getVersion() {
-        String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            // older Java versions (before 9)
-            version = String.valueOf(version.charAt(2));
-        } else {
-            // The version number could be freestanding integer.
-            int dotIndex = version.indexOf(".");
-            if (dotIndex != -1) {
-                version = version.substring(0, dotIndex);
-            }
-        }
-
-        return Integer.parseInt(version);
+        return Runtime.version().feature();
     }
 
     /**
