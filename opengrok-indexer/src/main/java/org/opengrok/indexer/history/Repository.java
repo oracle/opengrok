@@ -414,7 +414,7 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Actually store the history in history cache
+     * Actually store the history in history cache.
      * @param cache history cache object
      * @param history history to store
      * @param tillRevision end revision (matters only for renamed files), can be null
