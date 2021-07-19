@@ -422,7 +422,7 @@ public class JFlexXrefTest {
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a></span>",
                 out.toString());
     }
-    
+
     /**
      * Test that CSharpXref correctly handles verbatim strings that end with backslash.
      */

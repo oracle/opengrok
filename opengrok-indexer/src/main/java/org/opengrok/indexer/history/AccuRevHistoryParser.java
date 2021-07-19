@@ -63,9 +63,9 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
          * When the path given is really just the root to the source
          * workarea, no history is available, create fake.
          */
-        
+
         String rootRelativePath = File.separator + "." + File.separator;
-        
+
         if (relPath.equals(rootRelativePath)) {
 
             List<HistoryEntry> entries = new ArrayList<>();

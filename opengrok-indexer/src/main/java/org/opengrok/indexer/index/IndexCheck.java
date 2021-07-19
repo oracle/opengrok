@@ -73,7 +73,7 @@ public class IndexCheck {
     private IndexCheck() {
         // utility class
     }
-    
+
     /**
      * Check if version of index(es) matches major Lucene version.
      * @param configuration configuration based on which to perform the check

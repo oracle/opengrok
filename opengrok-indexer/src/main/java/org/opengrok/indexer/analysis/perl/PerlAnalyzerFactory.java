@@ -32,8 +32,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class PerlAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Perl";
-    
+    private static final String NAME = "Perl";
+
     private static final String[] SUFFIXES = {
         "PL",
         "PLX",
@@ -50,7 +50,7 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PerlAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

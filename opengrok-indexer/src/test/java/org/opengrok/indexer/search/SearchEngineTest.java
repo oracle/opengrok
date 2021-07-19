@@ -210,14 +210,14 @@ public class SearchEngineTest {
 
         // negative symbol test (comments should be ignored)
         instance = new SearchEngine();
-        instance.setSymbol("Ordinary"); 
+        instance.setSymbol("Ordinary");
         instance.setFile("\"Main.java\"");
         instance.search();
         assertEquals("+path:\"main . java\" +refs:Ordinary",
                      instance.getQuery());
-        assertEquals(0, instance.search());        
+        assertEquals(0, instance.search());
         instance.destroy();
-        
+
         // wildcards and case sensitivity of definition search
         instance = new SearchEngine();
         instance.setDefinition("Mai*"); // definition is case sensitive
@@ -258,10 +258,10 @@ public class SearchEngineTest {
         }
         assertEquals(8, count); // path is now case sensitive ... but only in SearchEngine !
         instance.destroy();
-        
-        //test eol and eof        
+
+        //test eol and eof
         instance = new SearchEngine();
-        instance.setFreetext("makeW"); 
+        instance.setFreetext("makeW");
         assertEquals(1, instance.search());
         instance.destroy();
 
@@ -269,7 +269,7 @@ public class SearchEngineTest {
         instance.setFreetext("WeirdEOL");
         assertEquals(1, instance.search());
         instance.destroy();
-        
+
         //test bcel jar parser
         instance = new SearchEngine();
         instance.setFreetext("InstConstraintVisitor");

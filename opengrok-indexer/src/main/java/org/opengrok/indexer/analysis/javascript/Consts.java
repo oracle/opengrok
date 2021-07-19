@@ -51,7 +51,7 @@ public class Consts {
         kwd.add("Number");
         kwd.add("Object");
         kwd.add("RegExp");
-        kwd.add("String");                
+        kwd.add("String");
         //keywords
         kwd.add("await"); // ECMA-262, 10th edition, June 2019
         kwd.add("break");

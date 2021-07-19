@@ -28,9 +28,9 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Zip";
-    
+
+    private static final String NAME = "Zip";
+
     private static final String[] SUFFIXES = {
         "ZIP"
     };
@@ -57,7 +57,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
             new ZipAnalyzerFactory();
 
     private ZipAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
     }
 
     @Override

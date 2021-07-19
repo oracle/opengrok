@@ -351,7 +351,7 @@ public abstract class Repository extends RepositoryInfo {
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = null;
     }
-    
+
     /**
      * Annotate the specified revision of a file.
      *
@@ -440,7 +440,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file, CommandTimeoutType cmdType);
-    
+
     public final boolean isRepositoryFor(File file) {
         return isRepositoryFor(file, CommandTimeoutType.INDEXER);
     }
@@ -449,7 +449,7 @@ public abstract class Repository extends RepositoryInfo {
      * Determine parent of this repository.
      */
     abstract String determineParent(CommandTimeoutType cmdType) throws IOException;
-    
+
     /**
      * Determine parent of this repository.
      * @return parent
@@ -472,7 +472,7 @@ public abstract class Repository extends RepositoryInfo {
     public final String determineBranch() throws IOException {
         return determineBranch(CommandTimeoutType.INDEXER);
     }
-    
+
     /**
      * Get list of ignored files for this repository.
      * @return list of strings
@@ -500,7 +500,7 @@ public abstract class Repository extends RepositoryInfo {
      * @throws IOException if I/O exception occurred
      */
     abstract String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException;
-    
+
     public final String determineCurrentVersion() throws IOException {
         return determineCurrentVersion(CommandTimeoutType.INDEXER);
     }

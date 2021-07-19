@@ -295,7 +295,7 @@ public class Summarizer {
 
     private SToken[] getTokens(String text) throws IOException {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
-        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter        
+        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<SToken> result = new ArrayList<>();
         try (TokenStream ts = analyzer.tokenStream(QueryBuilder.FULL, text)) {
             CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);

@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author austvik
  */
 public class ClearCaseHistoryParserTest {
-    
+
     private ClearCaseHistoryParser instance;
 
     @BeforeEach
@@ -95,11 +95,11 @@ public class ClearCaseHistoryParserTest {
                 "\n" +
                 "\n" +
                 ".";
-        
+
         History result = instance.parse(output);
         assertNotNull(result);
         assertEquals(4, result.getHistoryEntries().size());
-        
+
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals("/main/3", e1.getRevision());
         assertEquals(author1, e1.getAuthor());
@@ -111,7 +111,7 @@ public class ClearCaseHistoryParserTest {
         assertEquals(author2, e4.getAuthor());
         assertEquals(0, e4.getFiles().size());
     }
-    
+
     /**
      * Test of parse method, of class ClearCaseHistoryParser.
      * @throws Exception exception

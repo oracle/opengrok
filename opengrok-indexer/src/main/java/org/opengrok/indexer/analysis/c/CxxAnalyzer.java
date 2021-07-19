@@ -74,7 +74,7 @@ public class CxxAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new CxxXref(reader));
     }
-    
+
     @Override
     protected boolean supportsScopes() {
         return true;

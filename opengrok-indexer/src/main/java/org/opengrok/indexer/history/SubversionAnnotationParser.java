@@ -44,12 +44,12 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class SubversionAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubversionAnnotationParser.class);
-    
+
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-    
+
     private final String fileName;
 
     /**
@@ -68,7 +68,7 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -81,7 +81,7 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
             IOException err = new IOException("Failed to create SAX parser", ex);
             throw err;
         }
-        
+
         AnnotateHandler handler = new AnnotateHandler(fileName, annotation);
         try (BufferedInputStream in
                 = new BufferedInputStream(input)) {
@@ -91,7 +91,7 @@ public class SubversionAnnotationParser implements Executor.StreamHandler {
                     "An error occurred while parsing the xml output", e);
         }
     }
-    
+
     private static class AnnotateHandler extends DefaultHandler2 {
 
         String rev;

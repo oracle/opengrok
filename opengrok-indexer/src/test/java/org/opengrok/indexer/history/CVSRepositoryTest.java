@@ -205,11 +205,11 @@ public class CVSRepositoryTest {
                 revId3 + "       (" + author3 + " 30-Apr-07)           call_function(i);\n";
 
         String fileName = "something.ext";
-        
+
         CVSAnnotationParser parser = new CVSAnnotationParser(fileName);
         parser.processStream(new ByteArrayInputStream(output.getBytes()));
         Annotation result = parser.getAnnotation();
-        
+
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {

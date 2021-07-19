@@ -136,5 +136,5 @@ public class CtagsTest {
             }
         }
         assertEquals(names.length, count, "function count");
-    }       
+    }
 }

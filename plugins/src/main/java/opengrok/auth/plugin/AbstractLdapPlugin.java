@@ -226,7 +226,7 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
             // old/invalid request (should not happen)
             return;
         }
-        
+
         // The cast to User should not be problem as this object is stored
         // in the request itself (as opposed to in the session).
         User user;

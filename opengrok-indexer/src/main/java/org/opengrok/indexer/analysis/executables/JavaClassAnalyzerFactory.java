@@ -38,8 +38,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Java class";
-    
+    private static final String NAME = "Java class";
+
     private static final String[] SUFFIXES = {
         "CLASS"
     };
@@ -90,7 +90,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         new JavaClassAnalyzerFactory();
 
     private JavaClassAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
     }
 
     /**

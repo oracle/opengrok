@@ -64,7 +64,7 @@ public class RepositoryFactoryTest {
         savedDisabledRepositories = env.getDisabledRepositories();
         savedIsProjectsEnabled = env.isProjectsEnabled();
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
         if (repository != null) {

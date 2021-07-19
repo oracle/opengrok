@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class XMLAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "XML";
-    
+
+    private static final String NAME = "XML";
+
     private static final String[] SUFFIXES = {
         "HTML", "HTM", "XML", "ASPX", "ASCX", "ASAX", "MASTER", "XAML"
     };
@@ -40,7 +40,7 @@ public class XMLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public XMLAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/html", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

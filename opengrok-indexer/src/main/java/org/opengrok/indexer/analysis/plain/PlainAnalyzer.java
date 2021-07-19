@@ -106,7 +106,7 @@ public class PlainAnalyzer extends TextAnalyzer {
     protected Reader getReader(InputStream stream) throws IOException {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
-    
+
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
@@ -122,7 +122,7 @@ public class PlainAnalyzer extends TextAnalyzer {
             if (defs != null && defs.numberOfSymbols() > 0) {
                 tryAddingDefs(doc, defs, src);
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField(QueryBuilder.TAGS, tags));                
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));
             }
         }
         /*
@@ -133,7 +133,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         OGKTextField ref = new OGKTextField(QueryBuilder.REFS, symbolTokenizer);
         symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(ref);
-        
+
         if (scopesEnabled && xrefOut == null) {
             /*
              * Scopes are generated during xref generation. If xrefs are
@@ -150,7 +150,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 args.setDefs(defs);
                 args.setProject(project);
                 Xrefer xref = writeXref(args);
-            
+
                 Scopes scopes = xref.getScopes();
                 if (scopes.size() > 0) {
                     byte[] scopesSerialized = scopes.serialize();

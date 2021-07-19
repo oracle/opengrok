@@ -187,7 +187,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     private void updateSession(HttpServletRequest req, boolean allowed) {
         req.getSession().setAttribute(sessionAllowed, allowed);
     }
-    
+
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
         return ((Boolean) request.getSession().getAttribute(sessionAllowed));

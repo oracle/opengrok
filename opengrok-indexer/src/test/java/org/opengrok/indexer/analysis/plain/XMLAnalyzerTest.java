@@ -53,7 +53,7 @@ public class XMLAnalyzerTest {
         // Ordinary file names should not have .'s replaced
         assertTrue(xref[3].contains("path=README.txt"));
     }
-    
+
     @Test
     public void bug806() throws IOException {
         String xmlText

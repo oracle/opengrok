@@ -74,7 +74,7 @@ public class PascalAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new PascalXref(reader));
     }
-    
+
     @Override
     protected boolean supportsScopes() {
         return true;

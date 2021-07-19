@@ -26,15 +26,15 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class TarAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Tar";
-    
+
+    private static final String NAME = "Tar";
+
     private static final String[] SUFFIXES = {
         "TAR"
     };
 
     public TarAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
     }
 
     @Override

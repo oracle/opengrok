@@ -259,7 +259,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
         if (bln) {
             session = new DummyHttpSession();
         }
-        
+
         return session;
     }
 

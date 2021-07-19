@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class TclAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Tcl";
-    
+
+    private static final String NAME = "Tcl";
+
     private static final String[] SUFFIXES = {
         "TCL",
         "TM",
@@ -41,7 +41,7 @@ public class TclAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public TclAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

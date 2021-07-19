@@ -37,12 +37,12 @@ import org.opengrok.indexer.util.Executor;
  * into a set of tag entries.
  */
 public class BazaarTagParser implements Executor.StreamHandler {
-    
+
     /**
      * Store tag entries created by processStream.
      */
     private final TreeSet<TagEntry> entries = new TreeSet<>();
-    
+
     /**
      * Returns the set of entries that has been created.
      *
@@ -51,7 +51,7 @@ public class BazaarTagParser implements Executor.StreamHandler {
     public TreeSet<TagEntry> getEntries() {
         return entries;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {

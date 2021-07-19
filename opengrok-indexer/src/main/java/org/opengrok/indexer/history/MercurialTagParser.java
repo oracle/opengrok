@@ -38,12 +38,12 @@ import org.opengrok.indexer.util.Executor;
  */
 public class MercurialTagParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MercurialTagParser.class);
-    
+
     /**
      * Store tag entries created by processStream.
      */
     private TreeSet<TagEntry> entries = new TreeSet<>();
-    
+
     /**
      * Returns the set of entries that has been created.
      *
@@ -52,7 +52,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
     public TreeSet<TagEntry> getEntries() {
         return entries;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try {
@@ -75,7 +75,7 @@ public class MercurialTagParser implements Executor.StreamHandler {
                         tag = tag.concat(" ");
                         tag = tag.concat(parts[i]);
                     }
-                    // The implicit 'tip' tag only causes confusion so ignore it. 
+                    // The implicit 'tip' tag only causes confusion so ignore it.
                     if (tag.contentEquals("tip")) {
                         continue;
                     }

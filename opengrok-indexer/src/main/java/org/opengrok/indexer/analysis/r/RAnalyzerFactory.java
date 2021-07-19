@@ -32,7 +32,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class RAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "R";
+    private static final String NAME = "R";
 
     private static final String[] SUFFIXES = {"R", "RDATA", "RDA", "RDS"};
 
@@ -41,7 +41,7 @@ public class RAnalyzerFactory extends FileAnalyzerFactory {
      * ".r", ".rdata", ".rda", and ".rds" with {@link RAnalyzer}.
      */
     public RAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     /**

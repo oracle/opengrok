@@ -33,10 +33,10 @@ public class Consts {
     public static final Set<String> kwd = new HashSet<>();
 
     static {
-        
+
         //TODO
         // it is a keyword for lambdas with 1 param
-        
+
         kwd.add("abstract");
         kwd.add("annotation");
         kwd.add("as");
@@ -74,7 +74,7 @@ public class Consts {
         kwd.add("noinline");
         kwd.add("null");
         kwd.add("nullobject");
-        kwd.add("object");        
+        kwd.add("object");
         kwd.add("open");
         kwd.add("operator");
         kwd.add("out");
@@ -87,7 +87,7 @@ public class Consts {
         kwd.add("return");
         kwd.add("sealed");
         kwd.add("set");
-        kwd.add("super");        
+        kwd.add("super");
         kwd.add("tailrec");
         kwd.add("this");
         kwd.add("throw");

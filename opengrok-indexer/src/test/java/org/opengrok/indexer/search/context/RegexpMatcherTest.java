@@ -39,7 +39,7 @@ public class RegexpMatcherTest {
         RegexpMatcher m = new RegexpMatcher("reg[e]+x", true);
         assertEquals(LineMatcher.NOT_MATCHED, m.match("regx"));
         assertEquals(LineMatcher.MATCHED, m.match("regeex"));
-        
+
         m = new RegexpMatcher("Reg[e]+x", false);
         assertEquals(LineMatcher.NOT_MATCHED, m.match("regex"));
         assertEquals(LineMatcher.MATCHED, m.match("Regex"));

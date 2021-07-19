@@ -103,7 +103,7 @@ public class HistoryContextTest {
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy</b> program"));
 
-        // Construct a query equivalent to hist:"dummy program"        
+        // Construct a query equivalent to hist:"dummy program"
         PhraseQuery.Builder q2 = new PhraseQuery.Builder();
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));

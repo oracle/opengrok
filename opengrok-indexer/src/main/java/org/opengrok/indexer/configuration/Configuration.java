@@ -797,7 +797,7 @@ public final class Configuration {
     public void setHistoryCache(boolean historyCache) {
         this.historyCache = historyCache;
     }
-    
+
     /**
      * How long can a history request take before it's cached? If the time is
      * exceeded, the result is cached. This setting only affects
@@ -917,11 +917,11 @@ public final class Configuration {
     public String getIncludeRoot() {
         return includeRoot != null ? includeRoot : dataRoot;
     }
-    
+
     public void setIncludeRoot(String newRoot) {
         this.includeRoot = newRoot;
     }
-    
+
     public List<RepositoryInfo> getRepositories() {
         return repositories;
     }
@@ -1458,7 +1458,7 @@ public final class Configuration {
         Configuration conf = ((Configuration) ret);
 
         // Removes all non root groups.
-        // This ensures that when the configuration is reloaded then the set 
+        // This ensures that when the configuration is reloaded then the set
         // contains only root groups. Subgroups are discovered again
         // as follows below
         conf.groups.removeIf(g -> g.getParent() != null);

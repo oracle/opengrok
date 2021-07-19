@@ -31,7 +31,7 @@ import java.util.Set;
 public class Consts {
 
     public static final Set<String> kwd = new HashSet<>();
-    
+
     static {
         kwd.add("true");
         kwd.add("false");
@@ -39,30 +39,30 @@ public class Consts {
 
 //TODO below applies ONLY for schema - detect this is a schema and use keywords, not otherwise
     //json as such has no keywords
-        
-/*        
+
+/*
         kwd.add("title");
         kwd.add("description");
         kwd.add("default");
         kwd.add("enum");
         kwd.add("Boolean");
 
-        string 
+        string
         pattern
         format
         date-time email
         hostname ipv4
         ipv6 uri
         integer number
-        multipleOf minimum, maximum, exclusiveMinimum and exclusiveMaximum        
+        multipleOf minimum, maximum, exclusiveMinimum and exclusiveMaximum
         object properties
-        additionalProperties required 
-        minProperties maxProperties 
+        additionalProperties required
+        minProperties maxProperties
         dependencies
-        ...        
+        ...
     array...
     boolean...
-        null...    
+        null...
 */
 
     }

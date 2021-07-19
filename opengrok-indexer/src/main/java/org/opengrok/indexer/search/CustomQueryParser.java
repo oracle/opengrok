@@ -47,7 +47,7 @@ public class CustomQueryParser extends QueryParser {
                 RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         // Convert terms to lower case manually to prevent changing the case
         // if the field is case sensitive.
-        // since lucene 7.0.0 below is in place so every class that 
+        // since lucene 7.0.0 below is in place so every class that
         // extends Analyser must normalize the text by itself
         /*
 ## AnalyzingQueryParser removed (LUCENE-7355)
@@ -62,7 +62,7 @@ This option has been removed as expanded terms are now normalized through
 Analyzer#normalize.
         */
      //   setLowercaseExpandedTerms(false);
-        
+
     }
 
     /**

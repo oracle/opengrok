@@ -40,18 +40,18 @@ public class RepositoryInfoTest {
     public void setUp() {
         RuntimeEnvironment.getInstance().setSourceRoot("/src");
     }
-    
+
     @Test
     public void testEquals() {
         String repoDirectory = "/src/foo";
-        
+
         RepositoryInfo ri1 = new RepositoryInfo();
         ri1.setDirectoryName(new File(repoDirectory));
         ri1.setBranch("branch1");
-        
+
         RepositoryInfo ri2 = new RepositoryInfo();
         assertNotEquals(ri1, ri2);
-        
+
         ri2.setDirectoryName(new File(repoDirectory));
         assertEquals(ri1, ri2);
     }

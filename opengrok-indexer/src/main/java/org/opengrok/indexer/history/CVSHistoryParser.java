@@ -93,7 +93,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 } else {
                     state = ParseState.REVISION;
                     s = in.readLine();
-                }             
+                }
             }
             if (state == ParseState.REVISION && s.startsWith("revision")) {
                 if (entry != null) {

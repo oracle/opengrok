@@ -27,7 +27,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ClojureAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Clojure";
+    private static final String NAME = "Clojure";
 
     private static final String[] SUFFIXES = {
         "CLJ",
@@ -36,7 +36,7 @@ public class ClojureAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ClojureAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

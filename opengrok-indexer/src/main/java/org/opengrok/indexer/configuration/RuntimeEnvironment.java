@@ -734,11 +734,11 @@ public final class RuntimeEnvironment {
     public void setRepositories(List<RepositoryInfo> repositories) {
         syncWriteConfiguration(repositories, Configuration::setRepositories);
     }
-    
+
     public void removeRepositories() {
         syncWriteConfiguration(null, Configuration::setRepositories);
     }
-    
+
     /**
      * Search through the directory for repositories and use the result to replace
      * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.

@@ -53,16 +53,16 @@ public final class HistoryAnalyzer extends Analyzer {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         stopWords = StopFilter.makeStopSet(ENGLISH_STOP_WORDS);
     }
-   
+
     /**
      * Creates components using a new {@link PlainFullTokenizer}, filtered using
      * a default set of English stop-words.
-     * @param fieldName name of field for which to create components     
+     * @param fieldName name of field for which to create components
      * @return components for this analyzer (NB safe to use even if this
      * analyzer were to be garbage-collected)
      */
     @Override
-    protected TokenStreamComponents createComponents(String fieldName) {        
+    protected TokenStreamComponents createComponents(String fieldName) {
         JFlexTokenizer plainfull = new JFlexTokenizer(new PlainFullTokenizer(
                 AbstractAnalyzer.DUMMY_READER));
         //we are counting position increments, this might affect the queries
@@ -70,9 +70,9 @@ public final class HistoryAnalyzer extends Analyzer {
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull,
             stopWords));
     }
-    
+
     @Override
-    protected TokenStream normalize(String fieldName, TokenStream in) {        
+    protected TokenStream normalize(String fieldName, TokenStream in) {
            return new LowerCaseFilter(in);
-        }        
+        }
 }

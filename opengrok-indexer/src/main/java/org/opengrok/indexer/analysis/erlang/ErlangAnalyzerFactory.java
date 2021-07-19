@@ -28,8 +28,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Erlang";
-    
+    private static final String NAME = "Erlang";
+
     private static final String[] SUFFIXES = {
         "ERL", "HRL", "ESCRIPT"
     };
@@ -39,7 +39,7 @@ public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ErlangAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

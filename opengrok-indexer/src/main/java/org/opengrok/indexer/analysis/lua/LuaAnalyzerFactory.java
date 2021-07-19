@@ -31,14 +31,14 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class LuaAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Lua";
+    private static final String NAME = "Lua";
 
     private static final String[] SUFFIXES = {
         "LUA"
     };
 
     public LuaAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

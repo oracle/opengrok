@@ -42,9 +42,9 @@ import org.opengrok.indexer.util.Executor;
  * into an annotation object.
  */
 public class PerforceAnnotationParser implements Executor.StreamHandler {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PerforceAnnotationParser.class);
-    
+
     /**
      * Store annotation created by processStream.
      */
@@ -74,7 +74,7 @@ public class PerforceAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         // Pass null for revision to get all history for the file.
@@ -84,7 +84,7 @@ public class PerforceAnnotationParser implements Executor.StreamHandler {
         for (HistoryEntry entry : revisions) {
             revAuthor.put(entry.getRevision(), entry.getAuthor());
         }
-        
+
         String line;
         int lineno = 0;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {

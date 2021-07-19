@@ -19,9 +19,9 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * Portions Apache software license, see below
- * 
+ *
  */
 package org.opengrok.indexer.search.context;
 

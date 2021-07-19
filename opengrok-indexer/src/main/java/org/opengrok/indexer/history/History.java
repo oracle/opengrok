@@ -44,7 +44,7 @@ public class History implements Serializable {
 
     /** Entries in the log. The first entry is the most recent one. */
     private List<HistoryEntry> entries;
-    /** 
+    /**
      * track renamed files so they can be treated in special way (for some
      * SCMs) during cache creation.
      * These are relative to repository root.

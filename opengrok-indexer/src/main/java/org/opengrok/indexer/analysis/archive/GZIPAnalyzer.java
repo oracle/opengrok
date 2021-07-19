@@ -132,5 +132,5 @@ public class GZIPAnalyzer extends FileAnalyzer {
                         new GZIPInputStream(src.getStream()));
             }
         };
-    }    
+    }
 }

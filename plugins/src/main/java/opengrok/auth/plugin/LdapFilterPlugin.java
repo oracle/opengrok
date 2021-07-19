@@ -178,9 +178,9 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
                 }
             }
         }
-        
+
         filter = filter.replaceAll("\\\\%", "%");
-        
+
         return filter;
     }
 

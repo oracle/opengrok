@@ -49,7 +49,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
  */
 public class PathTokenizer extends Tokenizer {
 
-    // below should be '/' since we try to convert even windows file separators 
+    // below should be '/' since we try to convert even windows file separators
     // to unix ones
     public static final char DEFAULT_DELIMITER = '/';
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);

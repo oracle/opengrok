@@ -101,7 +101,7 @@ public class SubversionRepository extends Repository {
     }
 
     /**
-     * Get {@code Document} corresponding to the parsed XML output from 
+     * Get {@code Document} corresponding to the parsed XML output from
      * {@code svn info} command.
      * @return document with data from {@code info} or null if the {@code svn}
      * command failed

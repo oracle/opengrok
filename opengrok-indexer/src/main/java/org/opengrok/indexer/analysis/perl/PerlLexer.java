@@ -592,7 +592,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
 
     /**
      * Gets a pattern to match the collateral capture for the current quoting
-     * state or null if there is no active quoting state. 
+     * state or null if there is no active quoting state.
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {

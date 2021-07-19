@@ -110,8 +110,8 @@ public class SearchHelperTest {
         sh.desc = null;
         sh.sourceRoot = env.getSourceRootFile();
         return sh;
-    }    
-    
+    }
+
     @Test
     public void testSearchAfterReindex() throws Exception {
         SortedSet<String> projectNames = new TreeSet<>();
@@ -160,7 +160,7 @@ public class SearchHelperTest {
         assertEquals(6, searchHelper.totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
-        
+
         // Search for case insensitive path.
         projectNames.add("java");
         searchHelper = this.getSearchHelperPath("JaVa")

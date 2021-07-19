@@ -28,8 +28,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class PhpAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "PHP";
-    
+    private static final String NAME = "PHP";
+
     private static final String[] SUFFIXES = {
         "PHP",
         "PHP3",
@@ -45,7 +45,7 @@ public class PhpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PhpAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

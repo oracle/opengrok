@@ -26,8 +26,8 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class VBAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Visual Basic";
+
+    private static final String NAME = "Visual Basic";
 
     private static final String[] SUFFIXES = {
         "VB",
@@ -39,7 +39,7 @@ public class VBAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public VBAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

@@ -38,27 +38,27 @@ import org.opengrok.indexer.util.Executor;
  * command into an annotation object.
  */
 public class BazaarAnnotationParser implements Executor.StreamHandler {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BazaarAnnotationParser.class);
-    
+
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-    
+
     /**
      * Pattern used to extract author/revision.
      */
     private static final Pattern BLAME_PATTERN
             = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
-    
+
     /**
      * @param fileName the name of the file being annotated
      */
     public BazaarAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
     }
-    
+
     /**
      * Returns the annotation that has been created.
      *

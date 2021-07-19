@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class BZip2AnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Bzip(2)";
-    
+
+    private static final String NAME = "Bzip(2)";
+
     private static final String[] SUFFIXES = {
         "BZ", "BZ2"
     };
@@ -38,7 +38,7 @@ public class BZip2AnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public BZip2AnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null, name);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME);
     }
 
     @Override

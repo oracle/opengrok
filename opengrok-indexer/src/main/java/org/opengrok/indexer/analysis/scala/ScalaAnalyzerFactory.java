@@ -32,14 +32,14 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ScalaAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Scala";
-    
+    private static final String NAME = "Scala";
+
     private static final String[] SUFFIXES = {
         "SCALA"
     };
 
     public ScalaAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

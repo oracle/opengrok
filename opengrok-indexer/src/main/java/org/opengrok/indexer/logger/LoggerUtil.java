@@ -122,7 +122,7 @@ public class LoggerUtil {
                 newFileHandler.setLevel(fileHandler.getLevel());
                 try {
                     newFileHandler.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException 
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
                         | InvocationTargetException e) {
                     newFileHandler.setFormatter(new FileLogFormatter());
                 }
@@ -175,7 +175,7 @@ public class LoggerUtil {
             String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
             try {
                 fh.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException 
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException
                     | InvocationTargetException e) {
                 fh.setFormatter(new FileLogFormatter());
             }
