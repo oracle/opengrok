@@ -25,8 +25,11 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +41,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -812,14 +816,25 @@ public class GitRepositoryTest {
 
     @Test
     void testSubmodule() throws Exception {
-        String submodulePath = addSubmodule("submodule");
+        String submoduleOriginPath = addSubmodule("submodule");
+        Path submodulePath = Paths.get(repository.getSourceRoot(), "git", "submodule");
 
-        Repository subRepo = RepositoryFactory.
-                getRepository(Paths.get(repository.getSourceRoot(), "git", "submodule").toFile());
+        Repository subRepo = RepositoryFactory.getRepository(submodulePath.toFile());
         assertNotNull(subRepo);
         assertNotNull(subRepo.getParent());
-        assertTrue(subRepo.getParent().contains(submodulePath));
+        assertTrue(subRepo.getParent().contains(submoduleOriginPath));
 
-        // TODO: test relative path too
+        // Test relative path too. JGit always writes absolute path so overwrite the contents directly.
+        File gitFile = Paths.get(submodulePath.toString(), Constants.DOT_GIT).toFile();
+        assertTrue(gitFile.isFile());
+        try (Writer writer = new FileWriter(gitFile)) {
+            writer.write(Constants.GITDIR + ".." + File.separator + Constants.DOT_GIT +
+                    File.separator + Constants.MODULES + File.separator + "submodule");
+        }
+        subRepo = RepositoryFactory.getRepository(submodulePath.toFile());
+        assertNotNull(subRepo);
+        assertNotNull(subRepo.getParent());
+
+        // TODO: cleanup
     }
 }
