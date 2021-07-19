@@ -335,9 +335,7 @@ class FileHistoryCache implements HistoryCache {
      * @param mergeHistory whether to merge the history with existing or
      *                     store the histNew as is
      */
-    private void storeFile(History histNew, File file, Repository repo,
-            boolean mergeHistory) throws HistoryException {
-
+    private void storeFile(History histNew, File file, Repository repo, boolean mergeHistory) throws HistoryException {
         File cacheFile;
         try {
             cacheFile = getCachedFile(file);
@@ -348,9 +346,9 @@ class FileHistoryCache implements HistoryCache {
         History history = histNew;
 
         File dir = cacheFile.getParentFile();
-        if (!dir.isDirectory() && !dir.mkdirs()) {
-            throw new HistoryException(
-                    "Unable to create cache directory '" + dir + "'.");
+        // calling isDirectory twice to prevent a race condition
+        if (!dir.isDirectory() && !dir.mkdirs() && !dir.isDirectory()) {
+            throw new HistoryException("Unable to create cache directory '" + dir + "'.");
         }
 
         if (mergeHistory && cacheFile.exists()) {
