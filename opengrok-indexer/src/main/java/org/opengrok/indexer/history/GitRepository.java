@@ -232,13 +232,12 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return result.success;
     }
 
-    private String getPathRelativeToCanonicalRepositoryRoot(String fullpath)
-            throws IOException {
+    private String getPathRelativeToCanonicalRepositoryRoot(String fullPath) throws IOException {
         String repoPath = getCanonicalDirectoryName() + File.separator;
-        if (fullpath.startsWith(repoPath)) {
-            return fullpath.substring(repoPath.length());
+        if (fullPath.startsWith(repoPath)) {
+            return fullPath.substring(repoPath.length());
         }
-        return fullpath;
+        return fullPath;
     }
 
     /**
