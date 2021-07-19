@@ -685,7 +685,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
      * @return value of the {@code gitdir} property from the file
      */
     private String getGitDirValue(File dotGit) {
-        try (Scanner scanner = new Scanner(dotGit)) {   // Assumes UTF-8.
+        try (Scanner scanner = new Scanner(dotGit, StandardCharsets.UTF_8)) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 if (line.startsWith(Constants.GITDIR)) {
@@ -695,7 +695,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     }
                 }
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to scan the contents of file ''{0}''", dotGit);
             return null;
         }
