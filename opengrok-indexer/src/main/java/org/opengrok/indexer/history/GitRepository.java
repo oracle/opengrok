@@ -708,7 +708,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 parentAbsPath = gitDirValue.substring(0, dotGitIndex - 1);
             } else {
                 File parent = new File(directory, gitDirValue.substring(0, dotGitIndex + Constants.DOT_GIT.length()));
-                parentAbsPath = parent.getAbsolutePath();
+                parentAbsPath = parent.getCanonicalPath();
                 int indexDotGitParent = parentAbsPath.indexOf(File.separator + Constants.DOT_GIT);
                 if (indexDotGitParent == -1) {
                     return null;
