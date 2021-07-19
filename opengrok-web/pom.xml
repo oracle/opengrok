@@ -39,7 +39,6 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <properties>
         <tomcat.server.id>OpenGrok</tomcat.server.id>
-        <tomcat.servlet.context.path>/source</tomcat.servlet.context.path>
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
     </properties>
 
@@ -262,7 +261,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                 <version>2.21.0</version>
                 <configuration>
                     <baseSourceDir>${project.basedir}/src/main/webapp</baseSourceDir>
-                    <baseTargetDir>${project.build.directory}/source</baseTargetDir>
+                    <baseTargetDir>${project.build.directory}/${project.build.finalName}</baseTargetDir>
                 </configuration>
                 <executions>
                     <execution>
