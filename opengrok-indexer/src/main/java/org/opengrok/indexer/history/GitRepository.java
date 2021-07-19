@@ -673,15 +673,11 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 if (line.startsWith(Constants.GITDIR)) {
-                    String[] array = line.split(": ");
-                    if (array.length == 2) {
-                        return array[1];
-                    }
+                    return line.substring(Constants.GITDIR.length());
                 }
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to scan the contents of file ''{0}''", dotGit);
-            return null;
         }
 
         return null;
