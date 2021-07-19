@@ -232,21 +232,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return result.success;
     }
 
-    /**
-     * Create a {@code Reader} that reads an {@code InputStream} using the
-     * correct character encoding.
-     *
-     * @param input a stream with the output from a log or blame command
-     * @return a reader that reads the input
-     */
-    static Reader newLogReader(InputStream input) {
-        // Bug #17731: Git always encodes the log output using UTF-8 (unless
-        // overridden by i18n.logoutputencoding, but let's assume that hasn't
-        // been done for now). Create a reader that uses UTF-8 instead of the
-        // platform's default encoding.
-        return new InputStreamReader(input, StandardCharsets.UTF_8);
-    }
-
     private String getPathRelativeToCanonicalRepositoryRoot(String fullpath)
             throws IOException {
         String repoPath = getCanonicalDirectoryName() + File.separator;
