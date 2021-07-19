@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test include file functionality for web application.
- * 
+ *
  * @author Vladimir Kotal
  */
 public class IncludeFilesTest {

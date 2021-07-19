@@ -74,13 +74,13 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search
         JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
         OGKTextField full = new OGKTextField(QueryBuilder.FULL, symbolTokenizer);
         symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(full);
-                
+
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);

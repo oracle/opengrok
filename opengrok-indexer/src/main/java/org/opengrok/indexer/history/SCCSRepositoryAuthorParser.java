@@ -42,13 +42,13 @@ public class SCCSRepositoryAuthorParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SCCSRepositoryAuthorParser.class);
 
     private final Map<String, String> authors = new HashMap<>();
-    
+
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
      */
     private static final Pattern AUTHOR_PATTERN
             = Pattern.compile("^([\\d.]+)\\s+(\\S+)");
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader in = new BufferedReader(
@@ -70,7 +70,7 @@ public class SCCSRepositoryAuthorParser implements Executor.StreamHandler {
             }
         }
     }
-    
+
     /**
      * @return map of revision to author
      */

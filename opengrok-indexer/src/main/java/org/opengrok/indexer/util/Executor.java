@@ -376,7 +376,7 @@ public class Executor {
         }
 
         @Override
-        public void processStream(InputStream input) throws IOException {            
+        public void processStream(InputStream input) throws IOException {
             BufferedInputStream  in = new BufferedInputStream(input);
 
             byte[] buffer = new byte[8092];
@@ -389,7 +389,7 @@ public class Executor {
             }
         }
     }
-    
+
     public static void registerErrorHandler() {
         UncaughtExceptionHandler dueh =
             Thread.getDefaultUncaughtExceptionHandler();

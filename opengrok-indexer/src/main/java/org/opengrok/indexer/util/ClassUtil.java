@@ -226,7 +226,7 @@ public class ClassUtil {
 
     /**
      * Invokes a getter of a property on an object.
-     * 
+     *
      * @param obj the object
      * @param field string with field name
      * @return string representation of the field value
@@ -252,7 +252,7 @@ public class ClassUtil {
                         String.format("The getter \"%s\" for the name \"%s\" takes a parameter.",
                                 getter.getName(), field));
             }
-            
+
             return getter.invoke(obj);
         } catch (IntrospectionException
                 | IllegalAccessException

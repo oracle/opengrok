@@ -1030,7 +1030,7 @@ public final class Indexer {
                 }
             }
         }
-        
+
         if (!searchPaths.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories in {0}...", searchPaths);
             Statistics stats = new Statistics();

@@ -26,16 +26,16 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class PowershellAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "PowerShell script";
-    
+
+    private static final String NAME = "PowerShell script";
+
     private static final String[] SUFFIXES = {
         "PS1",
         "PSM1"
     };
 
     public PowershellAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

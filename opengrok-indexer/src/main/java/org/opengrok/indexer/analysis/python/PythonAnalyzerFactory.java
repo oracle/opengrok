@@ -30,10 +30,9 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  *
  * @author Lubos Kosco
  */
-
 public class PythonAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Python";
+    private static final String NAME = "Python";
 
     //TODO note that .PM below is kind of wrong, since perl already has this and is registered before python analyzer
     // unfortunately we miss code that would be able to share extensions between analyzers
@@ -49,7 +48,7 @@ public class PythonAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PythonAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

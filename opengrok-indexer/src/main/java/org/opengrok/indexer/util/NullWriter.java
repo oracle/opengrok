@@ -28,7 +28,7 @@ import java.io.Writer;
 /**
  * Implementation of Writer that doesn't produce any ouput. Serves as a dummy
  * class where Writer is needed but the output is not relevant.
- * 
+ *
  * @author tkotal
  */
 public class NullWriter extends Writer  {
@@ -44,5 +44,5 @@ public class NullWriter extends Writer  {
     @Override
     public void close() throws IOException {
     }
-    
+
 }

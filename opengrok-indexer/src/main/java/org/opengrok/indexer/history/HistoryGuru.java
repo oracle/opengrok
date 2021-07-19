@@ -545,7 +545,7 @@ public final class HistoryGuru {
                     new Object[]{type, path});
             return;
         }
-        
+
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 

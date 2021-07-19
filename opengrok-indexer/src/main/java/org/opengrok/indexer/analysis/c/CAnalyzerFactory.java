@@ -27,9 +27,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class CAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "C";
-    
+
+    private static final String NAME = "C";
+
     private static final String[] SUFFIXES = {
         "C",
         "H",
@@ -44,7 +44,7 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

@@ -216,7 +216,7 @@ public class AnalyzerGuru {
      * List of all registered {@code FileAnalyzerFactory} instances.
      */
     private static final List<AnalyzerFactory> factories = new ArrayList<>();
-    
+
     /**
      * Names of all analysis packages.
      */
@@ -768,35 +768,35 @@ public class AnalyzerGuru {
      * @throws InvocationTargetException if the underlying constructor throws an exception
      */
     public static AnalyzerFactory findFactory(String factoryClassName)
-            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, 
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
             InvocationTargetException {
         Class<?> fcn;
         try {
             fcn = Class.forName(factoryClassName);
-            
+
         } catch (ClassNotFoundException e) {
             fcn = getFactoryClass(factoryClassName);
-            
+
             if (fcn == null) {
                 throw new ClassNotFoundException("Unable to locate class " + factoryClassName);
             }
         }
-        
+
         return findFactory(fcn);
     }
 
     /**
      * Get Analyzer factory class using class simple name.
-     * 
+     *
      * @param simpleName which may be either the factory class
      * simple name (eg. CAnalyzerFactory), the analyzer name
      * (eg. CAnalyzer), or the language name (eg. C)
-     * 
+     *
      * @return the analyzer factory class, or null when not found.
      */
     public static Class<?> getFactoryClass(String simpleName) {
         Class<?> factoryClass = null;
-        
+
         // Build analysis package name list first time only
         if (analysisPkgNames.isEmpty()) {
             Package[] p = Package.getPackages();
@@ -807,17 +807,17 @@ public class AnalyzerGuru {
                 }
             }
         }
-        
+
         // This allows user to enter the language or analyzer name
         // (eg. C or CAnalyzer vs. CAnalyzerFactory)
         // Note that this assumes a regular naming scheme of
-        // all language parsers: 
+        // all language parsers:
         //      <language>Analyzer, <language>AnalyzerFactory
-        
+
         if (!simpleName.contains("Analyzer")) {
             simpleName += "Analyzer";
         }
-        
+
         if (!simpleName.contains("Factory")) {
             simpleName += "Factory";
         }
@@ -831,10 +831,10 @@ public class AnalyzerGuru {
                 // Ignore
             }
         }
-        
+
         return factoryClass;
     }
-    
+
     /**
      * Find a {@code FileAnalyzerFactory} which is an instance of the specified
      * class. If one doesn't exist, create one and register it.

@@ -31,15 +31,15 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 
 public class PascalAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Pascal";
-    
+
+    private static final String NAME = "Pascal";
+
     private static final String[] SUFFIXES = {
         "PAS"
     };
 
     public PascalAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

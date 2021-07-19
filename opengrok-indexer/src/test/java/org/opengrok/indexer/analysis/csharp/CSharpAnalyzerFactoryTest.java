@@ -125,8 +125,8 @@ public class CSharpAnalyzerFactoryTest {
             } else if (i >= 19 && i <= 25) {
                 assertEquals("M3", scopes.getScope(i).getName());
                 assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
-//TODO add support for generic classes                
-//            } else if (i >= 28 && i <= 30) { 
+//TODO add support for generic classes
+//            } else if (i >= 28 && i <= 30) {
 //                assertEquals("M4", scopes.getScope(i).name);
 //                assertEquals("MyNamespace.TopClass", scopes.getScope(i).namespace);
             } else if (i >= 34 && i <= 36) {

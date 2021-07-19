@@ -88,7 +88,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
         @Override
         @SuppressWarnings("deprecation")
         public jakarta.servlet.http.HttpSessionContext getSessionContext() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -99,18 +99,18 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
         @Override
         @SuppressWarnings("deprecation")
         public Object getValue(String string) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public Enumeration<String> getAttributeNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         @SuppressWarnings("deprecation")
         public String[] getValueNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -161,7 +161,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
     public void setHeader(String string, String value) {
         headers.put(string, value);
     }
-    
+
     @Override
     public String getHeader(String string) {
         return headers.get(string);

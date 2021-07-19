@@ -31,14 +31,14 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class GolangAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Golang";
+    private static final String NAME = "Golang";
 
     private static final String[] SUFFIXES = {
         "GO"
     };
 
     public GolangAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

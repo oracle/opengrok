@@ -26,16 +26,16 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class KotlinAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Kotlin";
-    
+
+    private static final String NAME = "Kotlin";
+
     private static final String[] SUFFIXES = {
         "KT",
         "KTS",
     };
 
     public KotlinAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

@@ -164,7 +164,7 @@ public class EftarFileReader implements Closeable {
         }
         return null;
     }
-    
+
     public String getChildTag(FNode fn, String name) throws IOException {
         if (fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
             FNode ch = fn.binarySearch(fn.offset + fn.childOffset, fn.numChildren, EftarFile.myHash(name));

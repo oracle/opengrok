@@ -32,7 +32,7 @@ package opengrok.auth.plugin.decoders;
 public class FakeOSSOHeaderDecoder extends OSSOHeaderDecoder {
 
     private static final String PREFIX = "fake-";
-    
+
     public FakeOSSOHeaderDecoder() {
         OSSO_COOKIE_TIMESTAMP_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_COOKIE_TIMESTAMP_HEADER;
         OSSO_TIMEOUT_EXCEEDED_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_TIMEOUT_EXCEEDED_HEADER;

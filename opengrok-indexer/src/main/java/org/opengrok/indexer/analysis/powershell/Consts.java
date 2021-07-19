@@ -66,7 +66,7 @@ public class Consts {
         poshkwd.add("until");
         poshkwd.add("while");
         poshkwd.add("workgroup");
-        
+
         // comparison operators
         poshkwd.add("-eq");
         poshkwd.add("-ne");
@@ -79,7 +79,7 @@ public class Consts {
         poshkwd.add("-replace");
         poshkwd.add("-like");
         poshkwd.add("-notlike");
-        
+
         // logical operators
         poshkwd.add("-and");
         poshkwd.add("-or");
@@ -89,17 +89,17 @@ public class Consts {
         poshkwd.add("-bor");
         poshkwd.add("-bxor");
         poshkwd.add("-bnot");
-        
+
         // type operators
         poshkwd.add("-is");
         poshkwd.add("-isnot");
         poshkwd.add("-as");
-        
+
         // miscellaneous operators
         poshkwd.add("-split");
         poshkwd.add("-join");
         poshkwd.add("-f");
-        
+
         // constants
         poshkwd.add("true");
         poshkwd.add("false");
@@ -110,7 +110,7 @@ public class Consts {
         poshkwd.add("any");
         poshkwd.add("leaf");
         poshkwd.add("container");
-        
+
         // some standard aliases to cmdlets
         poshkwd.add("cat");
         poshkwd.add("cp");
@@ -140,7 +140,7 @@ public class Consts {
         poshkwd.add("type");
         poshkwd.add("where");
         poshkwd.add("write");
-        
+
         // Cmdlets
         poshkwd.add("add-bitsfile");
         poshkwd.add("add-computer");

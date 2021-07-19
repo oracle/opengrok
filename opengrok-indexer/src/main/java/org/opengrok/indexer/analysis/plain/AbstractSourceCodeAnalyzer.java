@@ -33,17 +33,17 @@ import org.opengrok.indexer.analysis.JFlexXref;
 /**
  *
  * @author Lubos Kosco
- * 
+ *
  * This class should abstract all analysers that deal with source code.
  * Source code is specific that it has definitions and references.
  * Source code has custom xref generators, depending on symbols.
  * This class should mark the classes that can provide defs and refs.
  * NOTE: SymbolTokenizer gets set for #1376 in PlainAnalyzer::analyze
  * and not part of this class anymore due to changes in lucene 6 .
- * 
+ *
  * Anything shared just for source code analyzers should be here,
  * also all interfaces for source code analyzer should start here.
- * 
+ *
  * Any child is forced to provide necessary xref and symbol tokenizers,
  * if it fails to do so it will automatically behave like PlainAnalyzer.
  */
@@ -58,7 +58,7 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
             Supplier<JFlexTokenizer> symbolTokenizerFactory) {
         super(factory, symbolTokenizerFactory);
     }
-    
+
     /**
      * Create an xref for the language supported by this analyzer.
      * @param reader the data to produce xref for

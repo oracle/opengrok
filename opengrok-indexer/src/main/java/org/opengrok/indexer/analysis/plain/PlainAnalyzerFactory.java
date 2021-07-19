@@ -34,8 +34,8 @@ import org.opengrok.indexer.util.IOUtils;
 
 public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Plain Text";
-    
+    private static final String NAME = "Plain Text";
+
     private static final Matcher MATCHER = new Matcher() {
             @Override
             public String description() {
@@ -99,7 +99,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

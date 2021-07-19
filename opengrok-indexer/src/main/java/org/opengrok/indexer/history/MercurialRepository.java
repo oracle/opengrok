@@ -346,7 +346,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
          * we can revert to the old behavior.
          */
         // argv.add("-r");
-        // Use reverse() to get the changesets from newest to oldest. 
+        // Use reverse() to get the changesets from newest to oldest.
         // argv.add("reverse(" + rev_to_find + ":)");
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");

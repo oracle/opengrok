@@ -28,12 +28,12 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class TypeScriptAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "TypeScript";
+    private static final String NAME = "TypeScript";
 
     private static final String[] SUFFIXES = {"TS"};
 
     public TypeScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

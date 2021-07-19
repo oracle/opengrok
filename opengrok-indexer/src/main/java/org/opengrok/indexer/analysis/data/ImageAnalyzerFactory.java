@@ -30,15 +30,15 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  * Factory for analyzer that tells that image files can be displayed.
  */
 public class ImageAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Image file";
-    
+
+    private static final String NAME = "Image file";
+
     private static final String[] SUFFIXES = {
         "PNG", "GIF", "JPEG", "JPG", "TIFF", "BMP"
     };
 
     public ImageAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.IMAGE, name);
+        super(null, null, SUFFIXES, null, null, null, AbstractAnalyzer.Genre.IMAGE, NAME);
     }
 
     @Override

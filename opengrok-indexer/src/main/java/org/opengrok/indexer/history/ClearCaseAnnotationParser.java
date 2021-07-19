@@ -33,19 +33,19 @@ import org.opengrok.indexer.util.Executor;
  * command into an annotation object.
  */
 public class ClearCaseAnnotationParser implements Executor.StreamHandler {
-    
+
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-    
+
     /**
      * @param fileName the name of the file being annotated
      */
     public ClearCaseAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
     }
-    
+
     /**
      * Returns the annotation that has been created.
      *
@@ -54,7 +54,7 @@ public class ClearCaseAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         String line;

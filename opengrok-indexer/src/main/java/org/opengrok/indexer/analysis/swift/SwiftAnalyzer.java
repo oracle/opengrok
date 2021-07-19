@@ -73,7 +73,7 @@ public class SwiftAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new SwiftXref(reader));
     }
-    
+
     @Override
     protected boolean supportsScopes() {
         return true;

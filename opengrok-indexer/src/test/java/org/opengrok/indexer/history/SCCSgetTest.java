@@ -64,9 +64,9 @@ public class SCCSgetTest {
                     p.destroy();
                 }
             } catch (Exception e) {
-                
+
             }
-        }        
+        }
         try {
             p = Runtime.getRuntime().exec("sccs --version");
             p.waitFor();

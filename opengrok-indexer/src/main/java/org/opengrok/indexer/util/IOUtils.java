@@ -49,7 +49,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 /**
  * A small utility class to provide common functionality related to
  * IO so that we don't need to duplicate the logic all over the place.
- * 
+ *
  * @author Trond Norbye &lt;trond.norbye@gmail.com&gt;
  */
 public final class IOUtils {
@@ -182,7 +182,7 @@ public final class IOUtils {
      * @param defaultCharset default charset
      * @return reader for the stream without BOM
      * @throws IOException if I/O exception occurred
-     */    
+     */
     public static Reader createBOMStrippedReader(InputStream stream, String defaultCharset) throws IOException {
         InputStream in = stream.markSupported() ?
                 stream : new BufferedInputStream(stream);

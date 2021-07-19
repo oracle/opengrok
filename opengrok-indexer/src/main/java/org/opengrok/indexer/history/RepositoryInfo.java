@@ -324,9 +324,9 @@ public class RepositoryInfo implements Serializable {
         if (!(obj instanceof RepositoryInfo)) {
             return false;
         }
-        
+
         RepositoryInfo ri = (RepositoryInfo) obj;
-        
+
         // Directory paths should be unique.
         if (ri.getDirectoryNameRelative() != null && this.getDirectoryNameRelative() != null) {
             return ri.getDirectoryNameRelative().equals(this.getDirectoryNameRelative());

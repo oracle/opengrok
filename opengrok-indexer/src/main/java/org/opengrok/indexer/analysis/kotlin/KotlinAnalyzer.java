@@ -73,7 +73,7 @@ public class KotlinAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new KotlinXref(reader));
     }
-    
+
     @Override
     protected boolean supportsScopes() {
         return true;

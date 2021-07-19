@@ -73,9 +73,9 @@ public class TroffAnalyzer extends TextAnalyzer {
     protected int getSpecializedVersionNo() {
         return 20180112_00; // Edit comment above too!
     }
-    
+
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search
         JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
         symbolTokenizer.setReader(getReader(src.getStream()));

@@ -107,22 +107,22 @@ public class RuntimeEnvironmentTest {
     public void testIncludeRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNull(instance.getIncludeRootPath());
-        
+
         // set data root
         File f = File.createTempFile("dataroot", null);
         String path = f.getCanonicalPath();
         instance.setDataRoot(path);
-        
+
         // verify they are the same
         assertEquals(instance.getDataRootPath(), instance.getIncludeRootPath());
-        
+
         // set include root
         f = File.createTempFile("includeroot", null);
         path = f.getCanonicalPath();
         instance.setIncludeRoot(path);
         assertEquals(path, instance.getIncludeRootPath());
     }
-    
+
     @Test
     public void testSourceRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();

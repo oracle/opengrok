@@ -441,7 +441,7 @@ public class Context {
             LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
             IOUtils.close(in);
-            
+
             if (out != null) {
                 try {
                     out.flush();

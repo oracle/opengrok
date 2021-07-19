@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  *
  * @author Gustavo Lopes
  */
-public class PhpSymbolTokenizerTest {    
+public class PhpSymbolTokenizerTest {
 
     private final AbstractAnalyzer analyzer;
 
@@ -54,9 +54,9 @@ public class PhpSymbolTokenizerTest {
     }
 
     private String[] getTermsFor(Reader r) {
-        List<String> l = new LinkedList<>();        
+        List<String> l = new LinkedList<>();
         JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
-        ts.setReader(r);        
+        ts.setReader(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
             ts.reset();

@@ -39,7 +39,7 @@ import org.opengrok.indexer.util.Executor;
  */
 public class CVSAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CVSAnnotationParser.class);
-    
+
     /**
      * Pattern used to extract author/revision from {@code cvs annotate}.
      */
@@ -66,7 +66,7 @@ public class CVSAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(input));

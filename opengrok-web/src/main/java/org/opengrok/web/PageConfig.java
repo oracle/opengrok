@@ -173,14 +173,14 @@ public final class PageConfig {
 
     /**
      * Sets current request's attribute.
-     * 
+     *
      * @param attr attribute
      * @param val value
      */
     public void setRequestAttribute(String attr, Object val) {
         this.req.setAttribute(attr, val);
     }
-    
+
     /**
      * Gets current request's attribute.
      * @param attr attribute
@@ -188,16 +188,16 @@ public final class PageConfig {
      */
     public Object getRequestAttribute(String attr) {
         return this.req.getAttribute(attr);
-    }  
-    
+    }
+
     /**
      * Removes an attribute from the current request.
-     * @param string the attribute 
+     * @param string the attribute
      */
     public void removeAttribute(String string) {
         req.removeAttribute(string);
     }
-    
+
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -555,7 +555,7 @@ public final class PageConfig {
         }
         return ret;
     }
-    
+
     /**
      * Get the <b>start</b> index for a search result to return by looking up
      * the {@code start} request parameter.
@@ -847,7 +847,7 @@ public final class PageConfig {
         }
         return requestedProjects;
     }
-    
+
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
@@ -992,7 +992,7 @@ public final class PageConfig {
 
         return projectNames;
     }
-    
+
     public ProjectHelper getProjectHelper() {
         return ProjectHelper.getInstance(this);
     }
@@ -1609,7 +1609,7 @@ public final class PageConfig {
             cfg.eftarReader.close();
         }
     }
-    
+
     /**
      * Checks if current request is allowed to access project.
      * @param t project
@@ -1618,7 +1618,7 @@ public final class PageConfig {
     public boolean isAllowed(Project t) {
         return this.authFramework.isAllowed(this.req, t);
     }
-    
+
     /**
      * Checks if current request is allowed to access group.
      * @param g group
@@ -1628,11 +1628,11 @@ public final class PageConfig {
         return this.authFramework.isAllowed(this.req, g);
     }
 
-    
+
     public SortedSet<AcceptedMessage> getMessages() {
         return env.getMessages();
     }
-    
+
     public SortedSet<AcceptedMessage> getMessages(String tag) {
         return env.getMessages(tag);
     }
@@ -1722,7 +1722,7 @@ public final class PageConfig {
 
         return Util.htmlize(title);
     }
-    
+
     public void checkSourceRootExistence() throws IOException {
         if (getSourceRootPath() == null || getSourceRootPath().isEmpty()) {
             throw new FileNotFoundException("Unable to determine source root path. Missing configuration?");

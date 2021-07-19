@@ -60,7 +60,7 @@ public class HistoryEntry implements Serializable {
         message = new StringBuffer();
         files = new TreeSet<>();
     }
-    
+
     /**
      * Copy constructor.
      * @param that HistoryEntry object

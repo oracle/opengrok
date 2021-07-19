@@ -221,7 +221,7 @@ public class SearchHelper {
      * history context usually created via {@link #prepareSummary()}.
      */
     public HistoryContext historyContext;
-    
+
     /**
      * Default query parse error message prefix.
      */

@@ -114,11 +114,11 @@ public class Configuration implements Serializable {
     public String getSearchBase() {
         return searchBase;
     }
-    
+
     public void setSearchBase(String base) {
         this.searchBase = base;
     }
-    
+
     public String getXMLRepresentationAsString() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         this.encodeObject(bos);

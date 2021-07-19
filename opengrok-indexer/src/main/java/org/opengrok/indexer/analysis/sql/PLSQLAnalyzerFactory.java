@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "PL/SQL";
-    
+
+    private static final String NAME = "PL/SQL";
+
     private static final String[] SUFFIXES = {
         "PLS",
         "PKS", //?
@@ -39,7 +39,7 @@ public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PLSQLAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

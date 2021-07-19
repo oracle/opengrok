@@ -32,7 +32,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class TerraformAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Terraform";
+    private static final String NAME = "Terraform";
 
     private static final String[] SUFFIXES = {"TF", "TFVARS"};
 
@@ -40,7 +40,7 @@ public class TerraformAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link TerraformAnalyzerFactory}.
      */
     public TerraformAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     /**

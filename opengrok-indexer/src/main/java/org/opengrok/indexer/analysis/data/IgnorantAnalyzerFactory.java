@@ -41,7 +41,7 @@ public class IgnorantAnalyzerFactory extends FileAnalyzerFactory {
         "%PDF",
         "Microsoft C/C++ MSF ", // PDB files: https://msdn.microsoft.com/en-us/library/yd4f8bd1(vs.71).aspx
         "!<arch>", // LIB files: https://msdn.microsoft.com/en-us/library/ba1z7822.aspx
-        
+
     };
 
     public IgnorantAnalyzerFactory() {

@@ -107,7 +107,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      */
     private long pluginVersion = 0;
 
-    // HTTP session attribute that holds plugin version 
+    // HTTP session attribute that holds plugin version
     private static final String SESSION_VERSION = "opengrok-authorization-session-version";
 
     /**

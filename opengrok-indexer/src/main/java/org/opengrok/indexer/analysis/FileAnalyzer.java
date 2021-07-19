@@ -185,7 +185,7 @@ public class FileAnalyzer extends AbstractAnalyzer {
                 try (HistoryAnalyzer historyAnalyzer = new HistoryAnalyzer()) {
                     return historyAnalyzer.createComponents(fieldName);
                 }
-            //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
+            //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search
             case QueryBuilder.REFS: {
                 return new TokenStreamComponents(symbolTokenizerFactory.get());
             }

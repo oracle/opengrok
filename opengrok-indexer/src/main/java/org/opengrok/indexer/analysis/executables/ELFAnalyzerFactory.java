@@ -26,15 +26,15 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ELFAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "ELF";
-    
+
+    private static final String NAME = "ELF";
+
     private static final String[] MAGICS = {
         "\177ELF"
     };
 
     public ELFAnalyzerFactory() {
-        super(null, null, null, MAGICS, null, null, AbstractAnalyzer.Genre.XREFABLE, name);
+        super(null, null, null, MAGICS, null, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
     }
 
     @Override

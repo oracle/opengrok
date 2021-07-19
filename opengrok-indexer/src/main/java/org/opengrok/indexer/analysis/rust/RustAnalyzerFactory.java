@@ -34,14 +34,14 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class RustAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Rust";
+    private static final String NAME = "Rust";
 
     private static final String[] SUFFIXES = {
         "RS"
     };
 
     public RustAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

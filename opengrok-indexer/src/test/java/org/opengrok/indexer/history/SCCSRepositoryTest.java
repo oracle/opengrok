@@ -48,22 +48,22 @@ public class SCCSRepositoryTest {
         SCCSRepository instance = new SCCSRepository();
         assertEquals(shouldPass, instance.isRepositoryFor(tdir));
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr1() throws IOException {
         testIsRepositoryFor("Codemgr_wsdata", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr2() throws IOException {
         testIsRepositoryFor("codemgr_wsdata", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr3() throws IOException {
         testIsRepositoryFor("SCCS", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgrNot() throws IOException {
         testIsRepositoryFor("NOT", false);

@@ -33,7 +33,7 @@ import org.opengrok.indexer.util.Executor;
 
 /**
  * Handles handles parsing the output of the {@code mnt annotate} command
- * into an annotation object. 
+ * into an annotation object.
  */
 public class MonotoneAnnotationParser implements Executor.StreamHandler {
     /**
@@ -46,7 +46,7 @@ public class MonotoneAnnotationParser implements Executor.StreamHandler {
      */
     private static final Pattern ANNOTATION_PATTERN
             = Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
-    
+
     /**
      * @param file the file being annotated
      */
@@ -62,7 +62,7 @@ public class MonotoneAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {

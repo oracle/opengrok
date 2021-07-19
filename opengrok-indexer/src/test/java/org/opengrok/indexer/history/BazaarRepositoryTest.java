@@ -35,7 +35,7 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.BAZAAR;
 
 /**
  * Simple Bazaar repository test.
- * 
+ *
  * @author austvik
  */
 @EnabledForRepository(BAZAAR)
@@ -68,13 +68,13 @@ public class BazaarRepositoryTest {
         String output = revId1 + "  " + author1 + " 20050912 | some source code here\n" +
                 revId2 + "  " + author2 + " 20050912 | and here.\n" +
                 revId3 + "           " + author3 + "          20030731 | \n";
-       
+
         String fileName = "something.ext";
-        
+
         BazaarAnnotationParser parser = new BazaarAnnotationParser(fileName);
         parser.processStream(new ByteArrayInputStream(output.getBytes()));
         Annotation result = parser.getAnnotation();
-        
+
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {

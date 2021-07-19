@@ -26,15 +26,15 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class SwiftAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Swift";
-    
+
+    private static final String NAME = "Swift";
+
     private static final String[] SUFFIXES = {
-        "SWIFT",        
+        "SWIFT"
     };
 
     public SwiftAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

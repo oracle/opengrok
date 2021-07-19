@@ -105,7 +105,7 @@ public class PerforceRepository extends Repository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         PerforceAnnotationParser parser = new PerforceAnnotationParser(this, file);
         executor.exec(true, parser);
-        
+
         return parser.getAnnotation();
     }
 

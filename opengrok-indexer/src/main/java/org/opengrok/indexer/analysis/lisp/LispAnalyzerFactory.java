@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class LispAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Lisp";
-    
+
+    private static final String NAME = "Lisp";
+
     private static final String[] SUFFIXES = {
         "LISP",
         "LSP",
@@ -37,7 +37,7 @@ public class LispAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public LispAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

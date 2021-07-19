@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/* 
+/*
  * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
@@ -428,7 +428,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Add query text for the specified field.  
+     * Add query text for the specified field.
      *
      * @param field the field to add query text for
      * @param query the query text to set

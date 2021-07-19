@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Lubos Kosco
  */
 public class PathTokenizerTest {
-        
+
     /**
      * Test of incrementToken method, of class PathTokenizer.
      */

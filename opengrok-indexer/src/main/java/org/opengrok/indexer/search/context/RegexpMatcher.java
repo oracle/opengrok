@@ -39,7 +39,7 @@ class RegexpMatcher extends LineMatcher {
     private final Pattern termRegexp;
 
     RegexpMatcher(String term, boolean caseInsensitive) {
-        super(caseInsensitive); 
+        super(caseInsensitive);
         Pattern regexp;
         try {
             regexp = Pattern.compile(term, caseInsensitive ? Pattern.CASE_INSENSITIVE : 0 );
@@ -54,5 +54,5 @@ class RegexpMatcher extends LineMatcher {
     public int match(String line) {
         return (termRegexp != null && termRegexp.matcher(line).matches()) ? MATCHED : NOT_MATCHED;
     }
-    
+
 }

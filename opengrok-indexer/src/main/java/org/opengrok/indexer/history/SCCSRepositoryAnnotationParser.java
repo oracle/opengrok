@@ -37,27 +37,27 @@ import org.opengrok.indexer.util.Executor;
 
 /**
  * handles parsing into Annotation object.
- */ 
+ */
 public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SCCSRepositoryAnnotationParser.class);
-    
+
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-    
+
     private final Map<String, String> authors;
 
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
      */
     private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^([\\d.]+)\\s+");
-    
+
     SCCSRepositoryAnnotationParser(File file, Map<String, String> authors) {
         this.annotation = new Annotation(file.getName());
         this.authors = authors;
     }
-    
+
     /**
      * Returns the annotation that has been created.
      *
@@ -66,7 +66,7 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader in = new BufferedReader(

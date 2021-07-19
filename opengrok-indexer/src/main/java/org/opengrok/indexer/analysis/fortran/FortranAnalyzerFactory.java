@@ -28,7 +28,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class FortranAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Fortran";
+    private static final String NAME = "Fortran";
 
     /**
      * Includes Fortran free-form extension F90 and its successors, per
@@ -42,7 +42,7 @@ public class FortranAnalyzerFactory extends FileAnalyzerFactory {
      * ¹https://en.wikipedia.org/wiki/Fortran, Wikipedia, Creative Commons
      * Attribution-ShareAlike 3.0,
      * https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License
-     */    
+     */
     private static final String[] SUFFIXES = {
         "F",
         "F90",
@@ -50,9 +50,9 @@ public class FortranAnalyzerFactory extends FileAnalyzerFactory {
         "F03",
         "F08",
         "F15"};
-     
+
     public FortranAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override
