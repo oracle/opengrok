@@ -24,7 +24,10 @@
  */
 package org.opengrok.indexer.history;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +41,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -72,6 +76,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.submodule.SubmoduleWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -423,6 +428,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
             File f = new File(file, ".git");
+            // No check for directory or file as submodules contain '.git' file.
             return f.exists();
         }
         return false;
@@ -444,6 +450,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     @Override
     public boolean isWorking() {
+        // TODO: check isBare() in JGit ?
         return true;
     }
 
@@ -675,8 +682,75 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return true;
     }
 
+    /**
+     * @param dotGit {@code .git} file
+     * @return value of the {@code gitdir} property from the file
+     */
+    private String getGitDirValue(File dotGit) {
+        try (Scanner scanner = new Scanner(dotGit)) {   // Assumes UTF-8.
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.startsWith(Constants.GITDIR)) {
+                    String[] array = line.split(": ");
+                    if (array.length == 2) {
+                        return array[1];
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.WARNING, "failed to scan the contents of file ''{0}''", dotGit);
+            return null;
+        }
+
+        return null;
+    }
+
     private org.eclipse.jgit.lib.Repository getJGitRepository(String directory) throws IOException {
-        return FileRepositoryBuilder.create(Paths.get(directory, ".git").toFile());
+        File dotGit = Paths.get(directory, Constants.DOT_GIT).toFile();
+        if (dotGit.isDirectory()) {
+            return FileRepositoryBuilder.create(dotGit);
+        } else if (dotGit.isFile()) {
+            // Assume this is a sub-module.
+            String gitDirValue;
+            if ((gitDirValue = getGitDirValue(dotGit)) == null) {
+                return null;
+            }
+
+            int dotGitIndex = gitDirValue.indexOf(Constants.DOT_GIT);
+            if (dotGitIndex == -1) {
+                return null;
+            }
+
+            String parentAbsPath;
+            if (Paths.get(gitDirValue).isAbsolute()) {
+                parentAbsPath = gitDirValue.substring(0, dotGitIndex - 1);
+            } else {
+                File parent = new File(directory, gitDirValue.substring(0, dotGitIndex + Constants.DOT_GIT.length()));
+                parentAbsPath = parent.getAbsolutePath();
+                int indexDotGitParent = parentAbsPath.indexOf(File.separator + Constants.DOT_GIT);
+                if (indexDotGitParent == -1) {
+                    return null;
+                }
+
+                parentAbsPath = parentAbsPath.substring(0, indexDotGitParent);
+                if (!directory.startsWith(parentAbsPath)) {
+                    return null;
+                }
+            }
+
+            // Assumes directory is canonical path too.
+            String directoryRelative = directory.substring(parentAbsPath.length() + 1);
+
+            Repository parentRepository = FileRepositoryBuilder.
+                    create(Paths.get(parentAbsPath, Constants.DOT_GIT).toFile());
+            if (parentRepository == null) {
+                return null;
+            }
+
+            return SubmoduleWalk.getSubmoduleRepository(parentRepository, directoryRelative);
+        }
+
+        return null;
     }
 
     private void rebuildTagList(File directory) {
