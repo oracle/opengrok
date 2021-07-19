@@ -42,6 +42,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.URIish;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -59,6 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -787,5 +789,38 @@ public class GitRepositoryTest {
         } catch (IOException e) {
             // ignore
         }
+    }
+
+    private String addSubmodule(String submoduleName) throws Exception {
+        // Create new Git repository first.
+        File newRepoFile = new File(repository.getSourceRoot(), submoduleName);
+        Git newRepo = Git.init().setDirectory(newRepoFile).call();
+        assertNotNull(newRepo);
+
+        // Add this repository as a submodule to the existing Git repository.
+        org.eclipse.jgit.lib.Repository mainRepo = new FileRepositoryBuilder().
+                setGitDir(Paths.get(repository.getSourceRoot(), "git", ".git").toFile())
+                .build();
+        try (Git git = new Git(mainRepo)) {
+            org.eclipse.jgit.lib.Repository subRepoInit = git.submoduleAdd().
+                    setURI("file:///" + newRepoFile.toString()).
+                    setPath(submoduleName).
+                    call();
+        }
+
+        return newRepoFile.toString();
+    }
+
+    @Test
+    void testSubmodule() throws Exception {
+        String submodulePath = addSubmodule("submodule");
+
+        Repository subRepo = RepositoryFactory.
+                getRepository(Paths.get(repository.getSourceRoot(), "git", "submodule").toFile());
+        assertNotNull(subRepo);
+        assertNotNull(subRepo.getParent());
+        assertTrue(subRepo.getParent().contains(submodulePath));
+
+        // TODO: test relative path too
     }
 }
