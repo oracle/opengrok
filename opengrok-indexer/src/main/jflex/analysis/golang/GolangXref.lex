@@ -171,6 +171,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Gg][Oo] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         chkLOC();
+        onEmailAddressMatched(yytext(), yychar);
     }
 }
 

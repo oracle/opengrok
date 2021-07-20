@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link GolangXref} class.
  */
-public class GolangXrefTest extends XrefTestBase {
+class GolangXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/sample.go",
                 "analysis/golang/sample_xref.html",
@@ -43,9 +43,16 @@ public class GolangXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/truncated.go",
                 "analysis/golang/truncated_xref.html", null, 1);
+    }
+
+    @Test
+    void shouldContainEmail() throws IOException {
+        writeAndCompare(new GolangAnalyzerFactory(),
+                "analysis/golang/email.go",
+                "analysis/golang/email_xref.html", null, 3);
     }
 }
