@@ -593,19 +593,23 @@ def check_commands(commands):
 
     for name, value in commands.items():
         if type(value) is not str:
-            logger.error("value of {} is not string".format(name))
+            logger.error("value of '{}' under '{}' is not string".
+                         format(name, COMMANDS_PROPERTY))
             return False
 
         if name not in REPO_TYPES:
-            logger.error("unknown repository type: {}".format(name))
+            logger.error("unknown repository type: {} under '{}'".
+                         format(name, COMMANDS_PROPERTY))
             return False
 
         if not os.path.exists(value):
-            logger.error("path for {} does not exist: {}".format(name, value))
+            logger.error("path for '{}' under '{}' does not exist: {}".
+                         format(name, COMMANDS_PROPERTY, value))
             return False
 
         if not os.path.isfile(value):
-            logger.error("path for {} is not a file: {}".format(name, value))
+            logger.error("path for '{}' under '{}' is not a file: {}".
+                         format(name, COMMANDS_PROPERTY, value))
             return False
 
     return True
