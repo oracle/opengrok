@@ -47,6 +47,7 @@ from opengrok_tools.utils.opengrok import list_projects, \
     add_project, delete_project, get_configuration
 from opengrok_tools.utils.readconfig import read_config
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
+from opengrok_tools.utils.mirror import check_configuration
 
 
 fs_root = os.path.abspath('.').split(os.path.sep)[0] + os.path.sep
@@ -69,6 +70,8 @@ OPENGROK_CONFIG_FILE = os.path.join(OPENGROK_CONFIG_DIR,
                                     "configuration.xml")
 OPENGROK_WEBAPPS_DIR = os.path.join(tomcat_root, "webapps")
 OPENGROK_JAR = os.path.join(OPENGROK_LIB_DIR, 'opengrok.jar')
+
+NOMIRROR_ENV_NAME = 'NOMIRROR'
 
 expected_token = None
 
@@ -485,8 +488,8 @@ def main():
     if extra_indexer_options:
         logger.info("extra indexer options: {}".format(extra_indexer_options))
         env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
-    if os.environ.get('NOMIRROR'):
-        env['OPENGROK_NO_MIRROR'] = os.environ.get('NOMIRROR')
+    if os.environ.get(NOMIRROR_ENV_NAME):
+        env['OPENGROK_NO_MIRROR'] = os.environ.get(NOMIRROR_ENV_NAME)
     logger.debug('Extra environment: {}'.format(env))
 
     use_projects = True
@@ -531,15 +534,25 @@ def main():
             if out_file:
                 os.remove(out_file)
 
+    sync_enabled = True
     if use_projects:
         num_workers = get_num_from_env(logger, 'WORKERS',
                                        multiprocessing.cpu_count())
         logger.info('Number of sync workers: {}'.format(num_workers))
 
-        mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
-        if not os.path.exists(mirror_config):
-            with open(mirror_config, 'w') as fp:
-                fp.write("# Empty config file for opengrok-mirror\n")
+        if not os.environ.get(NOMIRROR_ENV_NAME):
+            mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
+            if not os.path.exists(mirror_config):
+                with open(mirror_config, 'w') as fp:
+                    fp.write("# Empty config file for opengrok-mirror\n")
+            else:
+                conf = read_config(logger, mirror_config)
+                logger.info("Checking mirror configuration in '{}'".
+                            format(mirror_config))
+                if not check_configuration(conf):
+                    logger.error("Mirror configuration in '{}' is invalid, "
+                                 "disabling sync".format(mirror_config))
+                    sync_enabled = False
 
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,
@@ -550,14 +563,16 @@ def main():
         syncer_args = (logger, uri, OPENGROK_CONFIG_FILE,
                        extra_indexer_options)
 
-    logger.debug("Starting sync thread")
-    sync_thread = threading.Thread(target=worker_function, name="Sync thread",
-                                   args=syncer_args, daemon=True)
-    sync_thread.start()
+    if sync_enabled:
+        logger.debug("Starting sync thread")
+        sync_thread = threading.Thread(target=worker_function,
+                                       name="Sync thread",
+                                       args=syncer_args, daemon=True)
+        sync_thread.start()
 
-    start_rest_thread(logger)
-    if sync_period > 0:
-        start_timeout_thread(logger, sync_period)
+        start_rest_thread(logger)
+        if sync_period > 0:
+            start_timeout_thread(logger, sync_period)
 
     # Start Tomcat last. It will be the foreground process.
     logger.info("Starting Tomcat")

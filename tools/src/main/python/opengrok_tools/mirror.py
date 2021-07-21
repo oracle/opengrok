@@ -90,6 +90,8 @@ def main():
                         help='mirror all indexed projects', default=False)
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
+    parser.add_argument('--check_config', action='store_true',
+                        help='check configuration and exit')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='uri of the webapp with context path')
     parser.add_argument('-b', '--batch', action='store_true',
@@ -116,7 +118,21 @@ def main():
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
-    headers = get_headers(args.header)
+    if args.config:
+        config = read_config(logger, args.config)
+        if config is None:
+            return fatal("Cannot read config file from {}".
+                         format(args.config), False)
+    else:
+        config = {}
+
+    if not check_configuration(config):
+        logger.error("Configuration check failed, exiting")
+        return 1
+
+    if args.check_config:
+        logger.debug("Configuration check passed, exiting")
+        return 0
 
     nomirror = os.environ.get("OPENGROK_NO_MIRROR")
     if nomirror and len(nomirror) > 0:
@@ -130,21 +146,12 @@ def main():
     if not args.all and len(args.project) == 0:
         return fatal("Need at least one project or --all", False)
 
-    if args.config:
-        config = read_config(logger, args.config)
-        if config is None:
-            return fatal("Cannot read config file from {}".
-                         format(args.config), False)
-    else:
-        config = {}
-
     uri = args.uri
     if not is_web_uri(uri):
         return fatal("Not a URI: {}".format(uri), False)
     logger.debug("web application URI = {}".format(uri))
 
-    if not check_configuration(config):
-        return 1
+    headers = get_headers(args.header)
 
     # Save the source root to avoid querying the web application.
     source_root = get_config_value(logger, 'sourceRoot', uri,
