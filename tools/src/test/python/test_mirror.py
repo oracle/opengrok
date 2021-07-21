@@ -47,7 +47,7 @@ from opengrok_tools.utils.mirror import check_project_configuration, \
     PROJECTS_PROPERTY, DISABLED_CMD_PROPERTY, DISABLED_PROPERTY, \
     CMD_TIMEOUT_PROPERTY, HOOK_TIMEOUT_PROPERTY, DISABLED_REASON_PROPERTY, \
     INCOMING_PROPERTY, IGNORE_ERR_PROPERTY, HOOK_PRE_PROPERTY, \
-    HOOKDIR_PROPERTY, HOOK_POST_PROPERTY
+    HOOKDIR_PROPERTY, HOOK_POST_PROPERTY, COMMANDS_PROPERTY
 from opengrok_tools.utils.patterns import COMMAND_PROPERTY, PROJECT_SUBST
 
 
@@ -95,6 +95,41 @@ def test_invalid_project_config_hooknames():
     with tempfile.TemporaryDirectory() as tmpdir:
         config = {"foo": {HOOKS_PROPERTY: {"blah": "value"}}}
         assert not check_project_configuration(config, hookdir=tmpdir)
+
+
+def test_invalid_configuration_commands_dict():
+    """
+    The value of the commands property has to be a dictionary.
+    """
+    config = {COMMANDS_PROPERTY: "foo"}
+    assert not check_configuration(config)
+
+
+def test_invalid_configuration_commands_scm():
+    """
+    The names in the commands section should be match recognized SCMs.
+    """
+    config = {COMMANDS_PROPERTY: {"foo": "bar"}}
+    assert not check_configuration(config)
+
+
+def test_invalid_configuration_commands_value():
+    """
+    The values in the command section should be strings.
+    """
+    config = {COMMANDS_PROPERTY: {"git": {"foo": "bar"}}}
+    assert not check_configuration(config)
+
+
+def test_invalid_configuration_commands_exists():
+    config = {COMMANDS_PROPERTY: {"git": "/usr/nonexistent/bin/git"}}
+    assert not check_configuration(config)
+
+
+@posix_only
+def test_configuration_commands():
+    config = {COMMANDS_PROPERTY: {"git": "/usr/bin/git"}}
+    assert check_configuration(config)
 
 
 @posix_only
