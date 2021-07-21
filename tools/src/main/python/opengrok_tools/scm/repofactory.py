@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # Portions Copyright 2020 Robert Williams
 
@@ -32,7 +32,10 @@ from .repo import RepoRepository
 from .svn import SubversionRepository
 from .teamware import TeamwareRepository
 
-logger = logging.getLogger(__name__)
+
+# Note: these have to correspond with get_repository().
+REPO_TYPES = ["mercurial", "hg", "teamware", "sccs", "cvs",
+              "svn", "subversion", "git", "perforce", "repo"]
 
 
 def get_repository(path, repo_type, project,
@@ -48,6 +51,8 @@ def get_repository(path, repo_type, project,
     :return: a Repository derived object according to the type specified
     or None if given repository type cannot be found.
     """
+
+    logger = logging.getLogger(__name__)
 
     repo_lower = repo_type.lower()
 

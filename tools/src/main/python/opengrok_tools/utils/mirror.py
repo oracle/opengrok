@@ -42,7 +42,7 @@ from .hook import run_hook
 from .command import Command
 from .restful import call_rest_api, do_api_call
 
-from ..scm.repofactory import get_repository
+from ..scm.repofactory import get_repository, REPO_TYPES
 from ..scm.repository import RepositoryException
 
 
@@ -574,6 +574,43 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     return True
 
 
+def check_commands(commands):
+    """
+    Validate the commands section of the configuration that allows
+    to override files used for SCM synchronization and incoming check.
+    This should be simple dictionary of string values.
+    :return: True if valid, False otherwise
+    """
+
+    logger = logging.getLogger(__name__)
+
+    if commands is None:
+        return True
+
+    if type(commands) is not dict:
+        logger.error("commands sections is not a dictionary")
+        return False
+
+    for name, value in commands.items():
+        if type(value) is not str:
+            logger.error("value of {} is not string".format(name))
+            return False
+
+        if name not in REPO_TYPES:
+            logger.error("unknown repository type: {}".format(name))
+            return False
+
+        if not os.path.exists(value):
+            logger.error("path for {} does not exist: {}".format(name, value))
+            return False
+
+        if not os.path.isfile(value):
+            logger.error("path for {} is not a file: {}".format(name, value))
+            return False
+
+    return True
+
+
 def check_configuration(config):
     """
     Validate configuration
@@ -603,6 +640,9 @@ def check_configuration(config):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger.debug("Disabled command: {}".format(disabled_command))
+
+    if not check_commands(config.get(COMMANDS_PROPERTY)):
+        return False
 
     if not check_project_configuration(config.get(PROJECTS_PROPERTY),
                                        config.get(HOOKDIR_PROPERTY),
