@@ -802,7 +802,7 @@ public class GitRepositoryTest {
 
         // Add this repository as a submodule to the existing Git repository.
         org.eclipse.jgit.lib.Repository mainRepo = new FileRepositoryBuilder().
-                setGitDir(Paths.get(repository.getSourceRoot(), "git", ".git").toFile())
+                setGitDir(Paths.get(repository.getSourceRoot(), "git", Constants.DOT_GIT).toFile())
                 .build();
         try (Git git = new Git(mainRepo)) {
             git.submoduleAdd().
