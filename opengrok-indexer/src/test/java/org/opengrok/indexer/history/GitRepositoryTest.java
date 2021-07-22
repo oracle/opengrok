@@ -835,6 +835,6 @@ public class GitRepositoryTest {
         assertNotNull(subRepo);
         assertNotNull(subRepo.getParent());
 
-        // TODO: cleanup
+        removeRecursive(submodulePath.toFile());
     }
 }
