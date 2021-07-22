@@ -690,7 +690,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             throw new IOException("cannot get gitDir value from " + dotGitFile);
         }
 
-        // If the gitDir value is relative path, make it absolute. This is necessary for the
+        // If the gitDir value is relative path, make it absolute.
+        // This is necessary for the JGit Repository construction.
         File gitDirFile = new File(gitDirValue);
         if (!gitDirFile.isAbsolute()) {
             gitDirFile = new File(directory, gitDirValue);
