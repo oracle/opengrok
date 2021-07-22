@@ -183,25 +183,25 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     @Override
     boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
-        String fullpath;
+        String fullPath;
         try {
-            fullpath = new File(parent, basename).getCanonicalPath();
+            fullPath = new File(parent, basename).getCanonicalPath();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e, () -> String.format(
                     "Failed to get canonical path: %s/%s", parent, basename));
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(out, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(out, fullPath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
              * renamed so we need to find its original name in that revision
              * and retry with the original name.
              */
-            String origpath;
+            String origPath;
             try {
-                origpath = findOriginalName(fullpath, rev);
+                origPath = findOriginalName(fullPath, rev);
             } catch (IOException exp) {
                 LOGGER.log(Level.SEVERE, exp, () -> String.format(
                         "Failed to get original revision: %s/%s (revision %s)",
@@ -209,16 +209,16 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 return false;
             }
 
-            if (origpath != null) {
+            if (origPath != null) {
                 String fullRenamedPath;
                 try {
-                    fullRenamedPath = Paths.get(getCanonicalDirectoryName(), origpath).toString();
+                    fullRenamedPath = Paths.get(getCanonicalDirectoryName(), origPath).toString();
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e, () -> String.format(
-                            "Failed to get canonical path: .../%s", origpath));
+                            "Failed to get canonical path: .../%s", origPath));
                     return false;
                 }
-                if (!fullRenamedPath.equals(fullpath)) {
+                if (!fullRenamedPath.equals(fullPath)) {
                     result = getHistoryRev(out, fullRenamedPath, rev);
                 }
             }
