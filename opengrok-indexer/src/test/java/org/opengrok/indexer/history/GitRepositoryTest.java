@@ -805,8 +805,8 @@ public class GitRepositoryTest {
                 setGitDir(Paths.get(repository.getSourceRoot(), "git", ".git").toFile())
                 .build();
         try (Git git = new Git(mainRepo)) {
-            org.eclipse.jgit.lib.Repository subRepoInit = git.submoduleAdd().
-                    setURI("file:///" + newRepoFile.toString()).
+            git.submoduleAdd().
+                    setURI("file:///" + newRepoFile).
                     setPath(submoduleName).
                     call();
         }
