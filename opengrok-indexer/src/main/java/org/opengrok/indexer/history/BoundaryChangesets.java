@@ -58,7 +58,7 @@ public class BoundaryChangesets {
         }
         if (maxCount <= 1) {
             throw new RuntimeException(String.format("per partes count for repository ''%s'' " +
-                    "must be stricly greater than 1", repository.getDirectoryName()));
+                    "must be strictly greater than 1", repository.getDirectoryName()));
         }
         LOGGER.log(Level.FINER, "using history cache chunks with {0} entries for repository {1}",
                 new Object[]{this.maxCount, repository});
