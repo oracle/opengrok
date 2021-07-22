@@ -797,7 +797,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     String determineParent(CommandTimeoutType cmdType) throws IOException {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             if (repository.getConfig() != null) {
-                return repository.getConfig().getString("remote", "origin", "url");
+                return repository.getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
             } else {
                 return null;
             }
