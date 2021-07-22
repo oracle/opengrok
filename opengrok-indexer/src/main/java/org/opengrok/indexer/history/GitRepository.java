@@ -680,49 +680,24 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     private org.eclipse.jgit.lib.Repository getJGitRepository(String directory) throws IOException {
-        File dotGit = Paths.get(directory, Constants.DOT_GIT).toFile();
-        if (dotGit.isDirectory()) {
-            return FileRepositoryBuilder.create(dotGit);
+        File dotGitFile = Paths.get(directory, Constants.DOT_GIT).toFile();
+        if (dotGitFile.isDirectory()) {
+            return FileRepositoryBuilder.create(dotGitFile);
         }
 
-        // Assume this is a sub-module so dotGit is a file.
+        // Assume this is a sub-module so dotGitFile is a file.
         String gitDirValue;
-        if ((gitDirValue = getGitDirValue(dotGit)) == null) {
-            throw new IOException("cannot get gitDir value from " + dotGit);
+        if ((gitDirValue = getGitDirValue(dotGitFile)) == null) {
+            throw new IOException("cannot get gitDir value from " + dotGitFile);
         }
 
-        int dotGitIndex = gitDirValue.indexOf(Constants.DOT_GIT);
-        if (dotGitIndex == -1) {
-            throw new IOException("no .git in " + gitDirValue);
+        // If the gitDir value is relative path, make it absolute. This is necessary for the
+        File gitDirFile = new File(gitDirValue);
+        if (!gitDirFile.isAbsolute()) {
+            gitDirFile = new File(directory, gitDirValue);
         }
 
-        String parentAbsPath;
-        if (Paths.get(gitDirValue).isAbsolute()) {
-            parentAbsPath = gitDirValue.substring(0, dotGitIndex - 1);
-        } else {
-            File parent = new File(directory, gitDirValue.substring(0, dotGitIndex + Constants.DOT_GIT.length()));
-            parentAbsPath = parent.getCanonicalPath();
-            int indexDotGitParent = parentAbsPath.indexOf(File.separator + Constants.DOT_GIT);
-            if (indexDotGitParent == -1) {
-                throw new IOException("not .git in " + parentAbsPath);
-            }
-
-            parentAbsPath = parentAbsPath.substring(0, indexDotGitParent);
-            if (!directory.startsWith(parentAbsPath)) {
-                throw new IOException(directory + " does not start with " + parentAbsPath);
-            }
-        }
-
-        // Assumes directory is canonical path too.
-        String directoryRelative = directory.substring(parentAbsPath.length() + 1);
-
-        Repository parentRepository = FileRepositoryBuilder.
-                create(Paths.get(parentAbsPath, Constants.DOT_GIT).toFile());
-        if (parentRepository == null) {
-            throw new IOException("cannot create parent repository from " + parentAbsPath);
-        }
-
-        return SubmoduleWalk.getSubmoduleRepository(parentRepository, directoryRelative);
+        return new FileRepositoryBuilder().setWorkTree(new File(directory)).setGitDir(gitDirFile).build();
     }
 
     private void rebuildTagList(File directory) {
