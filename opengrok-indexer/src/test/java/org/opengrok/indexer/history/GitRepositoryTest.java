@@ -804,14 +804,15 @@ public class GitRepositoryTest {
         org.eclipse.jgit.lib.Repository mainRepo = new FileRepositoryBuilder().
                 setGitDir(Paths.get(repository.getSourceRoot(), "git", Constants.DOT_GIT).toFile())
                 .build();
+        String parent = newRepoFile.toPath().toUri().toString();
         try (Git git = new Git(mainRepo)) {
             git.submoduleAdd().
-                    setURI(newRepoFile.toPath().toUri().toString()).
+                    setURI(parent).
                     setPath(submoduleName).
                     call();
         }
 
-        return newRepoFile.toString();
+        return parent;
     }
 
     @Test
@@ -823,7 +824,7 @@ public class GitRepositoryTest {
         Repository subRepo = RepositoryFactory.getRepository(submodulePath.toFile());
         assertNotNull(subRepo);
         assertNotNull(subRepo.getParent());
-        assertTrue(subRepo.getParent().contains(submoduleOriginPath));
+        assertEquals(submoduleOriginPath, subRepo.getParent());
 
         // Test relative path too. JGit always writes absolute path so overwrite the contents directly.
         File gitFile = Paths.get(submodulePath.toString(), Constants.DOT_GIT).toFile();
