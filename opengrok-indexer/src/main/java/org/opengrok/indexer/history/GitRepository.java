@@ -685,8 +685,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         }
 
         // Assume this is a sub-module so dotGitFile is a file.
-        String gitDirValue;
-        if ((gitDirValue = getGitDirValue(dotGitFile)) == null) {
+        String gitDirValue = getGitDirValue(dotGitFile);
+        if (gitDirValue == null) {
             throw new IOException("cannot get gitDir value from " + dotGitFile);
         }
 
