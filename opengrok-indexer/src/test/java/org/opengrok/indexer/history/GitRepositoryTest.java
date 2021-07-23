@@ -806,7 +806,7 @@ public class GitRepositoryTest {
                 .build();
         try (Git git = new Git(mainRepo)) {
             git.submoduleAdd().
-                    setURI("file:///" + newRepoFile).
+                    setURI(newRepoFile.toPath().toUri().toString()).
                     setPath(submoduleName).
                     call();
         }
