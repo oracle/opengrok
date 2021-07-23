@@ -816,8 +816,9 @@ public class GitRepositoryTest {
 
     @Test
     void testSubmodule() throws Exception {
-        String submoduleOriginPath = addSubmodule("submodule");
-        Path submodulePath = Paths.get(repository.getSourceRoot(), "git", "submodule");
+        String submoduleName = "submodule";
+        String submoduleOriginPath = addSubmodule(submoduleName);
+        Path submodulePath = Paths.get(repository.getSourceRoot(), "git", submoduleName);
 
         Repository subRepo = RepositoryFactory.getRepository(submodulePath.toFile());
         assertNotNull(subRepo);
@@ -829,7 +830,7 @@ public class GitRepositoryTest {
         assertTrue(gitFile.isFile());
         try (Writer writer = new FileWriter(gitFile)) {
             writer.write(Constants.GITDIR + ".." + File.separator + Constants.DOT_GIT +
-                    File.separator + Constants.MODULES + File.separator + "submodule");
+                    File.separator + Constants.MODULES + File.separator + submoduleName);
         }
         subRepo = RepositoryFactory.getRepository(submodulePath.toFile());
         assertNotNull(subRepo);
