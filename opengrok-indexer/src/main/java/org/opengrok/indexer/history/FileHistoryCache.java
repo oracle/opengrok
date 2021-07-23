@@ -460,7 +460,8 @@ class FileHistoryCache implements HistoryCache {
         history.strip();
 
         File histDataDir = new File(getRepositoryHistDataDirname(repository));
-        if (!histDataDir.isDirectory() && !histDataDir.mkdirs()) {
+        // Check the directory again in case of races (might happen in the presence of sub-repositories).
+        if (!histDataDir.isDirectory() && !histDataDir.mkdirs() && !histDataDir.isDirectory()) {
             LOGGER.log(Level.WARNING, "cannot create history cache directory for ''{0}''", histDataDir);
         }
 
