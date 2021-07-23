@@ -404,7 +404,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     @Override
     boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
-            File f = new File(file, ".git");
+            File f = new File(file, Constants.DOT_GIT);
             // No check for directory or file as submodules contain '.git' file.
             return f.exists();
         }
