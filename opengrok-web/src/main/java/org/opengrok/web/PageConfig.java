@@ -1104,6 +1104,9 @@ public final class PageConfig {
         return path;
     }
 
+    /**
+     * @return true if file/directory corrsponding to the request path exists however is unreadable, false otherwise
+     */
     public boolean isUnreadable() {
         File f = new File(getSourceRootPath(), getPath());
         return f.exists() && !f.canRead();
