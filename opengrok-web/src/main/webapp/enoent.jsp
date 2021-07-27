@@ -16,16 +16,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page session="false" errorPage="error.jsp" isErrorPage="true" import="
-org.opengrok.indexer.web.Prefix,
-org.opengrok.indexer.configuration.RuntimeEnvironment"
- %><%
+<%@page session="false" errorPage="error.jsp" isErrorPage="true"%><%
 /* ---------------------- enoent.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
