@@ -16,17 +16,37 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
-<%@page  session="false" import="org.opengrok.web.PageConfig" %>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@page session="false" import="org.opengrok.web.PageConfig" %>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 <%
-/* ---------------------- eforbidden.jspf start --------------------- */
+/* ---------------------- eforbidden.jsp start --------------------- */
 {
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-%>
+%><%@
+
+        include file="httpheader.jspf"
+
+%><body>
+<div id="page">
+    <div id="whole_header">
+        <div id="header"><%@
+
+                include file="pageheader.jspf"
+
+        %></div>
+    </div>
+<h3 class="error">Error: access forbidden</h3>
+<p>The request was forbidden. This can be either file/directory permissions problem or insufficient authorization.</p>
 <%= PageConfig.get(request).getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false) %>
 <%
 }
-/* ---------------------- eforbidden.jspf end --------------------- */
+/* ---------------------- eforbidden.jsp end --------------------- */
+%><%@
+
+        include file="foot.jspf"
+
 %>

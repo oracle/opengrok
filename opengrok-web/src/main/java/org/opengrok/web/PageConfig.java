@@ -1104,6 +1104,11 @@ public final class PageConfig {
         return path;
     }
 
+    public boolean isUnreadable() {
+        File f = new File(getSourceRootPath(), getPath());
+        return f.exists() && !f.canRead();
+    }
+
     /**
      * Get the on disk file for the given path.
      *

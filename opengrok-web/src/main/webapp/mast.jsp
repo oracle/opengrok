@@ -34,10 +34,16 @@ org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.Util"%>
 <%@ page import="org.opengrok.indexer.web.messages.MessagesUtils" %>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 <%
 /* ---------------------- mast.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    if (cfg.isUnreadable()) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+    }
+
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir == null) {            
