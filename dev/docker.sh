@@ -12,6 +12,9 @@
 
 set -e
 
+echo "Running linter"
+docker run --rm -i hadolint/hadolint:2.6.0 < Dockerfile || exit 1
+
 API_URL="https://hub.docker.com/v2"
 IMAGE="opengrok/docker"
 
