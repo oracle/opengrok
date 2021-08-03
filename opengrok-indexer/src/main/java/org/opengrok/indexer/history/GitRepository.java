@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashSet;
@@ -324,14 +325,15 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         if (revision == null) {
             revision = getFirstRevision(filePath);
         }
-        Annotation annotation = getAnnotation(revision, filePath);
+        String fileName = Path.of(filePath).getFileName().toString();
+        Annotation annotation = getAnnotation(revision, filePath, fileName);
 
         if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
             // The file might have changed its location if it was renamed.
             // Try to lookup its original name and get the annotation again.
             String origName = findOriginalName(file.getCanonicalPath(), revision);
             if (origName != null) {
-                annotation = getAnnotation(revision, origName);
+                annotation = getAnnotation(revision, origName, fileName);
             }
         }
 
@@ -361,8 +363,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     @NotNull
-    private Annotation getAnnotation(String revision, String filePath) throws IOException {
-        Annotation annotation = new Annotation(filePath);
+    private Annotation getAnnotation(String revision, String filePath, String fileName) throws IOException {
+        Annotation annotation = new Annotation(fileName);
 
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
             BlameCommand blameCommand = new Git(repository).blame().setFilePath(getGitFilePath(filePath));

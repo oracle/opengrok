@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -913,15 +912,7 @@ public final class Util {
      * @see URLEncoder#encode(String, String)
      */
     public static String URIEncode(String q) {
-        try {
-            return q == null ? "" : URLEncoder.encode(q,
-                StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            // Should not happen. UTF-8 must be supported by JVMs.
-            LOGGER.log(
-                    Level.WARNING, "Failed to URL-encode UTF-8: ", e);
-        }
-        return null;
+        return q == null ? "" : URLEncoder.encode(q, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1680,15 +1671,8 @@ public final class Util {
                 continue;
             }
 
-            String key = pair.substring(0, idx);
-            String value = pair.substring(idx + 1);
-
-            try {
-                key = URLDecoder.decode(key, StandardCharsets.UTF_8.toString());
-                value = URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("Could not find UTF-8 encoding", e);
-            }
+            String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
+            String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
 
             List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());
             paramValues.add(value);
