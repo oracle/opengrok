@@ -99,13 +99,13 @@ if [[ "$OPENGROK_REPO_SLUG" != "oracle/opengrok" ]]; then
 fi
 
 if [[ -z $DOCKER_USERNAME ]]; then
-	echo "DOCKER_USERNAME is empty"
-	exit 1
+	echo "DOCKER_USERNAME is empty, exiting"
+	exit 0
 fi
 
 if [[ -z $DOCKER_PASSWORD ]]; then
-	echo "DOCKER_PASSWORD is empty"
-	exit 1
+	echo "DOCKER_PASSWORD is empty, exiting"
+	exit 0
 fi
 
 # Publish the image to Docker hub.
