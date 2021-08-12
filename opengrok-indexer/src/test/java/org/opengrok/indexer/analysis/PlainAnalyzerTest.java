@@ -69,7 +69,7 @@ public class PlainAnalyzerTest {
     private static class TestablePlainAnalyzer extends PlainAnalyzer {
         boolean writeXrefCalled;
 
-        public TestablePlainAnalyzer() {
+        TestablePlainAnalyzer() {
             super(PlainAnalyzerFactory.DEFAULT_INSTANCE);
         }
 
