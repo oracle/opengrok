@@ -31,8 +31,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
@@ -50,7 +48,6 @@ import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 
@@ -61,8 +58,6 @@ import org.opengrok.indexer.util.NullWriter;
  * @author Chandan
  */
 public class PlainAnalyzer extends TextAnalyzer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PlainAnalyzer.class);
 
     /**
      * Creates a new instance of PlainAnalyzer.
@@ -116,6 +111,19 @@ public class PlainAnalyzer extends TextAnalyzer {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
 
+    private static class XrefWork {
+        Xrefer xrefer;
+        Exception exception;
+
+        XrefWork(Xrefer xrefer) {
+            this.xrefer = xrefer;
+        }
+
+        XrefWork(Exception e) {
+            this.exception = e;
+        }
+    }
+
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
         Definitions defs = null;
@@ -157,16 +165,16 @@ public class PlainAnalyzer extends TextAnalyzer {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                CompletableFuture<Xrefer> future = CompletableFuture.supplyAsync(() -> {
+                CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
                     try {
-                        return writeXref(args);
+                        return new XrefWork(writeXref(args));
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "I/O exception when generating xref for " + fullPath, e);
-                        return null;
+                        return new XrefWork(e);
                     }
                 }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
                         orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
-                Xrefer xref = future.get();  // Will throw ExecutionException wrapping TimeoutException on timeout.
+                XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
+                Xrefer xref = xrefWork.xrefer;
 
                 if (xref != null) {
                     Scopes scopes = xref.getScopes();
@@ -179,8 +187,8 @@ public class PlainAnalyzer extends TextAnalyzer {
                     String path = doc.get(QueryBuilder.PATH);
                     addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
                 } else {
-                    // Re-throw the exception from writeXref(). We no longer have the original exception, though.
-                    throw new IOException("I/O exception when generating xref for " + fullPath);
+                    // Re-throw the exception from writeXref().
+                    throw new IOException(xrefWork.exception);
                 }
             } catch (ExecutionException e) {
                 throw new InterruptedException("failed to generate xref :" + e);
