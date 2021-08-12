@@ -1330,8 +1330,7 @@ public class IndexDatabase {
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
         AtomicInteger alreadyClosedCounter = new AtomicInteger();
-        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer();
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
@@ -1355,8 +1354,7 @@ public class IndexDatabase {
                             }
                         } catch (AlreadyClosedException e) {
                             alreadyClosedCounter.incrementAndGet();
-                            String errmsg = String.format("ERROR addFile(): %s",
-                                x.file);
+                            String errmsg = String.format("ERROR addFile(): %s", x.file);
                             LOGGER.log(Level.SEVERE, errmsg, e);
                             x.exception = e;
                             ret = false;
@@ -1369,8 +1367,7 @@ public class IndexDatabase {
                             x.exception = e;
                             ret = false;
                         } catch (RuntimeException | IOException e) {
-                            String errmsg = String.format("ERROR addFile(): %s",
-                                x.file);
+                            String errmsg = String.format("ERROR addFile(): %s", x.file);
                             LOGGER.log(Level.WARNING, errmsg, e);
                             x.exception = e;
                             ret = false;
@@ -1390,8 +1387,7 @@ public class IndexDatabase {
         } catch (InterruptedException | ExecutionException e) {
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
-            String exmsg = String.format(
-                "%d successes (%.1f%%) after aborting parallel-indexing",
+            String exmsg = String.format("%d successes (%.1f%%) after aborting parallel-indexing",
                 successCount, successPct);
             LOGGER.log(Level.SEVERE, exmsg, e);
         }
@@ -1401,28 +1397,24 @@ public class IndexDatabase {
         // Start with failureCount=worksCount, and then subtract successes.
         int failureCount = worksCount;
         if (bySuccess != null) {
-            List<IndexFileWork> successes = bySuccess.getOrDefault(
-                Boolean.TRUE, null);
+            List<IndexFileWork> successes = bySuccess.getOrDefault(Boolean.TRUE, null);
             if (successes != null) {
                 failureCount -= successes.size();
             }
         }
         if (failureCount > 0) {
             double pctFailed = 100.0 * failureCount / worksCount;
-            String exmsg = String.format(
-                "%d failures (%.1f%%) while parallel-indexing",
-                failureCount, pctFailed);
+            String exmsg = String.format("%d failures (%.1f%%) while parallel-indexing", failureCount, pctFailed);
             LOGGER.log(Level.WARNING, exmsg);
         }
 
-        /**
+        /*
          * Encountering an AlreadyClosedException is severe enough to abort the
          * run, since it will fail anyway later upon trying to commit().
          */
         int numAlreadyClosed = alreadyClosedCounter.get();
         if (numAlreadyClosed > 0) {
-            throw new AlreadyClosedException(String.format("count=%d",
-                numAlreadyClosed));
+            throw new AlreadyClosedException(String.format("count=%d", numAlreadyClosed));
         }
     }
 

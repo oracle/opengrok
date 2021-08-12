@@ -298,6 +298,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(timeout, Configuration::setCtagsTimeout);
     }
 
+    public long getXrefTimeout() {
+        return syncReadConfiguration(Configuration::getXrefTimeout);
+    }
+
+    public void setXrefTimeout(long timeout) {
+        syncWriteConfiguration(timeout, Configuration::setXrefTimeout);
+    }
+
     public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
         syncWriteConfiguration(lastEditedDisplayMode, Configuration::setLastEditedDisplayMode);
     }
