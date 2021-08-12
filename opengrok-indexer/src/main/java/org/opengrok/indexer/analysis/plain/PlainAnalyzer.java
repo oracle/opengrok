@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -27,7 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
@@ -44,6 +49,8 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 
@@ -54,6 +61,8 @@ import org.opengrok.indexer.util.NullWriter;
  * @author Chandan
  */
 public class PlainAnalyzer extends TextAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlainAnalyzer.class);
 
     /**
      * Creates a new instance of PlainAnalyzer.
@@ -108,17 +117,15 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut)
-            throws IOException, InterruptedException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
         Definitions defs = null;
         NullWriter nullWriter = null;
 
-        doc.add(new OGKTextField(QueryBuilder.FULL,
-            getReader(src.getStream())));
+        doc.add(new OGKTextField(QueryBuilder.FULL, getReader(src.getStream())));
 
-        String fullpath = doc.get(QueryBuilder.FULLPATH);
-        if (fullpath != null && ctags != null) {
-            defs = ctags.doCtags(fullpath);
+        String fullPath = doc.get(QueryBuilder.FULLPATH);
+        if (fullPath != null && ctags != null) {
+            defs = ctags.doCtags(fullPath);
             if (defs != null && defs.numberOfSymbols() > 0) {
                 tryAddingDefs(doc, defs, src);
                 byte[] tags = defs.serialize();
@@ -137,7 +144,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         if (scopesEnabled && xrefOut == null) {
             /*
              * Scopes are generated during xref generation. If xrefs are
-             * turned off we still need to run writeXref to produce scopes,
+             * turned off we still need to run writeXref() to produce scopes,
              * we use a dummy writer that will throw away any xref output.
              */
             nullWriter = new NullWriter();
@@ -146,20 +153,37 @@ public class PlainAnalyzer extends TextAnalyzer {
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                Xrefer xref = writeXref(args);
+                CompletableFuture<Xrefer> future = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return writeXref(args);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "I/O exception when generating xref for " + fullPath, e);
+                        return null;
+                    }
+                }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
+                        orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
+                Xrefer xref = future.get();  // Will throw ExecutionException wrapping TimeoutException on timeout.
 
-                Scopes scopes = xref.getScopes();
-                if (scopes.size() > 0) {
-                    byte[] scopesSerialized = scopes.serialize();
-                    doc.add(new StoredField(QueryBuilder.SCOPES,
-                        scopesSerialized));
+                if (xref != null) {
+                    Scopes scopes = xref.getScopes();
+                    if (scopes.size() > 0) {
+                        byte[] scopesSerialized = scopes.serialize();
+                        doc.add(new StoredField(QueryBuilder.SCOPES,
+                                scopesSerialized));
+                    }
+
+                    String path = doc.get(QueryBuilder.PATH);
+                    addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
+                } else {
+                    // Re-throw the exception from writeXref(). We no longer have the original exception, though.
+                    throw new IOException("I/O exception when generating xref for " + fullPath);
                 }
-
-                String path = doc.get(QueryBuilder.PATH);
-                addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
+            } catch (ExecutionException e) {
+                throw new InterruptedException("failed to generate xref :" + e);
             } finally {
                 if (nullWriter != null) {
                     nullWriter.close();

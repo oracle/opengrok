@@ -425,8 +425,8 @@ public class Ctags implements Resettable {
      * @throws IOException I/O exception
      * @throws InterruptedException interrupted command
      */
-    public Definitions doCtags(String file) throws IOException,
-            InterruptedException {
+    public Definitions doCtags(String file) throws IOException, InterruptedException {
+
         if (file.length() < 1 || "\n".equals(file)) {
             return null;
         }

@@ -214,6 +214,7 @@ public final class Configuration {
     private int webappStartCommandTimeout; // in seconds
     private int restfulCommandTimeout; // in seconds
     private long ctagsTimeout; // in seconds
+    private long xrefTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -475,6 +476,24 @@ public final class Configuration {
         this.ctagsTimeout = timeout;
     }
 
+    public long getXrefTimeout() {
+        return xrefTimeout;
+    }
+
+    /**
+     * Set the timeout for generating xrefs to a new value.
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setXrefTimeout(long timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "xrefTimeout", timeout));
+        }
+        this.xrefTimeout = timeout;
+    }
+
     public boolean isLastEditedDisplayMode() {
         return lastEditedDisplayMode;
     }
@@ -569,11 +588,11 @@ public final class Configuration {
         //setTabSize(4);
         setTagsEnabled(false);
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
-        // Set to empty string so we can append it to the URL
-        // unconditionally later.
+        // Set to empty string so we can append it to the URL unconditionally later.
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
+        setXrefTimeout(30);
     }
 
     public String getRepoCmd(String clazzName) {

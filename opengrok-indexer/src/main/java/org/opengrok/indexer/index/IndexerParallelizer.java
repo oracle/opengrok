@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -61,6 +61,7 @@ public class IndexerParallelizer implements AutoCloseable {
     private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
     private LazilyInstantiate<ExecutorService> lzHistoryFileExecutor;
     private LazilyInstantiate<ExecutorService> lzCtagsWatcherExecutor;
+    private LazilyInstantiate<ExecutorService> lzXrefWatcherExecutor;
 
     /**
      * Initializes a new instance using settings from the specified environment
@@ -84,6 +85,7 @@ public class IndexerParallelizer implements AutoCloseable {
         createLazyHistoryExecutor();
         createLazyHistoryFileExecutor();
         createLazyCtagsWatcherExecutor();
+        createLazyXrefWatcherExecutor();
     }
 
     /**
@@ -129,6 +131,13 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     /**
+     * @return the Executor used for enforcing xref timeouts.
+     */
+    public ExecutorService getXrefWatcherExecutor() {
+        return lzXrefWatcherExecutor.get();
+    }
+
+    /**
      * Calls {@link #bounce()}, which prepares for -- but does not start -- new
      * pools.
      */
@@ -160,6 +169,7 @@ public class IndexerParallelizer implements AutoCloseable {
         bounceHistoryExecutor();
         bounceHistoryRenamedExecutor();
         bounceCtagsWatcherExecutor();
+        bounceXrefWatcherExecutor();
     }
 
     private void bounceForkJoinPool() {
@@ -210,6 +220,14 @@ public class IndexerParallelizer implements AutoCloseable {
         }
     }
 
+    private void bounceXrefWatcherExecutor() {
+        if (lzXrefWatcherExecutor.isActive()) {
+            ExecutorService formerXrefWatcherExecutor = lzXrefWatcherExecutor.get();
+            createLazyXrefWatcherExecutor();
+            formerXrefWatcherExecutor.shutdown();
+        }
+    }
+
     private void createLazyForkJoinPool() {
         lzForkJoinPool = LazilyInstantiate.using(() ->
                 new ForkJoinPool(indexingParallelism));
@@ -226,6 +244,15 @@ public class IndexerParallelizer implements AutoCloseable {
                 new ScheduledThreadPoolExecutor(1, runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("ctags-watcher-" + thread.getId());
+                    return thread;
+                }));
+    }
+
+    private void createLazyXrefWatcherExecutor() {
+        lzXrefWatcherExecutor = LazilyInstantiate.using(() ->
+                new ScheduledThreadPoolExecutor(1, runnable -> {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("xref-watcher-" + thread.getId());
                     return thread;
                 }));
     }
