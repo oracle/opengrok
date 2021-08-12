@@ -607,8 +607,8 @@ def check_commands(commands):
                          format(name, COMMANDS_PROPERTY, value))
             return False
 
-        if not os.path.isfile(value):
-            logger.error("path for '{}' under '{}' is not a file: {}".
+        if not os.path.isfile(value) and not os.path.isdir(value):
+            logger.error("path for '{}' under '{}' is not a file or directory: {}".
                          format(name, COMMANDS_PROPERTY, value))
             return False
 

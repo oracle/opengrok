@@ -133,6 +133,12 @@ def test_configuration_commands():
 
 
 @posix_only
+def test_configuration_commands_dir():
+    config = {COMMANDS_PROPERTY: {"teamware": "/usr/bin"}}
+    assert check_configuration(config)
+
+
+@posix_only
 def test_invalid_project_config_nonexec_hook():
     with tempfile.TemporaryDirectory() as tmpdir:
         with open(os.path.join(tmpdir, "foo.sh"), 'w+') as tmpfile:
