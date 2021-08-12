@@ -53,7 +53,7 @@ public class PlainAnalyzerTest {
     void testXrefTimeout() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         long timeoutOriginal = env.getXrefTimeout();
-        int timeout = 3;
+        int timeout = 1;
         env.setXrefTimeout(timeout);
         assertEquals(timeout, env.getXrefTimeout());
 
