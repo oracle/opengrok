@@ -19,13 +19,15 @@
 
 /*
  * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2021, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.analysis;
+package org.opengrok.indexer.analysis.plain;
 
 import org.apache.lucene.document.Document;
 import org.junit.jupiter.api.Test;
-import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
-import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.Xrefer;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.io.ByteArrayInputStream;
@@ -38,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PlainAnalyzerTest {
+class PlainAnalyzerTest {
 
     private static StreamSource getStreamSource(final byte[] bytes) {
         return new StreamSource() {
