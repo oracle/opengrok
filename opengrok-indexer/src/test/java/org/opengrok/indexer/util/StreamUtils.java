@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -143,7 +143,7 @@ public class StreamUtils {
         InputStream res = StreamUtils.class.getClassLoader().
                 getResourceAsStream(resourceName);
         assertNotNull(res, resourceName + " should be gettable");
-        return IOUtils.createBOMStrippedReader(res, "UTF-8");
+        return IOUtils.createBOMStrippedReader(res, StandardCharsets.UTF_8.name());
     }
 
     /**

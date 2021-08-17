@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -272,7 +272,6 @@ public class AnalyzerGuru {
                 new ErlangAnalyzerFactory(),
                 new ShAnalyzerFactory(),
                 new PowershellAnalyzerFactory(),
-                PlainAnalyzerFactory.DEFAULT_INSTANCE,
                 new UuencodeAnalyzerFactory(),
                 new GZIPAnalyzerFactory(),
                 new JavaAnalyzerFactory(),
@@ -303,7 +302,9 @@ public class AnalyzerGuru {
                 new AsmAnalyzerFactory(),
                 new HCLAnalyzerFactory(),
                 new TerraformAnalyzerFactory(),
-                new RAnalyzerFactory()
+                new RAnalyzerFactory(),
+                // Keep PlainAnalyzer last, with its lone, quite fuzzy matcher.
+                PlainAnalyzerFactory.DEFAULT_INSTANCE
             };
 
             for (AnalyzerFactory analyzer : analyzers) {
@@ -979,7 +980,7 @@ public class AnalyzerGuru {
 
         // First, do precise-magic Matcher matching
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            if (matcher.getIsPreciseMagic()) {
+            if (matcher.isPreciseMagic()) {
                 fac = matcher.isMagic(content, in);
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
@@ -1001,7 +1002,7 @@ public class AnalyzerGuru {
 
         // Last, do imprecise-magic Matcher matching
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            if (!matcher.getIsPreciseMagic()) {
+            if (!matcher.isPreciseMagic()) {
                 fac = matcher.isMagic(content, in);
                 if (fac != null) {
                     if (LOGGER.isLoggable(Level.FINEST)) {

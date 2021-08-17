@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -169,7 +169,7 @@ public class JFlexXrefTest {
     /**
      * Helper method for {@link #testBug15890Anchor()}.
      *
-     * @param klass the Xref sub-class to test
+     * @param klass the Xref subclass to test
      * @param path path to input file with a definition
      */
     private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass, String path) throws Exception {

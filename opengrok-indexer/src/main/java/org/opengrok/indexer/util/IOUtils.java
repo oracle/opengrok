@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011, Trond Norbye.
- * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
@@ -56,8 +56,8 @@ public final class IOUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IOUtils.class);
 
+    // private to enforce static
     private IOUtils() {
-        // singleton
     }
 
     /**
@@ -70,7 +70,7 @@ public final class IOUtils {
             try {
                 c.close();
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to close resource: ", e);
+                LOGGER.log(Level.WARNING, "Failed to close resource", e);
             }
         }
     }
@@ -197,7 +197,7 @@ public final class IOUtils {
         if (br >= 2
                 && (head[0] == (byte) 0xFE && head[1] == (byte) 0xFF)
                 || (head[0] == (byte) 0xFF && head[1] == (byte) 0xFE)) {
-            charset = "UTF-16";
+            charset = StandardCharsets.UTF_16.name();
             in.reset();
         } else if (br >= 3 && head[0] == (byte) 0xEF && head[1] == (byte) 0xBB
                 && head[2] == (byte) 0xBF) {
@@ -218,10 +218,31 @@ public final class IOUtils {
      * Byte-order markers.
      */
     private static final Map<String, byte[]> BOMS = Map.of(
-            "UTF-8", new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF},
-            "UTF-16BE", new byte[]{(byte) 0xFE, (byte) 0xFF},
-            "UTF-16LE", new byte[]{(byte) 0xFF, (byte) 0xFE}
+            StandardCharsets.UTF_8.name(), UTF_8_BOM(),
+            StandardCharsets.UTF_16BE.name(), UTF_16BE_BOM(),
+            StandardCharsets.UTF_16LE.name(), UTF_16LE_BOM()
     );
+
+    /**
+     * Gets a new array containing the UTF-8 BOM.
+     */
+    public static byte[] UTF_8_BOM() {
+        return new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+    }
+
+    /**
+     * Gets a new array containing the UTF-16BE BOM (Big-Endian).
+     */
+    public static byte[] UTF_16BE_BOM() {
+        return new byte[]{(byte) 0xFE, (byte) 0xFF};
+    }
+
+    /**
+     * Gets a new array containing the UTF-16LE BOM (Little-Endian).
+     */
+    public static byte[] UTF_16LE_BOM() {
+        return new byte[]{(byte) 0xFF, (byte) 0xFE};
+    }
 
     /**
      * Gets a value indicating a UTF encoding if the array starts with a

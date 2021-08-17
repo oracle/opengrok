@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2018, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
 
@@ -52,6 +52,11 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
     private static final int JAVA_SE_9_MAJOR_VER = 0x35;
 
     private static final Matcher MATCHER = new Matcher() {
+        @Override
+        public boolean isPreciseMagic() {
+            return true;
+        }
+
         @Override
         public String description() {
             return "0xCAFEBABE magic with major_version from JDK 1.1 to Java" +

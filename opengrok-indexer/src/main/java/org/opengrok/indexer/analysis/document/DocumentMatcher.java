@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.document;
 
@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory.Matcher;
@@ -108,7 +109,7 @@ public class DocumentMatcher implements Matcher {
         int bomLength = 0;
         String encoding = IOUtils.findBOMEncoding(contents);
         if (encoding == null) {
-            encoding = "UTF-8";
+            encoding = StandardCharsets.UTF_8.name();
         } else {
             bomLength = IOUtils.skipForBOM(contents);
             if (in.skip(bomLength) != bomLength) {

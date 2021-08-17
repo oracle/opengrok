@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, 2021, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
@@ -83,12 +83,12 @@ public class AnalyzerGuruHelp {
 
         b.append(System.lineSeparator() + "AnalyzerGuru magic matchers:" + System.lineSeparator());
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
-            if (m.getIsPreciseMagic()) {
+            if (m.isPreciseMagic()) {
                 b.append(reportable(m));
             }
         });
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
-            if (!m.getIsPreciseMagic()) {
+            if (!m.isPreciseMagic()) {
                 b.append(reportable(m));
             }
         });
