@@ -113,7 +113,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         putjs("jquery-ui", "js/jquery-ui-1.12.1-custom", 11);
         putFromWebJar("jquery-tablesorter", "jquery.tablesorter.min.js", 12);
         putjs("tablesorter-parsers", "js/tablesorter-parsers-0.0.3", 13, true);
-        putjs("searchable-option-list", "js/searchable-option-list-2.0.14", 14);
+        putjs("searchable-option-list", "js/searchable-option-list-2.0.15", 14, true);
         putjs("utils", "js/utils-0.0.42", 15, true);
         putjs("repos", "js/repos-0.0.3", 20, true);
         putjs("diff", "js/diff-0.0.5", 20, true);

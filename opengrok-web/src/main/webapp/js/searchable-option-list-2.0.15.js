@@ -519,8 +519,9 @@
                             // toggle current selected item with space bar
                             $currentHighlightedOption = self.$selection.find('.sol-option.keyboard-selection input');
                             $currentHighlightedOption
+                                .prop('checked', !$currentHighlightedOption.is(':checked'))
                                 .trigger('change');
-                            
+
                             preventDefault = true;
                         }
 
