@@ -3,7 +3,7 @@
 # Trigger new release creation on Github.
 # Assumes working Maven + Git.
 #
-# see https://github.com/OpenGrok/opengrok/wiki/Release-process
+# see https://github.com/oracle/opengrok/wiki/Release-process
 #
 
 set -e
