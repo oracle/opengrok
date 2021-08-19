@@ -122,7 +122,7 @@ import org.opengrok.indexer.web.Util;
 
 /**
  * Manages and provides Analyzers as needed. Please see
- * <a href="https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Internals">
+ * <a href="https://github.com/oracle/opengrok/wiki/Internals">
  * this</a> page for a great description of the purpose of the AnalyzerGuru.
  *
  * Created on September 22, 2005
