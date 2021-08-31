@@ -176,12 +176,12 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
-            <version>3.2.9</version>
+            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>2.4.1</version>
+            <version>2.4.4</version>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>

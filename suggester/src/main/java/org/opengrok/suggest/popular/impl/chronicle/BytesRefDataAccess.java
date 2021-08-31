@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
  * {@link BytesRef} data serializer for {@link net.openhft.chronicle.map.ChronicleMap}.
  * Modified from https://github.com/OpenHFT/Chronicle-Map/blob/master/docs/CM_Tutorial_DataAccess.adoc
  */
+@SuppressWarnings("deprecation")
 public class BytesRefDataAccess extends AbstractData<BytesRef> implements DataAccess<BytesRef> {
 
     /** Cache field. */
