@@ -64,7 +64,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.8.0</version>
+            <version>2.11.0</version>
         </dependency>
 
         <dependency>
@@ -94,7 +94,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.20.84</version>
+            <version>3.21.85</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>
@@ -109,6 +109,18 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
                     <artifactId>annotations</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.18</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>1.4.1</version>
         </dependency>
 
         <!-- to get rid of SL4J warning messages -->
@@ -130,17 +142,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <version>${micrometer.version}</version>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>net.openhft</groupId>
-                <artifactId>chronicle-core</artifactId>
-                <version>2.20.127.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 
     <build>
         <plugins>
