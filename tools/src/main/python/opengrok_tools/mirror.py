@@ -60,6 +60,8 @@ if major_version < 3:
 
 __version__ = "1.1"
 
+OPENGROK_NO_MIRROR_ENV = "OPENGROK_NO_MIRROR"
+
 
 def worker(args):
     project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
@@ -134,7 +136,7 @@ def main():
         logger.debug("Configuration check passed, exiting")
         return 0
 
-    nomirror = os.environ.get("OPENGROK_NO_MIRROR")
+    nomirror = os.environ.get(OPENGROK_NO_MIRROR_ENV)
     if nomirror and len(nomirror) > 0:
         logger.debug("skipping mirror based on the OPENGROK_NO_MIRROR " +
                      "environment variable")
