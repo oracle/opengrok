@@ -36,6 +36,9 @@ RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
 # hadolint ignore=SC2012,DL4006
 RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
+# Store the version in a file so that the tools can report it.
+RUN mvn help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
+
 FROM tomcat:10-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
@@ -65,6 +68,8 @@ RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     rm -f /opengrok.tar.gz && \
     python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools* && \
     python3 -m pip install --no-cache-dir Flask Flask-HTTPAuth waitress # for /reindex REST endpoint handled by start.py
+
+COPY --from=build /mvn/VERSION /opengrok/VERSION
 
 # environment variables
 ENV SRC_ROOT /opengrok/src
