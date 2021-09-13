@@ -48,6 +48,7 @@ from opengrok_tools.utils.opengrok import list_projects, \
 from opengrok_tools.utils.readconfig import read_config
 from opengrok_tools.utils.exitvals import SUCCESS_EXITVAL
 from opengrok_tools.utils.mirror import check_configuration
+from opengrok_tools.mirror import OPENGROK_NO_MIRROR_ENV
 
 
 fs_root = os.path.abspath('.').split(os.path.sep)[0] + os.path.sep
@@ -489,7 +490,7 @@ def main():
         logger.info("extra indexer options: {}".format(extra_indexer_options))
         env['OPENGROK_INDEXER_OPTIONAL_ARGS'] = extra_indexer_options
     if os.environ.get(NOMIRROR_ENV_NAME):
-        env['OPENGROK_NO_MIRROR'] = os.environ.get(NOMIRROR_ENV_NAME)
+        env[OPENGROK_NO_MIRROR_ENV] = os.environ.get(NOMIRROR_ENV_NAME)
     logger.debug('Extra environment: {}'.format(env))
 
     use_projects = True
