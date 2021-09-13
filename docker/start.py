@@ -467,6 +467,13 @@ def main():
 
     logger = get_console_logger(get_class_basename(), log_level)
 
+    try:
+        with open(os.path.join(OPENGROK_BASE_DIR, "VERSION"), "r") as f:
+            version = f.read()
+            logger.info("Running version {}".format(version))
+    except Exception:
+        pass
+
     uri, url_root = set_url_root(logger, os.environ.get('URL_ROOT'))
     logger.debug("URL_ROOT = {}".format(url_root))
     logger.debug("URI = {}".format(uri))
