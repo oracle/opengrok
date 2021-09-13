@@ -138,8 +138,8 @@ def main():
 
     nomirror = os.environ.get(OPENGROK_NO_MIRROR_ENV)
     if nomirror and len(nomirror) > 0:
-        logger.debug("skipping mirror based on the OPENGROK_NO_MIRROR " +
-                     "environment variable")
+        logger.debug("skipping mirror based on the {} " +
+                     "environment variable".format(OPENGROK_NO_MIRROR_ENV))
         return SUCCESS_EXITVAL
 
     if len(args.project) > 0 and args.all:
