@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -29,8 +29,8 @@ from ..utils.command import Command
 
 
 class MercurialRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks, timeout):
-        super().__init__(logger, path, project, command, env, hooks, timeout)
+    def __init__(self, name, logger, path, project, command, env, hooks, timeout):
+        super().__init__(name, logger, path, project, command, env, hooks, timeout)
 
         self.command = self._repository_command(command, default=lambda: which('hg'))
 
@@ -39,8 +39,8 @@ class MercurialRepository(Repository):
 
     def get_branch(self):
         hg_command = [self.command, "branch"]
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(hg_command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -68,8 +68,8 @@ class MercurialRepository(Repository):
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(hg_command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -82,8 +82,8 @@ class MercurialRepository(Repository):
         # some servers do not support it.
         if branch == "default":
             hg_command.append("--check")
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(hg_command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
@@ -104,8 +104,8 @@ class MercurialRepository(Repository):
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(hg_command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info("output of {}:".format(cmd))
         self.logger.info(cmd.getoutputstr())
