@@ -18,11 +18,12 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
 import abc
+import os
 
 from ..utils.command import Command
 
@@ -43,9 +44,11 @@ class Repository:
 
     SYNC_COMMAND_SECTION = 'sync'
     INCOMING_COMMAND_SECTION = 'incoming'
+    COMMAND_PROPERTY = 'command'
 
-    def __init__(self, logger, path, project, configured_commands, env, hooks,
-                 timeout):
+    def __init__(self, name, logger, path, project, configured_commands, env, hooks, timeout):
+        self.name = name
+        self.command = None
         self.logger = logger
         self.path = path
         self.project = project
@@ -59,12 +62,16 @@ class Repository:
     def __str__(self):
         return self.path
 
-    def getCommand(self, cmd, **kwargs):
+    def get_command(self, cmd, **kwargs):
+        """
+        :param cmd: command
+        :param kwargs: dictionary of command attributes
+        :return: Command object ready for execution.
+        """
         kwargs['timeout'] = self.timeout
         return Command(cmd, **kwargs)
 
     def sync(self):
-        # Eventually, there might be per-repository hooks added here.
         if self.is_command_overridden(self.configured_commands, self.SYNC_COMMAND_SECTION):
             return self._run_custom_sync_command(
                 self.listify(self.configured_commands[self.SYNC_COMMAND_SECTION])
@@ -76,6 +83,8 @@ class Repository:
         """
         Synchronize the repository by running sync command specific for
         given repository type.
+
+        This method definition has to be overriden by given repository class.
 
         Return 1 on failure, 0 on success.
         """
@@ -96,6 +105,8 @@ class Repository:
     def incoming_check(self):
         """
         Check if there are any incoming changes.
+        Normally this method definition is overriden, unless the repository
+        type has no way how to check for incoming changes.
 
         Return True if so, False otherwise.
         """
@@ -137,8 +148,8 @@ class Repository:
                     - status: 0 on success execution, non-zero otherwise
                     - output: command output as string
         """
-        cmd = self.getCommand(command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to perform command")
@@ -164,7 +175,7 @@ class Repository:
         if isinstance(configured_commands, str):
             return configured_commands
         elif isinstance(configured_commands, dict) and \
-                configured_commands.get('command'):
+                configured_commands.get('command'):  # COMMAND_PROPERTY
             return configured_commands['command']
 
         return default()
@@ -185,3 +196,38 @@ class Repository:
         :return: true if overridden, false otherwise
         """
         return isinstance(config, dict) and config.get(command) is not None
+
+    def _check_command(self):
+        """
+        Could be overriden in given repository class to provide different check.
+        :return: True if self.command is a file, False otherwise.
+        """
+        if self.command and not os.path.isfile(self.command):
+            self.logger.error("path for '{}' is not a file: {}".
+                              format(self.name, self.command))
+            return False
+
+        return True
+
+    def check_command(self):
+        """
+        Check the validity of the command. Does not check the command if
+        the sync/incoming is overriden.
+        :return: True if self.command is valid, False otherwise.
+        """
+
+        if isinstance(self.configured_commands, dict):
+            for key in self.configured_commands.keys():
+                if key not in [self.SYNC_COMMAND_SECTION,
+                               self.INCOMING_COMMAND_SECTION,
+                               self.COMMAND_PROPERTY]:
+                    self.logger.error("Unknown property '{}' for '{}'".
+                                      format(key, self.name))
+                    return False
+
+        if self.command and not os.path.exists(self.command):
+            self.logger.error("path for '{}' does not exist: {}".
+                              format(self.name, self.command))
+            return False
+
+        return self._check_command()

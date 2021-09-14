@@ -113,22 +113,41 @@ def test_invalid_configuration_commands_scm():
     assert not check_configuration(config)
 
 
-def test_invalid_configuration_commands_value():
+def test_configuration_commands_dictionary_invalid():
     """
-    The values in the command section should be strings.
+    If the commands are overriden, they need to match certain keywords.
     """
     config = {COMMANDS_PROPERTY: {"git": {"foo": "bar"}}}
     assert not check_configuration(config)
 
 
-def test_invalid_configuration_commands_exists():
+def test_configuration_commands_override():
+    config = {COMMANDS_PROPERTY: {"git":
+                                  {"sync": ["foo", "bar"],
+                                   "incoming": ["foo", "bar"]}}}
+    assert check_configuration(config)
+
+
+def test_invalid_configuration_commands_exists_string():
     config = {COMMANDS_PROPERTY: {"git": "/usr/nonexistent/bin/git"}}
     assert not check_configuration(config)
 
 
+def test_invalid_configuration_commands_exists_dictionary():
+    config = {COMMANDS_PROPERTY: {"git":
+                                  {"command": "/usr/nonexistent/bin/git"}}}
+    assert not check_configuration(config)
+
+
 @posix_only
-def test_configuration_commands():
+def test_configuration_commands_string():
     config = {COMMANDS_PROPERTY: {"git": "/usr/bin/git"}}
+    assert check_configuration(config)
+
+
+@posix_only
+def test_configuration_commands_dictionary():
+    config = {COMMANDS_PROPERTY: {"git": {"command": "/usr/bin/git"}}}
     assert check_configuration(config)
 
 
@@ -504,7 +523,7 @@ def test_mirroring_custom_repository_command(expected_command, config):
 def test_mirroring_custom_incoming_invoke_command(touch_binary):
     checking_file = 'incoming.txt'
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'incoming': [touch_binary, checking_file]
         }, None, None, None)
         assert repository.incoming() is False
@@ -514,7 +533,7 @@ def test_mirroring_custom_incoming_invoke_command(touch_binary):
 @system_binary('echo')
 def test_mirroring_custom_incoming_changes(echo_binary):
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'incoming': [echo_binary, 'new incoming changes!']
         }, None, None, None)
         assert repository.incoming() is True
@@ -523,7 +542,7 @@ def test_mirroring_custom_incoming_changes(echo_binary):
 @system_binary('true')
 def test_mirroring_custom_incoming_no_changes(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'incoming': true_binary
         }, None, None, None)
         assert repository.incoming() is False
@@ -533,7 +552,7 @@ def test_mirroring_custom_incoming_no_changes(true_binary):
 def test_mirroring_custom_incoming_error(false_binary):
     with pytest.raises(RepositoryException):
         with tempfile.TemporaryDirectory() as repository_root:
-            repository = GitRepository(mock(), repository_root, 'test-1', {
+            repository = GitRepository("git", mock(), repository_root, 'test-1', {
                 'incoming': false_binary
             }, None, None, None)
             repository.incoming()
@@ -541,7 +560,7 @@ def test_mirroring_custom_incoming_error(false_binary):
 
 def test_mirroring_incoming_invoke_original_command():
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1',
+        repository = GitRepository("git", mock(), repository_root, 'test-1',
                                    None, None, None, None)
         with when(repository).incoming_check().thenReturn(0):
             repository.incoming()
@@ -552,7 +571,7 @@ def test_mirroring_incoming_invoke_original_command():
 def test_mirroring_custom_sync_invoke_command(touch_binary):
     checking_file = 'sync.txt'
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'sync': [touch_binary, checking_file]
         }, None, None, None)
         assert repository.sync() == 0
@@ -562,7 +581,7 @@ def test_mirroring_custom_sync_invoke_command(touch_binary):
 @system_binary('true')
 def test_mirroring_custom_sync_success(true_binary):
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'sync': true_binary
         }, None, None, None)
         assert 0 == repository.sync()
@@ -571,7 +590,7 @@ def test_mirroring_custom_sync_success(true_binary):
 @system_binary('false')
 def test_mirroring_custom_sync_error(false_binary):
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1', {
+        repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'sync': false_binary
         }, None, None, None)
         assert 1 == repository.sync()
@@ -579,7 +598,7 @@ def test_mirroring_custom_sync_error(false_binary):
 
 def test_mirroring_sync_invoke_original_command():
     with tempfile.TemporaryDirectory() as repository_root:
-        repository = GitRepository(mock(), repository_root, 'test-1',
+        repository = GitRepository("git", mock(), repository_root, 'test-1',
                                    None, None, None, None)
         with when(repository).reposync().thenReturn(0):
             repository.sync()

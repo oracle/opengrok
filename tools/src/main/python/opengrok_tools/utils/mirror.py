@@ -27,6 +27,7 @@ import os
 import fnmatch
 import logging
 import urllib
+from tempfile import gettempdir
 
 from requests.exceptions import HTTPError
 
@@ -42,7 +43,7 @@ from .hook import run_hook
 from .command import Command
 from .restful import call_rest_api, do_api_call
 
-from ..scm.repofactory import get_repository, REPO_TYPES
+from ..scm.repofactory import get_repository
 from ..scm.repository import RepositoryException
 
 
@@ -592,24 +593,20 @@ def check_commands(commands):
         return False
 
     for name, value in commands.items():
-        if type(value) is not str:
-            logger.error("value of '{}' under '{}' is not string".
-                         format(name, COMMANDS_PROPERTY))
+        try:
+            repo = get_repository(gettempdir(), name, "dummy_project",
+                                  commands=commands)
+        except RepositoryException as e:
+            logger.error("failed to check repository for '{}': '{}'".
+                         format(name, e))
             return False
 
-        if name not in REPO_TYPES:
-            logger.error("unknown repository type: {} under '{}'".
-                         format(name, COMMANDS_PROPERTY))
-            return False
-
-        if not os.path.exists(value):
-            logger.error("path for '{}' under '{}' does not exist: {}".
+        if repo is None:
+            logger.error("unknown repository type '{}' under '{}': '{}'".
                          format(name, COMMANDS_PROPERTY, value))
             return False
 
-        if not os.path.isfile(value) and not os.path.isdir(value):
-            logger.error("path for '{}' under '{}' is not a file or directory: {}".
-                         format(name, COMMANDS_PROPERTY, value))
+        if not repo.check_command():
             return False
 
     return True

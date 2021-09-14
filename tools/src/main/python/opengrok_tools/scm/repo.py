@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -28,8 +28,8 @@ from .repository import Repository, RepositoryException
 
 
 class RepoRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks, timeout):
-        super().__init__(logger, path, project, command, env, hooks, timeout)
+    def __init__(self, name, logger, path, project, command, env, hooks, timeout):
+        super().__init__(logger, name, path, project, command, env, hooks, timeout)
 
         self.command = self._repository_command(command, default=lambda: which('repo'))
 

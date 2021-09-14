@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -28,8 +28,8 @@ from .repository import Repository, RepositoryException
 
 
 class TeamwareRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks, timeout):
-        super().__init__(logger, path, project, command, env, hooks, timeout)
+    def __init__(self, name, logger, path, project, command, env, hooks, timeout):
+        super().__init__(name, logger, path, project, command, env, hooks, timeout)
 
         #
         # Teamware is different than the rest of the repositories.
@@ -39,7 +39,7 @@ class TeamwareRepository(Repository):
         # argument contains the path to the directory that contains
         # the binaries.
         #
-        command = self._repository_command(command)
+        self.command = self._repository_command(command)
         if command:
             if not os.path.isdir(command):
                 raise RepositoryException("Cannot construct Teamware "
@@ -67,3 +67,15 @@ class TeamwareRepository(Repository):
             return 0
 
         return self._run_custom_sync_command(['bringover'])
+
+    def _check_command(self):
+        #
+        # The default implementation checks file existence. Teamware needs
+        # a directory.
+        #
+        if not os.path.isdir(self.command):
+            self.logger.error("path for '{}' is not a directory: {}".
+                              format(self.name, self.command))
+            return False
+
+        return True
