@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -36,11 +37,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -55,23 +56,15 @@ import org.opengrok.indexer.util.TandemPath;
  * be executed.
  * <p>
  * {@link PendingFileCompleter} is not generally thread-safe, as only
- * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)} is expected
- * to be run in parallel; that method is thread-safe -- but only among other
- * callers of the same method.
+ * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)},
+ * {@link #add(org.opengrok.indexer.index.PendingSymlinkage)} and
+ * {@link #add(org.opengrok.indexer.index.PendingFileDeletion)} are expected
+ * to be run in parallel; these methods are thread-safe w.r.t. underlying data structures.
  * <p>
- * No methods are thread-safe between each other. E.g.,
+ * No other methods are thread-safe between each other. E.g.,
  * {@link #complete()} should only be called by a single thread after all
  * additions of {@link PendingSymlinkage}s, {@link PendingFileDeletion}s, and
  * {@link PendingFileRenaming}s are indicated.
- * <p>
- * {@link #add(org.opengrok.indexer.index.PendingSymlinkage)} should only
- * be called in serial from a single thread in an isolated stage.
- * <p>
- * {@link #add(org.opengrok.indexer.index.PendingFileDeletion)} should only
- * be called in serial from a single thread in an isolated stage.
- * <p>
- * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)}, as noted,
- * can be called in parallel in an isolated stage.
  */
 class PendingFileCompleter {
 
@@ -82,10 +75,7 @@ class PendingFileCompleter {
      */
     public static final String PENDING_EXTENSION = ".org_opengrok";
 
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(PendingFileCompleter.class);
-
-    private final Object INSTANCE_LOCK = new Object();
+    private static final Logger LOGGER = LoggerFactory.getLogger(PendingFileCompleter.class);
 
     private volatile boolean completing;
 
@@ -110,11 +100,11 @@ class PendingFileCompleter {
             return cmp;
     };
 
-    private final Set<PendingFileDeletion> deletions = new HashSet<>();
+    private final Set<PendingFileDeletion> deletions = ConcurrentHashMap.newKeySet();
 
-    private final Set<PendingFileRenaming> renames = new HashSet<>();
+    private final Set<PendingFileRenaming> renames = ConcurrentHashMap.newKeySet();
 
-    private final Set<PendingSymlinkage> linkages = new HashSet<>();
+    private final Set<PendingSymlinkage> linkages = ConcurrentHashMap.newKeySet();
 
     /**
      * Adds the specified element to this instance's set if it is not already
@@ -148,9 +138,7 @@ class PendingFileCompleter {
 
     /**
      * Adds the specified element to this instance's set if it is not already
-     * present, and also remove any pending deletion for the same absolute
-     * path -- all in a thread-safe manner among other callers of this same
-     * method (and only this method).
+     * present, and also remove any pending deletion for the same absolute path.
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
@@ -160,11 +148,9 @@ class PendingFileCompleter {
         if (completing) {
             throw new IllegalStateException("complete() is running");
         }
-        synchronized (INSTANCE_LOCK) {
-            boolean rc = renames.add(e);
-            deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
-            return rc;
-        }
+        boolean rc = renames.add(e);
+        deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
+        return rc;
     }
 
     /**
