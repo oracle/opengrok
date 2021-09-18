@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -117,18 +117,14 @@ include file="httpheader.jspf"
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
 <div id="page">
-    <div id="whole_header">
-        <div id="header">
+    <header id="whole_header">
 <%
     }
 }
 {
     if (request.getAttribute("history.jsp-hist") != null) {
-%><%@
-
-include file="pageheader.jspf"
-
 %>
+    <%@include file="pageheader.jspf" %>
 <%
     }
 }
@@ -148,7 +144,6 @@ include file="pageheader.jspf"
         // We have a lots of results to show: create a slider for them
         request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
 %>
-        </div>
         <div id="Masthead">History log of 
         <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
         (Results <b> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start

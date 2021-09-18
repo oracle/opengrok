@@ -39,9 +39,9 @@ org.opengrok.indexer.web.Prefix"
 {
     PageConfig cfg = PageConfig.get(request);
     Date dateForLastIndexRun = cfg.getEnv().getDateForLastIndexRun();
-    
+
         %>
-    <div id="footer">
+    <footer id="footer">
 <p><a href="https://oracle.github.io/opengrok/" class="link-no-decoration"
       title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)">
     <span id="served-by">served&nbsp;by&nbsp;</span><span class="logo logo-gray-color">{</span><span class="logo logo-blue-color">Open</span><span class="logo logo-gray-color">Grok</span>
@@ -56,7 +56,7 @@ org.opengrok.indexer.web.Prefix"
     }
     // #footer, #page:
     %>
-    </div>
+    </footer>
 </div>
 <%
     /**

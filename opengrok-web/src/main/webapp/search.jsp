@@ -106,13 +106,8 @@ include file="httpheader.jspf"
 
 %><body>
 <div id="page">
-    <div id="whole_header">
-        <div id="header"><%@
-
-include file="pageheader.jspf"
-
-%>
-        </div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
         <div id="Masthead">
             <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
             <%-- TODO: jel: IMHO it should be move to menu.jspf as combobox --%>
@@ -148,7 +143,7 @@ include file="menu.jspf"
 
 %>
         </div>
-    </div>
+    </header>
 
     <div id="results"> <%
 {

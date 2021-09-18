@@ -118,7 +118,7 @@ org.opengrok.indexer.web.Util"%><%
             document.domReady.push(function() { domReadyMenu(true); });
             /* ]]> */
         </script>
-    </div>
+    </header>
 <div id="content">
 <% 
 }

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -44,19 +44,15 @@ include file="httpheader.jspf"
 
 %><body>
     <div id="page">
-        <div id="whole_header">
-            <div id="header"><%@
-
-include file="pageheader.jspf"
-
-            %></div>
+        <header id="whole_header">
+            <%@include file="pageheader.jspf" %>
             <div id="Masthead">OpenGrok search</div>
             <div id="sbar"><%@
 
 include file="menu.jspf"
 
             %></div>
-        </div>
+        </header>
         <div id="results">
             <%= PageConfig.get(request).getEnv().getIncludeFiles().getBodyIncludeFileContent(false) %>
             <% if (PageConfig.get(request).getEnv().getDisplayRepositories()) { %><%@
