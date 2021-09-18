@@ -1657,11 +1657,6 @@ function domReadyMast() {
         const h = getParameter("h");
         if (h && h !== "") {
             window.location.hash = h;
-        } else {
-            $("#content").
-                    attr("tabindex", 1).
-                    focus().
-                    css('outline', 'none');
         }
     }
     if (document.annotate) {
