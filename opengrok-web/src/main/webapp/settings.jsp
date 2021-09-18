@@ -30,14 +30,12 @@ Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
 <%@ include file="httpheader.jspf" %>
 <body>
 <div id="page">
-    <div id="whole_header">
-        <div id="header">
-            <%@include file="pageheader.jspf" %>
-        </div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
         <div id="Masthead">
             <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
         </div>
-    </div>
+    </header>
     <div id="sbar"></div>
     <div style="padding-left: 1rem;">
         <h1>Settings</h1>

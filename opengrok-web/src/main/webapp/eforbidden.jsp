@@ -32,13 +32,9 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 %><body>
 <div id="page">
-    <div id="whole_header">
-        <div id="header"><%@
-
-                include file="pageheader.jspf"
-
-        %></div>
-    </div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
+    </header>
 <h3 class="error">Error: access forbidden</h3>
 <p>The request was forbidden. This can be either file/directory permissions problem or insufficient authorization.</p>
 <%= PageConfig.get(request).getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false) %>

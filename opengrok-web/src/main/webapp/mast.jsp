@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -82,13 +82,8 @@ include file="httpheader.jspf"
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
 <div id="page">
-    <div id="whole_header">
-<div id="header"><%@
-
-include file="pageheader.jspf"
-
-%>
-</div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
 <div id="Masthead">
     <%
 {
