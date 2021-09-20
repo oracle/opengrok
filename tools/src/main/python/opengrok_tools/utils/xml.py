@@ -37,7 +37,7 @@ def insert_file(input_xml, insert_xml_file):
     """
 
     # This avoids resulting XML to have namespace prefixes in elements.
-    ET.register_namespace('', "http://xmlns.jcp.org/xml/ns/javaee")
+    ET.register_namespace('', "https://jakarta.ee/xml/ns/jakartaee")
 
     root = ET.fromstring(input_xml)
     try:
