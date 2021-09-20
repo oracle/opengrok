@@ -40,7 +40,7 @@ def test_xml_insert():
                           os.path.join(DIR_PATH, "insert.xml"))
         with open(os.path.join(DIR_PATH, "new.xml")) as expected_xml:
             # TODO: this should really be comparing XML trees
-            assert out == expected_xml.read()
+            assert out.strip() == expected_xml.read().strip()
 
 
 def test_invalid_xml():
