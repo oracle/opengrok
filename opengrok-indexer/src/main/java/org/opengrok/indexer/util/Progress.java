@@ -25,6 +25,8 @@ package org.opengrok.indexer.util;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,27 +83,37 @@ public class Progress implements AutoCloseable {
 
     private void logLoop() {
         long cachedCount = 0;
+        Map<Level, Long> lastLoggedChunk = new HashMap<>();
+        Map<Level, Integer> levelCount = Map.of(Level.INFO, 100,
+                Level.FINE, 50,
+                Level.FINER, 10,
+                Level.FINEST, 1);
 
         while (true) {
             long currentCount = this.currentCount.get();
-            Level currentLevel;
+            Level currentLevel = Level.FINEST;
 
+            // Do not log if there was no progress.
             if (cachedCount < currentCount) {
-                if (currentCount <= 1 || currentCount % 100 == 0) {
+                if (currentCount <= 1 || currentCount == totalCount) {
                     currentLevel = Level.INFO;
-                } else if (currentCount % 50 == 0) {
-                    currentLevel = Level.FINE;
-                } else if (currentCount % 10 == 0) {
-                    currentLevel = Level.FINER;
                 } else {
-                    currentLevel = Level.FINEST;
+                    if (lastLoggedChunk.getOrDefault(Level.INFO, -1L) <
+                            currentCount / levelCount.get(Level.INFO)) {
+                        currentLevel = Level.INFO;
+                    } else if (lastLoggedChunk.getOrDefault(Level.FINE, -1L) <
+                            currentCount / levelCount.get(Level.FINE)) {
+                        currentLevel = Level.FINE;
+                    } else if (lastLoggedChunk.getOrDefault(Level.FINER, -1L) <
+                            currentCount / levelCount.get(Level.FINER)) {
+                        currentLevel = Level.FINER;
+                    }
                 }
 
-                // Do not log if there was no progress.
                 if (logger.isLoggable(currentLevel)) {
+                    lastLoggedChunk.put(currentLevel, currentCount / levelCount.get(currentLevel));
                     logger.log(currentLevel, "Progress: {0} ({1}%) for {2}",
-                            new Object[]{currentCount, currentCount * 100.0f /
-                                    totalCount, suffix});
+                            new Object[]{currentCount, currentCount * 100.0f / totalCount, suffix});
                 }
             }
 
