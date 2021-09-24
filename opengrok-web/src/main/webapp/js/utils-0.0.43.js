@@ -1484,6 +1484,7 @@ function init_markdown_converter() {
                         converter.setOption('tasklists', true);
                         converter.setOption('simplifiedAutoLink', true);
                         converter.setOption('parseImgDimension', true);
+                        converter.setOption('literalMidWordUnderscores', true);
                     }
 
                     $.ajax({
