@@ -544,23 +544,23 @@ def main():
 
     sync_enabled = True
     if use_projects:
+        mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
+        if not os.path.exists(mirror_config):
+            with open(mirror_config, 'w') as fp:
+                fp.write("# Empty config file for opengrok-mirror\n")
+
         num_workers = get_num_from_env(logger, 'WORKERS',
                                        multiprocessing.cpu_count())
         logger.info('Number of sync workers: {}'.format(num_workers))
 
         if not os.environ.get(NOMIRROR_ENV_NAME):
-            mirror_config = os.path.join(OPENGROK_CONFIG_DIR, "mirror.yml")
-            if not os.path.exists(mirror_config):
-                with open(mirror_config, 'w') as fp:
-                    fp.write("# Empty config file for opengrok-mirror\n")
-            else:
-                conf = read_config(logger, mirror_config)
-                logger.info("Checking mirror configuration in '{}'".
-                            format(mirror_config))
-                if not check_configuration(conf):
-                    logger.error("Mirror configuration in '{}' is invalid, "
-                                 "disabling sync".format(mirror_config))
-                    sync_enabled = False
+            conf = read_config(logger, mirror_config)
+            logger.info("Checking mirror configuration in '{}'".
+                        format(mirror_config))
+            if not check_configuration(conf):
+                logger.error("Mirror configuration in '{}' is invalid, "
+                             "disabling sync".format(mirror_config))
+                sync_enabled = False
 
         worker_function = project_syncer
         syncer_args = (logger, log_level, uri,
