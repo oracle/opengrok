@@ -25,17 +25,17 @@
 
 /**
  * Spaces plugin.
- * 
+ *
  * Inserts a dummy space between line number and the text so that on copy-paste
  * the white space is preserved.
- * 
+ *
  * Internally listens on scroll events and autofills the spaces only for the visible
  * elements.
- * 
+ *
  * IMPORTANT: This plugin is strictly dependent on ascending order of lines
  * and on their attribute "name". It performs a binary search which boosts performance
  * of this plugin for really long files.
- * 
+ *
  * @author Krystof Tulinger
  */
 (function (w, $) {
@@ -277,7 +277,7 @@
                     return true;
                 });
             },
-            
+
             getHashParts: function (hash) {
                 if (!hash || hash === "") {
                     return hash;
@@ -369,7 +369,7 @@
                 }
             }
         }; // inner
-        
+
         this.init = function (options) {
             if (inner.initialized) {
                 return this;
@@ -766,7 +766,7 @@
 
 /**
  * Intelligence window plugin.
- * 
+ *
  * Reworked to use Jquery in 2016
  */
 (function (browserWindow, document, $, $window) {
@@ -1044,7 +1044,7 @@
         console.log("The messagesWindow plugin requires $.window plugin");
         return;
     }
-    
+
     const messagesWindow = function () {
         this.init = function (options, context) {
             $.messagesWindow = $window.create($.extend({
@@ -1153,7 +1153,7 @@
                             return $toReturn;
                         };
                     });
-                    
+
                     $('.scopes-toggle').click(function () {
                         $window.toggle();
                         return false;
@@ -1484,6 +1484,7 @@ function init_markdown_converter() {
                         converter.setOption('tasklists', true);
                         converter.setOption('simplifiedAutoLink', true);
                         converter.setOption('parseImgDimension', true);
+                        converter.setOption('literalMidWordUnderscores', true);
                     }
 
                     $.ajax({
