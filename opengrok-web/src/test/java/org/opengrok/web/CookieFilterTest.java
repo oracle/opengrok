@@ -18,20 +18,19 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
-import org.junit.Test;
-
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.HttpHeaders;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -112,7 +111,7 @@ public class CookieFilterTest {
 
         }
 
-        private Map<String, List<String>> headers = new HashMap<>();
+        private final Map<String, List<String>> headers = new HashMap<>();
 
         @Override
         public void setHeader(String s, String s1) {
@@ -124,12 +123,8 @@ public class CookieFilterTest {
 
         @Override
         public void addHeader(String s, String s1) {
-            List<String> list = headers.get(s);
-            if (list == null) {
-                list = new ArrayList<>();
-                headers.put(s, list);
-            }
-            headers.get(s).add(s1);
+            List<String> list = headers.computeIfAbsent(s, k -> new ArrayList<>());
+            list.add(s1);
         }
 
         @Override

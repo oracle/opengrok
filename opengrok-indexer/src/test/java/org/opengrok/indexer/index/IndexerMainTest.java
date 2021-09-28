@@ -18,33 +18,33 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class IndexerMainTest {
     private TestRepository repository;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repository.destroy();
     }
@@ -59,11 +59,11 @@ public class IndexerMainTest {
         ThreadGroup mainGroup = Thread.currentThread().getThreadGroup();
         Thread[] threads = new Thread[mainGroup.activeCount()];
         mainGroup.enumerate(threads);
-        for (int i = 0; i < threads.length; i++) {
-            if (threads[i] == null || threads[i].getName() == null) {
+        for (Thread thread : threads) {
+            if (thread == null || thread.getName() == null) {
                 continue;
             }
-            assertFalse(threads[i].getName().contains("renamed-handling"));
+            assertFalse(thread.getName().contains("renamed-handling"));
         }
     }
 

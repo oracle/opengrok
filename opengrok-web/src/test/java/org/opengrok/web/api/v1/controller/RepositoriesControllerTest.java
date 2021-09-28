@@ -18,19 +18,18 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.MercurialRepositoryTest;
@@ -38,31 +37,28 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
-import javax.ws.rs.core.Application;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
-@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@EnabledForRepository(MERCURIAL)
 public class RepositoriesControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Override
     protected Application configure() {
         return new ResourceConfig(RepositoriesController.class);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -75,7 +71,7 @@ public class RepositoriesControllerTest extends OGKJerseyTest {
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -88,9 +84,9 @@ public class RepositoriesControllerTest extends OGKJerseyTest {
         repository.destroy();
     }
 
-    @Test(expected = javax.ws.rs.NotFoundException.class)
-    public void testGetRepositoryTypeOfNonExistentRepository() throws Exception {
-        getRepoType(Paths.get("/totally-nonexistent-repository").toString());
+    @Test
+    public void testGetRepositoryTypeOfNonExistentRepository() {
+        assertThrows(NotFoundException.class, () -> getRepoType(Paths.get("/totally-nonexistent-repository").toString()));
     }
 
     @Test

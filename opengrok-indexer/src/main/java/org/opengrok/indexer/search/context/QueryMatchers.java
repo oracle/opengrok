@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search.context;
 
@@ -75,8 +75,7 @@ public final class QueryMatchers {
         if (matchers.isEmpty()) {
             return null;
         }
-        LineMatcher[] m = matchers.toArray(new LineMatcher[matchers.size()]);
-        return (m);
+        return matchers.toArray(new LineMatcher[0]);
     }
 
     private void getTerms(Query query) {
@@ -162,7 +161,7 @@ public final class QueryMatchers {
      * Check whether a matcher should be created for a term.
      */
     private boolean useTerm(String termField) {
-        return fields.keySet().contains(termField);
+        return fields.containsKey(termField);
     }
 
     /**

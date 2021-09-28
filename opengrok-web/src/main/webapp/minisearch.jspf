@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
@@ -47,7 +47,7 @@ org.opengrok.indexer.web.Util"%><%
         %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%
     } else if (cfg.annotate()) {
         %><li><span id="toggle-annotate-by-javascript" style="display: none"><a
-            href="#" onclick="javascript:toggle_annotations(); return false;"
+            href="#" onclick="toggle_annotations(); return false;"
             title="Show or hide line annotation (revisions, authors)."
             ><span class="annotate"></span>Annotate</a></span><span
             id="toggle-annotate"><a href="#"><span class="annotate"></span>
@@ -55,33 +55,32 @@ org.opengrok.indexer.web.Util"%><%
     } else if (cfg.getPrefix() == Prefix.HIST_L) {
         %><li>
             <a href="#"
-               onclick="javascript:
-                           window.location = '<%= context + Prefix.XREF_P + cfg.getUriEncodedPath() %>'
-                           // taken from get_annotations() from utils.js
-                           + '?<%= QueryParameters.ANNOTATION_PARAM_EQ_TRUE %>'
-                           + (document.rev && document.rev() ?
-                                   '&amp;<%= QueryParameters.REVISION_PARAM_EQ %>'
-                           + encodeURIComponent(document.rev()) : '')
-                           + (window.location.hash ?
-                                   '&amp;<%= QueryParameters.WINDOW_HASH_PARAM_EQ %>'
-                           + window.location.hash.substring(1, window.location.hash.length) : '');
+               onclick="window.location = '<%= context + Prefix.XREF_P + cfg.getUriEncodedPath() %>'
+               // taken from get_annotations() from utils.js
+               + '?<%= QueryParameters.ANNOTATION_PARAM_EQ_TRUE %>'
+               + (document.rev && document.rev() ?
+                       '&amp;<%= QueryParameters.REVISION_PARAM_EQ %>'
+               + encodeURIComponent(document.rev()) : '')
+               + (window.location.hash ?
+                       '&amp;<%= QueryParameters.WINDOW_HASH_PARAM_EQ %>'
+               + window.location.hash.substring(1, window.location.hash.length) : '');
                            return false;">
                 <span class="annotate"></span>
                 Annotate
             </a>
         </li><%
     } else {
-        %><li><a href="#" onclick="javascript:get_annotations(); return false;"
+        %><li><a href="#" onclick="get_annotations(); return false;"
             ><span class="annotate"></span>Annotate</a></li><%
     }
     if (!cfg.isDir()) {
         if (cfg.getPrefix() == Prefix.XREF_P) {
-        %><li><a href="#" onclick="javascript:lntoggle();return false;"
+        %><li><a href="#" onclick="lntoggle();return false;"
             title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">
               <span id="line"></span>Line#</a></li>
           <li><a href="#" class="scopes-toggle"
             title="Show or hide scopes window.">
-              <span id="line"><%-- TODO: give its own id --%></span>Scopes#</a></li>
+              <span id="scopes"></span>Scopes#</a></li>
         <li><a href="#" id="navigate"
             title="Show or hide symbol list.">
               <span id="defbox"></span>Navigate#</a></li><%
@@ -98,13 +97,13 @@ org.opengrok.indexer.web.Util"%><%
 	<%
     }
         %><li><input type="text" id="search" name="<%= QueryParameters.FULL_SEARCH_PARAM %>"
-                  class="q" /></li>
+                  class="q" aria-label="Search"/></li>
             <li><input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
-        %><li><input id="minisearch-path" type="checkbox"
+        %><li><label><input id="minisearch-path" type="checkbox"
                   name="<%= QueryParameters.PATH_SEARCH_PARAM %>" value='"<%= vals[0]
-            %>"' <%= vals[2] %>/> current directory</li>
+            %>"' <%= vals[2] %>/> current directory</label></li>
     </ul><%
     if (proj != null) {
     %>
@@ -119,7 +118,7 @@ org.opengrok.indexer.web.Util"%><%
             document.domReady.push(function() { domReadyMenu(true); });
             /* ]]> */
         </script>
-    </div>
+    </header>
 <div id="content">
 <% 
 }

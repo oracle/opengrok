@@ -18,13 +18,12 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
@@ -36,14 +35,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 
 public class ProgressTest {
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         // needed to spawn logger thread in Progress
         RuntimeEnvironment.getInstance().setPrintProgress(true);
@@ -82,7 +82,7 @@ public class ProgressTest {
             TimeUnit.MILLISECONDS.sleep(10);
             i++;
         }
-        Assert.assertSame(loggerThread.getState(), Thread.State.TERMINATED);
+        assertSame(loggerThread.getState(), Thread.State.TERMINATED);
 
         Mockito.verify(logger, times(totalCount)).log(any(), anyString(), any(Object[].class));
     }
@@ -95,7 +95,7 @@ public class ProgressTest {
 
         Mockito.when(logger.isLoggable(any())).thenReturn(true);
         ExecutorService executor = Executors.newFixedThreadPool(totalCount);
-        System.out.println(String.format("Will run %d threads", totalCount));
+        System.out.printf("Will run %d threads%n", totalCount);
         try (Progress progress = new Progress(logger, "foo", totalCount)) {
             while (progress.getLoggerThread().getState() != Thread.State.WAITING) {
                 System.out.println("Waiting for the logger thread to reach the initial wait()");
@@ -111,7 +111,7 @@ public class ProgressTest {
                 try {
                     future.get();
                 } catch (Exception e) {
-                    Assert.fail();
+                    throw new RuntimeException(e);
                 }
             });
         }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -37,7 +37,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Various filesystem utilities used by the different test setups.
@@ -62,7 +62,7 @@ public class FileUtilities {
                      * exception on creating the symlink.
                      */
                     if (file.isDirectory()) {
-                        removeDirs(file);
+                        IOUtils.removeRecursive(file.toPath());
                     } else if (file.exists()) {
                         file.delete();
                     }
@@ -80,17 +80,6 @@ public class FileUtilities {
                 }
             }
         }
-    }
-
-    public static boolean removeDirs(File root) {
-        for (File f : root.listFiles()) {
-            if (f.isDirectory()) {
-                removeDirs(f);
-            } else {
-                f.delete();
-            }
-        }
-        return root.delete();
     }
 
     public static void copyFile(InputStream in, OutputStream out) throws IOException {

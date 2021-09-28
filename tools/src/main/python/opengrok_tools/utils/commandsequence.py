@@ -46,7 +46,8 @@ class CommandSequenceBase:
     """
 
     def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
-                 driveon=False, url=None, env=None):
+                 driveon=False, url=None, env=None, http_headers=None,
+                 api_timeout=None):
         self.name = name
         self.commands = commands
         self.failed = False
@@ -59,6 +60,8 @@ class CommandSequenceBase:
         self.loglevel = loglevel
         self.driveon = driveon
         self.env = env
+        self.http_headers = http_headers
+        self.api_timeout = api_timeout
 
         self.url = url
 
@@ -91,7 +94,9 @@ class CommandSequence(CommandSequenceBase):
     def __init__(self, base):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
                          cleanup=base.cleanup, driveon=base.driveon,
-                         url=base.url, env=base.env)
+                         url=base.url, env=base.env,
+                         http_headers=base.http_headers,
+                         api_timeout=base.api_timeout)
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
@@ -127,7 +132,8 @@ class CommandSequence(CommandSequenceBase):
             if cmd_value.startswith(URL_SUBST) or is_web_uri(cmd_value):
                 try:
                     call_rest_api(command, {PROJECT_SUBST: self.name,
-                                            URL_SUBST: self.url})
+                                            URL_SUBST: self.url},
+                                  self.http_headers, self.api_timeout)
                 except HTTPError as e:
                     self.logger.error("RESTful command {} failed: {}".
                                       format(command, e))
@@ -184,7 +190,8 @@ class CommandSequence(CommandSequenceBase):
             if arg0.startswith(URL_SUBST) or is_web_uri(arg0):
                 try:
                     call_rest_api(cleanup_cmd, {PROJECT_SUBST: self.name,
-                                                URL_SUBST: self.url})
+                                                URL_SUBST: self.url},
+                                  self.http_headers, self.api_timeout)
                 except HTTPError as e:
                     self.logger.error("RESTful command {} failed: {}".
                                       format(cleanup_cmd, e))

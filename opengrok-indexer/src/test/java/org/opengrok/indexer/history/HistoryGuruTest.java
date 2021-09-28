@@ -18,14 +18,19 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,15 +42,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
 import org.opengrok.indexer.util.TestRepository;
@@ -63,10 +64,7 @@ public class HistoryGuruTest {
 
     private static int savedNestingMaximum;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         savedNestingMaximum = env.getNestingMaximum();
@@ -76,31 +74,31 @@ public class HistoryGuruTest {
         RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 FILES, true);
-        Assert.assertNotEquals(0, FILES.size());
+        assertNotEquals(0, FILES.size());
 
         HistoryGuru histGuru = HistoryGuru.getInstance();
         assertNotNull(histGuru);
-        Assert.assertEquals(0, histGuru.getRepositories().size());
+        assertEquals(0, histGuru.getRepositories().size());
 
         // Add initial set of repositories to HistoryGuru and RuntimeEnvironment.
         // This is a test in itself. While this makes the structure of the tests
         // a bit incomprehensible, it does not make sense to run the rest of tests
         // if the basic functionality does not work.
         env.setRepositories(repository.getSourceRoot());
-        Assert.assertTrue(histGuru.getRepositories().size() > 0);
-        Assert.assertEquals(histGuru.getRepositories().size(),
+        assertTrue(histGuru.getRepositories().size() > 0);
+        assertEquals(histGuru.getRepositories().size(),
                 env.getRepositories().size());
 
         // Create cache with initial set of repositories.
         histGuru.createCache();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         env.setNestingMaximum(savedNestingMaximum);
     }
@@ -116,8 +114,8 @@ public class HistoryGuruTest {
                     String revision = entry.getRevision();
                     try (InputStream in = instance.getRevision(
                             f.getParent(), f.getName(), revision)) {
-                        assertNotNull("Failed to get revision " + revision
-                                + " of " + f.getAbsolutePath(), in);
+                        assertNotNull(in, "Failed to get revision " + revision
+                                + " of " + f.getAbsolutePath());
                     }
                 }
             }
@@ -125,13 +123,13 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @EnabledForRepository(SUBVERSION)
     public void testBug16465() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (f.getName().equals("bugreport16465@")) {
-                assertNotNull(f.getPath() + " must have history", instance.getHistory(f));
-                assertNotNull(f.getPath() + " must have annotations", instance.annotate(f, null));
+                assertNotNull(instance.getHistory(f), f.getPath() + " must have history");
+                assertNotNull(instance.annotate(f, null), f.getPath() + " must have annotations");
             }
         }
     }
@@ -154,7 +152,6 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         final int numReposOrig = instance.getRepositories().size();
@@ -163,24 +160,23 @@ public class HistoryGuruTest {
         Collection<String> repos = new ArrayList<>();
         repos.add("totally-nonexistent-repository");
         Collection<RepositoryInfo> added = instance.addRepositories(repos);
-        Assert.assertEquals(0, added.size());
-        Assert.assertEquals(numReposOrig, instance.getRepositories().size());
+        assertEquals(0, added.size());
+        assertEquals(numReposOrig, instance.getRepositories().size());
 
         // Remove one repository.
         repos = new ArrayList<>();
         repos.add(env.getSourceRootPath() + File.separator + "git");
         instance.removeRepositories(repos);
-        Assert.assertEquals(numReposOrig - 1, instance.getRepositories().size());
+        assertEquals(numReposOrig - 1, instance.getRepositories().size());
 
         // Add the repository back.
         added = instance.addRepositories(repos);
-        Assert.assertEquals(1, added.size());
-        Assert.assertEquals(numReposOrig, instance.getRepositories().size());
+        assertEquals(1, added.size());
+        assertEquals(numReposOrig, instance.getRepositories().size());
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.CvsInstalled.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(CVS)
     public void testAddSubRepositoryNotNestable() {
         HistoryGuru instance = HistoryGuru.getInstance();
 
@@ -201,7 +197,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     public void testAddSubRepository() {
         HistoryGuru instance = HistoryGuru.getInstance();
 
@@ -238,13 +234,13 @@ public class HistoryGuruTest {
         Collection<RepositoryInfo> addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(),
                         "repoRoot").toString()));
-        assertEquals("should add to default nesting maximum", 2, addedRepos.size());
+        assertEquals(2, addedRepos.size(), "should add to default nesting maximum");
 
         env.setNestingMaximum(2);
         addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(),
                         "repoRoot").toString()));
-        assertEquals("should get one more repo", 3, addedRepos.size());
+        assertEquals(3, addedRepos.size(), "should get one more repo");
     }
 
     private static void certainlyMkdirs(File file) throws IOException {
@@ -254,7 +250,6 @@ public class HistoryGuruTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testScanningDepth() throws IOException {
         String topLevelDirName = "scanDepthTest";
         File repoRoot = new File(repository.getSourceRoot(), topLevelDirName);
@@ -274,15 +269,22 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         Collection<RepositoryInfo> addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
-        assertEquals("should add to max depth", 1, addedRepos.size());
+        assertEquals(1, addedRepos.size(), "should add to max depth");
 
         env.setScanningDepth(1);
         List<String> repoDirs = addedRepos.stream().map(RepositoryInfo::getDirectoryName).collect(Collectors.toList());
         instance.removeRepositories(repoDirs);
         addedRepos = instance.addRepositories(
                 Collections.singleton(Paths.get(repository.getSourceRoot(), topLevelDirName).toString()));
-        assertEquals("should add to increased max depth", 2, addedRepos.size());
+        assertEquals(2, addedRepos.size(), "should add to increased max depth");
 
         env.setScanningDepth(originalScanDepth);
+    }
+
+    @Test
+    void testGetLastHistoryEntry() throws HistoryException {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        File file = new File("/nonexistent");
+        assertNull(instance.getLastHistoryEntry(file, true));
     }
 }

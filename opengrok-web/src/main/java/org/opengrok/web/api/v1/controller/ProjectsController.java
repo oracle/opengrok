@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -38,20 +38,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -90,11 +90,13 @@ public class ProjectsController {
         if (!env.getProjects().containsKey(projectName)) {
             Project project = new Project(projectName, "/" + projectName);
 
-            // Add repositories in this project.
-            List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+            if (env.isHistoryEnabled()) {
+                // Add repositories in this project.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
 
-            env.addRepositories(repos);
-            env.getProjectRepositoriesMap().put(project, repos);
+                env.addRepositories(repos);
+                env.getProjectRepositoriesMap().put(project, repos);
+            }
 
             // Finally introduce the project to the configuration.
             // Note that the project is inactive in the UI until it is indexed.
@@ -105,29 +107,31 @@ public class ProjectsController {
             Project project = env.getProjects().get(projectName);
             Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
 
-            // Refresh the list of repositories of this project.
-            // This is the goal of this action: if an existing project
-            // is re-added, this means its list of repositories has changed.
-            List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
-            List<RepositoryInfo> allrepos = env.getRepositories();
-            synchronized (allrepos) {
-                // newly added repository
-                for (RepositoryInfo repo : repos) {
-                    if (!allrepos.contains(repo)) {
-                        allrepos.add(repo);
+            if (env.isHistoryEnabled()) {
+                // Refresh the list of repositories of this project.
+                // This is the goal of this action: if an existing project
+                // is re-added, this means its list of repositories has changed.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+                List<RepositoryInfo> allrepos = env.getRepositories();
+                synchronized (allrepos) {
+                    // newly added repository
+                    for (RepositoryInfo repo : repos) {
+                        if (!allrepos.contains(repo)) {
+                            allrepos.add(repo);
+                        }
                     }
-                }
-                // deleted repository
-                if (map.containsKey(project)) {
-                    for (RepositoryInfo repo : map.get(project)) {
-                        if (!repos.contains(repo)) {
-                            allrepos.remove(repo);
+                    // deleted repository
+                    if (map.containsKey(project)) {
+                        for (RepositoryInfo repo : map.get(project)) {
+                            if (!repos.contains(repo)) {
+                                allrepos.remove(repo);
+                            }
                         }
                     }
                 }
-            }
 
-            map.put(project, repos);
+                map.put(project, repos);
+            }
         }
 
         return Response.status(Response.Status.CREATED).build();
@@ -174,12 +178,14 @@ public class ProjectsController {
             group.getProjects().remove(project);
         }
 
-        // Now remove the repositories associated with this project.
-        List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
-        if (repos != null) {
-            env.getRepositories().removeAll(repos);
+        if (env.isHistoryEnabled()) {
+            // Now remove the repositories associated with this project.
+            List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
+            if (repos != null) {
+                env.getRepositories().removeAll(repos);
+            }
+            env.getProjectRepositoriesMap().remove(project);
         }
-        env.getProjectRepositoriesMap().remove(project);
 
         env.getProjects().remove(projectName, project);
 
@@ -215,6 +221,10 @@ public class ProjectsController {
     @DELETE
     @Path("/{project}/historycache")
     public void deleteHistoryCache(@PathParam("project") String projectName) {
+        if (!env.isHistoryEnabled()) {
+            return;
+        }
+
         // Avoid classification as a taint bug.
         projectName = Laundromat.launderInput(projectName);
 

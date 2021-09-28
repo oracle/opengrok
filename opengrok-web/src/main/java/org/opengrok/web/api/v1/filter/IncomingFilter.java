@@ -22,6 +22,15 @@
  */
 package org.opengrok.web.api.v1.filter;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import org.opengrok.indexer.configuration.ConfigurationChangedListener;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -31,15 +40,6 @@ import org.opengrok.web.api.v1.controller.HistoryController;
 import org.opengrok.web.api.v1.controller.SearchController;
 import org.opengrok.web.api.v1.controller.SuggesterController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -122,13 +122,15 @@ public class IncomingFilter implements ContainerRequestFilter, ConfigurationChan
 
         String path = context.getUriInfo().getPath();
 
-        if (request.isSecure()) {
-            String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
-                String tokenValue = authHeaderValue.substring(BEARER.length());
-                if (getTokens().contains(tokenValue)) {
-                    LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication header token", path);
+        String authHeaderValue = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeaderValue != null && authHeaderValue.startsWith(BEARER)) {
+            String tokenValue = authHeaderValue.substring(BEARER.length());
+            if (getTokens().contains(tokenValue)) {
+                if (request.isSecure() || RuntimeEnvironment.getInstance().isAllowInsecureTokens()) {
+                    LOGGER.log(Level.FINEST, "allowing request to {0} based on authentication token", path);
                     return;
+                } else {
+                    LOGGER.log(Level.FINEST, "request to {0} has a valid token however is not secure", path);
                 }
             }
         }

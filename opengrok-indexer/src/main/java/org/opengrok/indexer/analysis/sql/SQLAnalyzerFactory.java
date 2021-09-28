@@ -26,15 +26,15 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class SQLAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "SQL";
-    
+
+    private static final String NAME = "SQL";
+
     private static final String[] SUFFIXES = {
-        "SQL"        
+        "SQL"
     };
 
     public SQLAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

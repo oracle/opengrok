@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -194,7 +193,7 @@ public final class Configuration {
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
     private int historyParallelism;
-    private int historyRenamedParallelism;
+    private int historyFileParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -215,6 +214,7 @@ public final class Configuration {
     private int webappStartCommandTimeout; // in seconds
     private int restfulCommandTimeout; // in seconds
     private long ctagsTimeout; // in seconds
+    private long xrefTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -231,6 +231,8 @@ public final class Configuration {
      * for capable repositories.
      */
     private boolean handleHistoryOfRenamedFiles;
+
+    private boolean mergeCommitsEnabled;
 
     public static final double defaultRamBufferSize = 16;
 
@@ -305,6 +307,10 @@ public final class Configuration {
 
     private Set<String> authenticationTokens; // for non-localhost API access
     private String indexerAuthenticationToken;
+    private boolean allowInsecureTokens;
+
+    private int historyChunkCount;
+    private boolean historyCachePerPartesEnabled = true;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -470,6 +476,24 @@ public final class Configuration {
         this.ctagsTimeout = timeout;
     }
 
+    public long getXrefTimeout() {
+        return xrefTimeout;
+    }
+
+    /**
+     * Set the timeout for generating xrefs to a new value.
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setXrefTimeout(long timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "xrefTimeout", timeout));
+        }
+        this.xrefTimeout = timeout;
+    }
+
     public boolean isLastEditedDisplayMode() {
         return lastEditedDisplayMode;
     }
@@ -540,6 +564,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMaxRevisionThreadCount(Runtime.getRuntime().availableProcessors());
+        setMergeCommitsEnabled(false);
         setMessageLimit(500);
         setNavigateWindowEnabled(false);
         setNestingMaximum(1);
@@ -563,11 +588,11 @@ public final class Configuration {
         //setTabSize(4);
         setTagsEnabled(false);
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
-        // Set to empty string so we can append it to the URL
-        // unconditionally later.
+        // Set to empty string so we can append it to the URL unconditionally later.
         setUserPageSuffix("");
         setWebappLAF("default");
         // webappCtags is default(boolean)
+        setXrefTimeout(30);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -791,7 +816,7 @@ public final class Configuration {
     public void setHistoryCache(boolean historyCache) {
         this.historyCache = historyCache;
     }
-    
+
     /**
      * How long can a history request take before it's cached? If the time is
      * exceeded, the result is cached. This setting only affects
@@ -828,6 +853,14 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
+    }
+
+    public void setMergeCommitsEnabled(boolean flag) {
+        this.mergeCommitsEnabled = flag;
+    }
+
+    public boolean isMergeCommitsEnabled() {
+        return mergeCommitsEnabled;
     }
 
     public boolean isNavigateWindowEnabled() {
@@ -903,11 +936,11 @@ public final class Configuration {
     public String getIncludeRoot() {
         return includeRoot != null ? includeRoot : dataRoot;
     }
-    
+
     public void setIncludeRoot(String newRoot) {
         this.includeRoot = newRoot;
     }
-    
+
     public List<RepositoryInfo> getRepositories() {
         return repositories;
     }
@@ -1132,7 +1165,7 @@ public final class Configuration {
     }
 
     public void setIndexingParallelism(int value) {
-        this.indexingParallelism = value > 0 ? value : 0;
+        this.indexingParallelism = Math.max(value, 0);
     }
 
     public int getHistoryParallelism() {
@@ -1140,15 +1173,15 @@ public final class Configuration {
     }
 
     public void setHistoryParallelism(int value) {
-        this.historyParallelism = value > 0 ? value : 0;
+        this.historyParallelism = Math.max(value, 0);
     }
 
-    public int getHistoryRenamedParallelism() {
-        return historyRenamedParallelism;
+    public int getHistoryFileParallelism() {
+        return historyFileParallelism;
     }
 
-    public void setHistoryRenamedParallelism(int value) {
-        this.historyRenamedParallelism = value > 0 ? value : 0;
+    public void setHistoryFileParallelism(int value) {
+        this.historyFileParallelism = Math.max(value, 0);
     }
 
     public boolean isTagsEnabled() {
@@ -1356,6 +1389,30 @@ public final class Configuration {
         this.indexerAuthenticationToken = token;
     }
 
+    public boolean isAllowInsecureTokens() {
+        return this.allowInsecureTokens;
+    }
+
+    public void setAllowInsecureTokens(boolean value) {
+        this.allowInsecureTokens = value;
+    }
+
+    public int getHistoryChunkCount() {
+        return historyChunkCount;
+    }
+
+    public void setHistoryChunkCount(int historyChunkCount) {
+        this.historyChunkCount = historyChunkCount;
+    }
+
+    public boolean isHistoryCachePerPartesEnabled() {
+        return historyCachePerPartesEnabled;
+    }
+
+    public void setHistoryCachePerPartesEnabled(boolean historyCachePerPartesEnabled) {
+        this.historyCachePerPartesEnabled = historyCachePerPartesEnabled;
+    }
+
     /**
      * Write the current configuration to a file.
      *
@@ -1397,14 +1454,10 @@ public final class Configuration {
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
         final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        ExceptionListener listener = exceptions::addLast;
 
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener)) {
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener,
+                new ConfigurationClassLoader())) {
             ret = d.readObject();
         }
 
@@ -1424,15 +1477,10 @@ public final class Configuration {
         Configuration conf = ((Configuration) ret);
 
         // Removes all non root groups.
-        // This ensures that when the configuration is reloaded then the set 
+        // This ensures that when the configuration is reloaded then the set
         // contains only root groups. Subgroups are discovered again
         // as follows below
-        conf.groups.removeIf(new Predicate<Group>() {
-            @Override
-            public boolean test(Group g) {
-                return g.getParent() != null;
-            }
-        });
+        conf.groups.removeIf(g -> g.getParent() != null);
 
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)

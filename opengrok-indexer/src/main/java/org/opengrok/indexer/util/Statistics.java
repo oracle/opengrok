@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.util;
 
@@ -31,6 +31,10 @@ import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class is handy for logging messages (and updating metrics)
+ * about duration of a task.
+ */
 public class Statistics {
 
     private final Instant startTime;
@@ -55,13 +59,29 @@ public class Statistics {
     }
 
     /**
-     * Log a message and trigger statsd message along with how much time it took since the constructor was called.
+     * Log a message along with how much time it took since the constructor was called.
+     * If there is a metrics registry, it will update the timer specified by the meter name.
      * @param logger logger instance
      * @param logLevel log level
      * @param msg message string
      * @param meterName name of the meter
+     * @see Metrics#getRegistry()
      */
     public void report(Logger logger, Level logLevel, String msg, String meterName) {
+        report(logger, logLevel, msg, meterName, new String[]{});
+    }
+
+    /**
+     * Log a message along with how much time it took since the constructor was called.
+     * If there is a metrics registry, it will update the timer specified by the meter name.
+     * @param logger logger instance
+     * @param logLevel log level
+     * @param msg message string
+     * @param meterName name of the meter
+     * @param tags array of tags for the meter
+     * @see Metrics#getRegistry()
+     */
+    public void report(Logger logger, Level logLevel, String msg, String meterName, String[] tags) {
         Duration duration = Duration.between(startTime, Instant.now());
 
         logIt(logger, logLevel, msg, duration);
@@ -69,6 +89,7 @@ public class Statistics {
         MeterRegistry registry = Metrics.getRegistry();
         if (registry != null) {
             Timer.builder(meterName).
+                    tags(tags).
                     register(registry).
                     record(duration);
         }
@@ -76,6 +97,7 @@ public class Statistics {
 
     /**
      * log a message along with how much time it took since the constructor was called.
+     * If there is a metrics registry, it will update the timer specified by the meter name.
      * The log level is {@code INFO}.
      * @param logger logger instance
      * @param msg message string

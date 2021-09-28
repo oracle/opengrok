@@ -26,48 +26,79 @@ from .webutil import get_uri
 from .restful import do_api_call
 
 
-def get_repos(logger, project, uri):
+def get_repos(logger, project, uri, headers=None, timeout=None):
     """
     :param logger: logger instance
     :param project: project name
     :param uri: web application URI
+    :param headers: optional dictionary of HTTP headers
+    :param timeout: optional timeout in seconds
     :return: list of repository paths (can be empty if no match)
              or None on failure
     """
 
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
-                                       urllib.parse.quote_plus(project),
-                                       'repositories'))
-    except Exception:
-        logger.error('could not get repositories for ' + project)
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
+                                         urllib.parse.quote_plus(project),
+                                         'repositories'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not get repositories for project '{}': {}".
+                     format(project, exception))
         return None
 
     ret = []
-    for line in r.json():
+    for line in res.json():
         ret.append(line.strip())
 
     return ret
 
 
-def get_config_value(logger, name, uri):
+def get_config_value(logger, name, uri, headers=None, timeout=None):
     """
-    Get list of repositories for given project name.
+    Get configuration value.
 
     Return string with the result on success, None on failure.
     """
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
-                                       urllib.parse.quote_plus(name)))
-    except Exception:
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration',
+                                         urllib.parse.quote_plus(name)),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
         logger.error("Cannot get the '{}' config value from the web "
-                     "application on {}".format(name, uri))
+                     "application: {}".format(name, exception))
         return None
 
-    return r.text
+    return res.text
 
 
-def get_repo_type(logger, repository, uri):
+def set_config_value(logger, name, value, uri, headers=None, timeout=None):
+    """
+    Set configuration value.
+    :param logger: logger instance
+    :param name: name of the configuration field
+    :param value: field value
+    :param uri: web app URI
+    :param headers: optional dictionary of HTTP headers
+    :param timeout: optional request timeout
+    :return: True on success, False on failure
+    """
+    try:
+        local_headers = {}
+        if headers:
+            local_headers.update(headers)
+        local_headers['Content-type'] = 'application/text'
+        do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration', name),
+                    data=value, headers=local_headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("Cannot set the '{}' config field to '{}' in the web "
+                     "application: {}".format(name, value, exception))
+        return False
+
+    return True
+
+
+def get_repo_type(logger, repository, uri, headers=None, timeout=None):
     """
     Get repository type for given path relative to sourceRoot.
 
@@ -76,85 +107,90 @@ def get_repo_type(logger, repository, uri):
     payload = {'repository': repository}
 
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
-                                       'property', 'type'), params=payload)
-    except Exception:
-        logger.error('could not get repository type for {} from web'
-                     'application on {}'.format(repository, uri))
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'repositories',
+                                         'property', 'type'), params=payload,
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not get repository type for '{}' from web"
+                     "application: {}".format(repository, exception))
         return None
 
-    line = r.text
+    line = res.text
 
     idx = line.rfind(":")
     return line[idx + 1:]
 
 
-def get_configuration(logger, uri):
+def get_configuration(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'))
-    except Exception:
-        logger.error('could not get configuration from web application on {}'.
-                     format(uri))
+        res = do_api_call('GET', get_uri(uri, 'api', 'v1', 'configuration'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error('could not get configuration from web application: {}'.
+                     format(exception))
         return None
 
-    return r.text
+    return res.text
 
 
-def set_configuration(logger, configuration, uri):
+def set_configuration(logger, configuration, uri, headers=None, timeout=None):
     try:
         do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration'),
-                    data=configuration)
-    except Exception:
-        logger.error('could not set configuration for web application on {}'.
-                     format(uri))
+                    data=configuration, headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error('could not set configuration to web application: {}'.
+                     format(exception))
         return False
 
     return True
 
 
-def list_projects(logger, uri):
+def list_projects(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET',
-                        get_uri(uri, 'api', 'v1', 'projects'))
-    except Exception:
-        logger.error('could not list projects from web application '
-                     'on {}'.format(uri))
+        res = do_api_call('GET',
+                          get_uri(uri, 'api', 'v1', 'projects'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not list projects from web application: {}".
+                     format(exception))
         return None
 
-    return r.json()
+    return res.json()
 
 
-def list_indexed_projects(logger, uri):
+def list_indexed_projects(logger, uri, headers=None, timeout=None):
     try:
-        r = do_api_call('GET',
-                        get_uri(uri, 'api', 'v1', 'projects', 'indexed'))
-    except Exception:
-        logger.error('could not list indexed projects from web application '
-                     'on {}'.format(uri))
+        res = do_api_call('GET',
+                          get_uri(uri, 'api', 'v1', 'projects', 'indexed'),
+                          headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not list indexed projects from web application: {}".
+                     format(exception))
         return None
 
-    return r.json()
+    return res.json()
 
 
-def add_project(logger, project, uri):
+def add_project(logger, project, uri, headers=None, timeout=None):
     try:
         do_api_call('POST', get_uri(uri, 'api', 'v1', 'projects'),
-                    data=project)
-    except Exception:
-        logger.error('could not add project {} for web application on {}'.
-                     format(project, uri))
+                    data=project, headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not add project '{}' to web application: {}".
+                     format(project, exception))
         return False
 
     return True
 
 
-def delete_project(logger, project, uri):
+def delete_project(logger, project, uri, headers=None, timeout=None):
     try:
         do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
-                                      urllib.parse.quote_plus(project)))
-    except Exception:
-        logger.error('could not delete project {} in web application on {}'.
-                     format(project, uri))
+                                      urllib.parse.quote_plus(project)),
+                    headers=headers, timeout=timeout)
+    except Exception as exception:
+        logger.error("could not delete project '{}' in web application: {}".
+                     format(project, exception))
         return False
 
     return True

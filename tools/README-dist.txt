@@ -20,7 +20,7 @@ Install
 
 Use the distribution tarball and run pip:
 
-  python3 -m pip install opengrok_tools.tar.gz
+  python3 -m pip install opengrok-tools.tar.gz
 
 This will download all dependencies and install the package to your local
 python3 modules.
@@ -32,7 +32,7 @@ the python virtual environment for it:
 
   cd /opt/opengrok
   python3 -m venv opengrok-tools
-  opengrok-tools/bin/python -m pip install opengrok_tools.tar.gz
+  opengrok-tools/bin/python -m pip install opengrok-tools.tar.gz
 
 This will install the package and all the dependencies under the
 /opt/opengrok/opengrok-tools directory. You can then call the scripts with

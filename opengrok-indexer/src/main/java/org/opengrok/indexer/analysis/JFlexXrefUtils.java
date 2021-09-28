@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -144,8 +144,7 @@ public class JFlexXrefUtils {
      * @return generated span id
      */
     public static String generateId(Scope scope) {
-        String name = Integer.toString(scope.getLineFrom()) + scope.getName()
-                + scope.getSignature();
+        String name = scope.getLineFrom() + scope.getName() + scope.getSignature();
         int hash = name.hashCode();
         return "scope_id_" + Integer.toHexString(hash);
     }
@@ -344,27 +343,16 @@ public class JFlexXrefUtils {
         }
 
         // We want the symbol table to be sorted
-        Comparator<Tag> cmp = (Tag tag1, Tag tag2) -> {
-            // Order by symbol name, and then by line number if multiple
-            // definitions use the same symbol name
-            int ret = tag1.symbol.compareTo(tag2.symbol);
-            if (ret == 0) {
-                ret = tag1.line - tag2.line;
-            }
-            return ret;
-        };
+        // Order by symbol name, and then by line number if multiple
+        // definitions use the same symbol name
+        Comparator<Tag> cmp = Comparator.comparing((Tag tag) -> tag.symbol).thenComparingInt(tag -> tag.line);
 
-        Map<String, SortedSet<Tag>> symbols
-                = new HashMap<>();
+        Map<String, SortedSet<Tag>> symbols = new HashMap<>();
 
         for (Tag tag : defs.getTags()) {
             XrefStyle style = XrefStyle.getStyle(tag.type);
             if (style != null && style.title != null) {
-                SortedSet<Tag> tags = symbols.get(style.name);
-                if (tags == null) {
-                    tags = new TreeSet<>(cmp);
-                    symbols.put(style.name, tags);
-                }
+                SortedSet<Tag> tags = symbols.computeIfAbsent(style.name, k -> new TreeSet<>(cmp));
                 tags.add(tag);
             }
         }

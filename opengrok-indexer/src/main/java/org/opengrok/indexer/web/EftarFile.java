@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -50,7 +50,7 @@ public class EftarFile {
     private long offset;
     private Node root;
 
-    class Node {
+    static class Node {
 
         public long hash;
         public String tag;

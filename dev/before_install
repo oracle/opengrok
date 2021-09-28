@@ -9,12 +9,10 @@ if [[ "$RUNNER_OS" == "Linux" ]]; then
 
 	sudo apt-get install -qq \
 	    cvs \
-	    git \
 	    mercurial \
 	    cssc \
 	    bzr \
 	    subversion \
-	    monotone \
 	    rcs \
 	    rcs-blame \
 	    python3 \

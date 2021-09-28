@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.suggest.query.customized;
@@ -39,7 +39,7 @@ import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 

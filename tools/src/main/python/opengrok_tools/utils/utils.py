@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -27,6 +27,7 @@ from logging import log
 import logging
 import sys
 from urllib.parse import urlparse
+from distutils import util
 from .exitvals import (
     FAILURE_EXITVAL,
 )
@@ -92,6 +93,24 @@ def get_int(logger, name, value):
 
     try:
         return int(value)
+    except ValueError:
+        logger.error("'{}' is not a number: {}".format(name, value))
+        return None
+
+
+def get_bool(logger, name, value):
+    """
+    If the supplied value is bool or its representation, return the bool value.
+    Otherwise return None.
+    """
+    if value is None:
+        return None
+
+    if type(value) is bool:
+        return value
+
+    try:
+        return bool(util.strtobool(value))
     except ValueError:
         logger.error("'{}' is not a number: {}".format(name, value))
         return None

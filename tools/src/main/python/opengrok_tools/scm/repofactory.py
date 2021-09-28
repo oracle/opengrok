@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # Portions Copyright 2020 Robert Williams
 
@@ -32,14 +32,12 @@ from .repo import RepoRepository
 from .svn import SubversionRepository
 from .teamware import TeamwareRepository
 
-logger = logging.getLogger(__name__)
-
 
 def get_repository(path, repo_type, project,
                    commands=None, env=None, hooks=None, timeout=None):
     """
-    :param path: full path
-    :param repo_type: repository type
+    :param path: full path for the working directory
+    :param repo_type: repository type name
     :param project: project name
     :param commands: commands dictionary with paths to SCM utilities
     :param env: environment variables dictionary
@@ -49,39 +47,42 @@ def get_repository(path, repo_type, project,
     or None if given repository type cannot be found.
     """
 
+    logger = logging.getLogger(__name__)
+
     repo_lower = repo_type.lower()
 
-    logger.debug("Constructing repo object for path {}".format(path))
+    logger.debug("Constructing repository object of type '{}' for path '{}'".
+                 format(repo_type, path))
 
     if not commands:
         commands = {}
 
     if repo_lower in ["mercurial", "hg"]:
-        return MercurialRepository(logger, path, project,
+        return MercurialRepository(repo_type, logger, path, project,
                                    commands.get("hg"),
                                    env, hooks, timeout)
     elif repo_lower in ["teamware", "sccs"]:
-        return TeamwareRepository(logger, path, project,
+        return TeamwareRepository(repo_type, logger, path, project,
                                   commands.get("teamware"),
                                   env, hooks, timeout)
     elif repo_lower == "cvs":
-        return CVSRepository(logger, path, project,
+        return CVSRepository(repo_type, logger, path, project,
                              commands.get("cvs"),
                              env, hooks, timeout)
     elif repo_lower in ["svn", "subversion"]:
-        return SubversionRepository(logger, path, project,
+        return SubversionRepository(repo_type, logger, path, project,
                                     commands.get("svn"),
                                     env, hooks, timeout)
     elif repo_lower == "git":
-        return GitRepository(logger, path, project,
+        return GitRepository(repo_type, logger, path, project,
                              commands.get("git"),
                              env, hooks, timeout)
     elif repo_lower == "perforce":
-        return PerforceRepository(logger, path, project,
+        return PerforceRepository(repo_type, logger, path, project,
                                   commands.get("perforce"),
                                   env, hooks, timeout)
     elif repo_lower == "repo":
-        return RepoRepository(logger, path, project,
+        return RepoRepository(repo_type, logger, path, project,
                               commands.get("repo"),
                               env, hooks, timeout)
     else:

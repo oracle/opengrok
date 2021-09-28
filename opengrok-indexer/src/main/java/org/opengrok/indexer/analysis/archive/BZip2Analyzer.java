@@ -127,5 +127,5 @@ public class BZip2Analyzer extends FileAnalyzer {
                 }
             }
         };
-    }    
+    }
 }

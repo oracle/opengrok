@@ -31,9 +31,9 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 
 public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "UUEncoded";
-    
+
+    private static final String NAME = "UUEncoded";
+
     private static final String[] SUFFIXES = {
        /**
          * XXX:
@@ -51,7 +51,7 @@ public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public UuencodeAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

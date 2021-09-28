@@ -18,16 +18,18 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
-import javax.ws.rs.ProcessingException;
-import org.junit.Test;
+import jakarta.ws.rs.ProcessingException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IndexerUtilTest {
-    @Test(expected = ProcessingException.class)
+    @Test
     public void testEnableProjectsInvalidUrl() {
-        IndexerUtil.enableProjects("http://non-existent.server.com:123");
+        assertThrows(ProcessingException.class, () -> IndexerUtil.enableProjects("http://non-existent.server.com:123"));
     }
 }

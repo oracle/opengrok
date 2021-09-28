@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
@@ -29,7 +29,7 @@ org.opengrok.indexer.web.Prefix"
 %>
 <%!
 /* ---------------------- foot.jspf members start --------------------- */
-    private static EnumSet<Prefix> needAddDiv = EnumSet.of(
+    private static final EnumSet<Prefix> needAddDiv = EnumSet.of(
         Prefix.HIST_L, Prefix.XREF_P, Prefix.DIFF_P, Prefix.MORE_P,
         // could NOT find any mapping/reference to those ones:
         Prefix.HIST_S, Prefix.XREF_S, Prefix.DIFF_S, Prefix.MORE_S);
@@ -39,13 +39,15 @@ org.opengrok.indexer.web.Prefix"
 {
     PageConfig cfg = PageConfig.get(request);
     Date dateForLastIndexRun = cfg.getEnv().getDateForLastIndexRun();
-    
+
         %>
-    <div id="footer">
-<p><a href="http://opengrok.github.com/OpenGrok/"
- title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)"><span id="fti"></span></a></p>
+    <footer id="footer">
+<p><a href="https://oracle.github.io/opengrok/" class="link-no-decoration"
+      title="Served by OpenGrok (<%= Info.getVersion() %> - <%= Info.getShortRevision() %>)">
+    <span id="served-by">served&nbsp;by&nbsp;</span><span class="logo logo-gray-color">{</span><span class="logo logo-blue-color">Open</span><span class="logo logo-gray-color">Grok</span>
+</a></p>
 <% if(dateForLastIndexRun != null) { %>
-<p>Last Index update <%= dateForLastIndexRun %></p>
+<p>Last Index Update: <%= dateForLastIndexRun %></p>
 <%}%>
     <%= cfg.getEnv().getIncludeFiles().getFooterIncludeFileContent(false) %>
     <%
@@ -54,7 +56,7 @@ org.opengrok.indexer.web.Prefix"
     }
     // #footer, #page:
     %>
-    </div>
+    </footer>
 </div>
 <%
     /**

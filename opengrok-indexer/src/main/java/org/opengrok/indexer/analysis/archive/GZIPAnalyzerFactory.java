@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "GZIP";
-    
+
+    private static final String NAME = "GZIP";
+
     private static final String[] SUFFIXES = {
         "GZ"
     };
@@ -38,7 +38,7 @@ public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public GZIPAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null, name);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, NAME);
     }
 
     @Override

@@ -18,58 +18,24 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
-<project name="OpenGrok" default="jar" basedir=".">
-    <description>Builds, tests, and runs the project opengrok.</description>
-
-    <property name="distname" value="opengrok"/>
+<project name="OpenGrok" default="-post-compile-test" basedir=".">
+    <description>Builds testdata for indexer.</description>
 
     <property name="build.classes.dir" value="target/classes"/>
 
     <property name="test.repositories" value="../testdata/repositories"/>
     <property name="test.sources" value="../testdata/sources"/>
-    <property name="test.svndump" value="../testdata/svndump"/>
-    <property name="test.plugins" value="../testdata/plugins"/>
-    <property name="test.cvs" value="${test.repositories}/cvs_test"/>
-    <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
-    <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.bk" value="${test.repositories}/bitkeeper"/>
     <property name="test.bzr" value="${test.repositories}/bazaar"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.git" value="${test.repositories}/git"/>
-    <property name="test.svn" value="${test.repositories}/svn"/>
-    <property name="test.svn2" value="${test.repositories}/subversion"/>
-    <property name="build.test.reposroots" value="target/reposroot"/>
     <property name="build.test.classes.dir" value="target/test-classes"/>
 
-
-    <path id="lib.search.path">
-        <pathelement path="${user.home}/.ant/lib"/>
-        <pathelement path="${java.class.path}"/>
-	<pathelement path="lib"/>
-	<pathelement path="../lib"/>
-    </path>
-
-    <property name="git" value="git"/>
-
-    <target name="-collect-lex-lexh">
-        <mkdir dir="${tgt.dir}"/>
-        <copy todir="${tgt.dir}" flatten="true">
-            <fileset dir="${src.dir}" includes="**/*.lex,**/*.lexh"/>
-        </copy>
-    </target>
-
     <target name="-post-compile-test">
-        <antcall target="-create-svn-repository"/>
-
-        <!-- Change root in CVS test repository -->
-        <!-- Strange indentation in line two levels below to get newline correctly -->
-        <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
-</concat>
-
         <!-- Generate ZIP files used for unit testing git/.git are renamed -->
         <copy todir="${test.git}/.git">
             <fileset dir="${test.git}/git"/>
@@ -83,14 +49,14 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
         <!-- Generate ZIP files used for unit testing bitkeeper/.bk are renamed -->
         <copy todir="${test.bk}/.bk">
-	    <!--
-	         The bk directory contains SCCS subdirectory which we want to
-	         include so disable default excludes.
-	    -->
+            <!--
+             The bk directory contains SCCS subdirectory which we want to
+             include so disable default excludes.
+            -->
             <fileset dir="${test.bk}/bk" defaultexcludes="no"/>
         </copy>
 
-	<!-- Generate ZIP files used for unit testing bzr/.bzr are renamed -->
+        <!-- Generate ZIP files used for unit testing bzr/.bzr are renamed -->
         <copy todir="${test.bzr}/.bzr">
             <fileset dir="${test.bzr}/bzr"/>
         </copy>
@@ -108,57 +74,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <antcall target="-delete-generated-repository-files"/>
     </target>
 
-    <target name="-create-svn-repository">
-      <delete dir="${test.svn}"/>
-      <delete dir="${test.svn2}"/>
-      <delete dir="${build.test.reposroots}/svn"/>
-      <delete dir="${build.test.reposroots}/svn2"/>
-      <mkdir dir="${build.test.reposroots}"/>
-      <exec executable="svnadmin" failifexecutionfails="true">
-        <arg value="create"/>
-        <arg value="${build.test.reposroots}/svn"/>
-      </exec>
-      
-      <!-- need absolute path for svn url -->
-      <pathconvert property="test.svn.url">
-        <map from="" to="file:///"/>
-        <path location="${build.test.reposroots}/svn"/>
-      </pathconvert>
-      <pathconvert property="test.svn.url2">
-        <map from="" to="file:///"/>
-        <path location="${build.test.reposroots}/svn2"/>
-      </pathconvert>
-
-      <exec executable="svn" failifexecutionfails="false">
-        <arg value="import"/>
-        <arg value="${test.sources}"/>
-        <arg value="${test.svn.url}"/>
-        <arg value="-m"/>
-        <arg value="Initial import"/>
-      </exec>
-      <exec executable="svn" failifexecutionfails="false">
-        <arg value="checkout"/>
-        <arg value="${test.svn.url}"/>
-        <arg value="${test.svn}"/>
-      </exec>
-
-      <exec executable="svnadmin" failifexecutionfails="true">
-        <arg value="create"/>
-        <arg value="${build.test.reposroots}/svn2"/>
-      </exec>
-
-      <exec executable="svnadmin" input="${test.svndump}/svnlog.dump" failifexecutionfails="true">
-        <arg value="load"/>
-        <arg value="${build.test.reposroots}/svn2"/>
-      </exec>
-    
-      <exec executable="svn" failifexecutionfails="false">
-        <arg value="checkout"/>
-        <arg value="${test.svn.url2}"/>
-        <arg value="${test.svn2}"/>
-      </exec>
-    </target>
-
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
       <delete dir="${test.bk}/.bk"/>
@@ -166,9 +81,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.git}/.git"/>
-      <delete dir="${test.svn}"/>
-      <delete dir="${test.svn2}"/>
-      <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
 
 </project>

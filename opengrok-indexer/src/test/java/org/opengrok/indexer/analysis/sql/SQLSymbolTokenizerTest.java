@@ -22,12 +22,12 @@
  */
 package org.opengrok.indexer.analysis.sql;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
@@ -41,12 +41,11 @@ public class SQLSymbolTokenizerTest {
      */
     @Test
     public void testSqlSymbolStream() throws Exception {
-        InputStream sqlRes = getClass().getClassLoader().getResourceAsStream(
-                "analysis/sql/sample.sql");
-        assertNotNull("sample.sql should be an available resource", sqlRes);
+        InputStream sqlRes = getClass().getClassLoader().getResourceAsStream("analysis/sql/sample.sql");
+        assertNotNull(sqlRes, "sample.sql should be an available resource");
         InputStream symRes = getClass().getClassLoader().getResourceAsStream(
                 "analysis/sql/samplesqlsymbols.txt");
-        assertNotNull("samplesqlsymbols.txt should be an available resource", symRes);
+        assertNotNull(symRes, "samplesqlsymbols.txt should be an available resource");
 
         List<String> expectedSymbols = readSampleSymbols(symRes);
         assertSymbolStream(SQLSymbolTokenizer.class, sqlRes, expectedSymbols);

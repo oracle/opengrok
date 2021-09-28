@@ -18,13 +18,19 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -34,20 +40,13 @@ import org.glassfish.jersey.test.DeploymentContext;
 import org.glassfish.jersey.test.spi.TestContainer;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -61,15 +60,14 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MessagesControllerTest extends OGKJerseyTest {
 
-    private static final GenericType<List<AcceptedMessageModel>> messagesType =
-            new GenericType<List<AcceptedMessageModel>>() {
-            };
+    private static final GenericType<List<AcceptedMessageModel>> messagesType = new GenericType<>() {
+    };
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -128,7 +126,9 @@ public class MessagesControllerTest extends OGKJerseyTest {
                 try {
                     this.server.start();
                     if (this.baseUri.getPort() == 0) {
-                        this.baseUri = UriBuilder.fromUri(this.baseUri).port(this.server.getListener("grizzly").getPort()).build(new Object[0]);
+                        this.baseUri = UriBuilder.fromUri(this.baseUri)
+                                .port(this.server.getListener("grizzly").getPort())
+                                .build();
                     }
                 } catch (IOException e) {
                     throw new TestContainerException(e);
@@ -148,13 +148,13 @@ public class MessagesControllerTest extends OGKJerseyTest {
         return new CustomGrizzlyTestContainerFactory();
     }
 
-    @Before
+    @BeforeEach
     public void setupMessageListener() throws Exception {
         setMessageContainer(env, new MessagesContainer());
         env.startExpirationTimer();
     }
 
-    @After
+    @AfterEach
     public void tearDownMessageListener() {
         env.stopExpirationTimer();
     }
@@ -197,8 +197,6 @@ public class MessagesControllerTest extends OGKJerseyTest {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.json(msgAsString));
 
-        assertEquals(0,
-                env.getMessages().stream().filter(m -> m.getMessageLevel().equals(invalidMessageLevel)).count());
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 

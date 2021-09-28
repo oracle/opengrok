@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import re
@@ -27,6 +27,7 @@ import os
 import fnmatch
 import logging
 import urllib
+from tempfile import gettempdir
 
 from requests.exceptions import HTTPError
 
@@ -36,7 +37,7 @@ from .exitvals import (
     SUCCESS_EXITVAL
 )
 from .patterns import PROJECT_SUBST, COMMAND_PROPERTY
-from .utils import is_exe, check_create_dir, get_int, is_web_uri
+from .utils import is_exe, check_create_dir, get_int, is_web_uri, get_bool
 from .opengrok import get_repos, get_repo_type, get_uri
 from .hook import run_hook
 from .command import Command
@@ -51,6 +52,8 @@ HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
 CMD_TIMEOUT_PROPERTY = 'command_timeout'
 IGNORED_REPOS_PROPERTY = 'ignored_repos'
 PROXY_PROPERTY = 'proxy'
+INCOMING_PROPERTY = 'incoming_check'
+IGNORE_ERR_PROPERTY = 'ignore_errors'
 COMMANDS_PROPERTY = 'commands'
 DISABLED_PROPERTY = 'disabled'
 DISABLED_REASON_PROPERTY = 'disabled-reason'
@@ -59,11 +62,14 @@ HOOKS_PROPERTY = 'hooks'
 LOGDIR_PROPERTY = 'logdir'
 PROJECTS_PROPERTY = 'projects'
 DISABLED_CMD_PROPERTY = 'disabled_command'
+HOOK_PRE_PROPERTY = "pre"
+HOOK_POST_PROPERTY = "post"
 
 
 def get_repos_for_project(project_name, uri, source_root,
                           ignored_repos=None,
-                          commands=None, proxy=None, command_timeout=None):
+                          commands=None, proxy=None, command_timeout=None,
+                          headers=None, timeout=None):
     """
     :param project_name: project name
     :param uri: web application URI
@@ -73,13 +79,15 @@ def get_repos_for_project(project_name, uri, source_root,
     :param proxy: dictionary of proxy servers - to be used as environment
                   variables
     :param command_timeout: command timeout value in seconds
+    :param headers: optional HTTP headers dictionary
     :return: list of Repository objects
     """
 
     logger = logging.getLogger(__name__)
 
     repos = []
-    for repo_path in get_repos(logger, project_name, uri):
+    for repo_path in get_repos(logger, project_name, uri,
+                               headers=headers, timeout=timeout):
         logger.debug("Repository path = {}".format(repo_path))
 
         if ignored_repos:
@@ -89,7 +97,8 @@ def get_repos_for_project(project_name, uri, source_root,
                 logger.info("repository {} ignored".format(repo_path))
                 continue
 
-        repo_type = get_repo_type(logger, repo_path, uri)
+        repo_type = get_repo_type(logger, repo_path, uri,
+                                  headers=headers, timeout=timeout)
         if not repo_type:
             raise RepositoryException("cannot determine type of repository {}".
                                       format(repo_path))
@@ -154,7 +163,7 @@ def get_project_properties(project_config, project_name, hookdir):
     :param project_name: name of the project
     :param hookdir: directory with hooks
     :return: list of properties: prehook, posthook, hook_timeout,
-    command_timeout, use_proxy, ignored_repos
+    command_timeout, use_proxy, ignored_repos, check_changes, ignore_errors
     """
 
     prehook = None
@@ -163,6 +172,8 @@ def get_project_properties(project_config, project_name, hookdir):
     command_timeout = None
     use_proxy = False
     ignored_repos = None
+    check_changes = None
+    ignore_errors = None
 
     logger = logging.getLogger(__name__)
 
@@ -198,10 +209,10 @@ def get_project_properties(project_config, project_name, hookdir):
         hooks = project_config.get(HOOKS_PROPERTY)
         if hooks:
             for hookname in hooks:
-                if hookname == "pre":
+                if hookname == HOOK_PRE_PROPERTY:
                     prehook = os.path.join(hookdir, hooks['pre'])
                     logger.debug("pre-hook = {}".format(prehook))
-                elif hookname == "post":
+                elif hookname == HOOK_POST_PROPERTY:
                     posthook = os.path.join(hookdir, hooks['post'])
                     logger.debug("post-hook = {}".format(posthook))
 
@@ -209,11 +220,23 @@ def get_project_properties(project_config, project_name, hookdir):
             logger.debug("will use proxy")
             use_proxy = True
 
+        if project_config.get(INCOMING_PROPERTY) is not None:
+            check_changes = get_bool(logger, ("incoming check for project {}".
+                                              format(project_name)),
+                                     project_config.get(INCOMING_PROPERTY))
+            logger.debug("incoming check = {}".format(check_changes))
+
+        if project_config.get(IGNORE_ERR_PROPERTY) is not None:
+            ignore_errors = get_bool(logger, ("ignore errors for project {}".
+                                              format(project_name)),
+                                     project_config.get(IGNORE_ERR_PROPERTY))
+            logger.debug("ignore errors = {}".format(check_changes))
+
     if not ignored_repos:
         ignored_repos = []
 
     return prehook, posthook, hook_timeout, command_timeout, \
-        use_proxy, ignored_repos
+        use_proxy, ignored_repos, check_changes, ignore_errors
 
 
 def process_hook(hook_ident, hook, source_root, project_name, proxy,
@@ -241,21 +264,25 @@ def process_hook(hook_ident, hook, source_root, project_name, proxy,
     return True
 
 
-def process_changes(repos, project_name, uri):
+def process_changes(repos, project_name, uri, headers=None):
     """
     :param repos: repository list
     :param project_name: project name
+    :param headers: optional dictionary of HTTP headers
     :return: exit code
     """
     logger = logging.getLogger(__name__)
 
     changes_detected = False
 
+    logger.debug("Checking incoming changes for project {}".format(project_name))
+
     # check if the project is a new project - full index is necessary
     try:
         r = do_api_call('GET', get_uri(uri, 'api', 'v1', 'projects',
                                        urllib.parse.quote_plus(project_name),
-                                       'property', 'indexed'))
+                                       'property', 'indexed'),
+                        headers=headers)
         if not bool(r.json()):
             changes_detected = True
             logger.info('Project {} has not been indexed yet'
@@ -303,7 +330,8 @@ def run_command(cmd, project_name):
                             cmd.getoutputstr()))
 
 
-def handle_disabled_project(config, project_name, disabled_msg):
+def handle_disabled_project(config, project_name, disabled_msg, headers=None,
+                            timeout=None):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger = logging.getLogger(__name__)
@@ -325,7 +353,8 @@ def handle_disabled_project(config, project_name, disabled_msg):
                 command_args[2]["text"] = text + ": " + disabled_msg
 
             try:
-                call_rest_api(disabled_command, {PROJECT_SUBST: project_name})
+                call_rest_api(disabled_command, {PROJECT_SUBST: project_name},
+                              http_headers=headers, timeout=timeout)
             except HTTPError as e:
                 logger.error("API call failed for disabled command of "
                              "project '{}': {}".
@@ -343,8 +372,18 @@ def handle_disabled_project(config, project_name, disabled_msg):
             run_command(cmd, project_name)
 
 
+def get_mirror_retcode(ignore_errors, value):
+    if ignore_errors and value != SUCCESS_EXITVAL:
+        logger = logging.getLogger(__name__)
+        logger.info("error code is {} however '{}' property is true, "
+                    "so returning success".format(value, IGNORE_ERR_PROPERTY))
+        return SUCCESS_EXITVAL
+
+    return value
+
+
 def mirror_project(config, project_name, check_changes, uri,
-                   source_root):
+                   source_root, headers=None, timeout=None):
     """
     Mirror the repositories of single project.
     :param config global configuration dictionary
@@ -353,6 +392,8 @@ def mirror_project(config, project_name, check_changes, uri,
      and terminate if no change is found
     :param uri
     :param source_root
+    :param headers: optional dictionary of HTTP headers
+    :param timeout: optional timeout in seconds for API call response
     :return exit code
     """
 
@@ -362,28 +403,42 @@ def mirror_project(config, project_name, check_changes, uri,
 
     project_config = get_project_config(config, project_name)
     prehook, posthook, hook_timeout, command_timeout, use_proxy, \
-        ignored_repos = get_project_properties(project_config,
-                                               project_name,
-                                               config.get(HOOKDIR_PROPERTY))
+        ignored_repos, \
+        check_changes_proj, \
+        ignore_errors_proj = get_project_properties(project_config,
+                                                    project_name,
+                                                    config.
+                                                    get(HOOKDIR_PROPERTY))
 
     if not command_timeout:
         command_timeout = config.get(CMD_TIMEOUT_PROPERTY)
     if not hook_timeout:
         hook_timeout = config.get(HOOK_TIMEOUT_PROPERTY)
 
+    if check_changes_proj is None:
+        check_changes_config = config.get(INCOMING_PROPERTY)
+    else:
+        check_changes_config = check_changes_proj
+
+    if ignore_errors_proj is None:
+        ignore_errors = config.get(IGNORE_ERR_PROPERTY)
+    else:
+        ignore_errors = ignore_errors_proj
+
     proxy = None
     if use_proxy:
         proxy = config.get(PROXY_PROPERTY)
 
     # We want this to be logged to the log file (if any).
-    if project_config:
-        if project_config.get(DISABLED_PROPERTY):
-            handle_disabled_project(config, project_name,
-                                    project_config.
-                                    get(DISABLED_REASON_PROPERTY))
-            logger.info("Project '{}' disabled, exiting".
-                        format(project_name))
-            return CONTINUE_EXITVAL
+    if project_config and project_config.get(DISABLED_PROPERTY):
+        handle_disabled_project(config, project_name,
+                                project_config.
+                                get(DISABLED_REASON_PROPERTY),
+                                headers=headers,
+                                timeout=timeout)
+        logger.info("Project '{}' disabled, exiting".
+                    format(project_name))
+        return CONTINUE_EXITVAL
 
     #
     # Cache the repositories first. This way it will be known that
@@ -396,39 +451,43 @@ def mirror_project(config, project_name, check_changes, uri,
                                   commands=config.
                                   get(COMMANDS_PROPERTY),
                                   proxy=proxy,
-                                  command_timeout=command_timeout)
+                                  command_timeout=command_timeout,
+                                  headers=headers,
+                                  timeout=timeout)
     if not repos:
         logger.info("No repositories for project {}".
                     format(project_name))
         return CONTINUE_EXITVAL
 
+    if check_changes_config is not None:
+        check_changes = check_changes_config
+
     # Check if the project or any of its repositories have changed.
     if check_changes:
-        r = process_changes(repos, project_name, uri)
+        r = process_changes(repos, project_name, uri, headers=headers)
         if r != SUCCESS_EXITVAL:
-            return r
+            return get_mirror_retcode(ignore_errors, r)
 
-    if not process_hook("pre", prehook, source_root, project_name, proxy,
-                        hook_timeout):
-        return FAILURE_EXITVAL
+    if not process_hook(HOOK_PRE_PROPERTY, prehook, source_root, project_name,
+                        proxy, hook_timeout):
+        return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
     #
     # If one of the repositories fails to sync, the whole project sync
     # is treated as failed, i.e. the program will return FAILURE_EXITVAL.
     #
     for repo in repos:
-        logger.info("Synchronizing repository {}".
-                    format(repo.path))
+        logger.info("Synchronizing repository {}".format(repo.path))
         if repo.sync() != SUCCESS_EXITVAL:
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
             ret = FAILURE_EXITVAL
 
-    if not process_hook("post", posthook, source_root, project_name, proxy,
-                        hook_timeout):
-        return FAILURE_EXITVAL
+    if not process_hook(HOOK_POST_PROPERTY, posthook, source_root, project_name,
+                        proxy, hook_timeout):
+        return get_mirror_retcode(ignore_errors, FAILURE_EXITVAL)
 
-    return ret
+    return get_mirror_retcode(ignore_errors, ret)
 
 
 def check_project_configuration(multiple_project_config, hookdir=False,
@@ -447,7 +506,8 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     known_project_tunables = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
                               HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
                               IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY,
-                              DISABLED_REASON_PROPERTY]
+                              DISABLED_REASON_PROPERTY, INCOMING_PROPERTY,
+                              IGNORE_ERR_PROPERTY]
 
     if not multiple_project_config:
         return True
@@ -515,6 +575,43 @@ def check_project_configuration(multiple_project_config, hookdir=False,
     return True
 
 
+def check_commands(commands):
+    """
+    Validate the commands section of the configuration that allows
+    to override files used for SCM synchronization and incoming check.
+    This should be simple dictionary of string values.
+    :return: True if valid, False otherwise
+    """
+
+    logger = logging.getLogger(__name__)
+
+    if commands is None:
+        return True
+
+    if type(commands) is not dict:
+        logger.error("commands sections is not a dictionary")
+        return False
+
+    for name, value in commands.items():
+        try:
+            repo = get_repository(gettempdir(), name, "dummy_project",
+                                  commands=commands)
+        except RepositoryException as e:
+            logger.error("failed to check repository for '{}': '{}'".
+                         format(name, e))
+            return False
+
+        if repo is None:
+            logger.error("unknown repository type '{}' under '{}': '{}'".
+                         format(name, COMMANDS_PROPERTY, value))
+            return False
+
+        if not repo.check_command():
+            return False
+
+    return True
+
+
 def check_configuration(config):
     """
     Validate configuration
@@ -527,7 +624,9 @@ def check_configuration(config):
     global_tunables = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
                        COMMANDS_PROPERTY, PROJECTS_PROPERTY,
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY,
-                       DISABLED_CMD_PROPERTY]
+                       DISABLED_CMD_PROPERTY, INCOMING_PROPERTY,
+                       IGNORE_ERR_PROPERTY]
+
     diff = set(config.keys()).difference(global_tunables)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
@@ -542,6 +641,9 @@ def check_configuration(config):
     disabled_command = config.get(DISABLED_CMD_PROPERTY)
     if disabled_command:
         logger.debug("Disabled command: {}".format(disabled_command))
+
+    if not check_commands(config.get(COMMANDS_PROPERTY)):
+        return False
 
     if not check_project_configuration(config.get(PROJECTS_PROPERTY),
                                        config.get(HOOKDIR_PROPERTY),

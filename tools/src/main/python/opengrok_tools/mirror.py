@@ -47,7 +47,7 @@ from .utils.exitvals import (
 from .utils.log import get_console_logger, get_class_basename, \
     fatal, get_batch_logger
 from .utils.opengrok import get_config_value, list_indexed_projects
-from .utils.parsers import get_base_parser
+from .utils.parsers import get_base_parser, add_http_headers, get_headers
 from .utils.readconfig import read_config
 from .utils.utils import get_int, is_web_uri
 from .utils.mirror import check_configuration, LOGDIR_PROPERTY, \
@@ -58,12 +58,14 @@ major_version = sys.version_info[0]
 if major_version < 3:
     fatal("Need Python 3, you are running {}".format(major_version))
 
-__version__ = "0.9"
+__version__ = "1.1"
+
+OPENGROK_NO_MIRROR_ENV = "OPENGROK_NO_MIRROR"
 
 
 def worker(args):
     project_name, logdir, loglevel, backupcount, config, check_changes, uri, \
-        source_root, batch = args
+        source_root, batch, headers, api_timeout = args
 
     if batch:
         get_batch_logger(logdir, project_name,
@@ -73,7 +75,8 @@ def worker(args):
 
     return mirror_project(config, project_name,
                           check_changes,
-                          uri, source_root)
+                          uri, source_root, headers=headers,
+                          timeout=api_timeout)
 
 
 def main():
@@ -89,21 +92,27 @@ def main():
                         help='mirror all indexed projects', default=False)
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
+    parser.add_argument('--check_config', action='store_true',
+                        help='check configuration and exit')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='uri of the webapp with context path')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')
     parser.add_argument('-L', '--logdir',
                         help='log directory')
-    parser.add_argument('-B', '--backupcount', default=8,
+    parser.add_argument('-B', '--backupcount', default=8, type=int,
                         help='how many log files to keep around in batch mode')
     parser.add_argument('-I', '--check-changes', action='store_true',
                         help='Check for changes in the project or its'
                              ' repositories,'
                              ' terminate the processing'
                              ' if no change is found.')
-    parser.add_argument('-w', '--workers', default=cpu_count(),
+    parser.add_argument('-w', '--workers', default=cpu_count(), type=int,
                         help='Number of worker processes')
+    add_http_headers(parser)
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds '
+                             'for RESTful API calls')
 
     try:
         args = parser.parse_args()
@@ -111,18 +120,6 @@ def main():
         return fatal(e, False)
 
     logger = get_console_logger(get_class_basename(), args.loglevel)
-
-    nomirror = os.environ.get("OPENGROK_NO_MIRROR")
-    if nomirror and len(nomirror) > 0:
-        logger.debug("skipping mirror based on the OPENGROK_NO_MIRROR " +
-                     "environment variable")
-        return SUCCESS_EXITVAL
-
-    if len(args.project) > 0 and args.all:
-        return fatal("Cannot use both project list and -a/--all", False)
-
-    if not args.all and len(args.project) == 0:
-        return fatal("Need at least one project or --all", False)
 
     if args.config:
         config = read_config(logger, args.config)
@@ -132,16 +129,36 @@ def main():
     else:
         config = {}
 
+    if not check_configuration(config):
+        logger.error("Configuration check failed, exiting")
+        return 1
+
+    if args.check_config:
+        logger.debug("Configuration check passed, exiting")
+        return 0
+
+    nomirror = os.environ.get(OPENGROK_NO_MIRROR_ENV)
+    if nomirror and len(nomirror) > 0:
+        logger.debug("skipping mirror based on the {} environment variable".
+                     format(OPENGROK_NO_MIRROR_ENV))
+        return SUCCESS_EXITVAL
+
+    if len(args.project) > 0 and args.all:
+        return fatal("Cannot use both project list and -a/--all", False)
+
+    if not args.all and len(args.project) == 0:
+        return fatal("Need at least one project or --all", False)
+
     uri = args.uri
     if not is_web_uri(uri):
         return fatal("Not a URI: {}".format(uri), False)
     logger.debug("web application URI = {}".format(uri))
 
-    if not check_configuration(config):
-        return 1
+    headers = get_headers(args.header)
 
     # Save the source root to avoid querying the web application.
-    source_root = get_config_value(logger, 'sourceRoot', uri)
+    source_root = get_config_value(logger, 'sourceRoot', uri,
+                                   headers=headers, timeout=args.api_timeout)
     if not source_root:
         return 1
 
@@ -179,7 +196,9 @@ def main():
         lockfile = os.path.basename(sys.argv[0])
 
     if args.all:
-        projects = list_indexed_projects(logger, args.uri)
+        projects = list_indexed_projects(logger, args.uri,
+                                         headers=headers,
+                                         timeout=args.api_timeout)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(), lockfile + ".lock"))
     try:
@@ -191,7 +210,8 @@ def main():
                                         args.backupcount, config,
                                         args.check_changes,
                                         args.uri, source_root,
-                                        args.batch])
+                                        args.batch, headers,
+                                        args.api_timeout])
                 try:
                     project_results = pool.map(worker, worker_args, 1)
                 except KeyboardInterrupt:

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -31,14 +31,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.document.Document;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.c.CXref;
 import org.opengrok.indexer.analysis.c.CxxXref;
 import org.opengrok.indexer.analysis.csharp.CSharpXref;
@@ -57,6 +56,8 @@ import org.opengrok.indexer.analysis.sql.SQLXref;
 import org.opengrok.indexer.analysis.tcl.TclXref;
 import org.opengrok.indexer.analysis.uue.UuencodeXref;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import org.opengrok.indexer.util.TestRepository;
 import org.xml.sax.InputSource;
@@ -76,7 +77,7 @@ public class JFlexXrefTest {
     private static final String FIRST_LINE_PREAMBLE =
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         repository = new TestRepository();
@@ -84,7 +85,7 @@ public class JFlexXrefTest {
                 "/org/opengrok/indexer/index/source.zip"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -137,7 +138,7 @@ public class JFlexXrefTest {
         xref.write(out);
         if (EXP_N != xref.getLineNumber()) {
             System.out.println(out.toString());
-            assertEquals("xref line count", EXP_N, xref.getLineNumber());
+            assertEquals(EXP_N, xref.getLineNumber(), "xref line count");
         }
     }
 
@@ -172,26 +173,21 @@ public class JFlexXrefTest {
      * @param klass the Xref sub-class to test
      * @param path path to input file with a definition
      */
-    private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass,
-        String path) throws Exception {
+    private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass, String path) throws Exception {
         File file = new File(repository.getSourceRoot() + File.separator + path);
         Definitions defs = ctags.doCtags(file.getAbsolutePath());
 
         // Input files contain non-ascii characters and are encoded in UTF-8
-        Reader in = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        try (Reader in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
 
-        JFlexXref xref = new JFlexXref(klass.getConstructor(Reader.class).
-            newInstance(in));
-        xref.setDefs(defs);
+            JFlexXref xref = new JFlexXref(klass.getConstructor(Reader.class).newInstance(in));
+            xref.setDefs(defs);
 
-        StringWriter out = new StringWriter();
-        xref.write(out);
-        String outstr = out.toString();
-        boolean hasAnchor = outstr.contains("\" name=\"bug15890\"/><a href=");
-        //TODO improve below to reflect all possible classes of a definition
-        if (!hasAnchor) {
-            assertTrue("No bug15890 anchor found for " + path + ":\n" + outstr,
-                hasAnchor);
+            StringWriter out = new StringWriter();
+            xref.write(out);
+            String outstr = out.toString();
+            boolean hasAnchor = outstr.contains("\" name=\"bug15890\"/><a href=");
+            assertTrue(hasAnchor, "No bug15890 anchor found for " + path + ":\n" + outstr);
         }
     }
 
@@ -329,8 +325,8 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         JFlexXref xref = new JFlexXref(new CxxXref(in));
         xref.write(out);
-        assertTrue("Link to search for definition of class not found",
-                   out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""));
+        assertTrue(out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""),
+                "Link to search for definition of class not found");
     }
 
     /**
@@ -353,12 +349,10 @@ public class JFlexXrefTest {
         String[] result = xout.split("\n");
 
         // The single-quote on line 2 shouldn't start a string literal.
-        assertTrue("Line 2 of:\n" + xout, result[1].endsWith(
-            "This shouldn&apos;t cause any problem."));
+        assertTrue(result[1].endsWith("This shouldn&apos;t cause any problem."), "Line 2 of:\n" + xout);
 
         // The string literal on line 4 should be recognized as one.
-        assertTrue("Line 4 of:\n" + xout,
-            result[3].endsWith("=<span class=\"s\">&apos;some string&apos;</span>"));
+        assertTrue(result[3].endsWith("=<span class=\"s\">&apos;some string&apos;</span>"), "Line 4 of:\n" + xout);
     }
 
     /**
@@ -377,11 +371,12 @@ public class JFlexXrefTest {
     @Test
     public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
-        Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
-        JFlexXref xref = new JFlexXref(new SQLXref(in));
-        xref.setDefs(ctags.doCtags(filename));
-        // The next call used to fail with an ArrayIndexOutOfBoundsException.
-        xref.write(new StringWriter());
+        try (Reader in = new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8)) {
+            JFlexXref xref = new JFlexXref(new SQLXref(in));
+            xref.setDefs(ctags.doCtags(filename));
+            // The next call used to fail with an ArrayIndexOutOfBoundsException.
+            xref.write(new StringWriter());
+        }
     }
 
     /**
@@ -427,7 +422,7 @@ public class JFlexXrefTest {
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a></span>",
                 out.toString());
     }
-    
+
     /**
      * Test that CSharpXref correctly handles verbatim strings that end with backslash.
      */

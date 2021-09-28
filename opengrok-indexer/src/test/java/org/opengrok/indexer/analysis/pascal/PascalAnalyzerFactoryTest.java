@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.pascal;
@@ -31,16 +31,15 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import static org.hamcrest.CoreMatchers.is;
-import org.junit.AfterClass;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
@@ -54,7 +53,7 @@ import org.opengrok.indexer.util.TestRepository;
  * @author alexanthony
  */
 public class PascalAnalyzerFactoryTest {
-    
+
     private static Ctags ctags;
     private static TestRepository repository;
     private static AbstractAnalyzer analyzer;
@@ -67,8 +66,8 @@ public class PascalAnalyzerFactoryTest {
             }
         };
     }
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -84,7 +83,7 @@ public class PascalAnalyzerFactoryTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -99,9 +98,7 @@ public class PascalAnalyzerFactoryTest {
     public void testAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/pascal/Sample.pas";
         File f = new File(path);
-        if (!(f.canRead() && f.isFile())) {
-            fail("pascal testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "pascal testfile " + f + " not found");
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,

@@ -24,7 +24,8 @@ package org.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Random;
 
@@ -46,7 +47,7 @@ public abstract class OGKJerseyTest extends JerseyTest {
      * Marshal a random high port through {@link TestProperties#CONTAINER_PORT}
      * for use by {@link #getPort()}.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         int triesCount = 0;
@@ -64,5 +65,10 @@ public abstract class OGKJerseyTest extends JerseyTest {
         }
 
         super.setUp();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 }

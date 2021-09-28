@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -110,6 +110,8 @@ import org.opengrok.indexer.analysis.verilog.VerilogAnalyzerFactory;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.HistoryReader;
@@ -120,7 +122,7 @@ import org.opengrok.indexer.web.Util;
 
 /**
  * Manages and provides Analyzers as needed. Please see
- * <a href="https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Internals">
+ * <a href="https://github.com/oracle/opengrok/wiki/Internals">
  * this</a> page for a great description of the purpose of the AnalyzerGuru.
  *
  * Created on September 22, 2005
@@ -185,20 +187,17 @@ public class AnalyzerGuru {
     /**
      * Descending string length comparator for magics.
      */
-    private static final Comparator<String> descStrlenComparator =
-        new Comparator<String>() {
-        @Override public int compare(String s1, String s2) {
-            // DESC: s2 length <=> s1 length
-            int cmp = Integer.compare(s2.length(), s1.length());
-            if (cmp != 0) {
-                return cmp;
-            }
-
-            // the Comparator must also be "consistent with equals", so check
-            // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
-            cmp = s1.compareTo(s2);
+    private static final Comparator<String> descStrlenComparator = (s1, s2) -> {
+        // DESC: s2 length <=> s1 length
+        int cmp = Integer.compare(s2.length(), s1.length());
+        if (cmp != 0) {
             return cmp;
         }
+
+        // the Comparator must also be "consistent with equals", so check
+        // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
+        cmp = s1.compareTo(s2);
+        return cmp;
     };
 
     /**
@@ -217,7 +216,7 @@ public class AnalyzerGuru {
      * List of all registered {@code FileAnalyzerFactory} instances.
      */
     private static final List<AnalyzerFactory> factories = new ArrayList<>();
-    
+
     /**
      * Names of all analysis packages.
      */
@@ -389,7 +388,7 @@ public class AnalyzerGuru {
         return Collections.unmodifiableMap(fileTypeDescriptions);
     }
 
-    public List<AnalyzerFactory> getAnalyzerFactories() {
+    public static List<AnalyzerFactory> getAnalyzerFactories() {
         return Collections.unmodifiableList(factories);
     }
 
@@ -575,9 +574,8 @@ public class AnalyzerGuru {
      * @throws IOException If an exception occurs while collecting the data
      * @throws InterruptedException if a timeout occurs
      */
-    public void populateDocument(Document doc, File file, String path,
-        AbstractAnalyzer fa, Writer xrefOut) throws IOException,
-            InterruptedException {
+    public void populateDocument(Document doc, File file, String path, AbstractAnalyzer fa, Writer xrefOut)
+            throws IOException, InterruptedException {
 
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
@@ -591,10 +589,18 @@ public class AnalyzerGuru {
 
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             try {
-                HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
+                HistoryGuru histGuru = HistoryGuru.getInstance();
+                HistoryReader hr = histGuru.getHistoryReader(file);
                 if (hr != null) {
                     doc.add(new TextField(QueryBuilder.HIST, hr));
-                    // date = hr.getLastCommentDate() //RFE
+                    History history;
+                    if ((history = histGuru.getHistory(file)) != null) {
+                        List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
+                        if (historyEntries.size() > 0) {
+                            HistoryEntry histEntry = historyEntries.get(0);
+                            doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
+                        }
+                    }
                 }
             } catch (HistoryException e) {
                 LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
@@ -761,35 +767,35 @@ public class AnalyzerGuru {
      * @throws InvocationTargetException if the underlying constructor throws an exception
      */
     public static AnalyzerFactory findFactory(String factoryClassName)
-            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, 
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
             InvocationTargetException {
         Class<?> fcn;
         try {
             fcn = Class.forName(factoryClassName);
-            
+
         } catch (ClassNotFoundException e) {
             fcn = getFactoryClass(factoryClassName);
-            
+
             if (fcn == null) {
                 throw new ClassNotFoundException("Unable to locate class " + factoryClassName);
             }
         }
-        
+
         return findFactory(fcn);
     }
 
     /**
      * Get Analyzer factory class using class simple name.
-     * 
+     *
      * @param simpleName which may be either the factory class
      * simple name (eg. CAnalyzerFactory), the analyzer name
      * (eg. CAnalyzer), or the language name (eg. C)
-     * 
+     *
      * @return the analyzer factory class, or null when not found.
      */
     public static Class<?> getFactoryClass(String simpleName) {
         Class<?> factoryClass = null;
-        
+
         // Build analysis package name list first time only
         if (analysisPkgNames.isEmpty()) {
             Package[] p = Package.getPackages();
@@ -800,17 +806,17 @@ public class AnalyzerGuru {
                 }
             }
         }
-        
+
         // This allows user to enter the language or analyzer name
         // (eg. C or CAnalyzer vs. CAnalyzerFactory)
         // Note that this assumes a regular naming scheme of
-        // all language parsers: 
+        // all language parsers:
         //      <language>Analyzer, <language>AnalyzerFactory
-        
+
         if (!simpleName.contains("Analyzer")) {
             simpleName += "Analyzer";
         }
-        
+
         if (!simpleName.contains("Factory")) {
             simpleName += "Factory";
         }
@@ -824,10 +830,10 @@ public class AnalyzerGuru {
                 // Ignore
             }
         }
-        
+
         return factoryClass;
     }
-    
+
     /**
      * Find a {@code FileAnalyzerFactory} which is an instance of the specified
      * class. If one doesn't exist, create one and register it.

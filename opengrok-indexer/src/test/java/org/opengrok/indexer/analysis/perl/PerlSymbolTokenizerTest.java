@@ -23,14 +23,14 @@
  */
 package org.opengrok.indexer.analysis.perl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import java.io.InputStream;
@@ -60,19 +60,17 @@ public class PerlSymbolTokenizerTest {
 
         int count = 0;
         while (tokenizer.incrementToken()) {
-            assertTrue("too many tokens", count < expectedTokens.length);
+            assertTrue(count < expectedTokens.length, "too many tokens");
             String expected = expectedTokens[count];
             // 0-based offset to accord with String[]
-            assertEquals("term" + count, expected, term.toString());
-            assertEquals("start" + count,
-                    inputText.indexOf(expected), offset.startOffset());
-            assertEquals("end" + count,
-                    inputText.indexOf(expected) + expected.length(),
-                    offset.endOffset());
+            assertEquals(expected, term.toString(), "term" + count);
+            assertEquals(inputText.indexOf(expected), offset.startOffset(), "start" + count);
+            assertEquals(inputText.indexOf(expected) + expected.length(),
+                    offset.endOffset(), "end" + count);
             count++;
         }
 
-        assertEquals("wrong number of tokens", expectedTokens.length, count);
+        assertEquals(expectedTokens.length, count, "wrong number of tokens");
     }
 
     @Test

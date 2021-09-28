@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -168,7 +168,7 @@ def test_restful_fail(monkeypatch):
             self.status_code = 500
             self.raise_for_status = self.p
 
-    def mock_response(uri, headers, data, params, proxies):
+    def mock_response(uri, headers, data, params, proxies, timeout):
         return MockResponse()
 
     commands = CommandSequence(
@@ -176,7 +176,23 @@ def test_restful_fail(monkeypatch):
                             [{'command': ['http://foo', 'PUT', 'data']}]))
     assert commands is not None
     with monkeypatch.context() as m:
-        m.setattr("requests.put",
-                  mock_response)
+        m.setattr("requests.put", mock_response)
         commands.run()
         assert commands.check([]) == 1
+
+
+def test_headers_init():
+    headers = {'foo': 'bar'}
+
+    # First verify that header parameter of a command does not impact class member.
+    commands = CommandSequence(CommandSequenceBase("opengrok-master",
+                                                   [{'command': ['http://foo', 'PUT', 'data', headers]}]))
+
+    assert commands.http_headers is None
+
+    # Second, verify that init function propagates the headers.
+    commands = CommandSequence(CommandSequenceBase("opengrok-master",
+                                                   [{'command': ['http://foo', 'PUT', 'data']}],
+                                                   http_headers=headers))
+
+    assert commands.http_headers == headers

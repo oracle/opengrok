@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
 import java.io.File;
-
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,18 +33,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.junit.After;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
@@ -62,19 +58,16 @@ import org.opengrok.indexer.util.IOUtils;
  */
 public class IndexerRepoTest {
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
     private TestRepository repository;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repository.destroy();
     }
@@ -82,9 +75,8 @@ public class IndexerRepoTest {
     /**
      * Test it is possible to disable history per project.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     @Test
+    @EnabledForRepository(MERCURIAL)
     public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(true);
     }
@@ -92,9 +84,8 @@ public class IndexerRepoTest {
     /**
      * Test it is possible to enable history per project.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     @Test
+    @EnabledForRepository(MERCURIAL)
     public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(false);
     }
@@ -146,7 +137,7 @@ public class IndexerRepoTest {
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     @Test
     public void testSymlinks() throws IndexerException, IOException {
 
@@ -190,8 +181,8 @@ public class IndexerRepoTest {
         assertEquals(File.separator + SYMLINK, repo.getDirectoryNameRelative());
         String epath = sourceRoot.toString() + File.separator + SYMLINK;
         String apath = repo.getDirectoryName();
-        assertTrue("Should match (with macOS leeway):\n" + epath + "\nv.\n" +
-                apath, epath.equals(apath) || apath.equals("/private" + epath));
+        assertTrue(epath.equals(apath) || apath.equals("/private" + epath),
+                "Should match (with macOS leeway):\n" + epath + "\nv.\n" + apath);
 
         // Check that history exists for a file in the repository.
         File repoRoot = new File(env.getSourceRootFile(), SYMLINK);

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web.messages;
 
@@ -49,7 +49,7 @@ public final class MessagesUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagesUtils.class);
 
-    private void MessageUtils() {
+    private MessagesUtils() {
         // private to ensure static
     }
 
@@ -183,8 +183,7 @@ public final class MessagesUtils {
             return JSONable.EMPTY;
         }
 
-        List<String> tags = new ArrayList<>();
-        tags.addAll(Arrays.asList(additionalTags));
+        List<String> tags = new ArrayList<>(Arrays.asList(additionalTags));
         tags.add(project.getName());
         project.getGroups().stream().map(Group::getName).forEach(tags::add);
 

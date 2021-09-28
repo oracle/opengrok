@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -54,56 +54,14 @@ public final class StringUtils {
     public static final Pattern END_C_COMMENT = Pattern.compile("\\*\\/");
 
     /**
-     * Matches the same possible character as CommonPath.lexh's {FNameChar}.
-     */
-    private static final String FNAME_CHARS_PAT = "[a-zA-Z0-9_\\-\\.]";
-
-    private static final Pattern FNAME_CHARS_STARTSMATCH =
-        Pattern.compile("^" + FNAME_CHARS_PAT);
-
-    /**
      * Matches one of the same possible characters as CommonPath.lexh's {FPath}.
      */
     private static final String FPATH_CHAR_PAT = "[a-zA-Z0-9_\\-\\./]";
 
-    private static final Pattern FPATH_CHAR_STARTSMATCH =
-        Pattern.compile("^" + FPATH_CHAR_PAT);
-
-    /**
-     * Matches one of the same¹ possible characters as Common.lexh's {URIChar}:
-     * <pre>
-     * {@code
-     * [a-zA-Z0-9\-\._~%:/\?\#\[\]@!\$&\'\(\)\*\+,;=]
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
-     * <p>
-     * ¹Backslash, '\', was in {URIChar} in many .lex files, but that is not
-     * a valid URI character per RFC-3986.
-     */
-    private static final String URI_CHARS_PAT =
-        "[a-zA-Z0-9\\-\\._~%:/\\?\\#\\[\\]@!\\$&\\'\\(\\)\\*\\+,;=]";
-
-    private static final Pattern URI_CHARS_STARTSMATCH =
-        Pattern.compile("^" + URI_CHARS_PAT);
+    private static final Pattern FPATH_CHAR_STARTSMATCH = Pattern.compile("^" + FPATH_CHAR_PAT);
 
     /** Private to enforce singleton. */
     private StringUtils() {
-    }
-
-    /**
-     * Returns true if the string is empty or only includes whitespace characters.
-     *
-     * @param str the string to be checked
-     * @return true if string is empty or only contains whitespace characters
-     */
-    public static boolean isOnlyWhitespace(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            if (!Character.isWhitespace(str.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
     }
 
     static final Pattern javaClassPattern =
@@ -197,26 +155,6 @@ public final class StringUtils {
     }
 
     /**
-     * Determines if the {@code value} starts with characters matching
-     * CommonPath.lexh's {FNameChar}.
-     * @param value the input to test
-     * @return true if {@code value} matches at its start
-     */
-    public static boolean startsWithFnameChars(String value) {
-        return FNAME_CHARS_STARTSMATCH.matcher(value).matches();
-    }
-
-    /**
-     * Determines if the {@code value} starts with characters matching
-     * RFC-3986 and CommonPath.lexh's definitions for allowable URI characters.
-     * @param value the input to test
-     * @return true if {@code value} matches at its start
-     */
-    public static boolean startsWithURIChars(String value) {
-        return URI_CHARS_STARTSMATCH.matcher(value).matches();
-    }
-
-    /**
      * Count the number of ending pushback characters from a matched URI.
      * <p>
      * jflex does not support negative lookbehind, so modifying a URI matcher
@@ -238,22 +176,6 @@ public final class StringUtils {
             }
         }
         return n;
-    }
-
-    /**
-     * Find out if string contains only alphanumeric characters.
-     * @param str string to check
-     * @return {@code true} if the string is alphanumeric, {@code false} otherwise
-     */
-    public static boolean isAlphanumeric(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (!Character.isDigit(c) && !Character.isLetter(c)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

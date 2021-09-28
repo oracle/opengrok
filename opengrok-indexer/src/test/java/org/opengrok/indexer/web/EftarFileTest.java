@@ -18,22 +18,20 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * JUnit test to test the EftarFile-system.
@@ -42,12 +40,9 @@ public class EftarFileTest {
 
     private static File eftar;
 
-    public EftarFileTest() {
-    }
-
     private static final String PATH_STRING = "/path";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
 
         eftar = File.createTempFile("paths", ".eftar");
@@ -67,19 +62,11 @@ public class EftarFileTest {
         ef.create(descriptions, outputFile);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    @AfterAll
+    public static void tearDownClass() {
         if (eftar != null) {
             eftar.delete();
         }
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -103,7 +90,7 @@ public class EftarFileTest {
             match.setLength(offset);
             match.append(ii);
 
-            assertEquals("description for path " + sb.toString(), match.toString(), er.get(sb.toString()));
+            assertEquals(match.toString(), er.get(sb.toString()), "description for path " + sb.toString());
         }
         er.close();
     }

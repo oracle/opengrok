@@ -32,8 +32,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class AdaAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Ada";
-    
+    private static final String NAME = "Ada";
+
     private static final String[] SUFFIXES = {
         "ADA",
         "ADB",
@@ -41,7 +41,7 @@ public class AdaAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public AdaAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

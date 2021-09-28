@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
@@ -27,20 +27,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.servlet.http.Cookie;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         ProjectHelperTest.setUpClass();
 
@@ -125,40 +128,40 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     @Test
     public void testGetAllowedGroupSubgroups() {
         Set<Group> result = helper.getSubgroups(getAllowedGroupWithSubgroups());
-        Assert.assertEquals(1, result.size());
+        assertEquals(1, result.size());
         for (Group p : result) {
-            Assert.assertTrue(p.getName().startsWith("allowed_"));
+            assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
     @Test
     public void testGetUnAllowedGroupSubgroups() {
         Set<Group> result = helper.getSubgroups(getUnAllowedGroupWithSubgroups());
-        Assert.assertEquals(0, result.size());
+        assertEquals(0, result.size());
     }
 
     @Test
     public void testHasAllowedSubgroupAllowedSubgroups() {
         Group g = getAllowedGroupWithSubgroups();
-        Assert.assertTrue(helper.hasAllowedSubgroup(g));
+        assertTrue(helper.hasAllowedSubgroup(g));
     }
 
     @Test
     public void testHasAllowedSubgroupUnAllowedSubgroups() {
         Group g = getUnAllowedGroupWithSubgroups();
-        Assert.assertFalse(helper.hasAllowedSubgroup(g));
+        assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
     public void testHasAllowedSubgroupAllowedNoSubgroups() {
         Group g = getAllowedGroupWithoutSubgroups();
-        Assert.assertFalse(helper.hasAllowedSubgroup(g));
+        assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
     public void testHasAllowedSubgroupUnAllowedNoSubgroups() {
         Group g = getUnAllowedGroupWithoutSubgroups();
-        Assert.assertFalse(helper.hasAllowedSubgroup(g));
+        assertFalse(helper.hasAllowedSubgroup(g));
     }
 
     @Test
@@ -172,22 +175,22 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
                 + "ungrouped_repository_1_1,"
                 + "ungrouped_project_0_1");
 
-        Assert.assertTrue(helper.isFavourite(createProject("grouped_project_0_1")));
-        Assert.assertTrue(helper.isFavourite(createProject("grouped_repository_2_2")));
-        Assert.assertTrue(helper.isFavourite(createProject("allowed_grouped_repository_0_2")));
-        Assert.assertTrue(helper.isFavourite(createProject("allowed_grouped_project_1_2")));
-        Assert.assertTrue(helper.isFavourite(createProject("allowed_ungrouped_project_2_1")));
-        Assert.assertTrue(helper.isFavourite(createProject("allowed_ungrouped_repository_2_1")));
-        Assert.assertTrue(helper.isFavourite(createProject("ungrouped_repository_1_1")));
-        Assert.assertTrue(helper.isFavourite(createProject("ungrouped_project_0_1")));
+        assertTrue(helper.isFavourite(createProject("grouped_project_0_1")));
+        assertTrue(helper.isFavourite(createProject("grouped_repository_2_2")));
+        assertTrue(helper.isFavourite(createProject("allowed_grouped_repository_0_2")));
+        assertTrue(helper.isFavourite(createProject("allowed_grouped_project_1_2")));
+        assertTrue(helper.isFavourite(createProject("allowed_ungrouped_project_2_1")));
+        assertTrue(helper.isFavourite(createProject("allowed_ungrouped_repository_2_1")));
+        assertTrue(helper.isFavourite(createProject("ungrouped_repository_1_1")));
+        assertTrue(helper.isFavourite(createProject("ungrouped_project_0_1")));
 
-        Assert.assertFalse(helper.isFavourite(createProject("uknown")));
-        Assert.assertFalse(helper.isFavourite(createProject("ungrouped_project_0_2")));
-        Assert.assertFalse(helper.isFavourite(createProject("ungrouped_epository_1_1")));
-        Assert.assertFalse(helper.isFavourite(createProject("allowed_grouped_repository_2_1")));
-        Assert.assertFalse(helper.isFavourite(createProject("grouped_project__0_1")));
-        Assert.assertFalse(helper.isFavourite(createProject("gd6sf8g718fd7gsd68dfg")));
-        Assert.assertFalse(helper.isFavourite(createProject("Chuck Norris")));
+        assertFalse(helper.isFavourite(createProject("uknown")));
+        assertFalse(helper.isFavourite(createProject("ungrouped_project_0_2")));
+        assertFalse(helper.isFavourite(createProject("ungrouped_epository_1_1")));
+        assertFalse(helper.isFavourite(createProject("allowed_grouped_repository_2_1")));
+        assertFalse(helper.isFavourite(createProject("grouped_project__0_1")));
+        assertFalse(helper.isFavourite(createProject("gd6sf8g718fd7gsd68dfg")));
+        assertFalse(helper.isFavourite(createProject("Chuck Norris")));
     }
 
     @Test
@@ -199,7 +202,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
                 + "allowed_ungrouped_repository_2_1,"
                 + "ungrouped_repository_1_1,"
                 + "ungrouped_project_0_1");
-        Assert.assertTrue(helper.hasUngroupedFavourite());
+        assertTrue(helper.hasUngroupedFavourite());
     }
 
     @Test
@@ -210,7 +213,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
                 + "allowed_grouped_project_1_2,"
                 + "ungrouped_repository_1_1,"
                 + "ungrouped_project_0_1");
-        Assert.assertFalse(helper.hasUngroupedFavourite());
+        assertFalse(helper.hasUngroupedFavourite());
     }
 
     @Test
@@ -237,11 +240,11 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
                 Group.getByName("group_0"),
                 Group.getByName("group_0")};
 
-        Assert.assertTrue(groups.length == exp.length && exp.length == cookie.length);
+        assertTrue(groups.length == exp.length && exp.length == cookie.length);
 
         for (int i = 0; i < exp.length; i++) {
             setupPageConfigRequest(cookie[i]);
-            Assert.assertEquals(exp[i], helper.hasFavourite(groups[i]));
+            assertEquals(exp[i], helper.hasFavourite(groups[i]));
         }
     }
 

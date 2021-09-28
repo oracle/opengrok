@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -30,7 +31,10 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -90,26 +94,36 @@ public class CtagsUtil {
 
     /**
      * Deletes Ctags temporary files left over after terminating Ctags processes
-     * in case of timeout, @see Ctags#doCtags.
+     * in case of timeout or Ctags crash, @see Ctags#doCtags.
      */
     public static void deleteTempFiles() {
-        String[] dirs = {System.getProperty("java.io.tmpdir"),
-                System.getenv("TMPDIR"), System.getenv("TMP")};
+        Set<String> dirs = new HashSet<>(Arrays.asList(System.getProperty("java.io.tmpdir"),
+                System.getenv("TMPDIR"), System.getenv("TMP")));
 
-        for (String dir : dirs) {
-            deleteTempFiles(dir);
+        if (SystemUtils.IS_OS_UNIX) {
+            // hard-coded TMPDIR in Universal Ctags on Unix.
+            dirs.add("/tmp");
+        }
+
+        for (String directoryName : dirs) {
+            if (directoryName == null) {
+                continue;
+            }
+
+            File directory = new File(directoryName);
+            if (!directory.isDirectory()) {
+                continue;
+            }
+
+            LOGGER.log(Level.FINER, "deleting Ctags temporary files in directory {0}", directoryName);
+            deleteTempFiles(directory);
         }
     }
 
-    private static void deleteTempFiles(String directoryName) {
+    private static void deleteTempFiles(File directory) {
         final Pattern pattern = Pattern.compile("tags\\.\\S{6}"); // ctags uses this pattern to call mkstemp()
 
-        if (directoryName == null) {
-            return;
-        }
-
-        File dir = new File(directoryName);
-        File[] files = dir.listFiles((dir1, name) -> {
+        File[] files = directory.listFiles((dir, name) -> {
             Matcher matcher = pattern.matcher(name);
             return matcher.find();
         });

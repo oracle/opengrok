@@ -18,15 +18,15 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.c;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 import java.io.File;
@@ -38,9 +38,9 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexableField;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Scopes;
@@ -69,7 +69,7 @@ public class CxxAnalyzerFactoryTest {
         };
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -85,7 +85,7 @@ public class CxxAnalyzerFactoryTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -99,9 +99,7 @@ public class CxxAnalyzerFactoryTest {
     public void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/c/sample.cxx";
         File f = new File(path);
-        if (!(f.canRead() && f.isFile())) {
-            fail("cxx testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "cxx testfile " + f + " not found");
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,

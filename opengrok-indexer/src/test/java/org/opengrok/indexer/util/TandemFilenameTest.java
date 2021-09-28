@@ -22,11 +22,13 @@
  */
 package org.opengrok.indexer.util;
 
+import org.junit.jupiter.api.Test;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TandemFilenameTest {
 
@@ -38,7 +40,7 @@ public class TandemFilenameTest {
         } catch (IllegalArgumentException ex) {
             caughtException = ex;
         }
-        assertNotNull("a/b/c is not a valid argument", caughtException);
+        assertNotNull(caughtException, "a/b/c is not a valid argument");
     }
 
     @Test
@@ -54,10 +56,10 @@ public class TandemFilenameTest {
         Arrays.fill(chars, 'A');
         String filename = new String(chars);
         String newName = TandemFilename.join(filename, extension);
-        assertEquals("254 ASCII characters", filename + extension, newName);
+        assertEquals(filename + extension, newName, "254 ASCII characters");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use 254 bytes", 254, newBytes.length);
+        assertEquals(254, newBytes.length, "Should use 254 bytes");
     }
 
     @Test
@@ -73,10 +75,10 @@ public class TandemFilenameTest {
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "EOowLBTrxWMrXUnR2y818jr7LlP-DReUhteosu_8AoY=.zip";
-        assertEquals("255 ASCII characters", expected, newName);
+        assertEquals(expected, newName, "255 ASCII characters");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use all 255 bytes", 255, newBytes.length);
+        assertEquals(255, newBytes.length, "Should use all 255 bytes");
     }
 
     @Test
@@ -93,10 +95,10 @@ public class TandemFilenameTest {
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "GfYhMFaQvXK2dbJeO9SXYHzWC2UFhNyDYXzWDP2a_5E=.cpp.gz";
-        assertEquals("255 ASCII characters + 2 extensions", expected, newName);
+        assertEquals(expected, newName, "255 ASCII characters + 2 extensions");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use all 255 bytes", 255, newBytes.length);
+        assertEquals(255, newBytes.length, "Should use all 255 bytes");
     }
 
     @Test
@@ -113,10 +115,10 @@ public class TandemFilenameTest {
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" +
                 "pVBqc9SOArO6qf3shKWndZ05harxS-tqnmQkev_mxmY=.gz";
-        assertEquals("256 ASCII characters + 2 extensions", expected, newName);
+        assertEquals(expected, newName, "256 ASCII characters + 2 extensions");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use all 255 bytes", 255, newBytes.length);
+        assertEquals(255, newBytes.length, "Should use all 255 bytes");
     }
 
     @Test
@@ -126,13 +128,13 @@ public class TandemFilenameTest {
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +
                 "итеррорибусприеро1";
         byte[] uFilename = filename.getBytes(StandardCharsets.UTF_8);
-        assertEquals(filename + " as UTF-8, length", 251, uFilename.length);
+        assertEquals(251, uFilename.length, filename + " as UTF-8, length");
 
         String newName = TandemFilename.join(filename, extension);
-        assertEquals("Unicode concatenation", filename + extension, newName);
+        assertEquals(filename + extension, newName, "Unicode concatenation");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use 254 bytes", 254, newBytes.length);
+        assertEquals(254, newBytes.length, "Should use 254 bytes");
     }
 
     @Test
@@ -142,16 +144,16 @@ public class TandemFilenameTest {
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +
                 "итеррорибусприер.cs";
         byte[] uFilename = filename.getBytes(StandardCharsets.UTF_8);
-        assertEquals(filename + " as UTF-8, length", 251, uFilename.length);
+        assertEquals(251, uFilename.length, filename + " as UTF-8, length");
 
         String newName = TandemFilename.join(filename, extension);
         String expected = "Лоремипсумдолорситаметаппетерепатриояуеелояуентиа" +
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеу" +
                 "8Veko6G0h8wci2kX60EisTi4ReksNP1wdTLhbuB-5Vw=.cs.zip";
-        assertEquals("Unicode + new extension", expected, newName);
+        assertEquals(expected, newName, "Unicode + new extension");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use all 255 bytes", 255, newBytes.length);
+        assertEquals(255, newBytes.length, "Should use all 255 bytes");
     }
 
     @Test
@@ -161,15 +163,15 @@ public class TandemFilenameTest {
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеусусцип" +
                 "итеррорибусприерер";
         byte[] uFilename = filename.getBytes(StandardCharsets.UTF_8);
-        assertEquals(filename + " as UTF-8, length", 252, uFilename.length);
+        assertEquals(252, uFilename.length, filename + " as UTF-8, length");
 
         String newName = TandemFilename.join(filename, extension);
         String expected = "Лоремипсумдолорситаметаппетерепатриояуеелояуентиа" +
                 "меуяуиетомнисанималсцрипторемсеаутвидитсолутаусуЯуиеус" +
                 "_exXOSa5o10Ll_Z1Ymf8pI1BDI9IH4io6weWi-PYPMj4=.zip";
-        assertEquals("Unicode + padding + new extension", expected, newName);
+        assertEquals(expected, newName, "Unicode + padding + new extension");
 
         byte[] newBytes = newName.getBytes(StandardCharsets.UTF_8);
-        assertEquals("Should use all 255 bytes", 255, newBytes.length);
+        assertEquals(255, newBytes.length, "Should use all 255 bytes");
     }
 }

@@ -28,14 +28,14 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class JsonAnalyzerFactory extends FileAnalyzerFactory {
     // TODO add schema support
-    private static final String name = "Json";
-    
+    private static final String NAME = "Json";
+
     private static final String[] SUFFIXES = {
-        "JSON"        
+        "JSON"
     };
 
     public JsonAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

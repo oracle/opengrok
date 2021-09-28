@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -30,15 +30,14 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import junit.framework.AssertionFailedError;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProjectTest {
 
@@ -51,7 +50,7 @@ public class ProjectTest {
         // Create an exception listener to detect errors while encoding and
         // decoding
         final LinkedList<Exception> exceptions = new LinkedList<>();
-        ExceptionListener listener = e -> exceptions.addLast(e);
+        ExceptionListener listener = exceptions::addLast;
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
@@ -62,11 +61,8 @@ public class ProjectTest {
 
         // verify that the write didn't fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
             // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -77,11 +73,8 @@ public class ProjectTest {
 
         // verify that the read didn't fail
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
             // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
     }
 
@@ -168,8 +161,8 @@ public class ProjectTest {
         p1.completeWithDefaults();
 
         assertNotNull(p1);
-        assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
-        assertTrue("Renamed file handling should be true", p1.isHandleRenamedFiles());
+        assertTrue(p1.isNavigateWindowEnabled(), "Navigate window should be turned on");
+        assertTrue(p1.isHandleRenamedFiles(), "Renamed file handling should be true");
         assertEquals(new Project().getTabSize() + 9737, p1.getTabSize());
     }
 
@@ -190,16 +183,16 @@ public class ProjectTest {
     public void testEquality() {
         Project g1 = new Project();
         Project g2 = new Project();
-        assertEquals("null == null", g1, g2);
+        assertEquals(g1, g2, "null == null");
 
         g1 = new Project("name");
         g2 = new Project("other");
-        assertNotEquals("\"name\" != \"other\"", g1, g2);
+        assertNotEquals(g1, g2, "\"name\" != \"other\"");
 
         g1 = new Project("name");
         g2 = new Project("NAME");
-        assertEquals("\"name\" == \"NAME\"", g1, g2);
-        assertEquals("\"name\" == \"name\"", g1, g1);
-        assertEquals("\"NAME\" == \"NAME\"", g2, g2);
+        assertEquals(g1, g2, "\"name\" == \"NAME\"");
+        assertEquals(g1, g1, "\"name\" == \"name\"");
+        assertEquals(g2, g2, "\"NAME\" == \"NAME\"");
     }
 }

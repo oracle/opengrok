@@ -32,15 +32,15 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class HaskellAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Haskell";
-    
+    private static final String NAME = "Haskell";
+
     private static final String[] SUFFIXES = {
         "HS",
         "HSC"
     };
-    
+
     public HaskellAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

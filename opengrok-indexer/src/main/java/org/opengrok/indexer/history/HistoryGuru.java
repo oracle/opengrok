@@ -235,6 +235,14 @@ public final class HistoryGuru {
         return getHistory(file, true, true);
     }
 
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        final Repository repo = getRepository(file);
+        if (repo != null) {
+            return repo.getLastHistoryEntry(file, ui);
+        }
+        return null;
+    }
+
     /**
      * Get the history for the specified file.
      *
@@ -515,10 +523,7 @@ public final class HistoryGuru {
      * @return collection of added repositories
      */
     public Collection<RepositoryInfo> addRepositories(Collection<String> repos) {
-
-        return addRepositories(repos.stream().
-                map(r -> new File(r)).
-                collect(Collectors.toList()).toArray(new File[0]));
+        return addRepositories(repos.stream().map(File::new).toArray(File[]::new));
     }
 
     /**
@@ -527,7 +532,7 @@ public final class HistoryGuru {
      */
     public Collection<RepositoryInfo> getRepositories() {
         return repositories.values().stream().
-                map(ri -> new RepositoryInfo(ri)).collect(Collectors.toSet());
+                map(RepositoryInfo::new).collect(Collectors.toSet());
     }
 
     private void createCache(Repository repository, String sinceRevision) {
@@ -540,7 +545,7 @@ public final class HistoryGuru {
                     new Object[]{type, path});
             return;
         }
-        
+
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 
@@ -593,17 +598,14 @@ public final class HistoryGuru {
                 repos2process.size());
         final CountDownLatch latch = new CountDownLatch(repos2process.size());
         for (final Map.Entry<Repository, String> entry : repos2process.entrySet()) {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        createCache(entry.getKey(), entry.getValue());
-                    } catch (Exception ex) {
-                        // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING, "createCacheReal() got exception", ex);
-                    } finally {
-                        latch.countDown();
-                    }
+            executor.submit(() -> {
+                try {
+                    createCache(entry.getKey(), entry.getValue());
+                } catch (Exception ex) {
+                    // We want to catch any exception since we are in thread.
+                    LOGGER.log(Level.WARNING, "createCacheReal() got exception", ex);
+                } finally {
+                    latch.countDown();
                 }
             });
         }
@@ -823,25 +825,22 @@ public final class HistoryGuru {
                 });
 
         for (RepositoryInfo rinfo : repos) {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Repository r = RepositoryFactory.getRepository(rinfo, cmdType);
-                        if (r == null) {
-                            LOGGER.log(Level.WARNING,
-                                    "Failed to instantiate internal repository data for {0} in {1}",
-                                    new Object[]{rinfo.getType(), rinfo.getDirectoryName()});
-                        } else {
-                            newrepos.put(r.getDirectoryName(), r);
-                        }
-                    } catch (Exception ex) {
-                        // We want to catch any exception since we are in thread.
-                        LOGGER.log(Level.WARNING, "Could not create " + rinfo.getType()
-                            + " for '" + rinfo.getDirectoryName(), ex);
-                    } finally {
-                        latch.countDown();
+            executor.submit(() -> {
+                try {
+                    Repository r = RepositoryFactory.getRepository(rinfo, cmdType);
+                    if (r == null) {
+                        LOGGER.log(Level.WARNING,
+                                "Failed to instantiate internal repository data for {0} in {1}",
+                                new Object[]{rinfo.getType(), rinfo.getDirectoryName()});
+                    } else {
+                        newrepos.put(r.getDirectoryName(), r);
                     }
+                } catch (Exception ex) {
+                    // We want to catch any exception since we are in thread.
+                    LOGGER.log(Level.WARNING, "Could not create " + rinfo.getType()
+                        + " for '" + rinfo.getDirectoryName(), ex);
+                } finally {
+                    latch.countDown();
                 }
             });
         }

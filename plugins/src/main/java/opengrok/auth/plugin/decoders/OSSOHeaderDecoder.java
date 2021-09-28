@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
 import org.opengrok.indexer.web.Laundromat;
@@ -58,14 +59,14 @@ public class OSSOHeaderDecoder implements IUserDecoder {
         timeouted = Laundromat.launderInput(request.getHeader(OSSO_TIMEOUT_EXCEEDED_HEADER));
         timestamp = Laundromat.launderInput(request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER));
         userguid = Laundromat.launderInput(request.getHeader(OSSO_USER_GUID_HEADER));
-        
+
         if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
                     "Can not construct an user: username could not be extracted from headers: {0}",
                     String.join(",", Collections.list(request.getHeaderNames())));
             return null;
         }
-        
+
         if (userguid == null || userguid.isEmpty()) {
             LOGGER.log(Level.WARNING,
                     "Can not construct an user: userguid could not be extracted from headers: {0}",

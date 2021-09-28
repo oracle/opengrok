@@ -23,14 +23,14 @@
 package opengrok.auth.plugin;
 
 import opengrok.auth.plugin.entity.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
-import org.opengrok.indexer.util.RandomString;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link TruePlugin}.
@@ -39,7 +39,7 @@ public class TruePluginTest {
 
     private TruePlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new TruePlugin();
     }
@@ -57,28 +57,28 @@ public class TruePluginTest {
     @Test
     public void shouldAllowRandomUserForAnyProject() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomString.generateUpper(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
 
-        Project randomProject = new Project(RandomString.generateUpper(10));
+        Project randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow rando for random project 1", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random project 1");
 
-        randomProject = new Project(RandomString.generateUpper(10));
+        randomProject = new Project(RandomStringUtils.randomAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomProject);
-        assertTrue("should allow rando for random project 2", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random project 2");
     }
 
     @Test
     public void shouldAllowRandomUserForAnyGroup() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
-        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomString.generateUpper(8)));
+        req.setAttribute(UserPlugin.REQUEST_ATTR, new User(RandomStringUtils.randomAlphanumeric(8)));
 
-        Group randomGroup = new Group(RandomString.generateUpper(10));
+        Group randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
         boolean projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow rando for random group 1", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random group 1");
 
-        randomGroup = new Group(RandomString.generateUpper(10));
+        randomGroup = new Group(RandomStringUtils.randomAlphanumeric(10));
         projectAllowed = plugin.isAllowed(req, randomGroup);
-        assertTrue("should allow rando for random group 2", projectAllowed);
+        assertTrue(projectAllowed, "should allow rando for random group 2");
     }
 }

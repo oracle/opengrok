@@ -18,25 +18,24 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.haskell;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,7 +56,7 @@ public class HaskellSymbolTokenizerTest {
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
         JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
-        ts.setReader(r);        
+        ts.setReader(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
             ts.reset();
@@ -68,22 +67,22 @@ public class HaskellSymbolTokenizerTest {
             throw new RuntimeException(ex);
         }
 
-        return l.toArray(new String[l.size()]);
+        return l.toArray(new String[0]);
     }
 
     @Test
-    public void sampleTest() throws UnsupportedEncodingException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "analysis/haskell/sample.hs");
-        InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8);
-        String[] termsFor = getTermsFor(r);        
-        assertArrayEquals(
-                new String[]{
-                    "qsort", // line 2
-                    "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
-                    "x'y'", "f'", "g'h", "f'", "g'h" // line 6
-                },
-                termsFor);
+    public void sampleTest() throws IOException {
+        try (InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/haskell/sample.hs");
+             InputStreamReader r = new InputStreamReader(res, StandardCharsets.UTF_8)) {
+            String[] termsFor = getTermsFor(r);
+            assertArrayEquals(
+                    new String[] {
+                            "qsort", // line 2
+                            "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
+                            "x'y'", "f'", "g'h", "f'", "g'h" // line 6
+                    },
+                    termsFor);
+        }
     }
 
     /**
@@ -94,10 +93,10 @@ public class HaskellSymbolTokenizerTest {
     public void testHaskellSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sample2.hs");
-        assertNotNull("despite sample.py as resource,", pyres);
+        assertNotNull(pyres, "despite sample.py as resource,");
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sample2symbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", symres);
+        assertNotNull(symres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(symres);
         assertSymbolStream(HaskellSymbolTokenizer.class, pyres, expectedSymbols);

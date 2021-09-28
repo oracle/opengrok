@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -27,22 +27,23 @@ import java.util.Collections;
 import java.util.TreeSet;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class LdapFilterPluginTest {
+class LdapFilterPluginTest {
 
     private LdapFilterPlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new LdapFilterPlugin();
     }
 
     @Test
-    public void expandFilterTest1() {
+    void expandFilterTest1() {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList("james@bond")));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("bondjame")));
@@ -69,7 +70,7 @@ public class LdapFilterPluginTest {
     }
 
     @Test
-    public void expandFilterTest2() {
+    void expandFilterTest2() {
         LdapUser ldapUser = new LdapUser();
         ldapUser.setAttribute("mail", new TreeSet<>(Collections.singletonList("james@bond")));
         ldapUser.setAttribute("uid", new TreeSet<>(Collections.singletonList("bondjame")));
@@ -99,12 +100,12 @@ public class LdapFilterPluginTest {
     }
 
     @Test
-    public void testLoadTransforms() {
+    void testLoadTransforms() {
         plugin.loadTransforms("foo:toUpperCase,bar:toLowerCase");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testLoadTransformsNegative() {
-        plugin.loadTransforms("foo:toUpperCase,ugly:nice");
+    @Test
+    void testLoadTransformsNegative() {
+        assertThrows(UnsupportedOperationException.class, () -> plugin.loadTransforms("foo:toUpperCase,ugly:nice"));
     }
 }

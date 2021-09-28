@@ -16,13 +16,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="javax.servlet.http.HttpServletResponse"%>
+<%@page import="jakarta.servlet.http.HttpServletResponse"%>
 <%@ page session="false" isErrorPage="true" import="
 java.io.PrintWriter,
 java.io.StringWriter,
@@ -47,14 +47,9 @@ include file="httpheader.jspf"
 %>
 <body>
 <div id="page">
-    <div id="whole_header">
-       <div id="header">
-<%@
-
-include file="pageheader.jspf"
-
-%>
-        </div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
+    </header>
 <%
 {
     PageConfig cfg = PageConfig.get(request);

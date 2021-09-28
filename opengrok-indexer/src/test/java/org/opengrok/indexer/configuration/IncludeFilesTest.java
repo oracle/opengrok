@@ -18,25 +18,24 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Aleksandr Kirillov <alexkirillovsamara@gmail.com>.
  */
 package org.opengrok.indexer.configuration;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test include file functionality for web application.
- * 
+ *
  * @author Vladimir Kotal
  */
 public class IncludeFilesTest {
@@ -44,72 +43,59 @@ public class IncludeFilesTest {
     static final String CONTENT_1 = "foo";
     static final String CONTENT_2 = "bar";
     static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-    static final String LINE_SEP = System.lineSeparator();
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpClass() throws IOException {
         includeRoot = Files.createTempDirectory("include_root");
         env.setIncludeRoot(includeRoot.toString());
     }
-    
-    private void writeStringToFile(File file, String str) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            bw.write(str);
-        }
+
+    private void writeStringToFile(Path file, String str) throws IOException {
+        Files.writeString(file, str, Charset.defaultCharset());
     }
-    
+
     @Test
     public void testGetHeaderIncludeFileContent() throws IOException {
-        File file = new File(includeRoot.toFile(), Configuration.HEADER_INCLUDE_FILE);
+        Path file = includeRoot.resolve(Configuration.HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + LINE_SEP,
-                env.includeFiles.getHeaderIncludeFileContent(false));
+        assertEquals(CONTENT_1, env.includeFiles.getHeaderIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + LINE_SEP,
-                env.includeFiles.getHeaderIncludeFileContent(true));
+        assertEquals(CONTENT_2, env.includeFiles.getHeaderIncludeFileContent(true));
     }
-    
+
     @Test
     public void testGetBodyIncludeFileContent() throws IOException {
-        File file = new File(includeRoot.toFile(), Configuration.BODY_INCLUDE_FILE);
+        Path file = includeRoot.resolve(Configuration.BODY_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + LINE_SEP,
-                env.includeFiles.getBodyIncludeFileContent(false));
+        assertEquals(CONTENT_1, env.includeFiles.getBodyIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + LINE_SEP,
-                env.includeFiles.getBodyIncludeFileContent(true));
+        assertEquals(CONTENT_2, env.includeFiles.getBodyIncludeFileContent(true));
     }
-    
+
     @Test
     public void testGetFooterIncludeFileContent() throws IOException {
-        File file = new File(includeRoot.toFile(), Configuration.FOOTER_INCLUDE_FILE);
+        Path file = includeRoot.resolve(Configuration.FOOTER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + LINE_SEP,
-                env.includeFiles.getFooterIncludeFileContent(false));
+        assertEquals(CONTENT_1, env.includeFiles.getFooterIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + LINE_SEP,
-                env.includeFiles.getFooterIncludeFileContent(true));
+        assertEquals(CONTENT_2, env.includeFiles.getFooterIncludeFileContent(true));
     }
-    
+
     @Test
     public void testGetForbiddenIncludeFileContent() throws IOException {
-        File file = new File(includeRoot.toFile(), Configuration.E_FORBIDDEN_INCLUDE_FILE);
+        Path file = includeRoot.resolve(Configuration.E_FORBIDDEN_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + LINE_SEP,
-                env.includeFiles.getForbiddenIncludeFileContent(false));
+        assertEquals(CONTENT_1, env.includeFiles.getForbiddenIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + LINE_SEP,
-                env.includeFiles.getForbiddenIncludeFileContent(true));
+        assertEquals(CONTENT_2, env.includeFiles.getForbiddenIncludeFileContent(true));
     }
 
     @Test
     public void testGetHttpHeaderIncludeFileContent() throws IOException {
-        File file = new File(includeRoot.toFile(), Configuration.HTTP_HEADER_INCLUDE_FILE);
+        Path file = includeRoot.resolve(Configuration.HTTP_HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + LINE_SEP,
-                env.includeFiles.getHttpHeaderIncludeFileContent(false));
+        assertEquals(CONTENT_1, env.includeFiles.getHttpHeaderIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + LINE_SEP,
-                env.includeFiles.getHttpHeaderIncludeFileContent(true));
+        assertEquals(CONTENT_2, env.includeFiles.getHttpHeaderIncludeFileContent(true));
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
 
@@ -28,12 +28,15 @@ import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_SUBSCRIBER_HE
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_TIMEOUT_EXCEEDED_HEADER;
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_DN_HEADER;
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_GUID_HEADER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test OSSO header decoder.
@@ -44,7 +47,7 @@ public class OSSODecoderTest {
     DummyHttpServletRequestUser dummyRequest;
     OSSOHeaderDecoder decoder = new OSSOHeaderDecoder();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dummyRequest = new DummyHttpServletRequestUser();
         dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, "5761172f");
@@ -68,12 +71,12 @@ public class OSSODecoderTest {
 
         User result = decoder.fromRequest(dummyRequest);
 
-        Assert.assertNotNull(result);
-        Assert.assertEquals("dn=specific.dn", result.getUsername());
-        Assert.assertEquals("123456", result.getId());
-        Assert.assertFalse(result.getTimeouted());
-        Assert.assertEquals(Long.parseLong("1465980719000"), result.getCookieTimestamp().getTime());
-        Assert.assertFalse(result.isTimeouted());
+        assertNotNull(result);
+        assertEquals("dn=specific.dn", result.getUsername());
+        assertEquals("123456", result.getId());
+        assertFalse(result.getTimeouted());
+        assertEquals(Long.parseLong("1465980719000"), result.getCookieTimestamp().getTime());
+        assertFalse(result.isTimeouted());
     }
 
     /**
@@ -90,8 +93,8 @@ public class OSSODecoderTest {
         for (String test : tests) {
             dummyRequest.setHeader(OSSO_USER_GUID_HEADER, test);
             User result = decoder.fromRequest(dummyRequest);
-            Assert.assertNotNull(result);
-            Assert.assertEquals(test, result.getId());
+            assertNotNull(result);
+            assertEquals(test, result.getId());
         }
     }
 
@@ -109,8 +112,8 @@ public class OSSODecoderTest {
         for (String test : tests) {
             dummyRequest.setHeader(OSSO_USER_DN_HEADER, test);
             User result = decoder.fromRequest(dummyRequest);
-            Assert.assertNotNull(result);
-            Assert.assertEquals(test, result.getUsername());
+            assertNotNull(result);
+            assertEquals(test, result.getUsername());
         }
     }
 
@@ -125,8 +128,8 @@ public class OSSODecoderTest {
         for (int i = 0; i < tests.length; i++) {
             dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, tests[i]);
             User result = decoder.fromRequest(dummyRequest);
-            Assert.assertNotNull(result);
-            Assert.assertEquals(expected[i], result.getCookieTimestamp().getTime());
+            assertNotNull(result);
+            assertEquals(expected[i], result.getCookieTimestamp().getTime());
         }
     }
 
@@ -145,8 +148,8 @@ public class OSSODecoderTest {
         for (String test : tests) {
             User u;
             dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, test);
-            Assert.assertNotNull(u = decoder.fromRequest(dummyRequest));
-            Assert.assertNull(u.getCookieTimestamp());
+            assertNotNull(u = decoder.fromRequest(dummyRequest));
+            assertNull(u.getCookieTimestamp());
         }
     }
 
@@ -162,9 +165,9 @@ public class OSSODecoderTest {
             dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, tests[i]);
             User result = decoder.fromRequest(dummyRequest);
             if (expected[i]) {
-                Assert.assertNull(result);
+                assertNull(result);
             } else {
-                Assert.assertNotNull(result);
+                assertNotNull(result);
             }
         }
     }

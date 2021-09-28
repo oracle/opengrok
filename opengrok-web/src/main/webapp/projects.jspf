@@ -26,6 +26,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page import="
 java.net.URLEncoder,
+java.nio.charset.StandardCharsets,
 org.opengrok.web.PageConfig
 "%><%
 /* ---------------------- projects.jspf start --------------------- */
@@ -39,7 +40,7 @@ org.opengrok.web.PageConfig
 
     String projects = cfg.getRequestedProjectsAsString();
     if (projects.length() != 0) {
-        Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, "utf-8"));
+        Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, StandardCharsets.UTF_8));
         response.addCookie(cookie);
     }
 }

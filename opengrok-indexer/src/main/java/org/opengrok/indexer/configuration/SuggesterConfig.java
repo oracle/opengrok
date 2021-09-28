@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -29,7 +29,6 @@ import com.cronutils.parser.CronParser;
 import org.opengrok.indexer.search.QueryBuilder;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -54,14 +53,14 @@ public class SuggesterConfig {
     public static final int REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT = 80;
 
     public static final Set<String> allowedProjectsDefault = null;
-    public static final Set<String> allowedFieldsDefault = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    public static final Set<String> allowedFieldsDefault = Set.of(
             QueryBuilder.FULL,
             QueryBuilder.DEFS,
             QueryBuilder.REFS,
             QueryBuilder.PATH,
             QueryBuilder.HIST,
             QueryBuilder.TYPE
-    )));
+    );
 
     /**
      * Specifies if the suggester is enabled.
@@ -215,7 +214,7 @@ public class SuggesterConfig {
     }
 
     public void setAllowedFields(final Set<String> allowedFields) {
-        this.allowedFields = allowedFields;
+        this.allowedFields = new HashSet<>(allowedFields);
     }
 
     public boolean isAllowComplexQueries() {

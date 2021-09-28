@@ -18,17 +18,15 @@
  */
 
 /*
- * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011, Trond Norbye.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,7 +40,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,7 +49,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 /**
  * A small utility class to provide common functionality related to
  * IO so that we don't need to duplicate the logic all over the place.
- * 
+ *
  * @author Trond Norbye &lt;trond.norbye@gmail.com&gt;
  */
 public final class IOUtils {
@@ -84,7 +81,7 @@ public final class IOUtils {
      * @throws IOException if any read error
      */
     public static void removeRecursive(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                     throws IOException {
@@ -185,7 +182,7 @@ public final class IOUtils {
      * @param defaultCharset default charset
      * @return reader for the stream without BOM
      * @throws IOException if I/O exception occurred
-     */    
+     */
     public static Reader createBOMStrippedReader(InputStream stream, String defaultCharset) throws IOException {
         InputStream in = stream.markSupported() ?
                 stream : new BufferedInputStream(stream);
@@ -220,13 +217,11 @@ public final class IOUtils {
     /**
      * Byte-order markers.
      */
-    private static final Map<String, byte[]> BOMS = new HashMap<>();
-
-    static {
-        BOMS.put("UTF-8", new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
-        BOMS.put("UTF-16BE", new byte[]{(byte) 0xFE, (byte) 0xFF});
-        BOMS.put("UTF-16LE", new byte[]{(byte) 0xFF, (byte) 0xFE});
-    }
+    private static final Map<String, byte[]> BOMS = Map.of(
+            "UTF-8", new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF},
+            "UTF-16BE", new byte[]{(byte) 0xFE, (byte) 0xFF},
+            "UTF-16LE", new byte[]{(byte) 0xFF, (byte) 0xFE}
+    );
 
     /**
      * Gets a value indicating a UTF encoding if the array starts with a
@@ -278,38 +273,10 @@ public final class IOUtils {
         if (file == null || !file.canRead()) {
             return "";
         }
-        FileReader fin = null;
-        BufferedReader input = null;
         try {
-            fin = new FileReader(file);
-            input = new BufferedReader(fin);
-            String line;
-            StringBuilder contents = new StringBuilder();
-            String EOL = System.getProperty("line.separator");
-            while ((line = input.readLine()) != null) {
-                contents.append(line).append(EOL);
-            }
-            return contents.toString();
-        } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.WARNING, "failed to find file: {0}",
-                    e.getMessage());
-        } catch (java.io.IOException e) {
-            LOGGER.log(Level.WARNING, "failed to read file: {0}",
-                    e.getMessage());
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (Exception e) {
-                    // nothing we can do about it
-                }
-            } else if (fin != null) {
-                try {
-                    fin.close();
-                } catch (Exception e) {
-                    // nothing we can do about it
-                }
-            }
+            return Files.readString(file.toPath(), Charset.defaultCharset());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "failed to read file: {0}", e.getMessage());
         }
         return "";
     }

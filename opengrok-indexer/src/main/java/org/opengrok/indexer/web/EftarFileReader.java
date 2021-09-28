@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.web;
 
@@ -50,7 +50,7 @@ public class EftarFileReader implements Closeable {
 
     public class FNode {
 
-        private long offset;
+        private final long offset;
         private long hash;
         private int childOffset;
         private int numChildren;
@@ -164,7 +164,7 @@ public class EftarFileReader implements Closeable {
         }
         return null;
     }
-    
+
     public String getChildTag(FNode fn, String name) throws IOException {
         if (fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
             FNode ch = fn.binarySearch(fn.offset + fn.childOffset, fn.numChildren, EftarFile.myHash(name));
@@ -227,6 +227,7 @@ public class EftarFileReader implements Closeable {
         return !isOpen;
     }
 
+    @Override
     public void close() {
         if (isOpen) {
             IOUtils.close(f);

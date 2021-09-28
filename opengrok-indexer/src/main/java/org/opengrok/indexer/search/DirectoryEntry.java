@@ -19,20 +19,22 @@
 
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
+
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 
 import java.io.File;
 
 /**
  * Represents a pairing of {@link File} along with supplemental
- * {@link FileExtra}.
+ * {@link NullableNumLinesLOC}.
  */
 public class DirectoryEntry {
 
     private final File file;
-    private final FileExtra extra;
+    private final NullableNumLinesLOC extra;
 
     /**
      * Initializes an instance with a specified, required {@link File}.
@@ -44,11 +46,11 @@ public class DirectoryEntry {
 
     /**
      * Initializes an instance with a specified, required {@link File} and
-     * a possible {@link FileExtra}.
+     * a possible {@link NullableNumLinesLOC}.
      * @param file a defined instance
      * @param extra an optional instance
      */
-    public DirectoryEntry(File file, FileExtra extra) {
+    public DirectoryEntry(File file, NullableNumLinesLOC extra) {
         if (file == null) {
             throw new IllegalArgumentException("`file' is null");
         }
@@ -66,7 +68,7 @@ public class DirectoryEntry {
     /**
      * @return the (optional) extra file data
      */
-    public FileExtra getExtra() {
+    public NullableNumLinesLOC getExtra() {
         return extra;
     }
 }

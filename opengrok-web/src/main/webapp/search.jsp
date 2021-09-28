@@ -16,13 +16,13 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2018, 2020, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="javax.servlet.http.HttpServletResponse"%>
+<%@page import="jakarta.servlet.http.HttpServletResponse"%>
 <%@page session="false" errorPage="error.jsp" import="
 org.apache.lucene.queryparser.classic.QueryParser,
 org.opengrok.indexer.search.Results,
@@ -34,6 +34,9 @@ org.opengrok.indexer.web.Suggestion,
 
 java.util.List"
 %>
+<%@ page import="jakarta.servlet.http.HttpServletRequest" %>
+<%@ page import="jakarta.servlet.http.Cookie" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
@@ -60,9 +63,13 @@ include file="projects.jspf"
             Util.appendQuery(url, QueryParameters.HIST_SEARCH_PARAM, qb.getHist());
             Util.appendQuery(url, QueryParameters.TYPE_SEARCH_PARAM, qb.getType());
         }
-        if (sh.projects != null && sh.projects.size() != 0) {
-            Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM,
-                    PageConfig.get(request).getRequestedProjectsAsString());
+        if (sh.projects != null && !sh.projects.isEmpty()) {
+            if (Boolean.parseBoolean(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH))) {
+                Util.appendQuery(url, QueryParameters.ALL_PROJECT_SEARCH, Boolean.TRUE.toString());
+            } else {
+                Util.appendQuery(url, QueryParameters.PROJECT_SEARCH_PARAM,
+                        PageConfig.get(request).getRequestedProjectsAsString());
+            }
         }
         return url;
     }
@@ -91,7 +98,7 @@ include file="projects.jspf"
     } else {
         cfg.setTitle(cfg.getSearchTitle());
     }
-    response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
+    response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), StandardCharsets.UTF_8)));
 }
 %><%@
 
@@ -99,13 +106,8 @@ include file="httpheader.jspf"
 
 %><body>
 <div id="page">
-    <div id="whole_header">
-        <div id="header"><%@
-
-include file="pageheader.jspf"
-
-%>
-        </div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
         <div id="Masthead">
             <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
             <%-- TODO: jel: IMHO it should be move to menu.jspf as combobox --%>
@@ -141,7 +143,7 @@ include file="menu.jspf"
 
 %>
         </div>
-    </div>
+    </header>
 
     <div id="results"> <%
 {

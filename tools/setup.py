@@ -24,7 +24,7 @@ setup(
         'opengrok_tools.scm': 'src/main/python/opengrok_tools/scm',
         'opengrok_tools.utils': 'src/main/python/opengrok_tools/utils',
     },
-    url='https://github.com/OpenGrok/OpenGrok',
+    url='https://github.com/oracle/opengrok',
     license='CDDL',
     author='Oracle',
     description='Tools for managing OpenGrok instance',

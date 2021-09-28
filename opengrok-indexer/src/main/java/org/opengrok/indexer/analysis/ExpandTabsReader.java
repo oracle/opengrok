@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -115,15 +115,12 @@ public class ExpandTabsReader extends FilterReader {
         int newColumn = 0;
         for (int i = 0; i < column; ++i) {
             char c = line.charAt(i);
-            switch (c) {
-                case '\t':
-                    // Fill up with spaces up to the next tab stop
-                    newColumn += tabSize - (newColumn % tabSize);
-                    break;
-                default:
-                    // \r or \n are not expected so do not handle specially.
-                    ++newColumn;
-                    break;
+            if (c == '\t') {
+                // Fill up with spaces up to the next tab stop
+                newColumn += tabSize - (newColumn % tabSize);
+            } else {
+                // \r or \n are not expected so do not handle specially.
+                ++newColumn;
             }
         }
 

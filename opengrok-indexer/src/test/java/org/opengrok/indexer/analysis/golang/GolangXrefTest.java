@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.golang;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
 import java.io.IOException;
 
@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link GolangXref} class.
  */
-public class GolangXrefTest extends XrefTestBase {
+class GolangXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/sample.go",
                 "analysis/golang/sample_xref.html",
@@ -43,9 +43,16 @@ public class GolangXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new GolangAnalyzerFactory(),
                 "analysis/golang/truncated.go",
                 "analysis/golang/truncated_xref.html", null, 1);
+    }
+
+    @Test
+    void shouldContainEmail() throws IOException {
+        writeAndCompare(new GolangAnalyzerFactory(),
+                "analysis/golang/email.go",
+                "analysis/golang/email_xref.html", null, 3);
     }
 }

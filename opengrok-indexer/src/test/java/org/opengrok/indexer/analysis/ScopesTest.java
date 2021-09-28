@@ -18,14 +18,16 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.Scopes.Scope;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -63,4 +65,14 @@ public class ScopesTest {
         assertEquals(instance.getScope(101), globalScope);
         assertEquals(instance.getScope(500), globalScope);
     }
+
+    @Test
+    void testSerialize() throws IOException, ClassNotFoundException {
+        Scopes scopes = new Scopes();
+        scopes.addScope(new Scope(1, 100, "name", "namespace", "signature"));
+        byte[] bytes = scopes.serialize();
+        Scopes deserialized = Scopes.deserialize(bytes);
+        assertEquals(1, deserialized.size());
+    }
+
 }

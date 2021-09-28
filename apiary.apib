@@ -346,6 +346,11 @@ This entry point is used by the Indexer once it finishes indexing given project.
 
 ### marks project as indexed [PUT]
 
++ Request (text/plain)
+  + Body
+
+            empty
+
 + Response 204
 
 ## Project index files [/projects/{project}/files]
@@ -357,9 +362,12 @@ This entry point is used by the Indexer once it finishes indexing given project.
 
             ["/project/foo.txt","/project/bar.txt"]
 
-## Project metadata [/projects/{project}/property/{field}]
+## Project metadata [/projects/{project}/property/{propertyname}]
 
-### sets property field for the project [PUT]
+The list of per project properties can be found on
+https://github.com/oracle/opengrok/wiki/Per-project-configuration#properties
+
+### sets property value for the project [PUT]
 
 + Request
   + Body
@@ -368,7 +376,7 @@ This entry point is used by the Indexer once it finishes indexing given project.
 
 + Response 204
 
-### returns the field value [GET]
+### returns the property value [GET]
 
 + Response 200 (application/json)
 

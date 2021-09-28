@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -39,7 +39,7 @@ import org.opengrok.indexer.util.IOUtils;
  * Virtualize RCS log as an input stream.
  */
 public class RCSget extends InputStream {
-    private InputStream stream;
+    private final InputStream stream;
 
     /**
      * Pass null in version to get current revision.

@@ -104,7 +104,7 @@ public class Consts {
         kwd.add("while");
         kwd.add("with");
         kwd.add("xor");
- 
+
         kwd.add("ascii"); // A.1 The Package Standard
         kwd.add("base"); // A.1 The Package Standard
         kwd.add("boolean"); // A.1 The Package Standard

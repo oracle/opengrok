@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -50,7 +50,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MonotoneHistoryParser.class);
 
-    private List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
+    private final List<HistoryEntry> entries = new ArrayList<>(); //NOPMD
     private final MonotoneRepository repository;
     private final String mydir;
 

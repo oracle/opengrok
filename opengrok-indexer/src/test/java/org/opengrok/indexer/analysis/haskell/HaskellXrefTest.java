@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.haskell;
@@ -34,15 +34,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
@@ -67,7 +67,7 @@ public class HaskellXrefTest {
             " data-definition-place=\"undefined-in-file\">putStrLn</a>" +
             " <span class=\"s\">&quot;Hello, world!&quot;</span>\n",
                 w.toString());
-        assertEquals("Haskell LOC", 1, xref.getLOC());
+        assertEquals(1, xref.getLOC(), "Haskell LOC");
     }
 
     private static int writeHaskellXref(InputStream is, PrintStream os,
@@ -126,7 +126,7 @@ public class HaskellXrefTest {
         String[] actual = new String(sampleOutputStream.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         String[] expected = new String(expectedOutputSteam.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         assertLinesEqual("Haskell sampleTest()", expected, actual);
-        assertEquals("Haskell LOC", 3, actLOC);
+        assertEquals(3, actLOC, "Haskell LOC");
     }
 
     @Test
@@ -150,13 +150,13 @@ public class HaskellXrefTest {
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
-        assertNotNull(sourceResource + " should get-as-stream", res);
+        assertNotNull(res, sourceResource + " should get-as-stream");
         int actLOC = writeHaskellXref(res, new PrintStream(baos), defs);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             resultResource);
-        assertNotNull(resultResource + " should get-as-stream", exp);
+        assertNotNull(exp, resultResource + " should get-as-stream");
         byte[] expbytes = copyStream(exp);
         exp.close();
         baos.close();
@@ -168,13 +168,13 @@ public class HaskellXrefTest {
         String[] expected = estr.split("\n");
 
         assertLinesEqual("Haskell xref", expected, gotten);
-        assertEquals("Haskell LOC", expLOC, actLOC);
+        assertEquals(expLOC, actLOC, "Haskell LOC");
     }
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "analysis/haskell/sampletags");
-        assertNotNull("though sampletags should stream,", res);
+        assertNotNull(res, "though sampletags should stream,");
 
         BufferedReader in = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
 

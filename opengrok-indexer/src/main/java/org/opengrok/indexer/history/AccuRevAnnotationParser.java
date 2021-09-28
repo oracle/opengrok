@@ -38,12 +38,12 @@ import org.opengrok.indexer.util.Executor;
  * into an annotation object.
  */
 public class AccuRevAnnotationParser implements Executor.StreamHandler {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AccuRevAnnotationParser.class);
-    
+
     private static final Pattern ANNOTATION_PATTERN
             = Pattern.compile("^\\s+(\\d+.\\d+)\\s+(\\w+)");   // version, user
-    
+
     /**
      * Store annotation created by processStream.
      */
@@ -55,7 +55,7 @@ public class AccuRevAnnotationParser implements Executor.StreamHandler {
     public AccuRevAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
     }
-    
+
     /**
      * Returns the annotation that has been created.
      *
@@ -64,7 +64,7 @@ public class AccuRevAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader reader

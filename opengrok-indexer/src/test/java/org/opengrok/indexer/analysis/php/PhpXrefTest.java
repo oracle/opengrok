@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.php;
@@ -36,17 +36,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.CtagsReader;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
@@ -69,7 +67,7 @@ public class PhpXrefTest {
                         + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a>" +
                         " <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
                 w.toString());
-        assertEquals("PHP LOC", 1, xref.getLOC());
+        assertEquals(1, xref.getLOC(), "PHP LOC");
     }
 
     @Test
@@ -94,7 +92,7 @@ public class PhpXrefTest {
                         + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" "
                         + "data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
                 w.toString());
-        assertEquals("PHP LOC", 1, xref.getLOC());
+        assertEquals(1, xref.getLOC(), "PHP LOC");
     }
 
 
@@ -149,14 +147,14 @@ public class PhpXrefTest {
         String[] gotten = new String(baos.toByteArray(), StandardCharsets.UTF_8).split("\\r?\\n");
         String[] expected = new String(expbytes, StandardCharsets.UTF_8).split("\n");
         assertLinesEqual("PHP xref", expected, gotten);
-        assertEquals("PHP LOC", 29, actLOC);
+        assertEquals(29, actLOC, "PHP LOC");
 
         assertEquals(expected.length, gotten.length);
     }
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream("analysis/php/sampletags");
-        assertNotNull("though sampletags should stream,", res);
+        assertNotNull(res, "though sampletags should stream,");
 
         BufferedReader in = new BufferedReader(new InputStreamReader(res, StandardCharsets.UTF_8));
 

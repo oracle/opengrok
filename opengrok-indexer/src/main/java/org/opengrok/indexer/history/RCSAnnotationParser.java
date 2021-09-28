@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -39,7 +39,7 @@ public class RCSAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(RCSAnnotationParser.class);
 
     private Annotation annotation = null;
-    private File file;
+    private final File file;
 
     /**
      * Pattern used to extract author/revision from {@code blame}.

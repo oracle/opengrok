@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.clojure;
 
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 import static org.opengrok.indexer.util.StreamUtils.readSampleSymbols;
 
-import org.junit.Test;
 import java.io.InputStream;
 import java.util.List;
 
@@ -44,10 +45,10 @@ public class ClojureSymbolTokenizerTest {
     public void testClojureSymbolStream() throws Exception {
         InputStream cljres = getClass().getClassLoader().getResourceAsStream(
             "analysis/clojure/sample.clj");
-        assertNotNull("despite sample.clj as resource,", cljres);
+        assertNotNull(cljres, "despite sample.clj as resource,");
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
             "analysis/clojure/samplesymbols.txt");
-        assertNotNull("despite samplesymbols.txt as resource,", wdsres);
+        assertNotNull(wdsres, "despite samplesymbols.txt as resource,");
 
         List<String> expectedSymbols = readSampleSymbols(wdsres);
         assertSymbolStream(ClojureSymbolTokenizer.class, cljres, expectedSymbols);

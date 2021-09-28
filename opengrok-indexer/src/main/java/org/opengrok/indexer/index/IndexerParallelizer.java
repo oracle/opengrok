@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.index;
 
@@ -59,8 +59,9 @@ public class IndexerParallelizer implements AutoCloseable {
     private LazilyInstantiate<ObjectPool<Ctags>> lzCtagsPool;
     private LazilyInstantiate<ExecutorService> lzFixedExecutor;
     private LazilyInstantiate<ExecutorService> lzHistoryExecutor;
-    private LazilyInstantiate<ExecutorService> lzHistoryRenamedExecutor;
+    private LazilyInstantiate<ExecutorService> lzHistoryFileExecutor;
     private LazilyInstantiate<ExecutorService> lzCtagsWatcherExecutor;
+    private LazilyInstantiate<ExecutorService> lzXrefWatcherExecutor;
 
     /**
      * Initializes a new instance using settings from the specified environment
@@ -82,8 +83,9 @@ public class IndexerParallelizer implements AutoCloseable {
         createLazyCtagsPool();
         createLazyFixedExecutor();
         createLazyHistoryExecutor();
-        createLazyHistoryRenamedExecutor();
+        createLazyHistoryFileExecutor();
         createLazyCtagsWatcherExecutor();
+        createLazyXrefWatcherExecutor();
     }
 
     /**
@@ -108,17 +110,17 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     /**
-     * @return the ExecutorService used for history parallelism
+     * @return the ExecutorService used for history parallelism (repository level)
      */
     public ExecutorService getHistoryExecutor() {
         return lzHistoryExecutor.get();
     }
 
     /**
-     * @return the ExecutorService used for history-renamed parallelism
+     * @return the ExecutorService used for history parallelism (file level)
      */
-    public ExecutorService getHistoryRenamedExecutor() {
-        return lzHistoryRenamedExecutor.get();
+    public ExecutorService getHistoryFileExecutor() {
+        return lzHistoryFileExecutor.get();
     }
 
     /**
@@ -126,6 +128,13 @@ public class IndexerParallelizer implements AutoCloseable {
      */
     public ExecutorService getCtagsWatcherExecutor() {
         return lzCtagsWatcherExecutor.get();
+    }
+
+    /**
+     * @return the Executor used for enforcing xref timeouts.
+     */
+    public ExecutorService getXrefWatcherExecutor() {
+        return lzXrefWatcherExecutor.get();
     }
 
     /**
@@ -160,6 +169,7 @@ public class IndexerParallelizer implements AutoCloseable {
         bounceHistoryExecutor();
         bounceHistoryRenamedExecutor();
         bounceCtagsWatcherExecutor();
+        bounceXrefWatcherExecutor();
     }
 
     private void bounceForkJoinPool() {
@@ -195,9 +205,9 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     private void bounceHistoryRenamedExecutor() {
-        if (lzHistoryRenamedExecutor.isActive()) {
-            ExecutorService formerHistoryRenamedExecutor = lzHistoryRenamedExecutor.get();
-            createLazyHistoryRenamedExecutor();
+        if (lzHistoryFileExecutor.isActive()) {
+            ExecutorService formerHistoryRenamedExecutor = lzHistoryFileExecutor.get();
+            createLazyHistoryFileExecutor();
             formerHistoryRenamedExecutor.shutdown();
         }
     }
@@ -207,6 +217,14 @@ public class IndexerParallelizer implements AutoCloseable {
             ExecutorService formerCtagsWatcherExecutor = lzCtagsWatcherExecutor.get();
             createLazyCtagsWatcherExecutor();
             formerCtagsWatcherExecutor.shutdown();
+        }
+    }
+
+    private void bounceXrefWatcherExecutor() {
+        if (lzXrefWatcherExecutor.isActive()) {
+            ExecutorService formerXrefWatcherExecutor = lzXrefWatcherExecutor.get();
+            createLazyXrefWatcherExecutor();
+            formerXrefWatcherExecutor.shutdown();
         }
     }
 
@@ -230,6 +248,15 @@ public class IndexerParallelizer implements AutoCloseable {
                 }));
     }
 
+    private void createLazyXrefWatcherExecutor() {
+        lzXrefWatcherExecutor = LazilyInstantiate.using(() ->
+                new ScheduledThreadPoolExecutor(1, runnable -> {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("xref-watcher-" + thread.getId());
+                    return thread;
+                }));
+    }
+
     private void createLazyFixedExecutor() {
         lzFixedExecutor = LazilyInstantiate.using(() ->
                 Executors.newFixedThreadPool(indexingParallelism));
@@ -240,9 +267,9 @@ public class IndexerParallelizer implements AutoCloseable {
                 Executors.newFixedThreadPool(env.getHistoryParallelism()));
     }
 
-    private void createLazyHistoryRenamedExecutor() {
-        lzHistoryRenamedExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryRenamedParallelism()));
+    private void createLazyHistoryFileExecutor() {
+        lzHistoryFileExecutor = LazilyInstantiate.using(() ->
+                Executors.newFixedThreadPool(env.getHistoryFileParallelism()));
     }
 
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {

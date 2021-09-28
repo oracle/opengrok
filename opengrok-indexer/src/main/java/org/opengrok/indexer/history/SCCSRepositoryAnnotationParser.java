@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -37,31 +37,27 @@ import org.opengrok.indexer.util.Executor;
 
 /**
  * handles parsing into Annotation object.
- */ 
+ */
 public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SCCSRepositoryAnnotationParser.class);
-    
+
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-    
+
     private final Map<String, String> authors;
-    
-    private final File file;
-    
+
     /**
      * Pattern used to extract revision from the {@code sccs get} command.
      */
-    private static final Pattern ANNOTATION_PATTERN
-            = Pattern.compile("^([\\d.]+)\\s+");
-    
+    private static final Pattern ANNOTATION_PATTERN = Pattern.compile("^([\\d.]+)\\s+");
+
     SCCSRepositoryAnnotationParser(File file, Map<String, String> authors) {
         this.annotation = new Annotation(file.getName());
-        this.file = file;
         this.authors = authors;
     }
-    
+
     /**
      * Returns the annotation that has been created.
      *
@@ -70,7 +66,7 @@ public class SCCSRepositoryAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
         try (BufferedReader in = new BufferedReader(

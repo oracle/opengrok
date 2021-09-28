@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
@@ -49,7 +50,7 @@ import static opengrok.auth.plugin.util.FilterUtil.expandUserFilter;
 public class LdapUserPlugin extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapUserPlugin.class.getName());
-    
+
     static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
     /**
@@ -145,7 +146,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     @Override
     public void fillSession(HttpServletRequest req, User user) {
         Map<String, Set<String>> records;
-        
+
         updateSession(req, null);
 
         if (getLdapProvider() == null) {

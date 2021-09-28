@@ -33,7 +33,7 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(verb, uri, params=None, headers=None, data=None):
+def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None):
     """
     Perform an API call. Will raise an exception if the request fails.
     :param verb: string holding HTTP verb
@@ -41,6 +41,8 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     :param params: request parameters
     :param headers: HTTP headers dictionary
     :param data: data or None
+    :param timeout: optional connect timeout in seconds.
+                    If None, default (60 seconds) will be used.
     :return: the result of the handler call, can be None
     """
     logger = logging.getLogger(__name__)
@@ -49,14 +51,18 @@ def do_api_call(verb, uri, params=None, headers=None, data=None):
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    logger.debug("{} API call: {} with data '{}' and headers: {}".
-                 format(verb, uri, data, headers))
+    if timeout is None:
+        timeout = 60
+
+    logger.debug("{} API call: {} with data '{}', timeout {} seconds and headers: {}".
+                 format(verb, uri, data, timeout, headers))
     r = handler(
         uri,
         data=data,
         params=params,
         headers=headers,
-        proxies=get_proxies(uri)
+        proxies=get_proxies(uri),
+        timeout=timeout
     )
 
     if r is None:
@@ -76,17 +82,19 @@ def subst(src, substitutions):
     return src
 
 
-def call_rest_api(command, substitutions=None):
+def call_rest_api(command, substitutions=None, http_headers=None, timeout=None):
     """
     Make RESTful API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
 
     Default content type is application/json.
 
-    :param command: command (list of URI, HTTP verb, data payload)
+    :param command: command (list of URI, HTTP verb, data payload,
+                             HTTP header dictionary)
     :param substitutions: dictionary of pattern:value for command and/or
                           data substitution
-    :param name: command name
+    :param http_headers: optional dictionary of HTTP headers to be appended
+    :param timeout: optional timeout in seconds for API call response
     :return return value from given requests method
     """
 
@@ -108,6 +116,12 @@ def call_rest_api(command, substitutions=None):
     if headers is None:
         headers = {}
 
+    logger.debug("Headers from the command: {}".format(headers))
+    if http_headers:
+        logger.debug("Updating HTTP headers for command {} with {}".
+                     format(command, http_headers))
+        headers.update(http_headers)
+
     uri = subst(uri, substitutions)
     header_names = [x.lower() for x in headers.keys()]
 
@@ -127,4 +141,4 @@ def call_rest_api(command, substitutions=None):
         data = subst(data, substitutions)
         logger.debug("entity data: {}".format(data))
 
-    return do_api_call(verb, uri, headers=headers, data=data)
+    return do_api_call(verb, uri, headers=headers, data=data, timeout=timeout)

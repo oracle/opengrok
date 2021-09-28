@@ -18,14 +18,13 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.Iterator;
@@ -69,7 +68,7 @@ public class HistoryContext {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, tokenFields);
         if (m != null) {
-            tokens = new HistoryLineTokenizer((Reader) null);
+            tokens = new HistoryLineTokenizer(null);
         }
     }
     public boolean isEmpty() {

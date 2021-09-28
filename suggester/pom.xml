@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2018-2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -28,7 +28,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <artifactId>opengrok-top</artifactId>
         <groupId>org.opengrok</groupId>
-        <version>1.5.12</version>
+        <version>1.7.19</version>
     </parent>
 
     <artifactId>suggester</artifactId>
@@ -64,7 +64,7 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>2.11.0</version>
         </dependency>
 
         <dependency>
@@ -87,34 +87,52 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
         </dependency>
 
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <scope>test</scope>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
         </dependency>
 
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>chronicle-map</artifactId>
-            <version>3.20.80</version>
+            <version>3.21.85</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.java</groupId>
                     <artifactId>tools</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.intellij</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.18</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>1.4.1</version>
         </dependency>
 
         <!-- to get rid of SL4J warning messages -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.30</version>
         </dependency>
 
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>3.1.6</version>
             <scope>test</scope>
         </dependency>
 
@@ -124,17 +142,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <version>${micrometer.version}</version>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>net.openhft</groupId>
-                <artifactId>chronicle-core</artifactId>
-                <version>2.20.80</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 
     <build>
         <plugins>

@@ -30,6 +30,7 @@ import org.apache.lucene.document.Document;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
@@ -72,9 +73,9 @@ public class TroffAnalyzer extends TextAnalyzer {
     protected int getSpecializedVersionNo() {
         return 20180112_00; // Edit comment above too!
     }
-    
+
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search
         JFlexTokenizer symbolTokenizer = symbolTokenizerFactory.get();
         symbolTokenizer.setReader(getReader(src.getStream()));
@@ -87,8 +88,8 @@ public class TroffAnalyzer extends TextAnalyzer {
                 args.setProject(project);
                 Xrefer xref = writeXref(args);
 
-                addNumLines(doc, xref.getLineNumber());
-                addLOC(doc, xref.getLOC());
+                String path = doc.get(QueryBuilder.PATH);
+                addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
             }
         }
     }

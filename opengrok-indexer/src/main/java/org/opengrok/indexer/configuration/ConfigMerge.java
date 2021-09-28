@@ -42,7 +42,7 @@ import org.opengrok.indexer.util.Getopt;
  */
 public class ConfigMerge {
 
-    private static final String name = "ConfigMerge";
+    private static final String NAME = "ConfigMerge";
 
     private ConfigMerge() {
     }
@@ -107,7 +107,7 @@ public class ConfigMerge {
         try {
             getopt.parse();
         } catch (ParseException ex) {
-            System.err.println(name + ": " + ex.getMessage());
+            System.err.println(NAME + ": " + ex.getMessage());
             b_usage(System.err);
             System.exit(1);
         }
@@ -166,7 +166,7 @@ public class ConfigMerge {
 
     private static void a_usage(PrintStream out) {
         out.println("Usage:");
-        out.println(name + " [-h] <config_file_base> <config_file_new>");
+        out.println(NAME + " [-h] <config_file_base> <config_file_new>");
         out.println();
         out.println("OPTIONS:");
         out.println("Help");
@@ -176,6 +176,6 @@ public class ConfigMerge {
     }
 
     private static void b_usage(PrintStream out) {
-        out.println("Maybe try to run " + name + " -h");
+        out.println("Maybe try to run " + NAME + " -h");
     }
 }

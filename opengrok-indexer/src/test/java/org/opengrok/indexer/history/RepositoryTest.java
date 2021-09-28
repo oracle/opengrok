@@ -18,19 +18,21 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.Arrays;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
-import org.opengrok.indexer.util.BufferSink;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -107,11 +109,7 @@ public class RepositoryTest {
         repository.setDatePatterns(new String[0]);
 
         for (String test : tests) {
-            try {
-                repository.parse(test);
-                Assert.fail("Shouldn't be able to parse the date: " + test);
-            } catch (ParseException ex) {
-            }
+            assertThrows(ParseException.class, () -> repository.parse(test));
         }
     }
 
@@ -132,15 +130,11 @@ public class RepositoryTest {
         for (String[] test : tests) {
             RepositoryImplementation repository = new RepositoryImplementation();
             repository.setDatePatterns(Arrays.copyOfRange(test, 1, test.length));
-            try {
-                repository.parse(test[0]);
-                Assert.fail("Shouldn't be able to parse the date: " + test[0]);
-            } catch (ParseException ex) {
-            }
+            assertThrows(ParseException.class, () -> repository.parse(test[0]));
         }
     }
 
-    private class RepositoryImplementation extends Repository {
+    private static class RepositoryImplementation extends Repository {
         private static final long serialVersionUID = 1686223058901603237L;
 
         @Override
@@ -159,8 +153,7 @@ public class RepositoryTest {
         }
 
         @Override
-        boolean getHistoryGet(
-                BufferSink sink, String parent, String basename, String rev) {
+        boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
             return false;
         }
 

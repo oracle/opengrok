@@ -27,13 +27,13 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "JavaScript";
-    
+
+    private static final String NAME = "JavaScript";
+
     private static final String[] SUFFIXES = {"JS"};
 
     public JavaScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

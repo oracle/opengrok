@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -93,20 +93,16 @@ public class DirectoryHistoryReader {
      * @throws IOException when index cannot be accessed
      */
     public DirectoryHistoryReader(String path) throws IOException {
-        //TODO can we introduce paging here ???  this class is used just for rss.jsp !
-        int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
-        int cachePages = RuntimeEnvironment.getInstance().getCachePages();
         IndexReader ireader = null;
-        IndexSearcher searcher;
         try {
             // Prepare for index search.
-            String src_root = RuntimeEnvironment.getInstance().getSourceRootPath();
+            String srcRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
             ireader = IndexDatabase.getIndexReader(path);
             if (ireader == null) {
                 throw new IOException("Could not locate index database");
             }
             // The search results will be sorted by date.
-            searcher = new IndexSearcher(ireader);
+            IndexSearcher searcher = new IndexSearcher(ireader);
             SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
             QueryParser qparser = new QueryParser(QueryBuilder.PATH, new CompatibleAnalyser());
@@ -144,7 +140,7 @@ public class DirectoryHistoryReader {
                         String rbase = rpath.substring(ls + 1);
                         History hist = null;
                         try {
-                            File f = new File(src_root + rparent, rbase);
+                            File f = new File(srcRoot + rparent, rbase);
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
                             LOGGER.log(Level.WARNING,
@@ -190,27 +186,15 @@ public class DirectoryHistoryReader {
         long time = date.getTime();
         date.setTime(time - (time % 3600000L));
 
-        Map<String, Map<List<String>, SortedSet<String>>> ac = hash.get(date);
-        if (ac == null) {
-            ac = new HashMap<>();
-            hash.put(date, ac);
-        }
+        Map<String, Map<List<String>, SortedSet<String>>> ac = hash.computeIfAbsent(date, k -> new HashMap<>());
 
-        Map<List<String>, SortedSet<String>> cf = ac.get(author);
-        if (cf == null) {
-            cf = new HashMap<>();
-            ac.put(author, cf);
-        }
+        Map<List<String>, SortedSet<String>> cf = ac.computeIfAbsent(author, k -> new HashMap<>());
 
         // We are not going to modify the list so this is safe to do.
         List<String> cr = new ArrayList<>();
         cr.add(comment);
         cr.add(revision);
-        SortedSet<String> fls = cf.get(cr);
-        if (fls == null) {
-            fls = new TreeSet<>();
-            cf.put(cr, fls);
-        }
+        SortedSet<String> fls = cf.computeIfAbsent(cr, k -> new TreeSet<>());
 
         fls.add(path);
     }
@@ -241,7 +225,7 @@ public class DirectoryHistoryReader {
 
         icomment = citer.next();
 
-        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, null, icomment.get(0), true);
+        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, icomment.get(0), true);
         currentEntry.setFiles(hash.get(idate).get(iauthor).get(icomment));
 
         return true;

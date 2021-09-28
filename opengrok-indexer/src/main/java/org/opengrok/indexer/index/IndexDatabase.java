@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
@@ -42,6 +42,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -52,9 +53,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
+
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Response;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -89,6 +91,8 @@ import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -117,10 +121,11 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
-    private static final Comparator<File> FILENAME_COMPARATOR =
-        (File p1, File p2) -> p1.getName().compareTo(p2.getName());
+    private static final Comparator<File> FILENAME_COMPARATOR = Comparator.comparing(File::getName);
 
     private static final Set<String> CHECK_FIELDS;
+
+    private static final Set<String> REVERT_COUNTS_FIELDS;
 
     private final Object INSTANCE_LOCK = new Object();
 
@@ -132,12 +137,13 @@ public class IndexDatabase {
     private final Map<String, IndexedSymlink> indexedSymlinks = new TreeMap<>(
             Comparator.comparingInt(String::length).thenComparing(o -> o));
 
-    private Project project;
+    private final Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
     private IndexAnalysisSettings3 settings;
     private PendingFileCompleter completer;
+    private NumLinesLOCAggregator countsAggregator;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
     private PathAccepter pathAccepter;
@@ -149,6 +155,8 @@ public class IndexDatabase {
     private final Object lock = new Object();
     private boolean dirty;
     private boolean running;
+    private boolean isCountingDeltas;
+    private boolean isWithDirectoryCounts;
     private List<String> directories;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
@@ -184,6 +192,12 @@ public class IndexDatabase {
     static {
         CHECK_FIELDS = new HashSet<>();
         CHECK_FIELDS.add(QueryBuilder.TYPE);
+
+        REVERT_COUNTS_FIELDS = new HashSet<>();
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.D);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.PATH);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.NUML);
+        REVERT_COUNTS_FIELDS.add(QueryBuilder.LOC);
     }
 
     /**
@@ -214,18 +228,15 @@ public class IndexDatabase {
                 db.addIndexChangedListener(listener);
             }
 
-            parallelizer.getFixedExecutor().submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        db.update();
-                    } catch (Throwable e) {
-                        LOGGER.log(Level.SEVERE,
-                                String.format("Problem updating index database in directory %s: ",
-                                        db.indexDirectory.getDirectory()), e);
-                    } finally {
-                        latch.countDown();
-                    }
+            parallelizer.getFixedExecutor().submit(() -> {
+                try {
+                    db.update();
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE,
+                            String.format("Problem updating index database in directory %s: ",
+                                    db.indexDirectory.getDirectory()), e);
+                } finally {
+                    latch.countDown();
                 }
             });
         }
@@ -277,14 +288,11 @@ public class IndexDatabase {
 
             for (final IndexDatabase db : dbs) {
                 db.addIndexChangedListener(listener);
-                parallelizer.getFixedExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            db.update();
-                        } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
-                        }
+                parallelizer.getFixedExecutor().submit(() -> {
+                    try {
+                        db.update();
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                     }
                 });
             }
@@ -445,14 +453,30 @@ public class IndexDatabase {
 
                 String startuid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
+                countsAggregator = new NumLinesLOCAggregator();
                 settings = readAnalysisSettings();
                 if (settings == null) {
                     settings = new IndexAnalysisSettings3();
                 }
                 Terms terms = null;
-                int numDocs = reader.numDocs();
-                if (numDocs > 0) {
+                if (reader.numDocs() > 0) {
                     terms = MultiTerms.getTerms(reader, QueryBuilder.U);
+
+                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                    if (countsAccessor.hasStored(reader)) {
+                        isWithDirectoryCounts = true;
+                        isCountingDeltas = true;
+                    } else {
+                        boolean foundCounts = countsAccessor.register(countsAggregator, reader);
+                        isWithDirectoryCounts = false;
+                        isCountingDeltas = foundCounts;
+                        if (!isCountingDeltas) {
+                            LOGGER.info("Forcing reindexing to fully compute directory counts");
+                        }
+                    }
+                } else {
+                    isWithDirectoryCounts = false;
+                    isCountingDeltas = false;
                 }
 
                 try {
@@ -473,7 +497,8 @@ public class IndexDatabase {
                     Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
                     indexDown(sourceRoot, dir, args);
-                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir));
+                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
+                            "indexer.db.directory.traversal");
 
                     showFileCount(dir, args);
 
@@ -481,7 +506,8 @@ public class IndexDatabase {
                     elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
-                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir));
+                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
+                            "indexer.db.directory.index");
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
@@ -495,6 +521,27 @@ public class IndexDatabase {
                             uidIter = null;
                         }
                     }
+
+                    /*
+                     * As a signifier that #Lines/LOC are comprehensively
+                     * stored so that later calculation is in deltas mode, we
+                     * need at least one D-document saved. For a repo with only
+                     * non-code files, however, no true #Lines/LOC will have
+                     * been saved. Subsequent re-indexing will do more work
+                     * than necessary (until a source code file is placed). We
+                     * can record zeroes for a fake file under the root to get
+                     * a D-document even for this special repo situation.
+                     *
+                     * Metrics are aggregated for directories up to the root,
+                     * so it suffices to put the fake directly under the root.
+                     */
+                    if (!isWithDirectoryCounts) {
+                        final String ROOT_FAKE_FILE = "/.OpenGrok_fake_file";
+                        countsAggregator.register(new NumLinesLOC(ROOT_FAKE_FILE, 0, 0));
+                    }
+                    NumLinesLOCAccessor countsAccessor = new NumLinesLOCAccessor();
+                    countsAccessor.store(writer, reader, countsAggregator,
+                            isWithDirectoryCounts && isCountingDeltas);
 
                     markProjectIndexed(project);
                 } finally {
@@ -566,17 +613,14 @@ public class IndexDatabase {
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
-                parallelizer.getFixedExecutor().submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            db.update();
-                        } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE,
-                                "Problem updating lucene index database: ", e);
-                        } finally {
-                            latch.countDown();
-                        }
+                parallelizer.getFixedExecutor().submit(() -> {
+                    try {
+                        db.update();
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.SEVERE,
+                            "Problem updating lucene index database: ", e);
+                    } finally {
+                        latch.countDown();
                     }
                 });
             }
@@ -609,7 +653,8 @@ public class IndexDatabase {
 
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore
-            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail));
+            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail),
+                    "indexer.db.optimize");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
@@ -700,6 +745,25 @@ public class IndexDatabase {
             listener.fileRemove(path);
         }
 
+        // Determine if a reversal of counts is necessary, and execute if so.
+        if (isCountingDeltas) {
+            postsIter = uidIter.postings(postsIter);
+            while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+                // Read a limited-fields version of the document.
+                Document doc = reader.document(postsIter.docID(), REVERT_COUNTS_FIELDS);
+                if (doc != null) {
+                    NullableNumLinesLOC nullableCounts = NumLinesLOCUtil.read(doc);
+                    if (nullableCounts.getNumLines() != null && nullableCounts.getLOC() != null) {
+                        NumLinesLOC counts = new NumLinesLOC(path,
+                                -nullableCounts.getNumLines(),
+                                -nullableCounts.getLOC());
+                        countsAggregator.register(counts);
+                    }
+                    break;
+                }
+            }
+        }
+
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
 
         removeXrefFile(path);
@@ -737,6 +801,7 @@ public class IndexDatabase {
             ctags.setTimeout(env.getCtagsTimeout());
         }
         fa.setCtags(ctags);
+        fa.setCountsAggregator(countsAggregator);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(env.isScopesEnabled());
         fa.setFoldingEnabled(env.isFoldingEnabled());
@@ -782,6 +847,7 @@ public class IndexDatabase {
             return;
         } finally {
             fa.setCtags(null);
+            fa.setCountsAggregator(null);
             if (xrefOut != null) {
                 xrefOut.close();
             }
@@ -1205,7 +1271,7 @@ public class IndexDatabase {
 
                             // If the term's path matches path of currently processed file,
                             // it is clear that the file has been modified and thus
-                            // removeFile() will be followed by call to addFile() below.
+                            // removeFile() will be followed by call to addFile() in indexParallel().
                             // In such case, instruct removeFile() not to remove history
                             // cache for the file so that incremental history cache
                             // generation works.
@@ -1222,8 +1288,12 @@ public class IndexDatabase {
                         if (uidIter != null && uidIter.term() != null &&
                                 uidIter.term().bytesEquals(buid)) {
 
-                            boolean chkres = checkSettings(file, path);
-                            if (!chkres) {
+                            /*
+                             * Possibly short-circuit to force reindexing of prior-version indexes.
+                             */
+                            boolean matchOK = (isWithDirectoryCounts || isCountingDeltas) &&
+                                    checkSettings(file, path);
+                            if (!matchOK) {
                                 removeFile(false);
                             }
 
@@ -1232,7 +1302,7 @@ public class IndexDatabase {
                                 uidIter = null;
                             }
 
-                            if (chkres) {
+                            if (matchOK) {
                                 continue; // keep matching docs
                             }
                         }
@@ -1260,8 +1330,7 @@ public class IndexDatabase {
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
         AtomicInteger alreadyClosedCounter = new AtomicInteger();
-        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().
-                getIndexerParallelizer();
+        IndexerParallelizer parallelizer = RuntimeEnvironment.getInstance().getIndexerParallelizer();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
@@ -1285,8 +1354,7 @@ public class IndexDatabase {
                             }
                         } catch (AlreadyClosedException e) {
                             alreadyClosedCounter.incrementAndGet();
-                            String errmsg = String.format("ERROR addFile(): %s",
-                                x.file);
+                            String errmsg = String.format("ERROR addFile(): %s", x.file);
                             LOGGER.log(Level.SEVERE, errmsg, e);
                             x.exception = e;
                             ret = false;
@@ -1299,8 +1367,7 @@ public class IndexDatabase {
                             x.exception = e;
                             ret = false;
                         } catch (RuntimeException | IOException e) {
-                            String errmsg = String.format("ERROR addFile(): %s",
-                                x.file);
+                            String errmsg = String.format("ERROR addFile(): %s", x.file);
                             LOGGER.log(Level.WARNING, errmsg, e);
                             x.exception = e;
                             ret = false;
@@ -1320,8 +1387,7 @@ public class IndexDatabase {
         } catch (InterruptedException | ExecutionException e) {
             int successCount = successCounter.intValue();
             double successPct = 100.0 * successCount / worksCount;
-            String exmsg = String.format(
-                "%d successes (%.1f%%) after aborting parallel-indexing",
+            String exmsg = String.format("%d successes (%.1f%%) after aborting parallel-indexing",
                 successCount, successPct);
             LOGGER.log(Level.SEVERE, exmsg, e);
         }
@@ -1331,28 +1397,24 @@ public class IndexDatabase {
         // Start with failureCount=worksCount, and then subtract successes.
         int failureCount = worksCount;
         if (bySuccess != null) {
-            List<IndexFileWork> successes = bySuccess.getOrDefault(
-                Boolean.TRUE, null);
+            List<IndexFileWork> successes = bySuccess.getOrDefault(Boolean.TRUE, null);
             if (successes != null) {
                 failureCount -= successes.size();
             }
         }
         if (failureCount > 0) {
             double pctFailed = 100.0 * failureCount / worksCount;
-            String exmsg = String.format(
-                "%d failures (%.1f%%) while parallel-indexing",
-                failureCount, pctFailed);
+            String exmsg = String.format("%d failures (%.1f%%) while parallel-indexing", failureCount, pctFailed);
             LOGGER.log(Level.WARNING, exmsg);
         }
 
-        /**
+        /*
          * Encountering an AlreadyClosedException is severe enough to abort the
          * run, since it will fail anyway later upon trying to commit().
          */
         int numAlreadyClosed = alreadyClosedCounter.get();
         if (numAlreadyClosed > 0) {
-            throw new AlreadyClosedException(String.format("count=%d",
-                numAlreadyClosed));
+            throw new AlreadyClosedException(String.format("count=%d", numAlreadyClosed));
         }
     }
 
@@ -1424,8 +1486,7 @@ public class IndexDatabase {
 
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
-            int numDocs = ireader.numDocs();
-            if (numDocs > 0) {
+            if (ireader.numDocs() > 0) {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.U);
                 iter = terms.iterator(); // init uid iterator
             }
@@ -1462,11 +1523,9 @@ public class IndexDatabase {
      */
     public int getNumFiles() throws IOException {
         IndexReader ireader = null;
-        int numDocs = 0;
-
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
-            numDocs = ireader.numDocs();
+            return ireader.numDocs();
         } finally {
             if (ireader != null) {
                 try {
@@ -1476,8 +1535,6 @@ public class IndexDatabase {
                 }
             }
         }
-
-        return numDocs;
     }
 
     static void listFrequentTokens(List<String> subFiles) throws IOException {
@@ -1514,8 +1571,7 @@ public class IndexDatabase {
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
-            int numDocs = ireader.numDocs();
-            if (numDocs > 0) {
+            if (ireader.numDocs() > 0) {
                 terms = MultiTerms.getTerms(ireader, QueryBuilder.DEFS);
                 iter = terms.iterator(); // init uid iterator
             }
@@ -1601,11 +1657,10 @@ public class IndexDatabase {
     /**
      * @param file File object of a file under source root
      * @return Document object for the file or {@code null}
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException on I/O error
+     * @throws ParseException on problem with building Query
      */
-    public static Document getDocument(File file)
-            throws IOException, ParseException {
+    public static Document getDocument(File file) throws IOException, ParseException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path;
         try {
@@ -1617,18 +1672,20 @@ public class IndexDatabase {
         // Sanitize Windows path delimiters in order not to conflict with Lucene escape character.
         path = path.replace("\\", "/");
 
-        IndexReader ireader = getIndexReader(path);
+        try (IndexReader ireader = getIndexReader(path)) {
+            if (ireader == null) {
+                // No index, no document..
+                return null;
+            }
 
-        if (ireader == null) {
-            // No index, no document..
-            return null;
-        }
-
-        try {
             Document doc;
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
+            Statistics stat = new Statistics();
             TopDocs top = searcher.search(q, 1);
+            stat.report(LOGGER, Level.FINEST, "search via getDocument done",
+                    "search.latency", new String[]{"category", "getdocument",
+                            "outcome", top.totalHits.value == 0 ? "empty" : "success"});
             if (top.totalHits.value == 0) {
                 // No hits, no document...
                 return null;
@@ -1642,31 +1699,24 @@ public class IndexDatabase {
             }
 
             return doc;
-        } finally {
-            ireader.close();
         }
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IndexDatabase other = (IndexDatabase) obj;
-        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
-            return false;
-        }
-        return true;
+        IndexDatabase that = (IndexDatabase) o;
+        return Objects.equals(project, that.project);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
-        return hash;
+        return Objects.hash(project);
     }
 
     private static class CountingWriter extends Writer {

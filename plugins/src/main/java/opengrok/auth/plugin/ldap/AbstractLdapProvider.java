@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
@@ -32,8 +32,8 @@ public abstract class AbstractLdapProvider {
      * DN and attributes.
      */
     public static class LdapSearchResult<T> {
-        private String dn;
-        private T attrs;
+        private final String dn;
+        private final T attrs;
 
         public LdapSearchResult(String dn, T attrs) {
             this.dn = dn;

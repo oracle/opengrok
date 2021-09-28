@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -29,25 +29,28 @@ from ..utils.command import Command
 
 
 class GitRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks, timeout):
-        super().__init__(logger, path, project, command, env, hooks, timeout)
+    def __init__(self, name, logger, path, project, command, env, hooks, timeout):
+        super().__init__(name, logger, path, project, command, env, hooks, timeout)
 
         self.command = self._repository_command(command, default=lambda: which('git'))
 
         if not self.command:
             raise RepositoryException("Cannot get git command")
 
+    def _configure_git_pull(self):
         # The incoming() check relies on empty output so configure
         # the repository first to avoid getting extra output.
         git_command = [self.command, "config", "--local", "pull.ff", "only"]
-        cmd = self.getCommand(git_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
+        cmd = self.get_command(git_command, work_dir=self.path,
+                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             cmd.log_error("failed to configure git pull.ff")
 
     def reposync(self):
+        self._configure_git_pull()
         return self._run_custom_sync_command([self.command, 'pull', '--ff-only'])
 
     def incoming_check(self):
+        self._configure_git_pull()
         return self._run_custom_incoming_command([self.command, 'pull', '--dry-run'])

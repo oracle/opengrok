@@ -73,7 +73,7 @@ public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new JavaXref(reader));
     }
-    
+
     @Override
     protected boolean supportsScopes() {
         return true;

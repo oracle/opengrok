@@ -22,16 +22,15 @@
  */
 package org.opengrok.web.api.v1;
 
+import jakarta.ws.rs.ApplicationPath;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
-
-import javax.ws.rs.ApplicationPath;
 
 @ApplicationPath(RestApp.API_PATH)
 public class RestApp extends ResourceConfig {
 
     public static final String API_PATH = "/api/v1";
-    
+
     public RestApp() {
         register(new SuggesterAppBinder());
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");

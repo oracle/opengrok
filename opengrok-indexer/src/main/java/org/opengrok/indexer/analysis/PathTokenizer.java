@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -49,7 +49,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
  */
 public class PathTokenizer extends Tokenizer {
 
-    // below should be '/' since we try to convert even windows file separators 
+    // below should be '/' since we try to convert even windows file separators
     // to unix ones
     public static final char DEFAULT_DELIMITER = '/';
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
@@ -132,8 +132,4 @@ public class PathTokenizer extends Tokenizer {
         startPosition = 0;
     }
 
-    @Override
-    public final void close() throws IOException {
-        super.close();
-    }
 }

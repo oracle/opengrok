@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -82,6 +82,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * This flag enables/disables per-project history cache.
      */
     private Boolean historyEnabled = null;
+
+    /**
+     * This flag enables/disables per project merge commits.
+     */
+    private Boolean mergeCommitsEnabled = null;
 
     /**
      * This marks the project as (not)ready before initial index is done. this
@@ -238,6 +243,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if merge commits are enabled.
+     */
+    public boolean isMergeCommitsEnabled() {
+        return mergeCommitsEnabled != null && mergeCommitsEnabled;
+    }
+
+    /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
     public void setHandleRenamedFiles(boolean flag) {
@@ -256,6 +268,13 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public void setHistoryEnabled(boolean flag) {
         this.historyEnabled = flag;
+    }
+
+    /**
+     * @param flag true if project's repositories should deal with merge commits.
+     */
+    public void setMergeCommitsEnabled(boolean flag) {
+        this.mergeCommitsEnabled = flag;
     }
 
     /**
@@ -321,6 +340,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Allow project to override global setting of navigate window.
         if (navigateWindowEnabled == null) {
             setNavigateWindowEnabled(env.isNavigateWindowEnabled());
+        }
+
+        // Allow project to override global setting of merge commits.
+        if (mergeCommitsEnabled == null) {
+            setMergeCommitsEnabled(env.isMergeCommitsEnabled());
         }
     }
 

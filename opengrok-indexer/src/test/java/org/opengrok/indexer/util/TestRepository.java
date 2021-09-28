@@ -18,14 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,6 +30,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A source repository to be used during a test.
@@ -70,14 +70,18 @@ public class TestRepository {
     }
 
     public void destroy() {
-        if (sourceRoot != null) {
-            FileUtilities.removeDirs(sourceRoot);
-        }
-        if (externalRoot != null) {
-            FileUtilities.removeDirs(externalRoot);
-        }
-        if (dataRoot != null) {
-            FileUtilities.removeDirs(dataRoot);
+        try {
+            if (sourceRoot != null) {
+                IOUtils.removeRecursive(sourceRoot.toPath());
+            }
+            if (externalRoot != null) {
+                IOUtils.removeRecursive(externalRoot.toPath());
+            }
+            if (dataRoot != null) {
+                IOUtils.removeRecursive(dataRoot.toPath());
+            }
+        } catch (IOException ignore) {
+            // ignored
         }
     }
 
@@ -85,11 +89,11 @@ public class TestRepository {
      * Deletes the directory tree of {@link #getDataRoot()}, and then recreates
      * the empty directory afterward.
      */
-    public void purgeData() {
+    public void purgeData() throws IOException {
         if (dataRoot != null) {
-            assertTrue("should delete dataRoot", FileUtilities.removeDirs(dataRoot));
-            assertFalse("dataRoot should not exist", dataRoot.exists());
-            assertTrue("should recreate dataRoot", dataRoot.mkdir());
+            IOUtils.removeRecursive(dataRoot.toPath());
+            assertFalse(dataRoot.exists(), "dataRoot should not exist");
+            assertTrue(dataRoot.mkdir(), "should recreate dataRoot");
         }
     }
 
@@ -161,7 +165,7 @@ public class TestRepository {
                 assertTrue(sourceBundle.delete());
             }
 
-            assertNotNull("inputBundle should not be null", inputBundle);
+            assertNotNull(inputBundle, "inputBundle should not be null");
             FileOutputStream out = new FileOutputStream(sourceBundle);
             FileUtilities.copyFile(inputBundle, out);
             out.close();

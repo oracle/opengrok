@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.web;
@@ -35,20 +35,22 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.opengrok.indexer.util.PlatformUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
@@ -57,7 +59,7 @@ public class UtilTest {
 
     private static Locale savedLocale;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         // Some of the methods have different results in different locales.
         // Set locale to en_US for these tests.
@@ -65,7 +67,7 @@ public class UtilTest {
         Locale.setDefault(Locale.US);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         Locale.setDefault(savedLocale);
         savedLocale = null;
@@ -119,7 +121,7 @@ public class UtilTest {
         // Prefix gets just prefixed as is and not mangled wrt. path -> "//"
         assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
                 Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
-        // relative pathes are resolved wrt. / , so path resolves to /a/c/d 
+        // relative pathes are resolved wrt. / , so path resolves to /a/c/d
         assertEquals("/<a href=\"/r//a/\">a</a>/"
                         + "<a href=\"/r//a/c/\">c</a>/"
                         + "<a href=\"/r//a/c/d\">d</a>",
@@ -161,11 +163,9 @@ public class UtilTest {
     }
 
     @Test
-    public void fixPathIfWindows() {
-        if (PlatformUtils.isWindows()) {
-            assertEquals("/var/opengrok",
-                    Util.fixPathIfWindows("\\var\\opengrok"));
-        }
+    @EnabledOnOs(OS.WINDOWS)
+    void fixPathIfWindows() {
+        assertEquals("/var/opengrok", Util.fixPathIfWindows("\\var\\opengrok"));
     }
 
     @Test
@@ -267,8 +267,8 @@ public class UtilTest {
             String[] strings = Util.diffline(
                     new StringBuilder(tests[i][0]),
                     new StringBuilder(tests[i][1]));
-            assertEquals("" + i + "," + 0, tests[i][2], strings[0]);
-            assertEquals("" + i + "," + 1, tests[i][3], strings[1]);
+            assertEquals(tests[i][2], strings[0], "" + i + "," + 0);
+            assertEquals(tests[i][3], strings[1], "" + i + "," + 1);
         }
     }
 
@@ -332,13 +332,13 @@ public class UtilTest {
          */
         for (int i = 0; i < 10; i++) {
             for (int j = 1; j <= 5; j++) {
-                assertTrue("Contains page " + j, Util.createSlider(i * 10, 10, 55).contains(">" + j + "<"));
+                assertTrue(Util.createSlider(i * 10, 10, 55).contains(">" + j + "<"), "Contains page " + j);
             }
         }
 
-        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 4).contains(">1<"));
-        assertFalse("Does not contain page 5", Util.createSlider(0, 10, 2).contains(">5<"));
-        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 0).contains(">1<"));
+        assertFalse(Util.createSlider(0, 10, 4).contains(">1<"), "Does not contain page 1");
+        assertFalse(Util.createSlider(0, 10, 2).contains(">5<"), "Does not contain page 5");
+        assertFalse(Util.createSlider(0, 10, 0).contains(">1<"), "Does not contain page 1");
     }
 
     @Test
@@ -388,6 +388,7 @@ public class UtilTest {
         assertTrue(Util.linkify("https://example.com", true).contains("target=\"_blank\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2", true).contains("target=\"_blank\""));
         assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("target=\"_blank\""));
+        assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("rel=\"noreferrer\""));
 
         assertFalse(Util.linkify("http://www.example.com", false).contains("target=\"_blank\""));
         assertFalse(Util.linkify("https://example.com", false).contains("target=\"_blank\""));
@@ -442,14 +443,14 @@ public class UtilTest {
         assertTrue(link.contains("data-id=\"123456\""));
     }
 
-    @Test(expected = MalformedURLException.class)
-    public void testBuildLinkInvalidUrl1() throws URISyntaxException, MalformedURLException {
-        Util.buildLink("link", "www.example.com"); // invalid protocol
+    @Test
+    public void testBuildLinkInvalidUrl1() {
+        assertThrows(MalformedURLException.class, () -> Util.buildLink("link", "www.example.com")); // invalid protocol
     }
 
-    @Test(expected = URISyntaxException.class)
-    public void testBuildLinkInvalidUrl2() throws URISyntaxException, MalformedURLException {
-        Util.buildLink("link", "http://www.exa\"mp\"le.com"); // invalid authority
+    @Test
+    public void testBuildLinkInvalidUrl2() {
+        assertThrows(URISyntaxException.class, () -> Util.buildLink("link", "http://www.exa\"mp\"le.com")); // invalid authority
     }
 
     @Test
@@ -466,26 +467,29 @@ public class UtilTest {
         String expected
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per "
-                + "<a href=\"http://www.example.com?bug=12345698\" target=\"_blank\">12345698</a> ut labore et dolore magna "
+                + "<a href=\"http://www.example.com?bug=12345698\" rel=\"noreferrer\" target=\"_blank\">12345698</a>"
+                + " ut labore et dolore magna "
                 + "aliqua. bug3333fff Ut enim ad minim veniam, quis nostrud exercitation "
                 + "ullamco laboris nisi ut aliquip ex ea introduced in "
-                + "<a href=\"http://www.example.com?bug=9791216541\" target=\"_blank\">9791216541</a> commodo consequat. "
+                + "<a href=\"http://www.example.com?bug=9791216541\" rel=\"noreferrer\" target=\"_blank\">9791216541</a>"
+                + " commodo consequat. "
                 + "Duis aute irure dolor in reprehenderit in voluptate velit "
                 + "esse cillum dolore eu fixes "
-                + "<a href=\"http://www.example.com?bug=132469187\" target=\"_blank\">132469187</a> fugiat nulla pariatur. Excepteur sint "
+                + "<a href=\"http://www.example.com?bug=132469187\" rel=\"noreferrer\" target=\"_blank\">132469187</a>"
+                + " fugiat nulla pariatur. Excepteur sint "
                 + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
         String expected2
                 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
                 + "aliqua. "
-                + "<a href=\"http://www.other-example.com?bug=3333\" target=\"_blank\">bug3333fff</a>"
+                + "<a href=\"http://www.other-example.com?bug=3333\" rel=\"noreferrer\" target=\"_blank\">bug3333fff</a>"
                 + " Ut enim ad minim veniam, quis nostrud exercitation "
                 + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
                 + "Duis aute irure dolor in reprehenderit in voluptate velit "
                 + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
                 + "occaecat "
-                + "<a href=\"http://www.other-example.com?bug=6478\" target=\"_blank\">bug6478abc</a>"
+                + "<a href=\"http://www.other-example.com?bug=6478\" rel=\"noreferrer\" target=\"_blank\">bug6478abc</a>"
                 + " cupidatat non proident, sunt in culpa qui officia "
                 + "deserunt mollit anim id est laborum.";
 
@@ -540,9 +544,9 @@ public class UtilTest {
         assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getQueryParamsNullTest() {
-        Util.getQueryParams(null);
+        assertThrows(IllegalArgumentException.class, () -> Util.getQueryParams(null));
     }
 
     @Test

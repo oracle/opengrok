@@ -18,264 +18,191 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
  */
 package org.opengrok.indexer.history;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.eclipse.jgit.api.BlameCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.blame.BlameResult;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.FollowFilter;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.eclipse.jgit.util.io.CountingOutputStream;
+import org.eclipse.jgit.util.io.NullOutputStream;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
-import org.opengrok.indexer.util.Executor;
-import org.opengrok.indexer.util.HeadHandler;
-import org.opengrok.indexer.util.LazilyInstantiate;
-import org.opengrok.indexer.util.StringUtils;
-import org.opengrok.indexer.util.Version;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+
+import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
 
 /**
  * Access to a Git repository.
  *
  */
-public class GitRepository extends Repository {
+public class GitRepository extends RepositoryWithPerPartesHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
     private static final long serialVersionUID = -6126297612958508386L;
-    /**
-     * The property name used to obtain the client command for this repository.
-     */
-    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.git";
-    /**
-     * The command to use to access the repository if none was given explicitly.
-     */
-    public static final String CMD_FALLBACK = "git";
 
-    /**
-     * Git blame command.
-     */
-    private static final String BLAME = "blame";
-
-    /**
-     * Arguments to shorten git IDs.
-     */
-    private static final int CSET_LEN = 8;
-    private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
-    private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
-
-    /**
-     * All git commands that emit date that needs to be parsed by
-     * {@code getDateFormat()} should use this option.
-     */
-    private static final String GIT_DATE_OPT = "--date=iso8601-strict";
-
-    /**
-     * Minimum git version which supports the date format.
-     *
-     * @see #GIT_DATE_OPT
-     */
-    private static final Version MINIMUM_VERSION = new Version(2, 1, 2);
-
-    /**
-     * This is a static replacement for 'working' field. Effectively, check if git is working once in a JVM
-     * instead of calling it for every GitRepository instance.
-     */
-    private static final LazilyInstantiate<Boolean> GIT_IS_WORKING = LazilyInstantiate.using(GitRepository::isGitWorking);
+    public static final int GIT_ABBREV_LEN = 8;
+    public static final int MAX_CHANGESETS = 65536;
 
     public GitRepository() {
         type = "git";
-        /*
-         * This should match the 'iso-strict' format used by
-         * {@code getHistoryLogExecutor}.
-         */
-        datePatterns = new String[] {
-            "yyyy-MM-dd'T'HH:mm:ssXXX"
-        };
 
         ignoredDirs.add(".git");
         ignoredFiles.add(".git");
     }
 
-    private static boolean isGitWorking() {
-        String repoCommand = getCommand(GitRepository.class, CMD_PROPERTY_KEY, CMD_FALLBACK);
-        Executor exec = new Executor(new String[] {repoCommand, "--version"});
-        if (exec.exec(false) == 0) {
-            final String outputVersion = exec.getOutputString();
-            final String version = outputVersion.replaceAll(".*? version (\\d+(\\.\\d+)*).*", "$1");
-            try {
-                return Version.from(version).compareTo(MINIMUM_VERSION) >= 0;
-            } catch (NumberFormatException ex) {
-                LOGGER.log(Level.WARNING, String.format("Unable to detect git version from %s", outputVersion), ex);
-            }
-        }
-        return false;
-    }
-
     /**
-     * Get an executor to be used for retrieving the history log for the named
-     * file.
-     *
-     * @param file The file to retrieve history for
-     * @param sinceRevision the oldest changeset to return from the executor, or
-     *                      {@code null} if all changesets should be returned
-     * @return An Executor ready to be started
+     * Be careful, git uses only forward slashes in its command and output (not in file path).
+     * Using backslashes together with git show will get empty output and 0 status code.
+     * @return string with separator characters replaced with forward slash
      */
-    Executor getHistoryLogExecutor(final File file, String sinceRevision)
-            throws IOException {
-
-        String filename = getRepoRelativePath(file);
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("log");
-        cmd.add("--abbrev-commit");
-        cmd.add(ABBREV_LOG);
-        cmd.add("--name-only");
-        cmd.add("--pretty=fuller");
-        cmd.add(GIT_DATE_OPT);
-        cmd.add("-m");
-
-        if (file.isFile() && isHandleRenamedFiles()) {
-            cmd.add("--follow");
-        }
-
-        if (sinceRevision != null) {
-            cmd.add(sinceRevision + "..");
-        }
-
-        if (filename.length() > 0) {
-            cmd.add("--");
-            cmd.add(filename);
-        }
-
-        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
-    }
-
-    Executor getRenamedFilesExecutor(final File file, String sinceRevision) throws IOException {
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        List<String> cmd = new ArrayList<>();
-        cmd.add(RepoCommand);
-        cmd.add("log");
-        cmd.add("--find-renames=8"); // similarity 80%
-        cmd.add("--diff-filter=R");
-        cmd.add("--summary");
-        cmd.add(ABBREV_LOG);
-        cmd.add("--name-status");
-        cmd.add("--oneline");
-
-        if (file.isFile()) {
-            cmd.add("--follow");
-        }
-
-        if (sinceRevision != null) {
-            cmd.add(sinceRevision + "..");
-        }
-
-        String canonicalPath = file.getCanonicalPath();
-        if (canonicalPath.length() > getCanonicalDirectoryName().length() + 1) {
-            // this is a file in the repository
-            cmd.add("--");
-            cmd.add(getPathRelativeToCanonicalRepositoryRoot(canonicalPath));
-        }
-
-        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
+    private static String getGitFilePath(String filePath) {
+        return filePath.replace(File.separatorChar, '/');
     }
 
     /**
      * Try to get file contents for given revision.
      *
-     * @param sink a required target sink
+     * @param out a required OutputStream
      * @param fullpath full pathname of the file
-     * @param rev revision
+     * @param rev revision string
      * @return a defined instance with {@code success} == {@code true} if no
-     * error occurred and with non-zero {@code iterations} if some data was
-     * transferred
+     * error occurred and with non-zero {@code iterations} if some data was transferred
      */
-    private HistoryRevResult getHistoryRev(
-            BufferSink sink, String fullpath, String rev) {
+    private HistoryRevResult getHistoryRev(OutputStream out, String fullpath, String rev) {
 
         HistoryRevResult result = new HistoryRevResult();
         File directory = new File(getDirectoryName());
+
+        String filename;
+        result.success = false;
         try {
-            /*
-             * Be careful, git uses only forward slashes in its command and output (not in file path).
-             * Using backslashes together with git show will get empty output and 0 status code.
-             */
-            String filename = Paths.get(getCanonicalDirectoryName()).relativize(
-                    Paths.get(fullpath)).toString().replace(File.separatorChar, '/');
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String[] argv = {
-                RepoCommand,
-                "show",
-                rev + ":" + filename
-            };
-
-            Executor executor = new Executor(Arrays.asList(argv), directory,
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            int status = executor.exec();
-            result.iterations = copyBytes(sink, executor.getOutputStream());
-
-            /*
-             * If exit value of the process was not 0 then the file did
-             * not exist or internal git error occured.
-             */
-            result.success = (status == 0);
-        } catch (Exception exception) {
-            LOGGER.log(Level.SEVERE,
-                    String.format(
-                            "Failed to get history for file %s in revision %s:",
-                            fullpath, rev
-                    ),
-                    exception
-            );
+            filename = getGitFilePath(Paths.get(getCanonicalDirectoryName()).relativize(Paths.get(fullpath)).toString());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to relativize '%s' in for repository '%s'",
+                    fullpath, directory), e);
+            return result;
         }
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(directory.getAbsolutePath())) {
+            ObjectId commitId = repository.resolve(rev);
+
+            // a RevWalk allows to walk over commits based on some filtering that is defined
+            try (RevWalk revWalk = new RevWalk(repository)) {
+                RevCommit commit = revWalk.parseCommit(commitId);
+                // and using commit's tree find the path
+                RevTree tree = commit.getTree();
+
+                // now try to find a specific file
+                try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                    treeWalk.addTree(tree);
+                    treeWalk.setRecursive(true);
+                    treeWalk.setFilter(PathFilter.create(filename));
+                    if (!treeWalk.next()) {
+                        LOGGER.log(Level.FINEST,
+                                String.format("Did not find expected file '%s' in revision %s for repository '%s'",
+                                        filename, rev, directory));
+                        return result;
+                    }
+
+                    ObjectId objectId = treeWalk.getObjectId(0);
+                    ObjectLoader loader = repository.open(objectId);
+
+                    CountingOutputStream countingOutputStream = new CountingOutputStream(out);
+                    loader.copyTo(countingOutputStream);
+                    result.iterations = countingOutputStream.getCount();
+                    result.success = true;
+                }
+
+                revWalk.dispose();
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to get file '%s' in revision %s for repository '%s'",
+                    filename, rev, directory), e);
+        }
+
         return result;
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
-        String fullpath;
+        String fullPath;
         try {
-            fullpath = new File(parent, basename).getCanonicalPath();
+            fullPath = new File(parent, basename).getCanonicalPath();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e, () -> String.format(
                     "Failed to get canonical path: %s/%s", parent, basename));
             return false;
         }
 
-        HistoryRevResult result = getHistoryRev(sink::write, fullpath, rev);
+        HistoryRevResult result = getHistoryRev(out, fullPath, rev);
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
              * renamed so we need to find its original name in that revision
              * and retry with the original name.
              */
-            String origpath;
+            String origPath;
             try {
-                origpath = findOriginalName(fullpath, rev);
+                origPath = findOriginalName(fullPath, rev);
             } catch (IOException exp) {
                 LOGGER.log(Level.SEVERE, exp, () -> String.format(
                         "Failed to get original revision: %s/%s (revision %s)",
@@ -283,17 +210,17 @@ public class GitRepository extends Repository {
                 return false;
             }
 
-            if (origpath != null) {
+            if (origPath != null) {
                 String fullRenamedPath;
                 try {
-                    fullRenamedPath = Paths.get(getCanonicalDirectoryName(), origpath).toString();
+                    fullRenamedPath = Paths.get(getCanonicalDirectoryName(), origPath).toString();
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e, () -> String.format(
-                            "Failed to get canonical path: .../%s", origpath));
+                            "Failed to get canonical path: .../%s", origPath));
                     return false;
                 }
-                if (!fullRenamedPath.equals(fullpath)) {
-                    result = getHistoryRev(sink, fullRenamedPath, rev);
+                if (!fullRenamedPath.equals(fullPath)) {
+                    result = getHistoryRev(out, fullRenamedPath, rev);
                 }
             }
         }
@@ -301,42 +228,26 @@ public class GitRepository extends Repository {
         return result.success;
     }
 
-    /**
-     * Create a {@code Reader} that reads an {@code InputStream} using the
-     * correct character encoding.
-     *
-     * @param input a stream with the output from a log or blame command
-     * @return a reader that reads the input
-     */
-    static Reader newLogReader(InputStream input) {
-        // Bug #17731: Git always encodes the log output using UTF-8 (unless
-        // overridden by i18n.logoutputencoding, but let's assume that hasn't
-        // been done for now). Create a reader that uses UTF-8 instead of the
-        // platform's default encoding.
-        return new InputStreamReader(input, StandardCharsets.UTF_8);
-    }
-
-    private String getPathRelativeToCanonicalRepositoryRoot(String fullpath)
-            throws IOException {
+    private String getPathRelativeToCanonicalRepositoryRoot(String fullPath) throws IOException {
         String repoPath = getCanonicalDirectoryName() + File.separator;
-        if (fullpath.startsWith(repoPath)) {
-            return fullpath.substring(repoPath.length());
+        if (fullPath.startsWith(repoPath)) {
+            return fullPath.substring(repoPath.length());
         }
-        return fullpath;
+        return fullPath;
     }
 
     /**
-     * Get the name of file in given revision. The returned file name is relative
-     * to the repository root.
+     * Get the name of file in given revision. The returned file name is relative to the repository root.
+     * Assumes renamed file hanndling is on.
      *
-     * @param fullpath  file path
-     * @param changeset changeset
+     * @param fullpath full file path
+     * @param changeset revision ID (could be short)
      * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
      * @see #getPathRelativeToCanonicalRepositoryRoot(String)
      */
-    String findOriginalName(String fullpath, String changeset)
-            throws IOException {
+    String findOriginalName(String fullpath, String changeset) throws IOException {
+
         if (fullpath == null || fullpath.isEmpty()) {
             throw new IOException(String.format("Invalid file path string: %s", fullpath));
         }
@@ -346,94 +257,57 @@ public class GitRepository extends Repository {
                     fullpath, changeset));
         }
 
-        String fileInRepo = getPathRelativeToCanonicalRepositoryRoot(fullpath);
+        String fileInRepo = getGitFilePath(getPathRelativeToCanonicalRepositoryRoot(fullpath));
 
-        /*
-         * Get the list of file renames for given file to the specified
-         * revision.
-         */
-        String[] argv = {
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
-            "log",
-            "--follow",
-            "--summary",
-            ABBREV_LOG,
-            "--abbrev-commit",
-            "--name-status",
-            "--pretty=format:commit %h%n%d",
-            "--",
-            fileInRepo
-        };
+        String originalFile = fileInRepo;
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
 
-        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        int status = executor.exec();
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+            walk.markUninteresting(walk.lookupCommit(repository.resolve(changeset)));
 
-        String originalFile = null;
-        try (BufferedReader in = new BufferedReader(newLogReader(executor.getOutputStream()))) {
-            String line;
-            String rev = null;
-            Matcher m;
-            Pattern pattern = Pattern.compile("^R\\d+\\s(.*)\\s(.*)");
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("commit ")) {
-                    rev = line.substring(7);
+            Config config = repository.getConfig();
+            config.setBoolean("diff", null, "renames", true);
+            org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+            FollowFilter followFilter = FollowFilter.create(getGitFilePath(fileInRepo), dc);
+            walk.setTreeFilter(followFilter);
+
+            for (RevCommit commit : walk) {
+                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
                     continue;
                 }
 
-                if (changeset.equals(rev)) {
-                    if (originalFile == null) {
-                        originalFile = fileInRepo;
-                    }
+                if (commit.getId().getName().startsWith(changeset)) {
                     break;
                 }
 
-                if ((m = pattern.matcher(line)).find()) {
-                    // git output paths with forward slashes so transform it if needed
-                    originalFile = Paths.get(m.group(1)).toString();
+                if (commit.getParentCount() >= 1) {
+                    OutputStream outputStream = NullOutputStream.INSTANCE;
+                    try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+                        formatter.setRepository(repository);
+                        formatter.setDetectRenames(true);
+
+                        List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, commit.getParent(0)),
+                                prepareTreeParser(repository, commit));
+
+                        for (DiffEntry diff : diffs) {
+                            if (diff.getChangeType() == DiffEntry.ChangeType.RENAME &&
+                                    originalFile.equals(diff.getNewPath())) {
+                                originalFile = diff.getOldPath();
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        if (status != 0 || originalFile == null) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status), changeset});
+        if (originalFile == null) {
+            LOGGER.log(Level.WARNING, "Failed to get original name in revision {0} for: \"{1}\"",
+                    new Object[]{changeset, fullpath});
             return null;
         }
 
-        return originalFile;
-    }
-
-    /**
-     * Get first revision of given file without following renames.
-     * @param fullpath file path to get first revision of
-     */
-    private String getFirstRevision(String fullpath) {
-        String[] argv = {
-                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
-                "rev-list",
-                "--reverse",
-                "HEAD",
-                "--",
-                fullpath
-        };
-
-        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        HeadHandler headHandler = new HeadHandler(1);
-        int status = executor.exec(false, headHandler);
-
-        String line;
-        if (headHandler.count() > 0 && (line = headHandler.get(0)) != null) {
-            return line.trim();
-        }
-
-        LOGGER.log(Level.WARNING,
-                "Failed to get first revision for: \"{0}\" Exit code: {1}",
-                new Object[]{fullpath, String.valueOf(status)});
-
-        return null;
+        return getNativePath(originalFile);
     }
 
     /**
@@ -446,61 +320,73 @@ public class GitRepository extends Repository {
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add(BLAME);
-        cmd.add("-c"); // to get correctly formed changeset IDs
-        cmd.add(ABBREV_BLAME);
-        if (revision != null) {
-            cmd.add(revision);
-        } else {
-            // {@code git blame} follows renames by default. If renamed file handling is off, its output would
-            // contain invalid revisions. Therefore, the revision range needs to be constrained.
-            if (!isHandleRenamedFiles()) {
-                String firstRevision = getFirstRevision(file.getAbsolutePath());
-                if (firstRevision == null) {
-                    return null;
-                }
-                cmd.add(firstRevision + "..");
+        String filePath = getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath());
+
+        if (revision == null) {
+            revision = getFirstRevision(filePath);
+        }
+        String fileName = Path.of(filePath).getFileName().toString();
+        Annotation annotation = getAnnotation(revision, filePath, fileName);
+
+        if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
+            // The file might have changed its location if it was renamed.
+            // Try to lookup its original name and get the annotation again.
+            String origName = findOriginalName(file.getCanonicalPath(), revision);
+            if (origName != null) {
+                annotation = getAnnotation(revision, origName, fileName);
             }
         }
-        cmd.add("--");
-        cmd.add(getPathRelativeToCanonicalRepositoryRoot(file.getCanonicalPath()));
 
-        Executor executor = new Executor(cmd, new File(getDirectoryName()),
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        GitAnnotationParser parser = new GitAnnotationParser(file.getName());
-        int status = executor.exec(true, parser);
+        return annotation;
+    }
 
-        // File might have changed its location if it was renamed.
-        // Try to lookup its original name and get the annotation again.
-        if (status != 0 && isHandleRenamedFiles()) {
-            cmd.clear();
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            cmd.add(RepoCommand);
-            cmd.add(BLAME);
-            cmd.add("-c"); // to get correctly formed changeset IDs
-            cmd.add(ABBREV_BLAME);
-            if (revision != null) {
-                cmd.add(revision);
+    private String getFirstRevision(String filePath) {
+        String revision = null;
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            Iterable<RevCommit> commits = new Git(repository).log().
+                    addPath(getGitFilePath(filePath)).
+                    setMaxCount(1).
+                    call();
+            RevCommit commit = commits.iterator().next();
+            if (commit != null) {
+                revision = commit.getId().getName();
+            } else {
+                LOGGER.log(Level.WARNING, String.format("cannot get first revision of '%s' in repository '%s'",
+                        filePath, getDirectoryName()));
             }
-            cmd.add("--");
-            cmd.add(findOriginalName(file.getCanonicalPath(), revision));
-            executor = new Executor(cmd, new File(getDirectoryName()),
-                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-            parser = new GitAnnotationParser(file.getName());
-            status = executor.exec(true, parser);
-        }
-
-        if (status != 0) {
+        } catch (IOException | GitAPIException e) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
-            return null;
+                    String.format("cannot get first revision of '%s' in repository '%s'",
+                            filePath, getDirectoryName()), e);
         }
+        return revision;
+    }
 
-        return parser.getAnnotation();
+    @NotNull
+    private Annotation getAnnotation(String revision, String filePath, String fileName) throws IOException {
+        Annotation annotation = new Annotation(fileName);
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            BlameCommand blameCommand = new Git(repository).blame().setFilePath(getGitFilePath(filePath));
+            ObjectId commitId = repository.resolve(revision);
+            blameCommand.setStartCommit(commitId);
+            blameCommand.setFollowFileRenames(isHandleRenamedFiles());
+            final BlameResult result = blameCommand.setTextComparator(RawTextComparator.WS_IGNORE_ALL).call();
+            if (result != null) {
+                final RawText rawText = result.getResultContents();
+                for (int i = 0; i < rawText.size(); i++) {
+                    final PersonIdent sourceAuthor = result.getSourceAuthor(i);
+                    final RevCommit sourceCommit = result.getSourceCommit(i);
+                    annotation.addLine(sourceCommit.getId().abbreviate(GIT_ABBREV_LEN).
+                            name(), sourceAuthor.getName(), true);
+                }
+            }
+        } catch (GitAPIException e) {
+            LOGGER.log(Level.FINER,
+                    String.format("failed to get annotation for file '%s' in repository '%s' in revision '%s'",
+                            filePath, getDirectoryName(), revision));
+        }
+        return annotation;
     }
 
     @Override
@@ -520,7 +406,8 @@ public class GitRepository extends Repository {
     @Override
     boolean isRepositoryFor(File file, CommandTimeoutType cmdType) {
         if (file.isDirectory()) {
-            File f = new File(file, ".git");
+            File f = new File(file, Constants.DOT_GIT);
+            // No check for directory or file as submodules contain '.git' file.
             return f.exists();
         }
         return false;
@@ -542,11 +429,8 @@ public class GitRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        if (working == null) {
-            working = GIT_IS_WORKING.get();
-        }
-
-        return working;
+        // TODO: check isBare() in JGit ?
+        return true;
     }
 
     @Override
@@ -560,22 +444,297 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        History result = new GitHistoryParser(isHandleRenamedFiles()).parse(file, this, sinceRevision);
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, null);
+    }
+
+    public int getPerPartesCount() {
+        return MAX_CHANGESETS;
+    }
+
+    public void accept(String sinceRevision, Consumer<String> visitor) throws HistoryException {
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
+
+            if (sinceRevision != null) {
+                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+            }
+            walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+
+            for (RevCommit commit : walk) {
+                // Do not abbreviate the Id as this could cause AmbiguousObjectException in getHistory().
+                visitor.accept(commit.getId().name());
+            }
+        } catch (IOException e) {
+            throw new HistoryException(e);
+        }
+    }
+
+    @Nullable
+    @Override
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        History hist = getHistory(file, null, null, 1);
+        return getLastHistoryEntry(hist);
+    }
+
+    public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, tillRevision, null);
+    }
+
+    public History getHistory(File file, String sinceRevision, String tillRevision,
+                              Integer numCommits) throws HistoryException {
+
+        if (numCommits != null && numCommits <= 0) {
+            return null;
+        }
+
+        final List<HistoryEntry> entries = new ArrayList<>();
+        final Set<String> renamedFiles = new HashSet<>();
+
+        boolean isDirectory = file.isDirectory();
+
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName());
+             RevWalk walk = new RevWalk(repository)) {
+
+            if (sinceRevision != null) {
+                walk.markUninteresting(walk.lookupCommit(repository.resolve(sinceRevision)));
+            }
+
+            if (tillRevision != null) {
+                walk.markStart(walk.lookupCommit(repository.resolve(tillRevision)));
+            } else {
+                walk.markStart(walk.parseCommit(repository.resolve(Constants.HEAD)));
+            }
+
+            String relativePath = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file);
+            if (!getDirectoryNameRelative().equals(relativePath)) {
+                if (isHandleRenamedFiles()) {
+                    Config config = repository.getConfig();
+                    config.setBoolean("diff", null, "renames", true);
+                    org.eclipse.jgit.diff.DiffConfig dc = config.get(org.eclipse.jgit.diff.DiffConfig.KEY);
+                    FollowFilter followFilter = FollowFilter.create(getGitFilePath(getRepoRelativePath(file)), dc);
+                    walk.setTreeFilter(followFilter);
+                } else {
+                    walk.setTreeFilter(AndTreeFilter.create(
+                            PathFilter.create(getGitFilePath(getRepoRelativePath(file))),
+                            TreeFilter.ANY_DIFF));
+                }
+            }
+
+            int num = 0;
+            for (RevCommit commit : walk) {
+                if (commit.getParentCount() > 1 && !isMergeCommitsEnabled()) {
+                    continue;
+                }
+
+                HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                        commit.getAuthorIdent().getWhen(),
+                        commit.getAuthorIdent().getName() +
+                                " <" + commit.getAuthorIdent().getEmailAddress() + ">",
+                        commit.getFullMessage(), true);
+
+                if (isDirectory) {
+                    SortedSet<String> files = new TreeSet<>();
+                    getFilesForCommit(renamedFiles, files, commit, repository);
+                    historyEntry.setFiles(files);
+                }
+
+                entries.add(historyEntry);
+
+                if (numCommits != null && ++num >= numCommits) {
+                    break;
+                }
+            }
+        } catch (IOException | ForbiddenSymlinkException e) {
+            throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
+        }
+
+        History result = new History(entries, renamedFiles);
+
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
-        if (env.isTagsEnabled()) {
+        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
             assignTagsInHistory(result);
         }
+
         return result;
+    }
+
+    /**
+     * Accumulate list of changed files and renamed files (if enabled) for given commit.
+     * @param renamedFiles result containing the renamed files in this commit
+     * @param files result containing changed files in this commit
+     * @param commit RevCommit object
+     * @param repository repository object
+     * @throws IOException on error traversing the commit tree
+     */
+    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> files, RevCommit commit,
+                                   Repository repository) throws IOException {
+
+        int numParents = commit.getParentCount();
+
+        if (numParents == 1) {
+            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+        } else if (numParents == 0) { // first commit
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(commit.getTree());
+                treeWalk.setRecursive(true);
+
+                while (treeWalk.next()) {
+                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(treeWalk.getPathString()));
+                }
+            }
+        } else {
+            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+        }
+    }
+
+    private static String getNativePath(String path) {
+        if (!File.separator.equals("/")) {
+            return path.replace("/", File.separator);
+        }
+
+        return path;
+    }
+
+    /**
+     * Assemble list of files that changed between 2 commits.
+     * @param repository repository object
+     * @param oldCommit parent commit
+     * @param newCommit new commit (the mehotd assumes oldCommit is its parent)
+     * @param files set of files that changed (excludes renamed files)
+     * @param renamedFiles set of renamed files (if renamed handling is enabled)
+     * @throws IOException on I/O problem
+     */
+    private void getFiles(org.eclipse.jgit.lib.Repository repository,
+                          RevCommit oldCommit, RevCommit newCommit,
+                          Set<String> files, Set<String> renamedFiles)
+            throws IOException {
+
+        OutputStream outputStream = NullOutputStream.INSTANCE;
+        try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+            formatter.setRepository(repository);
+            if (isHandleRenamedFiles()) {
+                formatter.setDetectRenames(true);
+            }
+
+            List<DiffEntry> diffs = formatter.scan(prepareTreeParser(repository, oldCommit),
+                    prepareTreeParser(repository, newCommit));
+
+            for (DiffEntry diff : diffs) {
+                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
+                    if (files != null) {
+                        files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                                getNativePath(diff.getNewPath()));
+                    }
+                }
+
+                if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
+                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                            getNativePath(diff.getNewPath()));
+                }
+            }
+        }
+    }
+
+    private static AbstractTreeIterator prepareTreeParser(org.eclipse.jgit.lib.Repository repository,
+                                                          RevCommit commit) throws IOException {
+        // from the commit we can build the tree which allows us to construct the TreeParser
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevTree tree = walk.parseTree(commit.getTree().getId());
+
+            CanonicalTreeParser treeParser = new CanonicalTreeParser();
+            try (ObjectReader reader = repository.newObjectReader()) {
+                treeParser.reset(reader, tree.getId());
+            }
+
+            walk.dispose();
+
+            return treeParser;
+        }
     }
 
     @Override
     boolean hasFileBasedTags() {
         return true;
+    }
+
+    /**
+     * @param dotGit {@code .git} file
+     * @return value of the {@code gitdir} property from the file
+     */
+    private String getGitDirValue(File dotGit) {
+        try (Scanner scanner = new Scanner(dotGit, StandardCharsets.UTF_8)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.startsWith(Constants.GITDIR)) {
+                    return line.substring(Constants.GITDIR.length());
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "failed to scan the contents of file ''{0}''", dotGit);
+        }
+
+        return null;
+    }
+
+    private org.eclipse.jgit.lib.Repository getJGitRepository(String directory) throws IOException {
+        File dotGitFile = Paths.get(directory, Constants.DOT_GIT).toFile();
+        if (dotGitFile.isDirectory()) {
+            return FileRepositoryBuilder.create(dotGitFile);
+        }
+
+        // Assume this is a sub-module so dotGitFile is a file.
+        String gitDirValue = getGitDirValue(dotGitFile);
+        if (gitDirValue == null) {
+            throw new IOException("cannot get gitDir value from " + dotGitFile);
+        }
+
+        // If the gitDir value is relative path, make it absolute.
+        // This is necessary for the JGit Repository construction.
+        File gitDirFile = new File(gitDirValue);
+        if (!gitDirFile.isAbsolute()) {
+            gitDirFile = new File(directory, gitDirValue);
+        }
+
+        return new FileRepositoryBuilder().setWorkTree(new File(directory)).setGitDir(gitDirFile).build();
+    }
+
+    private void rebuildTagList(File directory) {
+        this.tagList = new TreeSet<>();
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(directory.getAbsolutePath())) {
+            try (Git git = new Git(repository)) {
+                List<Ref> refList = git.tagList().call(); // refs sorted according to tag names
+                Map<RevCommit, String> commit2Tags = new HashMap<>();
+                for (Ref ref : refList) {
+                    try {
+                        RevCommit commit = getCommit(repository, ref);
+                        String tagName = ref.getName().replace("refs/tags/", "");
+                        commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.FINEST, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
+                    }
+                }
+
+                for (Map.Entry<RevCommit, String> entry : commit2Tags.entrySet()) {
+                    int commitTime = entry.getKey().getCommitTime();
+                    Date date = new Date((long) (commitTime) * 1000);
+                    GitTagEntry tagEntry = new GitTagEntry(entry.getKey().getName(),
+                            date, entry.getValue());
+                    this.tagList.add(tagEntry);
+                }
+            }
+        } catch (IOException | GitAPIException e) {
+            LOGGER.log(Level.WARNING, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
+            // In case of partial success, do not null-out tagList here.
+        }
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Read tags count={0} for {1}",
+                    new Object[] {tagList.size(), directory});
+        }
     }
 
     /**
@@ -611,127 +770,67 @@ public class GitRepository extends Repository {
      */
     @Override
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
-        this.tagList = new TreeSet<>();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<?> future = executor.submit(() -> rebuildTagList(directory));
+        executor.shutdown();
 
-        /*
-         * Bulk log-tags command courtesy of GitHub's louie0817.
-         */
-        ArrayList<String> argv = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(RepoCommand);
-        argv.add("log");
-        argv.add("--tags");
-        argv.add("--simplify-by-decoration");
-        argv.add("--pretty=%H:%at:%D:");
-
-        Executor executor = new Executor(argv, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        int status = executor.exec(true, new GitTagParser(this.tagList));
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "Read tags count={0} for {1}",
-                    new Object[] {tagList.size(), directory});
+        try {
+            future.get(RuntimeEnvironment.getInstance().getCommandTimeout(cmdType), TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.log(Level.WARNING, "failed tag rebuild for directory " + directory, e);
+        } catch (TimeoutException e) {
+            LOGGER.log(Level.WARNING, "timed out tag rebuild for directory " + directory, e);
         }
 
-        if (status != 0) {
-            LOGGER.log(Level.WARNING,
-                "Failed to get tags for: \"{0}\" Exit code: {1}",
-                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
-            // In case of partial success, do not null-out tagList here.
+        if (!executor.isTerminated()) {
+            executor.shutdownNow();
+        }
+    }
+
+    @NotNull
+    private RevCommit getCommit(org.eclipse.jgit.lib.Repository repository, Ref ref) throws IOException {
+        try (RevWalk walk = new RevWalk(repository)) {
+            return walk.parseCommit(ref.getObjectId());
         }
     }
 
     @Override
+    @Nullable
     String determineParent(CommandTimeoutType cmdType) throws IOException {
-        String parent = null;
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("remote");
-        cmd.add("-v");
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        executor.exec();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("origin") && line.contains("(fetch)")) {
-                    String[] parts = line.split("\\s+");
-                    if (parts.length != 3) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to get parent for {0}", getDirectoryName());
-                    }
-                    parent = parts[1];
-                    break;
-                }
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            if (repository.getConfig() != null) {
+                return repository.getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
+            } else {
+                return null;
             }
         }
-
-        return parent;
     }
 
     @Override
     String determineBranch(CommandTimeoutType cmdType) throws IOException {
-        String branch = null;
-        File directory = new File(getDirectoryName());
-
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("branch");
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getCommandTimeout(cmdType));
-        executor.exec();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("*")) {
-                    branch = line.substring(2).trim();
-                    break;
-                }
-            }
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            return repository.getBranch();
         }
-
-        return branch;
     }
 
     @Override
     public String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException {
-        File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<>();
-        // The delimiter must not be contained in the date format emitted by
-        // {@code GIT_DATE_OPT}.
-        String delim = "#";
-
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-
-        cmd.add(RepoCommand);
-        cmd.add("log");
-        cmd.add("-1");
-        cmd.add("--pretty=%cd" + delim + "%h %an %s");
-        cmd.add(GIT_DATE_OPT);
-
-        Executor executor = new Executor(cmd, directory,
-                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        if (executor.exec(false) != 0) {
-            throw new IOException(executor.getErrorString());
+        try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(getDirectoryName())) {
+            Ref head = repository.exactRef(Constants.HEAD);
+            if (head != null && head.getObjectId() != null) {
+                try (RevWalk walk = new RevWalk(repository); ObjectReader reader = repository.newObjectReader()) {
+                    RevCommit commit = walk.parseCommit(head.getObjectId());
+                    int commitTime = commit.getCommitTime();
+                    Date date = new Date((long) (commitTime) * 1000);
+                    return String.format("%s %s %s %s",
+                            format(date),
+                            reader.abbreviate(head.getObjectId()).name(),
+                            commit.getAuthorIdent().getName(),
+                            commit.getShortMessage());
+                }
+            }
         }
 
-        String output = executor.getOutputString().trim();
-        int indexOf = StringUtils.nthIndexOf(output, delim, 1);
-        if (indexOf < 0) {
-            throw new IOException(
-                    String.format("Couldn't extract date from \"%s\".", output));
-        }
-
-        try {
-            Date date = parse(output.substring(0, indexOf));
-            return String.format("%s %s", format(date), output.substring(indexOf + 1));
-        } catch (ParseException ex) {
-            throw new IOException(ex);
-        }
+        return null;
     }
 }

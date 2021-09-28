@@ -465,7 +465,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
         boolean caseSensitive) throws IOException {
         return writeSymbol(symbol, keywords, line, caseSensitive, false);
     }
-    
+
     /**
      * Write a symbol and generate links as appropriate.
      *

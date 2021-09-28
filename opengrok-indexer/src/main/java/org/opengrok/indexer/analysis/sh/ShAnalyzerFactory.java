@@ -27,9 +27,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class ShAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Shell script";
-    
+
+    private static final String NAME = "Shell script";
+
     private static final String[] NAMES = {
         "GNUMAKEFILE", "MAKEFILE"
     };
@@ -60,7 +60,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ShAnalyzerFactory() {
-        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

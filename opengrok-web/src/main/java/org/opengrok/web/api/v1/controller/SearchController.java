@@ -18,11 +18,22 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.lucene.search.Query;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.search.Hit;
@@ -32,17 +43,6 @@ import org.opengrok.web.PageConfig;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -103,7 +103,7 @@ public class SearchController {
 
     private static class SearchEngineWrapper implements AutoCloseable {
 
-        private SearchEngine engine = new SearchEngine();
+        private final SearchEngine engine = new SearchEngine();
 
         private int numResults;
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -27,10 +27,6 @@ import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,14 +36,18 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import junit.framework.AssertionFailedError;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.c.CAnalyzerFactoryTest;
 import org.opengrok.indexer.history.RepositoryFactory;
-import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -55,10 +55,10 @@ import org.opengrok.indexer.util.TestRepository;
  */
 public class IgnoredNamesTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private static TestRepository repository;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
@@ -190,11 +190,8 @@ public class IgnoredNamesTest {
 
         // Verify that the XML encoding/decoding did not fail.
         if (!exceptions.isEmpty()) {
-            AssertionFailedError afe = new AssertionFailedError(
-                    "Got " + exceptions.size() + " exception(s)");
             // Can only chain one of the exceptions. Take the first one.
-            afe.initCause(exceptions.getFirst());
-            throw afe;
+            throw new AssertionError("Got " + exceptions.size() + " exception(s)", exceptions.getFirst());
         }
 
         // Make sure the complete list of items is equal after decoding.
@@ -209,6 +206,6 @@ public class IgnoredNamesTest {
         assertTrue(in2.ignore(bar));
 
         // Cleanup.
-        FileUtilities.removeDirs(tmpdir);
+        IOUtils.removeRecursive(tmpdir.toPath());
     }
 }

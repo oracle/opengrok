@@ -18,15 +18,16 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import jakarta.ws.rs.core.Application;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
@@ -36,7 +37,6 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.RestApp;
 import org.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
-import javax.ws.rs.core.Application;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -45,8 +45,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
 
@@ -59,7 +59,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
         return new RestApp();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
 
@@ -76,12 +76,12 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
         env.getSuggesterConfig().setRebuildCronConfig(null);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
 

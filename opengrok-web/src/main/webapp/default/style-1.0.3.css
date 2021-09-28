@@ -1,0 +1,1367 @@
+/* common stuff */
+body {
+    background-color: #ffffff;
+    color: black;
+    font-family: sans-serif;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+div#src a.l:after, div#src a.hl:after,
+div#src0 a.l:after, div#src0 a.hl:after {
+    content: "\0020";
+}
+
+div#src a.l.selected:after, div#src a.hl.selected:after,
+div#src0 a.l.selected:after, div#src0 a.hl.selected:after{
+    content: "";
+}
+
+/* highlight line number with anchor */
+div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
+    background: orange;
+    color:yellow;
+}
+
+a:link {
+    color: #2030A2;
+}
+
+a:visited, a:active, a:hover {
+    color: #202062;
+}
+
+a:active, a:hover {
+    text-decoration: underline;
+}
+
+img, form, pre, code, samp {
+    border: 0;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+caption {
+    caption-side:top;
+    margin: 1ex 0;
+    text-align: left;
+}
+
+thead {
+    background-color: #c5d5a9;
+}
+
+/* alternate color for odd rows, search-result class handles this by itself */
+tbody:not(.search-result) tr:nth-child(EVEN) {
+    background-color: #e8e8f0;
+}
+
+.search-result-even-row {
+    background-color: #e8e8f0;
+}
+
+.btn {
+    padding-left: 7px;
+    padding-right: 7px;
+    text-align: center;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.btn:hover, .btn:active {
+    text-decoration: none;
+}
+
+a.btn {
+    color: rgb(76, 76, 76);
+}
+
+input, button, .btn {
+    border: 1px solid #bbbbff;
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #a3b8cb;
+}
+
+/* below seems to be a problem for input boxes, where the color will overwrite
+ * the text inside, let's leave it for buttons though for search and clear
+ * buttons will make it part of submit class ONLY
+ */
+input.submit:hover, input.submit:active,
+button:hover, button:active, .btn:hover, .btn:active {
+    color: #ffffff;
+}
+
+label {
+}
+
+.pre { /* the diff content */
+    white-space: pre-wrap;
+    font-family: monospace;
+    margin: 0;
+}
+
+.edited {
+    font-size: 50%;
+    display: block;
+}
+
+#page { }
+
+.error { /* error messages */
+    color: #a52a2a;
+}
+
+.active {
+    font-weight: bold;
+    /* color: #c20097; */
+}
+
+/*
+ * Project list on the index page
+ */
+.projects {
+    list-style-type: none;
+}
+
+.panel {
+    margin-bottom: 10px;
+    background-color: #fff;
+    border-color: #ddd;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: 4px;
+}
+
+.projects > .toggle-buttons {
+    border: none;
+    text-align: right;
+}
+
+.projects > .panel {
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+}
+
+.projects .panel-body-accordion {
+    display: none;
+}
+
+.projects .panel-body-accordion.favourite, .projects .panel-body-accordion[data-accordion-visible="true"] {
+    display: block;
+}
+
+.projects .subrepository {
+    padding-left: 20px;
+}
+
+/* Leave some space between the tables of repositories and projects */
+.projects table tbody:not(:last-child):after {
+    content: '';
+    display: block;
+    height: 20px;
+}
+
+.panel > .panel-heading, .panel > .panel-heading-accordion {
+    padding: 0 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    color: #333;
+    background-color: #e0e0e0;
+    border-color: #ddd;
+}
+
+.panel > .panel-heading:hover,
+.panel > .panel-heading-accordion:hover {
+    cursor: pointer;
+}
+
+.panel > .panel-heading h1,
+.panel > .panel-heading h2,
+.panel > .panel-heading h3,
+.panel > .panel-heading h4,
+.panel > .panel-heading h5,
+.panel > .panel-heading h6,
+.panel > .panel-heading-accordion h1,
+.panel > .panel-heading-accordion h2,
+.panel > .panel-heading-accordion h3,
+.panel > .panel-heading-accordion h4,
+.panel > .panel-heading-accordion h5,
+.panel > .panel-heading-accordion h6 {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin: 0;
+}
+
+.panel > .panel-body-accordion + .panel-body, .panel > .panel-body-accordion {
+    padding: 15px;
+}
+
+.panel-group {
+    margin-bottom: 20px;
+}
+
+.panel-group .panel {
+    margin-bottom: 0;
+    border-radius: 4px;
+}
+
+.panel-group .panel + .panel {
+    margin-top: 0px;
+}
+
+.panel-group .panel-heading, .panel-group .panel-heading-accordion {
+    border-bottom: 0;
+}
+
+.panel-body > table, .panel-body-accordion > table {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.panel-body > table:last-child, .panel-body-accordion > table:last-child {
+    margin-bottom: 0;
+}
+
+.panel-body > table {
+    table-layout: fixed;
+}
+
+/* These are wanted for all but the last child hence last child below resets these. */
+.panel-body > table tr td, .panel-body-accordion > table tr td {
+    word-wrap: break-word;
+    padding-right: 10px;
+}
+
+/* 'Current version' column */
+.panel-body > table tr td:last-child, .panel-body-accordion > table tr td:last-child {
+    width: 400px;
+    word-wrap: normal;
+    padding-right: 0px;
+}
+
+/*
+ * Changesets colorization
+ * 1 is the most recent changeset
+ * class is set in web/Util.java
+ *
+ * version class is generated for every version number
+ * by setting those classes in style.css (or generating them) you can adjust
+ * the colorification for more versions than 10 versions
+ */
+.version_color_1  { background-color: rgb( 255, 231, 38 ) !important; }
+.version_color_2  { background-color: rgb( 255, 221, 38 ) !important; }
+.version_color_3  { background-color: rgb( 255, 215, 38 ) !important; }
+.version_color_4  { background-color: rgb( 255, 204, 38 ) !important; }
+.version_color_5  { background-color: rgb( 255, 199, 38 ) !important; }
+.version_color_6  { background-color: rgb( 255, 187, 38 ) !important; }
+.version_color_7  { background-color: rgb( 255, 183, 38 ) !important; }
+.version_color_8  { background-color: rgb( 255, 170, 38 ) !important; }
+.version_color_9  { background-color: rgb( 255, 167, 38 ) !important; }
+.version_color_10 { background-color: rgb( 255, 153, 38 ) !important; }
+
+/* ############### start of header ############## */
+#whole_header { }
+
+html.xref #whole_header,
+html.history #whole_header,
+html.more #whole_header,
+html.diff #whole_header {
+    position: fixed;
+    top: 0;
+    background: #ffffff;
+    height: 70px;
+    width: 100%;
+}
+
+/* *** banner/deco above navbar *** */
+#header { }
+
+#MastheadLogo {
+    width: 171px;
+    height: 40px;
+    float: left;
+    background-image: url(./img/Logo.png);
+    background-repeat: no-repeat;
+    margin: 0 0 0.5ex 0;
+}
+
+#dtag { /* short verbal summary/description of the shown content */
+}
+
+#filename { /* "Cross Reference: ..." */
+    font-size: x-large;
+    font-weight: bold;
+    margin-right: 1em;
+    float: right;
+}
+
+#Masthead {
+    font-family: monospace; /* ala <kbd> */
+    clear: left;
+    margin-bottom: 1ex;
+    margin-left: 1ex;
+    margin-top: 1ex;
+    margin-right: 1ex;
+}
+
+#sbar, #bar { /* default navbar */
+    border-top: 4px solid #ffc726;
+    margin: 0;
+    padding-top: 1ex;
+    clear: both;
+}
+
+/* *** full search navbar *** */
+#qtbl {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#qtbl tr {
+    background: none; /* remove alternating colors */
+}
+
+/* eops = end of project search */
+#ptbl tr:nth-child(2) td {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 1ex;
+}
+
+#ptbl button {
+    font-size: small;
+}
+
+/* padding so that the border created above has equal space around */
+#qtbl tbody:nth-child(2) tr:first-child td {
+    padding-top: 1ex;
+}
+
+#qtbl td:first-child {
+    text-align: right;
+}
+
+#qtbl td:nth-child(2) {
+    width: 90%;
+}
+
+#qtbl table {
+    width: 100%;
+}
+
+#qtbl input.q, #qtbl select.q {
+    width: 100%;
+}
+
+#qtbl input.q {
+    height: 1.3em;
+}
+
+#qtbl {
+    float: left;
+    width: 35%;
+    min-width: 300px;
+    margin-left: unset;
+    margin-top: 0.5em;
+    margin-right: 2em;
+    height: 100%;
+}
+
+#ltbl {
+    float: left;
+    width: 60%;
+    min-width: 300px;
+    margin-top: 0.5em;
+    height: 100%;
+}
+
+/** file type selection container (next to the file type select box) */
+
+#type-select-container .sol-selected-display-item,
+#type-select-container .sol-results-count,
+#type-select-container .sol-selected-display-item-text{
+    margin-bottom: 0;
+    margin-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+#form-controls {
+    white-space: nowrap;
+    /* 11ex = width(#qtbl td:first-child) + margin-left(body) */
+    margin: 1ex 0 0.5ex 11ex;
+}
+
+#form-controls > :nth-child(n+2) {
+    margin-left: 1ex;
+}
+
+/* *** default navbar *** */
+#bar {
+    padding: 0.2em 0.5em;
+}
+
+#bar ul { /* every list item is displayed as a "menu" item */
+    display: inline-block;
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    /* white-space: nowrap; */ /* hmm, sometimes good, sometimes not ;-) */
+}
+
+#bar li { /* menu items */
+    display: inline-block;
+}
+
+#history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before, #raw::before, #scopes::before {
+    content: "|";
+    padding: 0.5ex;
+    color: black;
+    font-size: large;
+    font-weight: normal;
+}
+
+#search {
+    margin-left: 0.5ex;
+}
+
+#annotate.c, #history.c { /* indicate annotation/history available */
+    color: #666;
+}
+
+input.q { /* text input fields */
+    background-color: #ffffff;
+    border: 1px solid #bbbbff;
+}
+
+input.submit { /* start search button , clear button */
+    font-weight: bold;
+}
+
+#sortfield {
+    display: inline-block;
+    margin-left: 6ex;
+}
+
+#sortfield label {
+    margin-right: 1ex;
+}
+
+#sortfield label:after {
+    content: ": ";
+}
+
+#sortby li:nth-child(n+2) :first-child::before {
+    content: "|";
+    padding: 0 1ex;
+    font-size: large;
+    font-weight: normal;
+}
+
+/* ############### end of header ############## */
+
+/* ############### start of content ############## */
+
+html.xref #content,
+html.diff #content,
+html.more #content,
+html.history #content{
+    margin-top: 70px;
+}
+
+/* *** help page *** */
+#help h4 {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+#help dfn { /* definitions */
+    text-decoration: underline;
+}
+
+#help .fields, #help .example {
+    margin-left: 3em;
+}
+
+#help dt {
+    font-weight: bold;
+}
+
+
+/* *** more page ***/
+#more {
+    line-height: 1.25em;
+}
+
+#more b { /* highlight matches */
+    background-color: #ffff99;
+}
+
+
+/* *** history page *** */
+table#revisions {
+    /* width: 100%; */ /* table with the history info for a file */
+    /* border-collapse: collapse; */ /* looks better with a small divider */
+}
+
+#revisions a.h    { /* modified file list content */
+    font-size: small;
+    margin-left: 2em;
+}
+
+#revisions .filelist-hidden { /* "Hide modified files" */
+    display: none;
+}
+
+#revisions tr.revtags { /* "Show revision tags" */
+    display: table-row;
+}
+
+#revisions span.revtags { /* "Show revision tags" */
+    display: inline;
+}
+
+#revisions tr.revtags-hidden, #revisions span.revtags-hidden { /* "Hide revision tags" */
+    display: none;
+}
+
+#revisions td {
+    padding: 0.5ex;
+    text-align: center;
+}
+
+#revisions td:first-child {
+    /* rev number - git/mercurial revs numbers look bad with prop. fonts */
+    font-family: monospace;
+    text-align: right;
+}
+
+#revisions td > p {
+    /* log message in comment column */
+    margin: 0;
+    text-align: left;
+}
+
+#revisions td > div {
+    /* modified file list in comment column */
+    font-family: monospace;
+    text-align: left;
+    float: left;
+}
+
+#revisions tbody td.revtags { /* tags row */
+    text-align: left;
+    color: #777777;
+}
+
+table#revisions tbody tr td p {
+    -ms-word-break: break-all;
+    -ms-word-wrap: break-all;
+    -webkit-word-break: break-word;
+    -webkit-word-wrap: break-word;
+    word-break: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+}
+
+@-moz-document url-prefix() {
+    table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+}
+
+.rev-message-hidden {
+    display: none;
+}
+
+.rssbadge { /* RSS/XML Feed on history page */
+    text-align: right;
+    margin: 1ex 0;
+}
+
+/* *** diff page *** */
+#diffbar { /* diff navbar: contains the tabs to select diff format */
+    padding-top: 1.5ex;
+    border-bottom: 1px solid #999;
+    white-space: nowrap;
+}
+
+#diffbar .d, #difftable .d {
+    /* "Deleted" heading + highlight of deleted text in diff lines */
+    background-color: #ffcc40;
+}
+
+#diffbar .a, #difftable .a {
+    /* "Added" heading + highlight of added text in diff lines */
+    background-color: #8bd98b;
+}
+
+#diffbar .legend, #diffbar .tabs, #diffbar .ctype {
+    display: inline-block;
+}
+
+#diffbar .legend {
+    /* bottom must be the same as .tabs span(padding-bottom) */
+    margin: 0 3ex 0.75ex 1ex;
+}
+
+#diffbar .legend span, #diffbar .ctype span {
+    padding: 0.2ex 1ex; /* bottom must be less than margin-bottom(.legend) */
+}
+
+#diffbar .tabs span {
+    padding: 0.75ex 1ex;
+    margin-left: 1ex;
+    border: 1px solid #999; /* should be the same as for #diffbar above */
+    border-radius: 0.75ex 0.75ex 0 00;
+    -moz-border-radius: 0.75ex 0.75ex 0 00;
+    background-color: #fafae0; /* navbar like */
+}
+
+#diffbar .tabs span.active, #diffbar .ctype span.active {
+    background-color: #c5d5a9; /* same as for table thead */
+}
+
+#diffbar .tabs span.active {
+    border-bottom-style: dashed;
+}
+
+#diffbar .ctype {
+    margin-left: 3ex; /* see margin-left .legend */
+}
+
+#diffbar .ctype span {
+    border: 1px solid #755; /* same as for input */
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #fafae0; /* navbar like */
+    margin-left: 1ex;
+}
+
+#difftable {
+    font-size: small;
+}
+
+#difftable table { /* left side == prev. rev; right side "current" rev */
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+#difftable table th { /* usually both rev. have changes: eq. space for both */
+    padding-top: 1ex;
+    width: 50%;
+}
+
+#difftable th:last-child, #difftable td:last-child {
+    border-left: 1px solid black;
+}
+
+#difftable .plain td {
+    padding: 2px;
+}
+
+#difftable .image td {
+    padding: 5px;
+}
+
+#difftable .k { /* border between the context and real diff lines */
+    border-bottom: 1px dashed #ccc;
+}
+
+
+/* *** list aka xref stuff *** */
+
+/* directory listing */
+table#dirlist { /* the "Name" column */
+    font-family: monospace;
+    border-style: none;
+    border-collapse: collapse;
+}
+
+table#dirlist thead tr:nth-child(1) {
+    height: 22px;
+}
+
+/* The tablersorter jQuery plugin makes the header fields clickable. */
+#dirlist th {
+    cursor: pointer;
+}
+
+#dirlist .r, #dirlist .p {
+    padding: 0;
+    margin: 0 0 0 1em;
+}
+
+#dirlist td:nth-child(n+3) { /* all but the first 2 columns */
+    padding-right: 1em;
+}
+
+#dirlist tbody td:nth-child(5) {
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+#dirlist td.q { /* 2nd column: H A D */
+    white-space: nowrap;
+    font-size: small;
+    padding-left: 16px;
+    width: 3em;
+}
+
+#dirlist td.numlines { /* 5th column: #Lines */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+#dirlist td.loc { /* 6th column: LOC */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+span.simplified-path {
+    color: #888;
+}
+
+/* file display */
+div[id^='src'] {
+}
+
+div[id^='src'] pre {
+    margin: 0;
+}
+
+/* hidden line number/annotation block */
+.lines-hidden .l, .lines-hidden .hl, .blame-hidden .blame {
+    display: none
+}
+
+.l, .hl, .blame .r, .blame .a,
+#results .l, #more .l,
+#difftable i, del.d { /* line number/annotation block */
+    display: inline-block;
+    width: 6ex;
+    text-align: right;
+    padding-right: 0;
+    background-color: #dddddd;
+    color: #666;
+    margin-right: .5ex;
+}
+
+.blame .search {
+    /* font-size: small; */
+        padding-left: .5ex;
+    background-color: #dddddd;
+        margin-right: .5ex;
+}
+
+div[id^='src'] .hl { /* highlighted line number */
+    color: #000;
+}
+
+/* highlight line number with anchor */
+div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
+    background: orange;
+    color:yellow;
+}
+
+.blame .r { /* revision number "column" (annotation) */
+    text-align: right;
+}
+
+.blame .a { /* author name "column" (annotation) */
+    text-align: center;
+}
+
+.most_recent_revision {
+    font-weight: bold;
+}
+
+/* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
+div[id^='src'] .n  { /* numbers/label      */ color: #a52a2a;                                           }
+div[id^='src'] .s  { /* strings            */ color: green;                                             }
+div[id^='src'] .c  { /* comment            */ color: #666;                                              }
+div[id^='src'] .b  { /* heading/title/bold */ color: #000;       font-weight: bold;                     }
+div[id^='src'] .k  { /* block display      */ color: #000;       font-family: monospace;                }
+div[id^='src'] a.d { /* symbol definition  */ color: #909;       font-weight: bold;                     }
+
+a.xlbl           { /* label              */ color: red;       font-weight: bold; background-color: yellow }
+a.xm              { /* macro              */ color: #c66;       font-weight: bold;                     }
+a.xa               { /* argument           */ color: #60c;       font-weight: bold;                     }
+a.xl               { /* local              */ color: #963;       font-weight: bold;                     }
+a.xv               { /* variable           */ color: #c30;       font-weight: bold;                     }
+a.xc               { /* class              */ color: #909;       font-weight: bold; font-style: italic; }
+a.xp               { /* package            */ color: #909;       font-weight: bold; font-style: italic; }
+a.xi               { /* interface          */ color: #909;       font-weight: bold; font-style: italic; }
+a.xn               { /* namespace          */ color: #909;       font-weight: bold; font-style: italic; }
+a.xe               { /* enum               */ color: #909;       font-weight: bold; font-style: italic; }
+a.xer              { /* enumerator         */ color: #909;       font-weight: bold; font-style: italic; }
+a.xs               { /* struct             */ color: #909;       font-weight: bold; font-style: italic; }
+a.xt               { /* typedef            */ color: #909;       font-weight: bold; font-style: italic; }
+a.xts              { /* typedefs           */ color: #909;       font-weight: bold; font-style: italic; }
+a.xu               { /* union              */ color: #909;       font-weight: bold; font-style: italic; }
+a.xfld             { /* field              */ color: #090;       font-weight: bold;                     }
+a.xmb              { /* member             */ color: #090;       font-weight: bold;                     }
+a.xf               { /* function           */ color: #00f;       font-weight: bold;                     }
+a.xmt              { /* method             */ color: #00f;       font-weight: bold;                     }
+a.xsr              { /* subroutine         */ color: #00f;       font-weight: bold;                     }
+a.scope            { /* scope              */ color: steelblue; font-weight: bold; padding-left: 1ex;  }
+
+#man table, #man td  { /* #man == troff src */
+    background-color: #ddddcc;
+    border: 1px;
+    padding: 2px;
+}
+
+#man p { /* a troff paragraph */
+    margin-top: 0.5em;
+    margin-bottom: 0;
+}
+
+#man div.b { /* man section headings etc. */
+    margin-top: 2em;
+}
+
+#man div.rs { /* a right-shifted block */
+    margin-left: 3em;
+    margin-bottom: 1em;
+}
+
+/* "Tooltip Style (minor information)" */
+.tooltip {
+    position: absolute;
+}
+
+/* Window plugins */
+
+.window {
+    position: fixed;
+    font-size: 12px;
+    font-family: monospace;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.window-header {
+    padding: 10px;
+    min-height: 20px;
+    border-bottom: 1px solid black;
+}
+
+.window-body {
+    overflow: auto;
+    height: calc(
+        100% /* whole window */
+        - 40px /* height of the header + its padding-top + padding-bottom */
+        - 1px /* border of the header */
+        - 20px /* padding-top + padding-bottom */
+        );
+    padding-left: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    width: calc(
+        100% /* whole window */
+        - 20px /* padding-left + padding-right */
+        );
+}
+
+.intelli-window {
+    width: 504px;
+    max-height: 400px;
+}
+
+.symbol-highlighted.hightlight-color-1 {
+    /* yellow */
+    background-color: #ffd700;
+    background-color: rgb(255, 215, 0);
+}
+
+.symbol-highlighted.hightlight-color-2 {
+    /* green */
+    background-color: #00ff00;
+    background-color: rgb(0, 255, 0);
+}
+
+.symbol-highlighted.hightlight-color-3 {
+    /* blue */
+    background-color: #00ccff;
+    background-color: rgb(0, 204, 255);
+}
+
+.messages-window {
+    width: 40%;
+    max-height: 400px;
+}
+
+.scopes-window {
+    min-width: 150px;
+    max-width: 40%;
+    max-height: 400px;
+}
+
+.navigate-window {
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 480px;
+}
+
+/**** DIFF NAVIGATION/JUMPER *****/
+
+.diff_navigation_style {
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #888888;
+    background-color: rgb(255,255,204);
+}
+
+.diff_navigation {
+    position: fixed;
+    top: 250px;
+    right: 25px;
+    width: 30%;
+    max-width: 250px;
+
+    background-color: rgba(255,255,204,0.80);
+    overflow: auto;
+    padding: 0;
+}
+
+.diff_navigation div.controls {
+    margin-top: 1.5em;
+    border-top: solid 2px #c0c0c0;
+}
+
+.diff_navigation_style .minimize {
+    padding: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 2px outset black;
+    border-radius: 3px;
+}
+
+.diff_navigation .header .minimize {
+    float: right;
+}
+
+.diff_navigation div {
+    clear: both;
+    padding-right: 1em;
+    padding-left: 1em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.diff_navigation div:empty {
+    padding: 0;
+}
+
+.diff_navigation .errors,
+.diff_navigation .summary,
+.diff_navigation .progress {
+    text-align: center;
+}
+
+.diff_navigation a {
+    /*border: 1px solid #bbbbff;
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #a3b8cb;*/
+}
+
+.diff_navigation .prev {
+    float: left;
+}
+
+.diff_navigation .next {
+    float: right;
+}
+
+.diff_navigation .error {
+    color: red;
+}
+/**** DIFF NAVIGATION/JUMPER *****/
+
+/* search result page */
+#results {
+}
+
+#results p, #revisions p { /* pagetitle and slider */
+    padding: 0.1em;
+}
+
+#results table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#results .dir { /* directory row above matched files */
+    background-color: #c5d5a9;
+}
+
+#results .dir td { /* directory link */
+    padding-left: 1em;
+}
+
+#results .l {
+}
+
+#results td.q { /* 1st column: H A D */
+    white-space: nowrap;
+    font-size: xx-small;
+    padding: 3px;
+    width: 3em;
+}
+
+#results td.f { /* 2nd column: filename */
+    width: 3em;
+    padding: 3px 0.5em 3px 2em;
+}
+
+#results .con { /* 3rd column: line number + matched line contents */
+    font-size: small;
+}
+
+#results .con .all {
+    margin-left: 6ex; /* width(div[id^='src'] .l) + 1ex */
+}
+
+#results .s, #more .s { /* matched line contents */
+    color: #000;
+}
+
+#results i { /* match type description (method, interface etc.) */
+    color: green;
+    font-weight: bold;
+    padding-left: 1ex;
+}
+
+#results .sel, #revisions .sel { /* slider item for the shown search result page */
+    background-color: #a3b8cb;
+    border: 1px #333366 solid;
+    padding: .5em;
+    margin: 1px;
+}
+
+#results .more, #revisions .more { /* slider item for the n-th search result page */
+    border: 1px #bba solid;
+    padding: .3em;
+    margin: 1px;
+}
+
+.slider {
+    font-family: sans-serif;
+}
+
+/* ############### start of footer ############## */
+#footer {
+    color: #777777;
+    font-size: small;
+    margin: 1ex 0;
+}
+
+#footer p { /* footer text */
+    padding: 0;
+    margin: 0.2em;
+    text-align: center;
+}
+
+@font-face {
+    font-display: swap;
+    font-family: SunSans;
+    src: url('./font/SunSansRegular.woff2') format('woff2');
+}
+
+.link-no-decoration {
+    text-decoration: none !important;
+}
+
+.logo {
+    font-family: SunSans, sans-serif;
+    font-size: 1.6153846153846154em;
+    vertical-align: middle;
+}
+
+.logo-gray-color {
+    color: #656664;
+}
+
+.logo-blue-color {
+    color: #4783A3;
+}
+
+#served-by {
+    color: #B8BAB7;
+    font-family: SunSans, sans-serif;
+    font-size: 1.1538461538461537em;
+    vertical-align: middle;
+}
+
+#rssi { /* rss.png */
+    display: inline-block;
+    width: 80px;
+    height: 15px;
+    vertical-align: middle;
+    background-image: url(./img/rss.png);
+    background-repeat: no-repeat;
+}
+/* ############### end of footer ############## */
+
+/* *** scopes *** */
+
+span.scope-head {
+    display: inline;
+}
+
+span.scope-body {
+    display: inline;
+}
+
+span.unfold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/unfolding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/folding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-space {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.scope-signature {
+    display: none;
+}
+
+/** --------------- fold arrows for main page ------------ */
+
+.fold-down:before {
+    content: url(./img/unfolding.png);
+}
+
+.fold-up:before {
+    content: url(./img/folding.png);
+}
+
+.fold {
+    vertical-align: central;
+}
+
+/** --------------- application messages ------------ */
+
+.message-group {
+    padding-left: 0;
+    margin: 0 0 5px 0;
+}
+
+.message-group.limited {
+    max-height: 125px;
+    overflow-y: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.message-group-item {
+    position: relative;
+    display: block;
+    padding: 2px 10px;
+    background-color: #fff;
+    margin-bottom: 3px;
+}
+
+h4.message-group-caption, h5.message-group-caption,
+h6.message-group-caption {
+    margin: 6px;
+}
+
+.message-group.limited .message-group-item {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.message-group-item:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.message-group-item:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.message-group-item.disabled,
+.message-group-item.disabled:hover,
+.message-group-item.disabled:focus {
+    color: #777;
+    cursor: not-allowed;
+    background-color: #eee;
+}
+
+.message-group-item.active,
+.message-group-item.active:hover,
+.message-group-item.active:focus {
+    z-index: 2;
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
+.message-group-item.success {
+    color: #3c763d;
+    background-color: #dff0d8;
+}
+
+.message-group-item.info {
+    color: #31708f;
+    background-color: #d9edf7;
+}
+
+.message-group-item.warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+}
+
+.message-group-item.error {
+    color: #a94442;
+    background-color: #f2dede;
+}
+
+.message-group-item-heading {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.message-group-item-text {
+    margin-bottom: 0;
+    line-height: 1.3;
+}
+
+.important-note {
+    text-align: center;
+    display: inline-block;
+    max-height: 100%;
+}
+
+.important-note.note-success {
+    background-color: #3c763d;
+}
+
+.important-note.note-info {
+    background-color: #31708f;
+}
+
+.important-note.note-warning {
+    background-color: #8a6d3b;
+}
+
+.important-note.note-error {
+    background-color: #a94442;
+}
+
+.important-note.important-note-rounded {
+    border-radius: 50%;
+    max-width: 100%;
+    min-width: 20px;
+}
+
+/** --------------- quick pull class ------------ */
+
+.pull-left {
+    display: inline-block;
+    float: left;
+}
+
+.pull-right {
+    display: inline-block;
+    float: right;
+}
+
+/** --------------- clear fix class ------------ */
+
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    *zoom: 1;
+}
+
+/** --------------- sol workaround ------------ */
+
+select#project, select#type {
+    height: 20px;
+    width: 30px;
+    visibility: hidden;
+}
+
+td#projectLabelTd {
+    height: 24px;
+}
+
+td#typeLabelTd {
+    height: 26px;
+}
+
+/** ---------------- markdown readme format ----- */
+
+.markdown {
+    margin-top: 15px;
+    width: 70%;
+    padding: 15px;
+    background-color: #F7F7F7 !important;
+    border-radius: 4px;
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, .3);
+}
+
+.markdown .markdown-heading {
+    border-bottom: 1px solid grey
+}
+
+[data-markdown] .markdown-content {
+    display: none;
+}
+
+/** --------------- autocomplete ---------------- */
+
+.ui-autocomplete-loading {
+    background:url('img/indicator.gif') no-repeat right center;
+}
+
+/** --------------- settings -------------------- */
+
+.local-setting {
+    background-color: inherit;
+}
+
+.header-half-bottom-margin {
+    margin-bottom: 0.5rem;
+}
+
+.no-margin-left {
+    margin-left: 0;
+}

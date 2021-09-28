@@ -250,11 +250,11 @@ public final class RepositoryFactory {
                 }
 
                 repo.fillFromProject();
-                
+
                 break;
             }
         }
-        
+
         return repo;
     }
 

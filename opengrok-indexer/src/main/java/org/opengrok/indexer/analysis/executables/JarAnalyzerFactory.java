@@ -29,9 +29,9 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 import org.opengrok.indexer.analysis.archive.ZipMatcherBase;
 
 public final class JarAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Jar";
-    
+
+    private static final String NAME = "Jar";
+
     private static final String[] SUFFIXES = {
         "JAR", "WAR", "EAR"
     };
@@ -63,7 +63,7 @@ public final class JarAnalyzerFactory extends FileAnalyzerFactory {
             new JarAnalyzerFactory();
 
     private JarAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, AbstractAnalyzer.Genre.XREFABLE, NAME);
     }
 
     @Override

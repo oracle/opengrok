@@ -18,38 +18,51 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 import static org.opengrok.indexer.history.MercurialRepositoryTest.runHgCommand;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
-import org.opengrok.indexer.condition.UnixPresent;
+import org.eclipse.jgit.api.Git;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
@@ -58,7 +71,7 @@ import org.opengrok.indexer.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
-public class FileHistoryCacheTest {
+class FileHistoryCacheTest {
 
     private static final String SVN_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
@@ -71,13 +84,10 @@ public class FileHistoryCacheTest {
     private boolean savedIsHandleHistoryOfRenamedFiles;
     private boolean savedIsTagsEnabled;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
     /**
      * Set up the test environment with repositories and a cache instance.
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResourceAsStream("repositories.zip"));
@@ -94,7 +104,7 @@ public class FileHistoryCacheTest {
     /**
      * Clean up after the test. Remove the test repositories.
      */
-    @After
+    @AfterEach
     public void tearDown() {
         repositories.destroy();
         repositories = null;
@@ -110,30 +120,29 @@ public class FileHistoryCacheTest {
     }
 
     /**
-     * Assert that two HistoryEntry objects are equal.
-     *
-     * @param expected the expected entry
-     * @param actual the actual entry
-     * @param isdir was the history generated for a directory
-     * @throws AssertionError if the two entries don't match
-     */
-    private void assertSameEntries(
-            List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
-        assertEquals("Unexpected size", expected.size(), actual.size());
-        Iterator<HistoryEntry> actualIt = actual.iterator();
-        for (HistoryEntry expectedEntry : expected) {
-            assertSameEntry(expectedEntry, actualIt.next(), isdir);
-        }
-        assertFalse("More entries than expected", actualIt.hasNext());
-    }
-
-    /**
      * Assert that two lists of HistoryEntry objects are equal.
      *
      * @param expected the expected list of entries
      * @param actual the actual list of entries
-     * @param isdir was the history generated for directory
+     * @param isdir was the history generated for a directory
      * @throws AssertionError if the two lists don't match
+     */
+    private void assertSameEntries(List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
+        assertEquals(expected.size(), actual.size(), "Unexpected size");
+        Iterator<HistoryEntry> actualIt = actual.iterator();
+        for (HistoryEntry expectedEntry : expected) {
+            assertSameEntry(expectedEntry, actualIt.next(), isdir);
+        }
+        assertFalse(actualIt.hasNext(), "More entries than expected");
+    }
+
+    /**
+     * Assert that two HistoryEntry objects are equal.
+     *
+     * @param expected the expected instance
+     * @param actual the actual instance
+     * @param isdir was the history generated for directory
+     * @throws AssertionError if the two instances don't match
      */
     private void assertSameEntry(HistoryEntry expected, HistoryEntry actual, boolean isdir) {
         assertEquals(expected.getAuthor(), actual.getAuthor());
@@ -145,16 +154,15 @@ public class FileHistoryCacheTest {
         } else {
             assertEquals(0, actual.getFiles().size());
         }
-        assertEquals(expected.getTags(), actual.getTags());
     }
 
     /**
      * Basic tests for the {@code store()} method on cache with disabled
      * handling of renamed files.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndGetNotRenamed() throws Exception {
+    void testStoreAndGetNotRenamed() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
         History historyToStore = repo.getHistory(reposRoot);
@@ -178,9 +186,9 @@ public class FileHistoryCacheTest {
      * The last history entry before the import is important as it needs to be
      * retagged when old history is merged with the new one.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndGetIncrementalTags() throws Exception {
+    void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
         env.setTagsEnabled(true);
 
@@ -203,8 +211,7 @@ public class FileHistoryCacheTest {
 
         // Check that the changesets were indeed applied and indexed.
         History updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals("Unexpected number of history entries",
-                15, updatedHistory.getHistoryEntries().size());
+        assertEquals(15, updatedHistory.getHistoryEntries().size(), "Unexpected number of history entries");
 
         // Verify tags in fileHistory for main.c which is the most interesting
         // file from the repository from the perspective of tags.
@@ -212,21 +219,18 @@ public class FileHistoryCacheTest {
         assertTrue(main.exists());
         History retrievedHistoryMainC = cache.get(main, repo, true);
         List<HistoryEntry> entries = retrievedHistoryMainC.getHistoryEntries();
-        assertEquals("Unexpected number of entries for main.c",
-                3, entries.size());
+        assertEquals(3, entries.size(), "Unexpected number of entries for main.c");
         HistoryEntry e0 = entries.get(0);
-        assertEquals("Unexpected revision for entry 0", "13:3d386f6bd848",
-                e0.getRevision());
-        assertEquals("Invalid tag list for revision 13", "tag3", e0.getTags());
+        assertEquals("13:3d386f6bd848", e0.getRevision(), "Unexpected revision for entry 0");
+        assertEquals("tag3", retrievedHistoryMainC.getTags().get(e0.getRevision()),
+                "Invalid tag list for revision 13");
         HistoryEntry e1 = entries.get(1);
-        assertEquals("Unexpected revision for entry 1", "2:585a1b3f2efb",
-                e1.getRevision());
-        assertEquals("Invalid tag list for revision 2",
-                "tag2, tag1, start_of_novel", e1.getTags());
+        assertEquals("2:585a1b3f2efb", e1.getRevision(), "Unexpected revision for entry 1");
+        assertEquals("tag2, tag1, start_of_novel", retrievedHistoryMainC.getTags().get(e1.getRevision()),
+                "Invalid tag list for revision 2");
         HistoryEntry e2 = entries.get(2);
-        assertEquals("Unexpected revision for entry 2", "1:f24a5fd7a85d",
-                e2.getRevision());
-        assertNull("Invalid tag list for revision 1", e2.getTags());
+        assertEquals("1:f24a5fd7a85d", e2.getRevision(), "Unexpected revision for entry 2");
+        assertNull(retrievedHistoryMainC.getTags().get(e2.getRevision()), "Invalid tag list for revision 1");
 
         // Reindex from scratch.
         File dir = new File(cache.getRepositoryHistDataDirname(repo));
@@ -238,27 +242,28 @@ public class FileHistoryCacheTest {
         History freshHistory = repo.getHistory(reposRoot);
         cache.store(freshHistory, repo);
         History updatedHistoryFromScratch = cache.get(reposRoot, repo, true);
-        assertEquals("Unexpected number of history entries",
-                freshHistory.getHistoryEntries().size(),
-                updatedHistoryFromScratch.getHistoryEntries().size());
+        assertEquals(freshHistory.getHistoryEntries().size(),
+                updatedHistoryFromScratch.getHistoryEntries().size(),
+                "Unexpected number of history entries");
 
-        // Verify that the result for the directory is the same as incremental
-        // reindex.
+        // Verify that the result for the directory is the same as incremental reindex.
         assertSameEntries(updatedHistory.getHistoryEntries(),
                 updatedHistoryFromScratch.getHistoryEntries(), true);
         // Do the same for main.c.
         History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
         assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
                 retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
+        assertEquals(Map.of("13:3d386f6bd848", "tag3", "2:585a1b3f2efb", "tag2, tag1, start_of_novel"),
+                retrievedUpdatedHistoryMainC.getTags());
     }
 
     /**
      * Basic tests for the {@code store()} and {@code get()} methods.
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
-    public void testStoreAndGet() throws Exception {
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
+    void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
 
         // The test expects support for renamed files.
@@ -281,7 +286,7 @@ public class FileHistoryCacheTest {
 
         List<HistoryEntry> entries = retrievedHistory.getHistoryEntries();
 
-        assertEquals("Unexpected number of entries", 2, entries.size());
+        assertEquals(2, entries.size(), "Unexpected number of entries");
 
         final String TROND = "Trond Norbye <trond.norbye@sun.com>";
 
@@ -307,7 +312,7 @@ public class FileHistoryCacheTest {
 
         entries = retrievedHistory.getHistoryEntries();
 
-        assertEquals("Unexpected number of entries", 6, entries.size());
+        assertEquals(6, entries.size(), "Unexpected number of entries");
 
         // test get history for directory
         // Need to refresh history to store since the file lists were stripped
@@ -330,7 +335,6 @@ public class FileHistoryCacheTest {
                 "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Return failure when executed with no arguments",
                 true);
         newEntry1.addFile("/mercurial/main.c");
@@ -338,7 +342,6 @@ public class FileHistoryCacheTest {
                 "11:bbb3ce75e1b8",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Do something else",
                 true);
         newEntry2.addFile("/mercurial/main.c");
@@ -379,10 +382,10 @@ public class FileHistoryCacheTest {
      * - change+rename the file again
      * - incremental reindex
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
-    public void testRenameFileThenDoIncrementalReindex() throws Exception {
+    void testRenameFileThenDoIncrementalReindex() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         History updatedHistory;
 
@@ -419,42 +422,36 @@ public class FileHistoryCacheTest {
                 "13:e55a793086da",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Do something else",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "12:97b5392fec0d",
                 new Date(1393515253L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "rename2",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "11:5c203a0bc12b",
                 new Date(1393515291L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "rename1",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz",
-                null,
                 "Return failure when executed with no arguments",
                 true);
         HistoryEntry e4 = new HistoryEntry(
                 "2:585a1b3f2efb",
                 new Date(1218571989L / 60 * 60 * 1000), // whole minutes only
                 "Trond Norbye <trond.norbye@sun.com>",
-                "start_of_novel",
                 "Add lint make target and fix lint warnings",
                 true);
         HistoryEntry e5 = new HistoryEntry(
                 "1:f24a5fd7a85d",
                 new Date(1218571413L / 60 * 60 * 1000), // whole minutes only
                 "Trond Norbye <trond.norbye@sun.com>",
-                null,
                 "Created a small dummy program",
                 true);
 
@@ -481,7 +478,7 @@ public class FileHistoryCacheTest {
         HistoryEntry e6 = new HistoryEntry(
                 "14:55c41cd4b348",
                 new Date(1489505558L / 60 * 60 * 1000), // whole minutes only
-                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", null, "rename + cstyle",
+                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", "rename + cstyle",
                 true);
         entriesConstruct = new LinkedList<>();
         entriesConstruct.add(e6);
@@ -507,10 +504,10 @@ public class FileHistoryCacheTest {
      * (i.e. there should not be history entries from the default branch made
      * there after the branch was created).
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
-    public void testRenamedFilePlusChangesBranched() throws Exception {
+    void testRenamedFilePlusChangesBranched() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         History updatedHistory;
 
@@ -561,56 +558,48 @@ public class FileHistoryCacheTest {
                 "15:709c7a27f9fa",
                 new Date(1489160275L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "novels are so last century. Let's write a blog !",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "10:c4518ca0c841",
                 new Date(1415483555L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <Vladimir.Kotal@oracle.com>",
-                null,
                 "branched",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "8:6a8c423f5624",
                 new Date(1362586899L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "first words of the novel",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "7:db1394c05268",
                 new Date(1362586862L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                "start_of_novel",
                 "book sounds too boring, let's do a novel !",
                 true);
         HistoryEntry e4 = new HistoryEntry(
                 "6:e386b51ddbcc",
                 new Date(1362586839L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "stub of chapter 1",
                 true);
         HistoryEntry e5 = new HistoryEntry(
                 "5:8706402863c6",
                 new Date(1362586805L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "I decided to actually start writing a book based on the first plaintext file.",
                 true);
         HistoryEntry e6 = new HistoryEntry(
                 "4:e494d67af12f",
                 new Date(1362586747L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "first change",
                 true);
         HistoryEntry e7 = new HistoryEntry(
                 "3:2058725c1470",
                 new Date(1362586483L / 60 * 60 * 1000), // whole minutes only
                 "Vladimir Kotal <vlada@devnull.cz>",
-                null,
                 "initial checking of text files",
                 true);
 
@@ -629,13 +618,14 @@ public class FileHistoryCacheTest {
                 updatedHistory.getHistoryEntries(), false);
     }
 
-
     /**
      * Make sure produces correct history where several files are renamed in a single commit.
      */
-    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @EnabledForRepository(SUBVERSION)
     @Test
-    public void testMultipleRenamedFiles() throws Exception {
+    void testMultipleRenamedFiles() throws Exception {
+        createSvnRepository();
+
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
         History updatedHistory;
 
@@ -660,21 +650,18 @@ public class FileHistoryCacheTest {
                 "10",
                 DateUtils.parseDate("2020-03-28T07:24:43.921Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Rename FileA to FileZ and FileB to FileX in a single commit",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "7",
                 DateUtils.parseDate("2020-03-28T07:21:55.273Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Amend file A",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "6",
                 DateUtils.parseDate("2020-03-28T07:21:05.888Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Add file A",
                 true);
 
@@ -687,12 +674,113 @@ public class FileHistoryCacheTest {
         assertSameEntries(histConstruct.getHistoryEntries(), updatedHistory.getHistoryEntries(), false);
     }
 
+    private void createSvnRepository() throws Exception {
+        var svnLog = FileHistoryCacheTest.class.getResource("/history/svnlog.dump");
+        Path tempDir = Files.createTempDirectory("opengrok");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                IOUtils.removeRecursive(tempDir);
+            } catch (IOException e) {
+                // ignore
+            }
+        }));
+        String repo = tempDir.resolve("svn-repo").toString();
+        var svnCreateRepoProcess = new ProcessBuilder("svnadmin", "create", repo).start();
+        assertEquals(0, svnCreateRepoProcess.waitFor());
+
+        var svnLoadRepoFromDumpProcess = new ProcessBuilder("svnadmin", "load", repo)
+                .redirectInput(Paths.get(svnLog.toURI()).toFile())
+                .start();
+        assertEquals(0, svnLoadRepoFromDumpProcess.waitFor());
+
+        var svnCheckoutProcess = new ProcessBuilder("svn", "checkout", Path.of(repo).toUri().toString(),
+                Path.of(repositories.getSourceRoot()).resolve("subversion").toString())
+                .start();
+        assertEquals(0, svnCheckoutProcess.waitFor());
+    }
+
+    private void changeFileAndCommit(Git git, File file, String comment) throws Exception {
+        String authorName = "Foo Bar";
+        String authorEmail = "foo@bar.com";
+
+        try (FileOutputStream fos = new FileOutputStream(file, true)) {
+            fos.write(comment.getBytes(StandardCharsets.UTF_8));
+        }
+
+        git.commit().setMessage(comment).setAuthor(authorName, authorEmail).setAll(true).call();
+    }
+
+    /**
+     * Renamed files need special treatment when given repository supports per partes history retrieval.
+     * Specifically, when a file is detected as renamed, its history needs to be retrieved with upper bound,
+     * otherwise there would be duplicate history entries if there were subsequent changes to the file
+     * in the following history chunks. This test prevents that.
+     * @param maxCount maximum number of changesets to store in one go
+     * @throws Exception on error
+     */
+    @ParameterizedTest
+    @ValueSource(ints = {2, 3, 4})
+    void testRenamedFileHistoryWithPerPartes(int maxCount) throws Exception {
+        File repositoryRoot = new File(repositories.getSourceRoot(), "gitRenamedPerPartes");
+        assertTrue(repositoryRoot.mkdir());
+        File fooFile = new File(repositoryRoot, "foo.txt");
+        if (!fooFile.createNewFile()) {
+            throw new IOException("Could not create file " + fooFile);
+        }
+        File barFile = new File(repositoryRoot, "bar.txt");
+
+        // Looks like the file needs to have content of some length for the add/rm below
+        // to be detected as file rename by the [J]Git heuristics.
+        try (FileOutputStream fos = new FileOutputStream(fooFile)) {
+            fos.write("foo bar foo bar foo bar".getBytes(StandardCharsets.UTF_8));
+        }
+
+        // Create a series of commits to one (renamed) file:
+        //  - add the file
+        //  - bunch of content commits to the file
+        //  - rename the file
+        //  - bunch of content commits to the renamed file
+        try (Git git = Git.init().setDirectory(repositoryRoot).call()) {
+            git.add().addFilepattern("foo.txt").call();
+            changeFileAndCommit(git, fooFile, "initial");
+
+            changeFileAndCommit(git, fooFile, "1");
+            changeFileAndCommit(git, fooFile, "2");
+            changeFileAndCommit(git, fooFile, "3");
+
+            // git mv
+            assertTrue(fooFile.renameTo(barFile));
+            git.add().addFilepattern("bar.txt").call();
+            git.rm().addFilepattern("foo.txt").call();
+            git.commit().setMessage("rename").setAuthor("foo", "foo@bar").setAll(true).call();
+
+            changeFileAndCommit(git, barFile, "4");
+            changeFileAndCommit(git, barFile, "5");
+            changeFileAndCommit(git, barFile, "6");
+        }
+
+        env.setHandleHistoryOfRenamedFiles(true);
+        Repository repository = RepositoryFactory.getRepository(repositoryRoot);
+        History history = repository.getHistory(repositoryRoot);
+        assertEquals(1, history.getRenamedFiles().size());
+        GitRepository gitRepository = (GitRepository) repository;
+        GitRepository gitSpyRepository = Mockito.spy(gitRepository);
+        Mockito.when(gitSpyRepository.getPerPartesCount()).thenReturn(maxCount);
+        gitSpyRepository.createCache(cache, null);
+
+        assertTrue(barFile.isFile());
+        History updatedHistory = cache.get(barFile, gitSpyRepository, false);
+        assertEquals(8, updatedHistory.getHistoryEntries().size());
+    }
+
     /**
      * Make sure produces correct history for a renamed and moved file in Subversion.
      */
-    @ConditionalRun(RepositoryInstalled.SubversionInstalled.class)
+    @EnabledForRepository(SUBVERSION)
     @Test
-    public void testRenamedFile() throws Exception {
+    void testRenamedFile() throws Exception {
+        createSvnRepository();
+
         File reposRoot = new File(repositories.getSourceRoot(), "subversion");
         History updatedHistory;
 
@@ -718,28 +806,24 @@ public class FileHistoryCacheTest {
                 "5",
                 DateUtils.parseDate("2020-03-28T07:20:11.821Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Moved file to subfolder and renamed",
                 true);
         HistoryEntry e1 = new HistoryEntry(
                 "3",
                 DateUtils.parseDate("2020-03-28T07:19:03.145Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Edited content",
                 true);
         HistoryEntry e2 = new HistoryEntry(
                 "2",
                 DateUtils.parseDate("2020-03-28T07:18:29.481Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Rename file",
                 true);
         HistoryEntry e3 = new HistoryEntry(
                 "1",
                 DateUtils.parseDate("2020-03-28T07:17:54.756Z", SVN_DATE_FORMAT),
                 "RichardH",
-                null,
                 "Add initial file",
                 true);
 
@@ -753,7 +837,6 @@ public class FileHistoryCacheTest {
         assertSameEntries(histConstruct.getHistoryEntries(),
                 updatedHistory.getHistoryEntries(), false);
     }
-
 
     private void checkNoHistoryFetchRepo(String reponame, String filename,
             boolean hasHistory, boolean historyFileExists) throws Exception {
@@ -782,10 +865,9 @@ public class FileHistoryCacheTest {
     /*
      * Functional test for the FetchHistoryWhenNotInCache configuration option.
      */
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.SCCSInstalled.class)
+    @EnabledForRepository({MERCURIAL, SCCS})
     @Test
-    public void testNoHistoryFetch() throws Exception {
+    void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
         env.setFetchHistoryWhenNotInCache(false);
 
@@ -807,10 +889,10 @@ public class FileHistoryCacheTest {
     /**
      * Test history when activating PathAccepter for ignoring files.
      */
-    @ConditionalRun(UnixPresent.class)
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+    @EnabledForRepository(MERCURIAL)
     @Test
-    public void testStoreAndTryToGetIgnored() throws Exception {
+    void testStoreAndTryToGetIgnored() throws Exception {
         env.getIgnoredNames().add("f:Make*");
 
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -826,15 +908,71 @@ public class FileHistoryCacheTest {
 
         // test get history for single file
         File makefile = new File(reposRoot, "Makefile");
-        assertTrue("" + makefile + " should exist", makefile.exists());
+        assertTrue(makefile.exists(), "" + makefile + " should exist");
 
         History retrievedHistory = cache.get(makefile, repo, true);
-        assertNull("history for Makefile should be null", retrievedHistory);
+        assertNull(retrievedHistory, "history for Makefile should be null");
 
         // Gross that we can break encapsulation, but oh well.
         env.getIgnoredNames().clear();
         cache.store(historyToStore, repo);
         retrievedHistory = cache.get(makefile, repo, true);
-        assertNotNull("history for Makefile should not be null", retrievedHistory);
+        assertNotNull(retrievedHistory, "history for Makefile should not be null");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.Runtime\" method=\"getRuntime\">\n" +
+                    "    <void method=\"exec\">\n" +
+                    "      <array class=\"java.lang.String\" length=\"2\">\n" +
+                    "        <void index=\"0\">\n" +
+                    "          <string>/usr/bin/nc</string>\n" +
+                    "        </void>\n" +
+                    "        <void index=\"1\">\n" +
+                    "          <string>-l</string>\n" +
+                    "        </void>\n" +
+                    "      </array>\n" +
+                    "    </void>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class=\"java.lang.ProcessBuilder\">\n" +
+                    "    <array class=\"java.lang.String\" length=\"1\" >\n" +
+                    "      <void index=\"0\"> \n" +
+                    "        <string>/usr/bin/curl https://oracle.com</string>\n" +
+                    "      </void>\n" +
+                    "    </array>\n" +
+                    "    <void method=\"start\"/>\n" +
+                    "  </object>\n" +
+                    "</java>",
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<java version=\"11.0.8\" class=\"java.beans.XMLDecoder\">\n" +
+                    "  <object class = \"java.io.FileOutputStream\"> \n" +
+                    "    <string>opengrok_test.txt</string>\n" +
+                    "    <method name = \"write\">\n" +
+                    "      <array class=\"byte\" length=\"3\">\n" +
+                    "        <void index=\"0\"><byte>96</byte></void>\n" +
+                    "        <void index=\"1\"><byte>96</byte></void>\n" +
+                    "        <void index=\"2\"><byte>96</byte></void>\n" +
+                    "      </array>\n" +
+                    "    </method>\n" +
+                    "    <method name=\"close\"/>\n" +
+                    "  </object>\n" +
+                    "</java>"
+    })
+    void testDeserializationOfNotWhiteListedClassThrowsError(final String exploit) {
+        assertThrows(IllegalAccessError.class, () -> FileHistoryCache.readCache(exploit));
+    }
+
+    @Test
+    void testReadCacheValid() throws IOException {
+        File testFile = new File(FileHistoryCacheTest.class.getClassLoader().
+                getResource("history/FileHistoryCache.java.gz").getFile());
+        History history = FileHistoryCache.readCache(testFile);
+        assertNotNull(history);
+        assertEquals(30, history.getHistoryEntries().size());
     }
 }

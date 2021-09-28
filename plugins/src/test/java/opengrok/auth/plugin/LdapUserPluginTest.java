@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -28,21 +28,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
 import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Spy;
-
-import javax.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
@@ -52,10 +51,10 @@ import static org.mockito.Mockito.when;
  * @author Vladimir Kotal
  */
 public class LdapUserPluginTest {
-    @Spy
+
     private LdapUserPlugin plugin;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         plugin = new LdapUserPlugin();
     }
@@ -68,11 +67,11 @@ public class LdapUserPluginTest {
         return params;
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void loadTestNegative1() {
         Map<String, Object> params = getParamsMap();
         params.put("foo", "bar");
-        plugin.load(params);
+        assertThrows(NullPointerException.class, () -> plugin.load(params));
     }
 
     @Test
@@ -134,11 +133,11 @@ public class LdapUserPluginTest {
         assertEquals(request.getSession().getAttribute(SESSION_ATTR + "42"), ldapUser);
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testInvalidInstance() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, "mail");
         params.put(LdapUserPlugin.INSTANCE, "foobar");
-        plugin.load(params);
+        assertThrows(NumberFormatException.class, () -> plugin.load(params));
     }
 }

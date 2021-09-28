@@ -18,28 +18,19 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.condition.RepositoryInstalled;
-import org.opengrok.indexer.condition.UnixPresent;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.util.TestRepository;
@@ -54,28 +45,21 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.TreeSet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Represents a container for additional tests of {@link IndexDatabase} for symlinks.
  */
-@ConditionalRun(UnixPresent.class)
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
-@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
+@EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
 public class IndexDatabaseSymlinksTest {
 
     private static RuntimeEnvironment env;
     private static TestRepository repository;
 
-    @ClassRule
-    public static ConditionalRunRule rule = new ConditionalRunRule();
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            System.out.println("Starting test: " + description.getMethodName());
-        }
-    };
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
 
@@ -86,9 +70,9 @@ public class IndexDatabaseSymlinksTest {
         // Create and verify symlink from source/ to external/links_tests/links
         Path symlink = Paths.get(repository.getSourceRoot(), "links");
         Path target = Paths.get(repository.getExternalRoot(), "links_tests", "links");
-        assertTrue(target + "should exist", target.toFile().exists());
+        assertTrue(target.toFile().exists(), target + "should exist");
         Files.createSymbolicLink(symlink, target);
-        assertTrue(symlink + " should exist", symlink.toFile().exists());
+        assertTrue(symlink.toFile().exists(), symlink + " should exist");
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -97,14 +81,14 @@ public class IndexDatabaseSymlinksTest {
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws IOException {
         repository.purgeData();
         env.setAllowedSymlinks(new HashSet<>());
         env.setCanonicalRoots(new HashSet<>());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         repository.destroy();
         env.setAllowedSymlinks(new HashSet<>());
@@ -127,7 +111,7 @@ public class IndexDatabaseSymlinksTest {
         lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
-        assertFalse(xref + " should not exist", xref.toFile().exists());
+        assertFalse(xref.toFile().exists(), xref + " should not exist");
     }
 
     @Test
@@ -145,19 +129,19 @@ public class IndexDatabaseSymlinksTest {
         lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
-        assertTrue(xref + " should exist", xref.toFile().exists());
+        assertTrue(xref.toFile().exists(), xref + " should exist");
 
         Path links = xref.resolve("links");
-        assertTrue(links + " should exist", links.toFile().exists());
+        assertTrue(links.toFile().exists(), links + " should exist");
 
         Path gitDir = links.resolve("gt");
-        assertTrue(gitDir + " should exist", gitDir.toFile().exists());
+        assertTrue(gitDir.toFile().exists(), gitDir + " should exist");
         Path subLink = gitDir.resolve("b");
         File expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
         assertSymlinkAsExpected("gt/b should == gt/a", expectedCanonical, subLink);
 
         Path mercurialDir = links.resolve("mrcrl");
-        assertTrue(mercurialDir + " should exist", mercurialDir.toFile().exists());
+        assertTrue(mercurialDir.toFile().exists(), mercurialDir + " should exist");
         subLink = mercurialDir.resolve("b");
         expectedCanonical = mercurialDir.resolve("a").toFile().getCanonicalFile();
         assertSymlinkAsExpected("mrcrl/b should == mrcrl/a", expectedCanonical, subLink);
@@ -176,7 +160,7 @@ public class IndexDatabaseSymlinksTest {
         File canonicalSourceRoot = new File(repository.getSourceRoot()).getCanonicalFile();
         Path linksSourceDir = Paths.get(canonicalSourceRoot.getPath(), "links");
         Path gitSourceDir = linksSourceDir.resolve("gt");
-        assertTrue(gitSourceDir + " should exist", gitSourceDir.toFile().exists());
+        assertTrue(gitSourceDir.toFile().exists(), gitSourceDir + " should exist");
 
         /*
          * By "one added symlink", we don't count default-accepted links
@@ -188,19 +172,19 @@ public class IndexDatabaseSymlinksTest {
         lsDir(env.getDataRootPath());
 
         Path xref = Paths.get(env.getDataRootPath(), "xref");
-        assertTrue(xref + " should exist", xref.toFile().exists());
+        assertTrue(xref.toFile().exists(), xref + " should exist");
 
         Path links = xref.resolve("links");
-        assertTrue(links + " should exist", links.toFile().exists());
+        assertTrue(links.toFile().exists(), links + " should exist");
 
         Path gitDir = links.resolve("gt");
-        assertTrue(gitDir + " should exist", gitDir.toFile().exists());
+        assertTrue(gitDir.toFile().exists(), gitDir + " should exist");
         Path subLink = gitDir.resolve("b");
         File expectedCanonical = gitDir.resolve("a").toFile().getCanonicalFile();
         assertSymlinkAsExpected("gt/b should == gt/a", expectedCanonical, subLink);
 
         Path mercurialDir = links.resolve("mrcrl");
-        assertFalse(mercurialDir + " should not exist", mercurialDir.toFile().exists());
+        assertFalse(mercurialDir.toFile().exists(), mercurialDir + " should not exist");
 
         Path dupeLinkDir = links.resolve("zzz");
         /*
@@ -229,11 +213,11 @@ public class IndexDatabaseSymlinksTest {
 
     private void assertSymlinkAsExpected(String message, File expectedCanonical, Path symlink)
             throws IOException {
-        assertTrue(symlink + " should exist", symlink.toFile().exists());
-        assertTrue(symlink + " should be symlink", Files.isSymbolicLink(symlink));
+        assertTrue(symlink.toFile().exists(), symlink + " should exist");
+        assertTrue(Files.isSymbolicLink(symlink), symlink + " should be symlink");
         File actualCanonical = symlink.toFile().getCanonicalFile();
-        assertTrue(actualCanonical + " should exist", actualCanonical.exists());
-        assertEquals(message, expectedCanonical, actualCanonical);
+        assertTrue(actualCanonical.exists(), actualCanonical + " should exist");
+        assertEquals(expectedCanonical, actualCanonical, message);
     }
 
     private static void lsDir(String name) throws IOException {

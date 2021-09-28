@@ -22,45 +22,41 @@
  */
 package org.opengrok.indexer.configuration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.UnixPresent;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.File;
 
-public class CanonicalRootValidatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
+public class CanonicalRootValidatorTest {
 
     @Test
     public void testRejectUnseparated() {
-        assertEquals("test value must end with a separator",
-                CanonicalRootValidator.validate("test", "test value"));
+        assertEquals(CanonicalRootValidator.validate("test", "test value"),
+                "test value must end with a separator");
     }
 
     @Test
-    @ConditionalRun(UnixPresent.class)
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     public void testRejectRoot() {
-        assertEquals("should reject root", "test value cannot be the root directory",
-                CanonicalRootValidator.validate("/", "test value"));
+        assertEquals("test value cannot be the root directory",
+                CanonicalRootValidator.validate("/", "test value"),
+                "should reject root");
     }
 
     @Test
     public void testRejectWindowsRoot() {
-        assertEquals("should reject Windows root", "--canonicalRoot cannot be a root directory",
-                CanonicalRootValidator.validate("C:" + File.separator, "--canonicalRoot"));
+        assertEquals("--canonicalRoot cannot be a root directory",
+                CanonicalRootValidator.validate("C:" + File.separator, "--canonicalRoot"),
+                "should reject Windows root");
     }
 
     @Test
     public void testSlashVar() {
-        assertNull("should allow /var/",
-                CanonicalRootValidator.validate(File.separator + "var" + File.separator,
-                        "--canonicalRoot"));
+        assertNull(CanonicalRootValidator.validate(File.separator + "var" + File.separator,
+                "--canonicalRoot"), "should allow /var/");
     }
 }

@@ -18,45 +18,32 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  * @author austvik
  */
 public class ClearCaseHistoryParserTest {
-    
+
     private ClearCaseHistoryParser instance;
 
-    public ClearCaseHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new ClearCaseHistoryParser();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -108,11 +95,11 @@ public class ClearCaseHistoryParserTest {
                 "\n" +
                 "\n" +
                 ".";
-        
+
         History result = instance.parse(output);
         assertNotNull(result);
         assertEquals(4, result.getHistoryEntries().size());
-        
+
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals("/main/3", e1.getRevision());
         assertEquals(author1, e1.getAuthor());
@@ -124,7 +111,7 @@ public class ClearCaseHistoryParserTest {
         assertEquals(author2, e4.getAuthor());
         assertEquals(0, e4.getFiles().size());
     }
-    
+
     /**
      * Test of parse method, of class ClearCaseHistoryParser.
      * @throws Exception exception

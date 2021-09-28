@@ -18,24 +18,25 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.authorization;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import javax.servlet.http.HttpSession;
-import org.junit.Test;
+
+import jakarta.servlet.http.HttpSession;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.
@@ -89,7 +90,7 @@ public class AuthorizationFrameworkReloadTest {
      * This might uncover any snags with locking within AuthorizationFramework.
      */
     @Test
-    public void testReloadCycle() throws URISyntaxException {
+    public void testReloadCycle() {
         String projectName = "project" + Math.random();
 
         // Create authorization stack for single project.
@@ -113,15 +114,12 @@ public class AuthorizationFrameworkReloadTest {
         // Create a thread that does reload() every now and then.
         runThread = true;
         final int maxReloadSleep = 10;
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (runThread) {
-                    framework.reload();
-                    try {
-                        Thread.sleep((long) (Math.random() % maxReloadSleep) + 1);
-                    } catch (InterruptedException ex) {
-                    }
+        Thread t = new Thread(() -> {
+            while (runThread) {
+                framework.reload();
+                try {
+                    Thread.sleep((long) (Math.random() % maxReloadSleep) + 1);
+                } catch (InterruptedException ex) {
                 }
             }
         });

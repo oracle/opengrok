@@ -31,7 +31,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
@@ -186,7 +187,7 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     private void updateSession(HttpServletRequest req, boolean allowed) {
         req.getSession().setAttribute(sessionAllowed, allowed);
     }
-    
+
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
         return ((Boolean) request.getSession().getAttribute(sessionAllowed));

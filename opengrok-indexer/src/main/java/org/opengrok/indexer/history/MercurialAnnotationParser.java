@@ -42,7 +42,7 @@ import org.opengrok.indexer.web.Util;
  */
 class MercurialAnnotationParser implements Executor.StreamHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(MercurialAnnotationParser.class);
-    
+
     private Annotation annotation = null;
     HashMap<String, HistoryEntry> revs;
     File file;
@@ -52,7 +52,7 @@ class MercurialAnnotationParser implements Executor.StreamHandler {
      */
     private static final Pattern ANNOTATION_PATTERN
             = Pattern.compile("^\\s*(\\d+):");
-    
+
     MercurialAnnotationParser(File file, HashMap<String, HistoryEntry> revs) {
         this.file = file;
         this.revs = revs;

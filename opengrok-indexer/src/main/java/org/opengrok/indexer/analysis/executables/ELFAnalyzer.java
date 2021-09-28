@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.executables;
@@ -166,10 +166,7 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
 
     private boolean isReadable(int c) {
-        if (c > ' ' && c <= 127) {
-            return true;
-        }
-        return false;
+        return c > ' ' && c <= 127;
     }
 
     private String getName(int tab, int stroff, MappedByteBuffer fmap) {

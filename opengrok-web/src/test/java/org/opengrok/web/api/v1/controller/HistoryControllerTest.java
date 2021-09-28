@@ -22,14 +22,13 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -40,35 +39,28 @@ import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryDTO;
 import org.opengrok.web.api.v1.controller.HistoryController.HistoryEntryDTO;
 
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.opengrok.web.api.v1.controller.HistoryController.getHistoryDTO;
 
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class HistoryControllerTest extends OGKJerseyTest {
 
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
-
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Override
     protected Application configure() {
         return new ResourceConfig(HistoryController.class);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -90,7 +82,7 @@ public class HistoryControllerTest extends OGKJerseyTest {
                 null); // repositories - needed when refreshing history partially
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -109,7 +101,6 @@ public class HistoryControllerTest extends OGKJerseyTest {
                 "1",
                 new Date(1245446973L / 60 * 60 * 1000),
                 "xyz",
-                null,
                 "foo",
                 true);
         HistoryEntryDTO entry1 = new HistoryEntryDTO(historyEntry);
@@ -136,13 +127,13 @@ public class HistoryControllerTest extends OGKJerseyTest {
                 .queryParam("start", start)
                 .request()
                 .get();
-        HistoryDTO history = response.readEntity(new GenericType<HistoryDTO>() {
+        HistoryDTO history = response.readEntity(new GenericType<>() {
         });
         assertEquals(size, history.getEntries().size());
         assertEquals("Kryštof Tulinger <krystof.tulinger@oracle.com>", history.getEntries().get(0).getAuthor());
 
         History repoHistory = HistoryGuru.getInstance().getHistory(new File(repository.getSourceRoot(), path));
-        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start),
+        assertEquals(history, getHistoryDTO(repoHistory.getHistoryEntries(size, start), repoHistory.getTags(),
                 start, size, repoHistory.getHistoryEntries().size()));
     }
 }

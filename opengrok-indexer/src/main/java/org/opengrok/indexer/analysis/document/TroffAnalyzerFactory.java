@@ -31,7 +31,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class TroffAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Troff";
+    private static final String NAME = "Troff";
 
     public static final Matcher MATCHER = new Matcher() {
         @Override
@@ -50,7 +50,7 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
         new TroffAnalyzerFactory();
 
     protected TroffAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, null, null, MATCHER, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
 
 import opengrok.auth.plugin.configuration.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.naming.directory.SearchControls;
@@ -34,15 +34,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class LdapFacadeTest {
+class LdapFacadeTest {
     @Test
-    public void testSearchControlsConfig() {
+    void testSearchControlsConfig() {
         Configuration config = new Configuration();
         int searchTimeout = 1234;
         config.setSearchTimeout(searchTimeout);
@@ -62,13 +63,13 @@ public class LdapFacadeTest {
     private LdapServer getSpyLdapServer(String name, boolean working) throws UnknownHostException {
         LdapServer server = new LdapServer(name);
         LdapServer serverSpy = Mockito.spy(server);
-        Mockito.when(serverSpy.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
-        Mockito.when(serverSpy.isWorking()).thenReturn(working);
+        doReturn(new InetAddress[]{InetAddress.getLocalHost()}).when(serverSpy).getAddresses(any());
+        doReturn(working).when(serverSpy).isWorking();
         return serverSpy;
     }
 
     @Test
-    public void testConnectTimeoutInheritance() throws UnknownHostException {
+    void testConnectTimeoutInheritance() throws UnknownHostException {
         Configuration config = new Configuration();
 
         LdapServer[] servers = {getSpyLdapServer("ldap://foo.com"), getSpyLdapServer("ldap://bar.com")};
@@ -81,18 +82,18 @@ public class LdapFacadeTest {
 
         LdapFacade facade = new LdapFacade(config);
         assertEquals(Collections.singleton(connectTimeoutValue),
-                facade.getServers().stream().map(s -> s.getConnectTimeout()).collect(Collectors.toSet()));
+                facade.getServers().stream().map(LdapServer::getConnectTimeout).collect(Collectors.toSet()));
         assertEquals(Collections.singleton(readTimeoutValue),
-                facade.getServers().stream().map(s -> s.getReadTimeout()).collect(Collectors.toSet()));
+                facade.getServers().stream().map(LdapServer::getReadTimeout).collect(Collectors.toSet()));
     }
 
     @Test
-    public void testToStringNegative() throws UnknownHostException {
+    void testToStringNegative() throws UnknownHostException {
         Configuration config = new Configuration();
         LdapServer server1 = new LdapServer("ldap://foo.com");
         LdapServer serverSpy1 = Mockito.spy(server1);
-        Mockito.when(serverSpy1.getAddresses(any())).thenReturn(new InetAddress[]{InetAddress.getLocalHost()});
-        Mockito.when(serverSpy1.isReachable()).thenReturn(false);
+        doReturn(new InetAddress[]{InetAddress.getLocalHost()}).when(serverSpy1).getAddresses(any());
+        doReturn(false).when(serverSpy1).isReachable();
 
         config.setServers(Collections.singletonList(serverSpy1));
         config.setSearchBase("dc=foo,dc=com");
@@ -104,11 +105,11 @@ public class LdapFacadeTest {
     }
 
     @Test
-    public void testToStringPositive() throws UnknownHostException {
+    void testToStringPositive() {
         Configuration config = new Configuration();
         LdapServer server1 = new LdapServer("ldap://foo.com");
         LdapServer serverSpy1 = Mockito.spy(server1);
-        Mockito.doReturn(true).when(serverSpy1).isWorking();
+        doReturn(true).when(serverSpy1).isWorking();
 
         config.setServers(Collections.singletonList(serverSpy1));
         config.setSearchBase("dc=foo,dc=com");
@@ -120,7 +121,7 @@ public class LdapFacadeTest {
     }
 
     @Test
-    public void testPrepareServersNegative() throws UnknownHostException {
+    void testPrepareServersNegative() throws UnknownHostException {
         Configuration config = new Configuration();
         config.setServers(Arrays.asList(getSpyLdapServer("ldap://foo.com", false),
                 getSpyLdapServer("ldap://bar.com", true)));
@@ -129,7 +130,7 @@ public class LdapFacadeTest {
     }
 
     @Test
-    public void testGetSearchDescription() {
+    void testGetSearchDescription() {
         assertEquals("DN: foo, filter: bar, attributes: Bilbo,Frodo",
                 LdapFacade.getSearchDescription("foo", "bar", new String[]{"Bilbo", "Frodo"}));
         assertEquals("DN: foo, filter: bar",
@@ -137,7 +138,7 @@ public class LdapFacadeTest {
     }
 
     @Test
-    public void testPrepareServersCloseUnused() throws UnknownHostException {
+    void testPrepareServersCloseUnused() throws UnknownHostException {
         Configuration config = new Configuration();
 
         LdapServer server1 = getSpyLdapServer("ldap://foo.com");

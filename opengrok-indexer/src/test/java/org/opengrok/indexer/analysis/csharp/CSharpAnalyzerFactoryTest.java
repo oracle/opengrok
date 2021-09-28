@@ -31,10 +31,10 @@ import org.apache.lucene.index.IndexableField;
 import java.io.InputStream;
 import java.io.StringWriter;
 import org.apache.lucene.document.Field;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Scopes;
@@ -44,10 +44,10 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.TestRepository;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
@@ -69,7 +69,7 @@ public class CSharpAnalyzerFactoryTest {
         };
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -85,7 +85,7 @@ public class CSharpAnalyzerFactoryTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -99,9 +99,7 @@ public class CSharpAnalyzerFactoryTest {
     public void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/csharp/Sample.cs";
         File f = new File(path);
-        if (!(f.canRead() && f.isFile())) {
-            fail("csharp testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "csharp testfile " + f + " not found");
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,
@@ -127,8 +125,8 @@ public class CSharpAnalyzerFactoryTest {
             } else if (i >= 19 && i <= 25) {
                 assertEquals("M3", scopes.getScope(i).getName());
                 assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
-//TODO add support for generic classes                
-//            } else if (i >= 28 && i <= 30) { 
+//TODO add support for generic classes
+//            } else if (i >= 28 && i <= 30) {
 //                assertEquals("M4", scopes.getScope(i).name);
 //                assertEquals("MyNamespace.TopClass", scopes.getScope(i).namespace);
             } else if (i >= 34 && i <= 36) {

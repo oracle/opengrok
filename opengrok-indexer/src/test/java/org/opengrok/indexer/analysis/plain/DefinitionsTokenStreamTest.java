@@ -31,15 +31,16 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.StreamUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Represents a container for tests of {@link DefinitionsTokenStream}.
@@ -128,17 +129,15 @@ public class DefinitionsTokenStreamTest {
 
         // Deserialize the token stream.
         DefinitionsTokenStream tokstream = new DefinitionsTokenStream();
-        tokstream.initialize(defs, src, (in) -> {
-            return ExpandTabsReader.wrap(in, tabSize);
-        });
+        tokstream.initialize(defs, src, in -> ExpandTabsReader.wrap(in, tabSize));
 
         // Iterate through stream.
         CharTermAttribute term = tokstream.getAttribute(
             CharTermAttribute.class);
-        assertNotNull("CharTermAttribute", term);
+        assertNotNull(term, "CharTermAttribute");
 
         OffsetAttribute offs = tokstream.getAttribute(OffsetAttribute.class);
-        assertNotNull("OffsetAttribute", offs);
+        assertNotNull(offs, "OffsetAttribute");
 
         int count = 0;
         while (tokstream.incrementToken()) {
@@ -151,20 +150,18 @@ public class DefinitionsTokenStreamTest {
             // If an override exists, test it specially.
             if (overrides != null && overrides.containsKey(count)) {
                 SimpleEntry<String, String> overkv = overrides.get(count);
-                assertEquals("cut term override" + count, overkv.getKey(),
-                    cutValue);
-                assertEquals("cut term w.r.t. term override" + count,
-                    overkv.getValue(), termValue);
+                assertEquals(overkv.getKey(), cutValue, "cut term override" + count);
+                assertEquals(overkv.getValue(), termValue, "cut term w.r.t. term override" + count);
                 continue;
             }
 
             boolean cutContainsTerm = cutValue.endsWith(termValue);
-            assertTrue("cut term" + count + " at " +
-                (offs.startOffset()) + "-" + (offs.endOffset()) + "[" +
-                cutValue + "] vs [" + termValue + "]", cutContainsTerm);
+            assertTrue(cutContainsTerm, "cut term" + count + " at " +
+                    (offs.startOffset()) + "-" + (offs.endOffset()) + "[" +
+                    cutValue + "] vs [" + termValue + "]");
         }
 
-        assertEquals("token count", expectedCount, count);
+        assertEquals(expectedCount, count, "token count");
     }
 
     private static StreamSource getSourceFromResource(String name) {
@@ -173,7 +170,7 @@ public class DefinitionsTokenStreamTest {
             public InputStream getStream() throws IOException {
                 InputStream srcres = getClass().getClassLoader().
                     getResourceAsStream(name);
-                assertNotNull(name + " as resource,", srcres);
+                assertNotNull(srcres, name + " as resource,");
                 return srcres;
             }
         };

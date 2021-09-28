@@ -18,12 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
-
-import static org.opengrok.indexer.history.HistoryEntry.TAGS_SEPARATOR;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
@@ -101,13 +100,47 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean hasHistoryForDirectories();
 
     /**
-     * Get the history log for the specified file or directory.
+     * Get the history for the specified file or directory.
+     * It is expected that {@link History#getRenamedFiles()} and {@link HistoryEntry#getFiles()} are empty for files.
      *
      * @param file the file to get the history for
      * @return history log for file
      * @throws HistoryException on error accessing the history
      */
     abstract History getHistory(File file) throws HistoryException;
+
+    HistoryEntry getLastHistoryEntry(History hist) {
+        if (hist == null) {
+            return null;
+        }
+
+        List<HistoryEntry> hlist = hist.getHistoryEntries();
+        if (hlist == null || hlist.isEmpty()) {
+            return null;
+        }
+
+        return hlist.get(0);
+    }
+
+    /**
+     * This is generic implementation that retrieves the full history of given file
+     * and returns the latest history entry. This is obviously very inefficient, both in terms of memory and I/O.
+     * The extending classes are encouraged to implement their own version.
+     * @param file file
+     * @return last history entry or null
+     * @throws HistoryException on error
+     */
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        History hist;
+        try {
+            hist = HistoryGuru.getInstance().getHistory(file, false, ui);
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "failed to get history for {0}", file);
+            return null;
+        }
+
+        return getLastHistoryEntry(hist);
+    }
 
     public Repository() {
         super();
@@ -140,8 +173,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return partial history for file
      * @throws HistoryException on error accessing the history
      */
-    History getHistory(File file, String sinceRevision)
-            throws HistoryException {
+    History getHistory(File file, String sinceRevision) throws HistoryException {
 
         // If we want an incremental history update and get here, warn that
         // it may be slow.
@@ -185,8 +217,7 @@ public abstract class Repository extends RepositoryInfo {
     void removeAndVerifyOldestChangeset(List<HistoryEntry> entries,
             String revision)
             throws HistoryException {
-        HistoryEntry entry
-                = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
+        HistoryEntry entry = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
 
         // TODO We should check more thoroughly that the changeset is the one
         // we expected it to be, since some SCMs may change the revision
@@ -211,11 +242,9 @@ public abstract class Repository extends RepositoryInfo {
      * @return {@code true} if contents were found
      * @throws java.io.IOException if an I/O error occurs
      */
-    public boolean getHistoryGet(
-            File target, String parent, String basename, String rev)
-            throws IOException {
+    public boolean getHistoryGet(File target, String parent, String basename, String rev) throws IOException {
         try (FileOutputStream out = new FileOutputStream(target)) {
-            return getHistoryGet(out::write, parent, basename, rev);
+            return getHistoryGet(out, parent, basename, rev);
         }
     }
 
@@ -227,10 +256,9 @@ public abstract class Repository extends RepositoryInfo {
      * @param rev the revision to get
      * @return a defined instance if contents were found; or else {@code null}
      */
-    public InputStream getHistoryGet(
-            String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        if (getHistoryGet(out::write, parent, basename, rev)) {
+        if (getHistoryGet(out, parent, basename, rev)) {
             return new ByteArrayInputStream(out.toByteArray());
         }
         return null;
@@ -240,14 +268,13 @@ public abstract class Repository extends RepositoryInfo {
      * Subclasses must override to get the contents of a specific version of a
      * named file, and copy to the specified {@code sink}.
      *
-     * @param sink a defined instance
+     * @param out a defined instance of OutputStream
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
      * @param rev the revision to get
      * @return a value indicating if the get was successful.
      */
-    abstract boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev);
+    abstract boolean getHistoryGet(OutputStream out, String parent, String basename, String rev);
 
     /**
      * Checks whether this parser can annotate files.
@@ -274,8 +301,8 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Assign tags to changesets they represent The complete list of tags must
-     * be pre-built using {@code getTagList()}. Then this function squeeze all
+     * Assign tags to changesets they represent. The complete list of tags must
+     * be pre-built using {@code getTagList()}. Then this function squeezes all
      * tags to changesets which actually exist in the history of given file.
      * Must be implemented repository-specific.
      *
@@ -295,7 +322,6 @@ public abstract class Repository extends RepositoryInfo {
         TagEntry lastTagEntry = null;
         for (HistoryEntry ent : hist.getHistoryEntries()) {
             // Assign all tags created since the last revision
-            // Revision in this HistoryEntry must be already specified !
             // TODO: is there better way to do this? We need to "repeat"
             //   last element returned by call to next()
             while (lastTagEntry != null || it.hasNext()) {
@@ -303,11 +329,7 @@ public abstract class Repository extends RepositoryInfo {
                     lastTagEntry = it.next();
                 }
                 if (lastTagEntry.compareTo(ent) >= 0) {
-                    if (ent.getTags() == null) {
-                        ent.setTags(lastTagEntry.getTags());
-                    } else {
-                        ent.setTags(ent.getTags() + TAGS_SEPARATOR + lastTagEntry.getTags());
-                    }
+                    hist.addTags(ent, lastTagEntry.getTags());
                 } else {
                     break;
                 }
@@ -329,7 +351,7 @@ public abstract class Repository extends RepositoryInfo {
     protected void buildTagList(File directory, CommandTimeoutType cmdType) {
         this.tagList = null;
     }
-    
+
     /**
      * Annotate the specified revision of a file.
      *
@@ -351,6 +373,10 @@ public abstract class Repository extends RepositoryInfo {
         return history_revision;
     }
 
+    protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {
+        finishCreateCache(cache, getHistory(directory, sinceRevision), null);
+    }
+
     /**
      * Create a history log cache for all files in this repository.
      * {@code getHistory()} is used to fetch the history for the entire
@@ -364,17 +390,16 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @throws HistoryException on error
      */
-    final void createCache(HistoryCache cache, String sinceRevision)
-            throws HistoryException {
+    final void createCache(HistoryCache cache, String sinceRevision) throws HistoryException {
+
         if (!isWorking()) {
             return;
         }
 
-        // If we don't have a directory parser, we can't create the cache
+        // If it is not possible to get history for a directory, we can't create the cache
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
-            LOGGER.log(
-                    Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Skipping creation of history cache for {0}, since retrieval "
                             + "of history for directories is not implemented for this "
                             + "repository type.", getDirectoryName());
@@ -383,32 +408,19 @@ public abstract class Repository extends RepositoryInfo {
 
         File directory = new File(getDirectoryName());
 
-        History history;
-        try {
-            history = getHistory(directory, sinceRevision);
-        } catch (HistoryException he) {
-            if (sinceRevision == null) {
-                // Failed to get full history, so fail.
-                throw he;
-            }
-            // Failed to get partial history. This may have been caused
-            // by changes in the revision numbers since the last update
-            // (bug #14724) so we'll try to regenerate the cache from
-            // scratch instead.
-            LOGGER.log(Level.WARNING,
-                    "Failed to get partial history. Attempting to "
-                    + "recreate the history cache from scratch.", he);
-            history = null;
-        }
+        doCreateCache(cache, sinceRevision, directory);
 
-        if (sinceRevision != null && history == null) {
-            // Failed to get partial history, now get full history instead.
-            history = getHistory(directory);
-            // Got full history successfully. Clear the history cache so that
-            // we can recreate it from scratch.
-            cache.clear(this);
-        }
+        LOGGER.log(Level.FINE, "Done storing history cache for repository {0}", getDirectoryName());
+    }
 
+    /**
+     * Actually store the history in history cache.
+     * @param cache history cache object
+     * @param history history to store
+     * @param tillRevision end revision (matters only for renamed files), can be null
+     * @throws HistoryException on error
+     */
+    void finishCreateCache(HistoryCache cache, History history, String tillRevision) throws HistoryException {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
@@ -416,7 +428,7 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         if (history != null) {
-            cache.store(history, this);
+            cache.store(history, this, tillRevision);
         }
     }
 
@@ -428,7 +440,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file, CommandTimeoutType cmdType);
-    
+
     public final boolean isRepositoryFor(File file) {
         return isRepositoryFor(file, CommandTimeoutType.INDEXER);
     }
@@ -437,7 +449,7 @@ public abstract class Repository extends RepositoryInfo {
      * Determine parent of this repository.
      */
     abstract String determineParent(CommandTimeoutType cmdType) throws IOException;
-    
+
     /**
      * Determine parent of this repository.
      * @return parent
@@ -460,7 +472,7 @@ public abstract class Repository extends RepositoryInfo {
     public final String determineBranch() throws IOException {
         return determineBranch(CommandTimeoutType.INDEXER);
     }
-    
+
     /**
      * Get list of ignored files for this repository.
      * @return list of strings
@@ -488,7 +500,7 @@ public abstract class Repository extends RepositoryInfo {
      * @throws IOException if I/O exception occurred
      */
     abstract String determineCurrentVersion(CommandTimeoutType cmdType) throws IOException;
-    
+
     public final String determineCurrentVersion() throws IOException {
         return determineCurrentVersion(CommandTimeoutType.INDEXER);
     }
@@ -523,7 +535,7 @@ public abstract class Repository extends RepositoryInfo {
      * @return the string representing the formatted date
      * @see #OUTPUT_DATE_FORMAT
      */
-    public String format(Date date) {
+    public static String format(Date date) {
         synchronized (OUTPUT_DATE_FORMAT) {
             return OUTPUT_DATE_FORMAT.format(date);
         }
@@ -619,7 +631,7 @@ public abstract class Repository extends RepositoryInfo {
 
     static class HistoryRevResult {
         boolean success;
-        int iterations;
+        long iterations;
     }
 
     private class RepositoryDateFormat extends DateFormat {

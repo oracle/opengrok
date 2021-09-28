@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -34,10 +34,16 @@ org.opengrok.web.PageConfig,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.indexer.web.Util"%>
 <%@ page import="org.opengrok.indexer.web.messages.MessagesUtils" %>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
 <%
 /* ---------------------- mast.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    if (cfg.isUnreadable()) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+    }
+
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir == null) {            
@@ -76,13 +82,8 @@ include file="httpheader.jspf"
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
 <div id="page">
-    <div id="whole_header">
-<div id="header"><%@
-
-include file="pageheader.jspf"
-
-%>
-</div>
+    <header id="whole_header">
+        <%@include file="pageheader.jspf" %>
 <div id="Masthead">
     <%
 {

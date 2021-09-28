@@ -221,7 +221,7 @@ public class SearchHelper {
      * history context usually created via {@link #prepareSummary()}.
      */
     public HistoryContext historyContext;
-    
+
     /**
      * Default query parse error message prefix.
      */
@@ -300,13 +300,13 @@ public class SearchHelper {
                 }
                 Set<Project> notIndexedProjects =
                     projects.stream().
-                    map(x -> Project.getByName(x)).
+                    map(Project::getByName).
                     filter(proj -> !proj.isIndexed()).
                     collect(Collectors.toSet());
                 if (notIndexedProjects.size() > 0) {
                     errorMsg = "Some of the projects to be searched are not indexed yet: " +
                         String.join(", ", notIndexedProjects.stream().
-                        map(proj -> proj.getName()).
+                        map(Project::getName).
                         collect(Collectors.toSet()));
                     return this;
                 }

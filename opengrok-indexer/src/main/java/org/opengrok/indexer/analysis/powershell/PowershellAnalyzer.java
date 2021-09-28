@@ -71,7 +71,7 @@ public class PowershellAnalyzer extends AbstractSourceCodeAnalyzer {
     protected boolean supportsScopes() {
         return true;
     }
-    
+
     /**
      * Creates a wrapped {@link PoshXref} instance.
      * @param reader the data to produce xref for

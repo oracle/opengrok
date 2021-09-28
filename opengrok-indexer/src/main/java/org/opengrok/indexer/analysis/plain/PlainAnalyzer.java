@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -27,6 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apache.lucene.document.Document;
@@ -36,6 +39,7 @@ import org.opengrok.indexer.analysis.Definitions;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.JFlexTokenizer;
 import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.OGKTextVecField;
 import org.opengrok.indexer.analysis.Scopes;
@@ -43,6 +47,7 @@ import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.NullWriter;
 
@@ -105,23 +110,34 @@ public class PlainAnalyzer extends TextAnalyzer {
     protected Reader getReader(InputStream stream) throws IOException {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
-    
+
+    private static class XrefWork {
+        Xrefer xrefer;
+        Exception exception;
+
+        XrefWork(Xrefer xrefer) {
+            this.xrefer = xrefer;
+        }
+
+        XrefWork(Exception e) {
+            this.exception = e;
+        }
+    }
+
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut)
-            throws IOException, InterruptedException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException, InterruptedException {
         Definitions defs = null;
         NullWriter nullWriter = null;
 
-        doc.add(new OGKTextField(QueryBuilder.FULL,
-            getReader(src.getStream())));
+        doc.add(new OGKTextField(QueryBuilder.FULL, getReader(src.getStream())));
 
-        String fullpath = doc.get(QueryBuilder.FULLPATH);
-        if (fullpath != null && ctags != null) {
-            defs = ctags.doCtags(fullpath);
+        String fullPath = doc.get(QueryBuilder.FULLPATH);
+        if (fullPath != null && ctags != null) {
+            defs = ctags.doCtags(fullPath);
             if (defs != null && defs.numberOfSymbols() > 0) {
                 tryAddingDefs(doc, defs, src);
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField(QueryBuilder.TAGS, tags));                
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));
             }
         }
         /*
@@ -132,11 +148,11 @@ public class PlainAnalyzer extends TextAnalyzer {
         OGKTextField ref = new OGKTextField(QueryBuilder.REFS, symbolTokenizer);
         symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(ref);
-        
+
         if (scopesEnabled && xrefOut == null) {
             /*
              * Scopes are generated during xref generation. If xrefs are
-             * turned off we still need to run writeXref to produce scopes,
+             * turned off we still need to run writeXref() to produce scopes,
              * we use a dummy writer that will throw away any xref output.
              */
             nullWriter = new NullWriter();
@@ -145,20 +161,37 @@ public class PlainAnalyzer extends TextAnalyzer {
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                Xrefer xref = writeXref(args);
-            
-                Scopes scopes = xref.getScopes();
-                if (scopes.size() > 0) {
-                    byte[] scopesSerialized = scopes.serialize();
-                    doc.add(new StoredField(QueryBuilder.SCOPES,
-                        scopesSerialized));
-                }
+                CompletableFuture<XrefWork> future = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return new XrefWork(writeXref(args));
+                    } catch (IOException e) {
+                        return new XrefWork(e);
+                    }
+                }, env.getIndexerParallelizer().getXrefWatcherExecutor()).
+                        orTimeout(env.getXrefTimeout(), TimeUnit.SECONDS);
+                XrefWork xrefWork = future.get(); // Will throw ExecutionException wrapping TimeoutException on timeout.
+                Xrefer xref = xrefWork.xrefer;
 
-                addNumLines(doc, xref.getLineNumber());
-                addLOC(doc, xref.getLOC());
+                if (xref != null) {
+                    Scopes scopes = xref.getScopes();
+                    if (scopes.size() > 0) {
+                        byte[] scopesSerialized = scopes.serialize();
+                        doc.add(new StoredField(QueryBuilder.SCOPES,
+                                scopesSerialized));
+                    }
+
+                    String path = doc.get(QueryBuilder.PATH);
+                    addNumLinesLOC(doc, new NumLinesLOC(path, xref.getLineNumber(), xref.getLOC()));
+                } else {
+                    // Re-throw the exception from writeXref().
+                    throw new IOException(xrefWork.exception);
+                }
+            } catch (ExecutionException e) {
+                throw new InterruptedException("failed to generate xref :" + e);
             } finally {
                 if (nullWriter != null) {
                     nullWriter.close();

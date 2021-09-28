@@ -32,7 +32,7 @@ public class LuaUtils {
      */
     private  LuaUtils() {
     }
-    
+
     /**
      * Counts the level of a Lua opening long bracket specified in
      * {@code capture}.

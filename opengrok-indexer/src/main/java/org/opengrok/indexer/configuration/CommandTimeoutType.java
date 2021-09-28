@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -26,5 +26,5 @@ public enum CommandTimeoutType {
     INTERACTIVE,
     INDEXER,
     RESTFUL,
-    WEBAPP_START;
+    WEBAPP_START
 }

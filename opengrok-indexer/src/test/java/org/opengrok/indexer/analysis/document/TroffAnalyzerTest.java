@@ -18,13 +18,10 @@
  */
 
 /*
- * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2009, 2011, Jens Elkner.
  */
 package org.opengrok.indexer.analysis.document;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
@@ -34,15 +31,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import org.apache.lucene.document.Document;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.StreamSource;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.Util;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jens Elkner
@@ -61,7 +58,7 @@ public class TroffAnalyzerTest {
      *
      * @throws java.lang.Exception exception
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         factory = new TroffAnalyzerFactory();
         assertNotNull(factory);
@@ -74,9 +71,7 @@ public class TroffAnalyzerTest {
         String file = System.getProperty("opengrok.test.troff.doc",
                 repository.getSourceRoot() + "/document/foobar.1");
         File f = new File(file);
-        if (!(f.canRead() && f.isFile())) {
-            fail("troff testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "troff testfile " + f + " not found");
         CharArrayWriter w = new CharArrayWriter((int) f.length());
         Util.dump(w, f, false);
         content = w.toString();
@@ -85,27 +80,13 @@ public class TroffAnalyzerTest {
     /**
      * @throws java.lang.Exception exception
      */
-    @AfterClass
+    @AfterAll
     public static void tearDownAfterClass() throws Exception {
         factory = null;
         analyzer = null;
         content = null;
         repository.destroy();
         repository = null;
-    }
-
-    /**
-     * @throws java.lang.Exception exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    /**
-     * @throws java.lang.Exception exception
-     */
-    @After
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -127,24 +108,4 @@ public class TroffAnalyzerTest {
         }, xrefOut);
     }
 
-    /**
-     * Test method for {@link org.opengrok.indexer.analysis.document
-     * .TroffAnalyzer#tokenStream(java.lang.String, java.io.Reader)}.
-     */
-    @Ignore
-    public void testTokenStreamStringReader() {
-        fail("Not yet implemented");
-    }
-
-    /**
-     * Test method for {@link org.opengrok.indexer.analysis.document
-     * .TroffAnalyzer#writeXref(java.io.Reader, java.io.Writer,
-     *      org.opengrok.indexer.analysis.Definitions,
-     *      org.opengrok.indexer.history.Annotation,
-     *      org.opengrok.indexer.configuration.Project)}.
-     */
-    @Ignore
-    public void xtestWriteXrefReaderWriterDefinitionsAnnotationProject() {
-        fail("Not yet implemented");
-    }
 }

@@ -18,15 +18,16 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LookupResultItemTest {
 
@@ -42,11 +43,11 @@ public class LookupResultItemTest {
         assertThat(item1.getProjects(), containsInAnyOrder("proj1", "proj2"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void combineNullTest() {
         LookupResultItem item = new LookupResultItem("p1", "proj1", 2);
 
-        item.combine(null);
+        assertThrows(IllegalArgumentException.class, () -> item.combine(null));
     }
 
 }

@@ -18,15 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
-import org.junit.Test;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

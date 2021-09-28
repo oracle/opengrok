@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -31,22 +31,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.TestRepository;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test RepositoryFactory.
@@ -59,18 +57,15 @@ public class RepositoryFactoryTest {
     private static Set<String> savedDisabledRepositories;
     private static boolean savedIsProjectsEnabled;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
         repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
         savedDisabledRepositories = env.getDisabledRepositories();
         savedIsProjectsEnabled = env.isProjectsEnabled();
     }
-    
-    @AfterClass
+
+    @AfterAll
     public static void tearDownClass() {
         if (repository != null) {
             repository.destroy();
@@ -78,14 +73,14 @@ public class RepositoryFactoryTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         env.setRepoCmds(Collections.emptyMap());
         env.setDisabledRepositories(savedDisabledRepositories);
         env.setProjectsEnabled(savedIsProjectsEnabled);
     }
 
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
     public void testRepositoryMatchingSourceRoot() throws IllegalAccessException, InvocationTargetException,
             ForbiddenSymlinkException, InstantiationException, NoSuchMethodException, IOException {
@@ -94,10 +89,10 @@ public class RepositoryFactoryTest {
         env.setSourceRoot(root.getAbsolutePath());
         env.setProjectsEnabled(true);
         Repository repo = RepositoryFactory.getRepository(root);
-        assertNull("should not get repo for root if projects enabled", repo);
+        assertNull(repo, "should not get repo for root if projects enabled");
     }
 
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
     public void testNormallyEnabledMercurialRepository() throws IllegalAccessException,
             InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
@@ -105,15 +100,13 @@ public class RepositoryFactoryTest {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
         env.setSourceRoot(root.getAbsolutePath());
-        assertNotNull("should get repository for mercurial/",
-                RepositoryFactory.getRepository(root));
+        assertNotNull(RepositoryFactory.getRepository(root), "should get repository for mercurial/");
 
         List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
-        assertTrue("should contain MercurialRepository",
-                clazzes.contains(MercurialRepository.class));
+        assertTrue(clazzes.contains(MercurialRepository.class), "should contain MercurialRepository");
     }
 
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @EnabledForRepository(RepositoryInstalled.Type.MERCURIAL)
     @Test
     public void testMercurialRepositoryWhenDisabled() throws IllegalAccessException,
             InvocationTargetException, ForbiddenSymlinkException, InstantiationException,
@@ -124,29 +117,27 @@ public class RepositoryFactoryTest {
 
         File root = new File(repository.getSourceRoot(), "mercurial");
         env.setSourceRoot(root.getAbsolutePath());
-        assertNull("should not get repository for mercurial/ if disabled",
-                RepositoryFactory.getRepository(root));
+        assertNull(RepositoryFactory.getRepository(root), "should not get repository for mercurial/ if disabled");
 
         List<Class<? extends Repository>> clazzes = RepositoryFactory.getRepositoryClasses();
-        assertFalse("should not contain MercurialRepository",
-                clazzes.contains(MercurialRepository.class));
+        assertFalse(clazzes.contains(MercurialRepository.class), "should not contain MercurialRepository");
     }
 
     /*
      * There is no conditional run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
      */
-    private void testNotWorkingRepository(String repoPath, String propName)
+    static void testNotWorkingRepository(TestRepository repository, String repoPath, String propName)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
 
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         try {
             File root = new File(repository.getSourceRoot(), repoPath);
-            env.setSourceRoot(repository.getSourceRoot());
+            RuntimeEnvironment.getInstance().setSourceRoot(repository.getSourceRoot());
             Repository repo = RepositoryFactory.getRepository(root);
-            assertNotNull("should have defined repo", repo);
-            assertFalse("repo should not be working", repo.isWorking());
+            assertNotNull(repo, "should have defined repo");
+            assertFalse(repo.isWorking(), "repo should not be working");
         } finally {
             if (origPropValue != null) {
                 System.setProperty(propName, origPropValue);
@@ -155,28 +146,19 @@ public class RepositoryFactoryTest {
             }
         }
     }
-    
-    @Test
-    public void testNotWorkingMercurialRepository()
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
-            IOException, ForbiddenSymlinkException {
-        testNotWorkingRepository("mercurial", MercurialRepository.CMD_PROPERTY_KEY);
-    }
-    
+
     @Test
     public void testNotWorkingBitkeeperRepository()
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             IOException, ForbiddenSymlinkException {
-        testNotWorkingRepository("bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
+        testNotWorkingRepository(repository, "bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 
     @Test
     public void testRepositoryFactoryEveryImplIsNamedAsRepository() {
-        List<Class<? extends Repository>> repositoryClasses =
-                RepositoryFactory.getRepositoryClasses();
+        List<Class<? extends Repository>> repositoryClasses = RepositoryFactory.getRepositoryClasses();
         for (Class<? extends Repository> clazz : repositoryClasses) {
-            assertTrue("should end with \"Repository\"",
-                    clazz.getSimpleName().endsWith("Repository"));
+            assertTrue(clazz.getSimpleName().endsWith("Repository"), "should end with \"Repository\"");
         }
     }
 }

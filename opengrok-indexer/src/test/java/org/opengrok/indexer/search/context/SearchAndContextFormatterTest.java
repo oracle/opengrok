@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search.context;
@@ -31,16 +31,10 @@ import java.util.TreeSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
-import org.junit.After;
-import org.junit.AfterClass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -51,6 +45,9 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.search.SearchEngine;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 /**
@@ -59,13 +56,13 @@ import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
-public class SearchAndContextFormatterTest {
+class SearchAndContextFormatterTest {
 
     private static RuntimeEnvironment env;
     private static TestRepository repository;
     private static File configFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
@@ -81,7 +78,7 @@ public class SearchAndContextFormatterTest {
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 false, null, null);
-        env.setDefaultProjectsFromNames(new TreeSet<String>(Collections.singletonList("/c")));
+        env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
@@ -89,37 +86,28 @@ public class SearchAndContextFormatterTest {
         RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    @AfterAll
+    public static void tearDownClass() {
         repository.destroy();
         configFile.delete();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     @Test
-    public void testSearch() throws IOException {
+    void testSearch() throws IOException {
         SearchEngine instance = new SearchEngine();
-        instance.setFreetext("embedded");
-        instance.setFile("main.c");
+        instance.setFreetext("mt19937");
+        instance.setFile("bkexlib.cpp");
         int noHits = instance.search();
-        assertTrue("noHits should be positive", noHits > 0);
+        assertTrue(noHits > 0, "noHits should be positive");
         String[] frags = getFirstFragments(instance);
-        assertNotNull("getFirstFragments() should return something", frags);
-        assertEquals("frags should have one element", 1, frags.length);
+        assertNotNull(frags, "getFirstFragments() should return something");
+        assertEquals(1, frags.length, "frags should have one element");
 
-        final String CTX =
-                "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +
-                        "<a class=\"s\" href=\"/source/svn/c/main.c#10\"><span class=\"l\">10</span>    " +
-                        "Multi line comment, with <b>embedded</b> strange characters: &lt; &gt; &amp;,</a><br/>" +
-                        "<a class=\"s\" href=\"/source/svn/c/main.c#11\"><span class=\"l\">11</span>    " +
-                        "email address: testuser@example.com and even an URL:</a><br/>";
+        final String CTX = "<a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#12\"><span class=\"l\">12</span>"
+                + "     std::random_device rd;</a><br/><a class=\"s\" href=\"/source/bitkeeper/bkexlib.cpp#13\">"
+                + "<span class=\"l\">13</span>     std::<b>mt19937</b> gen(rd());</a><br/><a class=\"s\" "
+                + "href=\"/source/bitkeeper/bkexlib.cpp#14\"><span class=\"l\">14</span>     "
+                + "std::uniform_int_distribution&lt;&gt; dis(0, RAND_MAX);</a><br/>";
         assertLinesEqual("ContextFormatter output", CTX, frags[0]);
         instance.destroy();
     }

@@ -20,7 +20,6 @@ package org.opengrok.indexer.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -145,24 +144,21 @@ public class Summarizer {
         // how many query terms are present.  An excerpt is
         // a List full of Fragments and Highlights
         //
-        SortedSet<Excerpt> excerptSet = new TreeSet<>(new Comparator<Excerpt>() {
-            @Override
-            public int compare(Excerpt excerpt1, Excerpt excerpt2) {
-                if (excerpt1 == null) {
-                    return excerpt2 == null ? 0 : -1;
-                } else if (excerpt2 == null) {
-                    return 1;
-                } else {
-                    int numToks1 = excerpt1.numUniqueTokens();
-                    int numToks2 = excerpt2.numUniqueTokens();
+        SortedSet<Excerpt> excerptSet = new TreeSet<>((excerpt1, excerpt2) -> {
+            if (excerpt1 == null) {
+                return excerpt2 == null ? 0 : -1;
+            } else if (excerpt2 == null) {
+                return 1;
+            } else {
+                int numToks1 = excerpt1.numUniqueTokens();
+                int numToks2 = excerpt2.numUniqueTokens();
 
-                    if (numToks1 < numToks2) {
-                        return -1;
-                    } else if (numToks1 == numToks2) {
-                        return excerpt1.numFragments() - excerpt2.numFragments();
-                    } else {
-                        return 1;
-                    }
+                if (numToks1 < numToks2) {
+                    return -1;
+                } else if (numToks1 == numToks2) {
+                    return excerpt1.numFragments() - excerpt2.numFragments();
+                } else {
+                    return 1;
                 }
             }
         });
@@ -253,7 +249,7 @@ public class Summarizer {
         // If the target text doesn't appear, then we just
         // excerpt the first SUM_LENGTH words from the document.
         //
-        if (excerptSet.size() == 0) {
+        if (excerptSet.isEmpty()) {
             Excerpt excerpt = new Excerpt();
             int excerptLen = Math.min(SUM_LENGTH, tokens.length);
             lastExcerptPos = excerptLen;
@@ -289,7 +285,7 @@ public class Summarizer {
         return s;
     }
 
-    private class SToken extends PackedTokenAttributeImpl {
+    private static class SToken extends PackedTokenAttributeImpl {
 
         SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
             copyBuffer(startTermBuffer, termBufferOffset, termBufferLength);
@@ -299,7 +295,7 @@ public class Summarizer {
 
     private SToken[] getTokens(String text) throws IOException {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
-        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter        
+        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<SToken> result = new ArrayList<>();
         try (TokenStream ts = analyzer.tokenStream(QueryBuilder.FULL, text)) {
             CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
@@ -311,7 +307,7 @@ public class Summarizer {
             }
             ts.end();
         }
-        return result.toArray(new SToken[result.size()]);
+        return result.toArray(new SToken[0]);
     }
 
     /**

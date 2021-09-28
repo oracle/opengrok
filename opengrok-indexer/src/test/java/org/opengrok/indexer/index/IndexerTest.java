@@ -18,16 +18,18 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Ric Harris <harrisric@users.noreply.github.com>.
  */
 package org.opengrok.indexer.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -51,17 +53,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.opengrok.indexer.analysis.AnalyzerFactory;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -81,28 +80,25 @@ public class IndexerTest {
 
     TestRepository repository;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         repository = new TestRepository();
         repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repository.destroy();
     }
 
     @Test
-    public void testXrefGeneration() throws Exception {
+    void testXrefGeneration() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -115,7 +111,7 @@ public class IndexerTest {
         List<String> result = null;
         try (Stream<Path> walk = Files.walk(Paths.get(env.getDataRootPath(), IndexDatabase.XREF_DIR))) {
             result = walk.filter(Files::isRegularFile).filter(f -> f.toString().endsWith(".gz")).
-                    map(x -> x.toString()).collect(Collectors.toList());
+                    map(Path::toString).collect(Collectors.toList());
         }
         assertNotNull(result);
         assertTrue(result.size() > 50);
@@ -130,7 +126,7 @@ public class IndexerTest {
      * existing projects. Bug #16006.
      */
     @Test
-    public void testRescanProjects() throws Exception {
+    void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
         // some properties that we can verify after the rescan.
         Project p1 = new Project("java", "/java");
@@ -162,7 +158,7 @@ public class IndexerTest {
 
         // p2 should not be in the project list anymore
         for (Project p : newProjects) {
-            assertFalse("p2 not removed", p.getPath().equals(p2.getPath()));
+            assertNotEquals(p.getPath(), p2.getPath(), "p2 not removed");
         }
 
         // p1 should be there
@@ -173,20 +169,19 @@ public class IndexerTest {
                 break;
             }
         }
-        assertNotNull("p1 not in list", newP1);
+        assertNotNull(newP1, "p1 not in list");
 
         // The properties of p1 should be preserved
-        assertEquals("project path", p1.getPath(), newP1.getPath());
-        assertEquals("project name",
-                p1.getName(), newP1.getName());
-        assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
+        assertEquals(p1.getPath(), newP1.getPath(), "project path");
+        assertEquals(p1.getName(), newP1.getName(), "project name");
+        assertEquals(p1.getTabSize(), newP1.getTabSize(), "project tabsize");
     }
 
     /**
      * Test of doIndexerExecution method, of class Indexer.
      */
     @Test
-    public void testMain() {
+    void testMain() {
         System.out.println("Generate index by using command line options");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
@@ -234,7 +229,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
+    void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -311,8 +306,7 @@ public class IndexerTest {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File f = new File(env.getDataRootPath(),
                         TandemPath.join("historycache" + path, ".gz"));
-                Assert.assertTrue(String.format("history cache file %s should be preserved", f),
-                        f.exists());
+                assertTrue(f.exists(), String.format("history cache file %s should be preserved", f));
             }
             removedFiles.add(path);
         }
@@ -329,8 +323,8 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    public void testRemoveFileOnFileChange() throws Exception {
+    @EnabledForRepository(MERCURIAL)
+    void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         TestRepository testrepo = new TestRepository();
@@ -348,15 +342,15 @@ public class IndexerTest {
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener(path);
         idb.addIndexChangedListener(listener);
         idb.update();
-        Assert.assertEquals(5, listener.filesToAdd.size());
+        assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
         File historyFile = new File(env.getDataRootPath(),
                 TandemPath.join("historycache" + path, ".gz"));
-        Assert.assertTrue(String.format("history cache for %s has to exist", path), historyFile.exists());
+        assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial", "bar.txt");
-        Assert.assertTrue(bar.exists());
+        assertTrue(bar.exists());
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {
             bw.write("foo\n");
         }
@@ -372,9 +366,8 @@ public class IndexerTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
-    public void testSetRepositories() throws Exception {
+    @EnabledForRepository(MERCURIAL)
+    void testSetRepositories() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         TestRepository testrepo = new TestRepository();
@@ -382,7 +375,7 @@ public class IndexerTest {
         env.setSourceRoot(testrepo.getSourceRoot());
 
         env.setRepositories(testrepo.getSourceRoot());
-        assertEquals(9, env.getRepositories().size());
+        assertEquals(7, env.getRepositories().size());
 
         String[] repoNames = {"mercurial", "git"};
         env.setRepositories(Arrays.stream(repoNames).
@@ -391,7 +384,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testXref() throws IOException {
+    void testXref() throws IOException {
         List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
@@ -410,7 +403,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testBug3430() throws Exception {
+    void testBug3430() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -430,7 +423,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testIncrementalIndexAddRemoveFile() throws Exception {
+    void testIncrementalIndexAddRemoveFile() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -446,13 +439,12 @@ public class IndexerTest {
         listener.reset();
         repository.addDummyFile(ppath);
         idb.update();
-        assertEquals("No new file added", 1, listener.files.size());
+        assertEquals(1, listener.files.size(), "No new file added");
         repository.removeDummyFile(ppath);
         idb.update();
-        assertEquals("(added)files changed unexpectedly", 1, listener.files.size());
-        assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
-        assertEquals("Should have added then removed the same file",
-                listener.files.peek(), listener.removedFiles.peek());
+        assertEquals(1, listener.files.size(), "(added)files changed unexpectedly");
+        assertEquals(1, listener.removedFiles.size(), "Didn't remove the dummy file");
+        assertEquals(listener.files.peek(), listener.removedFiles.peek(), "Should have added then removed the same file");
     }
 
     /**
@@ -460,39 +452,32 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testBug11896() throws Exception {
+    @EnabledIf("mkfifoInPath")
+    void testBug11896() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Executor executor;
 
-        boolean test = true;
-        if (FileUtilities.findProgInPath("mkfifo") == null) {
-            System.out.println("Error: mkfifo not found in PATH !\n");
-            test = false;
-        }
+        executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
+        executor.exec(true);
 
-        if (test) {
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            Executor executor;
+        executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
+        executor.exec(true);
 
-            executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
-            executor.exec(true);
+        Project project = new Project("testBug11896");
+        project.setPath("/testBug11896");
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+        MyIndexChangeListener listener = new MyIndexChangeListener();
+        idb.addIndexChangedListener(listener);
+        System.out.println("Trying to index a special file - FIFO in this case.");
+        idb.update();
+        assertEquals(0, listener.files.size());
+    }
 
-            executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
-            executor.exec(true);
-
-            Project project = new Project("testBug11896");
-            project.setPath("/testBug11896");
-            IndexDatabase idb = new IndexDatabase(project);
-            assertNotNull(idb);
-            MyIndexChangeListener listener = new MyIndexChangeListener();
-            idb.addIndexChangedListener(listener);
-            System.out.println("Trying to index a special file - FIFO in this case.");
-            idb.update();
-            assertEquals(0, listener.files.size());
-
-        } else {
-            System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
-        }
+    boolean mkfifoInPath() {
+        return FileUtilities.findProgInPath("mkfifo") != null;
     }
 
     /**
@@ -500,7 +485,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsSingleProject() throws Exception {
+    void testDefaultProjectsSingleProject() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -509,8 +494,8 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(new TreeSet<>(Collections.singletonList("/c")));
         assertEquals(1, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"c"})),
-                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Collections.singletonList("c")),
+                env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 
     /**
@@ -518,7 +503,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsNonExistent() throws Exception {
+    void testDefaultProjectsNonExistent() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -534,8 +519,8 @@ public class IndexerTest {
                 false, null, null);
         env.setDefaultProjectsFromNames(projectSet);
         assertEquals(4, env.getDefaultProjects().size());
-        assertEquals(new TreeSet<>(Arrays.asList(new String[] {"lisp", "pascal", "perl", "data"})),
-                env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(new TreeSet<>(Arrays.asList("lisp", "pascal", "perl", "data")),
+                env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 
     /**
@@ -543,7 +528,7 @@ public class IndexerTest {
      * @throws Exception
      */
     @Test
-    public void testDefaultProjectsAll() throws Exception {
+    void testDefaultProjectsAll() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
@@ -559,6 +544,6 @@ public class IndexerTest {
         env.setDefaultProjectsFromNames(defaultProjects);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
-        assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
+        assertEquals(projects, env.getDefaultProjects().stream().map(Project::getName).collect(Collectors.toSet()));
     }
 }

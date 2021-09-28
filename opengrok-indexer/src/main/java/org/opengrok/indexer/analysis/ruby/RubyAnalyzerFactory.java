@@ -32,8 +32,8 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class RubyAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "Ruby";
-    
+    private static final String NAME = "Ruby";
+
     private static final String[] SUFFIXES = {
         "RB",
         "RUBY"
@@ -50,8 +50,7 @@ public class RubyAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link RubyAnalyzerFactory}.
      */
     public RubyAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN,
-            name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     /**

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -31,11 +31,11 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Group;
@@ -107,7 +107,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      */
     private long pluginVersion = 0;
 
-    // HTTP session attribute that holds plugin version 
+    // HTTP session attribute that holds plugin version
     private static final String SESSION_VERSION = "opengrok-authorization-session-version";
 
     /**
@@ -168,11 +168,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
                         }
 
                         // shouldn't skip if the project is contained in the setup
-                        if (authEntity.forProjects().contains(project.getName())) {
-                            return false;
-                        }
-
-                        return true;
+                        return !authEntity.forProjects().contains(project.getName());
                     }
                 });
     }

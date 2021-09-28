@@ -16,16 +16,21 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@page import="org.opengrok.web.PageConfig"%>
 <%
 /* ---------------------- pageheader.jspf start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
-%>
-<%= cfg.getEnv().getIncludeFiles().getHeaderIncludeFileContent(false) %>
-<% 
+    String headerContent = cfg.getEnv().getIncludeFiles().getHeaderIncludeFileContent(false);
+    if (headerContent != null && !headerContent.isBlank()) {
+        %>
+<div id="header">
+    <%= headerContent %>
+</div>
+        <%
+    }
 }
 /* ---------------------- pageheader.jspf end --------------------- */
 %>

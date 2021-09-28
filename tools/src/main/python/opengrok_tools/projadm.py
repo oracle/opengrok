@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -39,8 +39,8 @@ from .utils.command import Command
 from .utils.log import get_console_logger, get_class_basename, \
     fatal
 from .utils.opengrok import get_configuration, set_configuration, \
-    add_project, delete_project, get_config_value
-from .utils.parsers import get_base_parser
+    add_project, delete_project, get_config_value, get_repos
+from .utils.parsers import get_base_parser, get_headers, add_http_headers
 from .utils.utils import get_command, is_web_uri
 from .utils.exitvals import (
     FAILURE_EXITVAL,
@@ -52,7 +52,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -111,7 +111,7 @@ def install_config(doit, logger, src, dst):
 
 
 def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
-                   roconfig, java):
+                   roconfig, java, headers=None, timeout=None):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -127,7 +127,8 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
         sys.exit(FAILURE_EXITVAL)
 
     if doit:
-        current_config = get_configuration(logger, uri)
+        current_config = get_configuration(logger, uri,
+                                           headers=headers, timeout=timeout)
         if not current_config:
             sys.exit(FAILURE_EXITVAL)
     else:
@@ -162,7 +163,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                     install_config(doit, logger, fmerged.name, main_config)
 
 
-def project_add(doit, logger, project, uri):
+def project_add(doit, logger, project, uri, headers=None, timeout=None):
     """
     Adds a project to configuration. Works in multiple steps:
 
@@ -173,10 +174,16 @@ def project_add(doit, logger, project, uri):
     logger.info("Adding project {}".format(project))
 
     if doit:
-        add_project(logger, project, uri)
+        if add_project(logger, project, uri, headers=headers, timeout=timeout):
+            repos = get_repos(logger, project, uri,
+                              headers=headers, timeout=timeout)
+            if repos:
+                logger.info("Added project {} with repositories: {}".
+                            format(project, repos))
 
 
-def project_delete(logger, project, uri, doit=True, deletesource=False):
+def project_delete(logger, project, uri, doit=True, deletesource=False,
+                   headers=None, timeout=None):
     """
     Delete the project for configuration and all its data.
     Works in multiple steps:
@@ -193,10 +200,11 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
     logger.info("Deleting project {} and its index data".format(project))
 
     if doit:
-        delete_project(logger, project, uri)
+        delete_project(logger, project, uri, headers=headers, timeout=timeout)
 
     if deletesource:
-        src_root = get_config_value(logger, 'sourceRoot', uri)
+        src_root = get_config_value(logger, 'sourceRoot', uri, headers=headers,
+                                    timeout=timeout)
         if not src_root or len(src_root) == 0:
             raise Exception("source root empty")
         logger.debug("Source root = {}".format(src_root))
@@ -204,7 +212,12 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
         logger.debug("Removing directory tree {}".format(sourcedir))
         if doit:
             logger.info("Removing source code under {}".format(sourcedir))
-            shutil.rmtree(sourcedir)
+            try:
+                shutil.rmtree(sourcedir)
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                logger.error("Failed to remove {}: {}".format(sourcedir, e))
 
 
 def main():
@@ -235,6 +248,9 @@ def main():
     parser.add_argument('-N', '--nosourcedelete', action='store_true',
                         default=False, help='Do not delete source code when '
                                             'deleting a project')
+    add_http_headers(parser)
+    parser.add_argument('--api_timeout', type=int,
+                        help='Set response timeout in seconds for RESTful API calls')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', metavar='project', nargs='+',
@@ -261,6 +277,8 @@ def main():
     # used through the rest of the program.
     #
     logger = get_console_logger(get_class_basename(), args.loglevel)
+
+    headers = get_headers(args.header)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")
@@ -319,7 +337,8 @@ def main():
                 for proj in args.add:
                     project_add(doit=doit, logger=logger,
                                 project=proj,
-                                uri=uri)
+                                uri=uri, headers=headers,
+                                timeout=args.api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -327,13 +346,17 @@ def main():
                                configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig,
-                               java=args.java)
+                               java=args.java,
+                               headers=headers,
+                               timeout=args.api_timeout)
             elif args.delete:
                 for proj in args.delete:
                     project_delete(logger=logger,
                                    project=proj,
                                    uri=uri, doit=doit,
-                                   deletesource=not args.nosourcedelete)
+                                   deletesource=not args.nosourcedelete,
+                                   headers=headers,
+                                   timeout=args.api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -341,7 +364,9 @@ def main():
                                configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig,
-                               java=args.java)
+                               java=args.java,
+                               headers=headers,
+                               timeout=args.api_timeout)
             elif args.refresh:
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -349,7 +374,9 @@ def main():
                                configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig,
-                               java=args.java)
+                               java=args.java,
+                               headers=headers,
+                               timeout=args.api_timeout)
             else:
                 parser.print_help()
                 sys.exit(FAILURE_EXITVAL)
@@ -362,7 +389,9 @@ def main():
                                      encoding="utf-8") as config_file:
                             config_data = config_file.read().encode("utf-8")
                             if not set_configuration(logger,
-                                                     config_data, uri):
+                                                     config_data, uri,
+                                                     headers=headers,
+                                                     timeout=args.api_timeout):
                                 sys.exit(FAILURE_EXITVAL)
                 else:
                     logger.error("file {} does not exist".format(main_config))

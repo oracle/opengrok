@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -87,23 +88,13 @@ public class ClassUtil {
              * datatypes</a>.
              */
             if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
-                if (!BooleanUtil.isBoolean(value)) {
+                Boolean parsedValue = BooleanUtils.toBooleanObject(value);
+                if (parsedValue == null) {
                     throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
                                     + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
                             paramClass, value));
                 }
-                boolean boolValue = Boolean.parseBoolean(value);
-                if (!boolValue) {
-                    /*
-                     * The Boolean.valueOf() returns true only for "true" case
-                     * insensitive so now we have either the false values or
-                     * "on" or "1". These are convenient shortcuts for "on", "1"
-                     * to be interpreted as booleans.
-                     */
-                    boolValue = value.equalsIgnoreCase("on");
-                    boolValue = boolValue || value.equals("1");
-                }
-                v = boolValue;
+                v = parsedValue;
             } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
                 v = Short.valueOf(value);
             } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
@@ -235,7 +226,7 @@ public class ClassUtil {
 
     /**
      * Invokes a getter of a property on an object.
-     * 
+     *
      * @param obj the object
      * @param field string with field name
      * @return string representation of the field value
@@ -261,7 +252,7 @@ public class ClassUtil {
                         String.format("The getter \"%s\" for the name \"%s\" takes a parameter.",
                                 getter.getName(), field));
             }
-            
+
             return getter.invoke(obj);
         } catch (IntrospectionException
                 | IllegalAccessException

@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.search.context;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests for the RegexpMatcher class.
@@ -39,7 +39,7 @@ public class RegexpMatcherTest {
         RegexpMatcher m = new RegexpMatcher("reg[e]+x", true);
         assertEquals(LineMatcher.NOT_MATCHED, m.match("regx"));
         assertEquals(LineMatcher.MATCHED, m.match("regeex"));
-        
+
         m = new RegexpMatcher("Reg[e]+x", false);
         assertEquals(LineMatcher.NOT_MATCHED, m.match("regex"));
         assertEquals(LineMatcher.MATCHED, m.match("Regex"));

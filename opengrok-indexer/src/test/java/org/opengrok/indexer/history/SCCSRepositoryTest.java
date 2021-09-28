@@ -18,44 +18,23 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
+
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author Lubos Kosco
  */
 public class SCCSRepositoryTest {
-
-    public SCCSRepositoryTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of isRepositoryFor method, of class SCCSRepository.
@@ -69,22 +48,22 @@ public class SCCSRepositoryTest {
         SCCSRepository instance = new SCCSRepository();
         assertEquals(shouldPass, instance.isRepositoryFor(tdir));
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr1() throws IOException {
         testIsRepositoryFor("Codemgr_wsdata", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr2() throws IOException {
         testIsRepositoryFor("codemgr_wsdata", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgr3() throws IOException {
         testIsRepositoryFor("SCCS", true);
     }
-    
+
     @Test
     public void testIsRepositoryForCodemgrNot() throws IOException {
         testIsRepositoryFor("NOT", false);

@@ -281,7 +281,7 @@ public class Annotation {
             sw.append(line.author);
             sw.append(": \n");
         }
-        
+
         try {
             writeTooltipMap(sw);
         } catch (IOException e) {

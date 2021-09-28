@@ -18,12 +18,17 @@
  */
 
 /*
- * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web;
 
 import io.micrometer.core.instrument.Timer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.Metrics;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
@@ -37,11 +42,6 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -59,7 +59,7 @@ public final class WebappListener
         implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
-    private Timer startupTimer = Timer.builder("webapp.startup.latency").
+    private final Timer startupTimer = Timer.builder("webapp.startup.latency").
                 description("web application startup latency").
                 register(Metrics.getPrometheusRegistry());
 
@@ -75,7 +75,7 @@ public final class WebappListener
 
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
                     new Object[]{Info.getVersion(), Info.getRevision()});
-        
+
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
             throw new Error("CONFIGURATION parameter missing in the web.xml file");

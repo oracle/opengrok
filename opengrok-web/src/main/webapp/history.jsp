@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -117,18 +117,14 @@ include file="httpheader.jspf"
     document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
 <div id="page">
-    <div id="whole_header">
-        <div id="header">
+    <header id="whole_header">
 <%
     }
 }
 {
     if (request.getAttribute("history.jsp-hist") != null) {
-%><%@
-
-include file="pageheader.jspf"
-
 %>
+    <%@include file="pageheader.jspf" %>
 <%
     }
 }
@@ -148,7 +144,6 @@ include file="pageheader.jspf"
         // We have a lots of results to show: create a slider for them
         request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
 %>
-        </div>
         <div id="Masthead">History log of 
         <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
         (Results <b> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start
@@ -213,7 +208,7 @@ document.domReady.push(function() {domReadyHistory();});
         <tr>
             <th>Revision <%
             if (hist.hasTags()) {
-                %><a href="#" onclick="javascript: toggle_revtags(); return false;">
+                %><a href="#" onclick="toggle_revtags(); return false;">
                     <span class="revtags-hidden">
                     (&lt;&lt;&lt; Hide revision tags)</span>
                     <span class="revtags">
@@ -238,7 +233,7 @@ document.domReady.push(function() {domReadyHistory();});
             <th>Author</th>
             <th>Comments <%
             if (hist.hasFileList()) {
-                %><a href="#" onclick="javascript: toggle_filelist(); return false;">
+                %><a href="#" onclick="toggle_filelist(); return false;">
                     <div class="filelist-hidden">
                     (&lt;&lt;&lt; Hide modified files)</div>
                     <div class="filelist">
@@ -256,7 +251,7 @@ document.domReady.push(function() {domReadyHistory();});
                 if (rev == null || rev.length() == 0) {
                     rev = "";
                 }
-                String tags = entry.getTags();
+                String tags = hist.getTags().get(rev);
 
                 if (tags != null) {
 			int colspan;
@@ -291,6 +286,7 @@ document.domReady.push(function() {domReadyHistory();});
                 </a></td>
             <td><%
                 %><input type="radio"
+                        aria-label="From"
                         data-revision-1="<%= (start + count) %>"
                         data-revision-2="<%= revision2 %>"
                         data-diff-revision="<%= QueryParameters.REVISION_1_PARAM %>"
@@ -308,6 +304,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %>/><%
 
                 %><input type="radio"
+                        aria-label="To"
                         data-revision-1="<%= revision1 %>"
                         data-revision-2="<%= (start + count) %>"
                         data-diff-revision="<%= QueryParameters.REVISION_2_PARAM %>"

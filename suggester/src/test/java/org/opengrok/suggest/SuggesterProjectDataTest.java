@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest;
 
@@ -34,9 +34,9 @@ import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,12 +49,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SuggesterProjectDataTest {
 
@@ -66,13 +67,13 @@ public class SuggesterProjectDataTest {
 
     private SuggesterProjectData data;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         dir = new ByteBuffersDirectory();
         tempDir = Files.createTempDirectory("test");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         if (data != null) {
             data.close();
@@ -205,13 +206,14 @@ public class SuggesterProjectDataTest {
         assertEquals(20, data.getSearchCounts(FIELD).get(new BytesRef("some")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void incrementByNegativeValueTest() throws IOException {
         addText(FIELD, "another text example");
 
         init(true);
 
-        data.incrementSearchCount(new Term(FIELD, "example"), -10);
+        assertThrows(IllegalArgumentException.class,
+                () -> data.incrementSearchCount(new Term(FIELD, "example"), -10));
     }
 
     @Test
@@ -245,12 +247,12 @@ public class SuggesterProjectDataTest {
         assertThat(getSuggestions(FIELD, "t", 2), containsInAnyOrder("term", "term2"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void incrementSearchCountNullTest() throws IOException {
         addText(FIELD, "term");
         init(false);
 
-        data.incrementSearchCount(null);
+        assertThrows(IllegalArgumentException.class, () -> data.incrementSearchCount(null));
     }
 
     @Test
@@ -306,6 +308,24 @@ public class SuggesterProjectDataTest {
         List<Entry<BytesRef, Integer>> searchCounts = data.getSearchCountsSorted(FIELD, 0, 10);
 
         assertThat(searchCounts, contains(new SimpleEntry<>(t1.bytes(), 10), new SimpleEntry<>(t2.bytes(), 5)));
+    }
+
+    @Test
+    public void testRebuildPicksUpNewFields() throws IOException {
+        // create dummy index
+        try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
+            iw.isOpen(); // dummy operation
+        }
+        init(false);
+
+        // add new field after suggester data was initialized
+        addText(FIELD, "term1 term2");
+
+        assertTrue(getSuggestions(FIELD, "t", 10).isEmpty());
+
+        data.rebuild();
+
+        assertFalse(getSuggestions(FIELD, "t", 10).isEmpty());
     }
 
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Nameable;
 import org.opengrok.indexer.configuration.Project;
@@ -165,8 +164,8 @@ public class AuthorizationPlugin extends AuthorizationStack {
      * false otherwise
      *
      * @see #isFailed()
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Project)
-     * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Group)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Project)
+     * @see IAuthorizationPlugin#isAllowed(jakarta.servlet.http.HttpServletRequest, Group)
      */
     @Override
     public boolean isAllowed(Nameable entity,
@@ -280,16 +279,11 @@ public class AuthorizationPlugin extends AuthorizationStack {
      */
     @Override
     public String hierarchyToString(String prefix, String colorElement) {
-        StringBuilder builder = new StringBuilder(prefix);
-
-        builder.append(colorToString(colorElement));
-        builder.append(infoToString(prefix));
-        builder.append(" (class ").append(isWorking() ? "loaded" : "missing/failed").append(")");
-        builder.append("\n");
-
-        builder.append(setupToString(prefix));
-        builder.append(targetsToString(prefix));
-
-        return builder.toString();
+        return prefix + colorToString(colorElement) +
+                infoToString(prefix) +
+                " (class " + (isWorking() ? "loaded" : "missing/failed") + ")" +
+                "\n" +
+                setupToString(prefix) +
+                targetsToString(prefix);
     }
 }

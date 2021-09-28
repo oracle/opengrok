@@ -96,12 +96,8 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if modifiers are OK
      */
     public boolean areModifiersOK() {
-        switch (dHead.qopname) {
-            case "m": // named here a la Perl for the Ruby /pat/ operator
-                return true;
-            default:
-                return false;
-        }
+        // "m" named here a la Perl for the Ruby /pat/ operator
+        return "m".equals(dHead.qopname);
     }
 
     /**
@@ -219,7 +215,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceFirst("\\s+$", "");
+        String lede = preceding.stripTrailing();
         String intervening = preceding.substring(lede.length());
 
         // OK to pass a fake "m/" with doWrite=false
@@ -244,7 +240,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceFirst("\\s+$", "");
+        String lede = preceding.stripTrailing();
         String intervening = preceding.substring(lede.length());
 
         // OK to pass a fake "m/" with doWrite=false
@@ -369,7 +365,7 @@ abstract class RubyLexer extends JFlexSymbolMatcher
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
-        String trimmed = capture.replaceFirst("^\\s+", "");
+        String trimmed = capture.stripLeading();
         HereDocSettings settings = dHead.hereSettings.peek();
         assert settings != null;
 

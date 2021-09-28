@@ -18,23 +18,25 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Application;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Application;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class WebHookTest extends JerseyTest {
+class WebHookTest extends JerseyTest {
     private static final String PREFIX = "service";
     private static int requests;
 
@@ -47,13 +49,23 @@ public class WebHookTest extends JerseyTest {
         }
     }
 
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     @Override
     protected Application configure() {
         return new ResourceConfig(Service.class);
     }
 
     @Test
-    public void testPost() throws ExecutionException, InterruptedException {
+    void testPost() throws ExecutionException, InterruptedException {
         assertEquals(0, requests);
         WebHook hook = new WebHook(getBaseUri() + PREFIX, "{}");
         Future<String> future = hook.post();

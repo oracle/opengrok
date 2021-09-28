@@ -23,7 +23,7 @@
  */
 package org.opengrok.indexer.analysis.plain;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
 
 import java.io.IOException;

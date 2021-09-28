@@ -18,27 +18,23 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
 
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.GenericType;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.util.TestRepository;
 
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -51,16 +47,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class AnnotationControllerTest extends OGKJerseyTest {
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 
@@ -69,7 +61,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         return new ResourceConfig(AnnotationController.class);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -91,7 +83,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
                 null); // repositories - needed when refreshing history partially
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -122,7 +114,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)
                 .request()
-                .get(new GenericType<List<AnnotationController.AnnotationDTO>>() {
+                .get(new GenericType<>() {
                 });
         assertEquals(getNumLines(new File(env.getSourceRootFile(), path)), annotations.size());
         assertEquals("Trond Norbye", annotations.get(0).getAuthor());
@@ -140,13 +132,13 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAnnotationAPIWithRevision() throws IOException {
+    public void testAnnotationAPIWithRevision() {
         final String path = "git/Makefile";
         List<AnnotationController.AnnotationDTO> annotations = target("annotation")
                 .queryParam("path", path)
                 .queryParam("revision", "bb74b7e8")
                 .request()
-                .get(new GenericType<List<AnnotationController.AnnotationDTO>>() {
+                .get(new GenericType<>() {
                 });
         assertEquals(8, annotations.size());
         assertEquals("Trond Norbye", annotations.get(0).getAuthor());

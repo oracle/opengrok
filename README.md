@@ -1,5 +1,5 @@
 
-Copyright (c) 2006, 2020 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2021 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
@@ -25,7 +25,7 @@ your source tree. It can understand various program file formats and
 version control histories of many source code management systems.
 
 Official page of the project is on:
-<http://opengrok.github.com/OpenGrok/>
+<https://oracle.github.io/opengrok/>
 
 ## 2. OpenGrok install and setup
 
@@ -33,11 +33,13 @@ See https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
 
 ### 2. 1. Updating
 
-OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is x.y.z and change in any component is interpreted as:
+OpenGrok uses [semantic versioning](https://semver.org/) and the version components further indicate more details about updating to newer version. The version scheme is *major.minor.micro* and change in any component is interpreted as:
 
- - x - major backwards incompatible update
- - y - full clean reindex of your repositories is needed (e. g. index format has changed)
- - z - redeploy web application
+ - major - major backwards incompatible update
+ - minor - full clean reindex of your repositories is needed (e. g. index format has changed)
+ - micro - redeploy web application
+
+Generally it is possible to go backward only within the micro version.
 
 ## 3. Information for developers
 
@@ -45,7 +47,7 @@ See https://github.com/oracle/opengrok/wiki/Developer-intro and https://github.c
 
 ## 4. Authors
 
-The project has been originally conceived in Sun Microsystems by Chandan B.N.
+The project has been originally conceived in [Sun Microsystems](https://en.wikipedia.org/wiki/Sun_Microsystems) by Chandan B.N.
 
 For full list of contributors see https://github.com/oracle/opengrok/graphs/contributors
 
@@ -56,3 +58,5 @@ There are Slack channels on https://opengrok.slack.com/
 ## 6. Run as container
 
 You can run OpenGrok as a Docker container as described [here](docker/README.md).
+
+In fact, http://demo.opengrok.org/ is using the `opengrok/docker:master` Docker image.

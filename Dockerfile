@@ -1,9 +1,12 @@
-# Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2021 Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 FROM ubuntu:bionic as build
 
-RUN apt-get update && apt-get install -y maven python3 python3-venv
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install --no-install-recommends -y maven python3 python3-venv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a first layer to cache the "Maven World" in the local repository.
 # Incremental docker builds will always resume after that, unless you update the pom
@@ -15,12 +18,12 @@ COPY plugins/pom.xml /mvn/plugins/
 COPY suggester/pom.xml /mvn/suggester/
 
 # distribution and tools do not have dependencies to cache
-RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml
-RUN sed -i 's:<module>tools</module>::g' /mvn/pom.xml
-
-RUN mkdir -p /mvn/opengrok-indexer/target/jflex-sources
-RUN mkdir -p /mvn/opengrok-web/src/main/webapp
-RUN mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
+RUN sed -i 's:<module>distribution</module>::g' /mvn/pom.xml && \
+    sed -i 's:<module>tools</module>::g' /mvn/pom.xml && \
+    mkdir -p /mvn/opengrok-indexer/target/jflex-sources && \
+    mkdir -p /mvn/opengrok-web/src/main/webapp/js && \
+    mkdir -p /mvn/opengrok-web/src/main/webapp/WEB-INF/ && \
+    touch /mvn/opengrok-web/src/main/webapp/WEB-INF/web.xml
 
 # dummy build to cache the dependencies
 RUN mvn -DskipTests -Dcheckstyle.skip -Dmaven.antrun.skip package
@@ -30,30 +33,43 @@ COPY ./ /opengrok-source
 WORKDIR /opengrok-source
 
 RUN mvn -DskipTests=true -Dmaven.javadoc.skip=true -B -V package
+# hadolint ignore=SC2012,DL4006
 RUN cp `ls -t distribution/target/*.tar.gz | head -1` /opengrok.tar.gz
 
-FROM tomcat:9-jdk11
+# Store the version in a file so that the tools can report it.
+RUN mvn help:evaluate -Dexpression=project.version -q -DforceStdout > /mvn/VERSION
+
+FROM tomcat:10-jdk11
 LABEL maintainer="https://github.com/oracle/opengrok"
 
 # install dependencies and Python tools
+# hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
-    apt-get install -y git subversion mercurial unzip inotify-tools python3 python3-pip python3-venv
+    apt-get install --no-install-recommends -y git subversion mercurial unzip inotify-tools python3 python3-pip \
+    python3-venv python3-setuptools
 
 # compile and install universal-ctags
-RUN apt-get install -y pkg-config autoconf build-essential && \
+# hadolint ignore=DL3003,DL3008
+RUN apt-get install --no-install-recommends -y pkg-config automake build-essential && \
     git clone https://github.com/universal-ctags/ctags /root/ctags && \
     cd /root/ctags && ./autogen.sh && ./configure && make && make install && \
-    apt-get remove -y autoconf build-essential && \
+    apt-get remove -y automake build-essential && \
     apt-get -y autoremove && apt-get -y autoclean && \
-    cd /root && rm -rf /root/ctags
+    cd /root && rm -rf /root/ctags && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # prepare OpenGrok binaries and directories
+# hadolint ignore=DL3010
 COPY --from=build opengrok.tar.gz /opengrok.tar.gz
+# hadolint ignore=DL3013
 RUN mkdir -p /opengrok /opengrok/etc /opengrok/data /opengrok/src && \
     tar -zxvf /opengrok.tar.gz -C /opengrok --strip-components 1 && \
-    rm -f /opengrok.tar.gz
+    rm -f /opengrok.tar.gz && \
+    python3 -m pip install --no-cache-dir /opengrok/tools/opengrok-tools* && \
+    python3 -m pip install --no-cache-dir Flask Flask-HTTPAuth waitress # for /reindex REST endpoint handled by start.py
 
-RUN python3 -m pip install /opengrok/tools/opengrok-tools*
+COPY --from=build /mvn/VERSION /opengrok/VERSION
 
 # environment variables
 ENV SRC_ROOT /opengrok/src
@@ -66,11 +82,11 @@ ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CLASSPATH /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar
 
 # disable all file logging
-ADD docker/logging.properties /usr/local/tomcat/conf/logging.properties
+COPY docker/logging.properties /usr/local/tomcat/conf/logging.properties
 RUN sed -i -e 's/Valve/Disabled/' /usr/local/tomcat/conf/server.xml
 
 # add our scripts
-ADD docker /scripts
+COPY docker /scripts
 RUN chmod -R +x /scripts
 
 # run

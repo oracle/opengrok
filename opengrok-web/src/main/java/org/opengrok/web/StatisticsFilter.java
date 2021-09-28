@@ -18,25 +18,28 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.Metrics;
+import org.opengrok.indexer.web.QueryParameters;
 import org.opengrok.indexer.web.SearchHelper;
 
 public class StatisticsFilter implements Filter {
@@ -44,13 +47,6 @@ public class StatisticsFilter implements Filter {
     static final String REQUESTS_METRIC = "requests";
 
     private final DistributionSummary requests = Metrics.getPrometheusRegistry().summary(REQUESTS_METRIC);
-
-    private final Timer emptySearch = Timer.builder("search.latency").
-            tags("outcome", "empty").
-            register(Metrics.getPrometheusRegistry());
-    private final Timer successfulSearch = Timer.builder("search.latency").
-            tags("outcome", "success").
-            register(Metrics.getPrometheusRegistry());
 
     @Override
     public void init(FilterConfig fc) throws ServletException {
@@ -76,6 +72,33 @@ public class StatisticsFilter implements Filter {
     private void measure(HttpServletResponse httpResponse, HttpServletRequest httpReq,
                          Duration duration, PageConfig config) {
         String category;
+        category = getCategory(httpReq, config);
+
+        Timer categoryTimer = Timer.builder("requests.latency").
+                tags("category", category, "code", String.valueOf(httpResponse.getStatus())).
+                register(Metrics.getPrometheusRegistry());
+        categoryTimer.record(duration);
+
+        SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
+        MeterRegistry registry = Metrics.getRegistry();
+        if (helper != null && registry != null) {
+            if (helper.hits == null || helper.hits.length == 0) {
+                Timer.builder("search.latency").
+                        tags("category", "ui", "outcome", "empty").
+                        register(registry).
+                        record(duration);
+            } else {
+                Timer.builder("search.latency").
+                        tags("category", "ui", "outcome", "success").
+                        register(registry).
+                        record(duration);
+            }
+        }
+    }
+
+    @NotNull
+    private String getCategory(HttpServletRequest httpReq, PageConfig config) {
+        String category;
         if (isRoot(httpReq)) {
             category = "root";
         } else {
@@ -84,22 +107,12 @@ public class StatisticsFilter implements Filter {
                 category = "unknown";
             } else {
                 category = prefix.substring(1);
+                if (category.equals("xref") && httpReq.getParameter(QueryParameters.ANNOTATION_PARAM) != null) {
+                    category = "annotate";
+                }
             }
         }
-
-        Timer categoryTimer = Timer.builder("requests.latency").
-                tags("category", category, "code", String.valueOf(httpResponse.getStatus())).
-                register(Metrics.getPrometheusRegistry());
-        categoryTimer.record(duration);
-
-        SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
-        if (helper != null) {
-            if (helper.hits == null || helper.hits.length == 0) {
-                emptySearch.record(duration);
-            } else {
-                successfulSearch.record(duration);
-            }
-        }
+        return category;
     }
 
     private boolean isRoot(final HttpServletRequest httpReq) {

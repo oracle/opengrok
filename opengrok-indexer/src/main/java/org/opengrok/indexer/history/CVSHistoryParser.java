@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -67,7 +67,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         String s = in.readLine();
         while (s != null) {
             if (state == ParseState.NAMES && s.startsWith("symbolic names:")) {
-                tags = new HashMap<String, String>();
+                tags = new HashMap<>();
                 state = ParseState.TAG;
                 s = in.readLine();
             }
@@ -93,7 +93,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 } else {
                     state = ParseState.REVISION;
                     s = in.readLine();
-                }             
+                }
             }
             if (state == ParseState.REVISION && s.startsWith("revision")) {
                 if (entry != null) {
@@ -104,7 +104,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 String commit = s.substring("revision".length()).trim();
                 entry.setRevision(commit);
                 if (tags.containsKey(commit)) {
-                    entry.setTags(tags.get(commit));
+                    history.addTags(entry, tags.get(commit));
                 }
                 state = ParseState.METADATA;
                 s = in.readLine();

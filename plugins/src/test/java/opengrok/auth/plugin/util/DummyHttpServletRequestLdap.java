@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -31,29 +31,29 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
 
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.Part;
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
-import org.opengrok.indexer.util.RandomString;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
     private final Map<String, String> headers = new HashMap<>();
     private final Map<String, Object> attrs = new HashMap<>();
-    private HttpSession sessions = new HttpSession() {
+    private final HttpSession sessions = new HttpSession() {
 
         private final Map<String, Object> attrs = new HashMap<>();
 
@@ -68,7 +68,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
             if ((user = (User) getAttribute(UserPlugin.REQUEST_ATTR)) != null) {
                 return user.getUsername();
             }
-            return RandomString.generate(5);
+            return RandomStringUtils.randomAlphanumeric(5);
         }
 
         @Override
@@ -92,7 +92,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
         @Override
         @SuppressWarnings("deprecation")
-        public javax.servlet.http.HttpSessionContext getSessionContext() {
+        public jakarta.servlet.http.HttpSessionContext getSessionContext() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

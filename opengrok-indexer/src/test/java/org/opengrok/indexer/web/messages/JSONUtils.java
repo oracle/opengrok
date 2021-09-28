@@ -25,11 +25,12 @@ package org.opengrok.indexer.web.messages;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.junit.Assert;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public final class JSONUtils {
     private JSONUtils() {
@@ -41,7 +42,7 @@ public final class JSONUtils {
         JsonFactory jfactory = new JsonFactory();
         JsonParser jParser = jfactory.createParser(jsonString);
 
-        Assert.assertNotNull(jParser);
+        assertNotNull(jParser);
 
         JsonToken token;
         jParser.nextToken(); // skip the initial START_OBJECT

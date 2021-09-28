@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -58,8 +59,8 @@ public class Executor {
     private static final Pattern ARG_UNIX_QUOTING = Pattern.compile("[^-:.+=%a-zA-Z0-9_/]");
     private static final Pattern ARG_GNU_STYLE_EQ = Pattern.compile("^--[-.a-zA-Z0-9_]+=");
 
-    private List<String> cmdList;
-    private File workingDirectory;
+    private final List<String> cmdList;
+    private final File workingDirectory;
     private byte[] stdout;
     private byte[] stderr;
     private int timeout; // in seconds, 0 means no timeout
@@ -154,8 +155,7 @@ public class Executor {
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
-        final String cmd_str = escapeForShell(processBuilder.command(), false,
-                PlatformUtils.isWindows());
+        final String cmd_str = escapeForShell(processBuilder.command(), false, SystemUtils.IS_OS_WINDOWS);
         final String dir_str;
         Timer timer = null; // timer for timing out the process
 
@@ -174,14 +174,14 @@ public class Executor {
             dir_str = cwd.toString();
         }
 
-        String env_str = "";
+        String envStr = "";
         if (LOGGER.isLoggable(Level.FINER)) {
-            Map<String, String> env_map = processBuilder.environment();
-            env_str = " with environment: " + env_map.toString();
+            Map<String, String> envMap = processBuilder.environment();
+            envStr = " with environment: " + envMap.toString();
         }
         LOGGER.log(Level.FINE,
                 "Executing command [{0}] in directory {1}{2}",
-                new Object[] {cmd_str, dir_str, env_str});
+                new Object[] {cmd_str, dir_str, envStr});
 
         Process process = null;
         try {
@@ -191,19 +191,15 @@ public class Executor {
 
             final InputStream errorStream = process.getErrorStream();
             final SpoolHandler err = new SpoolHandler();
-            Thread thread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        err.processStream(errorStream);
-                    } catch (IOException ex) {
-                        if (reportExceptions) {
-                            LOGGER.log(Level.SEVERE,
-                                    "Error while executing command [{0}] in directory {1}",
-                                    new Object[] {cmd_str, dir_str});
-                            LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
-                        }
+            Thread thread = new Thread(() -> {
+                try {
+                    err.processStream(errorStream);
+                } catch (IOException ex) {
+                    if (reportExceptions) {
+                        LOGGER.log(Level.SEVERE,
+                                "Error while executing command [{0}] in directory {1}",
+                                new Object[] {cmd_str, dir_str});
+                        LOGGER.log(Level.SEVERE, "Error during process pipe listening", ex);
                     }
                 }
             });
@@ -380,7 +376,7 @@ public class Executor {
         }
 
         @Override
-        public void processStream(InputStream input) throws IOException {            
+        public void processStream(InputStream input) throws IOException {
             BufferedInputStream  in = new BufferedInputStream(input);
 
             byte[] buffer = new byte[8092];
@@ -393,20 +389,16 @@ public class Executor {
             }
         }
     }
-    
+
     public static void registerErrorHandler() {
         UncaughtExceptionHandler dueh =
             Thread.getDefaultUncaughtExceptionHandler();
         if (dueh == null) {
             LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
-            Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
+            Thread.setDefaultUncaughtExceptionHandler((t, e) ->
                     LOGGER.log(Level.SEVERE, "Uncaught exception in thread "
-                        + t.getName() + " with ID " + t.getId() + ": "
-                        + e.getMessage(), e);
-                }
-            });
+                            + t.getName() + " with ID " + t.getId() + ": "
+                            + e.getMessage(), e));
         }
     }
 

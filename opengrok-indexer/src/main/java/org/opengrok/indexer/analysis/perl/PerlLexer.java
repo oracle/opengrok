@@ -212,7 +212,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         }
 
         String postop = postboundary.substring(qopname.length());
-        String ltpostop = postop.replaceFirst("^\\s+", "");
+        String ltpostop = postop.stripLeading();
         char opc = ltpostop.charAt(0);
         setEndQuoteChar(opc);
         setState(ltpostop, nointerp);
@@ -291,7 +291,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceFirst("\\s+$", "");
+        String lede = preceding.stripTrailing();
         String intervening = preceding.substring(lede.length());
 
         // OK to pass a fake "m/" with doWrite=false
@@ -312,7 +312,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceFirst("\\s+$", "");
+        String lede = preceding.stripTrailing();
         String intervening = preceding.substring(lede.length());
 
         // OK to pass a fake "m/" with doWrite=false
@@ -374,7 +374,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
             indented = true;
             remaining = remaining.substring(1);
         }
-        remaining = remaining.replaceFirst("^\\s+", "");
+        remaining = remaining.stripLeading();
         char c = remaining.charAt(0);
         switch (c) {
             case '\'':
@@ -442,7 +442,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
-        String trimmed = capture.replaceFirst("^\\s+", "");
+        String trimmed = capture.stripLeading();
         HereDocSettings settings = hereSettings.peek();
 
         boolean didZspan = false;
@@ -489,7 +489,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         }
 
         String postsigil = capture.substring(1);
-        String id = postsigil.replaceFirst("^\\s+", "");
+        String id = postsigil.stripLeading();
         String s0 = postsigil.substring(0, postsigil.length() - id.length());
 
         int ohnooo;
@@ -544,13 +544,13 @@ abstract class PerlLexer extends JFlexSymbolMatcher
         String sigil = capture.substring(0, 1);
         String rpunc = capture.substring(capture.length() - 1);
         String interior0 = capture.substring(1, capture.length() - 1);
-        String ltinterior0 = interior0.replaceFirst("^\\s+", "");
+        String ltinterior0 = interior0.stripLeading();
         String s0 = interior0.substring(0, interior0.length() -
             ltinterior0.length());
 
         String lpunc = ltinterior0.substring(0, 1);
         String interior1 = ltinterior0.substring(1);
-        String ltinterior1 = interior1.replaceFirst("^\\s+", "");
+        String ltinterior1 = interior1.stripLeading();
         String s1 = interior1.substring(0, interior1.length() -
             ltinterior1.length());
 
@@ -592,7 +592,7 @@ abstract class PerlLexer extends JFlexSymbolMatcher
 
     /**
      * Gets a pattern to match the collateral capture for the current quoting
-     * state or null if there is no active quoting state. 
+     * state or null if there is no active quoting state.
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {

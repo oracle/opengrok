@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
@@ -45,15 +45,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
+
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Response;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.search.SearcherManager;
@@ -132,7 +132,7 @@ public final class RuntimeEnvironment {
         return subFiles;
     }
 
-    private List<String> subFiles = new ArrayList<>();
+    private final List<String> subFiles = new ArrayList<>();
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
@@ -144,8 +144,8 @@ public final class RuntimeEnvironment {
         watchDog = new WatchDogService();
         lzIndexerParallelizer = LazilyInstantiate.using(() ->
                 new IndexerParallelizer(this));
-        lzSearchExecutor = LazilyInstantiate.using(() -> newSearchExecutor());
-        lzRevisionExecutor = LazilyInstantiate.using(() -> newRevisionExecutor());
+        lzSearchExecutor = LazilyInstantiate.using(this::newSearchExecutor);
+        lzRevisionExecutor = LazilyInstantiate.using(this::newRevisionExecutor);
     }
 
     // Instance of authorization framework and its lock.
@@ -170,14 +170,11 @@ public final class RuntimeEnvironment {
     private ExecutorService newSearchExecutor() {
         return Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
-                new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
+                runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("search-" + thread.getId());
                     return thread;
-                }
-            });
+                });
     }
 
     public ExecutorService getRevisionExecutor() {
@@ -299,6 +296,14 @@ public final class RuntimeEnvironment {
 
     public void setCtagsTimeout(long timeout) {
         syncWriteConfiguration(timeout, Configuration::setCtagsTimeout);
+    }
+
+    public long getXrefTimeout() {
+        return syncReadConfiguration(Configuration::getXrefTimeout);
+    }
+
+    public void setXrefTimeout(long timeout) {
+        syncWriteConfiguration(timeout, Configuration::setXrefTimeout);
     }
 
     public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
@@ -737,11 +742,11 @@ public final class RuntimeEnvironment {
     public void setRepositories(List<RepositoryInfo> repositories) {
         syncWriteConfiguration(repositories, Configuration::setRepositories);
     }
-    
+
     public void removeRepositories() {
         syncWriteConfiguration(null, Configuration::setRepositories);
     }
-    
+
     /**
      * Search through the directory for repositories and use the result to replace
      * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.
@@ -1121,12 +1126,12 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Gets the value of {@link Configuration#getHistoryRenamedParallelism()} -- or
+     * Gets the value of {@link Configuration#getHistoryFileParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
      * @return a natural number &gt;= 1
      */
-    public int getHistoryRenamedParallelism() {
-        int parallelism = syncReadConfiguration(Configuration::getHistoryRenamedParallelism);
+    public int getHistoryFileParallelism() {
+        int parallelism = syncReadConfiguration(Configuration::getHistoryFileParallelism);
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
                 parallelism;
     }
@@ -1250,6 +1255,14 @@ public final class RuntimeEnvironment {
         return syncReadConfiguration(Configuration::isHandleHistoryOfRenamedFiles);
     }
 
+    public void setMergeCommitsEnabled(boolean flag) {
+        syncWriteConfiguration(flag, Configuration::setMergeCommitsEnabled);
+    }
+
+    public boolean isMergeCommitsEnabled() {
+        return syncReadConfiguration(Configuration::isMergeCommitsEnabled);
+    }
+
     public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
         syncWriteConfiguration(navigateWindowEnabled, Configuration::setNavigateWindowEnabled);
     }
@@ -1353,6 +1366,22 @@ public final class RuntimeEnvironment {
      */
     public short getContextSurround() {
         return syncReadConfiguration(Configuration::getContextSurround);
+    }
+
+    public int getHistoryChunkCount() {
+        return syncReadConfiguration(Configuration::getHistoryChunkCount);
+    }
+
+    public void setHistoryChunkCount(int chunkCount) {
+        syncWriteConfiguration(chunkCount, Configuration::setHistoryChunkCount);
+    }
+
+    public boolean isHistoryCachePerPartesEnabled() {
+        return syncReadConfiguration(Configuration::isHistoryCachePerPartesEnabled);
+    }
+
+    public void setHistoryCachePerPartesEnabled(boolean enabled) {
+        syncWriteConfiguration(enabled, Configuration::setHistoryCachePerPartesEnabled);
     }
 
     public Set<String> getDisabledRepositories() {
@@ -1750,12 +1779,9 @@ public final class RuntimeEnvironment {
             Directory dir = FSDirectory.open(new File(indexDir, projectName).toPath());
             mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
             searcherManagerMap.put(projectName, mgr);
-            searcher = (SuperIndexSearcher) mgr.acquire();
-            searcher.setSearcherManager(mgr);
-        } else {
-            searcher = (SuperIndexSearcher) mgr.acquire();
-            searcher.setSearcherManager(mgr);
         }
+        searcher = (SuperIndexSearcher) mgr.acquire();
+        searcher.setSearcherManager(mgr);
 
         return searcher;
     }
@@ -1965,6 +1991,14 @@ public final class RuntimeEnvironment {
 
     public void setAuthenticationTokens(Set<String> tokens) {
         syncWriteConfiguration(tokens, Configuration::setAuthenticationTokens);
+    }
+
+    public boolean isAllowInsecureTokens() {
+        return syncReadConfiguration(Configuration::isAllowInsecureTokens);
+    }
+
+    public void setAllowInsecureTokens(boolean value) {
+        syncWriteConfiguration(value, Configuration::setAllowInsecureTokens);
     }
 
     public void registerListener(ConfigurationChangedListener listener) {

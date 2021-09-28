@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2020, Krystof Tulinger <k.tulinger@seznam.cz>
 #
 
@@ -76,6 +76,9 @@ def test_incoming_retval(monkeypatch):
         def mock_get(*args, **kwargs):
             return MockResponse()
 
+        def mock_get_config_value(*args, **kwargs):
+            return source_root
+
         # Clone a Git repository so that it can pull.
         repo = Repo.init(repo_path)
         with repo.config_writer() as git_config:
@@ -96,7 +99,7 @@ def test_incoming_retval(monkeypatch):
 
             # With mocking done via pytest it is necessary to patch
             # the call-site rather than the absolute object path.
-            m.setattr("opengrok_tools.mirror.get_config_value", lambda x, y, z: source_root)
+            m.setattr("opengrok_tools.mirror.get_config_value", mock_get_config_value)
             m.setattr("opengrok_tools.utils.mirror.get_repos_for_project", mock_get_repos)
             m.setattr("opengrok_tools.utils.mirror.do_api_call", mock_get)
 

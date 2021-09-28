@@ -26,9 +26,9 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class JavaAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Java";
-    
+
+    private static final String NAME = "Java";
+
     private static final String[] SUFFIXES = {
         "JAVA",
         "AIDL",
@@ -36,7 +36,7 @@ public class JavaAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public JavaAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

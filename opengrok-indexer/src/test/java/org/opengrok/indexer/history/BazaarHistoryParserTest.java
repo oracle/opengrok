@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -26,17 +26,15 @@ package org.opengrok.indexer.history;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.PlatformUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
@@ -45,18 +43,7 @@ public class BazaarHistoryParserTest {
 
     private BazaarHistoryParser instance;
 
-    public BazaarHistoryParserTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
             RuntimeEnvironment.getInstance().setSourceRoot("");
@@ -67,7 +54,7 @@ public class BazaarHistoryParserTest {
         instance = new BazaarHistoryParser(bzrRepo);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         instance = null;
     }
@@ -81,7 +68,7 @@ public class BazaarHistoryParserTest {
         History result = instance.parse("");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals("Should not contain any history entries", 0, result.getHistoryEntries().size());
+        assertEquals(0, result.getHistoryEntries().size(), "Should not contain any history entries");
     }
 
     @Test
@@ -161,14 +148,8 @@ public class BazaarHistoryParserTest {
         String revId1 = "1234";
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
-        String[] files = {
-                "/filename.ext",
-                "/directory",
-                "/directory/filename.ext",
-                "/directory/filename2.ext2",
-                "/otherdir/file.extension"
-        };
-        if (PlatformUtils.isWindows()) {
+        String[] files;
+        if (SystemUtils.IS_OS_WINDOWS) {
             files = new String[] {
                     "\\\\filename.ext",
                     "\\\\directory",
@@ -176,12 +157,18 @@ public class BazaarHistoryParserTest {
                     "\\\\directory\\filename2.ext2",
                     "\\\\otherdir\\file.extension"
             };
+        } else {
+            files = new String[] {
+                    "/filename.ext",
+                    "/directory",
+                    "/directory/filename.ext",
+                    "/directory/filename2.ext2",
+                    "/otherdir/file.extension"
+            };
         }
 
         StringBuilder output = new StringBuilder();
-        for (int i = 0; i < 60; i++) {
-            output.append('-');
-        }
+        output.append("-".repeat(60));
         output.append('\n');
         output.append("revno: ").append(revId1).append("\n");
         output.append("committer: ").append(author1).append("\n");

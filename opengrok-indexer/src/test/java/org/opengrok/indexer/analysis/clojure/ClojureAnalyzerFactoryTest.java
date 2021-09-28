@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.clojure;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Definitions;
@@ -43,9 +43,8 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
@@ -66,7 +65,7 @@ public class ClojureAnalyzerFactoryTest {
         };
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -82,7 +81,7 @@ public class ClojureAnalyzerFactoryTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -97,9 +96,7 @@ public class ClojureAnalyzerFactoryTest {
     public void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/clojure/sample.clj";
         File f = new File(path);
-        if (!(f.canRead() && f.isFile())) {
-            fail("clojure testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "clojure testfile " + f + " not found");
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,

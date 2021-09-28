@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 
@@ -25,7 +25,6 @@ Portions Copyright (c) 2017-2020, Chris Fraire <cfraire@me.com>.
 java.io.BufferedInputStream,
 java.io.File,
 java.io.FileInputStream,
-java.io.InputStream,
 java.io.InputStreamReader,
 java.io.IOException,
 java.io.Reader,
@@ -38,29 +37,23 @@ java.util.logging.Logger,
 java.util.Set,
 java.util.TreeSet,
 org.opengrok.indexer.analysis.AnalyzerGuru,
-org.opengrok.indexer.analysis.Ctags,
 org.opengrok.indexer.analysis.Definitions,
 org.opengrok.indexer.analysis.AbstractAnalyzer,
-org.opengrok.indexer.analysis.AbstractAnalyzer.Genre,
 org.opengrok.indexer.analysis.AnalyzerFactory,
+org.opengrok.indexer.analysis.NullableNumLinesLOC,
 org.opengrok.indexer.history.Annotation,
-org.opengrok.indexer.history.HistoryGuru,
 org.opengrok.indexer.index.IndexDatabase,
 org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.search.DirectoryEntry,
 org.opengrok.indexer.search.DirectoryExtraReader,
-org.opengrok.indexer.search.FileExtra,
 org.opengrok.indexer.util.FileExtraZipper,
 org.opengrok.indexer.util.ForbiddenSymlinkException,
-org.opengrok.indexer.util.ObjectPool,
 org.opengrok.indexer.util.IOUtils,
-org.opengrok.indexer.web.QueryParameters,
 org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
 %>
+<%@ page import="static org.opengrok.web.PageConfig.DUMMY_REVISION" %>
 <%
-final String DUMMY_REVISION = "unknown";
-
 {
     // need to set it here since requesting parameters
     if (request.getCharacterEncoding() == null) {
@@ -155,7 +148,7 @@ document.pageReady.push(function() { pageReadyList();});
                 // update cookie
                 cookieValue = cookieValue.length() == 0 ? projectName :
                         projectName + ',' + cookieValue;
-                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
+                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, StandardCharsets.UTF_8));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
                 response.addCookie(cookie);
@@ -165,7 +158,7 @@ document.pageReady.push(function() { pageReadyList();});
         DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
-            List<FileExtra> extras = null;
+            List<NullableNumLinesLOC> extras = null;
             SearchHelper searchHelper = cfg.prepareInternalSearch();
             /*
              * N.b. searchHelper.destroy() is called via
@@ -193,11 +186,9 @@ document.pageReady.push(function() { pageReadyList();});
             }
 
             FileExtraZipper zipper = new FileExtraZipper();
-            List<DirectoryEntry> entries = zipper.zip(resourceFile, files,
-                extras);
+            List<DirectoryEntry> entries = zipper.zip(resourceFile, files, extras);
 
-            List<String> readMes = dl.extraListTo(
-                    Util.URIEncodePath(request.getContextPath()),
+            List<String> readMes = dl.extraListTo(Util.URIEncodePath(request.getContextPath()),
                     resourceFile, out, path, entries);
             File[] catfiles = cfg.findDataFiles(readMes);
             for (int i=0; i < catfiles.length; i++) {
@@ -234,12 +225,10 @@ document.pageReady.push(function() { pageReadyList();});
     } else if (rev.length() != 0) {
         // requesting a revision
         File xrefFile;
-        if (cfg.isLatestRevision(rev) &&
-                (xrefFile = cfg.findDataFile()) != null) {
+        if (cfg.isLatestRevision(rev) && (xrefFile = cfg.findDataFile()) != null) {
             if (cfg.annotate()) {
                 // annotate
-                BufferedInputStream bin =
-                        new BufferedInputStream(new FileInputStream(resourceFile));
+                BufferedInputStream bin = new BufferedInputStream(new FileInputStream(resourceFile));
                 try {
                     AnalyzerFactory a = AnalyzerGuru.find(basename);
                     AbstractAnalyzer.Genre g = AnalyzerGuru.getGenre(a);
@@ -253,7 +242,7 @@ document.pageReady.push(function() { pageReadyList();});
     <img src="<%= rawPath %>" alt="Image from Source Repository"/>
 </div><%
                     } else if ( g == AbstractAnalyzer.Genre.HTML) {
-                        /**
+                        /*
                          * For backward compatibility, read the OpenGrok-produced
                          * document using the system default charset.
                          */
@@ -268,7 +257,7 @@ document.pageReady.push(function() { pageReadyList();});
                         // find the definitions in the index.
                         Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                         Annotation annotation = cfg.getAnnotation();
-                        // SRCROOT is read with UTF-8 as a default.
+                        // Data under source root is read with UTF-8 as a default.
                         r = IOUtils.createBOMStrippedReader(bin,
                             StandardCharsets.UTF_8.name());
                         AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
@@ -298,155 +287,20 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                     Util.dumpXref(out, xrefFile, compressed,
                             request.getContextPath());
     %></pre>
-</div><%
+</div>
+<%
             }
         } else {
-            // requesting a previous revision or needed to generate xref on the fly (economy mode).
-            AnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
-            String error = null;
-            if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
-                InputStream in = null;
-                File tempf = null;
-                try {
-                    if (rev.equals(DUMMY_REVISION)) {
-                        in = new BufferedInputStream(new FileInputStream(resourceFile));
-                    } else {
-                        tempf = File.createTempFile("ogtags", basename);
-                        if (HistoryGuru.getInstance().getRevision(tempf,
-                                resourceFile.getParent(), basename, rev)) {
-                            in = new BufferedInputStream(new FileInputStream(tempf));
-                        } else {
-                            tempf.delete();
-                            tempf = null;
-                        }
-                    }
-                } catch (Exception e) {
-                    // fall through to error message
-                    error = e.getMessage();
-                    if (tempf != null) {
-                        tempf.delete();
-                        tempf = null;
-                    }
-                }
-                if (in != null) {
-                    try {
-                        if (g == null) {
-                            a = AnalyzerGuru.find(in, basename);
-                            g = AnalyzerGuru.getGenre(a);
-                        }
-                        if (g == AbstractAnalyzer.Genre.DATA || g == AbstractAnalyzer.Genre.XREFABLE || g == null) {
-    %>
-    <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a>
-    </div><%
-                        } else {
-    %>
-    <div id="src">
-        <pre><%
-                            if (g == AbstractAnalyzer.Genre.PLAIN) {
-                                Definitions defs = null;
-                                ObjectPool<Ctags> ctagsPool = cfg.getEnv().
-                                        getIndexerParallelizer().getCtagsPool();
-                                int tries = 2;
-                                while (cfg.getEnv().isWebappCtags()) {
-                                    Ctags ctags = ctagsPool.get();
-                                    try {
-                                        ctags.setTabSize(project != null ?
-                                                project.getTabSize() : 0);
-                                        defs = ctags.doCtags(tempf.getPath());
-                                        break;
-                                    } catch (InterruptedException ex) {
-                                        if (--tries > 0) {
-                                            LOGGER.log(Level.WARNING,
-                                                    "doCtags() interrupted--{0}",
-                                                    ex.getMessage());
-                                            continue;
-                                        }
-                                        LOGGER.log(Level.WARNING, "doCtags()", ex);
-                                        break;
-                                    } catch (Exception ex) {
-                                        LOGGER.log(Level.WARNING, "doCtags()", ex);
-                                        break;
-                                    } finally {
-                                        ctags.reset();
-                                        ctagsPool.release(ctags);
-                                    }
-                                }
-                                Annotation annotation = cfg.getAnnotation();
-                                //not needed yet
-                                //annotation.writeTooltipMap(out);
-                                // SRCROOT is read with UTF-8 as a default.
-                                r = IOUtils.createBOMStrippedReader(in,
-                                    StandardCharsets.UTF_8.name());
-                                AnalyzerGuru.writeDumpedXref(
-                                        request.getContextPath(),
-                                        a, r, out,
-                                        defs, annotation, project);
-                            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
-        %></pre>
-        <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"/>
-        <pre><%
-                            } else if (g == AbstractAnalyzer.Genre.HTML) {
-                                /**
-                                 * For backward compatibility, read the
-                                 * OpenGrok-produced document using the system
-                                 * default charset.
-                                 */
-                                r = new InputStreamReader(in);
-                                /**
-                                 * dumpXref() is also useful here for
-                                 * translating links.
-                                 */
-                                Util.dumpXref(out, r, request.getContextPath());
-                            } else {
-        %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a><%
-                            }
-                        }
-                    } catch (IOException e) {
-                        LOGGER.log(Level.SEVERE, "Failed xref on-the-fly", e);
-                    } finally {
-                        if (r != null) {
-                            IOUtils.close(r);
-                            in = null;
-                        }
-                        if (in != null) {
-                            IOUtils.close(in);
-                            in = null;
-                        }
-                        if (tempf != null) {
-                            tempf.delete();
-                        }
-                    }
-        %></pre>
-    </div><%
-                } else {
-    %>
-    <h3 class="error">Error reading file</h3><%
-                    if (error != null) {
-    %>
-    <p class="error"><%= error %></p><%
-                    }
-                }
-            } else if (g == AbstractAnalyzer.Genre.IMAGE) {
-    %>
-    <div id="src">
-        <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"
-	    alt="Image from Source Repository"/>
-    </div><%
-            } else {
-    %>
-    <div id="src">
-    Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a>
-    </div><%
-            }
+%>
+<%@
+
+include file="xref.jspf"
+
+%>
+<%
         }
     } else {
-        // requesting cross referenced file
-
+        // Requesting cross referenced file with no known revision.
         File xrefFile = cfg.findDataFile();
         if (xrefFile != null) {
 %>
@@ -455,10 +309,17 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             boolean compressed = xrefFile.getName().endsWith(".gz");
             Util.dumpXref(out, xrefFile, compressed, request.getContextPath());
     %></pre>
-</div><%
+</div>
+<%
         } else {
+            // Failed to get xref, generate on the fly.
 %>
-<p class="error">Failed to get xref file</p><%
+<%@
+
+include file="xref.jspf"
+
+%>
+<%
         }
     }
 }

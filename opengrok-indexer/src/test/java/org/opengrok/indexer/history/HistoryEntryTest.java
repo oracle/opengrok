@@ -18,23 +18,27 @@
  */
 
 /*
- * Copyright (c) 2008, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.TreeSet;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -43,29 +47,18 @@ import static org.junit.Assert.assertTrue;
 public class HistoryEntryTest {
 
     private HistoryEntry instance;
-    private Date historyDate = new Date();
-    private String historyRevision = "1.0";
-    private String historyAuthor = "test author";
-    private String historyMessage = "history entry message";
- 
-    public HistoryEntryTest() {
-    }
+    private final Date historyDate = new Date();
+    private final String historyRevision = "1.0";
+    private final String historyAuthor = "test author";
+    private final String historyMessage = "history entry message";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new HistoryEntry(historyRevision, historyDate,
-            historyAuthor, null, historyMessage, true);
+            historyAuthor, historyMessage, true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 
@@ -252,10 +245,65 @@ public class HistoryEntryTest {
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);
-        instance.setTags("test tag");
         instance.strip();
         assertEquals(0, instance.getFiles().size());
-        assertNull(instance.getTags());
     }
 
+    @Test
+    public void testEqualsCopyConstructor() {
+        HistoryEntry e = new HistoryEntry(instance);
+        assertNotSame(e, instance);
+        assertEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsEmpty() {
+        HistoryEntry e = new HistoryEntry();
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
+    }
+
+    @Test
+    public void testEquals() {
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, historyMessage, true);
+        assertNotSame(e, instance);
+        assertEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsWithFilesInstance() {
+        HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(File.separator + Paths.get("foo", "main.o"),
+                        File.separator + Paths.get("foo", "testsprog")));
+        assertNotSame(e, instance);
+        assertNotEquals(e, instance);
+    }
+
+    @Test
+    public void testEqualsWithFilesPositive() {
+        Set<String> files = Set.of(File.separator + Paths.get("foo", "main.o"),
+                File.separator + Paths.get("foo", "testsprog"));
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true, files);
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true, files);
+        assertNotSame(e1, e2);
+        assertEquals(e1, e2);
+    }
+
+    @Test
+    public void testEqualsWithFilesNegative() {
+        String file1 = File.separator + Paths.get("foo", "main.o");
+        String file2 = File.separator + Paths.get("foo", "testsprog");
+        HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(file1, file2));
+        HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
+                historyAuthor, null, historyMessage, true,
+                Set.of(file1, file2 + "X"));
+        assertNotSame(e1, e2);
+        assertNotEquals(e1, e2);
+    }
 }

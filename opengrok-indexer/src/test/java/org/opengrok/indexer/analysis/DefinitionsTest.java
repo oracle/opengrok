@@ -18,47 +18,24 @@
  */
 
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author austvik
  */
 public class DefinitionsTest {
-
-    public DefinitionsTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of getSymbols method, of class Definitions.
@@ -68,11 +45,11 @@ public class DefinitionsTest {
         Definitions instance = new Definitions();
         Set<String> result = instance.getSymbols();
         assertNotNull(result);
-        assertEquals(result.size(), 0);
+        assertEquals(0, result.size());
         instance.addTag(1, "found", "", "", 0, 0);
         result = instance.getSymbols();
         assertNotNull(result);
-        assertEquals(result.size(), 1);
+        assertEquals(1, result.size());
     }
 
     /**
@@ -92,8 +69,7 @@ public class DefinitionsTest {
     @Test
     public void hasDefinitionAt() {
         Definitions instance = new Definitions();
-        String[] type = new String[1];
-        type[0] = "";
+        String[] type = {""};
         instance.addTag(1, "found", "", "", 0, 0);
         assertFalse(instance.hasDefinitionAt("found", 0, type));
         assertTrue(instance.hasDefinitionAt("found", 1, type));
@@ -111,9 +87,9 @@ public class DefinitionsTest {
         instance.addTag(1, "one", "", "", 0, 0);
         instance.addTag(1, "two", "", "", 0, 0);
         instance.addTag(3, "two", "", "", 0, 0);
-        assertEquals(instance.occurrences("one"), 1);
-        assertEquals(instance.occurrences("two"), 2);
-        assertEquals(instance.occurrences("notFound"), 0);
+        assertEquals(1, instance.occurrences("one"));
+        assertEquals(2, instance.occurrences("two"));
+        assertEquals(0, instance.occurrences("notFound"));
     }
 
     /**
@@ -122,12 +98,12 @@ public class DefinitionsTest {
     @Test
     public void numberOfSymbols() {
         Definitions instance = new Definitions();
-        assertEquals(instance.numberOfSymbols(), 0);
+        assertEquals(0, instance.numberOfSymbols());
         instance.addTag(1, "one", "", "", 0, 0);
-        assertEquals(instance.numberOfSymbols(), 1);
+        assertEquals(1, instance.numberOfSymbols());
         instance.addTag(1, "two", "", "", 0, 0);
         instance.addTag(3, "two", "", "", 0, 0);
-        assertEquals(instance.numberOfSymbols(), 2);
+        assertEquals(2, instance.numberOfSymbols());
     }
 
     /**
@@ -136,13 +112,13 @@ public class DefinitionsTest {
     @Test
     public void getTags() {
         Definitions instance = new Definitions();
-        assertEquals(instance.getTags().size(), 0);
+        assertEquals(0, instance.getTags().size());
         instance.addTag(1, "one", "", "", 0, 0);
-        assertEquals(instance.getTags().size(), 1);
+        assertEquals(1, instance.getTags().size());
         instance.addTag(1, "two", "", "", 0, 0);
-        assertEquals(instance.getTags().size(), 2);
+        assertEquals(2, instance.getTags().size());
         instance.addTag(3, "two", "", "", 0, 0);
-        assertEquals(instance.getTags().size(), 3);
+        assertEquals(3, instance.getTags().size());
     }
 
     /**
@@ -151,9 +127,9 @@ public class DefinitionsTest {
     @Test
     public void addTag() {
         Definitions instance = new Definitions();
-        assertEquals(instance.getTags().size(), 0);
+        assertEquals(0, instance.getTags().size());
         instance.addTag(1, "one", "", "", 0, 0);
-        assertEquals(instance.getTags().size(), 1);
+        assertEquals(1, instance.getTags().size());
     }
 
     /**

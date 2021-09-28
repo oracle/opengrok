@@ -140,12 +140,12 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         if (xrefOut != null) {
             xrefOut.append(xref);
-            try { 
+            try {
                 xrefOut.flush();
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Couldn''t flush. Will retry once added to doc", ex);
             }
-        }        
+        }
 
         appendValues(dout, defs);
         appendValues(rout, refs);
@@ -163,7 +163,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    
+
     private static final String AHREF = "<a href=\"";
     private static final String AHREFT_END = "\">";
     private static final String AHREFEND = "</a>";
@@ -212,15 +212,15 @@ private static final String LBRA = " (";
 private static final String COMMA = ", ";
 private static final String RBRA = ") ";
 private static final String RCBREOL = "}\n";
-    
+
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
     private void getContent(Writer out, Writer fout, JavaClass c,
             List<String> defs, List<String> refs, List<String> full)
             throws IOException {
         String t;
         ConstantPool cp = c.getConstantPool();
-        
-        
+
+
         int[] v = new int[cp.getLength() + 1];
         out.write(linkPath(t = c.getSourceFileName()));
         defs.add(t);
@@ -239,8 +239,8 @@ private static final String RCBREOL = "}\n";
         out.write(EOL);
         fout.write(EOL);
         String aflg;
-        out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));        
-        if (aflg != null) {            
+        out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));
+        if (aflg != null) {
             out.write(SPACE);
             fout.write(aflg);
             fout.write(SPACE);
@@ -299,7 +299,7 @@ private static final String RCBREOL = "}\n";
         for (org.apache.bcel.classfile.Field fld : c.getFields()) {
             out.write(TAB);
             fout.write(TAB);
-            aflgs = Utility.accessToString(fld.getAccessFlags());            
+            aflgs = Utility.accessToString(fld.getAccessFlags());
             if (aflgs != null && aflgs.length() > 0) {
                 out.write(aflgs);
                 fout.write(aflgs);
@@ -327,7 +327,7 @@ private static final String RCBREOL = "}\n";
         for (org.apache.bcel.classfile.Method m : c.getMethods()) {
             out.write(TAB);
             fout.write(TAB);
-            aflgs = Utility.accessToString(m.getAccessFlags());            
+            aflgs = Utility.accessToString(m.getAccessFlags());
             if (aflgs != null && aflgs.length() > 0) {
                 out.write(aflgs);
                 fout.write(aflgs);
@@ -501,10 +501,10 @@ private static final String RCBREOL = "}\n";
                 str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
                         constantToString(cp.getConstant(j), cp, v));
                 break;
-                
+
             case org.apache.bcel.Const.CONSTANT_MethodType:
                 i = ((ConstantMethodType) c).getDescriptorIndex();
-                v[i] = 1;                
+                v[i] = 1;
                 str = constantToString(cp.getConstant(i), cp, v);
                 break;
 //                CONSTANT_MethodType_info {
@@ -538,29 +538,29 @@ private static final String RCBREOL = "}\n";
 //                        constantToString(cp.getConstant(j), cp, v) + ' ' +
 //                        constantToString(cp.getConstant(k), cp, v));
                 str = "";
-                break;            
-            case org.apache.bcel.Const.CONSTANT_Package:    
+                break;
+            case org.apache.bcel.Const.CONSTANT_Package:
                 i = ((ConstantPackage) c).getNameIndex();
-                v[i] = 1;                
+                v[i] = 1;
                 str = constantToString(cp.getConstant(i), cp, v);
                 break;
             case org.apache.bcel.Const.CONSTANT_Module:
                 i = ((ConstantModule) c).getNameIndex();
-                v[i] = 1;                
+                v[i] = 1;
                 str = constantToString(cp.getConstant(i), cp, v);
                 break;
-                
+
 //                CONSTANT_InvokeDynamic_info {
 //    u1 tag;
 //    u2 bootstrap_method_attr_index;
 //    u2 name_and_type_index;
 //}
-                
+
 // if types are missing add more as per
-// https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4.2 
-// and bcel docs 
-// https://commons.apache.org/proper/commons-bcel/apidocs/org/apache/bcel/classfile/Constant.html  
-                
+// https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4.2
+// and bcel docs
+// https://commons.apache.org/proper/commons-bcel/apidocs/org/apache/bcel/classfile/Constant.html
+
             default: // Never reached
                 throw new ClassFormatException("Unknown constant type " + tag);
         }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -33,7 +33,10 @@ import java.nio.file.InvalidPathException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -51,11 +54,11 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     /** Prefix which identifies lines with the description of a commit. */
     private static final String DESC_PREFIX = "description: ";
 
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private List<HistoryEntry> entries = new ArrayList<>();
     private final MercurialRepository repository;
     private final String mydir;
     private boolean isDir;
-    private final List<String> renamedFiles = new ArrayList<String>();
+    private final Set<String> renamedFiles = new HashSet<>();
 
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
@@ -68,15 +71,18 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * specified one.
      *
      * @param file the file or directory to get history for
-     * @param changeset the changeset right before the first one to fetch, or
+     * @param sinceRevision the changeset right before the first one to fetch, or
      * {@code null} if all changesets should be fetched
+     * @param tillRevision end revision or {@code null}
+     * @param numCommits number of revisions to get
      * @return history for the specified file or directory
      * @throws HistoryException if an error happens when parsing the history
      */
-    History parse(File file, String changeset) throws HistoryException {
+    History parse(File file, String sinceRevision, String tillRevision, Integer numCommits) throws HistoryException {
         isDir = file.isDirectory();
         try {
-            Executor executor = repository.getHistoryLogExecutor(file, changeset);
+            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision, tillRevision, false,
+                    numCommits);
             int status = executor.exec(true, this);
 
             if (status != 0) {
@@ -93,11 +99,26 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         // from the list, since only the ones following it should be returned.
         // Also check that the specified changeset was found, otherwise throw
         // an exception.
-        if (changeset != null) {
-            repository.removeAndVerifyOldestChangeset(entries, changeset);
+        if (sinceRevision != null) {
+            repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
+        }
+
+        // See getHistoryLogExecutor() for explanation.
+        if (repository.isHandleRenamedFiles() && file.isFile() && tillRevision != null) {
+            removeChangesets(entries, tillRevision);
         }
 
         return new History(entries, renamedFiles);
+    }
+
+    private void removeChangesets(List<HistoryEntry> entries, String tillRevision) {
+        for (Iterator<HistoryEntry> iter = entries.listIterator(); iter.hasNext(); ) {
+            HistoryEntry entry = iter.next();
+            if (entry.getRevision().equals(tillRevision)) {
+                break;
+            }
+            iter.remove();
+        }
     }
 
     /**
@@ -111,7 +132,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        entries = new ArrayList<HistoryEntry>();
+        entries = new ArrayList<>();
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
@@ -153,7 +174,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         }
                     }
                 }
-            } else if (s.startsWith(MercurialRepository.FILE_COPIES) &&
+            } else if (repository.isHandleRenamedFiles() && s.startsWith(MercurialRepository.FILE_COPIES) &&
                 entry != null && isDir) {
                 /*
                  * 'file_copies:' should be present only for directories but
@@ -167,9 +188,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                       */
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
-                     if (!move[0].isEmpty() && f.exists() &&
-                         !renamedFiles.contains(move[0])) {
-                             renamedFiles.add(move[0]);
+                     if (!move[0].isEmpty() && f.exists()) {
+                             renamedFiles.add(repository.getDirectoryNameRelative() + File.separator + move[0]);
                      }
                 }
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {

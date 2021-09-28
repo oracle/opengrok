@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.ruby;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.XrefTestBase;
 import org.opengrok.indexer.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 
@@ -67,6 +67,6 @@ public class RubyXrefTest extends XrefTestBase {
                 + "<span class=\"s\">}:&quot;</span>\n" +
             "<a class=\"l\" name=\"2\" href=\"#2\">2</a>\n";
         assertLinesEqual("Ruby colon-quote", xexpected, xout);
-        assertEquals("Ruby colon-quote LOC", 1, actLOC);
+        assertEquals(1, actLOC, "Ruby colon-quote LOC");
     }
 }

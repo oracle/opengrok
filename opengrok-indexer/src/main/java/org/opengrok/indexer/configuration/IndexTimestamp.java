@@ -31,7 +31,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 public class IndexTimestamp {
     private transient Date lastModified;
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexTimestamp.class);
 
     /**

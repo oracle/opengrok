@@ -28,9 +28,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import jakarta.validation.constraints.NotBlank;
 import org.opengrok.indexer.logger.LoggerFactory;
-
-import javax.validation.constraints.NotBlank;
 
 import java.io.IOException;
 import java.text.DateFormat;

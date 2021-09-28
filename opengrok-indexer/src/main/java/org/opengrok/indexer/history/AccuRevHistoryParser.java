@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -63,15 +63,15 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
          * When the path given is really just the root to the source
          * workarea, no history is available, create fake.
          */
-        
+
         String rootRelativePath = File.separator + "." + File.separator;
-        
+
         if (relPath.equals(rootRelativePath)) {
 
-            List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            List<HistoryEntry> entries = new ArrayList<>();
 
             entries.add(new HistoryEntry(
-                    "", new Date(), "OpenGrok", null, "Workspace Root", true));
+                    "", new Date(), "OpenGrok", "Workspace Root", true));
 
             history = new History(entries);
 
@@ -93,10 +93,11 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         return history;
     }
 
+    @Override
     public void processStream(InputStream input) throws IOException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        List<HistoryEntry> entries = new ArrayList<>();
         String line;
         String user;
         Date date;

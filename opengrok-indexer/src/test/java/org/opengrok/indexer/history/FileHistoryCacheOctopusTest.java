@@ -18,25 +18,22 @@
  */
 
 /*
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opengrok.indexer.condition.ConditionalRun;
-import org.opengrok.indexer.condition.ConditionalRunRule;
-import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test file-based history cache with for git-octopus.
@@ -47,11 +44,10 @@ public class FileHistoryCacheOctopusTest {
     private TestRepository repositories;
     private FileHistoryCache cache;
 
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        RuntimeEnvironment.getInstance().setMergeCommitsEnabled(true);
+
         repositories = new TestRepository();
         repositories.create(getClass().getResourceAsStream("/history/git-octopus.zip"));
 
@@ -59,7 +55,7 @@ public class FileHistoryCacheOctopusTest {
         cache.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         repositories.destroy();
         repositories = null;
@@ -67,7 +63,6 @@ public class FileHistoryCacheOctopusTest {
         cache = null;
     }
 
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     @Test
     public void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "git-octopus");
@@ -76,18 +71,17 @@ public class FileHistoryCacheOctopusTest {
 
         cache.store(historyToStore, repo);
 
-        assertEquals("latest git-octopus commit", "206f862b",
-                cache.getLatestCachedRevision(repo));
+        assertEquals("206f862b", cache.getLatestCachedRevision(repo), "latest git-octopus commit");
 
         History dHist = cache.get(new File(reposRoot, "d"), repo, true);
-        assertNotNull("cache get() for git-octopus/d", dHist);
+        assertNotNull(dHist, "cache get() for git-octopus/d");
 
         List<HistoryEntry> entries = dHist.getHistoryEntries();
         String firstMessage = entries.get(0).getMessage();
         String lastMessage = entries.get(entries.size() - 1).getMessage();
-        assertEquals("first message equals last", firstMessage, lastMessage);
+        assertEquals(firstMessage, lastMessage, "first message equals last");
         assertEquals("Merge branches 'file_a', 'file_b' and 'file_c' into master, and add d",
                 firstMessage);
-        assertEquals("git-octopus/d has one cached log", 1, entries.size());
+        assertEquals(1, entries.size(), "git-octopus/d has one cached log");
     }
 }

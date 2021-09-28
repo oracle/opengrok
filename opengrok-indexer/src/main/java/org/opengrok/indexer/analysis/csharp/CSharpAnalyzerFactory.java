@@ -27,15 +27,15 @@ import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "C#";
-    
+
+    private static final String NAME = "C#";
+
     private static final String[] SUFFIXES = {
         "CS"
     };
 
     public CSharpAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     @Override

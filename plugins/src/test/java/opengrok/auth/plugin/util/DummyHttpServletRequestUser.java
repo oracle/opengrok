@@ -22,6 +22,20 @@
  */
 package opengrok.auth.plugin.util;
 
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpUpgradeHandler;
+import jakarta.servlet.http.Part;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -33,25 +47,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.servlet.http.Part;
 
 public class DummyHttpServletRequestUser implements HttpServletRequest {
 
     private final Map<String, String> headers = new HashMap<>();
     private final Map<String, Object> attrs = new HashMap<>();
-    private HttpSession sessions = new HttpSession() {
+    private final HttpSession sessions = new HttpSession() {
 
         private final Map<String, Object> attrs = new HashMap<>();
 
@@ -86,8 +87,8 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
 
         @Override
         @SuppressWarnings("deprecation")
-        public javax.servlet.http.HttpSessionContext getSessionContext() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+        public jakarta.servlet.http.HttpSessionContext getSessionContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -98,18 +99,18 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
         @Override
         @SuppressWarnings("deprecation")
         public Object getValue(String string) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public Enumeration<String> getAttributeNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         @SuppressWarnings("deprecation")
         public String[] getValueNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -160,7 +161,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
     public void setHeader(String string, String value) {
         headers.put(string, value);
     }
-    
+
     @Override
     public String getHeader(String string) {
         return headers.get(string);
@@ -230,12 +231,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
         String encodedValue = authHeader.split(" ")[1];
         Base64.Decoder decoder = Base64.getDecoder();
         String username = new String(decoder.decode(encodedValue)).split(":")[0];
-        return new Principal() {
-            @Override
-            public String getName() {
-                return username;
-            }
-        };
+        return () -> username;
     }
 
     @Override

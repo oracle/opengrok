@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -28,11 +28,11 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.5.12</version>
+        <version>1.7.19</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.5.12</version>
+    <version>1.7.19</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>
@@ -47,12 +47,13 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <groupId>${project.groupId}</groupId>
             <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
+            <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -60,8 +61,8 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,11 +85,16 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
             <version>${jersey.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.28.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

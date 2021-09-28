@@ -23,10 +23,10 @@
  */
 package org.opengrok.indexer.analysis.java;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 import java.io.File;
@@ -38,9 +38,9 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexableField;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.opengrok.indexer.analysis.Ctags;
 import org.opengrok.indexer.analysis.Scopes;
@@ -69,7 +69,7 @@ public class JavaAnalyzerFactoryTest {
         };
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
 
@@ -85,7 +85,7 @@ public class JavaAnalyzerFactoryTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         ctags.close();
         ctags = null;
@@ -98,9 +98,7 @@ public class JavaAnalyzerFactoryTest {
     public void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/java/Sample.java";
         File f = new File(path);
-        if (!(f.canRead() && f.isFile())) {
-            fail("java testfile " + f + " not found");
-        }
+        assertTrue(f.canRead() && f.isFile(), "java testfile " + f + " not found");
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,

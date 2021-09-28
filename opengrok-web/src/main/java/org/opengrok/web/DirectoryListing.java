@@ -37,13 +37,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.opengrok.indexer.analysis.NullableNumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.DirectoryEntry;
-import org.opengrok.indexer.search.FileExtra;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Util;
 
@@ -252,8 +253,8 @@ public class DirectoryListing {
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename, isDir);
                 printDateSize(out, child, modTimes.get(filename), dateFormatter);
-                printNumlines(out, entry);
-                printLoc(out, entry);
+                printNumlines(out, entry, isDir);
+                printLoc(out, entry, isDir);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, filename);
                     if (briefDesc == null) {
@@ -271,16 +272,16 @@ public class DirectoryListing {
         return readMes;
     }
 
-    private void printNumlines(Writer out, DirectoryEntry entry)
+    private void printNumlines(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
-        Integer numlines = null;
+        Long numlines = null;
         String readableNumlines = "";
-        FileExtra extra = entry.getExtra();
+        NullableNumLinesLOC extra = entry.getExtra();
         if (extra != null) {
-            numlines = extra.getNumlines();
+            numlines = extra.getNumLines();
         }
         if (numlines != null) {
-            readableNumlines = Util.readableCount(numlines);
+            readableNumlines = Util.readableCount(numlines, isDir);
         }
 
         out.write("<td class=\"numlines\">");
@@ -288,16 +289,16 @@ public class DirectoryListing {
         out.write("</td>");
     }
 
-    private void printLoc(Writer out, DirectoryEntry entry)
+    private void printLoc(Writer out, DirectoryEntry entry, boolean isDir)
             throws IOException {
-        Integer loc = null;
+        Long loc = null;
         String readableLoc = "";
-        FileExtra extra = entry.getExtra();
+        NullableNumLinesLOC extra = entry.getExtra();
         if (extra != null) {
-            loc = extra.getLoc();
+            loc = extra.getLOC();
         }
         if (loc != null) {
-            readableLoc = Util.readableCount(loc);
+            readableLoc = Util.readableCount(loc, isDir);
         }
 
         out.write("<td class=\"loc\">");

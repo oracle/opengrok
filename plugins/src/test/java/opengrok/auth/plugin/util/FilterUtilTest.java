@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -30,9 +30,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static opengrok.auth.plugin.util.FilterUtil.doTransform;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FilterUtilTest {
+
     @Test
     public void testTransforms() {
         assertEquals("FOO", doTransform("foo", "toUpperCase"));
@@ -47,9 +49,9 @@ public class FilterUtilTest {
                 doTransform(new String("ČUČKAŘ".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), "toLowerCase"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testInvalidTransform() {
-        doTransform("foo", "bar");
+        assertThrows(UnsupportedOperationException.class, () -> doTransform("foo", "bar"));
     }
 
     @Test
@@ -60,10 +62,10 @@ public class FilterUtilTest {
                 FilterUtil.replace("foo%uid%bar", "uid", "user", transforms));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testCheckTransforms() {
         Map<String, String> transforms = new TreeMap<>();
         transforms.put("uid", "xxx");
-        FilterUtil.checkTransforms(transforms);
+        assertThrows(UnsupportedOperationException.class, () -> FilterUtil.checkTransforms(transforms));
     }
 }

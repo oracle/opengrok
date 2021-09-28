@@ -18,15 +18,15 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.logger.LoggerFactory;
 
@@ -70,13 +69,12 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
         try {
             File file = new File(parent, basename);
             File rcsFile = getRCSFile(file);
             try (InputStream in = new RCSget(rcsFile.getPath(), rev)) {
-                copyBytes(sink, in);
+                copyBytes(out::write, in);
             }
             return true;
         } catch (IOException ioe) {
@@ -116,10 +114,7 @@ public class RCSRepository extends Repository {
      * Wrap a {@code Throwable} in an {@code IOException} and return it.
      */
     static IOException wrapInIOException(String message, Throwable t) {
-        // IOException's constructor takes a Throwable, but only in JDK 6
-        IOException ioe = new IOException(message + ": " + t.getMessage());
-        ioe.initCause(t);
-        return ioe;
+        return new IOException(message + ": " + t.getMessage(), t);
     }
 
     @Override
@@ -131,14 +126,11 @@ public class RCSRepository extends Repository {
 
         // If there is at least one entry with the ',v' suffix,
         // consider this a RCS repository.
-        String[] list = rcsDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                // Technically we should check whether the entry is a file
-                // however this would incur additional I/O. The pattern
-                // should be enough.
-                return name.matches(".*,v");
-            }
+        String[] list = rcsDir.list((dir, name) -> {
+            // Technically we should check whether the entry is a file
+            // however this would incur additional I/O. The pattern
+            // should be enough.
+            return name.matches(".*,v");
         });
 
         return (list.length > 0);

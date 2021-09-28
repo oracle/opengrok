@@ -26,7 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.configuration.Configuration;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
@@ -225,7 +226,7 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
             // old/invalid request (should not happen)
             return;
         }
-        
+
         // The cast to User should not be problem as this object is stored
         // in the request itself (as opposed to in the session).
         User user;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2019, Krystof Tulinger <k.tulinger@seznam.cz>.
@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -59,14 +58,15 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import javax.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.PlatformUtils;
 
 /**
  * Class for useful functions.
@@ -330,11 +330,7 @@ public final class Util {
                     return true;
                 }
             default:
-                if ((c >= ' ' && c <= '~') || (c < ' ' &&
-                    Character.isWhitespace(c))) {
-                    return false;
-                }
-                return true;
+                return (c < ' ' || c > '~') && (c >= ' ' || !Character.isWhitespace(c));
         }
     }
 
@@ -487,8 +483,8 @@ public final class Util {
         }
         StringBuilder buf = new StringBuilder(path.length());
         buf.append('/');
-        for (int i = 0; i < pnames.length; i++) {
-            buf.append(pnames[i]).append('/');
+        for (String pname : pnames) {
+            buf.append(pname).append('/');
         }
         if (path.charAt(path.length() - 1) != sep) {
             // since is not a general purpose method. So we waive to handle
@@ -549,8 +545,7 @@ public final class Util {
                 res.add(name);
             }
         }
-        return res.size() == names.length ? names : res.toArray(new String[res
-                .size()]);
+        return res.size() == names.length ? names : res.toArray(new String[0]);
     }
 
     /**
@@ -564,17 +559,14 @@ public final class Util {
         StringBuilder sb = new StringBuilder(6);
         sb.append("\\u");
         String hex = Integer.toHexString(c);
-        for (int i = 0; i < 4 - hex.length(); i++) {
-            sb.append('0');
-        }
+        sb.append("0".repeat(4 - hex.length()));
         sb.append(hex);
         return sb.toString();
     }
 
-    private static NumberFormat FORMATTER = new DecimalFormat("#,###,###,###.#");
+    private static final NumberFormat FORMATTER = new DecimalFormat("#,###,###,###.#");
 
-    private static NumberFormat COUNT_FORMATTER =
-        new DecimalFormat("#,###,###,###");
+    private static final NumberFormat COUNT_FORMATTER = new DecimalFormat("#,###,###,###");
 
     /**
      * Convert the given size into a human readable string.
@@ -605,8 +597,19 @@ public final class Util {
      * @return a readable string
      */
     public static String readableCount(long count) {
+        return readableCount(count, false);
+    }
+
+    /**
+     * Convert the specified {@code count} into a human readable string.
+     * @param isKnownDirectory a value indicating if {@code count} is known to
+     *                         be for a directory
+     * @param count value to convert.
+     * @return a readable string
+     */
+    public static String readableCount(long count, boolean isKnownDirectory) {
         NumberFormat formatter = (NumberFormat) COUNT_FORMATTER.clone();
-        if (count < BOLD_COUNT_THRESHOLD) {
+        if (isKnownDirectory || count < BOLD_COUNT_THRESHOLD) {
             return formatter.format(count);
         } else {
             return "<b>" + formatter.format(count) + "</b>";
@@ -842,14 +845,14 @@ public final class Util {
     }
 
     /**
-     * Sanitizes Windows path delimiters (if {@link PlatformUtils#isWindows()}
+     * Sanitizes Windows path delimiters (if {@link SystemUtils#IS_OS_WINDOWS}
      * is {@code true}) as
      * {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR} in order not
      * to conflict with the Lucene escape character and also so {@code path}
      * appears as a correctly formed URI in search results.
      */
     public static String fixPathIfWindows(String path) {
-        if (path != null && PlatformUtils.isWindows()) {
+        if (path != null && SystemUtils.IS_OS_WINDOWS) {
             return path.replace(File.separatorChar, PATH_SEPARATOR);
         }
         return path;
@@ -909,15 +912,7 @@ public final class Util {
      * @see URLEncoder#encode(String, String)
      */
     public static String URIEncode(String q) {
-        try {
-            return q == null ? "" : URLEncoder.encode(q,
-                StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            // Should not happen. UTF-8 must be supported by JVMs.
-            LOGGER.log(
-                    Level.WARNING, "Failed to URL-encode UTF-8: ", e);
-        }
-        return null;
+        return q == null ? "" : URLEncoder.encode(q, StandardCharsets.UTF_8);
     }
 
     /**
@@ -1056,26 +1051,24 @@ public final class Util {
 
         // deleted
         if (s <= m) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(Util.htmlize(line1.substring(0, s)));
-            sb.append(HtmlConsts.SPAN_D);
-            sb.append(Util.htmlize(line1.substring(s, m + 1)));
-            sb.append(HtmlConsts.ZSPAN);
-            sb.append(Util.htmlize(line1.substring(m + 1, line1.length())));
-            ret[0] = sb.toString();
+            String sb = Util.htmlize(line1.substring(0, s)) +
+                    HtmlConsts.SPAN_D +
+                    Util.htmlize(line1.substring(s, m + 1)) +
+                    HtmlConsts.ZSPAN +
+                    Util.htmlize(line1.substring(m + 1, line1.length()));
+            ret[0] = sb;
         } else {
             ret[0] = Util.htmlize(line1.toString()); // no change
         }
 
         // added
         if (s <= n) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(Util.htmlize(line2.substring(0, s)));
-            sb.append(HtmlConsts.SPAN_A);
-            sb.append(Util.htmlize(line2.substring(s, n + 1)));
-            sb.append(HtmlConsts.ZSPAN);
-            sb.append(Util.htmlize(line2.substring(n + 1, line2.length())));
-            ret[1] = sb.toString();
+            String sb = Util.htmlize(line2.substring(0, s)) +
+                    HtmlConsts.SPAN_A +
+                    Util.htmlize(line2.substring(s, n + 1)) +
+                    HtmlConsts.ZSPAN +
+                    Util.htmlize(line2.substring(n + 1, line2.length()));
+            ret[1] = sb;
         } else {
             ret[1] = Util.htmlize(line2.toString()); // no change
         }
@@ -1194,31 +1187,29 @@ public final class Util {
      * {@link IOException}s get caught and logged, but not re-thrown.
      * @param out dump destination
      * @param file file to dump
-     * @param compressed if {@code true} the denoted file is assumed to be
-     * gzipped
+     * @param compressed if {@code true} the denoted file is assumed to be gzipped
      * @param contextPath an optional override of "/source/" as the context path
      * @return {@code true} on success (everything read and written)
      * @throws NullPointerException if a parameter is {@code null}.
      */
-    public static boolean dumpXref(Writer out, File file, boolean compressed,
-            String contextPath) {
+    public static boolean dumpXref(Writer out, File file, boolean compressed, String contextPath) {
+
         if (!file.exists()) {
             return false;
         }
-        /**
+
+        /*
          * For backward compatibility, read the OpenGrok-produced document
          * using the system default charset.
          */
-        try (InputStream iss = new BufferedInputStream(
-                new FileInputStream(file))) {
-            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(
-                iss)) : new InputStreamReader(iss);
-            dumpXref(out, in, contextPath);
-            return true;
+        try (InputStream iss = new BufferedInputStream(new FileInputStream(file));
+            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(iss)) : new InputStreamReader(iss)) {
+                dumpXref(out, in, contextPath);
+                return true;
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "An error occured while piping file " +
-                    file, e);
+            LOGGER.log(Level.WARNING, "An error occurred while piping file " + file, e);
         }
+
         return false;
     }
 
@@ -1382,44 +1373,41 @@ public final class Util {
             int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
 
             // function taking the page number and appending the desired content into the final buffer
-            Function<Integer, Void> generatePageLink = new Function<Integer, Void>() {
-                @Override
-                public Void apply(Integer page) {
-                    int myOffset = Math.max(0, (page - 1) * limit);
-                    if (myOffset <= offset && offset < myOffset + limit) {
-                        // do not generate anchor for current page
-                        buf.append("<span class=\"sel\">").append(page).append("</span>");
-                    } else {
-                        buf.append("<a class=\"more\" href=\"?");
-                        // append request parameters
-                        if (request != null && request.getQueryString() != null) {
-                            String query = request.getQueryString();
-                            query = query.replaceFirst(RE_Q_E_A_A_COUNT_EQ_VAL, "");
-                            query = query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, "");
-                            query = query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, "");
-                            if (!query.isEmpty()) {
-                                buf.append(query);
-                                buf.append("&amp;");
-                            }
+            Function<Integer, Void> generatePageLink = page -> {
+                int myOffset = Math.max(0, (page - 1) * limit);
+                if (myOffset <= offset && offset < myOffset + limit) {
+                    // do not generate anchor for current page
+                    buf.append("<span class=\"sel\">").append(page).append("</span>");
+                } else {
+                    buf.append("<a class=\"more\" href=\"?");
+                    // append request parameters
+                    if (request != null && request.getQueryString() != null) {
+                        String query = request.getQueryString();
+                        query = query.replaceFirst(RE_Q_E_A_A_COUNT_EQ_VAL, "");
+                        query = query.replaceFirst(RE_Q_E_A_A_START_EQ_VAL, "");
+                        query = query.replaceFirst(RE_A_ANCHOR_Q_E_A_A, "");
+                        if (!query.isEmpty()) {
+                            buf.append(query);
+                            buf.append("&amp;");
                         }
-                        buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
-                        if (myOffset != 0) {
-                            buf.append("&amp;").append(QueryParameters.START_PARAM_EQ).
-                                    append(myOffset);
-                        }
-                        buf.append("\">");
-                        // add << or >> if this link would lead to another section
-                        if (page == myFirstPage && page != 1) {
-                            buf.append("&lt;&lt");
-                        } else if (page == myLastPage && myOffset + limit < size) {
-                            buf.append("&gt;&gt;");
-                        } else {
-                            buf.append(page);
-                        }
-                        buf.append("</a>");
                     }
-                    return null;
+                    buf.append(QueryParameters.COUNT_PARAM_EQ).append(limit);
+                    if (myOffset != 0) {
+                        buf.append("&amp;").append(QueryParameters.START_PARAM_EQ).
+                                append(myOffset);
+                    }
+                    buf.append("\">");
+                    // add << or >> if this link would lead to another section
+                    if (page == myFirstPage && page != 1) {
+                        buf.append("&lt;&lt");
+                    } else if (page == myLastPage && myOffset + limit < size) {
+                        buf.append("&gt;&gt;");
+                    } else {
+                        buf.append(page);
+                    }
+                    buf.append("</a>");
                 }
+                return null;
             };
 
             // slider composition
@@ -1508,6 +1496,7 @@ public final class Util {
                 attrs.put("title", String.format("Link to %s", Util.encode(url)));
                 if (newTab) {
                     attrs.put("target", "_blank");
+                    attrs.put("rel", "noreferrer");
                 }
                 return buildLink(url, attrs);
             } catch (URISyntaxException | MalformedURLException ex) {
@@ -1588,6 +1577,7 @@ public final class Util {
         attrs.put("href", url);
         if (newTab) {
             attrs.put("target", "_blank");
+            attrs.put("rel", "noreferrer");
         }
         return buildLink(name, attrs);
     }
@@ -1681,15 +1671,8 @@ public final class Util {
                 continue;
             }
 
-            String key = pair.substring(0, idx);
-            String value = pair.substring(idx + 1);
-
-            try {
-                key = URLDecoder.decode(key, StandardCharsets.UTF_8.toString());
-                value = URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("Could not find UTF-8 encoding", e);
-            }
+            String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
+            String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
 
             List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());
             paramValues.add(value);

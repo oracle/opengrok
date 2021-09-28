@@ -32,7 +32,7 @@ import org.opengrok.indexer.analysis.FileAnalyzerFactory;
  */
 public class HCLAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String name = "HCL";
+    private static final String NAME = "HCL";
 
     private static final String[] SUFFIXES = {"HCL"};
 
@@ -40,7 +40,7 @@ public class HCLAnalyzerFactory extends FileAnalyzerFactory {
      * Creates a new instance of {@link HCLAnalyzerFactory}.
      */
     public HCLAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", AbstractAnalyzer.Genre.PLAIN, NAME);
     }
 
     /**

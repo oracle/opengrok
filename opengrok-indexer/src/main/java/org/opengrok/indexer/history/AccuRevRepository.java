@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -26,6 +26,7 @@ package org.opengrok.indexer.history;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -38,7 +39,6 @@ import java.util.regex.Pattern;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -79,21 +79,18 @@ public class AccuRevRepository extends Repository {
      * The command to use to access the repository if none was given explicitly.
      */
     public static final String CMD_FALLBACK = "accurev";
-    
-    private static final Pattern DEPOT_PATTERN
-            = Pattern.compile("^Depot:\\s+(\\w+)");
-    private static final Pattern PARENT_PATTERN
-            = Pattern.compile("^Basis:\\s+(\\w+)");
-    private static final Pattern WORKSPACE_ROOT_PATTERN
-            = Pattern.compile("Top:\\s+(.+)$");
-    
+
+    private static final Pattern DEPOT_PATTERN = Pattern.compile("^Depot:\\s+(\\w+)");
+    private static final Pattern PARENT_PATTERN = Pattern.compile("^Basis:\\s+(\\w+)");
+    private static final Pattern WORKSPACE_ROOT_PATTERN = Pattern.compile("Top:\\s+(.+)$");
+
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private String depotName = null;
     private String parentInfo = null;
     private String wsRoot = null;
     private String relRoot = "";
-    
+
     /**
      * This will be /./ on Unix and \.\ on Windows .
      */
@@ -130,7 +127,7 @@ public class AccuRevRepository extends Repository {
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         AccuRevAnnotationParser parser = new AccuRevAnnotationParser(file.getName());
         executor.exec(true, parser);
-        
+
         return parser.getAnnotation();
     }
 
@@ -145,7 +142,7 @@ public class AccuRevRepository extends Repository {
 
         // Do not use absolute paths because symbolic links will cause havoc.
         String path = getDepotRelativePath( file );
-        
+
         ArrayList<String> cmd = new ArrayList<>();
 
         cmd.add(RepoCommand);
@@ -157,15 +154,14 @@ public class AccuRevRepository extends Repository {
         }
 
         cmd.add(path);
-        
+
         File workingDirectory = file.isDirectory() ? file : file.getParentFile();
-        
+
         return new Executor(cmd, workingDirectory);
     }
 
     @Override
-    boolean getHistoryGet(
-            BufferSink sink, String parent, String basename, String rev) {
+    boolean getHistoryGet(OutputStream out, String parent, String basename, String rev) {
 
         ArrayList<String> cmd = new ArrayList<>();
         File directory = new File(parent);
@@ -216,7 +212,7 @@ public class AccuRevRepository extends Repository {
             executor = new Executor(cmd, directory);
             executor.exec();
             try {
-                copyBytes(sink, executor.getOutputStream());
+                copyBytes(out::write, executor.getOutputStream());
                 return true;
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to obtain content for {0}",
@@ -250,7 +246,7 @@ public class AccuRevRepository extends Repository {
      *   Server time:    2017/08/02 13:30:54 Eastern Daylight Time (1501695054)
      *   Depot:          bread_and_butter
      *   Workspace/ref:  BABS_2_shaehn
-     *   Basis:          BABS2 
+     *   Basis:          BABS2
      *   Top:            C:\Users\shaehn\workspaces\BABS_2
      *
      *   Output would be similar on Unix boxes, but with '/' appearing
@@ -261,12 +257,12 @@ public class AccuRevRepository extends Repository {
      *   is not within a known AccuRev workspace/repository.
      */
     private boolean getAccuRevInfo(File wsPath, CommandTimeoutType cmdType) {
-    
+
         ArrayList<String> cmd = new ArrayList<>();
         boolean status  = false;
         Path given = Paths.get(wsPath.toString());
         Path realWsPath = null;
-        
+
         try {
             // This helps overcome symbolic link issues so that
             // Accurev will report the desired information.
@@ -277,7 +273,7 @@ public class AccuRevRepository extends Repository {
             LOGGER.log(Level.SEVERE,
                     "Could not determine real path for {0}", wsPath);
         }
-        
+
         cmd.add(RepoCommand);
         cmd.add("info");
 
@@ -324,10 +320,10 @@ public class AccuRevRepository extends Repository {
                         // AccuRev workspace, check to see if it happens to be
                         // a symbolic link (which means its path name will differ
                         // from the path known by Accurev)
- 
+
                         if (Files.isSymbolicLink(given)) {
                             LOGGER.log(Level.INFO, "{0} is symbolic link.", wsPath);
-                            
+
                             // When we know that the two paths DO NOT point to the
                             // same place (that is, the given path is deeper into
                             // the repository workspace), then need to get the
@@ -349,7 +345,7 @@ public class AccuRevRepository extends Repository {
                                 relRoot = srcRoot.substring(wsRoot.length());
                             }
                         }
-                        
+
                         if (relRoot.length() > 0) {
                             LOGGER.log(Level.INFO, "Source root relative to workspace root by: {0}", relRoot);
                         }
@@ -360,7 +356,7 @@ public class AccuRevRepository extends Repository {
             LOGGER.log(Level.SEVERE,
                     "Could not find AccuRev repository for {0}", wsPath);
         }
-        
+
         return status;
     }
 
@@ -391,18 +387,18 @@ public class AccuRevRepository extends Repository {
      * when the repository root is "/home/shaehn/workspaces/BABS_2" then
      *
      * given file path: /home/shaehn/workspaces/BABS_2/tools
-     * depot relative:  /./tools 
-     * 
+     * depot relative:  /./tools
+     *
      * Using depot relative names instead of absolute file paths solves
      * the problems encountered when symbolic links are made for repository
      * root paths. For example, when the following path
-     * 
+     *
      *  /home/shaehn/active/src/BABS is a symbolic link to
-     *  /home/shaehn/workspaces/BABS_2 then 
-     * 
+     *  /home/shaehn/workspaces/BABS_2 then
+     *
      * given file path: /home/shaehn/active/src/BABS/tools
-     * depot relative:  /./tools 
-     * 
+     * depot relative:  /./tools
+     *
      * @param file path to repository element
      * @return a depot relative file element path
      */
@@ -415,11 +411,11 @@ public class AccuRevRepository extends Repository {
             // ... so that removing the workspace root will give the depot relative path
             //     (Note realPath should always be starting with wsRoot.)
             String relativePath = realPath.toString().substring(wsRoot.length());
-            
+
             if (relativePath.length() > 0) {
                 path = Paths.get(depotRoot, relativePath).toString();
             }
-            
+
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
                     "Unable to determine depot relative path for {0}",

@@ -18,20 +18,21 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.query;
 
 import org.apache.lucene.index.Term;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SuggesterWildcardQueryTest {
 
     @Test
     public void testLength() {
         SuggesterWildcardQuery q = new SuggesterWildcardQuery(new Term("test", "m?t"));
-        Assert.assertEquals("m?t".length(), q.length());
+        assertEquals("m?t".length(), q.length());
     }
 
 }

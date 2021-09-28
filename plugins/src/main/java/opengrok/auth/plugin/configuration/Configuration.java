@@ -114,11 +114,11 @@ public class Configuration implements Serializable {
     public String getSearchBase() {
         return searchBase;
     }
-    
+
     public void setSearchBase(String base) {
         this.searchBase = base;
     }
-    
+
     public String getXMLRepresentationAsString() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         this.encodeObject(bos);
@@ -161,7 +161,8 @@ public class Configuration implements Serializable {
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
 
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, null, Configuration.class.getClassLoader())) {
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, null,
+                new PluginConfigurationClassLoader())) {
             ret = d.readObject();
         }
 
