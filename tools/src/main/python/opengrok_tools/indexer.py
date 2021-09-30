@@ -27,6 +27,7 @@ import argparse
 import os
 import sys
 import tempfile
+from os import path
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.log import get_console_logger, get_class_basename, fatal
@@ -116,6 +117,8 @@ def main():
     except Timeout:
         logger.warning("Already running, exiting.")
         return FAILURE_EXITVAL
+    finally:
+        if path.exists(lock.lock_file): os.remove(lock.lock_file)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@
 
 import argparse
 import io
+import os
 import shutil
 import sys
 import tempfile
@@ -399,6 +400,9 @@ def main():
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(FAILURE_EXITVAL)
+    finally:
+        # cleanup lock file
+        if path.exists(lock.lock_file): os.remove(lock.lock_file)
 
 
 if __name__ == '__main__':

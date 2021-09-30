@@ -36,6 +36,7 @@ import os
 import sys
 import tempfile
 from multiprocessing import Pool, cpu_count
+from os import path
 
 from filelock import Timeout, FileLock
 
@@ -224,6 +225,8 @@ def main():
     except Timeout:
         logger.warning("Already running, exiting.")
         return FAILURE_EXITVAL
+    finally:
+            if path.exists(lock.lock_file): os.remove(lock.lock_file)
 
     logging.shutdown()
     return ret

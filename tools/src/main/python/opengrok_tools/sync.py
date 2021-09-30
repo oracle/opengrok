@@ -287,6 +287,8 @@ def main():
         except Timeout:
             logger.warning("Already running")
             return FAILURE_EXITVAL
+        finally:
+            if path.exists(lock.lock_file): os.remove(lock.lock_file)
 
     return r
 
