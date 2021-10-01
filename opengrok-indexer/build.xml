@@ -61,10 +61,6 @@ Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
             <fileset dir="${test.bzr}/bzr"/>
         </copy>
 
-        <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/index/source.zip"
-              basedir="${test.sources}"
-              update="false"
-              defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/history/repositories.zip"
                 basedir="${test.repositories}"
                 excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**"

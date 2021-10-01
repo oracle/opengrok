@@ -53,7 +53,7 @@ public class SearchControllerTest extends OGKJerseyTest {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
-        repository.create(SearchControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
+        repository.create(SearchControllerTest.class.getClassLoader().getResource("sources"));
 
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
@@ -68,7 +68,7 @@ public class SearchControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testSearchCors() {
+    void testSearchCors() {
         Response response = target(SearchController.PATH)
                 .request()
                 .header(CORS_REQUEST_HEADER, "http://example.com")

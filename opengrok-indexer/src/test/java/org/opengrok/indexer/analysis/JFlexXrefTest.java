@@ -81,8 +81,7 @@ public class JFlexXrefTest {
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         repository = new TestRepository();
-        repository.create(JFlexXrefTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(JFlexXrefTest.class.getClassLoader().getResource("sources"));
     }
 
     @AfterAll
@@ -98,7 +97,7 @@ public class JFlexXrefTest {
      * to cause trouble.
      */
     @Test
-    public void testBug15890LineCount() throws Exception {
+    void testBug15890LineCount() throws Exception {
         String fileContents =
                 "line 1\n" +
                 "line 2\n" +
@@ -159,7 +158,7 @@ public class JFlexXrefTest {
      * used to cause trouble.
      */
     @Test
-    public void testBug15890Anchor() throws Exception {
+    void testBug15890Anchor() throws Exception {
         bug15890Anchor(CXref.class, "c/bug15890.c");
         bug15890Anchor(CxxXref.class, "c/bug15890.c");
         bug15890Anchor(HaskellXref.class, "haskell/bug15890.hs");
@@ -196,7 +195,7 @@ public class JFlexXrefTest {
      * highlighting in ShXref.
      */
     @Test
-    public void testBug14663() throws Exception {
+    void testBug14663() throws Exception {
         // \" should not start a new string literal
         assertXrefLine(ShXref.class, "echo \\\"", "<b>echo</b> \\&quot;");
         // \" should not terminate a string literal
@@ -242,7 +241,7 @@ public class JFlexXrefTest {
      * is properly reset now.
      */
     @Test
-    public void bug16883() throws Exception {
+    void bug16883() throws Exception {
         final String ECHO_QUOT_XYZ = "echo \"xyz";
         // Analyze a script with broken syntax (unterminated string literal)
         JFlexXref xref = new JFlexXref(new ShXref(
@@ -285,12 +284,12 @@ public class JFlexXrefTest {
      * </ul>
      */
     @Test
-    public void testCXrefInclude() throws Exception {
+    void testCXrefInclude() throws Exception {
         testCXrefInclude(CXref.class);
     }
 
     @Test
-    public void testCxxXrefInclude() throws Exception {
+    void testCxxXrefInclude() throws Exception {
         testCXrefInclude(CxxXref.class);
     }
 
@@ -320,7 +319,7 @@ public class JFlexXrefTest {
      * filenames.
      */
     @Test
-    public void testCxxXrefTemplateParameters() throws Exception {
+    void testCxxXrefTemplateParameters() throws Exception {
         StringReader in = new StringReader("#include <vector>\nclass MyClass;\nstd::vector<MyClass> *v;");
         StringWriter out = new StringWriter();
         JFlexXref xref = new JFlexXref(new CxxXref(in));
@@ -333,7 +332,7 @@ public class JFlexXrefTest {
      * Verify that ShXref handles here-documents. Bug #18198.
      */
     @Test
-    public void testShXrefHeredoc() throws IOException {
+    void testShXrefHeredoc() throws IOException {
         final String SH_HERE_DOC = "cat<<EOF\n" +
             "This shouldn't cause any problem.\n" +
             "EOF\n" +
@@ -359,7 +358,7 @@ public class JFlexXrefTest {
      * Test that JavaXref handles empty Java comments. Bug #17885.
      */
     @Test
-    public void testEmptyJavaComment() throws IOException {
+    void testEmptyJavaComment() throws IOException {
         StringReader in = new StringReader("/**/\nclass xyz { }\n");
         JFlexXref xref = new JFlexXref(new JavaXref(in));
         StringWriter out = new StringWriter();
@@ -369,7 +368,7 @@ public class JFlexXrefTest {
     }
 
     @Test
-    public void bug18586() throws IOException, InterruptedException {
+    void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         try (Reader in = new InputStreamReader(new FileInputStream(filename), StandardCharsets.UTF_8)) {
             JFlexXref xref = new JFlexXref(new SQLXref(in));
@@ -384,7 +383,7 @@ public class JFlexXrefTest {
      * This originally became a problem after upgrade to JFlex 1.5.0.
      */
     @Test
-    public void unterminatedHeredoc() throws IOException {
+    void unterminatedHeredoc() throws IOException {
         JFlexXref xref = new JFlexXref(new ShXref(new StringReader(
                 "cat << EOF\nunterminated heredoc")));
 
@@ -406,7 +405,7 @@ public class JFlexXrefTest {
      * they work now.
      */
     @Test
-    public void truncatedUuencodedFile() throws IOException {
+    void truncatedUuencodedFile() throws IOException {
         JFlexXref xref = new JFlexXref(new UuencodeXref(
                 new StringReader("begin 644 test.txt\n")));
 
@@ -427,7 +426,7 @@ public class JFlexXrefTest {
      * Test that CSharpXref correctly handles verbatim strings that end with backslash.
      */
     @Test
-    public void testCsharpXrefVerbatimString() throws IOException {
+    void testCsharpXrefVerbatimString() throws IOException {
         StringReader in = new StringReader("test(@\"\\some_windows_path_in_a_string\\\");");
         JFlexXref xref = new JFlexXref(new CSharpXref(in));
         StringWriter out = new StringWriter();
@@ -439,7 +438,7 @@ public class JFlexXrefTest {
      * Test that special characters in URLs are escaped in the xref.
      */
     @Test
-    public void testEscapeLink() throws IOException {
+    void testEscapeLink() throws IOException {
         StringReader in = new StringReader("http://www.example.com/?a=b&c=d");
         JFlexXref xref = new JFlexXref(new PlainXref(in));
         StringWriter out = new StringWriter();
@@ -454,7 +453,7 @@ public class JFlexXrefTest {
      * to be produced.
      */
     @Test
-    public void testJFlexRule() throws Exception {
+    void testJFlexRule() throws Exception {
         StringReader in = new StringReader("\\\" { yybegin(STRING); }");
         // JFlex files are usually analyzed with CAnalyzer.
         JFlexXref xref = new JFlexXref(new CXref(in));
@@ -473,7 +472,7 @@ public class JFlexXrefTest {
      * longer so.
      */
     @Test
-    public void testUnterminatedElements() throws Exception {
+    void testUnterminatedElements() throws Exception {
         for (String str : Arrays.asList("#define STR \"abc\n",
                                         "void f(); /* unterminated comment\n",
                                         "const char c = 'x\n")) {
@@ -491,7 +490,7 @@ public class JFlexXrefTest {
      * Test that JavaClassAnalyzer produces well-formed output.
      */
     @Test
-    public void testJavaClassAnalyzer() throws Exception {
+    void testJavaClassAnalyzer() throws Exception {
         StreamSource src = new StreamSource() {
             @Override public InputStream getStream() throws IOException {
                 final String path = "/" +
@@ -513,7 +512,7 @@ public class JFlexXrefTest {
      * Test that special characters in Fortran files are escaped.
      */
     @Test
-    public void testFortranSpecialCharacters() throws Exception {
+    void testFortranSpecialCharacters() throws Exception {
         JFlexXref xref = new JFlexXref(new FortranXref(
             new StringReader("<?php?>")));
         StringWriter out = new StringWriter();

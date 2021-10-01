@@ -23,7 +23,6 @@
  */
 package org.opengrok.indexer.web;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -48,15 +47,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for the {@code SearchHelper} class.
  */
-public class SearchHelperTest {
+class SearchHelperTest {
 
     TestRepository repository;
     RuntimeEnvironment env;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
+        repository.create(IndexerTest.class.getClassLoader().getResource("sources"));
 
         env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
@@ -113,7 +112,7 @@ public class SearchHelperTest {
     }
 
     @Test
-    public void testSearchAfterReindex() throws Exception {
+    void testSearchAfterReindex() throws Exception {
         SortedSet<String> projectNames = new TreeSet<>();
 
         env.setProjectsEnabled(true);
@@ -172,7 +171,7 @@ public class SearchHelperTest {
     }
 
     @Test
-    public void testPrepareExecInvalidInput() {
+    void testPrepareExecInvalidInput() {
         SortedSet<String> projectNames = new TreeSet<>();
         SearchHelper searchHelper;
 
@@ -207,7 +206,7 @@ public class SearchHelperTest {
      * fail. Used to fail with a NullPointerException. See bug #19232.
      */
     @Test
-    public void testDestroyUninitializedInstance() {
+    void testDestroyUninitializedInstance() {
         new SearchHelper().destroy();
     }
 }

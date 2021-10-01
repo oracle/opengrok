@@ -27,10 +27,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +49,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Trond Norbye
  */
 public class TestRepository {
+
+    private static final String URL_FILE_PROTOCOL = "file";
+    private static final char JAR_PATH_DELIMITER = '!';
 
     private final RuntimeEnvironment env;
     private File sourceRoot;
@@ -56,6 +67,34 @@ public class TestRepository {
         dataRoot = Files.createTempDirectory("data").toFile();
         env.setSourceRoot(sourceRoot.getAbsolutePath());
         env.setDataRoot(dataRoot.getAbsolutePath());
+    }
+
+    public void create(@NotNull final URL url) throws IOException, URISyntaxException {
+        createEmpty();
+        if (url.getProtocol().equals(URL_FILE_PROTOCOL)) {
+            copyDirectory(Path.of(url.toURI()), sourceRoot.toPath());
+        } else {
+            try (var fs = FileSystems.newFileSystem(url.toURI(), Map.of())) {
+                var urlStr = url.toString();
+                copyDirectory(fs.getPath(urlStr.substring(urlStr.indexOf(JAR_PATH_DELIMITER) + 1)),
+                        sourceRoot.toPath());
+            }
+        }
+    }
+
+    private void copyDirectory(Path src, Path dest) throws IOException {
+        try (Stream<Path> stream = Files.walk(src)) {
+            stream.forEach(source -> {
+                if (source.equals(src)) {
+                    return;
+                }
+                try {
+                    Files.copy(source, dest.resolve(src.relativize(source).toString()), REPLACE_EXISTING);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            });
+        }
     }
 
     public void create(InputStream inputBundle) throws IOException {

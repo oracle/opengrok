@@ -74,8 +74,7 @@ public class CAnalyzerFactoryTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(CAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         CAnalyzerFactory analFact = new CAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
@@ -97,7 +96,7 @@ public class CAnalyzerFactoryTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void testScopeAnalyzer() throws Exception {
+    void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/c/sample.c";
         File f = new File(path);
         assertTrue(f.canRead() && f.isFile(), "c testfile " + f + " not found");

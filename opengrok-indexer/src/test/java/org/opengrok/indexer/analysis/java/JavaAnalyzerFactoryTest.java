@@ -74,8 +74,7 @@ public class JavaAnalyzerFactoryTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(JavaAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(JavaAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         JavaAnalyzerFactory analFact = new JavaAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
@@ -95,7 +94,7 @@ public class JavaAnalyzerFactoryTest {
      * Test of writeXref method, of class CAnalyzerFactory.
      */
     @Test
-    public void testScopeAnalyzer() throws Exception {
+    void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/java/Sample.java";
         File f = new File(path);
         assertTrue(f.canRead() && f.isFile(), "java testfile " + f + " not found");
