@@ -47,8 +47,7 @@ public class CtagsTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(CtagsTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(CtagsTest.class.getClassLoader().getResource("sources"));
 
         /*
          * This setting is only needed for bug19195 but it does not seem
@@ -84,7 +83,7 @@ public class CtagsTest {
      * Test of doCtags method, of class Ctags.
      */
     @Test
-    public void testDoCtags() throws Exception {
+    void testDoCtags() throws Exception {
         Definitions result = getDefs("bug16070/arguments.c");
         assertEquals(13, result.numberOfSymbols());
     }
@@ -94,7 +93,7 @@ public class CtagsTest {
      * definitions for Java files. Bug #14924.
      */
     @Test
-    public void bug14924() throws Exception {
+    void bug14924() throws Exception {
         // Expected method names found in the file
         String[] names = {"ts", "classNameOnly", "format"};
         // Expected line numbers for the methods
@@ -118,7 +117,7 @@ public class CtagsTest {
      * for assembler source code. Bug #19195.
      */
     @Test
-    public void bug19195() throws Exception {
+    void bug19195() throws Exception {
         // Expected method names found in the file
         String[] names = {"foo", "bar", "_fce", "__fce"};
         // Expected line numbers for the methods

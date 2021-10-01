@@ -72,8 +72,7 @@ public class PascalAnalyzerFactoryTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(PascalAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(PascalAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         PascalAnalyzerFactory analyzerFactory = new PascalAnalyzerFactory();
         analyzer = analyzerFactory.getAnalyzer();
@@ -95,7 +94,7 @@ public class PascalAnalyzerFactoryTest {
      * @throws java.lang.Exception exception
      */
     @Test
-    public void testAnalyzer() throws Exception {
+    void testAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/pascal/Sample.pas";
         File f = new File(path);
         assertTrue(f.canRead() && f.isFile(), "pascal testfile " + f + " not found");

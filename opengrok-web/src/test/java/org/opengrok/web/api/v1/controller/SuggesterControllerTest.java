@@ -102,7 +102,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // necessary to test CORS from controllers
         repository = new TestRepository();
 
-        repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
+        repository.create(SuggesterControllerTest.class.getClassLoader().getResource("sources"));
 
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
@@ -127,7 +127,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggesterConfig() {
+    void testGetSuggesterConfig() {
         SuggesterConfig config = target(SuggesterController.PATH)
                 .path("config")
                 .request()
@@ -137,7 +137,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggesterConfigCors() {
+    void testGetSuggesterConfigCors() {
         Response response = target(SuggesterController.PATH)
                 .path("config")
                 .request()
@@ -147,7 +147,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsSimpleFull() {
+    void testGetSuggestionsSimpleFull() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -160,7 +160,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsCors() {
+    void testGetSuggestionsCors() {
         Response response = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -173,7 +173,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsSimpleDefs() {
+    void testGetSuggestionsSimpleDefs() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.DEFS)
@@ -186,7 +186,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsSimpleRefs() {
+    void testGetSuggestionsSimpleRefs() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.REFS)
@@ -199,7 +199,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsSimplePath() {
+    void testGetSuggestionsSimplePath() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "c")
                 .queryParam("field", QueryBuilder.PATH)
@@ -212,7 +212,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsBadRequest() {
+    void testGetSuggestionsBadRequest() {
         Response r = target(SuggesterController.PATH)
                 .queryParam("field", "")
                 .request()
@@ -222,7 +222,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsBadRequest2() {
+    void testGetSuggestionsBadRequest2() {
         Response r = target(SuggesterController.PATH)
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam("caret", -2)
@@ -233,7 +233,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionUnknownField() {
+    void testGetSuggestionUnknownField() {
         Response r = target(SuggesterController.PATH)
                 .queryParam("field", "unknown")
                 .request()
@@ -243,7 +243,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsMultipleProjects() {
+    void testGetSuggestionsMultipleProjects() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
@@ -256,7 +256,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testGetSuggestionsMultipleProjects2() {
+    void testGetSuggestionsMultipleProjects2() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
@@ -269,7 +269,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testComplexSuggestions() {
+    void testComplexSuggestions() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -283,7 +283,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testWildcard() {
+    void testWildcard() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -297,7 +297,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testRegex() {
+    void testRegex() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -312,7 +312,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testPhraseAfter() {
+    void testPhraseAfter() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -327,7 +327,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testPhraseBefore() {
+    void testPhraseBefore() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -342,7 +342,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testPhraseMiddle() {
+    void testPhraseMiddle() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -357,7 +357,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testSloppyPhrase() {
+    void testSloppyPhrase() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
@@ -372,7 +372,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testRangeQueryUpper() {
+    void testRangeQueryUpper() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
@@ -386,7 +386,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testRangeQueryLower() {
+    void testRangeQueryLower() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
@@ -400,7 +400,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testComplexSuggestions2() {
+    void testComplexSuggestions2() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
@@ -414,7 +414,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testInitPopularTermsFromQueries() {
+    void testInitPopularTermsFromQueries() {
         // terms for prefix t: "text", "texttrim", "tell", "teach", "trimmargin"
 
         List<String> queries = Arrays.asList(
@@ -445,7 +445,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testInitPopularTermsFromRawData() {
+    void testInitPopularTermsFromRawData() {
         // terms for prefix a: "args", "array", "and"
 
         TermIncrementData data1 = new TermIncrementData();
@@ -482,7 +482,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testInitPopularTermsFromRawDataInvalidRequest() {
+    void testInitPopularTermsFromRawDataInvalidRequest() {
         TermIncrementData data = new TermIncrementData();
         data.project = "kotlin";
         data.field = QueryBuilder.FULL;
@@ -499,7 +499,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testDisabledSuggestions() {
+    void testDisabledSuggestions() {
         env.getSuggesterConfig().setEnabled(false);
 
         Response r = target(SuggesterController.PATH)
@@ -513,7 +513,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testMinChars() {
+    void testMinChars() {
         env.getSuggesterConfig().setMinChars(2);
 
         Response r = target(SuggesterController.PATH)
@@ -527,7 +527,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAllowedProjects() {
+    void testAllowedProjects() {
         env.getSuggesterConfig().setAllowedProjects(Collections.singleton("kotlin"));
 
         Result res = target(SuggesterController.PATH)
@@ -543,7 +543,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testMaxProjects() {
+    void testMaxProjects() {
         env.getSuggesterConfig().setMaxProjects(1);
 
         Response r = target(SuggesterController.PATH)
@@ -557,7 +557,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAllowedFields() {
+    void testAllowedFields() {
         env.getSuggesterConfig().setAllowedFields(Collections.singleton(QueryBuilder.DEFS));
 
         Response r = target(SuggesterController.PATH)
@@ -571,7 +571,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testAllowComplexQueries() {
+    void testAllowComplexQueries() {
         env.getSuggesterConfig().setAllowComplexQueries(false);
 
         Response r = target(SuggesterController.PATH)
@@ -587,7 +587,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains
-    public void testGetPopularityDataSimple() {
+    void testGetPopularityDataSimple() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("rust",
                 new Term(QueryBuilder.FULL, "main"), 10, true));
 
@@ -602,7 +602,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains
-    public void testGetPopularityDataAll() {
+    void testGetPopularityDataAll() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
                 new Term(QueryBuilder.FULL, "mynamespace"), 10, true));
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
@@ -621,7 +621,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
 
     @Test
     @SuppressWarnings("unchecked") // for contains
-    public void testGetPopularityDataDifferentField() {
+    void testGetPopularityDataDifferentField() {
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
                 new Term(QueryBuilder.FULL, "print"), 10, true));
         assertTrue(SuggesterServiceImpl.getInstance().increaseSearchCount("swift",
@@ -638,7 +638,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void testWildcardQueryEndingWithAsterisk() {
+    void testWildcardQueryEndingWithAsterisk() {
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "c")
                 .queryParam("field", QueryBuilder.FULL)
@@ -651,7 +651,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void ZtestRebuild() throws InterruptedException {
+    void ZtestRebuild() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .request()
@@ -662,7 +662,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    public void ZtestRebuildProject() throws InterruptedException {
+    void ZtestRebuildProject() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .path("c")

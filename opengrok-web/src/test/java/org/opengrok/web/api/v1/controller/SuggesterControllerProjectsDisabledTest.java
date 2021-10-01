@@ -62,8 +62,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-
-        repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
+        repository.create(SuggesterControllerTest.class.getClassLoader().getResource("sources"));
 
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(false);
@@ -100,7 +99,7 @@ public class SuggesterControllerProjectsDisabledTest extends OGKJerseyTest {
     }
 
     @Test
-    public void suggestionsSimpleTest() {
+    void suggestionsSimpleTest() {
         SuggesterControllerTest.Result res = target(SuggesterController.PATH)
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "inner")

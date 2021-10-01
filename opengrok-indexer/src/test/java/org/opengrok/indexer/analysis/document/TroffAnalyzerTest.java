@@ -65,8 +65,7 @@ public class TroffAnalyzerTest {
         analyzer = new TroffAnalyzer(factory);
         assertNotNull(analyzer);
         repository = new TestRepository();
-        repository.create(TroffAnalyzerTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(TroffAnalyzerTest.class.getClassLoader().getResource("sources"));
 
         String file = System.getProperty("opengrok.test.troff.doc",
                 repository.getSourceRoot() + "/document/foobar.1");
@@ -97,7 +96,7 @@ public class TroffAnalyzerTest {
      * @throws IOException I/O exception
      */
     @Test
-    public void testAnalyze() throws IOException {
+    void testAnalyze() throws IOException {
         Document doc = new Document();
         StringWriter xrefOut = new StringWriter();
         analyzer.analyze(doc, new StreamSource() {

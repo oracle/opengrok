@@ -74,8 +74,7 @@ public class CSharpAnalyzerFactoryTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(CSharpAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(CSharpAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         CSharpAnalyzerFactory analFact = new CSharpAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
@@ -96,7 +95,7 @@ public class CSharpAnalyzerFactoryTest {
      * @throws Exception exception
      */
     @Test
-    public void testScopeAnalyzer() throws Exception {
+    void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/csharp/Sample.cs";
         File f = new File(path);
         assertTrue(f.canRead() && f.isFile(), "csharp testfile " + f + " not found");

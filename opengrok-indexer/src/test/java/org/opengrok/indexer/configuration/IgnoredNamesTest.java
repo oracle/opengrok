@@ -61,8 +61,7 @@ public class IgnoredNamesTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(CAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         // Populate ignored lists with repository specific entries.
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
@@ -73,7 +72,7 @@ public class IgnoredNamesTest {
      * IgnoredNames.
      */
     @Test
-    public void testIgnoredSpecialPatterns() {
+    void testIgnoredSpecialPatterns() {
         IgnoredNames instance = env.getIgnoredNames();
 
         /* Test handling of special directories. */
@@ -83,7 +82,7 @@ public class IgnoredNamesTest {
     }
 
     @Test
-    public void testAbsolutePathCheckWithPattern() {
+    void testAbsolutePathCheckWithPattern() {
         IgnoredNames instance = new IgnoredNames();
         String currentDir = new File("").getAbsolutePath();
         String currentDirName = currentDir.substring(currentDir.lastIndexOf('/') + 1);
@@ -98,7 +97,7 @@ public class IgnoredNamesTest {
     }
 
     @Test
-    public void testIgnoredPatterns() {
+    void testIgnoredPatterns() {
         IgnoredNames instance = new IgnoredNames();
 
         List<String> names = instance.getItems();
@@ -157,7 +156,7 @@ public class IgnoredNamesTest {
      * Make sure that encoding and decoding IgnoredNames object is 1:1 operation.
      */
     @Test
-    public void testEncodeDecode() throws IOException {
+    void testEncodeDecode() throws IOException {
         IgnoredNames in = new IgnoredNames();
         // Add file and directory to list of ignored items.
         in.add("f:foo.txt");

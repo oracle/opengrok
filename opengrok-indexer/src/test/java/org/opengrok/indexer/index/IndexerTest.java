@@ -87,9 +87,9 @@ public class IndexerTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
+        repository.create(IndexerTest.class.getClassLoader().getResource("sources"));
     }
 
     @AfterEach

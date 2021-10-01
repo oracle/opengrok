@@ -70,8 +70,7 @@ public class ClojureAnalyzerFactoryTest {
         ctags = new Ctags();
 
         repository = new TestRepository();
-        repository.create(ClojureAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/index/source.zip"));
+        repository.create(ClojureAnalyzerFactoryTest.class.getClassLoader().getResource("sources"));
 
         ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
@@ -93,7 +92,7 @@ public class ClojureAnalyzerFactoryTest {
      * @throws java.lang.Exception throw in case of analyzer or deserialize ctags error
      */
     @Test
-    public void testScopeAnalyzer() throws Exception {
+    void testScopeAnalyzer() throws Exception {
         String path = repository.getSourceRoot() + "/clojure/sample.clj";
         File f = new File(path);
         assertTrue(f.canRead() && f.isFile(), "clojure testfile " + f + " not found");
