@@ -311,13 +311,20 @@ public class ProjectsController {
             // Set the property.
             ClassUtil.setFieldValue(project, field, value);
 
-            // Refresh repositories for this project as well.
+            // Refresh field values for project's repositories for this project as well.
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             if (riList != null) {
                 for (RepositoryInfo ri : riList) {
                     Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
-                    // set the property
+                    // Set the property if there is one.
+                    try {
+                        ClassUtil.getFieldValue(repo, field);
+                    } catch (IOException e) {
+                        // ignore
+                        continue;
+                    }
+
                     ClassUtil.setFieldValue(repo, field, value);
                 }
             }
