@@ -70,7 +70,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
-import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
 
 @ExtendWith(MockitoExtension.class)
