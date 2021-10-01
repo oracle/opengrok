@@ -315,17 +315,10 @@ public class ProjectsController {
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             if (riList != null) {
                 for (RepositoryInfo ri : riList) {
-                    Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
-
                     // Set the property if there is one.
-                    try {
-                        ClassUtil.getFieldValue(repo, field);
-                    } catch (IOException e) {
-                        // ignore
-                        continue;
+                    if (ClassUtil.hasField(ri, field)) {
+                        ClassUtil.setFieldValue(ri, field, value);
                     }
-
-                    ClassUtil.setFieldValue(repo, field, value);
                 }
             }
         } else {

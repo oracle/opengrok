@@ -482,21 +482,24 @@ class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testSetIndexed() throws Exception {
+    void testSetIndexed() {
         String project = "git";
         addProject(project);
         assertEquals(1, env.getProjectList().size());
 
+        env.getProjects().get(project).setIndexed(false);
+        assertFalse(env.getProjects().get(project).isIndexed());
         Response response = target("projects")
                 .path(project)
                 .path("property/indexed")
                 .request()
                 .put(Entity.text(Boolean.TRUE.toString()));
         assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
+        assertTrue(env.getProjects().get(project).isIndexed());
     }
 
     @Test
-    void testSetGet() throws Exception {
+    void testSetGet() {
         assertTrue(env.isHandleHistoryOfRenamedFiles());
         String[] projects = new String[] {"mercurial", "git"};
 
@@ -505,8 +508,19 @@ class ProjectsControllerTest extends OGKJerseyTest {
         }
 
         assertEquals(2, env.getProjectList().size());
+        for (String proj : projects) {
+            Project project = env.getProjects().get(proj);
+            assertNotNull(project);
+            assertTrue(project.isHandleRenamedFiles());
+            List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+            assertNotNull(riList);
+            for (RepositoryInfo ri : riList) {
+                ri.setHandleRenamedFiles(true);
+                assertTrue(ri.isHandleRenamedFiles());
+            }
+        }
 
-        // Change their property.
+        // Change their property via RESTful API call.
         for (String proj : projects) {
             setHandleRenamedFilesToFalse(proj);
         }
@@ -519,8 +533,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
             assertNotNull(riList);
             for (RepositoryInfo ri : riList) {
-                Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
-                assertFalse(repo.isHandleRenamedFiles());
+                assertFalse(ri.isHandleRenamedFiles());
             }
         }
 
