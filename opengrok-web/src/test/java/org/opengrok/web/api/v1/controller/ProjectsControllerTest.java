@@ -26,6 +26,7 @@ package org.opengrok.web.api.v1.controller;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -478,6 +479,20 @@ class ProjectsControllerTest extends OGKJerseyTest {
                 .get(type);
 
         assertEquals(Collections.singletonList("Mercurial"), types);
+    }
+
+    @Test
+    void testSetIndexed() throws Exception {
+        String project = "git";
+        addProject(project);
+        assertEquals(1, env.getProjectList().size());
+
+        Response response = target("projects")
+                .path(project)
+                .path("property/indexed")
+                .request()
+                .put(Entity.text(Boolean.TRUE.toString()));
+        assertEquals(response.getStatus(), Response.Status.NO_CONTENT.getStatusCode());
     }
 
     @Test
