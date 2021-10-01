@@ -225,6 +225,20 @@ public class ClassUtil {
     }
 
     /**
+     * @param obj object
+     * @param fieldName field name
+     * @return true if field is present in the object (not recursively) or false
+     */
+    public static boolean hasField(Object obj, String fieldName) {
+        try {
+            PropertyDescriptor desc = new PropertyDescriptor(fieldName, obj.getClass());
+        } catch (IntrospectionException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Invokes a getter of a property on an object.
      *
      * @param obj the object
