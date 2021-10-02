@@ -32,6 +32,7 @@ import shutil
 import sys
 import tempfile
 from os import path
+from hashlib import sha1
 
 from filelock import Timeout, FileLock
 
@@ -220,6 +221,19 @@ def project_delete(logger, project, uri, doit=True, deletesource=False,
                 logger.error("Failed to remove {}: {}".format(sourcedir, e))
 
 
+def get_lock_file(args):
+    project_list = list()
+    project_list.extend(args.add)
+    project_list.extend(args.delete)
+    if len(project_list) == 0:
+        name = "refresh"
+    else:
+        name = sha1("".join(project_list).encode()).hexdigest()
+
+    return path.join(tempfile.gettempdir(),
+                     path.basename(sys.argv[0]) + "-" + name + ".lock")
+
+
 def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
@@ -329,8 +343,7 @@ def main():
         sys.exit(FAILURE_EXITVAL)
     logger.debug("web application URI = {}".format(uri))
 
-    lock = FileLock(path.join(tempfile.gettempdir(),
-                              path.basename(sys.argv[0]) + ".lock"))
+    lock = FileLock(get_lock_file(args))
     try:
         with lock.acquire(timeout=0):
             if args.add:
