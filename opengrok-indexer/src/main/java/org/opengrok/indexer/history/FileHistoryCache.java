@@ -438,6 +438,14 @@ class FileHistoryCache implements HistoryCache {
         return latestRev;
     }
 
+    private static String getRevisionString(String revision) {
+        if (revision == null) {
+            return "end of history";
+        } else {
+            return "revision " + revision;
+        }
+    }
+
     /**
      * Store history for the whole repository in directory hierarchy resembling
      * the original repository structure. History of individual files will be
@@ -475,21 +483,23 @@ class FileHistoryCache implements HistoryCache {
 
         Set<String> regularFiles = map.keySet().stream().
                 filter(e -> !history.isRenamed(e)).collect(Collectors.toSet());
-        createDirectoriesForFiles(regularFiles, repository, "regular files for history till " + tillRevision);
+        createDirectoriesForFiles(regularFiles, repository, "regular files for history till " +
+                getRevisionString(tillRevision));
 
         /*
          * Now traverse the list of files from the hash map built above and for each file store its history
          * (saved in the value of the hash map entry for the file) in a file.
          * The renamed files will be handled separately.
          */
-        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till history {2}",
-                new Object[]{regularFiles.size(), repository.getDirectoryName(), tillRevision});
+        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till {2}",
+                new Object[]{regularFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
         final File root = env.getSourceRootFile();
 
         final CountDownLatch latch = new CountDownLatch(regularFiles.size());
         AtomicInteger fileHistoryCount = new AtomicInteger();
         try (Progress progress = new Progress(LOGGER,
-                String.format("history cache for regular files of %s till history %s", repository, tillRevision),
+                String.format("history cache for regular files of %s till %s", repository,
+                        getRevisionString(tillRevision)),
                 regularFiles.size())) {
             for (String file : regularFiles) {
                 env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
@@ -540,16 +550,18 @@ class FileHistoryCache implements HistoryCache {
 
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
-        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till history {2}",
-                new Object[]{renamedFiles.size(), repository.getDirectoryName(), tillRevision});
+        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
+                new Object[]{renamedFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
 
-        createDirectoriesForFiles(renamedFiles, repository, "renamed files for history till " + tillRevision);
+        createDirectoriesForFiles(renamedFiles, repository, "renamed files for history " +
+                getRevisionString(tillRevision));
 
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamedFiles.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
         try (Progress progress = new Progress(LOGGER,
-                String.format("history cache for renamed files of %s till history %s", repository, tillRevision),
+                String.format("history cache for renamed files of %s till %s", repository,
+                        getRevisionString(tillRevision)),
                 renamedFiles.size())) {
             for (final String file : renamedFiles) {
                 env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
