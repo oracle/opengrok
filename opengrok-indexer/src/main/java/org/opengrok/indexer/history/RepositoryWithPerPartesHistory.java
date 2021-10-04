@@ -88,7 +88,8 @@ public abstract class RepositoryWithPerPartesHistory extends Repository {
         int cnt = 0;
         for (String tillRevision: boundaryChangesetList) {
             Statistics stat = new Statistics();
-            LOGGER.log(Level.FINEST, "getting history for ({0}, {1})", new Object[]{sinceRevision, tillRevision});
+            LOGGER.log(Level.FINEST, "storing history cache for revision range ({0}, {1})",
+                    new Object[]{sinceRevision, tillRevision});
             finishCreateCache(cache, getHistory(directory, sinceRevision, tillRevision), tillRevision);
             sinceRevision = tillRevision;
 
