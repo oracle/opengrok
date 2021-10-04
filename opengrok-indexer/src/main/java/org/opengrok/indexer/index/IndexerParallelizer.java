@@ -264,12 +264,20 @@ public class IndexerParallelizer implements AutoCloseable {
 
     private void createLazyHistoryExecutor() {
         lzHistoryExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryParallelism()));
+                Executors.newFixedThreadPool(env.getHistoryParallelism(), runnable -> {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("history-" + thread.getId());
+                        return thread;
+                }));
     }
 
     private void createLazyHistoryFileExecutor() {
         lzHistoryFileExecutor = LazilyInstantiate.using(() ->
-                Executors.newFixedThreadPool(env.getHistoryFileParallelism()));
+                Executors.newFixedThreadPool(env.getHistoryFileParallelism(), runnable -> {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("history-file-" + thread.getId());
+                    return thread;
+                }));
     }
 
     private class CtagsObjectFactory implements ObjectFactory<Ctags> {
