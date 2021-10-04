@@ -99,6 +99,10 @@ public abstract class Repository extends RepositoryInfo {
     @NotNull
     abstract boolean hasHistoryForDirectories();
 
+    public String toString() {
+        return this.getDirectoryName();
+    }
+
     /**
      * Get the history for the specified file or directory.
      * It is expected that {@link History#getRenamedFiles()} and {@link HistoryEntry#getFiles()} are empty for files.
