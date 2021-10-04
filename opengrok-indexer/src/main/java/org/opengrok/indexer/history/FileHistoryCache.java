@@ -68,6 +68,8 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.Progress;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.util.TandemPath;
 
 /**
@@ -104,7 +106,7 @@ class FileHistoryCache implements HistoryCache {
      * @param filename file path
      * @param repository repository
      * @param root root
-     * @param tillRevision end revision
+     * @param tillRevision end revision (can be null)
      */
     public void doRenamedFileHistory(String filename, File file, Repository repository, File root, String tillRevision)
             throws HistoryException {
@@ -388,30 +390,8 @@ class FileHistoryCache implements HistoryCache {
         store(history, repository, null);
     }
 
-    /**
-     * Store history for the whole repository in directory hierarchy resembling
-     * the original repository structure. History of individual files will be
-     * stored under this hierarchy, each file containing history of
-     * corresponding source file.
-     *
-     * @param history history object to process into per-file histories
-     * @param tillRevision end revision
-     * @param repository repository object
-     */
-    @Override
-    public void store(History history, Repository repository, String tillRevision) throws HistoryException {
-
-        final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
-
+    private String createFileMap(History history, HashMap<String, List<HistoryEntry>> map) {
         String latestRev = null;
-
-        // Return immediately when there is nothing to do.
-        List<HistoryEntry> entries = history.getHistoryEntries();
-        if (entries.isEmpty()) {
-            return;
-        }
-
-        HashMap<String, List<HistoryEntry>> map = new HashMap<>();
         HashMap<String, Boolean> acceptanceCache = new HashMap<>();
 
         /*
@@ -455,6 +435,34 @@ class FileHistoryCache implements HistoryCache {
                 list.add(e);
             }
         }
+        return latestRev;
+    }
+
+    /**
+     * Store history for the whole repository in directory hierarchy resembling
+     * the original repository structure. History of individual files will be
+     * stored under this hierarchy, each file containing history of
+     * corresponding source file.
+     *
+     * @param history history object to process into per-file histories
+     * @param repository repository object
+     * @param tillRevision end revision (can be null)
+     */
+    @Override
+    public void store(History history, Repository repository, String tillRevision) throws HistoryException {
+
+        final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
+
+        String latestRev = null;
+
+        // Return immediately when there is nothing to do.
+        List<HistoryEntry> entries = history.getHistoryEntries();
+        if (entries.isEmpty()) {
+            return;
+        }
+
+        HashMap<String, List<HistoryEntry>> map = new HashMap<>();
+        latestRev = createFileMap(history, map);
 
         // File based history cache does not store files for individual changesets so strip them.
         history.strip();
@@ -467,41 +475,46 @@ class FileHistoryCache implements HistoryCache {
 
         Set<String> regularFiles = map.keySet().stream().
                 filter(e -> !history.isRenamed(e)).collect(Collectors.toSet());
-        createDirectoriesForFiles(regularFiles);
+        createDirectoriesForFiles(regularFiles, repository, "regular files for history till " + tillRevision);
 
         /*
          * Now traverse the list of files from the hash map built above and for each file store its history
          * (saved in the value of the hash map entry for the file) in a file.
          * The renamed files will be handled separately.
          */
-        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}''",
-                new Object[]{regularFiles.size(), repository.getDirectoryName()});
+        LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till history {2}",
+                new Object[]{regularFiles.size(), repository.getDirectoryName(), tillRevision});
         final File root = env.getSourceRootFile();
 
         final CountDownLatch latch = new CountDownLatch(regularFiles.size());
         AtomicInteger fileHistoryCount = new AtomicInteger();
-        for (String file : regularFiles) {
-            env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
-                try {
-                    doFileHistory(file, new History(map.get(file)), repository, root, false);
-                    fileHistoryCount.getAndIncrement();
-                } catch (Exception ex) {
-                    // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING, "doFileHistory() got exception ", ex);
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+        try (Progress progress = new Progress(LOGGER,
+                String.format("history cache for regular files of %s till history %s", repository, tillRevision),
+                regularFiles.size())) {
+            for (String file : regularFiles) {
+                env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
+                    try {
+                        doFileHistory(file, new History(map.get(file)), repository, root, false);
+                        fileHistoryCount.getAndIncrement();
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        LOGGER.log(Level.WARNING, "doFileHistory() got exception ", ex);
+                    } finally {
+                        latch.countDown();
+                        progress.increment();
+                    }
+                });
+            }
 
-        // Wait for the executors to finish.
-        try {
-            latch.await();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
+            // Wait for the executors to finish.
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.SEVERE, "latch exception", ex);
+            }
+            LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
+                    new Object[]{fileHistoryCount, repository.getDirectoryName()});
         }
-        LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
-                new Object[]{fileHistoryCount, repository.getDirectoryName()});
 
         if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
@@ -517,6 +530,7 @@ class FileHistoryCache implements HistoryCache {
      * handle renamed files (in parallel).
      * @param renamedFiles set of renamed file paths
      * @param repository repository
+     * @param tillRevision end revision (can be null)
      */
     public void storeRenamed(Set<String> renamedFiles, Repository repository, String tillRevision) throws HistoryException {
         final File root = env.getSourceRootFile();
@@ -526,47 +540,56 @@ class FileHistoryCache implements HistoryCache {
 
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
-        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}''",
-                new Object[]{renamedFiles.size(), repository.getDirectoryName()});
+        LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till history {2}",
+                new Object[]{renamedFiles.size(), repository.getDirectoryName(), tillRevision});
 
-        createDirectoriesForFiles(renamedFiles);
+        createDirectoriesForFiles(renamedFiles, repository, "renamed files for history till " + tillRevision);
 
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamedFiles.size());
         AtomicInteger renamedFileHistoryCount = new AtomicInteger();
-        for (final String file : renamedFiles) {
-            env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
-                try {
-                    doRenamedFileHistory(file,
-                            new File(env.getSourceRootPath() + file),
-                            repositoryF, root, tillRevision);
-                    renamedFileHistoryCount.getAndIncrement();
-                } catch (Exception ex) {
-                    // We want to catch any exception since we are in thread.
-                    LOGGER.log(Level.WARNING,
-                            "doFileHistory() got exception ", ex);
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+        try (Progress progress = new Progress(LOGGER,
+                String.format("history cache for renamed files of %s till history %s", repository, tillRevision),
+                renamedFiles.size())) {
+            for (final String file : renamedFiles) {
+                env.getIndexerParallelizer().getHistoryFileExecutor().submit(() -> {
+                    try {
+                        doRenamedFileHistory(file,
+                                new File(env.getSourceRootPath() + file),
+                                repositoryF, root, tillRevision);
+                        renamedFileHistoryCount.getAndIncrement();
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        LOGGER.log(Level.WARNING, "doFileHistory() got exception ", ex);
+                    } finally {
+                        latch.countDown();
+                        progress.increment();
+                    }
+                });
+            }
 
-        // Wait for the executors to finish.
-        try {
             // Wait for the executors to finish.
-            latch.await();
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception", ex);
+            try {
+                // Wait for the executors to finish.
+                latch.await();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.SEVERE, "latch exception", ex);
+            }
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
                 new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
     }
 
-    private void createDirectoriesForFiles(Set<String> files) throws HistoryException {
+    private void createDirectoriesForFiles(Set<String> files, Repository repository, String label)
+            throws HistoryException {
+
         // The directories for the files have to be created before
         // the actual files otherwise storeFile() might be racing for
         // mkdirs() if there are multiple files from single directory
         // handled in parallel.
+        Statistics elapsed = new Statistics();
+        LOGGER.log(Level.FINE, "Starting directory creation for {0} ({1}): {2} directories",
+                new Object[]{repository, label, files.size()});
         for (final String file : files) {
             File cache;
             try {
@@ -578,10 +601,10 @@ class FileHistoryCache implements HistoryCache {
             File dir = cache.getParentFile();
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
-                LOGGER.log(Level.WARNING,
-                        "Unable to create cache directory ''{0}''.", dir);
+                LOGGER.log(Level.WARNING, "Unable to create cache directory ''{0}''.", dir);
             }
         }
+        elapsed.report(LOGGER, String.format("Done creating directories for %s (%s)", repository, label));
     }
 
     @Override
