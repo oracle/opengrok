@@ -35,7 +35,7 @@ setup(
         'pyyaml',
         'requests>=2.20.0',
         'resource',
-        'filelock',
+        'filelock<3.3.0',
         'setuptools>=36.7.2',
     ],
     setup_requires=[
