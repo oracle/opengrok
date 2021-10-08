@@ -30,6 +30,7 @@ import tempfile
 
 import pytest
 import requests
+import subprocess
 from mockito import verify, patch, spy2, mock, ANY, when, unstub
 
 import opengrok_tools.mirror
@@ -593,7 +594,8 @@ def test_mirroring_custom_sync_error(false_binary):
         repository = GitRepository("git", mock(), repository_root, 'test-1', {
             'sync': false_binary
         }, None, None, None)
-        assert 1 == repository.sync()
+        ret = subprocess.run([false_binary])
+        assert ret.returncode == repository.sync()
 
 
 def test_mirroring_sync_invoke_original_command():
