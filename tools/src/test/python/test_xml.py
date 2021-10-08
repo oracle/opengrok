@@ -20,12 +20,14 @@
 #
 
 #
-# Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
 import pytest
 import platform
+
+import xml.etree.ElementTree as ET
 
 from opengrok_tools.utils.xml import insert_file, XMLProcessingException
 
@@ -34,13 +36,18 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 @pytest.mark.skipif(platform.system() == 'Windows',
                     reason="broken on Windows")
+@pytest.mark.skipif(not hasattr(ET, "canonicalize"),
+                    reason="need ElementTree with canonicalize()")
 def test_xml_insert():
     with open(os.path.join(DIR_PATH, "web.xml")) as base_xml:
         out = insert_file(base_xml.read(),
                           os.path.join(DIR_PATH, "insert.xml"))
-        with open(os.path.join(DIR_PATH, "new.xml")) as expected_xml:
-            # TODO: this should really be comparing XML trees
-            assert out.strip() == expected_xml.read().strip()
+        with open(os.path.join(DIR_PATH, "new.xml")) as expected_xml_fp:
+            out_xml_canonical = ET.canonicalize(out, strip_text=True)
+            expected_xml_canonical = ET.canonicalize(from_file=expected_xml_fp,
+                                                     strip_text=True)
+
+            assert out_xml_canonical == expected_xml_canonical
 
 
 def test_invalid_xml():
