@@ -98,7 +98,14 @@ unless authentication bearer tokens are configured in the web application and us
 
 ### get file content [GET]
 
-Honors the Accept header. The text type works for plain text files only.
+Honors the `Accept` header. If the value of the header is set to `text/plain`
+and there is a document in the index that has the genre detected as plain text,
+the contents of the document will be returned. If the document is not found,
+HTTP error 404 will be returned. If the genre of the document is not plain text,
+HTTP error 406 will be returned.
+Alternatively, one can use the `application/octet-stream` value of the header
+which bypasses the document and genre check.
+The `Content-type` header of the reply will be set accordingly.
 
 + Parameters
   + path (string) - path of file, relative to source root
@@ -109,7 +116,7 @@ Honors the Accept header. The text type works for plain text files only.
             foo
             bar
 
-+ Response 200 (application/octet-stream)
++ Response 200
 
 ## File genre [/file/genre{?path}]
 
