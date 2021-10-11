@@ -55,8 +55,6 @@ public class FileController {
 
     public static final String PATH = "/file";
 
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
     private StreamingOutput transfer(File file) throws FileNotFoundException {
         InputStream in = new FileInputStream(file);
         return out -> {
