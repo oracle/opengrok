@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -83,10 +83,6 @@ public class FileController {
                              @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
         File file = toFile(path);
-        if (file == null) {
-            // error already set in the response
-            return null;
-        }
 
         Document doc;
         if ((doc = getDocument(file)) == null) {
@@ -113,15 +109,6 @@ public class FileController {
                                            @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
         File file = toFile(path);
-        if (file == null) {
-            return null;
-        }
-
-        Document doc;
-        if ((doc = getDocument(file)) == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cannot get document for file");
-            return null;
-        }
 
         try {
             return transfer(file);
@@ -141,10 +128,6 @@ public class FileController {
                            @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
 
         File file = toFile(path);
-        if (file == null) {
-            // error already set in the response
-            return null;
-        }
 
         Document doc;
         if ((doc = getDocument(file)) == null) {
