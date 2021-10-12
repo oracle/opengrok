@@ -93,7 +93,7 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
         User user;
         String attrName = UserPlugin.REQUEST_ATTR;
         if ((user = (User) request.getAttribute(attrName)) == null) {
-            LOGGER.log(Level.WARNING, "cannot get {0} attribute from {1}", attrName);
+            LOGGER.log(Level.WARNING, "cannot get {0} attribute", attrName);
             return false;
         }
 
