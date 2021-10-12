@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package opengrok.auth.plugin;
@@ -70,13 +70,18 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
 
         // Load whitelist from file to memory.
         try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
-            stream.forEach(whitelist::add);
+            stream.map(String::strip).forEach(whitelist::add);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Unable to read the file \"%s\"", filePath), e);
         }
 
         LOGGER.log(Level.FINE, "UserWhiteList plugin loaded with filePath={0} ({1} entries), fieldName={2}",
                 new Object[]{filePath, whitelist.size(), fieldName});
+    }
+
+    // for testing
+    Set<String> getWhitelist() {
+        return whitelist;
     }
 
     @Override
@@ -88,7 +93,7 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
         User user;
         String attrName = UserPlugin.REQUEST_ATTR;
         if ((user = (User) request.getAttribute(attrName)) == null) {
-            LOGGER.log(Level.WARNING, "cannot get {0} attribute", attrName);
+            LOGGER.log(Level.WARNING, "cannot get {0} attribute from {1}", attrName);
             return false;
         }
 

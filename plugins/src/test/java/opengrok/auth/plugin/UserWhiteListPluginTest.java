@@ -36,13 +36,20 @@ import org.opengrok.indexer.web.DummyHttpServletRequest;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -162,6 +169,35 @@ public class UserWhiteListPluginTest {
         assertNotNull(caughtException, "caught IllegalArgumentException");
         assertTrue(caughtException.getMessage().contains("Missing parameter"),
                 "caughtException should mention 'Missing parameter'");
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void shouldStripWhitespaceFromWhitelists(String param) throws IOException {
+        plugin = new UserWhiteListPlugin();
+        HashMap<String, Object> pluginParameters = new HashMap<>();
+        pluginParameters.put(UserWhiteListPlugin.FIELD_PARAM, param);
+        Set<String> entries = Set.of("Moomin", " Fillyjonk", "  Snuffkin", "Snork Maiden  ", "Groke ");
+
+        File tmpFile = File.createTempFile("UserWhiteListPluginTestId", "txt");
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(
+                new FileOutputStream(tmpFile), StandardCharsets.UTF_8))) {
+            for (String entity : entries) {
+                writer.println(entity);
+            }
+        }
+
+        // Make sure there as some entries with trailing spaces in the file.
+        Stream<String> stream = Files.lines(tmpFile.toPath());
+        assertTrue(stream.filter(s -> s.startsWith(" ") || s.endsWith(" ")).
+                collect(Collectors.toSet()).size() > 0);
+
+        pluginParameters.put(UserWhiteListPlugin.FILE_PARAM, tmpFile.toString());
+        plugin.load(pluginParameters);
+        tmpFile.delete();
+
+        Set<String> expected = entries.stream().map(String::trim).collect(Collectors.toSet());
+        assertEquals(expected, plugin.getWhitelist());
     }
 
     @ParameterizedTest
