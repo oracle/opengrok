@@ -25,6 +25,7 @@ package opengrok.auth.plugin;
 
 import jakarta.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
+import org.jetbrains.annotations.TestOnly;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -79,7 +80,7 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
                 new Object[]{filePath, whitelist.size(), fieldName});
     }
 
-    // for testing
+    @TestOnly
     Set<String> getWhitelist() {
         return whitelist;
     }
