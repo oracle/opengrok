@@ -473,7 +473,7 @@ public class SearchEngine {
                                 new InputStreamReader(new FileInputStream(
                                 source + filename), StandardCharsets.UTF_8),
                                 null, null, null, filename, tags, nhits > 100,
-                                false, ret, scopes);
+                                getDefinition() != null, ret, scopes);
                         } else if (AbstractAnalyzer.Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             /**
