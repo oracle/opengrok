@@ -51,7 +51,7 @@ import org.opengrok.indexer.web.Util;
 
 /**
  * This is supposed to get the matching lines from sourcefile.
- * since lucene does not easily give the match context.
+ * since Lucene does not easily give the match context.
  */
 public class Context {
 
