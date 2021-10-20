@@ -285,7 +285,8 @@ def process_changes(repos, project_name, uri, headers=None):
                         headers=headers)
         if not bool(r.json()):
             changes_detected = True
-            logger.info('Project {} has not been indexed yet'
+            logger.info('Project {} has not been indexed yet, '
+                        'overridding incoming check'
                         .format(project_name))
     except ValueError as e:
         logger.error('Unable to parse project \'{}\' indexed flag: {}'
