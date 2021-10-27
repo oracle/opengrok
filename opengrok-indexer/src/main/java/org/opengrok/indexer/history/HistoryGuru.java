@@ -165,8 +165,7 @@ public final class HistoryGuru {
             try {
                 hist = getHistory(file);
             } catch (HistoryException ex) {
-                LOGGER.log(Level.FINEST,
-                        "Cannot get messages for tooltip: ", ex);
+                LOGGER.log(Level.FINEST, "Cannot get messages for tooltip: ", ex);
             }
             if (hist != null && annotation != null) {
                 Set<String> revs = annotation.getRevisions();
