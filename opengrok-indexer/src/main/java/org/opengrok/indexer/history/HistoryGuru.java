@@ -156,11 +156,11 @@ public final class HistoryGuru {
      * @throws IOException if I/O exception occurs
      */
     public Annotation annotate(File file, String rev) throws IOException {
-        Annotation ret = null;
+        Annotation annotation = null;
 
         Repository repo = getRepository(file);
         if (repo != null) {
-            ret = repo.annotate(file, rev);
+            annotation = repo.annotate(file, rev);
             History hist = null;
             try {
                 hist = repo.getHistory(file);
@@ -168,8 +168,8 @@ public final class HistoryGuru {
                 LOGGER.log(Level.FINEST,
                         "Cannot get messages for tooltip: ", ex);
             }
-            if (hist != null && ret != null) {
-                Set<String> revs = ret.getRevisions();
+            if (hist != null && annotation != null) {
+                Set<String> revs = annotation.getRevisions();
                 int revsMatched = 0;
              // !!! cannot do this because of not matching rev ids (keys)
                 // first is the most recent one, so we need the position of "rev"
@@ -181,19 +181,19 @@ public final class HistoryGuru {
                     String hist_rev = he.getRevision();
                     String short_rev = repo.getRevisionForAnnotate(hist_rev);
                     if (revs.contains(short_rev)) {
-                        ret.addDesc(short_rev, "changeset: " + he.getRevision()
+                        annotation.addDesc(short_rev, "changeset: " + he.getRevision()
                                 + "\nsummary: " + he.getMessage() + "\nuser: "
                                 + he.getAuthor() + "\ndate: " + he.getDate());
                          // History entries are coming from recent to older,
                          // file version should be from oldest to newer.
-                        ret.addFileVersion(short_rev, revs.size() - revsMatched);
+                        annotation.addFileVersion(short_rev, revs.size() - revsMatched);
                         revsMatched++;
                     }
                 }
             }
         }
 
-        return ret;
+        return annotation;
     }
 
     /**
