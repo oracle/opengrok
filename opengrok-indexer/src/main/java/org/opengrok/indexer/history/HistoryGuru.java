@@ -163,7 +163,7 @@ public final class HistoryGuru {
             annotation = repo.annotate(file, rev);
             History hist = null;
             try {
-                hist = repo.getHistory(file);
+                hist = getHistory(file);
             } catch (HistoryException ex) {
                 LOGGER.log(Level.FINEST,
                         "Cannot get messages for tooltip: ", ex);
