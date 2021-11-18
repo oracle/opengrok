@@ -340,11 +340,11 @@ document.domReady.push(function() {domReadyHistory();});
                 if (author == null) {
                 %>(no author)<%
                 } else if (userPage != null && userPage.length() > 0) {
-		String alink = Util.getEmail(author);
+                    String alink = Util.getEmail(author);
                 %><a href="<%= userPage + Util.htmlize(alink) + userPageSuffix
                 %>"><%= Util.htmlize(author)%></a><%
                 } else {
-                %><%= author %><%
+                %><%= Util.htmlize(author) %><%
                 }
                 %></td>
             <td><a name="<%= rev %>"></a><%
