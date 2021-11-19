@@ -248,10 +248,10 @@ public class Ctags implements Resettable {
         }
 
         // The following are not supported yet in Universal Ctags b13cb551
-        command.add("--kinddef-rust=\"C,const,Static constants\"");
-        command.add("--kinddef-rust=\"I,impl,Trait implementation\"");
-        command.add("--kinddef-rust=\"r,trait,Traits\"");
-        command.add("--kinddef-rust=\"V,variable,Variables\"");
+        command.add("--kinddef-rust=C,const,Static\\ constants");
+        command.add("--kinddef-rust=I,impl,Trait\\ implementation");
+        command.add("--kinddef-rust=r,trait,Traits");
+        command.add("--kinddef-rust=V,variable,Variables");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
                 "([[:alnum:]_]+)/\\4/C/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?" +
@@ -286,14 +286,14 @@ public class Ctags implements Resettable {
             command.add("--langdef=pascal"); // Lower-case if user-defined.
         }
 
-        command.add("--kinddef-pascal=\"t,type,Types\"");
-        command.add("--kinddef-pascal=\"c,class,Classes\"");
-        command.add("--kinddef-pascal=\"i,interface,Interfaces\"");
-        command.add("--kinddef-pascal=\"n,constructor,Constructors\"");
-        command.add("--kinddef-pascal=\"d,destructor,Destructors\"");
-        command.add("--kinddef-pascal=\"o,property,Properties\"");
-        command.add("--kinddef-pascal=\"s,section,Sections\"");
-        command.add("--kinddef-pascal=\"u,unit,Units\"");
+        command.add("--kinddef-pascal=t,type,Types");
+        command.add("--kinddef-pascal=c,class,Classes");
+        command.add("--kinddef-pascal=i,interface,Interfaces");
+        command.add("--kinddef-pascal=n,constructor,Constructors");
+        command.add("--kinddef-pascal=d,destructor,Destructors");
+        command.add("--kinddef-pascal=o,property,Properties");
+        command.add("--kinddef-pascal=s,section,Sections");
+        command.add("--kinddef-pascal=u,unit,Units");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t/");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c/");
         command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i/");
@@ -310,14 +310,14 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Swift")) { // Built-in would be capitalized.
             command.add("--langdef=swift"); // Lower-case if user-defined.
         }
-        command.add("--kinddef-swift=\"n,enum,Enums\"");
-        command.add("--kinddef-swift=\"t,typealias,Type aliases\"");
-        command.add("--kinddef-swift=\"p,protocol,Protocols\"");
-        command.add("--kinddef-swift=\"s,struct,Structs\"");
-        command.add("--kinddef-swift=\"c,class,Classes\"");
-        command.add("--kinddef-swift=\"f,function,Functions\"");
-        command.add("--kinddef-swift=\"v,variable,Variables\"");
-        command.add("--kinddef-swift=\"e,extension,Extensions\"");
+        command.add("--kinddef-swift=n,enum,Enums");
+        command.add("--kinddef-swift=t,typealias,Type\\ aliases");
+        command.add("--kinddef-swift=p,protocol,Protocols");
+        command.add("--kinddef-swift=s,struct,Structs");
+        command.add("--kinddef-swift=c,class,Classes");
+        command.add("--kinddef-swift=f,function,Functions");
+        command.add("--kinddef-swift=v,variable,Variables");
+        command.add("--kinddef-swift=e,extension,Extensions");
 
         command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n/");
         command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t/");
@@ -333,8 +333,8 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Kotlin")) { // Built-in would be capitalized.
             command.add("--langdef=kotlin"); // Lower-case if user-defined.
         }
-        command.add("--kinddef-kotlin=\"d,dataClass,Data classes\"");
-        command.add("--kinddef-kotlin=\"I,import,Imports\"");
+        command.add("--kinddef-kotlin=d,dataClass,Data\\ classes");
+        command.add("--kinddef-kotlin=I,import,Imports");
 
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c/");
@@ -363,15 +363,15 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Clojure")) { // Built-in would be capitalized.
             command.add("--langdef=clojure"); // Lower-case if user-defined.
         }
-        command.add("--kinddef-clojure=\"d,definition,Definitions\"");
-        command.add("--kinddef-clojure=\"p,privateFunction,Private Functions\"");
-        command.add("--kinddef-clojure=\"m,macro,Macros\"");
-        command.add("--kinddef-clojure=\"i,inline,Inlines\"");
-        command.add("--kinddef-clojure=\"a,multimethodDefinition,Multimethod Definitions\"");
-        command.add("--kinddef-clojure=\"b,multimethodInstance,Multimethod Instnances\"");
-        command.add("--kinddef-clojure=\"c,definitionOnce,Definition once\"");
-        command.add("--kinddef-clojure=\"s,struct,Structs\"");
-        command.add("--kinddef-clojure=\"v,intern,Interns\"");
+        command.add("--kinddef-clojure=d,definition,Definitions");
+        command.add("--kinddef-clojure=p,privateFunction,Private\\ functions");
+        command.add("--kinddef-clojure=m,macro,Macros");
+        command.add("--kinddef-clojure=i,inline,Inlines");
+        command.add("--kinddef-clojure=a,multimethodDefinition,Multimethod\\ definitions");
+        command.add("--kinddef-clojure=b,multimethodInstance,Multimethod\\ instnances");
+        command.add("--kinddef-clojure=c,definitionOnce,Definition\\ once");
+        command.add("--kinddef-clojure=s,struct,Structs");
+        command.add("--kinddef-clojure=v,intern,Interns");
 
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d/");
@@ -404,16 +404,16 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
             command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
         }
-        command.add("--kinddef-scala=\"c,class,Classesw\"");
-        command.add("--kinddef-scala=\"o,object,Objects\"");
-        command.add("--kinddef-scala=\"C,caseClass,Case classes\"");
-        command.add("--kinddef-scala=\"O,caseObject,Case objects\"");
-        command.add("--kinddef-scala=\"t,trait,Traits\"");
-        command.add("--kinddef-scala=\"m,method,Methods\"");
-        command.add("--kinddef-scala=\"l,constant,Constants\"");
-        command.add("--kinddef-scala=\"v,variable,Variables\"");
-        command.add("--kinddef-scala=\"T,type,Types\"");
-        command.add("--kinddef-scala=\"p,package,Packages\"");
+        command.add("--kinddef-scala=c,class,Classesw");
+        command.add("--kinddef-scala=o,object,Objects");
+        command.add("--kinddef-scala=C,caseClass,Case\\ classes");
+        command.add("--kinddef-scala=O,caseObject,Case\\ objects");
+        command.add("--kinddef-scala=t,trait,Traits");
+        command.add("--kinddef-scala=m,method,Methods");
+        command.add("--kinddef-scala=l,constant,Constants");
+        command.add("--kinddef-scala=v,variable,Variables");
+        command.add("--kinddef-scala=T,type,Types");
+        command.add("--kinddef-scala=p,package,Packages");
 
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c/");
@@ -453,7 +453,7 @@ public class Ctags implements Resettable {
          * equivalent of {Identifier} from HCL.lexh, so we must approximate with
          * the possibility of leaving out some matches.
          */
-        command.add("--kinddef-terraform=\"s,struct,Resource names\"");
+        command.add("--kinddef-terraform=s,struct,Resource\\ names");
         command.add("--regex-terraform=" +
                 "/[[:<:]]resource[[:space:]]*\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*" +
                 "\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*\\{/" +
