@@ -268,7 +268,7 @@ class Command:
 
             self.logger.debug("Waiting for process with PID {}".format(p.pid))
             p.wait()
-            self.logger.debug("done waiting")
+            self.logger.debug("Done waiting")
 
             if self.timeout:
                 e = timeout_thread.get_exception()

@@ -854,7 +854,7 @@ public final class HistoryGuru {
         clear();
         newrepos.forEach((_key, repo) -> putRepository(repo));
 
-        elapsed.report(LOGGER, String.format("done invalidating %d repositories", newrepos.size()),
+        elapsed.report(LOGGER, String.format("Done invalidating %d repositories", newrepos.size()),
                 "history.repositories.invalidate");
     }
 

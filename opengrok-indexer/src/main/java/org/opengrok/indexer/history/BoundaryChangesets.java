@@ -91,7 +91,7 @@ public class BoundaryChangesets {
         Collections.reverse(result);
 
         stat.report(LOGGER, Level.FINE,
-                String.format("done getting boundary changesets for ''%s'' (%d entries)",
+                String.format("Done getting boundary changesets for ''%s'' (%d entries)",
                         repository.getDirectoryName(), result.size()));
 
         return List.copyOf(result);
