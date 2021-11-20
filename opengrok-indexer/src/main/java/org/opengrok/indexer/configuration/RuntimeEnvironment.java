@@ -61,6 +61,8 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.NamedThreadFactory;
+import org.glassfish.jersey.client.filter.EncodingFeature;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -1442,6 +1444,7 @@ public final class RuntimeEnvironment {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
         Response r = ClientBuilder.newClient()
+                .register(new EncodingFeature("gzip", GZipEncoder.class))
                 .target(host)
                 .path("api")
                 .path("v1")

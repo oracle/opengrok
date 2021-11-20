@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1;
 
 import jakarta.ws.rs.ApplicationPath;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.opengrok.web.api.v1.suggester.SuggesterAppBinder;
 
@@ -33,6 +34,7 @@ public class RestApp extends ResourceConfig {
 
     public RestApp() {
         register(new SuggesterAppBinder());
+        register(GZipEncoder.class);
         packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");
         packages(true, "org.opengrok.web.api.v1");
     }
