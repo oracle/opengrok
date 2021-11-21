@@ -113,7 +113,7 @@ public class PascalAnalyzerFactoryTest {
         assertTrue(definitions.hasDefinitionAt("Sample", 22, type));
         assertThat(type[0], is("unit"));
         assertTrue(definitions.hasDefinitionAt("TSample", 28, type));
-        assertThat(type[0], is("Class"));
+        assertThat(type[0], is("class"));
         assertTrue(definitions.hasDefinitionAt("Id", 40, type));
         assertThat(type[0], is("property"));
         assertTrue(definitions.hasDefinitionAt("Description", 41, type));

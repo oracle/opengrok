@@ -368,7 +368,7 @@ public class Ctags implements Resettable {
         command.add("--kinddef-clojure=m,macro,Macros");
         command.add("--kinddef-clojure=i,inline,Inlines");
         command.add("--kinddef-clojure=a,multimethodDefinition,Multimethod\\ definitions");
-        command.add("--kinddef-clojure=b,multimethodInstance,Multimethod\\ instnances");
+        command.add("--kinddef-clojure=b,multimethodInstance,Multimethod\\ instances");
         command.add("--kinddef-clojure=c,definitionOnce,Definition\\ once");
         command.add("--kinddef-clojure=s,struct,Structs");
         command.add("--kinddef-clojure=v,intern,Interns");
@@ -404,7 +404,7 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
             command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
         }
-        command.add("--kinddef-scala=c,class,Classesw");
+        command.add("--kinddef-scala=c,class,Classes");
         command.add("--kinddef-scala=o,object,Objects");
         command.add("--kinddef-scala=C,caseClass,Case\\ classes");
         command.add("--kinddef-scala=O,caseObject,Case\\ objects");
