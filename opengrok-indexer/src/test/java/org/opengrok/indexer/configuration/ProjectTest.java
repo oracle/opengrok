@@ -135,6 +135,10 @@ public class ProjectTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setTabSize(new Configuration().getTabSize() + 3731);
         env.setNavigateWindowEnabled(!new Configuration().isNavigateWindowEnabled());
+        env.setBugPage("http://example.com/bugPage");
+        env.setBugPattern("([1-9][0-9]{6,7})");
+        env.setReviewPage("http://example.com/reviewPage");
+        env.setReviewPattern("([A-Z]{2}ARC[ \\\\/]\\\\d{4}/\\\\d{3})");
 
         Project p1 = new Project();
         assertNotNull(p1);
@@ -143,6 +147,10 @@ public class ProjectTest {
 
         assertEquals(env.getTabSize(), p1.getTabSize());
         assertEquals(env.isNavigateWindowEnabled(), p1.isNavigateWindowEnabled());
+        assertEquals(env.getBugPage(), p1.getBugPage());
+        assertEquals(env.getBugPattern(), p1.getBugPattern());
+        assertEquals(env.getReviewPage(), p1.getReviewPage());
+        assertEquals(env.getReviewPattern(), p1.getReviewPattern());
     }
 
     /**
@@ -157,6 +165,14 @@ public class ProjectTest {
         p1.setTabSize(new Project().getTabSize() + 9737);
         p1.setNavigateWindowEnabled(true);
         p1.setHandleRenamedFiles(true);
+        final String customBugPage = "http://example.com/bugPage";
+        p1.setBugPage(customBugPage);
+        final String customBugPattern = "([1-9][0-1]{6,7})";
+        p1.setBugPattern(customBugPattern);
+        final String customReviewPage = "http://example.com/reviewPage";
+        p1.setReviewPage(customReviewPage);
+        final String customReviewPattern = "([A-Z]{2}XYZ[ \\\\/]\\\\d{4}/\\\\d{3})";
+        p1.setReviewPattern(customReviewPattern);
 
         p1.completeWithDefaults();
 
@@ -164,6 +180,10 @@ public class ProjectTest {
         assertTrue(p1.isNavigateWindowEnabled(), "Navigate window should be turned on");
         assertTrue(p1.isHandleRenamedFiles(), "Renamed file handling should be true");
         assertEquals(new Project().getTabSize() + 9737, p1.getTabSize());
+        assertEquals(p1.getBugPage(), customBugPage);
+        assertEquals(p1.getBugPattern(), customBugPattern);
+        assertEquals(p1.getReviewPage(), customReviewPage);
+        assertEquals(p1.getReviewPattern(), customReviewPattern);
     }
 
     /**

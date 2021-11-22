@@ -171,16 +171,23 @@ include file="minisearch.jspf"
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
         RuntimeEnvironment env = cfg.getEnv();
         String uriEncodedName = cfg.getUriEncodedPath();
+        Project project = cfg.getProject();
 
         boolean striked = false;
         String userPage = env.getUserPage();
         String userPageSuffix = env.getUserPageSuffix();
-        String bugPage = env.getBugPage();
-        String bugRegex = env.getBugPattern();
-        Pattern bugPattern = Pattern.compile(bugRegex);
-        String reviewPage = env.getReviewPage();
-        String reviewRegex = env.getReviewPattern();
-        Pattern reviewPattern = Pattern.compile(reviewRegex);
+        String bugPage = project != null ? project.getBugPage() : env.getBugPage();
+        String bugRegex = project != null ? project.getBugPattern() : env.getBugPattern();
+        Pattern bugPattern = null;
+        if (bugRegex != null) {
+            bugPattern = Pattern.compile(bugRegex);
+        }
+        String reviewPage = project != null ? project.getReviewPage() : env.getReviewPage();
+        String reviewRegex = project != null ? project.getReviewPattern() : env.getReviewPattern();
+        Pattern reviewPattern = null;
+        if (reviewRegex != null) {
+            reviewPattern = Pattern.compile(reviewRegex);
+        }
 
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
 
@@ -352,10 +359,10 @@ document.domReady.push(function() {domReadyHistory();});
                 int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
 
-                if (bugPage != null && bugPage.length() > 0) {
+                if (bugPage != null && bugPage.length() > 0 && bugPattern != null) {
                     cout = Util.linkifyPattern(cout, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
                 }
-                if (reviewPage != null && reviewPage.length() > 0) {
+                if (reviewPage != null && reviewPage.length() > 0 && reviewPattern != null) {
                     cout = Util.linkifyPattern(cout, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
                 }
                 

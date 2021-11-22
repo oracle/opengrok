@@ -60,6 +60,8 @@ import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+import static org.opengrok.indexer.configuration.PatternUtil.compilePattern;
+
 
 /**
  * Placeholder class for all configuration variables. Due to the multi-threaded
@@ -76,20 +78,6 @@ public final class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
     public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
 
-    /**
-     * A check if a pattern contains at least one pair of parentheses meaning
-     * that there is at least one capture group. This group must not be empty.
-     */
-    private static final String PATTERN_SINGLE_GROUP = ".*\\([^\\)]+\\).*";
-    /**
-     * Error string for invalid patterns without a single group. This is passed
-     * as a first argument to the constructor of PatternSyntaxException and in
-     * the output it is followed by the invalid pattern.
-     *
-     * @see PatternSyntaxException
-     * @see #PATTERN_SINGLE_GROUP
-     */
-    private static final String PATTERN_MUST_CONTAIN_GROUP = "The pattern must contain at least one non-empty group -";
     /**
      * Error string for negative numbers (could be int, double, long, ...).
      * First argument is the name of the property, second argument is the actual
@@ -1057,10 +1045,7 @@ public final class Configuration {
      * contain a single character
      */
     public void setBugPattern(String bugPattern) throws PatternSyntaxException {
-        if (!bugPattern.matches(PATTERN_SINGLE_GROUP)) {
-            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, bugPattern, 0);
-        }
-        this.bugPattern = Pattern.compile(bugPattern).toString();
+        this.bugPattern = compilePattern(bugPattern);
     }
 
     public String getBugPattern() {
@@ -1088,10 +1073,7 @@ public final class Configuration {
      * contain a single character
      */
     public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
-        if (!reviewPattern.matches(PATTERN_SINGLE_GROUP)) {
-            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, reviewPattern, 0);
-        }
-        this.reviewPattern = Pattern.compile(reviewPattern).toString();
+        this.reviewPattern = compilePattern(reviewPattern);
     }
 
     public String getWebappLAF() {

@@ -791,6 +791,7 @@ public final class PageConfig {
      *
      * @return {@code null} if not available, the project otherwise.
      */
+    @Nullable
     public Project getProject() {
         return Project.getProject(getResourceFile());
     }
