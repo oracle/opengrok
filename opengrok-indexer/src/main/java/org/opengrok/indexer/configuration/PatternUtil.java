@@ -34,7 +34,7 @@ public class PatternUtil {
      * A check if a pattern contains at least one pair of parentheses meaning
      * that there is at least one capture group. This group must not be empty.
      */
-    static final String PATTERN_SINGLE_GROUP = ".*\\([^\\)]+\\).*";
+    private static final String PATTERN_SINGLE_GROUP = ".*\\([^\\)]+\\).*";
     /**
      * Error string for invalid patterns without a single group. This is passed
      * as a first argument to the constructor of PatternSyntaxException and in
@@ -43,7 +43,7 @@ public class PatternUtil {
      * @see PatternSyntaxException
      * @see #PATTERN_SINGLE_GROUP
      */
-    static final String PATTERN_MUST_CONTAIN_GROUP = "The pattern must contain at least one non-empty group -";
+    private static final String PATTERN_MUST_CONTAIN_GROUP = "The pattern must contain at least one non-empty group -";
 
     /**
      * Check and compile the bug pattern.
