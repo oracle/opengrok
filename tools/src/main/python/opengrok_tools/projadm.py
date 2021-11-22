@@ -223,8 +223,10 @@ def project_delete(logger, project, uri, doit=True, deletesource=False,
 
 def get_lock_file(args):
     project_list = list()
-    project_list.extend(args.add)
-    project_list.extend(args.delete)
+    if args.add is not None:
+        project_list.extend(args.add)
+    if args.delete is not None:
+        project_list.extend(args.delete)
     if len(project_list) == 0:
         name = "refresh"
     else:
