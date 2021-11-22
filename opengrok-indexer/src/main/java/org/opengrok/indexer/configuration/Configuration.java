@@ -192,6 +192,7 @@ public final class Configuration {
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
+    private int repositoryInvalidationParallelism;
     private int historyParallelism;
     private int historyFileParallelism;
     private boolean tagsEnabled;
@@ -1166,6 +1167,14 @@ public final class Configuration {
 
     public void setIndexingParallelism(int value) {
         this.indexingParallelism = Math.max(value, 0);
+    }
+
+    public int getRepositoryInvalidationParallelism() {
+        return repositoryInvalidationParallelism;
+    }
+
+    public void setRepositoryInvalidationParallelism(int value) {
+        this.repositoryInvalidationParallelism = Math.max(value, 0);
     }
 
     public int getHistoryParallelism() {

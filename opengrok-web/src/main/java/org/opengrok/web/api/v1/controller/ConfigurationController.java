@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -59,7 +59,7 @@ public class ConfigurationController {
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     public void set(final String body, @QueryParam("reindex") final boolean reindex) {
-        env.applyConfig(body, reindex, reindex ? CommandTimeoutType.INDEXER : CommandTimeoutType.RESTFUL);
+        env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
         suggesterService.refresh();
     }
 
