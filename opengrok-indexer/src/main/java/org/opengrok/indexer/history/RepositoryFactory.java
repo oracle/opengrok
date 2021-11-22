@@ -245,7 +245,7 @@ public final class RepositoryFactory {
 
                 // If this repository displays tags only for files changed by tagged
                 // revision, we need to prepare list of all tags in advance.
-                if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
+                if (cmdType.equals(CommandTimeoutType.INDEXER) && env.isTagsEnabled() && repo.hasFileBasedTags()) {
                     repo.buildTagList(file, cmdType);
                 }
 

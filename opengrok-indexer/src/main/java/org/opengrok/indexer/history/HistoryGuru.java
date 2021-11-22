@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -815,7 +815,14 @@ public final class HistoryGuru {
          * run in parallel to speed up the process.
          */
         final CountDownLatch latch = new CountDownLatch(repos.size());
-        final ExecutorService executor = Executors.newFixedThreadPool(env.getIndexingParallelism(),
+        int parallelismLevel;
+        // Both indexer and web app startup should be as quick as possible.
+        if (cmdType.equals(CommandTimeoutType.INDEXER) || cmdType.equals(CommandTimeoutType.WEBAPP_START)) {
+            parallelismLevel = env.getIndexingParallelism();
+        } else {
+            parallelismLevel = env.getRepositoryInvalidationParallelism();
+        }
+        final ExecutorService executor = Executors.newFixedThreadPool(parallelismLevel,
                 runnable -> {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("invalidate-repos-" + thread.getId());

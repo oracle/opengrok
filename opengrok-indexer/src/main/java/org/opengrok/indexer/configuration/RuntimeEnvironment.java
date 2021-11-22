@@ -1115,6 +1115,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Gets the value of {@link Configuration#getRepositoryInvalidationParallelism()} -- or
+     * if zero, then as a default gets the number of available processors halved.
+     * @return a natural number &gt;= 1
+     */
+    public int getRepositoryInvalidationParallelism() {
+        int parallelism = syncReadConfiguration(Configuration::getRepositoryInvalidationParallelism);
+        return parallelism < 1 ? (Runtime.getRuntime().availableProcessors() / 2) : parallelism;
+    }
+
+    /**
      * Gets the value of {@link Configuration#getHistoryParallelism()} -- or
      * if zero, then as a default gets the number of available processors.
      * @return a natural number &gt;= 1
