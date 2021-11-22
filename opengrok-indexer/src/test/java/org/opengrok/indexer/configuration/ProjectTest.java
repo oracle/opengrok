@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -96,12 +97,14 @@ public class ProjectTest {
         env.setProjects(projects);
 
         // The matching of project name to project should be exact.
-        assertEquals(foo, Project.getProject("/foo"));
-        assertEquals(bar, Project.getProject("/foo-bar"));
-        assertEquals(foo, Project.getProject("/foo/blah.c"));
-        assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
-        assertNull(Project.getProject("/foof"));
-        assertNull(Project.getProject("/foof/ha.c"));
+        assertAll(
+                () -> assertEquals(foo, Project.getProject("/foo")),
+                () -> assertEquals(bar, Project.getProject("/foo-bar")),
+                () -> assertEquals(foo, Project.getProject("/foo/blah.c")),
+                () -> assertEquals(bar, Project.getProject("/foo-bar/ha.c")),
+                () -> assertNull(Project.getProject("/foof")),
+                () -> assertNull(Project.getProject("/foof/ha.c"))
+        );
     }
 
     /**
@@ -121,10 +124,12 @@ public class ProjectTest {
         env.setProjects(projects);
 
         List<String> descs = env.getProjectNames();
-        assertTrue(descs.contains("foo"));
-        assertTrue(descs.contains("bar"));
-        assertFalse(descs.contains("foobar"));
-        assertEquals(2, descs.size());
+        assertAll(
+                () -> assertTrue(descs.contains("foo")),
+                () -> assertTrue(descs.contains("bar")),
+                () -> assertFalse(descs.contains("foobar")),
+                () -> assertEquals(2, descs.size())
+        );
     }
 
     /**
@@ -145,12 +150,14 @@ public class ProjectTest {
 
         p1.completeWithDefaults();
 
-        assertEquals(env.getTabSize(), p1.getTabSize());
-        assertEquals(env.isNavigateWindowEnabled(), p1.isNavigateWindowEnabled());
-        assertEquals(env.getBugPage(), p1.getBugPage());
-        assertEquals(env.getBugPattern(), p1.getBugPattern());
-        assertEquals(env.getReviewPage(), p1.getReviewPage());
-        assertEquals(env.getReviewPattern(), p1.getReviewPattern());
+        assertAll(
+                () -> assertEquals(env.getTabSize(), p1.getTabSize()),
+                () -> assertEquals(env.isNavigateWindowEnabled(), p1.isNavigateWindowEnabled()),
+                () -> assertEquals(env.getBugPage(), p1.getBugPage()),
+                () -> assertEquals(env.getBugPattern(), p1.getBugPattern()),
+                () -> assertEquals(env.getReviewPage(), p1.getReviewPage()),
+                () -> assertEquals(env.getReviewPattern(), p1.getReviewPattern())
+        );
     }
 
     /**
@@ -176,14 +183,16 @@ public class ProjectTest {
 
         p1.completeWithDefaults();
 
-        assertNotNull(p1);
-        assertTrue(p1.isNavigateWindowEnabled(), "Navigate window should be turned on");
-        assertTrue(p1.isHandleRenamedFiles(), "Renamed file handling should be true");
-        assertEquals(new Project().getTabSize() + 9737, p1.getTabSize());
-        assertEquals(p1.getBugPage(), customBugPage);
-        assertEquals(p1.getBugPattern(), customBugPattern);
-        assertEquals(p1.getReviewPage(), customReviewPage);
-        assertEquals(p1.getReviewPattern(), customReviewPattern);
+        assertAll(
+                () -> assertNotNull(p1),
+                () -> assertTrue(p1.isNavigateWindowEnabled(), "Navigate window should be turned on"),
+                () -> assertTrue(p1.isHandleRenamedFiles(), "Renamed file handling should be true"),
+                () -> assertEquals(new Project().getTabSize() + 9737, p1.getTabSize()),
+                () -> assertEquals(p1.getBugPage(), customBugPage),
+                () -> assertEquals(p1.getBugPattern(), customBugPattern),
+                () -> assertEquals(p1.getReviewPage(), customReviewPage),
+                () -> assertEquals(p1.getReviewPattern(), customReviewPattern)
+        );
     }
 
     /**
