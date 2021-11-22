@@ -817,7 +817,7 @@ public final class HistoryGuru {
         final CountDownLatch latch = new CountDownLatch(repos.size());
         int parallelismLevel;
         // Both indexer and web app startup should be as quick as possible.
-        if (cmdType.equals(CommandTimeoutType.INDEXER) || cmdType.equals(CommandTimeoutType.WEBAPP_START)) {
+        if (cmdType == CommandTimeoutType.INDEXER || cmdType == CommandTimeoutType.WEBAPP_START) {
             parallelismLevel = env.getIndexingParallelism();
         } else {
             parallelismLevel = env.getRepositoryInvalidationParallelism();
