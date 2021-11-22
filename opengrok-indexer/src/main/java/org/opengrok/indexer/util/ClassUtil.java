@@ -53,7 +53,7 @@ public class ClassUtil {
      * Mark all transient fields in {@code targetClass} as @Transient for the
      * XML serialization.
      *
-     * Fields marked with java transient keyword do not work becase the
+     * Fields marked with java transient keyword do not work because the
      * XMLEncoder does not take these into account. This helper marks the fields
      * marked with transient keyword as transient also for the XMLDecoder.
      *
@@ -73,7 +73,7 @@ public class ClassUtil {
                 }
             }
         } catch (IntrospectionException ex) {
-            LOGGER.log(Level.WARNING, "An exception ocurred during remarking transient fields:", ex);
+            LOGGER.log(Level.WARNING, "An exception occurred during remarking transient fields:", ex);
         }
     }
 

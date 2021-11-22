@@ -44,7 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -97,8 +99,11 @@ import org.opengrok.indexer.analysis.NumLinesLOC;
 import org.opengrok.indexer.configuration.PathAccepter;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.history.RepositoryWithHistoryTraversal;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
@@ -410,6 +415,74 @@ public class IndexDatabase {
         }
     }
 
+    private static List<Repository> getRepositoriesForProject(Project project) {
+        List<Repository> repositoryList = new ArrayList<>();
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        List<RepositoryInfo> repositoryInfoList = env.getProjectRepositoriesMap().get(project);
+
+        for (RepositoryInfo repositoryInfo : repositoryInfoList) {
+            Repository repository = HistoryGuru.getInstance().getRepository(new File(repositoryInfo.getDirectoryName()));
+            if (repository != null) {
+               repositoryList.add(repository);
+            }
+        }
+
+        return repositoryList;
+    }
+
+    // TODO: find a better name for the method
+    private static boolean isAllRepositoriesSupportDeletedFiles(Project project) {
+        if (project == null) {
+            return false;
+        }
+        if (!project.isHistoryEnabled()) {
+            return false;
+        }
+        if (!RuntimeEnvironment.getInstance().isHistoryCache()) {
+            return false;
+        }
+
+        List<Repository> repositories = getRepositoriesForProject(project);
+        // Projects without repositories have to be indexed using indexDown().
+        if (repositories.isEmpty()) {
+            return false;
+        }
+        for (Repository repository : repositories) {
+            if (!(repository instanceof RepositoryWithHistoryTraversal)) {
+                // TODO: log
+                return false;
+            }
+        }
+
+        // Here it is assumed there are no files untracked by the repositories.
+        return true;
+    }
+
+    private static class FileCollector {
+        SortedSet<String> files;
+        Set<String> renamedFiles;
+        Set<String> deletedFiles;
+
+        FileCollector() {
+            files = new TreeSet<>();
+            renamedFiles = new HashSet<>();
+            deletedFiles = new HashSet<>();
+        }
+
+        public void visit(RepositoryWithHistoryTraversal.ChangesetInfo changesetInfo) {
+            if (changesetInfo.renamedFiles != null) {
+                renamedFiles.addAll(changesetInfo.renamedFiles);
+            }
+            if (changesetInfo.files != null) {
+                files.addAll(changesetInfo.files);
+            }
+            if (changesetInfo.deletedFiles != null) {
+                deletedFiles.addAll(changesetInfo.deletedFiles);
+            }
+        }
+    }
+
     /**
      * Update the content of this index database.
      *
@@ -501,19 +574,50 @@ public class IndexDatabase {
                         }
                     }
 
-                    // The actual indexing happens in indexParallel().
-
+                    // The actual indexing happens in indexParallel(). Here we merely collect the items
+                    // that need to be indexed.
                     IndexDownArgs args = new IndexDownArgs();
-                    Statistics elapsed = new Statistics();
-                    LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
-                    indexDown(sourceRoot, dir, args);
-                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
-                            "indexer.db.directory.traversal");
+                    // Only do this if all repositories for given project support file gathering via history traversal.
+                    // TODO: add tunable for this (in case there are untracked files)
+                    boolean indexDownPerformed = false;
+                    if (isAllRepositoriesSupportDeletedFiles(project)) {
+                        // TODO: do this for the initial index ? might not be worth it.
+                        for (Repository repository : getRepositoriesForProject(project)) {
+                            // TODO: need to get the changeset of the previous index run
+                            // Traverse the history and add args to IndexDownArgs for the files/symlinks changed/deleted.
+                            if (repository instanceof RepositoryWithHistoryTraversal) {
+                                FileCollector fileCollector = new FileCollector();
+                                ((RepositoryWithHistoryTraversal) repository).traverseHistory(sourceRoot,
+                                        "from", "till", null, fileCollector::visit);
+
+                                for (String path : fileCollector.files) {
+                                    File file = new File(sourceRoot, path);
+                                    // Check that each file is present on file system to avoid problems
+                                    // in indexParallel().
+                                    // TODO: what about deleted files ?
+                                    if (file.exists()) {
+                                        // TODO: call accept() to see if the file can be added (symlinks !)
+                                        args.works.add(new IndexFileWork(file, path));
+                                    }
+                                }
+                                for (String path : fileCollector.deletedFiles) {
+                                    // TODO: removeFile()
+                                }
+                            }
+                        }
+                    } else {
+                        Statistics elapsed = new Statistics();
+                        LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
+                        indexDown(sourceRoot, dir, args);
+                        indexDownPerformed = true;
+                        elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir),
+                                "indexer.db.directory.traversal");
+                    }
 
                     showFileCount(dir, args);
 
                     args.cur_count = 0;
-                    elapsed = new Statistics();
+                    Statistics elapsed = new Statistics();
                     LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(dir, args);
                     elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir),
@@ -522,13 +626,15 @@ public class IndexDatabase {
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
                     // removed and have higher ordering than any present files.
-                    while (uidIter != null && uidIter.term() != null
-                        && uidIter.term().utf8ToString().startsWith(startuid)) {
+                    if (indexDownPerformed) {
+                        while (uidIter != null && uidIter.term() != null
+                                && uidIter.term().utf8ToString().startsWith(startuid)) {
 
-                        removeFile(true);
-                        BytesRef next = uidIter.next();
-                        if (next == null) {
-                            uidIter = null;
+                            removeFile(true);
+                            BytesRef next = uidIter.next();
+                            if (next == null) {
+                                uidIter = null;
+                            }
                         }
                     }
 
@@ -554,6 +660,8 @@ public class IndexDatabase {
                             isWithDirectoryCounts && isCountingDeltas);
 
                     markProjectIndexed(project);
+                } catch (HistoryException e) {
+                    // TODO
                 } finally {
                     reader.close();
                 }

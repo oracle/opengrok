@@ -779,7 +779,7 @@ public final class HistoryGuru {
         return repos;
     }
 
-    Repository getRepository(File file) {
+    public Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);
     }

@@ -92,7 +92,7 @@ import static org.opengrok.indexer.history.History.TAGS_SEPARATOR;
  * Access to a Git repository.
  *
  */
-public class GitRepository extends RepositoryWithPerPartesHistory {
+public class GitRepository extends RepositoryWithHistoryTraversal {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
@@ -476,15 +476,56 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         return getHistory(file, sinceRevision, tillRevision, null);
     }
 
+    private static class HistoryCollector {
+        List<HistoryEntry> entries;
+        Set<String> renamedFiles;
+
+        HistoryCollector() {
+            entries = new ArrayList<>();
+            renamedFiles = new HashSet<>();
+        }
+
+        public void visit(ChangesetInfo changesetInfo) {
+            RepositoryWithHistoryTraversal.CommitInfo commit = changesetInfo.commit;
+            HistoryEntry historyEntry = new HistoryEntry(commit.revision,
+                    commit.date,commit.authorName + " <" + commit.authorEmail + ">",
+                    commit.message, true);
+
+            if (changesetInfo.renamedFiles != null) {
+                renamedFiles.addAll(changesetInfo.renamedFiles);
+            }
+            if (changesetInfo.files != null) {
+                historyEntry.setFiles(changesetInfo.files);
+            }
+
+            entries.add(historyEntry);
+        }
+    }
+
     public History getHistory(File file, String sinceRevision, String tillRevision,
                               Integer numCommits) throws HistoryException {
 
-        if (numCommits != null && numCommits <= 0) {
-            return null;
+        HistoryCollector historyCollector = new HistoryCollector();
+        traverseHistory(file, sinceRevision, tillRevision, numCommits, historyCollector::visit);
+
+        History result = new History(historyCollector.entries, historyCollector.renamedFiles);
+
+        // Assign tags to changesets they represent
+        // We don't need to check if this repository supports tags,
+        // because we know it :-)
+        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
+            assignTagsInHistory(result);
         }
 
-        final List<HistoryEntry> entries = new ArrayList<>();
-        final Set<String> renamedFiles = new HashSet<>();
+        return result;
+    }
+
+    public void traverseHistory(File file, String sinceRevision, String tillRevision,
+                              Integer numCommits, Consumer<ChangesetInfo> visitor) throws HistoryException {
+
+        if (numCommits != null && numCommits <= 0) {
+            throw new HistoryException("invalid number of commits to retrieve");
+        }
 
         boolean isDirectory = file.isDirectory();
 
@@ -522,19 +563,18 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     continue;
                 }
 
-                HistoryEntry historyEntry = new HistoryEntry(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
-                        commit.getAuthorIdent().getWhen(),
-                        commit.getAuthorIdent().getName() +
-                                " <" + commit.getAuthorIdent().getEmailAddress() + ">",
-                        commit.getFullMessage(), true);
-
+                CommitInfo commitInfo = new CommitInfo(commit.getId().abbreviate(GIT_ABBREV_LEN).name(),
+                        commit.getAuthorIdent().getWhen(), commit.getAuthorIdent().getName(),
+                        commit.getAuthorIdent().getEmailAddress(), commit.getFullMessage());
                 if (isDirectory) {
                     SortedSet<String> files = new TreeSet<>();
-                    getFilesForCommit(renamedFiles, files, commit, repository);
-                    historyEntry.setFiles(files);
+                    final Set<String> renamedFiles = new HashSet<>();
+                    final Set<String> deletedFiles = new HashSet<>();
+                    getFilesForCommit(renamedFiles, files, deletedFiles, commit, repository);
+                    visitor.accept(new ChangesetInfo(commitInfo, files, renamedFiles, deletedFiles));
+                } else {
+                    visitor.accept(new ChangesetInfo(commitInfo));
                 }
-
-                entries.add(historyEntry);
 
                 if (numCommits != null && ++num >= numCommits) {
                     break;
@@ -543,46 +583,36 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         } catch (IOException | ForbiddenSymlinkException e) {
             throw new HistoryException(String.format("failed to get history for ''%s''", file), e);
         }
-
-        History result = new History(entries, renamedFiles);
-
-        // Assign tags to changesets they represent
-        // We don't need to check if this repository supports tags,
-        // because we know it :-)
-        if (RuntimeEnvironment.getInstance().isTagsEnabled()) {
-            assignTagsInHistory(result);
-        }
-
-        return result;
     }
 
     /**
      * Accumulate list of changed files and renamed files (if enabled) for given commit.
      * @param renamedFiles result containing the renamed files in this commit
-     * @param files result containing changed files in this commit
+     * @param changedFiles result containing changed files in this commit
      * @param commit RevCommit object
      * @param repository repository object
      * @throws IOException on error traversing the commit tree
      */
-    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> files, RevCommit commit,
+    private void getFilesForCommit(Set<String> renamedFiles, SortedSet<String> changedFiles, Set<String> deletedFiles,
+                                   RevCommit commit,
                                    Repository repository) throws IOException {
 
         int numParents = commit.getParentCount();
 
         if (numParents == 1) {
-            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+            getFiles(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
         } else if (numParents == 0) { // first commit
             try (TreeWalk treeWalk = new TreeWalk(repository)) {
                 treeWalk.addTree(commit.getTree());
                 treeWalk.setRecursive(true);
 
                 while (treeWalk.next()) {
-                    files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
+                    changedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
                             getNativePath(treeWalk.getPathString()));
                 }
             }
         } else {
-            getFiles(repository, commit.getParent(0), commit, files, renamedFiles);
+            getFiles(repository, commit.getParent(0), commit, changedFiles, renamedFiles, deletedFiles);
         }
     }
 
@@ -595,17 +625,18 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     }
 
     /**
-     * Assemble list of files that changed between 2 commits.
+     * Assemble list of changedFiles that changed between 2 commits.
      * @param repository repository object
      * @param oldCommit parent commit
-     * @param newCommit new commit (the mehotd assumes oldCommit is its parent)
-     * @param files set of files that changed (excludes renamed files)
-     * @param renamedFiles set of renamed files (if renamed handling is enabled)
+     * @param newCommit new commit (the method assumes oldCommit is its parent)
+     * @param changedFiles output: set of changedFiles that changed (excludes renamed changedFiles)
+     * @param renamedFiles output: set of renamed files (if renamed handling is enabled)
+     * @param deletedFiles output: set of deleted files
      * @throws IOException on I/O problem
      */
     private void getFiles(org.eclipse.jgit.lib.Repository repository,
                           RevCommit oldCommit, RevCommit newCommit,
-                          Set<String> files, Set<String> renamedFiles)
+                          Set<String> changedFiles, Set<String> renamedFiles, Set<String> deletedFiles)
             throws IOException {
 
         OutputStream outputStream = NullOutputStream.INSTANCE;
@@ -619,16 +650,17 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     prepareTreeParser(repository, newCommit));
 
             for (DiffEntry diff : diffs) {
-                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE) {
-                    if (files != null) {
-                        files.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                                getNativePath(diff.getNewPath()));
-                    }
+                String newPath = getNativePath(getDirectoryNameRelative()) + File.separator +
+                        getNativePath(diff.getNewPath());
+
+                if (diff.getChangeType() != DiffEntry.ChangeType.DELETE && changedFiles != null) {
+                    changedFiles.add(newPath);
+                } else if (deletedFiles != null) {
+                    deletedFiles.add(newPath);
                 }
 
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME && isHandleRenamedFiles()) {
-                    renamedFiles.add(getNativePath(getDirectoryNameRelative()) + File.separator +
-                            getNativePath(diff.getNewPath()));
+                    renamedFiles.add(newPath);
                 }
             }
         }
