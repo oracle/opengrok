@@ -32,10 +32,14 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
+
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.web.Util;
+
+import static org.opengrok.indexer.configuration.PatternUtil.compilePattern;
 
 /**
  * Placeholder for the information that builds up a project.
@@ -99,6 +103,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Set of groups which match this project.
      */
     private transient Set<Group> groups = new TreeSet<>();
+
+    /**
+     * These properties override global settings, if set.
+     */
+    private String bugPage;
+    private String bugPattern;
+    private String reviewPage;
+    private String reviewPattern;
 
     // This empty constructor is needed for serialization.
     public Project() {
@@ -302,6 +314,70 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
     }
 
+    public void setBugPage(String bugPage) {
+        this.bugPage = bugPage;
+    }
+
+    public String getBugPage() {
+        if (bugPage != null) {
+            return bugPage;
+        } else {
+            return RuntimeEnvironment.getInstance().getBugPage();
+        }
+    }
+
+    /**
+     * Set the bug pattern to a new value.
+     *
+     * @param bugPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+        this.bugPattern = compilePattern(bugPattern);
+    }
+
+    public String getBugPattern() {
+        if (bugPattern != null) {
+            return bugPattern;
+        } else {
+            return RuntimeEnvironment.getInstance().getBugPattern();
+        }
+    }
+
+    public String getReviewPage() {
+        if (reviewPage != null) {
+            return reviewPage;
+        } else {
+            return RuntimeEnvironment.getInstance().getReviewPage();
+        }
+    }
+
+    public void setReviewPage(String reviewPage) {
+        this.reviewPage = reviewPage;
+    }
+
+    public String getReviewPattern() {
+        if (reviewPattern != null) {
+            return reviewPattern;
+        } else {
+            return RuntimeEnvironment.getInstance().getReviewPattern();
+        }
+    }
+
+    /**
+     * Set the review pattern to a new value.
+     *
+     * @param reviewPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+        this.reviewPattern = compilePattern(reviewPattern);
+    }
+
     /**
      * Fill the project with the current configuration where the applicable
      * project property has a default value.
@@ -310,7 +386,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         Configuration defaultCfg = new Configuration();
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        /**
+        /*
          * Choosing strategy for properties (tabSize used as example here):
          * <pre>
          * this       cfg        defaultCfg   chosen value
@@ -345,6 +421,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Allow project to override global setting of merge commits.
         if (mergeCommitsEnabled == null) {
             setMergeCommitsEnabled(env.isMergeCommitsEnabled());
+        }
+
+        if (bugPage == null) {
+            setBugPage(env.getBugPage());
+        }
+        if (bugPattern == null) {
+            setBugPattern(env.getBugPattern());
+        }
+
+        if (reviewPage == null) {
+            setReviewPage(env.getReviewPage());
+        }
+        if (reviewPattern == null) {
+            setReviewPattern(env.getReviewPattern());
         }
     }
 
