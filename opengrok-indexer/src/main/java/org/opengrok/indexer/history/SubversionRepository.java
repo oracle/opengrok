@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -120,6 +121,10 @@ public class SubversionRepository extends Repository {
         if (executor.exec() == 0) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                // Prohibit the use of all protocols by external entities:
+                factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 document = builder.parse(executor.getOutputStream());
             } catch (SAXException saxe) {
