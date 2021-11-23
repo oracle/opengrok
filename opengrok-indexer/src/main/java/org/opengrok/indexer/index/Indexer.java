@@ -167,11 +167,9 @@ public final class Indexer {
         try {
             argv = parseOptions(argv);
 
-            if (webappURI != null) {
-                if (!HostUtil.isReachable(webappURI, CONNECT_TIMEOUT)) {
-                    System.err.println(webappURI + " is not reachable.");
-                    System.exit(1);
-                }
+            if (webappURI != null && !HostUtil.isReachable(webappURI, CONNECT_TIMEOUT)) {
+                System.err.println(webappURI + " is not reachable.");
+                System.exit(1);
             }
 
             /*
@@ -268,9 +266,8 @@ public final class Indexer {
                 if (!IndexCheck.check(cfg, subFilesList)) {
                     System.err.printf("Index check failed%n");
                     System.err.print("You might want to remove " +
-                            (subFilesList.size() > 0 ?
-                                    "data for projects " + String.join(",", subFilesList) : "all data") +
-                            " under the data root and reindex\n");
+                            (!subFilesList.isEmpty() ? "data for projects " + String.join(",", subFilesList) :
+                                    "all data") + " under the data root and reindex\n");
                     System.exit(1);
                 }
 
@@ -453,7 +450,7 @@ public final class Indexer {
 
         optParser = OptionParser.execute(parser -> {
             parser.setPrologue(
-                String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
+                String.format("\nUsage: java -jar %s [options] [subDir1 [...]]%n", program));
 
             parser.on(HELP_OPT_3, HELP_OPT_2, HELP_OPT_1, "=[mode]",
                     "With no mode specified, display this usage summary. Or specify a mode:",

@@ -293,7 +293,7 @@ public class SearchHelper {
                 Set<String> invalidProjects = projects.stream().
                     filter(proj -> (Project.getByName(proj) == null)).
                     collect(Collectors.toSet());
-                if (invalidProjects.size() > 0) {
+                if (!invalidProjects.isEmpty()) {
                     errorMsg = "Project list contains invalid projects: " +
                         String.join(", ", invalidProjects);
                     return this;
@@ -303,7 +303,7 @@ public class SearchHelper {
                     map(Project::getByName).
                     filter(proj -> !proj.isIndexed()).
                     collect(Collectors.toSet());
-                if (notIndexedProjects.size() > 0) {
+                if (!notIndexedProjects.isEmpty()) {
                     errorMsg = "Some of the projects to be searched are not indexed yet: " +
                         String.join(", ", notIndexedProjects.stream().
                         map(Project::getName).
