@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.7.22</version>
+    <version>1.7.23</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
