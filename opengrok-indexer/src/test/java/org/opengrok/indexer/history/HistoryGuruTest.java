@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.CVS;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
@@ -46,6 +47,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.FileUtilities;
@@ -282,9 +285,28 @@ public class HistoryGuruTest {
     }
 
     @Test
-    void testGetLastHistoryEntry() throws HistoryException {
+    void testGetLastHistoryEntryNonexistent() throws HistoryException {
         HistoryGuru instance = HistoryGuru.getInstance();
         File file = new File("/nonexistent");
         assertNull(instance.getLastHistoryEntry(file, true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetLastHistoryEntry(boolean isIndexerParam) throws HistoryException {
+        boolean isIndexer = env.isIndexer();
+        env.setIndexer(isIndexerParam);
+        boolean isTagsEnabled = env.isTagsEnabled();
+        env.setTagsEnabled(true);
+        HistoryGuru instance = HistoryGuru.getInstance();
+        File file = new File(repository.getSourceRoot(), "git");
+        assertTrue(file.exists());
+        if (isIndexerParam) {
+            assertThrows(IllegalStateException.class, () -> instance.getLastHistoryEntry(file, true));
+        } else {
+            assertNotNull(instance.getLastHistoryEntry(file, true));
+        }
+        env.setIndexer(isIndexer);
+        env.setTagsEnabled(isTagsEnabled);
     }
 }
