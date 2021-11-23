@@ -319,7 +319,11 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         if (this.getTagList() == null) {
-            throw new IllegalStateException("getTagList() is null");
+            if (RuntimeEnvironment.getInstance().isIndexer()) {
+                throw new IllegalStateException("getTagList() is null");
+            } else {
+                return;
+            }
         }
 
         Iterator<TagEntry> it = this.getTagList().descendingIterator();
