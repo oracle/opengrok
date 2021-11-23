@@ -107,7 +107,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineCurrentVersionWithEmptyRepository() throws Exception {
+    void testDetermineCurrentVersionWithEmptyRepository() throws Exception {
         File emptyGitDir = new File(repository.getSourceRoot(), "gitEmpty");
         try (Git git = Git.init().setDirectory(emptyGitDir).call()) {
             GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(git.getRepository().getWorkTree());
@@ -119,7 +119,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineCurrentVersionOfKnownRepository() throws Exception {
+    void testDetermineCurrentVersionOfKnownRepository() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         assertNotNull(gitrepo);
@@ -130,7 +130,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineCurrentVersionAfterChange() throws Exception {
+    void testDetermineCurrentVersionAfterChange() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         assertNotNull(gitrepo);
@@ -174,7 +174,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineBranchBasic() throws Exception {
+    void testDetermineBranchBasic() throws Exception {
         // First check branch of known repository.
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
@@ -184,7 +184,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineBranchAfterChange() throws Exception {
+    void testDetermineBranchAfterChange() throws Exception {
         // Clone the test repository and create new branch there.
         // Clone under source root to avoid problems with prohibited symlinks.
         File root = new File(repository.getSourceRoot(), "git");
@@ -246,7 +246,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineParentEmpty() throws Exception {
+    void testDetermineParentEmpty() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String parent = gitrepo.determineParent();
@@ -254,7 +254,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testDetermineParent() throws Exception {
+    void testDetermineParent() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
         String parent;
@@ -284,7 +284,7 @@ public class GitRepositoryTest {
      * Test of fileHasAnnotation method, of class GitRepository.
      */
     @Test
-    public void fileHasAnnotation() {
+    void fileHasAnnotation() {
         boolean result = instance.fileHasAnnotation(null);
         assertTrue(result);
     }
@@ -293,7 +293,7 @@ public class GitRepositoryTest {
      * Test of fileHasHistory method, of class GitRepository.
      */
     @Test
-    public void fileHasHistory() {
+    void fileHasHistory() {
         boolean result = instance.fileHasHistory(null);
         assertTrue(result);
     }
@@ -309,7 +309,7 @@ public class GitRepositoryTest {
      * </pre>
      */
     @Test
-    public void testRenamedFiles() throws Exception {
+    void testRenamedFiles() throws Exception {
         String[][] tests = new String[][] {
                 {Paths.get("moved2", "renamed2.c").toString(), "84599b3c", Paths.get("moved2", "renamed2.c").toString()},
                 {Paths.get("moved2", "renamed2.c").toString(), "67dfbe26", Paths.get("moved", "renamed2.c").toString()},
@@ -342,7 +342,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testAnnotationOfRenamedFileWithHandlingOff() throws Exception {
+    void testAnnotationOfRenamedFileWithHandlingOff() throws Exception {
         String[] revisions = {"84599b3c"};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
@@ -355,7 +355,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testAnnotationOfRenamedFileWithHandlingOn() throws Exception {
+    void testAnnotationOfRenamedFileWithHandlingOn() throws Exception {
         String[] revisions = {"1086eaf5", "ce4c98ec"};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
@@ -368,7 +368,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testAnnotationOfRenamedFilePastWithHandlingOn() throws Exception {
+    void testAnnotationOfRenamedFilePastWithHandlingOn() throws Exception {
         String[] revisions = {"1086eaf5", "ce4c98ec"};
         Set<String> revSet = new HashSet<>();
         Collections.addAll(revSet, revisions);
@@ -381,7 +381,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testInvalidRenamedFiles() {
+    void testInvalidRenamedFiles() {
         String[][] tests = new String[][] {
                 {"", "67dfbe26"},
                 {"moved/renamed2.c", ""},
@@ -408,7 +408,7 @@ public class GitRepositoryTest {
      * @see #testRenamedFiles for git repo structure info
      */
     @Test
-    public void testGetRenamedFileContent() throws Exception {
+    void testGetRenamedFileContent() throws Exception {
         String old_content
                 = "#include <stdio.h>\n"
                 + "#include <stdlib.h>\n"
@@ -483,7 +483,7 @@ public class GitRepositoryTest {
      * @see #testRenamedFiles for git repo structure info
      */
     @Test
-    public void testGetHistoryForNonExistentRenamed() throws Exception {
+    void testGetHistoryForNonExistentRenamed() throws Exception {
         final List<String[]> tests = Arrays.asList(
                 new String[] {Paths.get("moved", "renamed2.c").toString(), "84599b3c"},
 
@@ -520,7 +520,7 @@ public class GitRepositoryTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    public void testHistory(boolean renamedHandling) throws Exception {
+    void testHistory(boolean renamedHandling) throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(renamedHandling);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
@@ -597,7 +597,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testSingleHistory() throws Exception {
+    void testSingleHistory() throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(false);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
@@ -611,7 +611,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testRenamedSingleHistory() throws Exception {
+    void testRenamedSingleHistory() throws Exception {
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
@@ -689,7 +689,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testBuildTagListEmpty() throws Exception {
+    void testBuildTagListEmpty() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "testBuildTagListEmpty");
@@ -710,7 +710,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testBuildTagListMultipleTags() throws Exception {
+    void testBuildTagListMultipleTags() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "testBuildTagListMultipleTags");
@@ -750,7 +750,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    public void testBuildTagListNotHead() throws Exception {
+    void testBuildTagListNotHead() throws Exception {
         File root = new File(repository.getSourceRoot(), "git");
         // Clone under source root to avoid problems with prohibited symlinks.
         File localPath = new File(repository.getSourceRoot(), "testBuildTagListNotHead");

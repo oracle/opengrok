@@ -170,22 +170,16 @@ public final class HistoryGuru {
             if (hist != null && annotation != null) {
                 Set<String> revs = annotation.getRevisions();
                 int revsMatched = 0;
-             // !!! cannot do this because of not matching rev ids (keys)
-                // first is the most recent one, so we need the position of "rev"
-                // until the end of the list
-                //if (hent.indexOf(rev)>0) {
-                //     hent = hent.subList(hent.indexOf(rev), hent.size());
-                //}
                 for (HistoryEntry he : hist.getHistoryEntries()) {
-                    String hist_rev = he.getRevision();
-                    String short_rev = repo.getRevisionForAnnotate(hist_rev);
-                    if (revs.contains(short_rev)) {
-                        annotation.addDesc(short_rev, "changeset: " + he.getRevision()
+                    String histRev = he.getRevision();
+                    String shortRev = repo.getRevisionForAnnotate(histRev);
+                    if (revs.contains(shortRev)) {
+                        annotation.addDesc(shortRev, "changeset: " + he.getRevision()
                                 + "\nsummary: " + he.getMessage() + "\nuser: "
                                 + he.getAuthor() + "\ndate: " + he.getDate());
-                         // History entries are coming from recent to older,
-                         // file version should be from oldest to newer.
-                        annotation.addFileVersion(short_rev, revs.size() - revsMatched);
+                        // History entries are coming from recent to older,
+                        // file version should be from oldest to newer.
+                        annotation.addFileVersion(shortRev, revs.size() - revsMatched);
                         revsMatched++;
                     }
                 }

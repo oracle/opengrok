@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.framework;
@@ -67,6 +67,8 @@ public class PluginClassLoader extends ClassLoader {
             "sun"
     };
 
+    private static final String CLASS_SUFFIX = ".class";
+
     private final File directory;
 
     public PluginClassLoader(File directory) {
@@ -86,9 +88,9 @@ public class PluginClassLoader extends ClassLoader {
         for (File f : jars) {
             try (JarFile jar = new JarFile(f)) {
                 // jar files always use / separator
-                String filename = classname.replace('.', '/') + ".class";
+                String filename = classname.replace('.', '/') + CLASS_SUFFIX;
                 JarEntry entry = (JarEntry) jar.getEntry(filename);
-                if (entry != null && entry.getName().endsWith(".class")) {
+                if (entry != null && entry.getName().endsWith(CLASS_SUFFIX)) {
                     try (InputStream is = jar.getInputStream(entry)) {
                         byte[] bytes = loadBytes(is);
                         Class<?> c = defineClass(classname, bytes, 0, bytes.length);
@@ -111,7 +113,7 @@ public class PluginClassLoader extends ClassLoader {
 
     private Class<?> loadClassFromFile(String classname) throws ClassNotFoundException {
         try {
-            String filename = classname.replace('.', File.separatorChar) + ".class";
+            String filename = classname.replace('.', File.separatorChar) + CLASS_SUFFIX;
             File f = new File(directory, filename);
             try (FileInputStream in = new FileInputStream(f)) {
                 byte[] bytes = loadBytes(in);

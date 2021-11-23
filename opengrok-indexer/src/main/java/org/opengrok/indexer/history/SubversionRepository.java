@@ -69,6 +69,9 @@ public class SubversionRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "svn";
 
+    private static final String XML_OPTION = "--xml";
+    private static final String NON_INTERACT_OPTION = "--non-interactive";
+
     private static final String URLattr = "url";
 
     protected String reposPath;
@@ -112,7 +115,7 @@ public class SubversionRepository extends Repository {
 
         cmd.add(RepoCommand);
         cmd.add("info");
-        cmd.add("--xml");
+        cmd.add(XML_OPTION);
         File directory = new File(getDirectoryName());
 
         Executor executor = new Executor(cmd, directory,
@@ -205,9 +208,9 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("log");
-        cmd.add("--non-interactive");
+        cmd.add(NON_INTERACT_OPTION);
         cmd.addAll(getAuthCommandLineParams());
-        cmd.add("--xml");
+        cmd.add(XML_OPTION);
         cmd.add("-v");
         if (numEntries > 0) {
             cmd.add("-l" + numEntries);
@@ -247,7 +250,7 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("cat");
-        cmd.add("--non-interactive");
+        cmd.add(NON_INTERACT_OPTION);
         cmd.addAll(getAuthCommandLineParams());
         cmd.add("-r");
         cmd.add(rev);
@@ -304,8 +307,8 @@ public class SubversionRepository extends Repository {
         argv.add(RepoCommand);
         argv.add("annotate");
         argv.addAll(getAuthCommandLineParams());
-        argv.add("--non-interactive");
-        argv.add("--xml");
+        argv.add(NON_INTERACT_OPTION);
+        argv.add(XML_OPTION);
         if (revision != null) {
             argv.add("-r");
             argv.add(revision);
@@ -409,7 +412,7 @@ public class SubversionRepository extends Repository {
             History hist = getHistory(new File(getDirectoryName()), null, 1, cmdType);
             if (hist != null) {
                 List<HistoryEntry> hlist = hist.getHistoryEntries();
-                if (hlist != null && hlist.size() > 0) {
+                if (hlist != null && !hlist.isEmpty()) {
                     HistoryEntry he = hlist.get(0);
                     curVersion = format(he.getDate()) + " " +
                             he.getRevision() + " " + he.getAuthor() + " " +
