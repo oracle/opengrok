@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -45,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link DefinitionsTokenStream}.
  */
-public class DefinitionsTokenStreamTest {
+class DefinitionsTokenStreamTest {
 
     /**
      * Tests sampleplain.cc v. sampletags_cc with no expand-tabs and
@@ -54,7 +55,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsForRawContentUnsupplemented()
+    void testCppDefinitionsForRawContentUnsupplemented()
             throws IOException {
         Map<Integer, SimpleEntry<String, String>> overrides = new TreeMap<>();
         overrides.put(44, new SimpleEntry<>(",", "parent_def"));
@@ -76,7 +77,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsWithRawContent1() throws IOException {
+    void testCppDefinitionsWithRawContent1() throws IOException {
         testDefinitionsVsContent(false,
             "analysis/c/sample.cc",
             "analysis/c/sampletags_cc", 65, true,
@@ -90,7 +91,7 @@ public class DefinitionsTokenStreamTest {
      * @throws java.io.IOException I/O exception
      */
     @Test
-    public void testCppDefinitionsWithRawContent2() throws IOException {
+    void testCppDefinitionsWithRawContent2() throws IOException {
         testDefinitionsVsContent(true,
             "analysis/c/sample.cc",
             "analysis/c/sampletags_cc", 65, true,
@@ -128,37 +129,38 @@ public class DefinitionsTokenStreamTest {
         }
 
         // Deserialize the token stream.
-        DefinitionsTokenStream tokstream = new DefinitionsTokenStream();
-        tokstream.initialize(defs, src, in -> ExpandTabsReader.wrap(in, tabSize));
+        int count;
+        try (DefinitionsTokenStream tokstream = new DefinitionsTokenStream()) {
+            tokstream.initialize(defs, src, in -> ExpandTabsReader.wrap(in, tabSize));
 
-        // Iterate through stream.
-        CharTermAttribute term = tokstream.getAttribute(
-            CharTermAttribute.class);
-        assertNotNull(term, "CharTermAttribute");
+            // Iterate through stream.
+            CharTermAttribute term = tokstream.getAttribute(CharTermAttribute.class);
+            assertNotNull(term, "CharTermAttribute");
 
-        OffsetAttribute offs = tokstream.getAttribute(OffsetAttribute.class);
-        assertNotNull(offs, "OffsetAttribute");
+            OffsetAttribute offs = tokstream.getAttribute(OffsetAttribute.class);
+            assertNotNull(offs, "OffsetAttribute");
 
-        int count = 0;
-        while (tokstream.incrementToken()) {
-            ++count;
-            String termValue = term.toString();
+            count = 0;
+            while (tokstream.incrementToken()) {
+                ++count;
+                String termValue = term.toString();
 
-            String cutValue = source.substring(offs.startOffset(),
-                offs.endOffset());
+                String cutValue = source.substring(offs.startOffset(),
+                        offs.endOffset());
 
-            // If an override exists, test it specially.
-            if (overrides != null && overrides.containsKey(count)) {
-                SimpleEntry<String, String> overkv = overrides.get(count);
-                assertEquals(overkv.getKey(), cutValue, "cut term override" + count);
-                assertEquals(overkv.getValue(), termValue, "cut term w.r.t. term override" + count);
-                continue;
+                // If an override exists, test it specially.
+                if (overrides != null && overrides.containsKey(count)) {
+                    SimpleEntry<String, String> overkv = overrides.get(count);
+                    assertEquals(overkv.getKey(), cutValue, "cut term override" + count);
+                    assertEquals(overkv.getValue(), termValue, "cut term w.r.t. term override" + count);
+                    continue;
+                }
+
+                boolean cutContainsTerm = cutValue.endsWith(termValue);
+                assertTrue(cutContainsTerm, "cut term" + count + " at " +
+                        (offs.startOffset()) + "-" + (offs.endOffset()) + "[" +
+                        cutValue + "] vs [" + termValue + "]");
             }
-
-            boolean cutContainsTerm = cutValue.endsWith(termValue);
-            assertTrue(cutContainsTerm, "cut term" + count + " at " +
-                    (offs.startOffset()) + "-" + (offs.endOffset()) + "[" +
-                    cutValue + "] vs [" + termValue + "]");
         }
 
         assertEquals(expectedCount, count, "token count");
@@ -168,10 +170,9 @@ public class DefinitionsTokenStreamTest {
         return new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
-                InputStream srcres = getClass().getClassLoader().
-                    getResourceAsStream(name);
-                assertNotNull(srcres, name + " as resource,");
-                return srcres;
+                InputStream srcRes = getClass().getClassLoader().getResourceAsStream(name);
+                assertNotNull(srcRes, name + " as resource,");
+                return srcRes;
             }
         };
     }

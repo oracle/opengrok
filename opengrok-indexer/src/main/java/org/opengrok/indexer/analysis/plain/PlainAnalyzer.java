@@ -203,27 +203,28 @@ public class PlainAnalyzer extends TextAnalyzer {
     private void tryAddingDefs(Document doc, Definitions defs, StreamSource src)
             throws IOException {
 
-        DefinitionsTokenStream defstream = new DefinitionsTokenStream();
-        defstream.initialize(defs, src, this::wrapReader);
+        try (DefinitionsTokenStream defstream = new DefinitionsTokenStream()) {
+            defstream.initialize(defs, src, this::wrapReader);
 
-        /*
-         *     Testing showed that UnifiedHighlighter will fall back to
-         * ANALYSIS in the presence of multi-term queries (MTQs) such as
-         * prefixes and wildcards even for fields that are analyzed with
-         * POSTINGS -- i.e. with DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS.
-         * This is despite UnifiedHighlighter seeming to indicate that
-         * postings should be sufficient in the comment for
-         * shouldHandleMultiTermQuery(String): "MTQ highlighting can be
-         * expensive, particularly when using offsets in postings."
-         *     DEFS re-analysis will not be correct, however, as the
-         * PlainAnalyzer which UnifiedHighlighter will use on-the-fly will
-         * not correctly integrate ctags Definitions.
-         *     Storing term vectors, however, allows UnifiedHighlighter to
-         * avoid re-analysis at the cost of a larger index. As DEFS are a
-         * small subset of source text, it seems worth the cost to get
-         * accurate highlighting for DEFS MTQs.
-         */
-        doc.add(new OGKTextVecField(QueryBuilder.DEFS, defstream));
+            /*
+             *     Testing showed that UnifiedHighlighter will fall back to
+             * ANALYSIS in the presence of multi-term queries (MTQs) such as
+             * prefixes and wildcards even for fields that are analyzed with
+             * POSTINGS -- i.e. with DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS.
+             * This is despite UnifiedHighlighter seeming to indicate that
+             * postings should be sufficient in the comment for
+             * shouldHandleMultiTermQuery(String): "MTQ highlighting can be
+             * expensive, particularly when using offsets in postings."
+             *     DEFS re-analysis will not be correct, however, as the
+             * PlainAnalyzer which UnifiedHighlighter will use on-the-fly will
+             * not correctly integrate ctags Definitions.
+             *     Storing term vectors, however, allows UnifiedHighlighter to
+             * avoid re-analysis at the cost of a larger index. As DEFS are a
+             * small subset of source text, it seems worth the cost to get
+             * accurate highlighting for DEFS MTQs.
+             */
+            doc.add(new OGKTextVecField(QueryBuilder.DEFS, defstream));
+        }
     }
 
     /**
