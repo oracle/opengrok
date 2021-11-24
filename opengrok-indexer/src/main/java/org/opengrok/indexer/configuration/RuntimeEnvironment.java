@@ -74,6 +74,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
@@ -1733,6 +1734,8 @@ public final class RuntimeEnvironment {
         for (ConfigurationChangedListener l : listeners) {
             l.onConfigurationChanged();
         }
+
+        LOGGER.log(Level.INFO, "Done applying configuration");
     }
 
     public void setIndexTimestamp() throws IOException {
@@ -1762,9 +1765,12 @@ public final class RuntimeEnvironment {
     }
 
     public void maybeRefreshIndexSearchers() {
+        LOGGER.log(Level.INFO, "refreshing searcher managers");
+        Statistics stat = new Statistics();
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             maybeRefreshSearcherManager(entry.getValue());
         }
+        stat.report(LOGGER, "Done refreshing searcher managers");
     }
 
     /**
@@ -1809,12 +1815,11 @@ public final class RuntimeEnvironment {
             // so that it cannot produce new IndexSearcher objects.
             if (!getProjectNames().contains(entry.getKey())) {
                 try {
-                    LOGGER.log(Level.FINE,
-                        "closing SearcherManager for project" + entry.getKey());
+                    LOGGER.log(Level.FINE, "closing SearcherManager for project {0}", entry.getKey());
                     entry.getValue().close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE,
-                        "cannot close SearcherManager for project" + entry.getKey(), ex);
+                        String.format("cannot close SearcherManager for project %s", entry.getKey()), ex);
                 }
                 toRemove.add(entry.getKey());
             }
