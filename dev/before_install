@@ -43,7 +43,7 @@ if [[ "$RUNNER_OS" == "Linux" ]]; then
 elif [[ "$RUNNER_OS" == "macOS" ]]; then
         export HOMEBREW_NO_AUTO_UPDATE=1
 
-	brew install cvs libgit2 jq autoconf automake
+	brew install cvs libgit2 jq autoconf automake mercurial
 	if [[ $? != 0 ]]; then
 		echo "cannot install extra packages"
 		exit 1
