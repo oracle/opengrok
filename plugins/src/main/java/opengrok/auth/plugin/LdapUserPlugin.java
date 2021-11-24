@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -69,8 +69,8 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
     private String ldapFilter;
     private Boolean useDN;
-    private Set<String> attributes;
-    private Integer instance;
+    private Set<String> attrSet;
+    private Integer instanceNum;
 
     // for testing
     void load(Map<String, Object> parameters, AbstractLdapProvider provider) {
@@ -92,7 +92,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             throw new NullPointerException("Missing configuration parameter [" + ATTRIBUTES +
                     "] in the setup");
         }
-        attributes = new HashSet<>(Arrays.asList(attributesVal.split(",")));
+        attrSet = new HashSet<>(Arrays.asList(attributesVal.split(",")));
 
         ldapFilter = (String) parameters.get(LDAP_FILTER);
 
@@ -100,14 +100,14 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             useDN = false;
         }
 
-        String instance_param = (String) parameters.get(INSTANCE);
-        if (instance_param != null) {
-            instance = Integer.parseInt(instance_param);
+        String instanceParam = (String) parameters.get(INSTANCE);
+        if (instanceParam != null) {
+            instanceNum = Integer.parseInt(instanceParam);
         }
 
         LOGGER.log(Level.FINE, "LdapUser plugin loaded with filter={0}, " +
                         "attributes={1}, useDN={2}, instance={3}",
-                new Object[]{ldapFilter, attributes, useDN, instance});
+                new Object[]{ldapFilter, attrSet, useDN, instanceNum});
     }
 
     /**
@@ -155,7 +155,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         }
 
         String dn = null;
-        if (useDN) {
+        if (Boolean.TRUE.equals(useDN)) {
             dn = user.getUsername();
             LOGGER.log(Level.FINEST, "using DN ''{0}'' for user {1}",
                     new Object[]{dn, user});
@@ -172,17 +172,17 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         try {
             AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
             if ((res = ldapProvider.lookupLdapContent(dn, expandedFilter,
-                    attributes.toArray(new String[0]))) == null) {
+                    attrSet.toArray(new String[0]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}'' from LDAP provider {3}",
-                        new Object[]{user, expandedFilter, attributes, getLdapProvider()});
+                        new Object[]{user, expandedFilter, attrSet, getLdapProvider()});
                 return;
             }
 
             records = res.getAttrs();
-            if (!useDN) {
+            if (Boolean.FALSE.equals(useDN)) {
                 dn = res.getDN();
-                LOGGER.log(Level.FINEST, "got DN ''{0}'' for user {1} on {2}",
+                LOGGER.log(Level.FINEST, "got DN ''{0}'' for user {1}",
                         new Object[]{dn, user});
             }
         } catch (LdapException ex) {
@@ -195,21 +195,21 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             return;
         }
 
-        for (String attrName : attributes) {
+        for (String attrName : attrSet) {
             if (!records.containsKey(attrName) || records.get(attrName) == null || records.get(attrName).isEmpty()) {
                 LOGGER.log(Level.WARNING, "''{0}'' record for user {1} is not present or empty on {2}",
                         new Object[]{attrName, user, ldapProvider});
             }
         }
 
-        Map<String, Set<String>> attrSet = new HashMap<>();
-        for (String attrName : attributes) {
-            attrSet.put(attrName, records.get(attrName));
+        Map<String, Set<String>> userAttrSet = new HashMap<>();
+        for (String attrName : this.attrSet) {
+            userAttrSet.put(attrName, records.get(attrName));
         }
 
         LOGGER.log(Level.FINEST, "DN for user {0} is ''{1}'' on {2}",
                 new Object[]{user, dn, ldapProvider});
-        updateSession(req, new LdapUser(dn, attrSet));
+        updateSession(req, new LdapUser(dn, userAttrSet));
     }
 
     /**
@@ -227,7 +227,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     }
 
     private String getSessionAttrName() {
-        return getSessionAttrName(instance);
+        return getSessionAttrName(instanceNum);
     }
 
     @Override

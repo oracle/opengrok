@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer;
 
@@ -39,14 +39,16 @@ public final class Info {
     private static final String REVISION;
     private static final String REVISION_SHORT;
 
+    private static final String UNKNOWN = "unknown";
+
     static {
         try (InputStream in = Info.class.getResourceAsStream("info.properties")) {
             if (in != null) {
                 properties.load(in);
             }
-            VERSION = properties.getProperty("version", "unknown");
-            REVISION = properties.getProperty("changeset", "unknown");
-            REVISION_SHORT = properties.getProperty("changeset_short", "unknown");
+            VERSION = properties.getProperty("version", UNKNOWN);
+            REVISION = properties.getProperty("changeset", UNKNOWN);
+            REVISION_SHORT = properties.getProperty("changeset_short", UNKNOWN);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
