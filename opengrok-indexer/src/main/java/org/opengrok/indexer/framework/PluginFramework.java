@@ -319,6 +319,8 @@ public abstract class PluginFramework<PluginType> {
         return classname;
     }
 
+    // The filePath is checked not to point outside the "target" directory in the code below.
+    @SuppressWarnings("javasecurity:S6096")
     @Nullable
     private String getClassName(JarEntry jarEntry) {
         final String filePath = jarEntry.getName();
