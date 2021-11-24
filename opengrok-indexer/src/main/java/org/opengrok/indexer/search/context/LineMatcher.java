@@ -28,13 +28,16 @@ import java.util.Locale;
 /**
  * Base class for matching a line against terms.
  */
+// Avoid the warning about 'WAIT' being confusing w.r.t. Object.wait().
+@SuppressWarnings("java:S1845")
 public abstract class LineMatcher {
+    // Line Matcher States
     public static final int NOT_MATCHED = 0;
     public static final int MATCHED = 1;
     public static final int WAIT = 2;
 
     /**
-     * Tells whether the matching should be done in a case insensitive manner.
+     * Tells whether the matching should be done in a case-insensitive manner.
      */
     private final boolean caseInsensitive;
 
@@ -49,7 +52,7 @@ public abstract class LineMatcher {
     }
 
     /**
-     * Check if two strings are equal. If this is a case insensitive matcher,
+     * Check if two strings are equal. If this is a case-insensitive matcher,
      * the check will return true if the only difference between the strings
      * is difference in case.
      */
@@ -60,7 +63,7 @@ public abstract class LineMatcher {
     /**
      * Compare two strings and return -1, 0 or 1 if the first string is
      * lexicographically smaller than, equal to or greater than the second
-     * string. If this is a case insensitive matcher, case differences will
+     * string. If this is a case-insensitive matcher, case differences will
      * be ignored.
      */
     int compareStrings(String s1, String s2) {
@@ -75,7 +78,7 @@ public abstract class LineMatcher {
 
     /**
      * Normalize a string token for comparison with other string tokens. That
-     * is, convert to lower case if this is a case insensitive matcher.
+     * is, convert to lower case if this is a case-insensitive matcher.
      * Otherwise, return the string itself.
      */
     String normalizeString(String s) {

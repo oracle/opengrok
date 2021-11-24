@@ -113,7 +113,7 @@ public class SSCMRepository extends Repository {
                 LOGGER.log(Level.WARNING,
                         "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
-                            getDirectoryName(), ex.getClass().toString()});
+                            getDirectoryName(), ex.getClass()});
             }
         }
 
@@ -140,8 +140,12 @@ public class SSCMRepository extends Repository {
         } else {
             argv.add(file.getName());
         }
-        if (sinceRevision != null && new Scanner(sinceRevision).hasNextInt()) {
-            argv.add("-v" + (Integer.parseInt(sinceRevision) + 1) + ":" + Integer.MAX_VALUE);
+        if (sinceRevision != null) {
+            try (Scanner scanner = new Scanner(sinceRevision)) {
+                if (scanner.hasNextInt()) {
+                    argv.add("-v" + (Integer.parseInt(sinceRevision) + 1) + ":" + Integer.MAX_VALUE);
+                }
+            }
         }
         argv.add("-w-");
 
@@ -227,9 +231,8 @@ public class SSCMRepository extends Repository {
                 }
             }
             return true;
-        } catch (IOException exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get file: " + exp.getClass().toString(), exp);
+        } catch (IOException exception) {
+            LOGGER.log(Level.SEVERE, "Failed to get file", exception);
         }
 
         return false;
@@ -249,8 +252,12 @@ public class SSCMRepository extends Repository {
                     if (parts[0].equals(file.getName())) {
                         // Check if the version field is greater than 1
                         //  which indicates that annotate will work
-                        if (parts.length > 2 && new Scanner(parts[2]).hasNextInt()) {
-                            return Integer.parseInt(parts[2]) > 1;
+                        if (parts.length > 2) {
+                            try (Scanner scanner = new Scanner(parts[2])) {
+                                if (scanner.hasNextInt()) {
+                                    return Integer.parseInt(parts[2]) > 1;
+                                }
+                            }
                         }
                         break;
                     }
@@ -259,7 +266,7 @@ public class SSCMRepository extends Repository {
                 LOGGER.log(Level.WARNING,
                         "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
-                            getDirectoryName(), ex.getClass().toString()});
+                            getDirectoryName(), ex.getClass()});
             }
         }
         return false;
