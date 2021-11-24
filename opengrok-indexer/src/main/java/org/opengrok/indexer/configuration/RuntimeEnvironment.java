@@ -1815,12 +1815,11 @@ public final class RuntimeEnvironment {
             // so that it cannot produce new IndexSearcher objects.
             if (!getProjectNames().contains(entry.getKey())) {
                 try {
-                    LOGGER.log(Level.FINE,
-                        "closing SearcherManager for project" + entry.getKey());
+                    LOGGER.log(Level.FINE, "closing SearcherManager for project {0}", entry.getKey());
                     entry.getValue().close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE,
-                        "cannot close SearcherManager for project" + entry.getKey(), ex);
+                        String.format("cannot close SearcherManager for project %s", entry.getKey()), ex);
                 }
                 toRemove.add(entry.getKey());
             }
