@@ -36,6 +36,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.authorization.IAuthorizationPlugin;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
@@ -48,6 +50,8 @@ import org.opengrok.indexer.util.IOUtils;
 public abstract class PluginFramework<PluginType> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginFramework.class);
+
+    private static final String CLASS_SUFFIX = ".class";
 
     /**
      * Class of the plugin type, necessary for instantiating and searching.
@@ -248,16 +252,16 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
-     * @param classfiles list of files which possibly contain a java class
+     * @param fileList list of files which possibly contain a java class
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadClassFiles(List<File> classfiles) {
+    private void loadClassFiles(List<File> fileList) {
         PluginType plugin;
 
-        for (File file : classfiles) {
+        for (File file : fileList) {
             String classname = getClassName(file);
-            if (classname.isEmpty()) {
+            if (classname == null || classname.isEmpty()) {
                 continue;
             }
             // Load the class in memory and try to find a configured space for this class.
@@ -274,23 +278,20 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
-     * @param jarfiles list of jar files containing java classes
+     * @param fileList list of jar files containing java classes
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadJarFiles(List<File> jarfiles) {
+    private void loadJarFiles(List<File> fileList) {
         PluginType pf;
 
-        for (File file : jarfiles) {
+        for (File file : fileList) {
             try (JarFile jar = new JarFile(file)) {
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
-                    if (!entry.getName().endsWith(".class")) {
-                        continue;
-                    }
                     String classname = getClassName(entry);
-                    if (!entry.getName().endsWith(".class") || classname.isEmpty()) {
+                    if (classname == null || classname.isEmpty()) {
                         continue;
                     }
                     // Load the class in memory and try to find a configured space for this class.
@@ -304,8 +305,13 @@ public abstract class PluginFramework<PluginType> {
         }
     }
 
-    private String getClassName(File f) {
-        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1);
+    @Nullable
+    private String getClassName(File file) {
+        if (!file.getName().endsWith(CLASS_SUFFIX)) {
+            return null;
+        }
+
+        String classname = file.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1);
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
         // no need to check for the index from lastIndexOf because we're in a branch
         // where we expect the .class suffix
@@ -313,9 +319,26 @@ public abstract class PluginFramework<PluginType> {
         return classname;
     }
 
-    private String getClassName(JarEntry f) {
+    @Nullable
+    private String getClassName(JarEntry jarEntry) {
+        final String filePath = jarEntry.getName();
+        if (!filePath.endsWith(CLASS_SUFFIX)) {
+            return null;
+        }
+
+        File file = new File(pluginDirectory.getAbsolutePath(), filePath);
+        try {
+            if (!file.getCanonicalPath().startsWith(pluginDirectory.getCanonicalPath() + File.separator)) {
+                LOGGER.log(Level.WARNING, "canonical path for jar entry {0} leads outside the origin", filePath);
+                return null;
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "failed to get canonical path for {0}", file);
+            return null;
+        }
+
         // java jar always uses / as separator
-        String classname = f.getName().replace('/', '.'); // convert to package name
+        String classname = filePath.replace('/', '.'); // convert to package name
         return classname.substring(0, classname.lastIndexOf('.'));  // strip .class
     }
 
@@ -364,7 +387,7 @@ public abstract class PluginFramework<PluginType> {
 
         // load all other possible plugin classes.
         if (isLoadClassesEnabled()) {
-            loadClassFiles(IOUtils.listFilesRec(pluginDirectory, ".class"));
+            loadClassFiles(IOUtils.listFilesRec(pluginDirectory, CLASS_SUFFIX));
         }
         if (isLoadJarsEnabled()) {
             loadJarFiles(IOUtils.listFiles(pluginDirectory, ".jar"));
