@@ -278,14 +278,14 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
-     * @param jarfiles list of jar files containing java classes
+     * @param fileList list of jar files containing java classes
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadJarFiles(List<File> jarfiles) {
+    private void loadJarFiles(List<File> fileList) {
         PluginType pf;
 
-        for (File file : jarfiles) {
+        for (File file : fileList) {
             try (JarFile jar = new JarFile(file)) {
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
