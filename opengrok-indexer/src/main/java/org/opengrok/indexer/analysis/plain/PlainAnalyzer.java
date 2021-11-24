@@ -200,6 +200,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         }
     }
 
+    // DefinitionsTokenStream should not be used in try-with-resources
     @SuppressWarnings("java:S2095")
     private void tryAddingDefs(Document doc, Definitions defs, StreamSource src) throws IOException {
 

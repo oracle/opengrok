@@ -98,6 +98,7 @@ public class DefinitionsTokenStreamTest {
             null);
     }
 
+    // DefinitionsTokenStream should not be used in try-with-resources
     @SuppressWarnings("java:S2095")
     private void testDefinitionsVsContent(
             boolean expandTabs,
