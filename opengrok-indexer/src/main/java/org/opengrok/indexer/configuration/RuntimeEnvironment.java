@@ -74,6 +74,7 @@ import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
+import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
@@ -1762,9 +1763,12 @@ public final class RuntimeEnvironment {
     }
 
     public void maybeRefreshIndexSearchers() {
+        LOGGER.log(Level.INFO, "refreshing searcher managers");
+        Statistics stat = new Statistics();
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             maybeRefreshSearcherManager(entry.getValue());
         }
+        stat.report(LOGGER, "Done refreshing searcher managers");
     }
 
     /**
