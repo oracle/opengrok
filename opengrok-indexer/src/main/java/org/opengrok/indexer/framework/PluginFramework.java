@@ -328,7 +328,7 @@ public abstract class PluginFramework<PluginType> {
 
         File file = new File(pluginDirectory.getAbsolutePath(), filePath);
         try {
-            if (!file.getCanonicalPath().startsWith(pluginDirectory.getCanonicalPath())) {
+            if (!file.getCanonicalPath().startsWith(pluginDirectory.getCanonicalPath() + File.separator)) {
                 return null;
             }
         } catch (IOException e) {
