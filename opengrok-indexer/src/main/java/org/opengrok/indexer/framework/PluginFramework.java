@@ -306,12 +306,12 @@ public abstract class PluginFramework<PluginType> {
     }
 
     @Nullable
-    private String getClassName(File f) {
-        if (!f.getName().endsWith(CLASS_SUFFIX)) {
+    private String getClassName(File file) {
+        if (!file.getName().endsWith(CLASS_SUFFIX)) {
             return null;
         }
 
-        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1);
+        String classname = file.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1);
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
         // no need to check for the index from lastIndexOf because we're in a branch
         // where we expect the .class suffix
@@ -320,8 +320,8 @@ public abstract class PluginFramework<PluginType> {
     }
 
     @Nullable
-    private String getClassName(JarEntry f) {
-        final String filePath = f.getName();
+    private String getClassName(JarEntry jarEntry) {
+        final String filePath = jarEntry.getName();
         if (!filePath.endsWith(CLASS_SUFFIX)) {
             return null;
         }
