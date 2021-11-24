@@ -329,9 +329,11 @@ public abstract class PluginFramework<PluginType> {
         File file = new File(pluginDirectory.getAbsolutePath(), filePath);
         try {
             if (!file.getCanonicalPath().startsWith(pluginDirectory.getCanonicalPath() + File.separator)) {
+                LOGGER.log(Level.WARNING, "canonical path for jar entry {0} leads outside the origin", filePath);
                 return null;
             }
         } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "failed to get canonical path for {0}", file);
             return null;
         }
 
