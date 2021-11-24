@@ -1734,6 +1734,8 @@ public final class RuntimeEnvironment {
         for (ConfigurationChangedListener l : listeners) {
             l.onConfigurationChanged();
         }
+
+        LOGGER.log(Level.INFO, "Done applying configuration");
     }
 
     public void setIndexTimestamp() throws IOException {
