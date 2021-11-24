@@ -55,17 +55,18 @@ public class FileController {
     public static final String PATH = "/file";
 
     private StreamingOutput transfer(File file) throws FileNotFoundException {
-        InputStream in = new FileInputStream(file);
+        if (!file.exists()) {
+            throw new FileNotFoundException(String.format("file %s does not exist", file));
+        }
+
         return out -> {
-            try {
+            try (InputStream in = new FileInputStream(file)) {
                 byte[] buffer = new byte[1024];
                 int len = in.read(buffer);
                 while (len != -1) {
                     out.write(buffer, 0, len);
                     len = in.read(buffer);
                 }
-            } finally {
-                in.close();
             }
         };
     }
@@ -103,7 +104,7 @@ public class FileController {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public StreamingOutput getContentOctets(@Context HttpServletRequest request,
                                            @Context HttpServletResponse response,
-                                           @QueryParam("path") final String path) throws IOException, ParseException, NoPathParameterException {
+                                           @QueryParam("path") final String path) throws IOException, NoPathParameterException {
 
         File file = toFile(path);
 
