@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -97,6 +98,7 @@ public class DefinitionsTokenStreamTest {
             null);
     }
 
+    @SuppressWarnings("java:S2095")
     private void testDefinitionsVsContent(
             boolean expandTabs,
             String sourceResource,
