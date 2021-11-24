@@ -252,14 +252,14 @@ public abstract class PluginFramework<PluginType> {
      * delegates the loading to the custom class loader
      * {@link #loadClass(String)}.
      *
-     * @param classfiles list of files which possibly contain a java class
+     * @param fileList list of files which possibly contain a java class
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadClassFiles(List<File> classfiles) {
+    private void loadClassFiles(List<File> fileList) {
         PluginType plugin;
 
-        for (File file : classfiles) {
+        for (File file : fileList) {
             String classname = getClassName(file);
             if (classname == null || classname.isEmpty()) {
                 continue;
