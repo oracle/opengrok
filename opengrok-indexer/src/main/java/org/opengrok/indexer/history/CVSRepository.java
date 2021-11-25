@@ -223,7 +223,7 @@ public class CVSRepository extends RCSRepository {
 
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            LOGGER.log(Level.WARNING,"Failed to get history", exp);
+            LOGGER.log(Level.WARNING, "Failed to get history", exp);
         }
 
         return ret;
