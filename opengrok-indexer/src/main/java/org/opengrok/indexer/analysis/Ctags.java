@@ -455,8 +455,8 @@ public class Ctags implements Resettable {
          */
         command.add("--kinddef-terraform=s,struct,Resource\\ names");
         command.add("--regex-terraform=" +
-                "/[[:<:]]resource[[:space:]]*\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*" +
-                "\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*\\{/" +
+                "/^[[:space:]]*resource[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*" +
+                "\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
                 "\\1.\\2/s/");
     }
 
