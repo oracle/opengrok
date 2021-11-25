@@ -144,7 +144,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             throw new AuthorizationException(ex);
         }
 
-        LOGGER.log(Level.FINER, "LDAP user {0} allowed on {2}",
+        LOGGER.log(Level.FINER, "LDAP user {0} allowed on {1}",
                 new Object[]{ldapUser, ldapProvider});
         updateSession(req, true);
     }
@@ -179,7 +179,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             }
         }
 
-        filter = filter.replace("\\\\%", "%");
+        filter = filter.replace("\\%", "%");
 
         return filter;
     }
