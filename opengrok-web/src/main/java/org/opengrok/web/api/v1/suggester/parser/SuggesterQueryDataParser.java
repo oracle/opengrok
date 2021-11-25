@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.api.v1.suggester.parser;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
@@ -33,9 +34,11 @@ import org.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opengrok.web.api.v1.suggester.query.SuggesterQueryBuilder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Parser for the raw {@link SuggesterQueryData}.
@@ -53,9 +56,14 @@ public class SuggesterQueryDataParser {
      * Parses the {@link SuggesterQueryData}.
      * @param data data to parse
      * @return parsed data for the suggester use
-     * @throws ParseException if could not parse the search data into a valid {@link Query}
+     * @throws ParseException could not parse the search data into a valid {@link Query}
      */
     public static SuggesterData parse(final SuggesterQueryData data) throws ParseException {
+
+        List<String> projectList = data.getProjects().stream().
+                filter(p -> RuntimeEnvironment.getInstance().getProjectNames().contains(p)).
+                collect(Collectors.toList());
+
         Map<String, String> fieldQueries = getFieldQueries(data);
 
         ProcessedQueryData queryData = processQuery(fieldQueries.get(data.getField()), data.getCaretPosition());
@@ -87,7 +95,7 @@ public class SuggesterQueryDataParser {
             query = null;
         }
 
-        return new SuggesterData(suggesterQuery, data.getProjects(), query, builder.getQueryTextWithPlaceholder(),
+        return new SuggesterData(suggesterQuery, projectList, query, builder.getQueryTextWithPlaceholder(),
                 builder.getIdentifier());
     }
 
@@ -136,5 +144,4 @@ public class SuggesterQueryDataParser {
             this.query = query;
         }
     }
-
 }
