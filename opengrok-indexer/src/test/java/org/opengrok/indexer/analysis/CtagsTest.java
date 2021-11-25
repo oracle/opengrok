@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.util.TestRepository;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -135,5 +136,14 @@ public class CtagsTest {
             }
         }
         assertEquals(names.length, count, "function count");
+    }
+
+    @Test
+    void testTfTags() throws Exception {
+        var defs = getDefs("terraform/test.tf");
+        assertAll(
+                () -> assertEquals(1, defs.getTags().size()),
+                () -> assertEquals("oci_core_vcn.test_vcn", defs.getTags().get(0).symbol)
+        );
     }
 }
