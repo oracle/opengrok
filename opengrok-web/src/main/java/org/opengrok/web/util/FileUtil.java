@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.web.util;
 
@@ -26,6 +26,8 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.InvalidPathException;
 
 public class FileUtil {
 
@@ -41,14 +43,19 @@ public class FileUtil {
      * @throws FileNotFoundException if the file constructed from the {@code path} parameter and source root does not exist
      * @throws NoPathParameterException if the {@code path} parameter is null
      */
-    public static File toFile(String path) throws NoPathParameterException, FileNotFoundException {
+    public static File toFile(String path) throws NoPathParameterException, IOException {
         if (path == null) {
             throw new NoPathParameterException("Missing path parameter");
         }
 
         File file = new File(env.getSourceRootFile(), path);
-        if (!file.isFile()) {
-            throw new FileNotFoundException("File " + file.toString() + "not found");
+
+        if (!file.getCanonicalPath().startsWith(env.getSourceRootPath() + File.separator)) {
+            throw new IOException("File points to outside of source root");
+        }
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File " + file + "not found");
         }
 
         return file;

@@ -41,8 +41,10 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
+import org.opengrok.web.util.NoPathParameterException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+
+import static org.opengrok.web.util.FileUtil.toFile;
 
 @Path(HistoryController.PATH)
 public final class HistoryController {
@@ -205,20 +209,9 @@ public final class HistoryController {
                           @QueryParam("withFiles") final boolean withFiles,
                           @QueryParam("max") @DefaultValue(MAX_RESULTS + "") final int maxEntries,
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
-            throws HistoryException {
+            throws HistoryException, IOException, NoPathParameterException {
 
-        File file = new File(env.getSourceRootFile(), path);
-        try {
-            if (!file.getCanonicalPath().startsWith(env.getSourceRootPath() + File.separator)) {
-                return null;
-            }
-        } catch (IOException e) {
-            return null;
-        }
-
-        if (!file.exists()) {
-            return null;
-        }
+        File file = toFile(path);
 
         History history = HistoryGuru.getInstance().getHistory(file, withFiles, true);
         if (history == null) {
