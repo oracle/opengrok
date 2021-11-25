@@ -30,7 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * LDAP facade for testing
+ * LDAP facade for testing.
  * @author Krystof Tulinger
  */
 public class FakeLdapFacade extends AbstractLdapProvider {
