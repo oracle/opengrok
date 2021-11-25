@@ -40,7 +40,10 @@ public class FileUtil {
     /**
      * @param path path relative to source root
      * @return file object corresponding to the file under source root
-     * @throws FileNotFoundException if the file constructed from the {@code path} parameter and source root does not exist
+     * @throws FileNotFoundException if the file constructed from the {@code path} parameter and source root
+     * does not exist
+     * @throws InvalidPathException if the file constructed from the {@code path} parameter and source root
+     * leads outside source root
      * @throws NoPathParameterException if the {@code path} parameter is null
      */
     public static File toFile(String path) throws NoPathParameterException, IOException {
