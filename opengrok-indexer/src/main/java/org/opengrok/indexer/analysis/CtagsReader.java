@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -40,24 +40,23 @@ public class CtagsReader {
     /**
      * Matches the Unicode word that occurs last in a string, ignoring any
      * trailing whitespace or non-word characters, and makes it accessible as
-     * the first capture, {@code mtch.groups(1)}.
+     * the first capture, {@code match.group(1)}.
      */
-    private static final Pattern LAST_UWORD = Pattern.compile("(?U)(\\w+)[\\W\\s]*$");
+    private static final Pattern LAST_UNICODE_WORD = Pattern.compile("(?U)(\\w+)[\\W\\s]*$");
 
     /**
      * Matches a Unicode word character.
      */
     private static final Pattern WORD_CHAR = Pattern.compile("(?U)\\w");
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        CtagsReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CtagsReader.class);
 
     /** A value indicating empty method body in tags, so skip it. */
     private static final int MIN_METHOD_LINE_LENGTH = 6;
 
     /**
      * 96 is used by universal ctags for some lines, but it's too low,
-     * OpenGrok can theoretically handle 50000 with 8G heap. Also this might
+     * OpenGrok can theoretically handle 50000 with 8G heap. Also, this might
      * break scopes functionality, if set too low.
      */
     private static final int MAX_METHOD_LINE_LENGTH = 1030;
@@ -198,7 +197,6 @@ public class CtagsReader {
 
         int p = tagLine.indexOf('\t');
         if (p <= 0) {
-            //log.fine("SKIPPING LINE - NO TAB");
             return;
         }
         String def = tagLine.substring(0, p);
@@ -208,9 +206,7 @@ public class CtagsReader {
 
         int lp = tagLine.length();
         while ((p = tagLine.lastIndexOf('\t', lp - 1)) > 0) {
-            //log.fine(" p = " + p + " lp = " + lp);
             String fld = tagLine.substring(p + 1, lp);
-            //log.fine("FIELD===" + fld);
             lp = p;
 
             int sep = fld.indexOf(':');
@@ -243,18 +239,16 @@ public class CtagsReader {
                 LOGGER.log(Level.FINEST, "Ctags: stripping method" +
                     " body for def {0} line {1}(scopes/highlight" +
                     " might break)", new Object[]{def, lnum});
-                match = whole.substring(0, MAX_METHOD_LINE_LENGTH).replaceAll(
-                    "[ \t]+", " ");
+                match = whole.substring(0, MAX_METHOD_LINE_LENGTH).replaceAll("[ \t]+", " ");
             }
-        } else { //tag is wrong format; cannot extract tagaddress from it; skip
+        } else { // tag is in wrong format; cannot extract tagaddress from it; skip
             return;
         }
 
         // Bug #809: Keep track of which symbols have already been
         // seen to prevent duplicating them in memory.
 
-        final String type = classInher == null ? kind : kind + " in " +
-            classInher;
+        final String type = classInher == null ? kind : kind + " in " + classInher;
 
         int lineno;
         try {
@@ -262,7 +256,7 @@ public class CtagsReader {
         } catch (NumberFormatException e) {
             lineno = 0;
             LOGGER.log(Level.WARNING, "CTags line number parsing problem(but" +
-                " I will continue with line # 0) for symbol {0}", def);
+                " will continue with line # 0) for symbol {0}", def);
         }
 
         CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
@@ -305,7 +299,7 @@ public class CtagsReader {
                 cidx = bestIndexOfArg(lineno, whole, arg);
 
                 String name = null;
-                Matcher mname = LAST_UWORD.matcher(arg);
+                Matcher mname = LAST_UNICODE_WORD.matcher(arg);
                 if (mname.find()) {
                     name = mname.group(1);
                 } else if (arg.equals("...")) {
@@ -324,8 +318,7 @@ public class CtagsReader {
                 }
             }
         }
-//        log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " +
-//            inher + " M " + match);
+
         fields.clear();
     }
 
@@ -339,7 +332,7 @@ public class CtagsReader {
         // Three lead character represents "\t/^".
         String cut = tagLine.substring(startTab + 3, endTab);
 
-        /**
+        /*
          * Formerly this class cut four characters from the end, but my testing
          * revealed a bug for short lines in files with macOS endings (e.g.
          * cyrus-sasl mac/libdes/src/des_enc.c) where the pattern-ending $ is
@@ -351,7 +344,7 @@ public class CtagsReader {
         } else if (cut.endsWith("/;\"")) {
             cut = cut.substring(0, cut.length() - 3);
         } else {
-            /**
+            /*
              * The former logic did the following without the inspections above.
              * Leaving this here as a fallback.
              */
@@ -412,7 +405,7 @@ public class CtagsReader {
             }
 
             if (woff < 0) {
-                /** At this point, do a lax search of the substring. */
+                /* At this point, do a lax search of the substring. */
                 woff = whole.indexOf(str);
             }
         }
@@ -422,7 +415,7 @@ public class CtagsReader {
             e = ExpandTabsReader.translate(whole, woff + str.length(), t);
             return new CpatIndex(lineno, s, e);
         }
-        /**
+        /*
          * When ctags has truncated a pattern, or when it spans multiple lines,
          * then `str' might not be found in `whole'. In that case, return an
          * imprecise index for the last character as the best we can do.
@@ -496,7 +489,7 @@ public class CtagsReader {
                 LOGGER.log(Level.FINE, "Odd arg:{0}|versus:{1}|line {2}",
                     new Object[]{arg, whole, lineno});
             }
-            /**
+            /*
              * When no fuzzy match can be generated, return an imprecise index
              * for the first character as the best we can do.
              */
@@ -529,7 +522,7 @@ public class CtagsReader {
             }
         }
 
-        /**
+        /*
          * When no match is found, return an imprecise index for the last
          * character as the best we can do.
          */
@@ -575,7 +568,7 @@ public class CtagsReader {
 
             spos = woff + 1;
             String onechar;
-            /**
+            /*
              * Reject if the previous character is a word character, as that
              * would not accord with a clean symbol break
              */
@@ -585,7 +578,7 @@ public class CtagsReader {
                     continue;
                 }
             }
-            /**
+            /*
              * Reject if the following character is a word character, as that
              * would not accord with a clean symbol break
              */
@@ -613,7 +606,7 @@ public class CtagsReader {
         Matcher m = pat.matcher(whole);
         while (m.find()) {
             String onechar;
-            /**
+            /*
              * Reject if the previous character is a word character, as that
              * would not accord with a clean symbol break
              */
@@ -623,7 +616,7 @@ public class CtagsReader {
                     continue;
                 }
             }
-            /**
+            /*
              * Reject if the following character is a word character, as that
              * would not accord with a clean symbol break
              */
@@ -656,7 +649,7 @@ public class CtagsReader {
         int t = tabSize;
         int resIndex = mIndex;
         int contentLength = 0;
-        /**
+        /*
          * Initialize the following just to silence warnings but with values
          * that will be detected as "bad fuzzy" later.
          */
@@ -690,7 +683,7 @@ public class CtagsReader {
             return new CpatIndex(resIndex + 1, s, e);
         }
 
-        /**
+        /*
          * This should not happen -- but if it does, log it and return an
          * imprecise index for the first character as the best we can do.
          */
