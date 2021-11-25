@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,10 +53,19 @@ class FileUtilTest {
     }
 
     @Test
-    void shouldThrowOnInvalidFile() {
-        String rndPath = UUID.randomUUID().toString();
+    void shouldThrowOnInvalidFile() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String origRoot = env.getSourceRootPath();
+        Path dir = Files.createTempDirectory("shouldThrowOnInvalidFile");
+        dir.toFile().deleteOnExit();
+        env.setSourceRoot(dir.toString());
+        assertTrue(env.getSourceRootFile().isDirectory());
+
+        String rndPath = ".." + File.separator + UUID.randomUUID();
         assertThrows(InvalidPathException.class, () -> FileUtil.toFile(rndPath),
                 "toFile(randomUUID)");
+
+        env.setSourceRoot(origRoot);
     }
 
     @ParameterizedTest
