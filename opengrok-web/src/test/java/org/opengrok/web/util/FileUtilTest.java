@@ -24,8 +24,11 @@
 package org.opengrok.web.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -55,17 +58,26 @@ class FileUtilTest {
                 "toFile(randomUUID)");
     }
 
-    @Test
-    void shouldThrowOnMissingFile() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldThrowOnMissingFile(boolean isPresent) throws IOException, NoPathParameterException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String origRoot = env.getSourceRootPath();
         Path dir = Files.createTempDirectory("shouldThrowOnMissingFile");
         dir.toFile().deleteOnExit();
         env.setSourceRoot(dir.toString());
-        String filePath = Paths.get(env.getSourceRootPath(), "nonexistent").toString();
         assertTrue(env.getSourceRootFile().isDirectory());
-        assertThrows(FileNotFoundException.class, () -> FileUtil.toFile(filePath),
-                "toFile(nonexistent)");
+        if (isPresent) {
+            String fileName = "existent";
+            Path filePath = Paths.get(env.getSourceRootPath(), fileName);
+            Files.createFile(filePath);
+            assertTrue(filePath.toFile().exists());
+            assertNotNull(FileUtil.toFile(fileName));
+        } else {
+            String filePath = Paths.get(env.getSourceRootPath(), "nonexistent").toString();
+            assertThrows(FileNotFoundException.class, () -> FileUtil.toFile(filePath),
+                    "toFile(nonexistent)");
+        }
         env.setSourceRoot(origRoot);
     }
 }

@@ -55,7 +55,7 @@ public class FileUtil {
         }
 
         if (!file.exists()) {
-            throw new FileNotFoundException("File " + file + "not found");
+            throw new FileNotFoundException("File " + file + " not found");
         }
 
         return file;
