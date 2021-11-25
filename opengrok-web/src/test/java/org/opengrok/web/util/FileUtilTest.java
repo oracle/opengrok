@@ -46,37 +46,36 @@ import java.util.UUID;
  */
 class FileUtilTest {
 
+    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
     @Test
     void shouldThrowOnNullArgument() {
         assertThrows(NoPathParameterException.class, () -> FileUtil.toFile(null),
                 "toFile(null)");
     }
 
-    @Test
-    void shouldThrowOnInvalidFile() throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private String setSourceRoot(String id) throws IOException {
         String origRoot = env.getSourceRootPath();
-        Path dir = Files.createTempDirectory("shouldThrowOnInvalidFile");
+        Path dir = Files.createTempDirectory(id);
         dir.toFile().deleteOnExit();
         env.setSourceRoot(dir.toString());
         assertTrue(env.getSourceRootFile().isDirectory());
+        return origRoot;
+    }
 
+    @Test
+    void shouldThrowOnInvalidFile() throws IOException {
+        String origRoot = setSourceRoot("shouldThrowOnInvalidFile");
         String rndPath = ".." + File.separator + UUID.randomUUID();
         assertThrows(InvalidPathException.class, () -> FileUtil.toFile(rndPath),
                 "toFile(randomUUID)");
-
         env.setSourceRoot(origRoot);
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void shouldThrowOnMissingFile(boolean isPresent) throws IOException, NoPathParameterException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String origRoot = env.getSourceRootPath();
-        Path dir = Files.createTempDirectory("shouldThrowOnMissingFile");
-        dir.toFile().deleteOnExit();
-        env.setSourceRoot(dir.toString());
-        assertTrue(env.getSourceRootFile().isDirectory());
+        String origRoot = setSourceRoot("shouldThrowOnMissingFile");
         if (isPresent) {
             String fileName = "existent";
             Path filePath = Paths.get(env.getSourceRootPath(), fileName);
