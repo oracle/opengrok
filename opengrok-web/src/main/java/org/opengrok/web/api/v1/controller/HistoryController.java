@@ -44,7 +44,6 @@ import org.opengrok.web.api.v1.filter.PathAuthorized;
 import org.opengrok.web.util.NoPathParameterException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,8 +56,6 @@ import static org.opengrok.web.util.FileUtil.toFile;
 
 @Path(HistoryController.PATH)
 public final class HistoryController {
-
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final int MAX_RESULTS = 1000;
 
