@@ -33,7 +33,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.jetbrains.annotations.TestOnly;
-import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
 import org.opengrok.indexer.history.HistoryException;
@@ -41,8 +40,10 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.web.messages.JSONable;
 import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
+import org.opengrok.web.util.NoPathParameterException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,10 +51,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 
+import static org.opengrok.web.util.FileUtil.toFile;
+
+// No need to have PATH configurable.
+@SuppressWarnings("java:S1075")
 @Path(HistoryController.PATH)
 public final class HistoryController {
-
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private static final int MAX_RESULTS = 1000;
 
@@ -204,10 +207,11 @@ public final class HistoryController {
                           @QueryParam("withFiles") final boolean withFiles,
                           @QueryParam("max") @DefaultValue(MAX_RESULTS + "") final int maxEntries,
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
-            throws HistoryException {
+            throws HistoryException, IOException, NoPathParameterException {
 
-        History history = HistoryGuru.getInstance().getHistory(new File(env.getSourceRootFile(), path),
-                withFiles, true);
+        File file = toFile(path);
+
+        History history = HistoryGuru.getInstance().getHistory(file, withFiles, true);
         if (history == null) {
             return null;
         }
