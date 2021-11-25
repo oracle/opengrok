@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -30,6 +30,8 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
 /**
+ * Authorization plugin that returns false (not allowed) for all decisions.
+ * This is mostly handy for testing or special cases when one needs to quickly disallow access.
  *
  * @author Krystof Tulinger
  */
@@ -37,10 +39,12 @@ public class FalsePlugin implements IAuthorizationPlugin {
 
     @Override
     public void load(Map<String, Object> parameters) {
+        // trivial plugin
     }
 
     @Override
     public void unload() {
+        // trivial plugin
     }
 
     @Override

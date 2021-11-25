@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -68,24 +68,25 @@ public class UserPlugin implements IAuthorizationPlugin {
 
     @Override
     public void load(Map<String, Object> parameters) {
-        String decoder_name;
-        if ((decoder_name = (String) parameters.get(DECODER_CLASS_PARAM)) == null) {
+        String decoderName;
+        if ((decoderName = (String) parameters.get(DECODER_CLASS_PARAM)) == null) {
             throw new NullPointerException(String.format("missing " +
                     "parameter '%s' in %s configuration",
                     DECODER_CLASS_PARAM, UserPlugin.class.getName()));
         }
 
-        LOGGER.log(Level.INFO, "loading decoder: {0}", decoder_name);
+        LOGGER.log(Level.INFO, "loading decoder: {0}", decoderName);
         try {
-            decoder = getDecoder(decoder_name);
+            decoder = getDecoder(decoderName);
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
                 InvocationTargetException | InstantiationException e) {
-            throw new RuntimeException("cannot load decoder " + decoder_name, e);
+            throw new RuntimeException("cannot load decoder " + decoderName, e);
         }
     }
 
     @Override
     public void unload() {
+        // no state to free
     }
 
     private User getUser(HttpServletRequest request) {

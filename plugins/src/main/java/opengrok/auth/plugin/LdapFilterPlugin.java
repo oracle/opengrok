@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -179,7 +179,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
             }
         }
 
-        filter = filter.replaceAll("\\\\%", "%");
+        filter = filter.replace("\\\\%", "%");
 
         return filter;
     }

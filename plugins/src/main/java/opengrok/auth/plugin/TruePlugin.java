@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -30,6 +30,8 @@ import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 
 /**
+ * Authorization plugin that returns true (allowed) for all decisions.
+ * This is mostly handy for testing or cases when one needs to explicitly allow a project/group.
  *
  * @author Krystof Tulinger
  */
@@ -37,10 +39,12 @@ public class TruePlugin implements IAuthorizationPlugin {
 
     @Override
     public void load(Map<String, Object> parameters) {
+        // trivial plugin
     }
 
     @Override
     public void unload() {
+        // trivial plugin
     }
 
     @Override
