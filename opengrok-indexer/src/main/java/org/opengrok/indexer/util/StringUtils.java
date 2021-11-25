@@ -84,21 +84,21 @@ public final class StringUtils {
 
     /**
      * Convert value in milliseconds to readable time.
-     * @param time_ms delta in milliseconds
+     * @param timeMs delta in milliseconds
      * @return human readable string
      */
-    public static String getReadableTime(long time_ms) {
+    public static String getReadableTime(long timeMs) {
         StringBuilder output = new StringBuilder();
-        long time_delta = time_ms;
+        long timeDelta = timeMs;
 
-        int milliseconds = (int) (time_delta % 1000);
-        time_delta /= 1000;
-        int seconds = (int) (time_delta % 60);
-        time_delta /= 60;
-        int minutes = (int) (time_delta % 60);
-        time_delta /= 60;
-        int hours = (int) (time_delta % 24);
-        int days = (int) (time_delta / 24);
+        int milliseconds = (int) (timeDelta % 1000);
+        timeDelta /= 1000;
+        int seconds = (int) (timeDelta % 60);
+        timeDelta /= 60;
+        int minutes = (int) (timeDelta % 60);
+        timeDelta /= 60;
+        int hours = (int) (timeDelta % 24);
+        int days = (int) (timeDelta / 24);
 
         if (days != 0) {
             output.append(days);

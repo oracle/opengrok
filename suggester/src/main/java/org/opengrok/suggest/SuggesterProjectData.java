@@ -273,9 +273,9 @@ class SuggesterProjectData implements Closeable {
         return lookup;
     }
 
-    private void store(final WFSTCompletionLookup WFST, final String field) throws IOException {
+    private void store(final WFSTCompletionLookup wfst, final String field) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(getWFSTFile(field))) {
-            WFST.store(fos);
+            wfst.store(fos);
         }
     }
 

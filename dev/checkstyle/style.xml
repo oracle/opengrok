@@ -35,6 +35,7 @@
         <module name="AnonInnerLength">
             <property name="max" value="60"/>
         </module>
+        <module name="ParameterName"/>
         <module name="ParameterNumber"/>
         <module name="EmptyBlock"/>
         <module name="LeftCurly"/>

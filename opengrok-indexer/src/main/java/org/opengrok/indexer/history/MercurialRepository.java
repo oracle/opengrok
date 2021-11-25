@@ -310,23 +310,21 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
      * of a file in historical revision.
      *
      * @param fullpath file path
-     * @param full_rev_to_find revision number (in the form of
+     * @param fullRevToFind revision number (in the form of
      * {rev}:{node|short})
      * @return original filename
      */
-    private String findOriginalName(String fullpath, String full_rev_to_find)
-            throws IOException {
+    private String findOriginalName(String fullpath, String fullRevToFind) throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
         String file = fullpath.substring(getDirectoryName().length() + 1);
         ArrayList<String> argv = new ArrayList<>();
         File directory = new File(getDirectoryName());
 
         // Extract {rev} from the full revision specification string.
-        String[] rev_array = full_rev_to_find.split(":");
-        String rev_to_find = rev_array[0];
-        if (rev_to_find.isEmpty()) {
-            LOGGER.log(Level.SEVERE,
-                    "Invalid revision string: {0}", full_rev_to_find);
+        String[] revArray = fullRevToFind.split(":");
+        String revToFind = revArray[0];
+        if (revToFind.isEmpty()) {
+            LOGGER.log(Level.SEVERE, "Invalid revision string: {0}", fullRevToFind);
             return null;
         }
 
@@ -369,7 +367,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
                 String rev = matcher.group(1);
                 String content = matcher.group(2);
 
-                if (rev.equals(rev_to_find)) {
+                if (rev.equals(revToFind)) {
                     break;
                 }
 
@@ -396,7 +394,7 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
         if (status != 0) {
             LOGGER.log(Level.WARNING,
                     "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status), full_rev_to_find});
+                    new Object[]{fullpath, String.valueOf(status), fullRevToFind});
             return null;
         }
 
@@ -494,8 +492,8 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
     }
 
     @Override
-    protected String getRevisionForAnnotate(String history_revision) {
-        String[] brev = history_revision.split(":");
+    protected String getRevisionForAnnotate(String historyRevision) {
+        String[] brev = historyRevision.split(":");
 
         return brev[0];
     }

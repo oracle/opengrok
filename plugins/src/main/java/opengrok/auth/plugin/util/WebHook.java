@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -36,13 +36,13 @@ public class WebHook implements Serializable {
     public WebHook() {
     }
 
-    WebHook(String URI, String content) {
-        this.URI = URI;
+    WebHook(String uri, String content) {
+        this.URI = uri;
         this.content = content;
     }
 
-    public void setURI(String URI) {
-        this.URI = URI;
+    public void setURI(String uri) {
+        this.URI = uri;
     }
     public String getURI() {
         return URI;

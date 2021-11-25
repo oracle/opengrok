@@ -388,7 +388,7 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>8.42</version>
+                            <version>9.1</version>
                         </dependency>
                     </dependencies>
                     <executions>
