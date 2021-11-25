@@ -41,8 +41,8 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class UserWhiteListPlugin implements IAuthorizationPlugin {
-    private static final String className = UserWhiteListPlugin.class.getName();
-    private static final Logger LOGGER = Logger.getLogger(className);
+    private static final String CLASS_NAME = UserWhiteListPlugin.class.getName();
+    private static final Logger LOGGER = Logger.getLogger(CLASS_NAME);
 
     // configuration parameters
     static final String FILE_PARAM = "file";

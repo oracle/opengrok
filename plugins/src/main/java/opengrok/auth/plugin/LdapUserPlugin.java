@@ -138,7 +138,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
         filter = expandUserFilter(user, filter);
 
-        filter = filter.replaceAll("\\\\%", "%");
+        filter = filter.replace("\\%", "%");
 
         return filter;
     }

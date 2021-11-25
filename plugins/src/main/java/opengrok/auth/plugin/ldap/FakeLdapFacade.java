@@ -30,7 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- *
+ * LDAP facade for testing.
  * @author Krystof Tulinger
  */
 public class FakeLdapFacade extends AbstractLdapProvider {
@@ -45,12 +45,12 @@ public class FakeLdapFacade extends AbstractLdapProvider {
         if ("objectclass=*".equals(filter)) {
             List<String> v = Arrays.asList(values);
             if (v.isEmpty()) {
-                map.put("mail", new TreeSet<>(Arrays.asList("james@bond.com")));
-                map.put("ou", new TreeSet<>(Arrays.asList("MI6")));
+                map.put("mail", new TreeSet<>(List.of("james@bond.com")));
+                map.put("ou", new TreeSet<>(List.of("MI6")));
             } else {
                 for (String x : v) {
                     if (x.equals("uid")) {
-                        map.put("uid", new TreeSet<>(Arrays.asList("bondjame")));
+                        map.put("uid", new TreeSet<>(List.of("bondjame")));
                     }
                 }
             }
@@ -72,6 +72,6 @@ public class FakeLdapFacade extends AbstractLdapProvider {
 
     @Override
     public void close() {
+        // No need to close anything as this is fake plugin.
     }
-
 }
