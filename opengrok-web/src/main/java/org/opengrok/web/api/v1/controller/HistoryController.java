@@ -53,6 +53,8 @@ import java.util.SortedSet;
 
 import static org.opengrok.web.util.FileUtil.toFile;
 
+// No need to have PATH configurable.
+@SuppressWarnings("java:S1075")
 @Path(HistoryController.PATH)
 public final class HistoryController {
 

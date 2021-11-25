@@ -44,6 +44,8 @@ import java.util.List;
 
 import static org.opengrok.web.util.FileUtil.toFile;
 
+// No need to have PATH configurable.
+@SuppressWarnings("java:S1075")
 @Path(AnnotationController.PATH)
 public class AnnotationController {
 
