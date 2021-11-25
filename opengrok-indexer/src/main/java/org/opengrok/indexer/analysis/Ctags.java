@@ -106,8 +106,8 @@ public class Ctags implements Resettable {
         this.tabSize = tabSize;
     }
 
-    public void setCTagsExtraOptionsFile(String CTagsExtraOptionsFile) {
-        this.CTagsExtraOptionsFile = CTagsExtraOptionsFile;
+    public void setCTagsExtraOptionsFile(String ctagsExtraOptionsFile) {
+        this.CTagsExtraOptionsFile = ctagsExtraOptionsFile;
     }
 
     public void setTimeout(long timeout) {

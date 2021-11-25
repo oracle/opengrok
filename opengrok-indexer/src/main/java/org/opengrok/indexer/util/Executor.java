@@ -113,11 +113,11 @@ public class Executor {
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the
      *                         working directory
-     * @param UseTimeout terminate the process after default timeout or not
+     * @param useTimeout terminate the process after default timeout or not
      */
-    public Executor(List<String> cmdList, File workingDirectory, boolean UseTimeout) {
+    public Executor(List<String> cmdList, File workingDirectory, boolean useTimeout) {
         this(cmdList, workingDirectory);
-        if (!UseTimeout) {
+        if (!useTimeout) {
             this.timeout = 0;
         }
     }

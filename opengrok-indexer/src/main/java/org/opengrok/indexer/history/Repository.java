@@ -374,11 +374,11 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Return revision for annotate view.
      *
-     * @param history_revision full revision
+     * @param historyRevision full revision
      * @return revision string suitable for matching into annotation
      */
-    protected String getRevisionForAnnotate(String history_revision) {
-        return history_revision;
+    protected String getRevisionForAnnotate(String historyRevision) {
+        return historyRevision;
     }
 
     protected void doCreateCache(HistoryCache cache, String sinceRevision, File directory) throws HistoryException {

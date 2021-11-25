@@ -45,7 +45,7 @@ class RCSHistoryParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RCSHistoryParser.class);
 
-    private static File readCVSRoot(File root, File CVSdir, String name) throws IOException {
+    private static File readCVSRoot(File root, File cvsDir, String name) throws IOException {
         String cvsroot = readFirstLine(root);
 
         if (cvsroot == null) {
@@ -55,7 +55,7 @@ class RCSHistoryParser {
             return null;
         }
 
-        File repository = new File(CVSdir, "Repository");
+        File repository = new File(cvsDir, "Repository");
         String repo = readFirstLine(repository);
         String dir = cvsroot + File.separatorChar + repo;
         String filename = name + ",v";

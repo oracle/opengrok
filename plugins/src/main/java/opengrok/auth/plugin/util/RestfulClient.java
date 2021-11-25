@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
 package opengrok.auth.plugin.util;
@@ -45,17 +45,17 @@ public class RestfulClient {
 
     /**
      * Perform HTTP PUT request.
-     * @param URI URI
+     * @param uri URI
      * @param input JSON string contents
      * @return HTTP status or -1
      */
-    public static int postIt(String URI, String input) {
+    public static int postIt(String uri, String input) {
         try {
             Client client = ClientBuilder.newClient();
 
             LOGGER.log(Level.FINEST, "sending REST POST request to {0}: {1}",
-                    new Object[]{URI, input});
-            Response response = client.target(URI)
+                    new Object[]{uri, input});
+            Response response = client.target(uri)
                     .request(MediaType.APPLICATION_JSON)
                     .post(Entity.entity(input, MediaType.APPLICATION_JSON));
 

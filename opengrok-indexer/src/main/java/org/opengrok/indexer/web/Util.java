@@ -865,11 +865,10 @@ public final class Util {
      * @param out writer for producing output
      * @param ctxE URI encoded prefix
      * @param entry file/directory name to write
-     * @param is_dir is directory
+     * @param isDir is directory
      * @throws IOException depends on the destination (<var>out</var>).
      */
-    public static void writeHAD(Writer out, String ctxE, String entry,
-            boolean is_dir) throws IOException {
+    public static void writeHAD(Writer out, String ctxE, String entry, boolean isDir) throws IOException {
 
         String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
@@ -887,7 +886,7 @@ public final class Util {
             out.write("\" title=\"History\">H</a>");
         }
 
-        if (!is_dir) {
+        if (!isDir) {
             out.write(" <a href=\"");
             out.write(xrefPrefixE);
             out.write(entry);
