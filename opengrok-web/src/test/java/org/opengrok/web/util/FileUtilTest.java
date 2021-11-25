@@ -81,11 +81,11 @@ class FileUtilTest {
             String fileName = "existent";
             Path filePath = Paths.get(env.getSourceRootPath(), fileName);
             Files.createFile(filePath);
+            filePath.toFile().deleteOnExit();
             assertTrue(filePath.toFile().exists());
             assertNotNull(FileUtil.toFile(fileName));
         } else {
-            String filePath = Paths.get(env.getSourceRootPath(), "nonexistent").toString();
-            assertThrows(FileNotFoundException.class, () -> FileUtil.toFile(filePath),
+            assertThrows(FileNotFoundException.class, () -> FileUtil.toFile("nonexistent"),
                     "toFile(nonexistent)");
         }
         env.setSourceRoot(origRoot);
