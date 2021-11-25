@@ -156,11 +156,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                     treeWalk.setRecursive(true);
                     treeWalk.setFilter(PathFilter.create(filename));
                     if (!treeWalk.next()) {
-                        if (LOGGER.isLoggable(Level.FINEST)) {
-                            LOGGER.log(Level.FINEST,
-                                    String.format("Did not find expected file '%s' in revision %s for repository '%s'",
-                                            filename, rev, directory));
-                        }
+                        LOGGER.log(Level.FINEST, "Did not find expected file ''{0}'' in revision {1} " +
+                                "for repository ''{2}''", new Object[] {filename, rev, directory});
                         return result;
                     }
 
@@ -353,10 +350,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             if (commit != null) {
                 revision = commit.getId().getName();
             } else {
-                if (LOGGER.isLoggable(Level.WARNING)) {
-                    LOGGER.log(Level.WARNING, String.format("cannot get first revision of '%s' in repository '%s'",
-                            filePath, getDirectoryName()));
-                }
+                LOGGER.log(Level.WARNING, "cannot get first revision of ''{0}'' in repository ''{1}''",
+                        new Object[] {filePath, getDirectoryName()});
             }
         } catch (IOException | GitAPIException e) {
             LOGGER.log(Level.WARNING,
