@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -59,7 +60,7 @@ public class CVSRepository extends RCSRepository {
     public static final String CMD_FALLBACK = "cvs";
 
     public CVSRepository() {
-        /**
+        /*
          * This variable is set in the ancestor to TRUE which has a side effect
          * that this repository is always marked as working even though it does
          * not have the binary available on the system.
@@ -97,24 +98,17 @@ public class CVSRepository extends RCSRepository {
         if (isWorking()) {
             File rootFile = new File(getDirectoryName() + File.separatorChar
                     + "CVS" + File.separatorChar + "Root");
-            BufferedReader input;
             String root;
-            try {
-                input = new BufferedReader(new FileReader(rootFile));
-                try {
-                    root = input.readLine();
-                } catch (java.io.IOException e) {
-                    LOGGER.log(Level.WARNING, "failed to load", e);
-                    return;
-                } finally {
-                    try {
-                        input.close();
-                    } catch (java.io.IOException e) {
-                        LOGGER.log(Level.INFO, "failed to close", e);
-                    }
-                }
-            } catch (java.io.FileNotFoundException e) {
-                LOGGER.log(Level.FINE, "not loading CVS Root file", e);
+
+            if (!rootFile.exists()) {
+                LOGGER.log(Level.FINE, "CVS Root file {0} does not exist", rootFile);
+                return;
+            }
+
+            try (BufferedReader input = new BufferedReader(new FileReader(rootFile))) {
+                root = input.readLine();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, String.format("failed to read %s", rootFile), e);
                 return;
             }
 
@@ -229,8 +223,7 @@ public class CVSRepository extends RCSRepository {
 
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            LOGGER.log(Level.WARNING,
-                    "Failed to get history: {0}", exp.getClass().toString());
+            LOGGER.log(Level.WARNING, "Failed to get history", exp);
         }
 
         return ret;
@@ -284,6 +277,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
+    @Nullable
     String determineParent(CommandTimeoutType cmdType) throws IOException {
         File rootFile = new File(getDirectoryName() + File.separator + "CVS"
                 + File.separator + "Root");
@@ -293,9 +287,7 @@ public class CVSRepository extends RCSRepository {
             try (BufferedReader br = new BufferedReader(new FileReader(rootFile))) {
                 parent = br.readLine();
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to read CVS/Root file {0}: {1}",
-                        new Object[]{rootFile, ex.getClass().toString()});
+                LOGGER.log(Level.WARNING, String.format("Failed to read CVS/Root file %s", rootFile), ex);
             }
         }
 

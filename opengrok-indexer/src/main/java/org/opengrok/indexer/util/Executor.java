@@ -240,13 +240,11 @@ public class Executor {
             stderr = err.getBytes();
         } catch (IOException e) {
             if (reportExceptions) {
-                LOGGER.log(Level.SEVERE,
-                        "Failed to read from process: " + cmdList.get(0), e);
+                LOGGER.log(Level.SEVERE, String.format("Failed to read from process: %s", cmdList.get(0)), e);
             }
         } catch (InterruptedException e) {
             if (reportExceptions) {
-                LOGGER.log(Level.SEVERE,
-                        "Waiting for process interrupted: " + cmdList.get(0), e);
+                LOGGER.log(Level.SEVERE, String.format("Waiting for process interrupted: %s", cmdList.get(0)), e);
             }
         } finally {
             // Stop timer thread if the instance exists.
@@ -391,14 +389,12 @@ public class Executor {
     }
 
     public static void registerErrorHandler() {
-        UncaughtExceptionHandler dueh =
-            Thread.getDefaultUncaughtExceptionHandler();
-        if (dueh == null) {
+        UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+        if (exceptionHandler == null) {
             LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler((t, e) ->
-                    LOGGER.log(Level.SEVERE, "Uncaught exception in thread "
-                            + t.getName() + " with ID " + t.getId() + ": "
-                            + e.getMessage(), e));
+                    LOGGER.log(Level.SEVERE, String.format("Uncaught exception in thread %s with ID %d: %s",
+                            t.getName(), t.getId(), e.getMessage()), e));
         }
     }
 

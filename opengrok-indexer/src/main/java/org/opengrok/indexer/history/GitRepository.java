@@ -144,21 +144,20 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         try (org.eclipse.jgit.lib.Repository repository = getJGitRepository(directory.getAbsolutePath())) {
             ObjectId commitId = repository.resolve(rev);
 
-            // a RevWalk allows to walk over commits based on some filtering that is defined
+            // A RevWalk allows walking over commits based on some filtering that is defined.
             try (RevWalk revWalk = new RevWalk(repository)) {
                 RevCommit commit = revWalk.parseCommit(commitId);
                 // and using commit's tree find the path
                 RevTree tree = commit.getTree();
 
-                // now try to find a specific file
+                // Now try to find a specific file.
                 try (TreeWalk treeWalk = new TreeWalk(repository)) {
                     treeWalk.addTree(tree);
                     treeWalk.setRecursive(true);
                     treeWalk.setFilter(PathFilter.create(filename));
                     if (!treeWalk.next()) {
-                        LOGGER.log(Level.FINEST,
-                                String.format("Did not find expected file '%s' in revision %s for repository '%s'",
-                                        filename, rev, directory));
+                        LOGGER.log(Level.FINEST, "Did not find expected file ''{0}'' in revision {1} " +
+                                "for repository ''{2}''", new Object[] {filename, rev, directory});
                         return result;
                     }
 
@@ -197,7 +196,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
         if (!result.success && result.iterations < 1) {
             /*
              * If we failed to get the contents it might be that the file was
-             * renamed so we need to find its original name in that revision
+             * renamed, so we need to find its original name in that revision
              * and retry with the original name.
              */
             String origPath;
@@ -330,7 +329,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
         if (annotation.getRevisions().isEmpty() && isHandleRenamedFiles()) {
             // The file might have changed its location if it was renamed.
-            // Try to lookup its original name and get the annotation again.
+            // Try looking up its original name and get the annotation again.
             String origName = findOriginalName(file.getCanonicalPath(), revision);
             if (origName != null) {
                 annotation = getAnnotation(revision, origName, fileName);
@@ -351,8 +350,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
             if (commit != null) {
                 revision = commit.getId().getName();
             } else {
-                LOGGER.log(Level.WARNING, String.format("cannot get first revision of '%s' in repository '%s'",
-                        filePath, getDirectoryName()));
+                LOGGER.log(Level.WARNING, "cannot get first revision of ''{0}'' in repository ''{1}''",
+                        new Object[] {filePath, getDirectoryName()});
             }
         } catch (IOException | GitAPIException e) {
             LOGGER.log(Level.WARNING,
@@ -396,10 +395,6 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
 
     @Override
     public boolean fileHasHistory(File file) {
-        // Todo: is there a cheap test for whether Git has history
-        // available for a file?
-        // Otherwise, this is harmless, since Git's commands will just
-        // print nothing if there is no history.
         return true;
     }
 
@@ -714,7 +709,8 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                         String tagName = ref.getName().replace("refs/tags/", "");
                         commit2Tags.merge(commit, tagName, (oldValue, newValue) -> oldValue + TAGS_SEPARATOR + newValue);
                     } catch (IOException e) {
-                        LOGGER.log(Level.FINEST, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
+                        LOGGER.log(Level.FINEST,
+                                String.format("cannot get tags for \"%s\"", directory.getAbsolutePath()), e);
                     }
                 }
 
@@ -727,7 +723,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
                 }
             }
         } catch (IOException | GitAPIException e) {
-            LOGGER.log(Level.WARNING, "cannot get tags for \"" + directory.getAbsolutePath() + "\"", e);
+            LOGGER.log(Level.WARNING, String.format("cannot get tags for \"%s\"", directory.getAbsolutePath()), e);
             // In case of partial success, do not null-out tagList here.
         }
 

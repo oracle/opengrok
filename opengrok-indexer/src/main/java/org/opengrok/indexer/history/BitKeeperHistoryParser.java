@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
- * Portions Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -126,11 +126,9 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
                 if (fields.length == 5) {
                     renamedFiles.add(fields[4]);
                 }
-            } else if (line.startsWith("C ")) {
-                if (entry != null) {
-                    final String messageLine = line.substring(2);
-                    entry.appendMessage(messageLine);
-                }
+            } else if (line.startsWith("C ") && (entry != null)) {
+                final String messageLine = line.substring(2);
+                entry.appendMessage(messageLine);
             }
         }
 
