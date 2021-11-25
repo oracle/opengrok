@@ -130,8 +130,7 @@ public class DirectoryHistoryReader {
                     try {
                         cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
-                        LOGGER.log(Level.WARNING,
-                                "Could not get date for " + path, ex);
+                        LOGGER.log(Level.WARNING, String.format("Could not get date for %s", path), ex);
                         cdate = new Date();
                     }
                     int ls = rpath.lastIndexOf('/');
@@ -143,8 +142,7 @@ public class DirectoryHistoryReader {
                             File f = new File(srcRoot + rparent, rbase);
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
-                            LOGGER.log(Level.WARNING,
-                                    "An error occurred while getting history reader", e);
+                            LOGGER.log(Level.WARNING, "An error occurred while getting history reader", e);
                         }
                         if (hist == null) {
                             put(cdate, "", "-", "", rpath);
@@ -170,8 +168,7 @@ public class DirectoryHistoryReader {
                 try {
                     ireader.close();
                 } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING,
-                            "An error occurred while closing reader", ex);
+                    LOGGER.log(Level.WARNING, "An error occurred while closing reader", ex);
                 }
             }
         }
@@ -204,9 +201,8 @@ public class DirectoryHistoryReader {
      * and store it into @code currentEntry.
      *
      * @return true if history entry was successfully generated otherwise false
-     * @throws IOException
      */
-    private boolean next() throws IOException {
+    private boolean next() {
         if (diter == null) {
             diter = hash.keySet().iterator();
         }

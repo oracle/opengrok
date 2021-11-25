@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
@@ -46,8 +50,9 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
      * Parses dates.
      */
     private final SimpleDateFormat dateFormat;
+
     /**
-     * Store tag entries created by {@link processStream()}.
+     * Store tag entries created by {@link #processStream(InputStream)}.
      */
     private final TreeSet<TagEntry> entries = new TreeSet<>();
 
@@ -85,7 +90,7 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         String revision = null;
         Date date = null;
-        String tag = null;
+        String tag;
 
         final BufferedReader in = new BufferedReader(new InputStreamReader(input));
         for (String line = in.readLine(); line != null; line = in.readLine()) {
@@ -97,11 +102,9 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
                 } catch (final Exception e) {
                     LOGGER.log(Level.SEVERE, "Error: malformed BitKeeper tags output {0}", line);
                 }
-            } else if (line.startsWith("T ")) {
-                if (date != null) {
-                    tag = line.substring(2);
-                    entries.add(new BitKeeperTagEntry(revision, date, tag));
-                }
+            } else if (line.startsWith("T ") && (date != null)) {
+                tag = line.substring(2);
+                entries.add(new BitKeeperTagEntry(revision, date, tag));
             }
         }
     }
