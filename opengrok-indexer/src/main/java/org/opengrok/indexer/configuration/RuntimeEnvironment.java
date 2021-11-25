@@ -447,7 +447,7 @@ public final class RuntimeEnvironment {
     /**
      * Get list of projects.
      *
-     * @return a list containing all of the projects
+     * @return a list containing all the projects
      */
     public List<Project> getProjectList() {
         return new ArrayList<>(getProjects().values());
