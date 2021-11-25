@@ -51,7 +51,7 @@ public class FileUtil {
         File file = new File(env.getSourceRootFile(), path);
 
         if (!file.getCanonicalPath().startsWith(env.getSourceRootPath() + File.separator)) {
-            throw new IOException("File points to outside of source root");
+            throw new InvalidPathException(path, "File points to outside of source root");
         }
 
         if (!file.exists()) {
