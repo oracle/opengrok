@@ -43,6 +43,7 @@ import org.opengrok.web.api.v1.filter.CorsEnable;
 import org.opengrok.web.api.v1.filter.PathAuthorized;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -206,8 +207,20 @@ public final class HistoryController {
                           @QueryParam("start") @DefaultValue(0 + "") final int startIndex)
             throws HistoryException {
 
-        History history = HistoryGuru.getInstance().getHistory(new File(env.getSourceRootFile(), path),
-                withFiles, true);
+        File file = new File(env.getSourceRootFile(), path);
+        try {
+            if (!file.getCanonicalPath().startsWith(env.getSourceRootPath() + File.separator)) {
+                return null;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+
+        if (!file.exists()) {
+            return null;
+        }
+
+        History history = HistoryGuru.getInstance().getHistory(file, withFiles, true);
         if (history == null) {
             return null;
         }
