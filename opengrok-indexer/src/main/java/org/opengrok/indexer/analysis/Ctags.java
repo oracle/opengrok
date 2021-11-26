@@ -251,14 +251,14 @@ public class Ctags implements Resettable {
         command.add("--kinddef-rust=C,const,Static\\ constants");
         command.add("--kinddef-rust=I,impl,Trait\\ implementation");
         command.add("--kinddef-rust=r,trait,Traits");
-        command.add("--kinddef-rust=V,variable,Variables");
+        command.add("--kinddef-rust=V,localVariable,Local\\ variables");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
                 "([[:alnum:]_]+)/\\4/C/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?" +
                 "[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?" +
                 "([[:alnum:]_]+)/\\5 \\7 \\8/I/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r/");
-        command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V/");
+        command.add("--regex-rust=/^[[:space:]]*let([[:space:]]+mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V/");
     }
 
     private void addPowerShellSupport(List<String> command) {
