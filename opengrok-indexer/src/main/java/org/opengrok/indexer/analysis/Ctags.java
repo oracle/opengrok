@@ -248,13 +248,17 @@ public class Ctags implements Resettable {
         }
 
         // The following are not supported yet in Universal Ctags b13cb551
+        command.add("--kinddef-rust=C,const,Static\\ constants");
+        command.add("--kinddef-rust=I,impl,Trait\\ implementation");
+        command.add("--kinddef-rust=r,trait,Traits");
+        command.add("--kinddef-rust=V,localVariable,Local\\ variables");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?" +
-                "([[:alnum:]_]+)/\\4/C,consts,staticConstants/");
+                "([[:alnum:]_]+)/\\4/C/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?" +
                 "[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?" +
-                "([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,traitImplementations/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r,traits,traits/");
-        command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
+                "([[:alnum:]_]+)/\\5 \\7 \\8/I/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r/");
+        command.add("--regex-rust=/^[[:space:]]*let([[:space:]]+mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V/");
     }
 
     private void addPowerShellSupport(List<String> command) {
@@ -262,8 +266,8 @@ public class Ctags implements Resettable {
             command.add("--langdef=powershell"); // Lower-case if user-defined.
         }
 
-        command.add("--regex-powershell=/\\$(\\{[^}]+\\})/\\1/v,variable/");
-        command.add("--regex-powershell=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
+        command.add("--regex-powershell=/\\$(\\{[^}]+\\})/\\1/v/");
+        command.add("--regex-powershell=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v/");
         command.add("--regex-powershell=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
 
         command.add("--_fielddef-powershell=signature,signatures");
@@ -274,7 +278,7 @@ public class Ctags implements Resettable {
         command.add("--regex-powershell=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
         command.add("--regex-powershell=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
         command.add("--regex-powershell=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*" +
-                "(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
+                "(\\(([^)]+)\\))?/\\2/f/{icase}{exclusive}{_field=signature:(\\4)}");
     }
 
     private void addPascalSupport(List<String> command) {
@@ -282,56 +286,74 @@ public class Ctags implements Resettable {
             command.add("--langdef=pascal"); // Lower-case if user-defined.
         }
 
-        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
-        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
-        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i,interface/");
-        command.add("--regex-pascal=/^constructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n,Constructor/");
-        command.add("--regex-pascal=/^destructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d,Destructor/");
-        command.add("--regex-pascal=/^(procedure)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/p,procedure/");
-        command.add("--regex-pascal=/^(function)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/f,function/");
-        command.add("--regex-pascal=/^[[:space:]]*property[[:space:]]+([a-zA-Z0-9_<>, ]+)[[:space:]]*\\:(.*)/\\1/o,property/");
-        command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
-        command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u,unit/");
+        command.add("--kinddef-pascal=t,type,Types");
+        command.add("--kinddef-pascal=c,class,Classes");
+        command.add("--kinddef-pascal=i,interface,Interfaces");
+        command.add("--kinddef-pascal=n,constructor,Constructors");
+        command.add("--kinddef-pascal=d,destructor,Destructors");
+        command.add("--kinddef-pascal=o,property,Properties");
+        command.add("--kinddef-pascal=s,section,Sections");
+        command.add("--kinddef-pascal=u,unit,Units");
+        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t/");
+        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c/");
+        command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i/");
+        command.add("--regex-pascal=/^constructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n/");
+        command.add("--regex-pascal=/^destructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d/");
+        command.add("--regex-pascal=/^(procedure)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/p/");
+        command.add("--regex-pascal=/^(function)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/f/");
+        command.add("--regex-pascal=/^[[:space:]]*property[[:space:]]+([a-zA-Z0-9_<>, ]+)[[:space:]]*\\:(.*)/\\1/o/");
+        command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s/");
+        command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u/");
     }
 
     private void addSwiftSupport(List<String> command) {
         if (!env.getCtagsLanguages().contains("Swift")) { // Built-in would be capitalized.
             command.add("--langdef=swift"); // Lower-case if user-defined.
         }
+        command.add("--kinddef-swift=n,enum,Enums");
+        command.add("--kinddef-swift=t,typealias,Type\\ aliases");
+        command.add("--kinddef-swift=p,protocol,Protocols");
+        command.add("--kinddef-swift=s,struct,Structs");
+        command.add("--kinddef-swift=c,class,Classes");
+        command.add("--kinddef-swift=f,function,Functions");
+        command.add("--kinddef-swift=v,variable,Variables");
+        command.add("--kinddef-swift=e,extension,Extensions");
 
-        command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n,enum,enums/");
-        command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t,typealias,typealiases/");
-        command.add("--regex-swift=/protocol[[:space:]]+([^:\\{]+).*$/\\1/p,protocol,protocols/");
-        command.add("--regex-swift=/struct[[:space:]]+([^:\\{]+).*$/\\1/s,struct,structs/");
-        command.add("--regex-swift=/class[[:space:]]+([^:\\{]+).*$/\\1/c,class,classes/");
-        command.add("--regex-swift=/func[[:space:]]+([^\\(\\)]+)\\([^\\(\\)]*\\)/\\1/f,function,functions/");
-        command.add("--regex-swift=/(var|let)[[:space:]]+([^:=]+).*$/\\2/v,variable,variables/");
-        command.add("--regex-swift=/^[[:space:]]*extension[[:space:]]+([^:\\{]+).*$/\\1/e,extension,extensions/");
+        command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n/");
+        command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t/");
+        command.add("--regex-swift=/protocol[[:space:]]+([^:\\{]+).*$/\\1/p/");
+        command.add("--regex-swift=/struct[[:space:]]+([^:\\{]+).*$/\\1/s/");
+        command.add("--regex-swift=/class[[:space:]]+([^:\\{]+).*$/\\1/c/");
+        command.add("--regex-swift=/func[[:space:]]+([^\\(\\)]+)\\([^\\(\\)]*\\)/\\1/f/");
+        command.add("--regex-swift=/(var|let)[[:space:]]+([^:=]+).*$/\\2/v/");
+        command.add("--regex-swift=/^[[:space:]]*extension[[:space:]]+([^:\\{]+).*$/\\1/e/");
     }
 
     private void addKotlinSupport(List<String> command) {
         if (!env.getCtagsLanguages().contains("Kotlin")) { // Built-in would be capitalized.
             command.add("--langdef=kotlin"); // Lower-case if user-defined.
         }
+        command.add("--kinddef-kotlin=d,dataClass,Data\\ classes");
+        command.add("--kinddef-kotlin=I,import,Imports");
 
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
+                "(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
+                "(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
                 "(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "data class[[:space:]]+([[:alnum:]_:]+)/\\6/d,dataClasses/");
+                "data class[[:space:]]+([[:alnum:]_:]+)/\\6/d/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
-        command.add("--regex-kotlin=/^[[:space:]]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
+                "(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i/");
+        command.add("--regex-kotlin=/^[[:space:]]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
-                "(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
+                "(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
-                "|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/C,constants/");
+                "|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/C/");
         command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*" +
-                "|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/v,variables/");
-        command.add("--regex-kotlin=/^[[:space:]]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
-        command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/I,imports/");
+                "|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/v/");
+        command.add("--regex-kotlin=/^[[:space:]]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p/");
+        command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/I/");
     }
 
     /**
@@ -341,17 +363,26 @@ public class Ctags implements Resettable {
         if (!env.getCtagsLanguages().contains("Clojure")) { // Built-in would be capitalized.
             command.add("--langdef=clojure"); // Lower-case if user-defined.
         }
+        command.add("--kinddef-clojure=d,definition,Definitions");
+        command.add("--kinddef-clojure=p,privateFunction,Private\\ functions");
+        command.add("--kinddef-clojure=m,macro,Macros");
+        command.add("--kinddef-clojure=i,inline,Inlines");
+        command.add("--kinddef-clojure=a,multimethodDefinition,Multimethod\\ definitions");
+        command.add("--kinddef-clojure=b,multimethodInstance,Multimethod\\ instances");
+        command.add("--kinddef-clojure=c,definitionOnce,Definition\\ once");
+        command.add("--kinddef-clojure=s,struct,Structs");
+        command.add("--kinddef-clojure=v,intern,Interns");
 
-        command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
-        command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
-        command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p,privateFunction/");
-        command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/m,macro/");
-        command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/i,inline/");
-        command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/a,multimethodDefinition/");
-        command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/b,multimethodInstance/");
-        command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/c,definitionOnce/");
-        command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/s,struct/");
-        command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v,intern/");
+        command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n/");
+        command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d/");
+        command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p/");
+        command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/m/");
+        command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/i/");
+        command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/a/");
+        command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/b/");
+        command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/c/");
+        command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/s/");
+        command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v/");
     }
 
     private void addHaskellSupport(List<String> command) {
@@ -359,39 +390,49 @@ public class Ctags implements Resettable {
             command.add("--langdef=haskell"); // below added with #912. Lowercase if user-defined.
         }
 
-        command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
-        command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
-        command.add("--regex-haskell=/^[[:space:]]*newtype[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
-        command.add("--regex-haskell=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
-        command.add("--regex-haskell=/^([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f,functions/");
-        command.add("--regex-haskell=/[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f,functions/");
-        command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
-        command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
+        command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c/");
+        command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t/");
+        command.add("--regex-haskell=/^[[:space:]]*newtype[[:space:]]+([a-zA-Z0-9_]+)/\\1/t/");
+        command.add("--regex-haskell=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/t/");
+        command.add("--regex-haskell=/^([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f/");
+        command.add("--regex-haskell=/[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f/");
+        command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f/");
+        command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f/");
     }
 
     private void addScalaSupport(List<String> command) {
         if (!env.getCtagsLanguages().contains("Scala")) { // Built-in would be capitalized.
             command.add("--langdef=scala"); // below is bug 61 to get full scala support. Lower-case
         }
+        command.add("--kinddef-scala=c,class,Classes");
+        command.add("--kinddef-scala=o,object,Objects");
+        command.add("--kinddef-scala=C,caseClass,Case\\ classes");
+        command.add("--kinddef-scala=O,caseObject,Case\\ objects");
+        command.add("--kinddef-scala=t,trait,Traits");
+        command.add("--kinddef-scala=m,method,Methods");
+        command.add("--kinddef-scala=l,constant,Constants");
+        command.add("--kinddef-scala=v,variable,Variables");
+        command.add("--kinddef-scala=T,type,Types");
+        command.add("--kinddef-scala=p,package,Packages");
 
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
+                "(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
+                "(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,caseClasses/");
+                "(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,caseObjects/");
+                "(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
-        command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
+                "(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t/");
+        command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private|protected)" +
-                "[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
+                "[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
+                "val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l/");
         command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*" +
-                "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
-        command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
+                "var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v/");
+        command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p/");
     }
 
     private void addTerraformSupport(List<String> command) {
@@ -412,10 +453,11 @@ public class Ctags implements Resettable {
          * equivalent of {Identifier} from HCL.lexh, so we must approximate with
          * the possibility of leaving out some matches.
          */
+        command.add("--kinddef-terraform=s,struct,Resource\\ names");
         command.add("--regex-terraform=" +
                 "/[[:<:]]resource[[:space:]]*\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*" +
                 "\"([[:alpha:]][-_[:alpha:]]*)\"[[:space:]]*\\{/" +
-                "\\1.\\2/s,struct,resource names/");
+                "\\1.\\2/s/");
     }
 
     /**
