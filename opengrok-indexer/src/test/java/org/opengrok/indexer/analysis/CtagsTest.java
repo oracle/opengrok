@@ -24,10 +24,13 @@
 package org.opengrok.indexer.analysis;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -138,12 +141,38 @@ public class CtagsTest {
         assertEquals(names.length, count, "function count");
     }
 
-    @Test
-    void testTfTags() throws Exception {
-        var defs = getDefs("terraform/test.tf");
+    @ParameterizedTest
+    @MethodSource("terraformTestParams")
+    void testTfTags(final SingleTagTestData data) throws Exception {
+        var defs = getDefs("terraform/" + data.file + ".tf");
         assertAll(
                 () -> assertEquals(1, defs.getTags().size()),
-                () -> assertEquals("oci_core_vcn.test_vcn", defs.getTags().get(0).symbol)
+                () -> assertEquals(data.symbol, defs.getTags().get(0).symbol),
+                () -> assertEquals(data.type, defs.getTags().get(0).type)
         );
     }
+
+    private static List<SingleTagTestData> terraformTestParams() {
+        return List.of(
+                new SingleTagTestData("data_source", "aws_ami.example", "dataSource"),
+                new SingleTagTestData("module", "servers", "module"),
+                new SingleTagTestData("output_value", "instance_ip_addr", "outputValue"),
+                new SingleTagTestData("provider", "oci", "provider"),
+                new SingleTagTestData("resource", "oci_core_vcn.test_vcn", "resource"),
+                new SingleTagTestData("variable", "availability_zone_names", "variable")
+        );
+    }
+
+    private static class SingleTagTestData {
+        private final String file;
+        private final String symbol;
+        private final String type;
+
+        SingleTagTestData(final String file, final String symbol, final String type) {
+            this.file = file;
+            this.symbol = symbol;
+            this.type = type;
+        }
+    }
+
 }
