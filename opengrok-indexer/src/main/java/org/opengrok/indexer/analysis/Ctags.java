@@ -453,11 +453,32 @@ public class Ctags implements Resettable {
          * equivalent of {Identifier} from HCL.lexh, so we must approximate with
          * the possibility of leaving out some matches.
          */
-        command.add("--kinddef-terraform=s,struct,Resource\\ names");
+        command.add("--kinddef-terraform=r,resource,Resource\\ names");
+        command.add("--kinddef-terraform=d,dataSource,Data\\ sources");
+        command.add("--kinddef-terraform=m,module,Modules");
+        command.add("--kinddef-terraform=o,outputValue,Output\\ values");
+        command.add("--kinddef-terraform=p,provider,Providers");
+        command.add("--kinddef-terraform=v,variable,Variables");
         command.add("--regex-terraform=" +
                 "/^[[:space:]]*resource[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*" +
                 "\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
-                "\\1.\\2/s/");
+                "\\1.\\2/r/");
+        command.add("--regex-terraform=" +
+                "/^[[:space:]]*data[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*" +
+                "\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
+                "\\1.\\2/d/");
+        command.add("--regex-terraform=" +
+                "/^[[:space:]]*module[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
+                "\\1/m/");
+        command.add("--regex-terraform=" +
+                "/^[[:space:]]*output[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
+                "\\1/o/");
+        command.add("--regex-terraform=" +
+                "/^[[:space:]]*provider[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
+                "\\1/p/");
+        command.add("--regex-terraform=" +
+                "/^[[:space:]]*variable[[:space:]]*\\\"([[:alpha:]][-_[:alpha:]]*)\\\"[[:space:]]*\\{/" +
+                "\\1/v/");
     }
 
     /**
