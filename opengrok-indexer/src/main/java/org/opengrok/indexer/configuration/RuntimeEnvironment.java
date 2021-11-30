@@ -125,7 +125,7 @@ public final class RuntimeEnvironment {
     private transient volatile Boolean ctagsFound;
     private final transient Set<String> ctagsLanguages = new HashSet<>();
 
-    public WatchDogService watchDog;
+    private final WatchDogService watchDog;
 
     private final Set<ConfigurationChangedListener> listeners = new CopyOnWriteArraySet<>();
 
@@ -161,6 +161,13 @@ public final class RuntimeEnvironment {
 
     public void setIndexer(boolean indexer) {
         this.indexer = indexer;
+    }
+
+    /**
+     * @return {@code WatchDogService} instance
+     */
+    public WatchDogService getWatchDog() {
+        return watchDog;
     }
 
     /** Gets the thread pool used for multi-project searches. */
