@@ -60,14 +60,14 @@ public class Definitions implements Serializable {
     public static class LineTagMap implements Serializable {
 
         private static final long serialVersionUID = 1191703801007779481L;
-        private final Map<String, Set<Tag>> sym_tags; //NOPMD
+        private final Map<String, Set<Tag>> symTags; //NOPMD
 
         protected LineTagMap() {
-            this.sym_tags = new HashMap<>();
+            this.symTags = new HashMap<>();
         }
     }
-    // line -> tag_map
-    private final Map<Integer, LineTagMap> line_maps;
+    // line number -> tag map
+    private final Map<Integer, LineTagMap> lineMaps;
 
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
@@ -80,7 +80,7 @@ public class Definitions implements Serializable {
 
     public Definitions() {
         symbols = new HashMap<>();
-        line_maps = new HashMap<>();
+        lineMaps = new HashMap<>();
         tags = new ArrayList<>();
     }
 
@@ -128,9 +128,9 @@ public class Definitions implements Serializable {
 
         // Get tag info
         if (lines != null && lines.contains(lineNumber)) {
-            LineTagMap line_map = line_maps.get(lineNumber);
-            if (line_map != null) {
-                for (Tag tag : line_map.sym_tags.get(symbol)) {
+            LineTagMap lineMap = lineMaps.get(lineNumber);
+            if (lineMap != null) {
+                for (Tag tag : lineMap.symTags.get(symbol)) {
                     if (tag.used) {
                         continue;
                     }
@@ -183,12 +183,12 @@ public class Definitions implements Serializable {
      * @return list of tags
      */
     public List<Tag> getTags(int line) {
-        LineTagMap line_map = line_maps.get(line);
+        LineTagMap lineMap = lineMaps.get(line);
         List<Tag> result = null;
 
-        if (line_map != null) {
+        if (lineMap != null) {
             result = new ArrayList<>();
-            for (Set<Tag> ltags : line_map.sym_tags.values()) {
+            for (Set<Tag> ltags : lineMap.symTags.values()) {
                 for (Tag tag : ltags) {
                     result.add(tag);
                 }
@@ -278,17 +278,17 @@ public class Definitions implements Serializable {
         lines.add(aLine);
 
         // Get per line map
-        LineTagMap line_map = line_maps.get(aLine);
+        LineTagMap line_map = lineMaps.get(aLine);
         if (line_map == null) {
             line_map = new LineTagMap();
-            line_maps.put(aLine, line_map);
+            lineMaps.put(aLine, line_map);
         }
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = line_map.sym_tags.get(symbol);
+        Set<Tag> ltags = line_map.symTags.get(symbol);
         if (ltags == null) {
             ltags = new HashSet<>();
-            line_map.sym_tags.put(symbol, ltags);
+            line_map.symTags.put(symbol, ltags);
         }
         ltags.add(new_tag);
     }
