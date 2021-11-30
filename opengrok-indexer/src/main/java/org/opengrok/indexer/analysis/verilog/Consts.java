@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.verilog;
@@ -30,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
 
     static {
         kwd.add("accept_on"); // IEEE 1800-2017

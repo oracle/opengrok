@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("and");
         kwd.add("as"); //2.5 , 2.6
