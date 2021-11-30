@@ -38,7 +38,7 @@ import java.util.TreeMap;
  * <i>Eftar</i> File has the following format
  * <code>
  * FILE --&gt; Record  ( Record | tagString ) *
- * <br/>
+ * <br>
  * Record --&gt; 64bit:Hash 16bit:childrenOffset  16bit:(numberChildren|lenthOfTag) 16bit:tagOffset
  * </code>
  *
