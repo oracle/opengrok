@@ -35,12 +35,14 @@ import java.util.TreeMap;
  * An Extremely Fast Tagged Attribute Read-only File System.
  * Created on October 12, 2005
  *
- * A Eftar File has the following format
+ * <i>Eftar</i> File has the following format
+ * <code>
  * FILE --&gt; Record  ( Record | tagString ) *
+ * <br/>
  * Record --&gt; 64bit:Hash 16bit:childrenOffset  16bit:(numberChildren|lenthOfTag) 16bit:tagOffset
+ * </code>
  *
- * It is a tree of tagged names,
- * doing binary search in sorted list of children
+ * It is a tree of tagged names, doing binary search in sorted list of children
  *
  * @author Chandan
  */
@@ -52,11 +54,11 @@ public class EftarFile {
 
     static class Node {
 
-        public long hash;
-        public String tag;
-        public Map<Long, Node> children;
-        public long tagOffset;
-        public long childOffset;
+        private final long hash;
+        private String tag;
+        private final Map<Long, Node> children;
+        private long tagOffset;
+        private long childOffset;
 
         Node(long hash, String tag) {
             this.hash = hash;
@@ -65,10 +67,7 @@ public class EftarFile {
         }
 
         public Node put(long hash, String desc) {
-            if (children.get(hash) == null) {
-                children.put(hash, new Node(hash, desc));
-            }
-            return children.get(hash);
+            return children.computeIfAbsent(hash, newNode -> new Node(hash, desc));
         }
 
         public Node get(long hash) {
