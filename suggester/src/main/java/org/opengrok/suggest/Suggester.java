@@ -121,7 +121,7 @@ public final class Suggester implements Closeable {
      * @param allowedFields fields for which should the suggester be enabled,
      * if {@code null} then enabled for all fields
      * @param timeThreshold time in milliseconds after which the suggestions requests should time out
-     * @param registry
+     * @param registry meter registry
      */
     public Suggester(
             final File suggesterDir,
