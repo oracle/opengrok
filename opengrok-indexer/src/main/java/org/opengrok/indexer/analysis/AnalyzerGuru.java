@@ -1123,8 +1123,7 @@ public class AnalyzerGuru {
         int r;
 
         StringBuilder opening = new StringBuilder();
-        BufferedReader readr = new BufferedReader(
-            new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+        BufferedReader readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
         while ((r = readr.read()) != -1) {
             if (++nRead > OPENING_MAX_CHARS) {
                 break;
@@ -1156,7 +1155,7 @@ public class AnalyzerGuru {
 
             // If the opening starts with "#!", then track so that any
             // trailing whitespace after the hashbang is ignored.
-            if (opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!') {
+            if (opening.toString().equals("#!")) {
                 postHashbang = true;
             }
         }
