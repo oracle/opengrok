@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.c;
 
@@ -30,10 +30,10 @@ import java.util.Set;
  */
 public class CxxConsts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
 
     static {
-        // Add all of the C keywords
+        // Add all the C keywords.
         kwd.addAll(Consts.kwd);
 
         // C++ keywords
@@ -67,5 +67,4 @@ public class CxxConsts {
 
     private CxxConsts() {
     }
-
 }
