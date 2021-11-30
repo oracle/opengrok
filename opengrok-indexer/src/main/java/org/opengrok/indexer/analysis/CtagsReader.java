@@ -138,11 +138,9 @@ public class CtagsReader {
          * @return a defined value, or null if unmatched
          */
         public static CtagsReader.tagFields quickValueOf(String fullName) {
-            int i;
-            boolean match;
             for (tagFields x : tagFields.values()) {
-                match = true;
-                for (i = 0; i <= CHAR_CMP_END_OFFSET; i++) {
+                boolean match = true;
+                for (int i = 0; i <= CHAR_CMP_END_OFFSET; i++) {
                     if (x.name.charAt(i) != fullName.charAt(i)) {
                         match = false;
                         break;
