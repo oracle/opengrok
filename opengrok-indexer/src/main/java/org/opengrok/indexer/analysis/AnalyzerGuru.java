@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -392,6 +393,8 @@ public class AnalyzerGuru {
         return Collections.unmodifiableList(factories);
     }
 
+    private static final String USED_IN_MULTIPLE_MSG = "' used in multiple analyzers";
+
     /**
      * Register a {@code FileAnalyzerFactory} instance.
      */
@@ -399,22 +402,22 @@ public class AnalyzerGuru {
         for (String name : factory.getFileNames()) {
             AnalyzerFactory old = FILE_NAMES.put(name, factory);
             assert old == null :
-                    "name '" + name + "' used in multiple analyzers";
+                    "name '" + name + USED_IN_MULTIPLE_MSG;
         }
         for (String prefix : factory.getPrefixes()) {
             AnalyzerFactory old = pre.put(prefix, factory);
             assert old == null :
-                    "prefix '" + prefix + "' used in multiple analyzers";
+                    "prefix '" + prefix + USED_IN_MULTIPLE_MSG;
         }
         for (String suffix : factory.getSuffixes()) {
             AnalyzerFactory old = ext.put(suffix, factory);
             assert old == null :
-                    "suffix '" + suffix + "' used in multiple analyzers";
+                    "suffix '" + suffix + USED_IN_MULTIPLE_MSG;
         }
         for (String magic : factory.getMagicStrings()) {
             AnalyzerFactory old = magics.put(magic, factory);
             assert old == null :
-                    "magic '" + magic + "' used in multiple analyzers";
+                    "magic '" + magic + USED_IN_MULTIPLE_MSG;
         }
         matchers.addAll(factory.getMatchers());
         factories.add(factory);
@@ -596,7 +599,7 @@ public class AnalyzerGuru {
                     History history;
                     if ((history = histGuru.getHistory(file)) != null) {
                         List<HistoryEntry> historyEntries = history.getHistoryEntries(1, 0);
-                        if (historyEntries.size() > 0) {
+                        if (!historyEntries.isEmpty()) {
                             HistoryEntry histEntry = historyEntries.get(0);
                             doc.add(new TextField(QueryBuilder.LASTREV, histEntry.getRevision(), Store.YES));
                         }
@@ -701,7 +704,7 @@ public class AnalyzerGuru {
             }
             Util.dumpXref(out, xrefTemp, false, contextPath);
         } finally {
-            xrefTemp.delete();
+            Files.delete(xrefTemp.toPath());
         }
     }
 
@@ -867,19 +870,14 @@ public class AnalyzerGuru {
      *
      * Use if you just want to find file type.
      *
-     *
      * @param in The input stream containing the data
      * @param file The file name to get the analyzer for
      * @return the analyzer factory to use
-     * @throws java.io.IOException If a problem occurs while reading the data
+     * @throws java.io.IOException If a problem occurred while reading the data
      */
-    public static AnalyzerFactory find(InputStream in, String file)
-            throws IOException {
+    public static AnalyzerFactory find(InputStream in, String file) throws IOException {
         AnalyzerFactory factory = find(file);
-        // TODO above is not that great, since if 2 analyzers share one extension
-        // then only the first one registered will own it
-        // it would be cool if above could return more analyzers and below would
-        // then decide between them ...
+
         if (factory != null) {
             return factory;
         }
@@ -1125,8 +1123,7 @@ public class AnalyzerGuru {
         int r;
 
         StringBuilder opening = new StringBuilder();
-        BufferedReader readr = new BufferedReader(
-            new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+        BufferedReader readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
         while ((r = readr.read()) != -1) {
             if (++nRead > OPENING_MAX_CHARS) {
                 break;
@@ -1158,10 +1155,8 @@ public class AnalyzerGuru {
 
             // If the opening starts with "#!", then track so that any
             // trailing whitespace after the hashbang is ignored.
-            if (opening.length() == 2) {
-                if (opening.charAt(0) == '#' && opening.charAt(1) == '!') {
-                    postHashbang = true;
-                }
+            if (opening.length() == 2 && opening.charAt(0) == '#' && opening.charAt(1) == '!') {
+                postHashbang = true;
             }
         }
 
@@ -1175,25 +1170,24 @@ public class AnalyzerGuru {
         customizationHashCode = Objects.hash(keys);
     }
 
-    private static boolean factoriesDifferent(AnalyzerFactory a,
-            AnalyzerFactory b) {
-        String a_name = null;
+    private static boolean factoriesDifferent(AnalyzerFactory a, AnalyzerFactory b) {
+        String aName = null;
         if (a != null) {
-            a_name = a.getName();
-            if (a_name == null) {
-                a_name = a.getClass().getSimpleName();
+            aName = a.getName();
+            if (aName == null) {
+                aName = a.getClass().getSimpleName();
             }
         }
-        String b_name = null;
+        String bName = null;
         if (b != null) {
-            b_name = b.getName();
-            if (b_name == null) {
-                b_name = b.getClass().getSimpleName();
+            bName = b.getName();
+            if (bName == null) {
+                bName = b.getClass().getSimpleName();
             }
         }
-        if (a_name == null && b_name == null) {
+        if (aName == null && bName == null) {
             return false;
         }
-        return a_name == null || !a_name.equals(b_name);
+        return aName == null || !aName.equals(bName);
     }
 }
