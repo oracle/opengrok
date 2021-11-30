@@ -90,14 +90,15 @@ public class EftarFileReader implements Closeable {
             int e = len;
             while (b <= e) {
                 int m = (b + e) / 2;
-                f.seek(start + m * EftarFile.RECORD_LENGTH);
+                f.seek(start + (long) m * EftarFile.RECORD_LENGTH);
                 long mhash = f.readLong();
                 if (hash > mhash) {
                     b = m + 1;
                 } else if (hash < mhash) {
                     e = m - 1;
                 } else {
-                    return new FNode(mhash, f.getFilePointer() - 8L, f.readUnsignedShort(), f.readUnsignedShort(), f.readUnsignedShort());
+                    return new FNode(mhash, f.getFilePointer() - 8L, f.readUnsignedShort(), f.readUnsignedShort(),
+                            f.readUnsignedShort());
                 }
             }
             return null;
