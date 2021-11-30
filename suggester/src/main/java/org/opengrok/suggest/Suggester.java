@@ -196,7 +196,7 @@ public final class Suggester implements Closeable {
      * wait for initialization to finish.
      * @param timeout timeout value
      * @param unit timeout unit
-     * @throws InterruptedException
+     * @throws InterruptedException on canceled await()
      */
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
         if (!initDone.await(timeout, unit)) {
@@ -324,7 +324,7 @@ public final class Suggester implements Closeable {
      * wait for rebuild to finish.
      * @param timeout timeout value
      * @param unit timeout unit
-     * @throws InterruptedException
+     * @throws InterruptedException on canceled await()
      */
     public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
         rebuildLock.lock();
