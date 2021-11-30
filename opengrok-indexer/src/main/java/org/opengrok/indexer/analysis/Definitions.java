@@ -189,9 +189,7 @@ public class Definitions implements Serializable {
         if (lineMap != null) {
             result = new ArrayList<>();
             for (Set<Tag> ltags : lineMap.symTags.values()) {
-                for (Tag tag : ltags) {
-                    result.add(tag);
-                }
+                result.addAll(ltags);
             }
         }
 
