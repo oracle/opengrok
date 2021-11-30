@@ -264,9 +264,9 @@ public class Definitions implements Serializable {
 
     public void addTag(int line, String symbol, String type, String text,
             String namespace, String signature, int lineStart, int lineEnd) {
-        Tag new_tag = new Tag(line, symbol, type, text, namespace, signature,
+        Tag newTag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
-        tags.add(new_tag);
+        tags.add(newTag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {
             lines = new HashSet<>();
@@ -276,19 +276,19 @@ public class Definitions implements Serializable {
         lines.add(aLine);
 
         // Get per line map
-        LineTagMap line_map = lineMaps.get(aLine);
-        if (line_map == null) {
-            line_map = new LineTagMap();
-            lineMaps.put(aLine, line_map);
+        LineTagMap lineMap = lineMaps.get(aLine);
+        if (lineMap == null) {
+            lineMap = new LineTagMap();
+            lineMaps.put(aLine, lineMap);
         }
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = line_map.symTags.get(symbol);
+        Set<Tag> ltags = lineMap.symTags.get(symbol);
         if (ltags == null) {
             ltags = new HashSet<>();
-            line_map.symTags.put(symbol, ltags);
+            lineMap.symTags.put(symbol, ltags);
         }
-        ltags.add(new_tag);
+        ltags.add(newTag);
     }
 
     /**
