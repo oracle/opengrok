@@ -1509,6 +1509,21 @@ public final class PageConfig {
     }
 
     /**
+     * Play nice in reverse proxy environment by using pre-configured hostname
+     * request to construct the URLs.
+     * Will not work well if the scheme or port is different for proxied server
+     * and original server.
+     * @return server name
+     */
+    public String getServerName() {
+        if (env.getServerName() != null) {
+            return env.getServerName();
+        } else {
+            return req.getServerName();
+        }
+    }
+
+    /**
      * Prepare a search helper with all required information, ready to execute
      * the query implied by the related request parameters and cookies.
      * <p>

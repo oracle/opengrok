@@ -300,6 +300,8 @@ public final class Configuration {
     private int historyChunkCount;
     private boolean historyCachePerPartesEnabled = true;
 
+    private String serverName;  // for reverse proxy environment
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -1401,6 +1403,14 @@ public final class Configuration {
 
     public void setHistoryCachePerPartesEnabled(boolean historyCachePerPartesEnabled) {
         this.historyCachePerPartesEnabled = historyCachePerPartesEnabled;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     /**
