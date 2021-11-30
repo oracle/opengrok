@@ -72,14 +72,14 @@ public class Definitions implements Serializable {
     /**
      * Map from symbol to the line numbers on which the symbol is defined.
      */
-    private final Map<String, Set<Integer>> symbols;
+    private final Map<String, Set<Integer>> symbolMap;
     /**
      * List of all the tags.
      */
     private final List<Tag> tags;
 
     public Definitions() {
-        symbols = new HashMap<>();
+        symbolMap = new HashMap<>();
         lineMaps = new HashMap<>();
         tags = new ArrayList<>();
     }
@@ -99,7 +99,7 @@ public class Definitions implements Serializable {
      * @return a set containing all the symbols
      */
     public Set<String> getSymbols() {
-        return symbols.keySet();
+        return symbolMap.keySet();
     }
 
     /**
@@ -109,7 +109,7 @@ public class Definitions implements Serializable {
      * @return {@code true} if there is a tag for {@code symbol}
      */
     public boolean hasSymbol(String symbol) {
-        return symbols.containsKey(symbol);
+        return symbolMap.containsKey(symbol);
     }
 
     /**
@@ -121,7 +121,7 @@ public class Definitions implements Serializable {
      * @return {@code true} if {@code symbol} is defined on the specified line
      */
     public boolean hasDefinitionAt(String symbol, int lineNumber, String[] strs) {
-        Set<Integer> lines = symbols.get(symbol);
+        Set<Integer> lines = symbolMap.get(symbol);
         if (strs.length > 0) {
             strs[0] = "none";
         }
@@ -154,7 +154,7 @@ public class Definitions implements Serializable {
      * @return the number of times the specified symbol is defined
      */
     public int occurrences(String symbol) {
-        Set<Integer> lines = symbols.get(symbol);
+        Set<Integer> lines = symbolMap.get(symbol);
         return lines == null ? 0 : lines.size();
     }
 
@@ -164,7 +164,7 @@ public class Definitions implements Serializable {
      * @return number of distinct symbols
      */
     public int numberOfSymbols() {
-        return symbols.size();
+        return symbolMap.size();
     }
 
     /**
@@ -267,10 +267,10 @@ public class Definitions implements Serializable {
         Tag newTag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
         tags.add(newTag);
-        Set<Integer> lines = symbols.get(symbol);
+        Set<Integer> lines = symbolMap.get(symbol);
         if (lines == null) {
             lines = new HashSet<>();
-            symbols.put(symbol, lines);
+            symbolMap.put(symbol, lines);
         }
         Integer aLine = line;
         lines.add(aLine);
