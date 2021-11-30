@@ -53,7 +53,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -1136,7 +1135,7 @@ public final class Indexer {
         // Wait forever for the executors to finish.
         try {
             LOGGER.info("Waiting for the executors to finish");
-            latch.await(999, TimeUnit.DAYS);
+            latch.await();
         } catch (InterruptedException exp) {
             LOGGER.log(Level.WARNING, "Received interrupt while waiting" +
                     " for executor to finish", exp);
