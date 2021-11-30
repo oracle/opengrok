@@ -52,8 +52,8 @@ public class SuggesterConfig {
     public static final int TIME_THRESHOLD_DEFAULT = 2000; // 2 sec
     public static final int REBUILD_THREAD_POOL_PERCENT_NCPUS_DEFAULT = 80;
 
-    public static final Set<String> allowedProjectsDefault = null;
-    public static final Set<String> allowedFieldsDefault = Set.of(
+    private static final Set<String> allowedProjectsDefault = null;
+    private static final Set<String> allowedFieldsDefault = Set.of(
             QueryBuilder.FULL,
             QueryBuilder.DEFS,
             QueryBuilder.REFS,
@@ -68,7 +68,7 @@ public class SuggesterConfig {
     private boolean enabled;
 
     /**
-     * Specifies how many results suggester should return at maximum.
+     * Specifies maximum number of results suggester should return.
      */
     private int maxResults;
 
