@@ -117,7 +117,7 @@ public class UserWhiteListPluginTest {
     @MethodSource("parameters")
     public void shouldThrowOnLoadIfNullArgument(String param) {
         init(param);
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             //noinspection ConstantConditions
             plugin.load(null);
             }, "plugin.load(null)");

@@ -57,6 +57,10 @@ public class UserWhiteListPlugin implements IAuthorizationPlugin {
 
     @Override
     public void load(Map<String, Object> parameters) {
+        if (parameters == null) {
+            throw new IllegalArgumentException("Null parameter");
+        }
+
         String filePath;
         if ((filePath = (String) parameters.get(FILE_PARAM)) == null) {
             throw new IllegalArgumentException("Missing parameter [" + FILE_PARAM + "] in the configuration");
