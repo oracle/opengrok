@@ -614,7 +614,7 @@ public final class Suggester implements Closeable {
             try {
                 f.close();
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not close suggester data " + f, e);
+                LOGGER.log(Level.WARNING, String.format("Could not close suggester data %s", f), e);
             }
         });
     }
