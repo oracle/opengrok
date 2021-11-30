@@ -199,7 +199,9 @@ public final class Suggester implements Closeable {
      * @throws InterruptedException
      */
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
-        initDone.await(timeout, unit);
+        if (!initDone.await(timeout, unit)) {
+            LOGGER.log(Level.WARNING, "await timed out due to timeout");
+        }
     }
 
     private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir) {
@@ -328,7 +330,9 @@ public final class Suggester implements Closeable {
         rebuildLock.lock();
         try {
             while (rebuilding) {
-                rebuildDone.await(timeout, unit);
+                if (!rebuildDone.await(timeout, unit)) {
+                    LOGGER.log(Level.WARNING, "await timed out due to timeout");
+                }
             }
         } finally {
             rebuildLock.unlock();
