@@ -126,11 +126,11 @@ public class CtagsReader {
          * <p>TODO:
          * <p>NOTE this is a big tradeoff in terms of input data, e.g. field
          * "find" will be considered "file" and overwrite the value, so if
-         * ctags will send us buggy input. We will output buggy data TOO! NO
-         * VALIDATION happens of input - but then we gain LOTS of speed, due to
+         * ctags will send us buggy input, we will output buggy data TOO!
+         * NO VALIDATION happens of input - but then we gain LOTS of speed, due to
          * not comparing the same field names again and again fully.
          */
-        public static int charCmpEndOffset = 0;
+        private static final int CHAR_CMP_END_OFFSET = 0;
 
         /**
          * Quickly get if the field name matches allowed/consumed ones.
@@ -138,11 +138,9 @@ public class CtagsReader {
          * @return a defined value, or null if unmatched
          */
         public static CtagsReader.tagFields quickValueOf(String fullName) {
-            int i;
-            boolean match;
             for (tagFields x : tagFields.values()) {
-                match = true;
-                for (i = 0; i <= charCmpEndOffset; i++) {
+                boolean match = true;
+                for (int i = 0; i <= CHAR_CMP_END_OFFSET; i++) {
                     if (x.name.charAt(i) != fullName.charAt(i)) {
                         match = false;
                         break;
