@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011, Jens Elkner.
  */
 package org.opengrok.indexer.web;
@@ -30,13 +31,13 @@ package org.opengrok.indexer.web;
 public class Suggestion {
 
     /** index name. */
-    public String name;
+    private final String name;
     /** freetext search suggestions. */
-    public String[] freetext;
+    private String[] freetext;
     /** references search suggestions. */
-    public String[] refs;
+    private String[] refs;
     /** definitions search suggestions. */
-    public String[] defs;
+    private String[] defs;
 
     /**
      * Create a new suggestion.
@@ -44,5 +45,42 @@ public class Suggestion {
      */
     public Suggestion(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String[] getFreetext() {
+        return freetext;
+    }
+
+    public String[] getRefs() {
+        return refs;
+    }
+
+    public String[] getDefs() {
+        return defs;
+    }
+
+    public void setFreetext(String[] freetext) {
+        this.freetext = freetext;
+    }
+
+    public void setRefs(String[] refs) {
+        this.refs = refs;
+    }
+
+    public void setDefs(String[] defs) {
+        this.defs = defs;
+    }
+
+    /**
+     * @return true if at least one of the properties has some content, false otherwise
+     */
+    public boolean isUsable() {
+        return (freetext != null && freetext.length > 0)
+                || (defs != null && defs.length > 0)
+                || (refs != null && refs.length > 0);
     }
 }

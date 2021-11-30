@@ -169,23 +169,23 @@ include file="menu.jspf"
     } else if (searchHelper.hits.length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
-        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
-	  if (hint.freetext!=null) { 
-	    for (String word : hint.freetext) {
+        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.getName() %>)</font>:<%
+	  if (hint.getFreetext() != null) {
+	    for (String word : hint.getFreetext()) {
             %> <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>
 <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
-	  if (hint.refs!=null)  {
-	    for (String word : hint.refs) {
+	  if (hint.getRefs() != null)  {
+	    for (String word : hint.getRefs()) {
             %> <a href="search?<%= QueryParameters.REFS_SEARCH_PARAM_EQ %>
 <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
-	  if (hint.defs!=null) {
-	    for (String word : hint.defs) {
+	  if (hint.getDefs() != null) {
+	    for (String word : hint.getDefs()) {
             %> <a href="search?<%= QueryParameters.DEFS_SEARCH_PARAM_EQ %>
 <%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
