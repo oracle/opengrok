@@ -57,7 +57,6 @@ public class EftarFile {
         public Map<Long, Node> children;
         public long tagOffset;
         public long childOffset;
-        public long myOffset;
 
         Node(long hash, String tag) {
             this.hash = hash;
@@ -87,7 +86,7 @@ public class EftarFile {
             n = 100;
         }
         for (int i = 0; i < n; i++) {
-            hash = (hash * 641 + name.charAt(i) * 2969 + hash << 6) % 9322397;
+            hash = (hash * 641L + name.charAt(i) * 2969 + hash << 6) % 9322397;
         }
         return hash;
     }
@@ -97,28 +96,28 @@ public class EftarFile {
             out.write(n.tag.getBytes());
             offset += n.tag.length();
         }
-        for (Node childnode : n.children.values()) {
-            out.writeLong(childnode.hash);
-            if (childnode.children.size() > 0) {
-                out.writeShort((short) (childnode.childOffset - offset));
-                out.writeShort((short) childnode.children.size());
+        for (Node childNode : n.children.values()) {
+            out.writeLong(childNode.hash);
+            if (childNode.children.size() > 0) {
+                out.writeShort((short) (childNode.childOffset - offset));
+                out.writeShort((short) childNode.children.size());
             } else {
                 out.writeShort(0);
-                if (childnode.tag == null) {
+                if (childNode.tag == null) {
                     out.writeShort((short) 0);
                 } else {
-                    out.writeShort((short) childnode.tag.length());
+                    out.writeShort((short) childNode.tag.length());
                 }
             }
-            if (childnode.tag == null) {
+            if (childNode.tag == null) {
                 out.writeShort(0);
             } else {
-                out.writeShort((short) (childnode.tagOffset - offset));
+                out.writeShort((short) (childNode.tagOffset - offset));
             }
             offset += RECORD_LENGTH;
         }
-        for (Node childnode : n.children.values()) {
-            write(childnode, out);
+        for (Node childNode : n.children.values()) {
+            write(childNode, out);
         }
     }
 
@@ -131,7 +130,7 @@ public class EftarFile {
         }
         if (n.children.size() > 0) {
             n.childOffset = offset;
-            offset += (RECORD_LENGTH * n.children.size());
+            offset += ((long)RECORD_LENGTH * n.children.size());
         } else {
             n.childOffset = 0;
         }
@@ -143,9 +142,8 @@ public class EftarFile {
     /**
      * Reads the input into interim representation. Can be called multiple times.
      * @param descriptions set of PathDescription
-     * @throws IOException
      */
-    private void readInput(Set<PathDescription> descriptions) throws IOException {
+    private void readInput(Set<PathDescription> descriptions) {
         if (root == null) {
             root = new Node(1, null);
         }
@@ -163,8 +161,7 @@ public class EftarFile {
     public void write(String outPath) throws IOException {
         offset = RECORD_LENGTH;
         traverse(root);
-        try (DataOutputStream out = new DataOutputStream(
-                new BufferedOutputStream(new FileOutputStream(outPath)))) {
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outPath)))) {
             out.writeLong(0x5e33);
             out.writeShort(RECORD_LENGTH);
             out.writeShort(root.children.size());
