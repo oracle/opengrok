@@ -200,7 +200,7 @@ public final class Suggester implements Closeable {
      */
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
         if (!initDone.await(timeout, unit)) {
-            LOGGER.log(Level.WARNING, "await timed out due to timeout");
+            LOGGER.log(Level.WARNING, "Initialization did not finish in {0} {1}", new Object[] {timeout, unit});
         }
     }
 
@@ -331,7 +331,7 @@ public final class Suggester implements Closeable {
         try {
             while (rebuilding) {
                 if (!rebuildDone.await(timeout, unit)) {
-                    LOGGER.log(Level.WARNING, "await timed out due to timeout");
+                    LOGGER.log(Level.WARNING, "Rebuild did not finish in {0} {1}", new Object[] {timeout, unit});
                 }
             }
         } finally {
