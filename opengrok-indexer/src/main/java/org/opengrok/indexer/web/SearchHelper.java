@@ -542,7 +542,7 @@ public class SearchHelper {
         IndexReader ir = null;
         Term t;
         for (String proj : name) {
-            Suggestion s = new Suggestion(proj);
+            Suggestion suggestion = new Suggestion(proj);
             try {
                 if (!closeOnDestroy) {
                     SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
@@ -556,30 +556,28 @@ public class SearchHelper {
                         && !builder.getFreetext().isEmpty()) {
                     t = new Term(QueryBuilder.FULL, builder.getFreetext());
                     getSuggestion(t, ir, dummy);
-                    s.freetext = dummy.toArray(new String[0]);
+                    suggestion.setFreetext(dummy.toArray(new String[0]));
                     dummy.clear();
                 }
                 if (builder.getRefs() != null && !builder.getRefs().isEmpty()) {
                     t = new Term(QueryBuilder.REFS, builder.getRefs());
                     getSuggestion(t, ir, dummy);
-                    s.refs = dummy.toArray(new String[0]);
+                    suggestion.setRefs(dummy.toArray(new String[0]));
                     dummy.clear();
                 }
                 if (builder.getDefs() != null && !builder.getDefs().isEmpty()) {
                     t = new Term(QueryBuilder.DEFS, builder.getDefs());
                     getSuggestion(t, ir, dummy);
-                    s.defs = dummy.toArray(new String[0]);
+                    suggestion.setDefs(dummy.toArray(new String[0]));
                     dummy.clear();
                 }
                 //TODO suggest also for path and history?
-                if ((s.freetext != null && s.freetext.length > 0)
-                        || (s.defs != null && s.defs.length > 0)
-                        || (s.refs != null && s.refs.length > 0)) {
-                    res.add(s);
+                if (suggestion.isUsable()) {
+                    res.add(suggestion);
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Got exception while getting "
-                        + "spelling suggestions for project " + proj + ":", e);
+                LOGGER.log(Level.WARNING,
+                        String.format("Got exception while getting spelling suggestions for project %s:", proj), e);
             } finally {
                 if (ir != null && closeOnDestroy) {
                     try {
