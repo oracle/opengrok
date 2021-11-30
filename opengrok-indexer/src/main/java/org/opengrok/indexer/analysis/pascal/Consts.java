@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         kwd.add("abstract");
         kwd.add("and");

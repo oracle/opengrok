@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> shkwd = new HashSet<>();
+    static final Set<String> shkwd = new HashSet<>();
     static {
         // Built-in shell commands mentioned in shell_builtins(1)
         shkwd.add(":");

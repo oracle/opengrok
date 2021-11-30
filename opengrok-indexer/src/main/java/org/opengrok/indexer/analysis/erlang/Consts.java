@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
-    protected static final Set<String> modules_kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
+    static final Set<String> modules_kwd = new HashSet<>();
     static {
         kwd.add("after"); // Ref. 9.1 "1.5 Reserved Words"
         kwd.add("and"); // Ref. 9.1 "1.5 Reserved Words"

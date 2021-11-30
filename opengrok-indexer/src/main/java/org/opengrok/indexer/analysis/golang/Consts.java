@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         // Go Programming Language Specification 2015
         kwd.add("break");

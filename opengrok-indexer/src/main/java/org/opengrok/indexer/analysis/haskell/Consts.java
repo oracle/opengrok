@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         // Haskell 2010 Language Report, Chapter 2.4
         kwd.add("case");

@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         // Note that keywords with 1 letter will be ignored for historical
         // reasons, as the {Identifier} used to require 2 characters in

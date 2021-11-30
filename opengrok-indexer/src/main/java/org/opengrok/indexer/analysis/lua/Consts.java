@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         // Lua 5.3 Reference Manual, Chapter 3.1
         // http://www.lua.org/manual/5.3/manual.html

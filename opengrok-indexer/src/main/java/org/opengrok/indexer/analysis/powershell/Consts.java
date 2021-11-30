@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> poshkwd = new HashSet<>();
+    static final Set<String> poshkwd = new HashSet<>();
     static {
         // Powershell keywords
         poshkwd.add("begin");

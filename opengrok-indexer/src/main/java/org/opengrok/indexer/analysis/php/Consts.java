@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    protected static final Set<String> kwd = new HashSet<>();
+    static final Set<String> kwd = new HashSet<>();
     static {
         //Keywords
         kwd.add("abstract"); //As of PHP5
