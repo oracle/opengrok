@@ -121,7 +121,7 @@ public final class Suggester implements Closeable {
      * @param allowedFields fields for which should the suggester be enabled,
      * if {@code null} then enabled for all fields
      * @param timeThreshold time in milliseconds after which the suggestions requests should time out
-     * @param registry
+     * @param registry meter registry
      */
     public Suggester(
             final File suggesterDir,
@@ -196,10 +196,12 @@ public final class Suggester implements Closeable {
      * wait for initialization to finish.
      * @param timeout timeout value
      * @param unit timeout unit
-     * @throws InterruptedException
+     * @throws InterruptedException on canceled await()
      */
     public void waitForInit(long timeout, TimeUnit unit) throws InterruptedException {
-        initDone.await(timeout, unit);
+        if (!initDone.await(timeout, unit)) {
+            LOGGER.log(Level.WARNING, "Initialization did not finish in {0} {1}", new Object[] {timeout, unit});
+        }
     }
 
     private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir) {
@@ -236,7 +238,7 @@ public final class Suggester implements Closeable {
                 Duration d = Duration.between(start, Instant.now());
                 LOGGER.log(Level.FINE, "Finished initialization of {0}, took {1}", new Object[] {indexDir, d});
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Could not initialize suggester data for " + indexDir, e);
+                LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for %s", indexDir), e);
             }
         };
     }
@@ -322,13 +324,15 @@ public final class Suggester implements Closeable {
      * wait for rebuild to finish.
      * @param timeout timeout value
      * @param unit timeout unit
-     * @throws InterruptedException
+     * @throws InterruptedException on canceled await()
      */
     public void waitForRebuild(long timeout, TimeUnit unit) throws InterruptedException {
         rebuildLock.lock();
         try {
             while (rebuilding) {
-                rebuildDone.await(timeout, unit);
+                if (!rebuildDone.await(timeout, unit)) {
+                    LOGGER.log(Level.WARNING, "Rebuild did not finish in {0} {1}", new Object[] {timeout, unit});
+                }
             }
         } finally {
             rebuildLock.unlock();
@@ -610,7 +614,7 @@ public final class Suggester implements Closeable {
             try {
                 f.close();
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Could not close suggester data " + f, e);
+                LOGGER.log(Level.WARNING, String.format("Could not close suggester data %s", f), e);
             }
         });
     }
