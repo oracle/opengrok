@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.perl;
@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    protected static final Set<String> kwd = new HashSet<>();
     static {
         // Note that keywords with 1 letter will be ignored for historical
         // reasons, as the {Identifier} used to require 2 characters in

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.erlang;
@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
-    public static final Set<String> modules_kwd = new HashSet<>();
+    protected static final Set<String> kwd = new HashSet<>();
+    protected static final Set<String> modules_kwd = new HashSet<>();
     static {
         kwd.add("after"); // Ref. 9.1 "1.5 Reserved Words"
         kwd.add("and"); // Ref. 9.1 "1.5 Reserved Words"

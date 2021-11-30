@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.sh;
@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> shkwd = new HashSet<>();
+    protected static final Set<String> shkwd = new HashSet<>();
     static {
         // Built-in shell commands mentioned in shell_builtins(1)
         shkwd.add(":");

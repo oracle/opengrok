@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.analysis.php;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<>();
+    protected static final Set<String> kwd = new HashSet<>();
     static {
         //Keywords
         kwd.add("abstract"); //As of PHP5
