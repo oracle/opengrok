@@ -1123,8 +1123,7 @@ public class AnalyzerGuru {
         int r;
 
         StringBuilder opening = new StringBuilder();
-        BufferedReader readr = new BufferedReader(
-            new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+        BufferedReader readr = new BufferedReader(new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
         while ((r = readr.read()) != -1) {
             if (++nRead > OPENING_MAX_CHARS) {
                 break;
