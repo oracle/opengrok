@@ -130,7 +130,7 @@ public class EftarFile {
         }
         if (n.children.size() > 0) {
             n.childOffset = offset;
-            offset += ((long)RECORD_LENGTH * n.children.size());
+            offset += ((long) RECORD_LENGTH * n.children.size());
         } else {
             n.childOffset = 0;
         }
