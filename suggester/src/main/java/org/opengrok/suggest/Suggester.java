@@ -238,7 +238,7 @@ public final class Suggester implements Closeable {
                 Duration d = Duration.between(start, Instant.now());
                 LOGGER.log(Level.FINE, "Finished initialization of {0}, took {1}", new Object[] {indexDir, d});
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Could not initialize suggester data for " + indexDir, e);
+                LOGGER.log(Level.SEVERE, String.format("Could not initialize suggester data for %s", indexDir), e);
             }
         };
     }
