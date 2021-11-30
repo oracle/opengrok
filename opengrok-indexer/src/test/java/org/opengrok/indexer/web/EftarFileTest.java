@@ -74,7 +74,7 @@ public class EftarFileTest {
      * @throws IOException if an error occurs while accessing the eftar file
      */
     @Test
-    public void searchEftarFile() throws IOException {
+    void searchEftarFile() throws IOException {
         searchEftarFile(new EftarFileReader(eftar));
         searchEftarFile(new EftarFileReader(eftar.getAbsolutePath()));
     }
