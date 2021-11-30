@@ -241,7 +241,7 @@ public class Definitions implements Serializable {
         /**
          * A non-serialized marker for marking a tag to avoid its reuse.
          */
-        public transient boolean used;
+        private transient boolean used;
 
         protected Tag(int line, String symbol, String type, String text,
                 String namespace, String signature, int lineStart,
