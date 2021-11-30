@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -45,30 +45,20 @@ include file="projects.jspf"
 
     // Optimize for URLs up to 128 characters. 
     StringBuilder url = new StringBuilder(128);
-    String ForwardedHost = request.getHeader("X-Forwarded-Host");
     String scheme = request.getScheme();
     int port = request.getServerPort();
 
     url.append(scheme).append("://");
 
-    // Play nice in proxy environment by using hostname from the original
-    // request to construct the URLs.
-    // Will not work well if the scheme or port is different for proxied server
-    // and original server. Unfortunately the X-Forwarded-Host does not seem to
-    // contain the port number so there is no way around it.
-    if (ForwardedHost != null) {
-        url.append(ForwardedHost);
-    } else {
-        url.append(request.getServerName());
+    String serverName = cfg.getServerName();
+    url.append(serverName);
 
-        // Append port if needed.
-        if ((port != 80 && scheme.equals("http")) ||
-                   (port != 443 && scheme.equals("https"))) {
-            url.append(':').append(port);
-        }
+    // Append port if needed.
+    if ((port != 80 && scheme.equals("http")) || (port != 443 && scheme.equals("https"))) {
+        url.append(':').append(port);
     }
 
-    String imgurl = url +  cfg.getCssDir() + "/img/icon.png";
+    String imgUrl = url + cfg.getCssDir() + "/img/icon.png";
 
     /* TODO  Bug 11749 ??? */
     StringBuilder text = new StringBuilder();
@@ -86,7 +76,7 @@ include file="projects.jspf"
     <ShortName>OpenGrok <%= text.toString() %></ShortName>
     <Description>Search in OpenGrok <%= text.toString() %></Description>
     <InputEncoding>UTF-8</InputEncoding>
-    <Image height="16" width="16" type="image/png"><%= imgurl %></Image>
+    <Image height="16" width="16" type="image/png"><%= imgUrl %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
     <Url template="<%= url.toString() %>&amp;<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>{searchTerms}"
         type="text/html"/>

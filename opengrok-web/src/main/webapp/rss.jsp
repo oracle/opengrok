@@ -18,12 +18,10 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
-
+Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="
-java.io.File,
 java.text.SimpleDateFormat,
 java.util.Set,
 
@@ -34,7 +32,9 @@ org.opengrok.indexer.history.HistoryGuru,
 org.opengrok.indexer.web.Util,
 org.opengrok.indexer.web.Prefix,
 org.opengrok.web.PageConfig"
-%><%@ page session="false" errorPage="error.jsp"%><%
+%>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
+<%@ page session="false" errorPage="error.jsp"%><%
 /* ---------------------- rss.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
@@ -51,7 +51,6 @@ org.opengrok.web.PageConfig"
     }
     String path = cfg.getPath();
     String dtag = cfg.getDefineTagsIndex();
-    String ForwardedHost = request.getHeader("X-Forwarded-Host");
     response.setContentType("text/xml");
 %><?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="<%= request.getContextPath()
@@ -90,21 +89,14 @@ org.opengrok.web.PageConfig"
             String replaced = entry.getMessage().split("\n")[0];
         %><%= Util.htmlize(entry.getRevision()) %> - <%= Util.htmlize(replaced) %></title>
         <link><%
-            // Play nice in proxy environment by using hostname from the original
-            // request to construct the URLs.
-            // Will not work well if the scheme or port is different for proxied server
-            // and original server. Unfortunately the X-Forwarded-Host does not seem to
-            // contain the port number so there is no way around it.
             String requestURL = request.getScheme() + "://";
-            if (ForwardedHost != null) {
-                requestURL += ForwardedHost;
-            } else {
-                requestURL += request.getServerName();
-                String port = Integer.toString(request.getLocalPort());
-                if (!port.isEmpty()) {
-                    requestURL += ":" + port;
-                }
+            String serverName = cfg.getServerName();
+            requestURL += serverName;
+            String port = Integer.toString(request.getLocalPort());
+            if (!port.isEmpty()) {
+                requestURL += ":" + port;
             }
+
             requestURL += request.getContextPath();
             requestURL += Prefix.HIST_L + cfg.getPath() + "#" + entry.getRevision();
         %><%= Util.htmlize(requestURL) %></link>

@@ -1410,6 +1410,14 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(disabledRepositories, Configuration::setDisabledRepositories);
     }
 
+    public String getServerName() {
+        return syncReadConfiguration(Configuration::getServerName);
+    }
+
+    public void setServerName(String serverName) {
+        syncWriteConfiguration(serverName, Configuration::setServerName);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
