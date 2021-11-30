@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -271,15 +272,17 @@ class FileHistoryCache implements HistoryCache {
                     LOGGER.log(Level.WARNING,
                             "Failed to remove temporary history cache file");
                 }
-                throw new HistoryException(
-                        "Cachefile exists, and I could not delete it.");
+                throw new HistoryException(String.format("Cache file '%s' exists, and could not be deleted.",
+                        cacheFile));
             }
             if (!output.renameTo(cacheFile)) {
-                if (!output.delete()) {
-                    LOGGER.log(Level.WARNING,
-                            "Failed to remove temporary history cache file");
+                try {
+                    Files.delete(output.toPath());
+                } catch (IOException e) {
+                    throw new HistoryException("failed to delete output file", e);
                 }
-                throw new HistoryException("Failed to rename cache tmpfile.");
+                throw new HistoryException(String.format("Failed to rename cache temporary file '%s' to '%s'",
+                        output, cacheFile));
             }
         }
     }
