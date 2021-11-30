@@ -870,19 +870,14 @@ public class AnalyzerGuru {
      *
      * Use if you just want to find file type.
      *
-     *
      * @param in The input stream containing the data
      * @param file The file name to get the analyzer for
      * @return the analyzer factory to use
-     * @throws java.io.IOException If a problem occurs while reading the data
+     * @throws java.io.IOException If a problem occurred while reading the data
      */
-    public static AnalyzerFactory find(InputStream in, String file)
-            throws IOException {
+    public static AnalyzerFactory find(InputStream in, String file) throws IOException {
         AnalyzerFactory factory = find(file);
-        // TODO above is not that great, since if 2 analyzers share one extension
-        // then only the first one registered will own it
-        // it would be cool if above could return more analyzers and below would
-        // then decide between them ...
+
         if (factory != null) {
             return factory;
         }
