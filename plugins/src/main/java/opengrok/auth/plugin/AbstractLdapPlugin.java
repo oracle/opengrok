@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -56,13 +56,13 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      * This is used to ensure that every instance of this plug-in has its own
      * unique name for its session parameters.
      */
-    public static long nextId = 1;
+    protected static long nextId = 1;
 
     protected static final String CONFIGURATION_PARAM = "configuration";
 
     private static final String SESSION_PREFIX = "opengrok-abstract-ldap-plugin-";
-    protected String SESSION_USERNAME = SESSION_PREFIX + "username";
-    protected String SESSION_ESTABLISHED = SESSION_PREFIX + "session-established";
+    protected String sessionUsername = SESSION_PREFIX + "username";
+    protected String sessionEstablished = SESSION_PREFIX + "session-established";
 
     /**
      * Configuration for the LDAP servers.
@@ -80,9 +80,9 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     private AbstractLdapProvider ldapProvider;
 
-    public AbstractLdapPlugin() {
-        SESSION_USERNAME += "-" + nextId;
-        SESSION_ESTABLISHED += "-" + nextId;
+    protected AbstractLdapPlugin() {
+        sessionUsername += "-" + nextId;
+        sessionEstablished += "-" + nextId;
         nextId++;
     }
 
@@ -204,8 +204,8 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     protected boolean sessionExists(HttpServletRequest req) {
         return req != null && req.getSession() != null
-                && req.getSession().getAttribute(SESSION_ESTABLISHED) != null
-                && req.getSession().getAttribute(SESSION_USERNAME) != null;
+                && req.getSession().getAttribute(sessionEstablished) != null
+                && req.getSession().getAttribute(sessionUsername) != null;
     }
 
     /**
@@ -237,12 +237,11 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
 
         if (sessionExists(req)
                 // we've already filled the groups and projects
-                && (boolean) req.getSession().getAttribute(SESSION_ESTABLISHED)
+                && (boolean) req.getSession().getAttribute(sessionEstablished)
                 // the session belongs to the user from the request
-                && isSameUser((String) req.getSession().getAttribute(SESSION_USERNAME), user.getUsername())) {
-            /**
-             * The session is already filled so no need to
-             * {@link #updateSession()}
+                && isSameUser((String) req.getSession().getAttribute(sessionUsername), user.getUsername())) {
+            /*
+             * The session is already filled so no need to call updateSession().
              */
             return;
         }
@@ -279,7 +278,7 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param value the value
      */
     protected void setSessionEstablished(HttpServletRequest req, Boolean value) {
-        req.getSession().setAttribute(SESSION_ESTABLISHED, value);
+        req.getSession().setAttribute(sessionEstablished, value);
     }
 
     /**
@@ -289,7 +288,7 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param value the value
      */
     protected void setSessionUsername(HttpServletRequest req, String value) {
-        req.getSession().setAttribute(SESSION_USERNAME, value);
+        req.getSession().setAttribute(sessionUsername, value);
     }
 
     @Override
