@@ -1441,6 +1441,7 @@ public final class Configuration {
         return ret;
     }
 
+    @SuppressWarnings("lgtm[java/unsafe-deserialization]")
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
         final LinkedList<Exception> exceptions = new LinkedList<>();
@@ -1457,7 +1458,7 @@ public final class Configuration {
 
         if (!exceptions.isEmpty()) {
             // There was an exception during parsing.
-            // see {@code addGroup}
+            // see addGroup()
             if (exceptions.getFirst() instanceof IOException) {
                 throw (IOException) exceptions.getFirst();
             }
@@ -1466,7 +1467,7 @@ public final class Configuration {
 
         Configuration conf = ((Configuration) ret);
 
-        // Removes all non root groups.
+        // Removes all non-root groups.
         // This ensures that when the configuration is reloaded then the set
         // contains only root groups. Subgroups are discovered again
         // as follows below
