@@ -1512,8 +1512,8 @@ public final class PageConfig {
      * Prepare a search helper with all required information, ready to execute
      * the query implied by the related request parameters and cookies.
      * <p>
-     * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
-     * {@link SearchHelper#redirect} and take the appropriate action before
+     * NOTE: One should check the {@link SearchHelper#getErrorMsg()} as well as
+     * {@link SearchHelper#getRedirect()} and take the appropriate action before
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
@@ -1521,19 +1521,17 @@ public final class PageConfig {
      * @return a search helper.
      */
     public SearchHelper prepareSearch() {
-        SearchHelper sh = prepareInternalSearch();
-
         List<SortOrder> sortOrders = getSortOrder();
-        sh.order = sortOrders.isEmpty() ? SortOrder.RELEVANCY : sortOrders.get(0);
+        SearchHelper sh = prepareInternalSearch(sortOrders.isEmpty() ? SortOrder.RELEVANCY : sortOrders.get(0));
 
         if (getRequestedProjects().isEmpty() && getEnv().hasProjects()) {
-            sh.errorMsg = "You must select a project!";
+            sh.setErrorMsg("You must select a project!");
             return sh;
         }
 
-        if (sh.builder.getSize() == 0) {
+        if (sh.getBuilder().getSize() == 0) {
             // Entry page show the map
-            sh.redirect = req.getContextPath() + '/';
+            sh.setRedirect(req.getContextPath() + '/');
             return sh;
         }
 
@@ -1543,30 +1541,19 @@ public final class PageConfig {
     /**
      * Prepare a search helper with required settings for an internal search.
      * <p>
-     * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
-     * {@link SearchHelper#redirect} and take the appropriate action before
+     * NOTE: One should check the {@link SearchHelper#getErrorMsg()} as well as
+     * {@link SearchHelper#getRedirect()} and take the appropriate action before
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
      * @return a search helper.
      */
-    public SearchHelper prepareInternalSearch() {
-        SearchHelper sh = new SearchHelper();
-        sh.dataRoot = getDataRoot(); // throws Exception if none-existent
-        sh.order = SortOrder.RELEVANCY;
-        sh.builder = getQueryBuilder();
-        sh.start = getSearchStart();
-        sh.maxItems = getSearchMaxItems();
-        sh.contextPath = req.getContextPath();
-        // jel: this should be IMHO a config param since not only core dependent
-        sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
-        sh.isCrossRefSearch = getPrefix() == Prefix.SEARCH_R;
-        sh.isGuiSearch = sh.isCrossRefSearch || getPrefix() == Prefix.SEARCH_P;
-        sh.desc = getEftarReader();
-        sh.sourceRoot = new File(getSourceRootPath());
+    public SearchHelper prepareInternalSearch(SortOrder sortOrder) {
         String xrValue = req.getParameter(QueryParameters.NO_REDIRECT_PARAM);
-        sh.noRedirect = xrValue != null && !xrValue.isEmpty();
-        return sh;
+        return new SearchHelper(getSearchStart(), sortOrder, getDataRoot(), new File(getSourceRootPath()),
+                getSearchMaxItems(), getEftarReader(), getQueryBuilder(), getPrefix() == Prefix.SEARCH_R,
+                req.getContextPath(), getPrefix() == Prefix.SEARCH_R || getPrefix() == Prefix.SEARCH_P,
+                xrValue != null && !xrValue.isEmpty());
     }
 
     /**

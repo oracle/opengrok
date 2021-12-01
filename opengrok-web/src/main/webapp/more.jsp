@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
 
@@ -37,6 +37,7 @@ org.opengrok.indexer.logger.LoggerFactory,
 org.opengrok.indexer.util.IOUtils,
 org.opengrok.indexer.web.SearchHelper"
 %>
+<%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
@@ -63,7 +64,7 @@ file="mast.jsp"
     if (activeProject == null) {
         qbuilder = cfg.getQueryBuilder();
     } else {
-        searchHelper = cfg.prepareInternalSearch();
+        searchHelper = cfg.prepareInternalSearch(SortOrder.RELEVANCY);
         /*
          * N.b. searchHelper.destroy() is called via
          * WebappListener.requestDestroyed() on presence of the following
@@ -71,9 +72,9 @@ file="mast.jsp"
          */
         request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
         searchHelper.prepareExec(activeProject);
-        if (searchHelper.searcher != null) {
+        if (searchHelper.getSearcher() != null) {
             docId = searchHelper.searchSingle(resourceFile);
-            qbuilder = searchHelper.builder;
+            qbuilder = searchHelper.getBuilder();
             searchHelper.prepareSummary();
             tabSize = searchHelper.getTabSize(activeProject);
         }
@@ -88,8 +89,8 @@ file="mast.jsp"
             String xrefPrefix = request.getContextPath() + Prefix.XREF_P;
             boolean didPresentNew = false;
             if (docId >= 0) {
-                didPresentNew = searchHelper.sourceContext.getContext2(env,
-                    searchHelper.searcher, docId, out, xrefPrefix, null, false,
+                didPresentNew = searchHelper.getSourceContext().getContext2(env,
+                    searchHelper.getSearcher(), docId, out, xrefPrefix, null, false,
                     tabSize);
             }
             if (!didPresentNew) {

@@ -49,11 +49,11 @@ include file="projects.jspf"
 %><%!
     private StringBuilder createUrl(HttpServletRequest request, SearchHelper sh, boolean menu) {
         StringBuilder url = new StringBuilder(64);
-        QueryBuilder qb = sh.builder;
+        QueryBuilder qb = sh.getBuilder();
         if (menu) {
             url.append("search?");
         } else {
-            Util.appendQuery(url, QueryParameters.SORT_PARAM, sh.order.toString());
+            Util.appendQuery(url, QueryParameters.SORT_PARAM, sh.getOrder().toString());
         }
         if (qb != null) {
             Util.appendQuery(url, QueryParameters.FULL_SEARCH_PARAM, qb.getFreetext());
@@ -63,7 +63,7 @@ include file="projects.jspf"
             Util.appendQuery(url, QueryParameters.HIST_SEARCH_PARAM, qb.getHist());
             Util.appendQuery(url, QueryParameters.TYPE_SEARCH_PARAM, qb.getType());
         }
-        if (sh.projects != null && !sh.projects.isEmpty()) {
+        if (sh.getProjects() != null && !sh.getProjects().isEmpty()) {
             if (Boolean.parseBoolean(request.getParameter(QueryParameters.ALL_PROJECT_SEARCH))) {
                 Util.appendQuery(url, QueryParameters.ALL_PROJECT_SEARCH, Boolean.TRUE.toString());
             } else {
@@ -85,12 +85,13 @@ include file="projects.jspf"
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     // notify suggester that query was searched
-    SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
-    if (searchHelper.redirect != null) {
-        response.sendRedirect(searchHelper.redirect);
+    SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.getQuery());
+    String redirect = searchHelper.getRedirect();
+    if (redirect != null) {
+        response.sendRedirect(redirect);
         return;
     }
-    if (searchHelper.errorMsg != null) {
+    if (searchHelper.getErrorMsg() != null) {
         cfg.setTitle("Search Error");
         // Set status to Internal error. This should help to avoid caching
         // the page by some proxies.
@@ -98,7 +99,8 @@ include file="projects.jspf"
     } else {
         cfg.setTitle(cfg.getSearchTitle());
     }
-    response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), StandardCharsets.UTF_8)));
+    response.addCookie(new Cookie("OpenGrokSorting",
+            URLEncoder.encode(searchHelper.getOrder().toString(), StandardCharsets.UTF_8)));
 }
 %><%@
 
@@ -121,7 +123,7 @@ include file="httpheader.jspf"
             append(QueryParameters.SORT_PARAM_EQ);
     int ordcnt = 0;
     for (SortOrder o : SortOrder.values()) {
-        if (searchHelper.order == o) {
+        if (searchHelper.getOrder() == o) {
                     %><span class="active"><%= o.getDesc() %></span><%
         } else {
                     %><a href="<%= url %><%= o %>"><%= o.getDesc() %></a><%
@@ -151,22 +153,22 @@ include file="menu.jspf"
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
-    if (searchHelper.errorMsg != null) {
+    String errorMsg = searchHelper.getErrorMsg();
+    if (errorMsg != null) {
         %><h3>Error</h3><p class="pagetitle"><%
-        if (searchHelper.errorMsg.startsWith((SearchHelper.PARSE_ERROR_MSG))) {
+        if (searchHelper.getErrorMsg().startsWith((SearchHelper.PARSE_ERROR_MSG))) {
             %><%= Util.htmlize(SearchHelper.PARSE_ERROR_MSG) %>
             <br/>You might try to enclose your search term in quotes,
             <a href="help.jsp#escaping">escape special characters</a>
             with <b>\</b>, or read the <a href="help.jsp">Help</a>
             on the query language. Error message from parser:<br/>
-            <%= Util.htmlize(searchHelper.errorMsg.substring(
-                        SearchHelper.PARSE_ERROR_MSG.length())) %><%
+            <%= Util.htmlize(errorMsg.substring(SearchHelper.PARSE_ERROR_MSG.length())) %><%
         } else {
-            %><%= Util.htmlize(searchHelper.errorMsg) %><%
+            %><%= Util.htmlize(errorMsg) %><%
         }%></p><%
-    } else if (searchHelper.hits == null) {
+    } else if (searchHelper.getHits() == null) {
         %><p class="pagetitle">No hits</p><%
-    } else if (searchHelper.hits.length == 0) {
+    } else if (searchHelper.getHits().length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
         %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.getName() %>)</font>:<%
@@ -195,7 +197,7 @@ include file="menu.jspf"
         }
         %>
         <p class="pagetitle"> Your search <b><%
-            Util.htmlize(searchHelper.query.toString(), out); %></b>
+            Util.htmlize(searchHelper.getQuery().toString(), out); %></b>
             did not match any files.
             <br/> Suggestions:<br/>
         </p>
@@ -207,18 +209,18 @@ include file="menu.jspf"
         </ul>
 	<%
     } else {
-        int start = searchHelper.start;
-        int max = searchHelper.maxItems;
-        long totalHits = searchHelper.totalHits;
+        int start = searchHelper.getStart();
+        int max = searchHelper.getMaxItems();
+        long totalHits = searchHelper.getTotalHits();
         long thispage = Math.min(totalHits - start, max);  // number of items to display on the current page
         // We have a lots of results to show: create a slider for
         String slider = Util.createSlider(start, max, totalHits, request);
         %>
         <p class="pagetitle">Searched <b><%
-            Util.htmlize(searchHelper.query.toString(), out);
+            Util.htmlize(searchHelper.getQuery().toString(), out);
             %></b> (Results <b> <%= start + 1 %> – <%= thispage + start
             %></b> of <b><%= totalHits %></b>) sorted by <%=
-            searchHelper.order.getDesc() %></p><%
+            searchHelper.getOrder().getDesc() %></p><%
         if (slider.length() > 0) {
         %>
         <p class="slider"><%= slider %></p><%
