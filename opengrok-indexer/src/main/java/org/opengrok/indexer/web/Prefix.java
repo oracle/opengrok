@@ -63,7 +63,7 @@ public enum Prefix {
     DOWNLOAD_P("/download"),
     /** Raw file display (link prefix). */
     RAW_P("/raw"),
-    /** Full blown search from main page or top bar (link prefix). */
+    /** Full-blown search from main page or top bar (link prefix). */
     SEARCH_P("/search"),
     /** Search from cross reference, can lead to direct match (which opens
      * directly) or to a matches Summary page. */

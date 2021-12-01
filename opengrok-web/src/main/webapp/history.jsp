@@ -45,6 +45,8 @@ org.opengrok.indexer.web.QueryParameters,
 org.opengrok.indexer.web.SearchHelper,
 org.opengrok.indexer.web.Util"
 %>
+<%@ page import="jakarta.servlet.http.HttpServletResponse" %>
+<%@ page import="org.opengrok.indexer.web.SortOrder" %>
 <%/* ---------------------- history.jsp start --------------------- */
 {
     final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -61,7 +63,7 @@ org.opengrok.indexer.web.Util"
         String primePath = path;
         Project project = cfg.getProject();
         if (project != null) {
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            SearchHelper searchHelper = cfg.prepareInternalSearch(SortOrder.RELEVANCY);
             /*
              * N.b. searchHelper.destroy() is called via
              * WebappListener.requestDestroyed() on presence of the following

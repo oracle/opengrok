@@ -55,6 +55,7 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.context.HistoryContext;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Prefix;
@@ -161,18 +162,19 @@ public final class Results {
             long end)
             throws HistoryException, IOException, ClassNotFoundException {
         Project p;
-        String ctxE = Util.URIEncodePath(sh.contextPath);
-        String xrefPrefix = sh.contextPath + Prefix.XREF_P;
-        String morePrefix = sh.contextPath + Prefix.MORE_P;
+        String contextPath = sh.getContextPath();
+        String ctxE = Util.URIEncodePath(contextPath);
+        String xrefPrefix = contextPath + Prefix.XREF_P;
+        String morePrefix = contextPath + Prefix.MORE_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
-        File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
+        File xrefDataDir = new File(sh.getDataRoot(), Prefix.XREF_P.toString());
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         boolean evenRow = true;
         out.write("<tbody class=\"search-result\">");
         for (Map.Entry<String, ArrayList<Integer>> entry :
-                createMap(sh.searcher, sh.hits, start, end).entrySet()) {
+                createMap(sh.getSearcher(), sh.getHits(), start, end).entrySet()) {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
             out.write(xrefPrefixE);
@@ -180,9 +182,9 @@ public final class Results {
             out.write("/\">");
             out.write(htmlize(parent));
             out.write("/</a>");
-            if (sh.desc != null) {
+            if (sh.getDesc() != null) {
                 out.write(" - <i>");
-                out.write(sh.desc.get(parent));
+                out.write(sh.getDesc().get(parent));
                 out.write("</i>");
             }
 
@@ -201,7 +203,7 @@ public final class Results {
 
             out.write("</td></tr>");
             for (int docId : entry.getValue()) {
-                Document doc = sh.searcher.doc(docId);
+                Document doc = sh.getSearcher().doc(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
                 if (evenRow) {
@@ -210,7 +212,7 @@ public final class Results {
                     out.write("<tr>");
                 }
                 evenRow = !evenRow;
-                Util.writeHAD(out, sh.contextPath, rpathE, false);
+                Util.writeHAD(out, sh.getContextPath(), rpathE, false);
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
                 out.write(rpathE);
@@ -222,26 +224,28 @@ public final class Results {
                 out.write(htmlize(rpath.substring(rpath.lastIndexOf('/') + 1)));
                 out.write("</a>");
                 out.write("</td><td><code class=\"con\">");
-                if (sh.sourceContext != null) {
+                if (sh.getSourceContext() != null) {
                     AbstractAnalyzer.Genre genre = AbstractAnalyzer.Genre.get(
                             doc.get(QueryBuilder.T));
-                    if (AbstractAnalyzer.Genre.XREFABLE == genre && sh.summarizer != null) {
+                    Summarizer summarizer = sh.getSummarizer();
+                    if (AbstractAnalyzer.Genre.XREFABLE == genre && summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, env.isCompressXref());
                         // FIXME use Highlighter from lucene contrib here,
                         // instead of summarizer, we'd also get rid of
                         // apache lucene in whole source ...
-                        out.write(sh.summarizer.getSummary(xtags).toString());
-                    } else if (AbstractAnalyzer.Genre.HTML == genre && sh.summarizer != null) {
-                        String htags = getTags(sh.sourceRoot, rpath, false);
-                        out.write(sh.summarizer.getSummary(htags).toString());
+                        out.write(summarizer.getSummary(xtags).toString());
+                    } else if (AbstractAnalyzer.Genre.HTML == genre && summarizer != null) {
+                        String htags = getTags(sh.getSourceRoot(), rpath, false);
+                        out.write(summarizer.getSummary(htags).toString());
                     } else if (genre == AbstractAnalyzer.Genre.PLAIN) {
                         printPlain(fargs, doc, docId, rpath);
                     }
                 }
 
-                if (sh.historyContext != null) {
-                    sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
-                            rpath, out, sh.contextPath);
+                HistoryContext historyContext = sh.getHistoryContext();
+                if (historyContext != null) {
+                    historyContext.getContext(new File(sh.getSourceRoot(), rpath),
+                            rpath, out, sh.getContextPath());
                 }
                 out.write("</code></td></tr>\n");
             }
@@ -265,10 +269,10 @@ public final class Results {
     private static void printPlain(PrintPlainFinalArgs fargs, Document doc,
         int docId, String rpath) throws ClassNotFoundException, IOException {
 
-        fargs.shelp.sourceContext.toggleAlt();
+        fargs.shelp.getSourceContext().toggleAlt();
 
-        boolean didPresentNew = fargs.shelp.sourceContext.getContext2(fargs.env,
-            fargs.shelp.searcher, docId, fargs.out, fargs.xrefPrefix,
+        boolean didPresentNew = fargs.shelp.getSourceContext().getContext2(fargs.env,
+            fargs.shelp.getSearcher(), docId, fargs.out, fargs.xrefPrefix,
             fargs.morePrefix, true, fargs.tabSize);
 
         if (!didPresentNew) {
@@ -289,12 +293,12 @@ public final class Results {
             } else {
                 scopes = new Scopes();
             }
-            boolean isDefSearch = fargs.shelp.builder.isDefSearch();
+            boolean isDefSearch = fargs.shelp.getBuilder().isDefSearch();
             // SRCROOT is read with UTF-8 as a default.
-            File sourceFile = new File(fargs.shelp.sourceRoot, rpath);
+            File sourceFile = new File(fargs.shelp.getSourceRoot(), rpath);
             try (FileInputStream fis = new FileInputStream(sourceFile);
                  Reader r = IOUtils.createBOMStrippedReader(fis, StandardCharsets.UTF_8.name())) {
-                fargs.shelp.sourceContext.getContext(r, fargs.out,
+                fargs.shelp.getSourceContext().getContext(r, fargs.out,
                     fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
                     isDefSearch, null, scopes);
             } catch (IOException ex) {

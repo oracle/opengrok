@@ -92,76 +92,83 @@ public class SearchHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchHelper.class);
 
+    private static final Pattern TAB_SPACE = Pattern.compile("[\t ]+");
+
     public static final String REQUEST_ATTR = "SearchHelper";
+
+    /**
+     * Default query parse error message prefix.
+     */
+    public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
+
     /**
      * Max number of words to suggest for spellcheck.
      */
-    public int SPELLCHECK_SUGGEST_WORD_COUNT = 5;
+    public static final int SPELLCHECK_SUGGEST_WORD_COUNT = 5;
+
     /**
-     * Opengrok's data root: used to find the search index file.
+     * data root: used to find the search index file.
      */
-    public File dataRoot;
+    private final File dataRoot;
     /**
-     * context path, i.e. the applications context path (usually /source) to use
+     * context path, i.e. the applications' context path (usually /source) to use
      * when generating a redirect URL
      */
-    public String contextPath;
+    private final String contextPath;
+
     /**
      * piggyback: the source root directory.
      */
-    public File sourceRoot;
+    private final File sourceRoot;
+
     /**
-     * piggyback: the eftar filereader to use.
+     * piggyback: the <i>Eftar</i> file-reader to use.
      */
-    public EftarFileReader desc;
+    private final EftarFileReader desc;
     /**
      * the result cursor start index, i.e. where to start displaying results
      */
-    public int start;
+    private final int start;
     /**
      * max. number of result items to show
      */
-    public int maxItems;
+    private final int maxItems;
     /**
      * The QueryBuilder used to create the query.
      */
-    public QueryBuilder builder;
+    private final QueryBuilder builder;
     /**
      * The order used for ordering query results.
      */
-    public SortOrder order;
+    private final SortOrder order;
     /**
-     * if {@code true} multi-threaded search will be used.
-     */
-    public boolean parallel;
-    /**
-     * Indicate, whether this is search from a cross reference. If {@code true}
+     * Indicate whether this is search from a cross-reference. If {@code true}
      * {@link #executeQuery()} sets {@link #redirect} if certain conditions are
      * met.
      */
-    public boolean isCrossRefSearch;
+    private final boolean crossRefSearch;
     /**
-     * As with {@link #isCrossRefSearch}, but here indicating either a
+     * As with {@link #crossRefSearch}, but here indicating either a
      * cross-reference search or a "full blown search".
      */
-    public boolean isGuiSearch;
+    private final boolean guiSearch;
     /**
      * if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
      * set via {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
      */
-    public String redirect;
+    private String redirect;
     /**
      * A value indicating if redirection should be short-circuited when state or
      * query result would have indicated otherwise.
      */
-    public boolean noRedirect;
+    private final boolean noRedirect;
     /**
      * if not {@code null}, the UI should show this error message and stop
      * processing the search. Automatically set via
      * {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
      */
-    public String errorMsg;
+    private String errorMsg;
     /**
      * the reader used to open the index. Automatically set via
      * {@link #prepareExec(SortedSet)}.
@@ -171,7 +178,7 @@ public class SearchHelper {
      * the searcher used to open/search the index. Automatically set via
      * {@link #prepareExec(SortedSet)}.
      */
-    public IndexSearcher searcher;
+    private IndexSearcher searcher;
     /**
      * If performing multi-project search, the indexSearcher objects will be
      * tracked by the indexSearcherMap so that they can be properly released
@@ -185,16 +192,16 @@ public class SearchHelper {
     /**
      * List of docs which result from the executing the query.
      */
-    public ScoreDoc[] hits;
+    private ScoreDoc[] hits;
     /**
      * Total number of hits.
      */
-    public long totalHits;
+    private long totalHits;
     /**
      * the query created by {@link #builder} via
      * {@link #prepareExec(SortedSet)}.
      */
-    public Query query;
+    private Query query;
     /**
      * the Lucene sort instruction based on {@link #order} created via
      * {@link #prepareExec(SortedSet)}.
@@ -208,26 +215,119 @@ public class SearchHelper {
      * projects to use to setup indexer searchers. Usually setup via
      * {@link #prepareExec(SortedSet)}.
      */
-    public SortedSet<String> projects;
+    private SortedSet<String> projects;
     /**
      * opengrok summary context. Usually created via {@link #prepareSummary()}.
      */
-    public Context sourceContext = null;
+    private Context sourceContext = null;
     /**
      * result summarizer usually created via {@link #prepareSummary()}.
      */
-    public Summarizer summarizer = null;
+    private Summarizer summarizer = null;
     /**
      * history context usually created via {@link #prepareSummary()}.
      */
-    public HistoryContext historyContext;
+    private HistoryContext historyContext;
 
-    /**
-     * Default query parse error message prefix.
-     */
-    public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
+    private File indexDir;
 
     private SettingsHelper settingsHelper;
+
+    public SearchHelper(int start, SortOrder sortOrder, File dataRoot, File sourceRoot, int maxItems,
+                        EftarFileReader eftarFileReader, QueryBuilder queryBuilder, boolean crossRefSearch,
+                        String contextPath, boolean guiSearch, boolean noRedirect) {
+        this.start = start;
+        this.order = sortOrder;
+        this.dataRoot = dataRoot;
+        this.sourceRoot = sourceRoot;
+        this.maxItems = maxItems;
+        this.desc = eftarFileReader;
+        this.builder = queryBuilder;
+        this.crossRefSearch = crossRefSearch;
+        this.contextPath = contextPath;
+        this.guiSearch = guiSearch;
+        this.noRedirect = noRedirect;
+    }
+
+    public File getDataRoot() {
+        return dataRoot;
+    }
+
+    public File getSourceRoot() {
+        return sourceRoot;
+    }
+
+    public EftarFileReader getDesc() {
+        return desc;
+    }
+
+    public QueryBuilder getBuilder() {
+        return builder;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setRedirect(String redirect) {
+        this.redirect = redirect;
+    }
+
+    public String getRedirect() {
+        return redirect;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    public IndexSearcher getSearcher() {
+        return searcher;
+    }
+
+    public ScoreDoc[] getHits() {
+        return hits;
+    }
+
+    public Query getQuery() {
+        return query;
+    }
+
+    public long getTotalHits() {
+        return totalHits;
+    }
+
+    public SortedSet<String> getProjects() {
+        return projects;
+    }
+
+    public Context getSourceContext() {
+        return sourceContext;
+    }
+
+    public int getMaxItems() {
+        return maxItems;
+    }
+
+    public SortOrder getOrder() {
+        return order;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public Summarizer getSummarizer() {
+        return summarizer;
+    }
+
+    public HistoryContext getHistoryContext() {
+        return historyContext;
+    }
 
     /**
      * User readable description for file types. Only those listed in
@@ -241,8 +341,6 @@ public class SearchHelper {
         return AnalyzerGuru.getfileTypeDescriptions().entrySet();
     }
 
-    private File indexDir;
-
     /**
      * Create the searcher to use w.r.t. currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
@@ -253,7 +351,9 @@ public class SearchHelper {
      * <ul>
      * <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #order} (falls back to relevance if unset)</li>
-     * <li>{@link #parallel} (default: false)</li> </ul> Populates/sets: <ul>
+     * </ul>
+     * Populates/sets:
+     * <ul>
      * <li>{@link #query}</li> <li>{@link #searcher}</li> <li>{@link #sort}</li>
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
@@ -378,7 +478,7 @@ public class SearchHelper {
      * fields required for and populated by
      * {@link #prepareExec(SortedSet)})</li> <li>{@link #start} (default:
      * 0)</li> <li>{@link #maxItems} (default: 0)</li>
-     * <li>{@link #isCrossRefSearch} (default: false)</li> </ul> Populates/sets:
+     * <li>{@link #crossRefSearch} (default: false)</li> </ul> Populates/sets:
      * <ul> <li>{@link #hits} (see {@link TopFieldDocs#scoreDocs})</li>
      * <li>{@link #totalHits} (see {@link TopFieldDocs#totalHits})</li>
      * <li>{@link #contextPath}</li> <li>{@link #errorMsg} if an error
@@ -402,9 +502,9 @@ public class SearchHelper {
              */
             if (!noRedirect && hits != null && hits.length == 1 && builder.getHist() == null) {
                 int docID = hits[0].doc;
-                if (isCrossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
+                if (crossRefSearch && query instanceof TermQuery && builder.getDefs() != null) {
                     maybeRedirectToDefinition(docID, (TermQuery) query);
-                } else if (isGuiSearch) {
+                } else if (guiSearch) {
                     if (builder.isPathSearch()) {
                         redirectToFile(docID);
                     } else {
@@ -491,14 +591,12 @@ public class SearchHelper {
         redirect = contextPath + Prefix.XREF_P + Util.URIEncodePath(doc.get(QueryBuilder.PATH));
     }
 
-    private static final Pattern TABSPACE = Pattern.compile("[\t ]+");
-
     private void getSuggestion(Term term, IndexReader ir,
             List<String> result) throws IOException {
         if (term == null) {
             return;
         }
-        String[] toks = TABSPACE.split(term.text(), 0);
+        String[] toks = TAB_SPACE.split(term.text(), 0);
         for (String tok : toks) {
             //TODO below seems to be case insensitive ... for refs/defs this is bad
             SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok),

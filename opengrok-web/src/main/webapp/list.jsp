@@ -53,6 +53,8 @@ org.opengrok.web.DirectoryListing,
 org.opengrok.indexer.web.SearchHelper"
 %>
 <%@ page import="static org.opengrok.web.PageConfig.DUMMY_REVISION" %>
+<%@ page import="org.opengrok.indexer.web.SortOrder" %>
+<%@ page import="jakarta.servlet.http.Cookie" %>
 <%
 {
     // need to set it here since requesting parameters
@@ -159,7 +161,7 @@ document.pageReady.push(function() { pageReadyList();});
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
             List<NullableNumLinesLOC> extras = null;
-            SearchHelper searchHelper = cfg.prepareInternalSearch();
+            SearchHelper searchHelper = cfg.prepareInternalSearch(SortOrder.RELEVANCY);
             /*
              * N.b. searchHelper.destroy() is called via
              * WebappListener.requestDestroyed() on presence of the following
@@ -173,7 +175,7 @@ document.pageReady.push(function() { pageReadyList();});
                 searchHelper.prepareExec(new TreeSet<String>());
             }
 
-            if (searchHelper.searcher != null) {
+            if (searchHelper.getSearcher() != null) {
                 DirectoryExtraReader extraReader = new DirectoryExtraReader();
                 String primePath = path;
                 try {
@@ -182,7 +184,7 @@ document.pageReady.push(function() { pageReadyList();});
                     LOGGER.log(Level.WARNING, String.format(
                             "Error getting prime relative for %s", path), ex);
                 }
-                extras = extraReader.search(searchHelper.searcher, primePath);
+                extras = extraReader.search(searchHelper.getSearcher(), primePath);
             }
 
             FileExtraZipper zipper = new FileExtraZipper();

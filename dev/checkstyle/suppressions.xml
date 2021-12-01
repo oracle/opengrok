@@ -40,7 +40,8 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
 
     <suppress checks="ParameterNumber" files="CtagsReader\.java|Definitions\.java|
         |JFlexXrefUtils\.java|FileAnalyzerFactory\.java|SearchController\.java|
-        |Context\.java|HistoryContext\.java|Suggester\.java|ProjectHelperTestBase\.java" />
+        |Context\.java|HistoryContext\.java|Suggester\.java|
+	|ProjectHelperTestBase\.java|SearchHelper\.java" />
 
     <suppress checks="FileLength" files="RuntimeEnvironment\.java" />
 

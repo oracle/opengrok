@@ -78,36 +78,24 @@ class SearchHelperTest {
     }
 
     private SearchHelper getSearchHelper(String searchTerm) {
-        SearchHelper sh = new SearchHelper();
+        SearchHelper sh = new SearchHelper(0, SortOrder.RELEVANCY,
+                env.getDataRootFile(), env.getSourceRootFile(),
+                env.getHitsPerPage(), null,
+                new QueryBuilder().setFreetext(searchTerm), false,
+                env.getUrlPrefix(), false, false);
 
-        sh.dataRoot = env.getDataRootFile(); // throws Exception if none-existent
-        sh.order = SortOrder.RELEVANCY;
-        sh.builder = new QueryBuilder().setFreetext(searchTerm);
-        assertNotSame(0, sh.builder.getSize());
-        sh.start = 0;
-        sh.maxItems = env.getHitsPerPage();
-        sh.contextPath = env.getUrlPrefix();
-        sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
-        sh.isCrossRefSearch = false;
-        sh.desc = null;
-        sh.sourceRoot = env.getSourceRootFile();
+        assertNotSame(0, sh.getBuilder().getSize());
         return sh;
     }
 
     private SearchHelper getSearchHelperPath(String searchTerm) {
-        SearchHelper sh = new SearchHelper();
+        SearchHelper sh = new SearchHelper(0, SortOrder.RELEVANCY,
+                env.getDataRootFile(), env.getSourceRootFile(),
+                env.getHitsPerPage(), null,
+                new QueryBuilder().setPath(searchTerm), false,
+                env.getUrlPrefix(), false, false);
 
-        sh.dataRoot = env.getDataRootFile(); // throws Exception if none-existent
-        sh.order = SortOrder.RELEVANCY;
-        sh.builder = new QueryBuilder().setPath(searchTerm);
-        assertNotSame(0, sh.builder.getSize());
-        sh.start = 0;
-        sh.maxItems = env.getHitsPerPage();
-        sh.contextPath = env.getUrlPrefix();
-        sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
-        sh.isCrossRefSearch = false;
-        sh.desc = null;
-        sh.sourceRoot = env.getSourceRootFile();
+        assertNotSame(0, sh.getBuilder().getSize());
         return sh;
     }
 
@@ -123,26 +111,27 @@ class SearchHelperTest {
         projectNames.add("c");
         SearchHelper searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
-        assertNull(searchHelper.errorMsg);
-        System.out.println("single project search returned " + searchHelper.totalHits + " hits");
-        assertEquals(4, searchHelper.totalHits);
+        assertNull(searchHelper.getErrorMsg());
+        System.out.println("single project search returned " + searchHelper.getTotalHits() + " hits");
+        assertEquals(4, searchHelper.getTotalHits());
         searchHelper.destroy();
 
         // Search for existing term in multiple projects.
         projectNames.add("document");
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
-        assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search returned " + searchHelper.totalHits + " hits");
-        assertEquals(5, searchHelper.totalHits);
+        assertNull(searchHelper.getErrorMsg());
+        System.out.println("multi-project search returned " + searchHelper.getTotalHits() + " hits");
+        assertEquals(5, searchHelper.getTotalHits());
         searchHelper.destroy();
 
         // Search for non-existing term.
         searchHelper = this.getSearchHelper("CannotExistAnywhereForSure")
             .prepareExec(projectNames).executeQuery().prepareSummary();
-        assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search for non-existing term returned " + searchHelper.totalHits + " hits");
-        assertEquals(0, searchHelper.totalHits);
+        assertNull(searchHelper.getErrorMsg());
+        long totalHits = searchHelper.getTotalHits();
+        System.out.println("multi-project search for non-existing term returned " + totalHits + " hits");
+        assertEquals(0, totalHits);
         searchHelper.destroy();
 
         // Add a change to the repository, reindex, try to reopen the indexes
@@ -154,9 +143,10 @@ class SearchHelperTest {
         env.maybeRefreshIndexSearchers();
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
-        assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search after reindex returned " + searchHelper.totalHits + " hits");
-        assertEquals(6, searchHelper.totalHits);
+        assertNull(searchHelper.getErrorMsg());
+        totalHits = searchHelper.getTotalHits();
+        System.out.println("multi-project search after reindex returned " + totalHits + " hits");
+        assertEquals(6, totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
 
@@ -164,9 +154,10 @@ class SearchHelperTest {
         projectNames.add("java");
         searchHelper = this.getSearchHelperPath("JaVa")
             .prepareExec(projectNames).executeQuery().prepareSummary();
-        assertNull(searchHelper.errorMsg);
-        System.out.println("multi-project search for non-existing term returned " + searchHelper.totalHits + " hits");
-        assertEquals(5, searchHelper.totalHits);
+        assertNull(searchHelper.getErrorMsg());
+        totalHits = searchHelper.getTotalHits();
+        System.out.println("multi-project search for non-existing term returned " + totalHits + " hits");
+        assertEquals(5, totalHits);
         searchHelper.destroy();
     }
 
@@ -189,24 +180,15 @@ class SearchHelperTest {
         projectNames.add("java");
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames);
-        assertNotNull(searchHelper.errorMsg);
-        assertTrue(searchHelper.errorMsg.contains("not indexed"));
-        assertFalse(searchHelper.errorMsg.contains("java"));
+        assertNotNull(searchHelper.getErrorMsg());
+        assertTrue(searchHelper.getErrorMsg().contains("not indexed"));
+        assertFalse(searchHelper.getErrorMsg().contains("java"));
 
         // Try to prepare search for list that contains non-existing project.
         projectNames.add("totally_nonexistent_project");
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames);
-        assertNotNull(searchHelper.errorMsg);
-        assertTrue(searchHelper.errorMsg.contains("invalid projects"));
-    }
-
-    /**
-     * Test that calling destroy() on an uninitialized instance does not
-     * fail. Used to fail with a NullPointerException. See bug #19232.
-     */
-    @Test
-    void testDestroyUninitializedInstance() {
-        new SearchHelper().destroy();
+        assertNotNull(searchHelper.getErrorMsg());
+        assertTrue(searchHelper.getErrorMsg().contains("invalid projects"));
     }
 }
