@@ -46,6 +46,7 @@ public class FileUtil {
      * leads outside source root
      * @throws NoPathParameterException if the {@code path} parameter is null
      */
+    @SuppressWarnings("lgtm[java/path-injection]")
     public static File toFile(String path) throws NoPathParameterException, IOException {
         if (path == null) {
             throw new NoPathParameterException("Missing path parameter");
