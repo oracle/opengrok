@@ -813,9 +813,13 @@ class FileHistoryCache implements HistoryCache {
         String revPath = getRepositoryCachedRevPath(repository);
         if (revPath != null) {
             // remove the file cached last revision (done separately in case
-            // it gets ever moved outside of the hierarchy)
+            // it gets ever moved outside the hierarchy)
             File cachedRevFile = new File(revPath);
-            cachedRevFile.delete();
+            try {
+                Files.delete(cachedRevFile.toPath());
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, String.format("failed to delete '%s'", cachedRevFile), e);
+            }
         }
 
         String histDir = getRepositoryHistDataDirname(repository);
