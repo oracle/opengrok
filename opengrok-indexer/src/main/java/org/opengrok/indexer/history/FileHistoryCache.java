@@ -676,7 +676,7 @@ class FileHistoryCache implements HistoryCache {
             return null;
         }
 
-        if (!file.isDirectory() && cacheFile.exists() && (time > env.getHistoryReaderTimeLimit())) {
+        if (!file.isDirectory() && (cacheFile.exists() || (time > env.getHistoryReaderTimeLimit()))) {
             // Retrieving the history took too long, cache it!
             // Also, don't cache history-information for directories, since the
             // history information on the directory may change if a file in
