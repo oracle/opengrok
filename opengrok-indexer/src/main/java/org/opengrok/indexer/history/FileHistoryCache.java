@@ -309,7 +309,7 @@ class FileHistoryCache implements HistoryCache {
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
-                LOGGER.log(Level.FINEST, "for ''{0}'' merging old history [{1}] with new history [{2}]",
+                LOGGER.log(Level.FINEST, "for ''{0}'' merging old history {1} with new history {2}",
                         new Object[]{cacheFile, histOld.getRevisionList(), histNew.getRevisionList()});
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
                 ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
