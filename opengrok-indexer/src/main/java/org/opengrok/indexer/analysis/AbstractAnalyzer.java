@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved. Use is subject to license terms.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -49,7 +49,7 @@ public abstract class AbstractAnalyzer extends Analyzer {
     protected boolean scopesEnabled;
     protected boolean foldingEnabled;
 
-    public AbstractAnalyzer(ReuseStrategy reuseStrategy) {
+    protected AbstractAnalyzer(ReuseStrategy reuseStrategy) {
         super(reuseStrategy);
     }
 
