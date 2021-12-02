@@ -226,15 +226,13 @@ public final class PageConfig {
     }
 
     /**
-     * Get all data required to create a diff view w.r.t. to this request in one
-     * go.
+     * Get all data required to create a diff view w.r.t. to this request in one go.
      *
-     * @return an instance with just enough information to render a sufficient
-     * view. If not all required parameters were given either they are
-     * supplemented with reasonable defaults if possible, otherwise the related
-     * field(s) are {@code null}. {@link DiffData#errorMsg}
-     *  {@code != null} indicates, that an error occured and one should not try
-     * to render a view.
+     * @return an instance with just enough information to render a sufficient view.
+     * If not all required parameters were given either they are supplemented
+     * with reasonable defaults if possible, otherwise the related field(s) are {@code null}.
+     * {@link DiffData#errorMsg}
+     * {@code != null} indicates that an error occurred and one should not try to render a view.
      */
     public DiffData getDiffData() {
         DiffData data = new DiffData();
