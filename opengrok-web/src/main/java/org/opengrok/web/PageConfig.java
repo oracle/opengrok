@@ -1092,8 +1092,8 @@ public final class PageConfig {
 
     /**
      * Get the canonical path of the related resource relative to the source
-     * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). No check is made,
-     * whether the obtained path is really an accessible resource on disk.
+     * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
+     * No check is made, whether the obtained path is really an accessible resource on disk.
      *
      * @see HttpServletRequest#getPathInfo()
      * @return a possible empty String (denotes the source root directory) but
@@ -1111,7 +1111,7 @@ public final class PageConfig {
     }
 
     /**
-     * @return true if file/directory corrsponding to the request path exists however is unreadable, false otherwise
+     * @return true if file/directory corresponding to the request path exists however is unreadable, false otherwise
      */
     public boolean isUnreadable() {
         File f = new File(getSourceRootPath(), getPath());
@@ -1122,7 +1122,7 @@ public final class PageConfig {
      * Get the on disk file for the given path.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
-     * may finally point to a file outside of the source root directory.
+     * may finally point to a file outside the source root directory.
      *
      * @param path the path to the file relatively to the source root
      * @return null if the related file or directory is not
@@ -1143,11 +1143,11 @@ public final class PageConfig {
      * Get the on disk file to the request related file or directory.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
-     * may finally point to a file outside of the source root directory.
+     * may finally point to a file outside the source root directory.
      *
-     * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })} if the related file or directory is not
-     * available (can not be find below the source root directory), the readable
-     * file or directory otherwise.
+     * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })}
+     * if the related file or directory is not available (can not be find below the source root directory),
+     * the readable file or directory otherwise.
      * @see #getSourceRootPath()
      * @see #getPath()
      */
@@ -1165,8 +1165,8 @@ public final class PageConfig {
      * Get the canonical on disk path to the request related file or directory
      * with all file separators replaced by a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}.
      *
-     * @return {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING} if the evaluated path is invalid or outside the source root
-     * directory), otherwise the path to the readable file or directory.
+     * @return {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING} if the evaluated path is invalid
+     * or outside the source root directory, otherwise the path to the readable file or directory.
      * @see #getResourceFile()
      */
     public String getResourcePath() {
@@ -1181,8 +1181,7 @@ public final class PageConfig {
      * directory below the source root directory and whether it matches an
      * ignored pattern.
      *
-     * @return {@code true} if the related resource does not exists or should be
-     * ignored.
+     * @return {@code true} if the related resource does not exist or should be ignored.
      * @see #getIgnoredNames()
      * @see #getResourcePath()
      */
@@ -1350,7 +1349,7 @@ public final class PageConfig {
                 }
                 Date fileDate = new Date(getResourceFile().lastModified());
                 if (docDate.compareTo(fileDate) < 0) {
-                    LOGGER.log(Level.FINER, "document for '{0}' is out of sync", getResourceFile());
+                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", getResourceFile());
                     return null;
                 }
             }
