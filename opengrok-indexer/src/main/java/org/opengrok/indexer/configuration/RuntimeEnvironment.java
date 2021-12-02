@@ -659,7 +659,7 @@ public final class RuntimeEnvironment {
     /**
      * Get the max time a SCM operation may use to avoid being cached.
      *
-     * @return the max time
+     * @return the maximum time in milliseconds
      */
     public int getHistoryReaderTimeLimit() {
         return syncReadConfiguration(Configuration::getHistoryCacheTime);
