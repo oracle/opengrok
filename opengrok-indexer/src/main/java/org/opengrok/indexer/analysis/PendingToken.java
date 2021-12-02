@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -34,11 +35,6 @@ public class PendingToken {
     public final String str;
     public final int start;
     public final int end;
-    /**
-     * When tokenizers allow overlapping tokens, the following field is set to
-     * {@code true} for tokens that should not increment the position attribute.
-     */
-    public boolean nonpos;
 
     /**
      * Initializes an instance with immutable fields for the specified
@@ -86,7 +82,6 @@ public class PendingToken {
      */
     @Override
     public String toString() {
-        return "PendingToken{" + str + "<<< start=" + start + ",end=" + end +
-            ",nonpos=" + nonpos + '}';
+        return "PendingToken{" + str + "<<< start=" + start + ",end=" + end + '}';
     }
 }

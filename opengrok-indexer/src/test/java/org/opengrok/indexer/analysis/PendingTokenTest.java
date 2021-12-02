@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -32,28 +33,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Represents a container for tests of {@link PendingToken}.
  */
-public class PendingTokenTest {
+class PendingTokenTest {
 
     @Test
-    public void testEquals1() {
+    void testEquals1() {
         PendingToken instance = new PendingToken("", 0, 0);
         boolean result = instance.equals(instance);
         assertTrue(result, "PendingToken instance equals itself");
     }
 
     @Test
-    public void testEquals2() {
+    void testEquals2() {
         PendingToken instance1 = new PendingToken("a", 0, 1);
-        assertFalse(instance1.nonpos, "PendingToken default nonpos");
-
         PendingToken instance2 = new PendingToken("a", 0, 1);
-        instance2.nonpos = true;
         boolean result = instance1.equals(instance2);
-        assertTrue(result, "PendingToken instance equivalence ignores nonpos");
+        assertTrue(result, "PendingToken instance equivalence false");
     }
 
     @Test
-    public void testNotEquals1() {
+    void testNotEquals1() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("", 0, 1); // nonsense but ok
         boolean result = instance1.equals(instance2);
@@ -61,7 +59,7 @@ public class PendingTokenTest {
     }
 
     @Test
-    public void testNotEquals2() {
+    void testNotEquals2() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("", 1, 0); // nonsense but ok
         boolean result = instance1.equals(instance2);
@@ -69,7 +67,7 @@ public class PendingTokenTest {
     }
 
     @Test
-    public void testNotEquals3() {
+    void testNotEquals3() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("a", 0, 0); // nonsense but ok
         boolean result = instance1.equals(instance2);
@@ -77,46 +75,38 @@ public class PendingTokenTest {
     }
 
     @Test
-    public void testSameHashCodes() {
+    void testSameHashCodes() {
         PendingToken instance1 = new PendingToken("a", 0, 1);
-        assertFalse(instance1.nonpos, "PendingToken default nonpos");
-
         PendingToken instance2 = new PendingToken("a", 0, 1);
-        instance2.nonpos = true;
-        assertEquals(instance1.hashCode(), instance2.hashCode(), "PendingToken instance HashCode ignores nonpos");
+        assertEquals(instance1.hashCode(), instance2.hashCode(), "PendingToken instance HashCode differs");
     }
 
     @Test
-    public void testDifferentHashCodes1() {
+    void testDifferentHashCodes1() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("", 0, 1); // nonsense but ok
         assertNotEquals(instance1.hashCode(), instance2.hashCode(), "PendingToken hashCode() only 2 immutables match");
     }
 
     @Test
-    public void testDifferentHashCodes2() {
+    void testDifferentHashCodes2() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("", 1, 0); // nonsense but ok
         assertNotEquals(instance1.hashCode(), instance2.hashCode(), "PendingToken hashCode() only 2 immutables match");
     }
 
     @Test
-    public void testDifferentHashCodes3() {
+    void testDifferentHashCodes3() {
         PendingToken instance1 = new PendingToken("", 0, 0);
         PendingToken instance2 = new PendingToken("a", 0, 0); // nonsense but ok
         assertNotEquals(instance1.hashCode(), instance2.hashCode(), "PendingToken hashCode() only 2 immutables match");
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         PendingToken instance = new PendingToken("abc", 0, 4);
-        String expResult = "PendingToken{abc<<< start=0,end=4,nonpos=false}";
+        String expResult = "PendingToken{abc<<< start=0,end=4}";
         String result = instance.toString();
-        assertEquals(expResult, result, "PendingToken toString()");
-
-        instance.nonpos = true;
-        expResult = "PendingToken{abc<<< start=0,end=4,nonpos=true}";
-        result = instance.toString();
         assertEquals(expResult, result, "PendingToken toString()");
     }
 }

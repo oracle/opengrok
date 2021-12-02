@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.plain;
@@ -104,7 +105,7 @@ public class DefinitionsTokenStream extends TokenStream {
     private void setAttribs(PendingToken tok) {
         clearAttributes();
 
-        this.posIncrAtt.setPositionIncrement(tok.nonpos ? 0 : 1);
+        this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setEmpty();
         this.termAtt.append(tok.str);
         this.offsetAtt.setOffset(tok.start, tok.end);
