@@ -49,7 +49,7 @@ public class XrefStyle {
     /**
      * Description of styles to use for different types of definitions.
      */
-    public static final XrefStyle[] DEFINITION_STYLES = {
+    protected static final XrefStyle[] DEFINITION_STYLES = {
         new XrefStyle("macro", "xm", "Macro"),
         new XrefStyle("argument", "xa", null),
         new XrefStyle("local", "xl", null),
