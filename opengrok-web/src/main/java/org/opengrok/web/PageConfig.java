@@ -114,7 +114,6 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
  * method of this class changes neither the request nor the response.
  *
  * @author Jens Elkner
- * @version $Revision$
  */
 public final class PageConfig {
 
