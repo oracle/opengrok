@@ -86,8 +86,6 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
-import org.opengrok.indexer.web.DiffData;
-import org.opengrok.indexer.web.DiffType;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.indexer.web.Prefix;
@@ -108,7 +106,7 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
  * Purpose is to decouple implementation details from web design, so that the
  * JSP developer does not need to know every implementation detail and normally
  * has to deal with this class/wrapper, only (so some people may like to call
- * this class a bean with request scope ;-)). Furthermore it helps to keep the
+ * this class a bean with request scope ;-)). Furthermore, it helps to keep the
  * pages (how content gets generated) consistent and to document the request
  * parameters used.
  * <p>
@@ -116,7 +114,6 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
  * method of this class changes neither the request nor the response.
  *
  * @author Jens Elkner
- * @version $Revision$
  */
 public final class PageConfig {
 
@@ -128,8 +125,8 @@ public final class PageConfig {
     public static final String DUMMY_REVISION = "unknown";
 
     // query parameters
-    protected static final String PROJECT_PARAM_NAME = "project";
-    protected static final String GROUP_PARAM_NAME = "group";
+    static final String PROJECT_PARAM_NAME = "project";
+    static final String GROUP_PARAM_NAME = "group";
     private static final String DEBUG_PARAM_NAME = "debug";
 
     // TODO if still used, get it from the app context
@@ -226,29 +223,14 @@ public final class PageConfig {
     }
 
     /**
-     * Get all data required to create a diff view w.r.t. to this request in one
-     * go.
-     *
-     * @return an instance with just enough information to render a sufficient
-     * view. If not all required parameters were given either they are
-     * supplemented with reasonable defaults if possible, otherwise the related
-     * field(s) are {@code null}. {@link DiffData#errorMsg}
-     *  {@code != null} indicates, that an error occured and one should not try
-     * to render a view.
+     * Extract file path and revision strings from the URL.
+     * @param data DiffData object
+     * @param context context path
+     * @param filepath file path array (output parameter)
+     * @return true if the extraction was successful, false otherwise
+     * (in which case {@link DiffData#errorMsg} will be set)
      */
-    public DiffData getDiffData() {
-        DiffData data = new DiffData();
-        data.path = getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR));
-        data.filename = Util.htmlize(getResourceFile().getName());
-
-        String srcRoot = getSourceRootPath();
-        String context = req.getContextPath();
-
-        String[] filepath = new String[2];
-        data.rev = new String[2];
-        data.file = new String[2][];
-        data.param = new String[2];
-
+    private boolean getFileRevision(DiffData data, String context, String[] filepath) {
         /*
          * Basically the request URI looks like this:
          * http://$site/$webapp/diff/$resourceFile?r1=$fileA@$revA&r2=$fileB@$revB
@@ -264,21 +246,45 @@ public final class PageConfig {
                 }
             }
         }
+
         if (data.rev[0] == null || data.rev[1] == null
                 || data.rev[0].length() == 0 || data.rev[1].length() == 0
                 || data.rev[0].equals(data.rev[1])) {
             data.errorMsg = "Please pick two revisions to compare the changed "
                     + "from the <a href=\"" + context + Prefix.HIST_L
                     + getUriEncodedPath() + "\">history</a>";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get all data required to create a diff view w.r.t. to this request in one go.
+     *
+     * @return an instance with just enough information to render a sufficient view.
+     * If not all required parameters were given either they are supplemented
+     * with reasonable defaults if possible, otherwise the related field(s) are {@code null}.
+     * {@link DiffData#errorMsg}
+     * {@code != null} indicates that an error occurred and one should not try to render a view.
+     */
+    public DiffData getDiffData() {
+        DiffData data = new DiffData(getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR)),
+                Util.htmlize(getResourceFile().getName()));
+
+        String srcRoot = getSourceRootPath();
+        String context = req.getContextPath();
+        String[] filepath = new String[2];
+
+        if (!getFileRevision(data, context, filepath)) {
             return data;
         }
-        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
 
+        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
             try {
                 // Get input stream for both older and newer file.
-                ExecutorService executor = this.executor;
                 Future<?>[] future = new Future<?>[2];
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
@@ -346,8 +352,7 @@ public final class PageConfig {
             try {
                 data.revision = Diff.diff(data.file[0], data.file[1]);
             } catch (DifferentiationFailedException e) {
-                data.errorMsg = "Unable to get diffs: "
-                        + Util.htmlize(e.getMessage());
+                data.errorMsg = "Unable to get diffs: " + Util.htmlize(e.getMessage());
             }
             for (int i = 0; i < 2; i++) {
                 try {
@@ -454,12 +459,12 @@ public final class PageConfig {
                 List<String> listOfFiles = getSortedFiles(files);
 
                 if (env.hasProjects() && getPath().isEmpty()) {
-                    /**
+                    /*
                      * This denotes the source root directory, we need to filter
                      * projects which aren't allowed by the authorization
                      * because otherwise the main xref page expose the names of
                      * all projects in OpenGrok even those which aren't allowed
-                     * for the particular user. E. g. remove all which aren't
+                     * for the particular user. E.g. remove all which aren't
                      * among the filtered set of projects.
                      *
                      * The authorization check is made in
@@ -550,7 +555,7 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (NumberFormatException e) {
-                LOGGER.log(Level.INFO, "Failed to parse " + name + " integer " + s, e);
+                LOGGER.log(Level.INFO, String.format("Failed to parse %s integer %s", name, s), e);
             }
         }
         return ret;
@@ -592,14 +597,14 @@ public final class PageConfig {
 
     /**
      * Get sort orders from the request parameter {@code sort} and if this list
-     * would be empty from the cookie {@code OpenGrokorting}.
+     * would be empty from the cookie {@code OpenGrokSorting}.
      *
      * @return a possible empty list which contains the sort order values in the
      * same order supplied by the request parameter or cookie(s).
      */
     public List<SortOrder> getSortOrder() {
         List<SortOrder> sort = new ArrayList<>();
-        List<String> vals = getParamVals(QueryParameters.SORT_PARAM);
+        List<String> vals = getParameterValues(QueryParameters.SORT_PARAM);
         for (String s : vals) {
             SortOrder so = SortOrder.get(s);
             if (so != null) {
@@ -641,7 +646,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the eftar reader for the data directory. If it has been already
+     * Get the <i>Eftar</i> reader for the data directory. If it has been already
      * opened and not closed, this instance gets returned. One should not close
      * it once used: {@link #cleanup(ServletRequest)} takes care to close it.
      *
@@ -677,7 +682,6 @@ public final class PageConfig {
         if (eftarReader != null) {
             try {
                 dtag = eftarReader.get(getPath());
-                // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
@@ -765,12 +769,11 @@ public final class PageConfig {
     }
 
     /**
-     * Get the {@code path} parameter and display value for "Search only in"
-     * option.
+     * Get the {@code path} parameter and display value for "Search only in" option.
      *
      * @return always an array of 3 fields, whereby field[0] contains the path
-     * value to use (starts and ends always with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). Field[1] the contains
-     * string to show in the UI. field[2] is set to {@code disabled=""} if the
+     * value to use (starts and ends always with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
+     * Field[1] the contains string to show in the UI. field[2] is set to {@code disabled=""} if the
      * current path is the "/" directory, otherwise set to an empty string.
      */
     public String[] getSearchOnlyIn() {
@@ -891,12 +894,12 @@ public final class PageConfig {
      * @param paramName name of the parameter.
      * @return a possible empty list.
      */
-    private List<String> getParamVals(String paramName) {
-        String[] vals = req.getParameterValues(paramName);
+    private List<String> getParameterValues(String paramName) {
+        String[] parameterValues = req.getParameterValues(paramName);
         List<String> res = new ArrayList<>();
-        if (vals != null) {
-            for (int i = vals.length - 1; i >= 0; i--) {
-                splitByComma(vals[i], res);
+        if (parameterValues != null) {
+            for (int i = parameterValues.length - 1; i >= 0; i--) {
+                splitByComma(parameterValues[i], res);
             }
         }
         return res;
@@ -947,7 +950,7 @@ public final class PageConfig {
         }
 
         // Add all projects which match the project parameter name values/
-        List<String> names = getParamVals(projectParamName);
+        List<String> names = getParameterValues(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
             if (project != null && project.isIndexed() && authFramework.isAllowed(req, project)) {
@@ -956,7 +959,7 @@ public final class PageConfig {
         }
 
         // Add all projects which are part of a group that matches the group parameter name.
-        names = getParamVals(groupParamName);
+        names = getParameterValues(groupParamName);
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
             if (group != null) {
@@ -1087,8 +1090,8 @@ public final class PageConfig {
 
     /**
      * Get the canonical path of the related resource relative to the source
-     * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). No check is made,
-     * whether the obtained path is really an accessible resource on disk.
+     * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
+     * No check is made, whether the obtained path is really an accessible resource on disk.
      *
      * @see HttpServletRequest#getPathInfo()
      * @return a possible empty String (denotes the source root directory) but
@@ -1106,7 +1109,7 @@ public final class PageConfig {
     }
 
     /**
-     * @return true if file/directory corrsponding to the request path exists however is unreadable, false otherwise
+     * @return true if file/directory corresponding to the request path exists however is unreadable, false otherwise
      */
     public boolean isUnreadable() {
         File f = new File(getSourceRootPath(), getPath());
@@ -1117,7 +1120,7 @@ public final class PageConfig {
      * Get the on disk file for the given path.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
-     * may finally point to a file outside of the source root directory.
+     * may finally point to a file outside the source root directory.
      *
      * @param path the path to the file relatively to the source root
      * @return null if the related file or directory is not
@@ -1138,11 +1141,11 @@ public final class PageConfig {
      * Get the on disk file to the request related file or directory.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
-     * may finally point to a file outside of the source root directory.
+     * may finally point to a file outside the source root directory.
      *
-     * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })} if the related file or directory is not
-     * available (can not be find below the source root directory), the readable
-     * file or directory otherwise.
+     * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })}
+     * if the related file or directory is not available (can not be find below the source root directory),
+     * the readable file or directory otherwise.
      * @see #getSourceRootPath()
      * @see #getPath()
      */
@@ -1160,8 +1163,8 @@ public final class PageConfig {
      * Get the canonical on disk path to the request related file or directory
      * with all file separators replaced by a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}.
      *
-     * @return {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING} if the evaluated path is invalid or outside the source root
-     * directory), otherwise the path to the readable file or directory.
+     * @return {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING} if the evaluated path is invalid
+     * or outside the source root directory, otherwise the path to the readable file or directory.
      * @see #getResourceFile()
      */
     public String getResourcePath() {
@@ -1176,8 +1179,7 @@ public final class PageConfig {
      * directory below the source root directory and whether it matches an
      * ignored pattern.
      *
-     * @return {@code true} if the related resource does not exists or should be
-     * ignored.
+     * @return {@code true} if the related resource does not exist or should be ignored.
      * @see #getIgnoredNames()
      * @see #getResourcePath()
      */
@@ -1242,7 +1244,7 @@ public final class PageConfig {
 
     /**
      * Find the files with the given names in the {@link #getPath()} directory
-     * relative to the crossfile directory of the opengrok data directory. It is
+     * relative to the cross-file directory of the opengrok data directory. It is
      * tried to find the compressed file first by appending the file extension
      * ".gz" to the filename. If that fails or an uncompressed version of the
      * file is younger than its compressed version, the uncompressed file gets
@@ -1271,7 +1273,7 @@ public final class PageConfig {
     }
 
     /**
-     * Lookup the file {@link #getPath()} relative to the crossfile directory of
+     * Lookup the file {@link #getPath()} relative to the cross-file directory of
      * the opengrok data directory. It is tried to find the compressed file
      * first by appending the file extension ".gz" to the filename. If that
      * fails or an uncompressed version of the file is younger than its
@@ -1345,7 +1347,7 @@ public final class PageConfig {
                 }
                 Date fileDate = new Date(getResourceFile().lastModified());
                 if (docDate.compareTo(fileDate) < 0) {
-                    LOGGER.log(Level.FINER, "document for '{0}' is out of sync", getResourceFile());
+                    LOGGER.log(Level.FINER, "document for ''{0}'' is out of sync", getResourceFile());
                     return null;
                 }
             }
@@ -1364,7 +1366,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the location of cross reference for given file containing the given revision.
+     * Get the location of cross-reference for given file containing the given revision.
      * @param revStr defined revision string
      * @return location to redirect to
      */
@@ -1412,9 +1414,7 @@ public final class PageConfig {
     public String getDirectoryRedirect() {
         if (isDir()) {
             getPrefix();
-            /**
-             * Redirect /xref -> /xref/
-             */
+            // Redirect /xref -> /xref/
             if (prefix == Prefix.XREF_P
                     && getUriEncodedPath().isEmpty()
                     && !req.getRequestURI().endsWith("/")) {
@@ -1444,8 +1444,7 @@ public final class PageConfig {
      * Get the URI encoded canonical path to the related file or directory (the
      * URI part between the servlet path and the start of the query string).
      *
-     * @return an URI encoded path which might be an empty string but not
-     * {@code null}.
+     * @return a URI encoded path which might be an empty string but not {@code null}.
      * @see #getPath()
      */
     public String getUriEncodedPath() {
@@ -1484,7 +1483,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get opengrok's configured dataroot directory. It is verified, that the
+     * Get opengrok's configured data root directory. It is verified, that the
      * used environment has a valid opengrok data root set and that it is an
      * accessible directory.
      *
@@ -1719,14 +1718,13 @@ public final class PageConfig {
      */
     public String getHistoryTitle() {
         String path = getPath();
-        return Util.htmlize(getShortPath(path) +
-                " - OpenGrok history log for " + path);
+        return Util.htmlize(getShortPath(path) + " - OpenGrok history log for " + path);
     }
 
     public String getPathTitle() {
         String path = getPath();
         String title = getShortPath(path);
-        if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
+        if (!getRequestedRevision().isEmpty()) {
             title += " (revision " + getRequestedRevision() + ")";
         }
         title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
@@ -1740,13 +1738,16 @@ public final class PageConfig {
         }
         File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
         if (!sourceRootPathFile.exists()) {
-            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist", sourceRootPathFile.getAbsolutePath()));
+            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist",
+                    sourceRootPathFile.getAbsolutePath()));
         }
         if (!sourceRootPathFile.isDirectory()) {
-            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory", sourceRootPathFile.getAbsolutePath()));
+            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory",
+                    sourceRootPathFile.getAbsolutePath()));
         }
         if (!sourceRootPathFile.canRead()) {
-            throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
+            throw new IOException(String.format("Source root path \"%s\" is not readable",
+                    sourceRootPathFile.getAbsolutePath()));
         }
     }
 
@@ -1758,7 +1759,7 @@ public final class PageConfig {
      * <li>Messages with tag = project's groups names</li>
      * </ol>
      *
-     * @return the sorted set of messages according to the accept time
+     * @return the sorted set of messages according to accept time
      * @see org.opengrok.indexer.web.messages.MessagesContainer#MESSAGES_MAIN_PAGE_TAG
      */
     private SortedSet<AcceptedMessage> getProjectMessages() {
@@ -1837,8 +1838,7 @@ public final class PageConfig {
      * Determines whether a match offset from a search result has been
      * indicated, and if so tries to calculate a translated xref fragment
      * identifier.
-     * @return {@code true} if an xref fragment identifier was calculated by
-     * the call to this method
+     * @return {@code true} if a xref fragment identifier was calculated by the call to this method
      */
     public boolean evaluateMatchOffset() {
         if (fragmentIdentifier == null) {
@@ -1857,8 +1857,8 @@ public final class PageConfig {
                             return true;
                         }
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to evaluate match offset for " +
-                                resourceFile, e);
+                        LOGGER.log(Level.WARNING, String.format("Failed to evaluate match offset for %s",
+                                resourceFile), e);
                     }
                 }
             }

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2020, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
 --%>
@@ -29,13 +29,13 @@ java.nio.charset.StandardCharsets,
 org.suigeneris.jrcs.diff.delta.Chunk,
 org.suigeneris.jrcs.diff.delta.Delta,
 org.opengrok.indexer.analysis.AbstractAnalyzer,
-org.opengrok.indexer.web.DiffData,
-org.opengrok.indexer.web.DiffType"
+org.opengrok.web.DiffData,
+org.opengrok.web.DiffType"
 %>
 <%!
 private String getAnnotateRevision(DiffData data) {
-    if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
-        String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
+    if (data.getType() == DiffType.OLD || data.getType() == DiffType.NEW) {
+        String rev = data.getRev(data.getType() == DiffType.NEW ? 1 : 0);
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
             + "document.rev = function() { return " + Util.htmlize(Util.jsStringLiteral(rev))
             + "; } /* ]]> */</script>";
@@ -59,16 +59,16 @@ private String getAnnotateRevision(DiffData data) {
      */
     DiffData data = cfg.getDiffData();
     request.setAttribute("diff.jsp-data", data);
-    if (data.type == DiffType.TEXT
+    if (data.getType() == DiffType.TEXT
             && request.getParameter("action") != null
             && request.getParameter("action").equals("download")) {
         try (OutputStream o = response.getOutputStream()) {
-            for (int i = 0; i < data.revision.size(); i++) {
-                Delta d = data.revision.getDelta(i);
+            for (int i = 0; i < data.getRevision().size(); i++) {
+                Delta d = data.getRevision().getDelta(i);
                 try (InputStream in = new ByteArrayInputStream(d.toString().getBytes(StandardCharsets.UTF_8))) {
                     response.setHeader("content-disposition", "attachment; filename="
-                            + cfg.getResourceFile().getName() + "@" + data.rev[0]
-                            + "-" + data.rev[1] + ".diff");
+                            + cfg.getResourceFile().getName() + "@" + data.getRev(0)
+                            + "-" + data.getRev(1) + ".diff");
                     byte[] buffer = new byte[8192];
                     int nr;
                     while ((nr = in.read(buffer)) > 0) {
@@ -93,14 +93,14 @@ include file="mast.jsp"
     DiffData data = (DiffData) request.getAttribute("diff.jsp-data");
 
     // the data is never null as the getDiffData always return valid object
-    if (data.errorMsg != null)  {
+    if (data.getErrorMsg() != null)  {
 
 %>
 <div class="src">
     <h3 class="error">Error:</h3>
-    <p><%= data.errorMsg %></p>
+    <p><%= data.getErrorMsg() %></p>
 </div><%
-    } else if (data.genre == AbstractAnalyzer.Genre.IMAGE) {
+    } else if (data.getGenre() == AbstractAnalyzer.Genre.IMAGE) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());
@@ -108,33 +108,33 @@ include file="mast.jsp"
 <div id="difftable">
     <table class="image">
         <thead>
-        <tr><th><%= data.filename %> (revision <%= data.rev[0] %>)</th>
-            <th><%= data.filename %> (revision <%= data.rev[1] %>)</th>
+        <tr><th><%= data.getFilename() %> (revision <%= data.getRev(0) %>)</th>
+            <th><%= data.getFilename() %> (revision <%= data.getRev(1) %>)</th>
         </tr>
         </thead>
         <tbody>
-        <tr><td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.rev[0] %>"/>
+        <tr><td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>"/>
             </td>
-            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.rev[1] %>"/>
+            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>"/>
             </td>
         </tr>
         </tbody>
     </table>
 </div><%
 
-    } else if (data.genre != AbstractAnalyzer.Genre.PLAIN && data.genre != AbstractAnalyzer.Genre.HTML) {
+    } else if (data.getGenre() != AbstractAnalyzer.Genre.PLAIN && data.getGenre() != AbstractAnalyzer.Genre.HTML) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());
 %>
 <div id="src">Diffs for binary files cannot be displayed! Files are <a
-    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.rev[0] %>"><%=
-        data.filename %>(revision <%= data.rev[0] %>)</a> and <a
-    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.rev[1] %>"><%=
-        data.filename %>(revision <%= data.rev[1] %>)</a>.
+    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>"><%=
+        data.getFilename() %>(revision <%= data.getRev(0) %>)</a> and <a
+    href="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>"><%=
+        data.getFilename() %>(revision <%= data.getRev(1) %>)</a>.
 </div><%
 
-    } else if (data.revision.size() == 0) {
+    } else if (data.getRevision().size() == 0) {
         %>
         <%= getAnnotateRevision(data) %>
         <b>No differences found!</b><%
@@ -143,14 +143,14 @@ include file="mast.jsp"
         //-------- Do THE DIFFS ------------
         int ln1 = 0;
         int ln2 = 0;
-        String rp1 = data.param[0];
-        String rp2 = data.param[1];
+        String rp1 = data.getParam(0);
+        String rp2 = data.getParam(1);
         String reqURI = request.getRequestURI();
-        String[] file1 = data.file[0];
-        String[] file2 = data.file[1];
+        String[] file1 = data.getFile(0);
+        String[] file2 = data.getFile(1);
 
-        DiffType type = data.type;
-        boolean full = data.full;
+        DiffType type = data.getType();
+        boolean full = data.isFull();
 %>
 <%= getAnnotateRevision(data) %>
 <div id="diffbar">
@@ -163,9 +163,9 @@ include file="mast.jsp"
             if (type == t) {
         %> <span class="active"><%= t.toString() %><%
                 if (t == DiffType.OLD) {
-            %>  ( <%= data.rev[0] %> )<%
+            %>  ( <%= data.getRev(0) %> )<%
                 } else if (t == DiffType.NEW) {
-            %>  ( <%= data.rev[1] %> )<%
+            %>  ( <%= data.getRev(1) %> )<%
                 }
             %></span><%
             } else {
@@ -175,9 +175,9 @@ include file="mast.jsp"
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %><%= full ? '1' : '0'%>"><%= t.toString() %>
             <%
                 if (t == DiffType.OLD) {
-            %>  ( <%= data.rev[0] %> )<%
+            %>  ( <%= data.getRev(0) %> )<%
                 } else if (t == DiffType.NEW) {
-            %>  ( <%= data.rev[1] %> )<%
+            %>  ( <%= data.getRev(1) %> )<%
                 }
             %></a></span><%
             }
@@ -214,16 +214,16 @@ action=download">download diff</a></span><%
             if (type == DiffType.SIDEBYSIDE) {
             %>
             <thead><tr>
-                <th><%= data.filename %> (<%= data.rev[0] %>)</th>
-                <th><%= data.filename %> (<%= data.rev[1] %>)</th>
+                <th><%= data.getFilename() %> (<%= data.getRev(0) %>)</th>
+                <th><%= data.getFilename() %> (<%= data.getRev(1) %>)</th>
             </tr></thead><%
             }
             %>
             <tbody><%
         }
 
-        for (int i=0; i < data.revision.size(); i++) {
-            Delta d = data.revision.getDelta(i);
+        for (int i=0; i < data.getRevision().size(); i++) {
+            Delta d = data.getRevision().getDelta(i);
             if (type == DiffType.TEXT) {
         %><%= Util.htmlize(d.toString()) %><%
             } else {
