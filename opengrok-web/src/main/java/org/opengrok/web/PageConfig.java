@@ -224,6 +224,43 @@ public final class PageConfig {
     }
 
     /**
+     * Extract file path and revision strings from the URL.
+     * @param data DiffData object
+     * @param context context path
+     * @param filepath file path
+     * @return true if the extraction was successful, false otherwise
+     * (in which case {@link DiffData#errorMsg} will be set)
+     */
+    private boolean getFileRevision(DiffData data, String context, String[] filepath) {
+        /*
+         * Basically the request URI looks like this:
+         * http://$site/$webapp/diff/$resourceFile?r1=$fileA@$revA&r2=$fileB@$revB
+         * The code below extracts file path and revision from the URI.
+         */
+        for (int i = 1; i <= 2; i++) {
+            String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
+            if (p != null) {
+                int j = p.lastIndexOf("@");
+                if (j != -1) {
+                    filepath[i - 1] = p.substring(0, j);
+                    data.rev[i - 1] = p.substring(j + 1);
+                }
+            }
+        }
+
+        if (data.rev[0] == null || data.rev[1] == null
+                || data.rev[0].length() == 0 || data.rev[1].length() == 0
+                || data.rev[0].equals(data.rev[1])) {
+            data.errorMsg = "Please pick two revisions to compare the changed "
+                    + "from the <a href=\"" + context + Prefix.HIST_L
+                    + getUriEncodedPath() + "\">history</a>";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Get all data required to create a diff view w.r.t. to this request in one go.
      *
      * @return an instance with just enough information to render a sufficient view.
@@ -240,31 +277,10 @@ public final class PageConfig {
         String context = req.getContextPath();
         String[] filepath = new String[2];
 
-        /*
-         * Basically the request URI looks like this:
-         * http://$site/$webapp/diff/$resourceFile?r1=$fileA@$revA&r2=$fileB@$revB
-         * The code below extracts file path and revision from the URI.
-         */
-        for (int i = 1; i <= 2; i++) {
-            String p = req.getParameter(QueryParameters.REVISION_PARAM + i);
-            if (p != null) {
-                int j = p.lastIndexOf("@");
-                if (j != -1) {
-                    filepath[i - 1] = p.substring(0, j);
-                    data.rev[i - 1] = p.substring(j + 1);
-                }
-            }
-        }
-        if (data.rev[0] == null || data.rev[1] == null
-                || data.rev[0].length() == 0 || data.rev[1].length() == 0
-                || data.rev[0].equals(data.rev[1])) {
-            data.errorMsg = "Please pick two revisions to compare the changed "
-                    + "from the <a href=\"" + context + Prefix.HIST_L
-                    + getUriEncodedPath() + "\">history</a>";
+        if (!getFileRevision(data, context, filepath))
             return data;
-        }
-        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
 
+        data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
             try {
