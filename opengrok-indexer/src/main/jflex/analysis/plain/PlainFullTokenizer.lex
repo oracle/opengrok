@@ -41,7 +41,7 @@ import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 Identifier = [a-zA-Z\p{Letter}_] [a-zA-Z\p{Letter}0-9\p{Number}_]*
 Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 // No letters in the following, so no toLowerCase(Locale.ROOT) needed.
-Printable = [\@\$\%\^\&\-+=\?\.\:]
+Printable = [\@\$\%\^\&\-+=\?\.\:!\[\]\{\}*\/\|#\<\>\(\),;~]
 
 %%
 {Identifier}|{Number}|{Printable} {
