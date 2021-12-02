@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
@@ -65,7 +65,7 @@ public abstract class AnalyzerFactory {
      */
     protected AbstractAnalyzer.Genre genre;
 
-    public AnalyzerFactory(FileAnalyzerFactory.Matcher matcher, String contentType) {
+    protected AnalyzerFactory(FileAnalyzerFactory.Matcher matcher, String contentType) {
         cachedAnalyzer = new ThreadLocal<>();
         if (matcher == null) {
             this.matchers = Collections.emptyList();
