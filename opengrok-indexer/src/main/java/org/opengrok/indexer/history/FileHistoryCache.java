@@ -676,15 +676,20 @@ class FileHistoryCache implements HistoryCache {
             return null;
         }
 
-        // Either the cache is stale or retrieving the history took too long, cache it!
-        if (!file.isDirectory() && (cacheFile.exists() || (time > env.getHistoryReaderTimeLimit()))) {
-            // Also, don't cache history-information for directories, since the
-            // history information on the directory may change if a file in
-            // a sub-directory change. This will cause us to present a stale
-            // history log until the current directory is updated and
-            // invalidates the cache entry.
-            LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it [{2}]",
-                    new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
+        // Don't cache history-information for directories, since the
+        // history information on the directory may change if a file in
+        // a sub-directory change. This will cause us to present a stale
+        // history log until the current directory is updated and
+        // invalidates the cache entry.
+        if (!file.isDirectory()) {
+            // Either the cache is stale or retrieving the history took too long, cache it!
+            if (cacheFile.exists()) {
+                LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
+                        new Object[]{file, history.getRevisionList()});
+            } else if (time > env.getHistoryReaderTimeLimit()) {
+                LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
+                        new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
+            }
             storeFile(history, file, repository);
         }
 
