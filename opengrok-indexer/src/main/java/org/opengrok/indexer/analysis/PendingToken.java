@@ -37,12 +37,6 @@ public class PendingToken {
     public final int end;
 
     /**
-     * When tokenizers allow overlapping tokens, the following field is set to
-     * {@code true} for tokens that should not increment the position attribute.
-     */
-    boolean nonpos;
-
-    /**
      * Initializes an instance with immutable fields for the specified
      * arguments.
      * @param str string value
@@ -53,10 +47,6 @@ public class PendingToken {
         this.str = str;
         this.start = start;
         this.end = end;
-    }
-
-    public boolean isNonpos() {
-        return nonpos;
     }
 
     /**
@@ -92,7 +82,6 @@ public class PendingToken {
      */
     @Override
     public String toString() {
-        return "PendingToken{" + str + "<<< start=" + start + ",end=" + end +
-            ",nonpos=" + nonpos + '}';
+        return "PendingToken{" + str + "<<< start=" + start + ",end=" + end + '}';
     }
 }
