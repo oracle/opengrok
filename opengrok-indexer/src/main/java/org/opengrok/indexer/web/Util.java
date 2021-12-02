@@ -348,7 +348,7 @@ public final class Util {
      *
      * @param urlPrefix prefix to add to each url
      * @param path path to crack
-     * @return HTML markup fro the breadcrumb or the path itself.
+     * @return HTML markup for the breadcrumb or the path itself.
      *
      * @see #breadcrumbPath(String, String, char)
      */
@@ -905,9 +905,8 @@ public final class Util {
     /**
      * Wrapper around UTF-8 URL encoding of a string.
      *
-     * @param q query to be encoded. If {@code null}, an empty string will be
-     * used instead.
-     * @return null if fail, otherwise the encoded string
+     * @param q query to be encoded. If {@code null}, an empty string will be used instead.
+     * @return null if failed, otherwise the encoded string
      * @see URLEncoder#encode(String, String)
      */
     public static String URIEncode(String q) {
