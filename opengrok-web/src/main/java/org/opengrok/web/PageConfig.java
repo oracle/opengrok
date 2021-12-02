@@ -227,7 +227,7 @@ public final class PageConfig {
      * Extract file path and revision strings from the URL.
      * @param data DiffData object
      * @param context context path
-     * @param filepath file path
+     * @param filepath file path array (output parameter)
      * @return true if the extraction was successful, false otherwise
      * (in which case {@link DiffData#errorMsg} will be set)
      */
