@@ -555,7 +555,7 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (NumberFormatException e) {
-                LOGGER.log(Level.INFO, "Failed to parse " + name + " integer " + s, e);
+                LOGGER.log(Level.INFO, String.format("Failed to parse %s integer %s", name, s), e);
             }
         }
         return ret;
@@ -597,14 +597,14 @@ public final class PageConfig {
 
     /**
      * Get sort orders from the request parameter {@code sort} and if this list
-     * would be empty from the cookie {@code OpenGrokorting}.
+     * would be empty from the cookie {@code OpenGrokSorting}.
      *
      * @return a possible empty list which contains the sort order values in the
      * same order supplied by the request parameter or cookie(s).
      */
     public List<SortOrder> getSortOrder() {
         List<SortOrder> sort = new ArrayList<>();
-        List<String> vals = getParamVals(QueryParameters.SORT_PARAM);
+        List<String> vals = getParameterValues(QueryParameters.SORT_PARAM);
         for (String s : vals) {
             SortOrder so = SortOrder.get(s);
             if (so != null) {
@@ -646,7 +646,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the eftar reader for the data directory. If it has been already
+     * Get the <i>Eftar</i> reader for the data directory. If it has been already
      * opened and not closed, this instance gets returned. One should not close
      * it once used: {@link #cleanup(ServletRequest)} takes care to close it.
      *
@@ -682,7 +682,6 @@ public final class PageConfig {
         if (eftarReader != null) {
             try {
                 dtag = eftarReader.get(getPath());
-                // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
@@ -770,12 +769,11 @@ public final class PageConfig {
     }
 
     /**
-     * Get the {@code path} parameter and display value for "Search only in"
-     * option.
+     * Get the {@code path} parameter and display value for "Search only in" option.
      *
      * @return always an array of 3 fields, whereby field[0] contains the path
-     * value to use (starts and ends always with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). Field[1] the contains
-     * string to show in the UI. field[2] is set to {@code disabled=""} if the
+     * value to use (starts and ends always with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}).
+     * Field[1] the contains string to show in the UI. field[2] is set to {@code disabled=""} if the
      * current path is the "/" directory, otherwise set to an empty string.
      */
     public String[] getSearchOnlyIn() {
@@ -896,12 +894,12 @@ public final class PageConfig {
      * @param paramName name of the parameter.
      * @return a possible empty list.
      */
-    private List<String> getParamVals(String paramName) {
-        String[] vals = req.getParameterValues(paramName);
+    private List<String> getParameterValues(String paramName) {
+        String[] parameterValues = req.getParameterValues(paramName);
         List<String> res = new ArrayList<>();
-        if (vals != null) {
-            for (int i = vals.length - 1; i >= 0; i--) {
-                splitByComma(vals[i], res);
+        if (parameterValues != null) {
+            for (int i = parameterValues.length - 1; i >= 0; i--) {
+                splitByComma(parameterValues[i], res);
             }
         }
         return res;
@@ -952,7 +950,7 @@ public final class PageConfig {
         }
 
         // Add all projects which match the project parameter name values/
-        List<String> names = getParamVals(projectParamName);
+        List<String> names = getParameterValues(projectParamName);
         for (String projectName : names) {
             Project project = Project.getByName(projectName);
             if (project != null && project.isIndexed() && authFramework.isAllowed(req, project)) {
@@ -961,7 +959,7 @@ public final class PageConfig {
         }
 
         // Add all projects which are part of a group that matches the group parameter name.
-        names = getParamVals(groupParamName);
+        names = getParameterValues(groupParamName);
         for (String groupName : names) {
             Group group = Group.getByName(groupName);
             if (group != null) {
@@ -1246,7 +1244,7 @@ public final class PageConfig {
 
     /**
      * Find the files with the given names in the {@link #getPath()} directory
-     * relative to the crossfile directory of the opengrok data directory. It is
+     * relative to the cross-file directory of the opengrok data directory. It is
      * tried to find the compressed file first by appending the file extension
      * ".gz" to the filename. If that fails or an uncompressed version of the
      * file is younger than its compressed version, the uncompressed file gets
@@ -1275,7 +1273,7 @@ public final class PageConfig {
     }
 
     /**
-     * Lookup the file {@link #getPath()} relative to the crossfile directory of
+     * Lookup the file {@link #getPath()} relative to the cross-file directory of
      * the opengrok data directory. It is tried to find the compressed file
      * first by appending the file extension ".gz" to the filename. If that
      * fails or an uncompressed version of the file is younger than its
@@ -1368,7 +1366,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the location of cross reference for given file containing the given revision.
+     * Get the location of cross-reference for given file containing the given revision.
      * @param revStr defined revision string
      * @return location to redirect to
      */
