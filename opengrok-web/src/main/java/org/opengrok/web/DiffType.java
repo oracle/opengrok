@@ -21,13 +21,12 @@
  * Copyright (c) 2009, 2011, Jens Elkner.
  * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 /**
  * Known diff display types.
  *
  * @author  Jens Elkner
- * @version $Revision$
  */
 public enum DiffType {
 

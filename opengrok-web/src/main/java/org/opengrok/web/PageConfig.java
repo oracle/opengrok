@@ -86,8 +86,6 @@ import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.LineBreaker;
 import org.opengrok.indexer.util.TandemPath;
-import org.opengrok.indexer.web.DiffData;
-import org.opengrok.indexer.web.DiffType;
 import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.indexer.web.Laundromat;
 import org.opengrok.indexer.web.Prefix;
@@ -108,7 +106,7 @@ import org.suigeneris.jrcs.diff.DifferentiationFailedException;
  * Purpose is to decouple implementation details from web design, so that the
  * JSP developer does not need to know every implementation detail and normally
  * has to deal with this class/wrapper, only (so some people may like to call
- * this class a bean with request scope ;-)). Furthermore it helps to keep the
+ * this class a bean with request scope ;-)). Furthermore, it helps to keep the
  * pages (how content gets generated) consistent and to document the request
  * parameters used.
  * <p>
@@ -128,8 +126,8 @@ public final class PageConfig {
     public static final String DUMMY_REVISION = "unknown";
 
     // query parameters
-    protected static final String PROJECT_PARAM_NAME = "project";
-    protected static final String GROUP_PARAM_NAME = "group";
+    static final String PROJECT_PARAM_NAME = "project";
+    static final String GROUP_PARAM_NAME = "group";
     private static final String DEBUG_PARAM_NAME = "debug";
 
     // TODO if still used, get it from the app context
@@ -343,8 +341,7 @@ public final class PageConfig {
             try {
                 data.revision = Diff.diff(data.file[0], data.file[1]);
             } catch (DifferentiationFailedException e) {
-                data.errorMsg = "Unable to get diffs: "
-                        + Util.htmlize(e.getMessage());
+                data.errorMsg = "Unable to get diffs: " + Util.htmlize(e.getMessage());
             }
             for (int i = 0; i < 2; i++) {
                 try {

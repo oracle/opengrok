@@ -19,43 +19,82 @@
 
 /*
  * Copyright (c) 2009, 2011, Jens Elkner.
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2020, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.indexer.web;
+package org.opengrok.web;
 
 import org.opengrok.indexer.analysis.AbstractAnalyzer;
 import org.suigeneris.jrcs.diff.Revision;
 
 /**
- * A simple container to store the data required to generated a view of diffs
+ * A simple container to store the data required to generate a view of diffs
  * for a certain versioned file.
  *
  * @author  Jens Elkner
- * @version $Revision$
  */
 public class DiffData {
-
     /** the directory which contains the given file wrt. to the source root directory. */
-    public String path;
+    String path;
     /** the HTML escaped filename used. */
-    public String filename;
+    String filename;
     /** the genre of the requested diff. */
-    public AbstractAnalyzer.Genre genre;
+    AbstractAnalyzer.Genre genre;
     /** the original and new revision container. */
-    public Revision revision;
-    /** the URI encoded parameter values of the request. {@code param[0]}
-     * belongs to {@code r1}, {@code param[1]} to {@code r2}. */
-    public String[] param;
+    Revision revision;
+    /**
+     * the URI encoded parameter values of the request. {@code param[0]}
+     * belongs to {@code r1}, {@code param[1]} to {@code r2}.
+     */
+    String[] param;
     /** the revision names extracted from {@link #param}. */
-    public String[] rev;
-    /** the content of the original and new file line-by-line corresponding
-     * with {@link #rev}. */
-    public String[][] file;
+    String[] rev;
+    /** the content of the original and new file line-by-line corresponding with {@link #rev}. */
+    String[][] file;
     /** error message to show, if diffs are not available. */
-    public String errorMsg;
+    String errorMsg;
     /** If {@code true} a full diff is desired. */
-    public boolean full;
+    boolean full;
     /** How should the data be displayed (request parameter {@code format}. */
-    public DiffType type;
+    DiffType type;
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public AbstractAnalyzer.Genre getGenre() {
+        return genre;
+    }
+
+    public Revision getRevision() {
+        return revision;
+    }
+
+    public String getParam(int index) {
+        return param[index];
+    }
+
+    public String getRev(int index) {
+        return rev[index];
+    }
+
+    public String[] getFile(int index) {
+        return file[index];
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public boolean isFull() {
+        return full;
+    }
+
+    public DiffType getType() {
+        return type;
+    }
 }
