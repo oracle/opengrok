@@ -66,7 +66,7 @@ public class Definitions implements Serializable {
             this.sym_tags = new HashMap<>();
         }
     }
-    // line -> tag_map
+    // line number -> tag map
     private final Map<Integer, LineTagMap> line_maps;
 
     /**
@@ -128,9 +128,9 @@ public class Definitions implements Serializable {
 
         // Get tag info
         if (lines != null && lines.contains(lineNumber)) {
-            LineTagMap line_map = line_maps.get(lineNumber);
-            if (line_map != null) {
-                for (Tag tag : line_map.sym_tags.get(symbol)) {
+            LineTagMap lineMap = line_maps.get(lineNumber);
+            if (lineMap != null) {
+                for (Tag tag : lineMap.sym_tags.get(symbol)) {
                     if (tag.used) {
                         continue;
                     }
@@ -183,15 +183,13 @@ public class Definitions implements Serializable {
      * @return list of tags
      */
     public List<Tag> getTags(int line) {
-        LineTagMap line_map = line_maps.get(line);
+        LineTagMap lineMap = line_maps.get(line);
         List<Tag> result = null;
 
-        if (line_map != null) {
+        if (lineMap != null) {
             result = new ArrayList<>();
-            for (Set<Tag> ltags : line_map.sym_tags.values()) {
-                for (Tag tag : ltags) {
-                    result.add(tag);
-                }
+            for (Set<Tag> ltags : lineMap.sym_tags.values()) {
+                result.addAll(ltags);
             }
         }
 
@@ -243,7 +241,7 @@ public class Definitions implements Serializable {
         /**
          * A non-serialized marker for marking a tag to avoid its reuse.
          */
-        public transient boolean used;
+        private transient boolean used;
 
         protected Tag(int line, String symbol, String type, String text,
                 String namespace, String signature, int lineStart,
@@ -266,9 +264,9 @@ public class Definitions implements Serializable {
 
     public void addTag(int line, String symbol, String type, String text,
             String namespace, String signature, int lineStart, int lineEnd) {
-        Tag new_tag = new Tag(line, symbol, type, text, namespace, signature,
+        Tag newTag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
-        tags.add(new_tag);
+        tags.add(newTag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {
             lines = new HashSet<>();
@@ -278,19 +276,19 @@ public class Definitions implements Serializable {
         lines.add(aLine);
 
         // Get per line map
-        LineTagMap line_map = line_maps.get(aLine);
-        if (line_map == null) {
-            line_map = new LineTagMap();
-            line_maps.put(aLine, line_map);
+        LineTagMap lineMap = line_maps.get(aLine);
+        if (lineMap == null) {
+            lineMap = new LineTagMap();
+            line_maps.put(aLine, lineMap);
         }
 
         // Insert sym->tag map for this line
-        Set<Tag> ltags = line_map.sym_tags.get(symbol);
+        Set<Tag> ltags = lineMap.sym_tags.get(symbol);
         if (ltags == null) {
             ltags = new HashSet<>();
-            line_map.sym_tags.put(symbol, ltags);
+            lineMap.sym_tags.put(symbol, ltags);
         }
-        ltags.add(new_tag);
+        ltags.add(newTag);
     }
 
     /**

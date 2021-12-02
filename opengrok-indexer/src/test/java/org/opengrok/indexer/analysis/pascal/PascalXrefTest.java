@@ -32,10 +32,10 @@ import static org.opengrok.indexer.util.StreamUtils.readTagsFromResource;
 /**
  * Tests the {@link PascalXref} class.
  */
-public class PascalXrefTest extends XrefTestBase {
+class PascalXrefTest extends XrefTestBase {
 
     @Test
-    public void sampleTest() throws IOException {
+    void sampleTest() throws IOException {
         writeAndCompare(new PascalAnalyzerFactory(),
                 "analysis/pascal/sample.pas",
                 "analysis/pascal/sample_xref.html",
@@ -43,7 +43,7 @@ public class PascalXrefTest extends XrefTestBase {
     }
 
     @Test
-    public void shouldCloseTruncatedStringSpan() throws IOException {
+    void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare(new PascalAnalyzerFactory(),
                 "analysis/pascal/truncated.pas",
                 "analysis/pascal/truncated_xref.html", null, 1);
