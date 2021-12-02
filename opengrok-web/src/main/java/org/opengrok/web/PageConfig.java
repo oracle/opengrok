@@ -459,12 +459,12 @@ public final class PageConfig {
                 List<String> listOfFiles = getSortedFiles(files);
 
                 if (env.hasProjects() && getPath().isEmpty()) {
-                    /**
+                    /*
                      * This denotes the source root directory, we need to filter
                      * projects which aren't allowed by the authorization
                      * because otherwise the main xref page expose the names of
                      * all projects in OpenGrok even those which aren't allowed
-                     * for the particular user. E. g. remove all which aren't
+                     * for the particular user. E.g. remove all which aren't
                      * among the filtered set of projects.
                      *
                      * The authorization check is made in
