@@ -1416,9 +1416,7 @@ public final class PageConfig {
     public String getDirectoryRedirect() {
         if (isDir()) {
             getPrefix();
-            /**
-             * Redirect /xref -> /xref/
-             */
+            // Redirect /xref -> /xref/
             if (prefix == Prefix.XREF_P
                     && getUriEncodedPath().isEmpty()
                     && !req.getRequestURI().endsWith("/")) {
@@ -1448,8 +1446,7 @@ public final class PageConfig {
      * Get the URI encoded canonical path to the related file or directory (the
      * URI part between the servlet path and the start of the query string).
      *
-     * @return an URI encoded path which might be an empty string but not
-     * {@code null}.
+     * @return a URI encoded path which might be an empty string but not {@code null}.
      * @see #getPath()
      */
     public String getUriEncodedPath() {
@@ -1488,7 +1485,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get opengrok's configured dataroot directory. It is verified, that the
+     * Get opengrok's configured data root directory. It is verified, that the
      * used environment has a valid opengrok data root set and that it is an
      * accessible directory.
      *
@@ -1723,14 +1720,13 @@ public final class PageConfig {
      */
     public String getHistoryTitle() {
         String path = getPath();
-        return Util.htmlize(getShortPath(path) +
-                " - OpenGrok history log for " + path);
+        return Util.htmlize(getShortPath(path) + " - OpenGrok history log for " + path);
     }
 
     public String getPathTitle() {
         String path = getPath();
         String title = getShortPath(path);
-        if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
+        if (!getRequestedRevision().isEmpty()) {
             title += " (revision " + getRequestedRevision() + ")";
         }
         title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
@@ -1744,13 +1740,16 @@ public final class PageConfig {
         }
         File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
         if (!sourceRootPathFile.exists()) {
-            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist", sourceRootPathFile.getAbsolutePath()));
+            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist",
+                    sourceRootPathFile.getAbsolutePath()));
         }
         if (!sourceRootPathFile.isDirectory()) {
-            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory", sourceRootPathFile.getAbsolutePath()));
+            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory",
+                    sourceRootPathFile.getAbsolutePath()));
         }
         if (!sourceRootPathFile.canRead()) {
-            throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
+            throw new IOException(String.format("Source root path \"%s\" is not readable",
+                    sourceRootPathFile.getAbsolutePath()));
         }
     }
 
@@ -1762,7 +1761,7 @@ public final class PageConfig {
      * <li>Messages with tag = project's groups names</li>
      * </ol>
      *
-     * @return the sorted set of messages according to the accept time
+     * @return the sorted set of messages according to accept time
      * @see org.opengrok.indexer.web.messages.MessagesContainer#MESSAGES_MAIN_PAGE_TAG
      */
     private SortedSet<AcceptedMessage> getProjectMessages() {
@@ -1841,8 +1840,7 @@ public final class PageConfig {
      * Determines whether a match offset from a search result has been
      * indicated, and if so tries to calculate a translated xref fragment
      * identifier.
-     * @return {@code true} if an xref fragment identifier was calculated by
-     * the call to this method
+     * @return {@code true} if a xref fragment identifier was calculated by the call to this method
      */
     public boolean evaluateMatchOffset() {
         if (fragmentIdentifier == null) {
@@ -1861,8 +1859,8 @@ public final class PageConfig {
                             return true;
                         }
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to evaluate match offset for " +
-                                resourceFile, e);
+                        LOGGER.log(Level.WARNING, String.format("Failed to evaluate match offset for %s",
+                                resourceFile), e);
                     }
                 }
             }
