@@ -105,7 +105,7 @@ public class DefinitionsTokenStream extends TokenStream {
     private void setAttribs(PendingToken tok) {
         clearAttributes();
 
-        this.posIncrAtt.setPositionIncrement(0);
+        this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setEmpty();
         this.termAtt.append(tok.str);
         this.offsetAtt.setOffset(tok.start, tok.end);
