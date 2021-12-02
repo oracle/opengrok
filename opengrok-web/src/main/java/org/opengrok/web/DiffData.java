@@ -35,9 +35,9 @@ import org.suigeneris.jrcs.diff.Revision;
  */
 public class DiffData {
     /** the directory which contains the given file wrt. to the source root directory. */
-    String path;
+    private final String path;
     /** the HTML escaped filename used. */
-    String filename;
+    private final String filename;
     /** the genre of the requested diff. */
     AbstractAnalyzer.Genre genre;
     /** the original and new revision container. */
@@ -57,6 +57,15 @@ public class DiffData {
     boolean full;
     /** How should the data be displayed (request parameter {@code format}. */
     DiffType type;
+
+    public DiffData(String path, String filename) {
+        this.path = path;
+        this.filename = filename;
+
+        this.rev = new String[2];
+        this.file = new String[2][];
+        this.param = new String[2];
+    }
 
     public String getPath() {
         return path;

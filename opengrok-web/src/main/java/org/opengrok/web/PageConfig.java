@@ -233,17 +233,12 @@ public final class PageConfig {
      * {@code != null} indicates that an error occurred and one should not try to render a view.
      */
     public DiffData getDiffData() {
-        DiffData data = new DiffData();
-        data.path = getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR));
-        data.filename = Util.htmlize(getResourceFile().getName());
+        DiffData data = new DiffData(getPath().substring(0, getPath().lastIndexOf(PATH_SEPARATOR)),
+                Util.htmlize(getResourceFile().getName()));
 
         String srcRoot = getSourceRootPath();
         String context = req.getContextPath();
-
         String[] filepath = new String[2];
-        data.rev = new String[2];
-        data.file = new String[2][];
-        data.param = new String[2];
 
         /*
          * Basically the request URI looks like this:
