@@ -276,8 +276,9 @@ public final class PageConfig {
         String context = req.getContextPath();
         String[] filepath = new String[2];
 
-        if (!getFileRevision(data, context, filepath))
+        if (!getFileRevision(data, context, filepath)) {
             return data;
+        }
 
         data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
         if (data.genre == null || txtGenres.contains(data.genre)) {
