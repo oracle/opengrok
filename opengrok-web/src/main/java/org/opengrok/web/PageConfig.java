@@ -276,7 +276,6 @@ public final class PageConfig {
             InputStream[] in = new InputStream[2];
             try {
                 // Get input stream for both older and newer file.
-                ExecutorService executor = this.executor;
                 Future<?>[] future = new Future<?>[2];
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
