@@ -692,13 +692,14 @@ class FileHistoryCache implements HistoryCache {
                     LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
                             new Object[]{file, history.getRevisionList()});
                 }
+                storeFile(history, file, repository);
             } else if (time > env.getHistoryReaderTimeLimit()) {
                 if (LOGGER.isLoggable(Level.FINEST)) {
                     LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
                             new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
                 }
+                storeFile(history, file, repository);
             }
-            storeFile(history, file, repository);
         }
 
         return history;
