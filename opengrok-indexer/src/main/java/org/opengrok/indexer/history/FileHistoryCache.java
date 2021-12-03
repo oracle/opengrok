@@ -246,8 +246,10 @@ class FileHistoryCache implements HistoryCache {
      */
     private void writeHistoryToFile(File dir, History history, File cacheFile) throws HistoryException {
 
-        LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
-                new Object[]{cacheFile, history.getRevisionList()});
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
+                    new Object[]{cacheFile, history.getRevisionList()});
+        }
 
         // We have a problem that multiple threads may access the cache layer
         // at the same time. Since I would like to avoid read-locking, I just
@@ -309,8 +311,10 @@ class FileHistoryCache implements HistoryCache {
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
-                LOGGER.log(Level.FINEST, "for ''{0}'' merging old history {1} with new history {2}",
-                        new Object[]{cacheFile, histOld.getRevisionList(), histNew.getRevisionList()});
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "for ''{0}'' merging old history {1} with new history {2}",
+                            new Object[]{cacheFile, histOld.getRevisionList(), histNew.getRevisionList()});
+                }
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
                 ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
                 while (li.hasPrevious()) {
@@ -684,11 +688,15 @@ class FileHistoryCache implements HistoryCache {
         if (!file.isDirectory()) {
             // Either the cache is stale or retrieving the history took too long, cache it!
             if (cacheFile.exists()) {
-                LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
-                        new Object[]{file, history.getRevisionList()});
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
+                            new Object[]{file, history.getRevisionList()});
+                }
             } else if (time > env.getHistoryReaderTimeLimit()) {
-                LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
-                        new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
+                            new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
+                }
             }
             storeFile(history, file, repository);
         }
