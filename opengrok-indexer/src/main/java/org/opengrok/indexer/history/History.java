@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Class representing the history of a file.
@@ -156,6 +157,14 @@ public class History implements Serializable {
 
     public Set<String> getRenamedFiles() {
         return renamedFiles;
+    }
+
+    /**
+     * @return list of revisions
+     */
+    public List<String> getRevisionList() {
+        return getHistoryEntries().stream().
+                map(HistoryEntry::getRevision).collect(Collectors.toList());
     }
 
     /**

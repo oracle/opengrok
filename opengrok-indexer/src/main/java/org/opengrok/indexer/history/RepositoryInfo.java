@@ -96,6 +96,9 @@ public class RepositoryInfo implements Serializable {
         this.parent = orig.parent;
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
+        this.historyEnabled = orig.historyEnabled;
+        this.handleRenamedFiles = orig.handleRenamedFiles;
+        this.mergeCommitsEnabled = orig.mergeCommitsEnabled;
     }
 
     /**

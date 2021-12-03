@@ -100,7 +100,26 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean hasHistoryForDirectories();
 
     public String toString() {
-        return this.getDirectoryName();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("{");
+        stringBuilder.append("dir=");
+        stringBuilder.append(this.getDirectoryName());
+        stringBuilder.append(",");
+        stringBuilder.append("type=");
+        stringBuilder.append(getType());
+        stringBuilder.append(",");
+
+        if (!isHistoryEnabled()) {
+            stringBuilder.append("history=off");
+        } else {
+            stringBuilder.append("renamed=");
+            stringBuilder.append(this.isHandleRenamedFiles());
+            stringBuilder.append(",");
+            stringBuilder.append("merge=");
+            stringBuilder.append(this.isMergeCommitsEnabled());
+        }
+        stringBuilder.append("}");
+        return stringBuilder.toString();
     }
 
     /**

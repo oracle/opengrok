@@ -245,13 +245,19 @@ class FileHistoryCache implements HistoryCache {
      * @param cacheFile the file to store the history to
      */
     private void writeHistoryToFile(File dir, History history, File cacheFile) throws HistoryException {
+
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "writing history entries to ''{0}'': {1}",
+                    new Object[]{cacheFile, history.getRevisionList()});
+        }
+
         // We have a problem that multiple threads may access the cache layer
         // at the same time. Since I would like to avoid read-locking, I just
         // serialize the write access to the cache file. The generation of the
         // cache file would most likely be executed during index generation, and
-        // that happens sequencial anyway....
+        // that happens sequential anyway....
         // Generate the file with a temporary name and move it into place when
-        // I'm done so I don't have to protect the readers for partially updated
+        // done, so it is not necessary to protect the readers for partially updated
         // files...
         final File output;
         try {
@@ -305,6 +311,10 @@ class FileHistoryCache implements HistoryCache {
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "for ''{0}'' merging old history {1} with new history {2}",
+                            new Object[]{cacheFile, histOld.getRevisionList(), histNew.getRevisionList()});
+                }
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
                 ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
                 while (li.hasPrevious()) {
@@ -312,12 +322,12 @@ class FileHistoryCache implements HistoryCache {
                 }
                 history = new History(listOld);
 
-                // Retag the changesets in case there have been some new
+                // Re-tag the changesets in case there have been some new
                 // tags added to the repository. Technically we should just
-                // retag the last revision from the listOld however this
+                // re-tag the last revision from the listOld however this
                 // does not solve the problem when listNew contains new tags
-                // retroactively tagging changesets from listOld so we resort
-                // to this somewhat crude solution of retagging from scratch.
+                // retroactively tagging changesets from listOld, so we resort
+                // to this somewhat crude solution of re-tagging from scratch.
                 if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
                     history.strip();
                     repo.assignTagsInHistory(history);
@@ -361,16 +371,16 @@ class FileHistoryCache implements HistoryCache {
         }
 
         // If the merge failed, null history will be returned.
-        // In such case store at least new history as a best effort.
+        // In such case store at least new history as the best effort.
         if (history == null) {
+            LOGGER.log(Level.WARNING, "history cache for file ''{0}'' truncated to new history", file);
             history = histNew;
         }
 
         writeHistoryToFile(dir, history, cacheFile);
     }
 
-    private void storeFile(History histNew, File file, Repository repo)
-            throws HistoryException {
+    private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
         storeFile(histNew, file, repo, false);
     }
 
@@ -382,7 +392,7 @@ class FileHistoryCache implements HistoryCache {
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
                 "Could not store history for repository {0}: {1} is not a directory",
-                new Object[]{repository.getDirectoryName(), histDir});
+                new Object[]{repository, histDir});
         } else {
             storeLatestCachedRevision(repository, latestRev);
         }
@@ -495,7 +505,7 @@ class FileHistoryCache implements HistoryCache {
          * The renamed files will be handled separately.
          */
         LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till {2}",
-                new Object[]{regularFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
+                new Object[]{regularFiles.size(), repository, getRevisionString(tillRevision)});
         final File root = env.getSourceRootFile();
 
         final CountDownLatch latch = new CountDownLatch(regularFiles.size());
@@ -526,7 +536,7 @@ class FileHistoryCache implements HistoryCache {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
             LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
-                    new Object[]{fileHistoryCount, repository.getDirectoryName()});
+                    new Object[]{fileHistoryCount, repository});
         }
 
         if (!handleRenamedFiles) {
@@ -554,7 +564,7 @@ class FileHistoryCache implements HistoryCache {
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
         LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
-                new Object[]{renamedFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
+                new Object[]{renamedFiles.size(), repository, getRevisionString(tillRevision)});
 
         createDirectoriesForFiles(renamedFiles, repository, "renamed files for history " +
                 getRevisionString(tillRevision));
@@ -592,7 +602,7 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
-                new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
+                new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 
     private void createDirectoriesForFiles(Set<String> files, Repository repository, String label)
@@ -625,22 +635,22 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
-        File cache = getCachedFile(file);
-        if (isUpToDate(file, cache)) {
+        File cacheFile = getCachedFile(file);
+        if (isUpToDate(file, cacheFile)) {
             try {
                 if (fileHistoryCacheHits != null) {
                     fileHistoryCacheHits.increment();
                 }
-                return readCache(cache);
+                return readCache(cacheFile);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING,
-                        "Error when reading cache file '" + cache, e);
+                LOGGER.log(Level.WARNING, String.format("Error when reading cache file '%s'", cacheFile), e);
             }
         }
 
         if (fileHistoryCacheMisses != null) {
             fileHistoryCacheMisses.increment();
         }
+
         /*
          * Some mirrors of repositories which are capable of fetching history
          * for directories may contain lots of files untracked by given SCM.
@@ -666,21 +676,28 @@ class FileHistoryCache implements HistoryCache {
             time = System.currentTimeMillis() - time;
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
-            // An example is a non-SCCS file somewhere in an SCCS-controlled
-            // workspace.
+            // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
             return null;
         }
 
+        // Don't cache history-information for directories, since the
+        // history information on the directory may change if a file in
+        // a sub-directory change. This will cause us to present a stale
+        // history log until the current directory is updated and
+        // invalidates the cache entry.
         if (!file.isDirectory()) {
-            // Don't cache history-information for directories, since the
-            // history information on the directory may change if a file in
-            // a sub-directory change. This will cause us to present a stale
-            // history log until a the current directory is updated and
-            // invalidates the cache entry.
-            if ((cache != null) &&
-                        (cache.exists() ||
-                             (time > env.getHistoryReaderTimeLimit()))) {
-                // retrieving the history takes too long, cache it!
+            // Either the cache is stale or retrieving the history took too long, cache it!
+            if (cacheFile.exists()) {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
+                            new Object[]{file, history.getRevisionList()});
+                }
+                storeFile(history, file, repository);
+            } else if (time > env.getHistoryReaderTimeLimit()) {
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
+                            new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
+                }
                 storeFile(history, file, repository);
             }
         }
@@ -714,11 +731,10 @@ class FileHistoryCache implements HistoryCache {
         String repoDirBasename;
 
         try {
-            repoDirBasename = env.getPathRelativeToSourceRoot(
-                    new File(repository.getDirectoryName()));
+            repoDirBasename = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Could not resolve " +
-                repository.getDirectoryName() + " relative to source root", ex);
+            LOGGER.log(Level.WARNING,
+                    String.format("Could not resolve repository %s relative to source root", repository), ex);
             return null;
         } catch (ForbiddenSymlinkException ex) {
             LOGGER.log(Level.FINER, ex.getMessage());
@@ -751,8 +767,8 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for " + repository.getDirectoryName(),
-                ex);
+            LOGGER.log(Level.WARNING,
+                    String.format("Cannot write latest cached revision to file for repository %s", repository), ex);
         } finally {
            try {
                if (writer != null) {
@@ -771,8 +787,7 @@ class FileHistoryCache implements HistoryCache {
 
         String revPath = getRepositoryCachedRevPath(repository);
         if (revPath == null) {
-            LOGGER.log(Level.WARNING, "no rev path for {0}",
-                repository.getDirectoryName());
+            LOGGER.log(Level.WARNING, "no rev path for repository {0}", repository);
             return null;
         }
 
