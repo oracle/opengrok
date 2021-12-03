@@ -65,7 +65,6 @@ import org.opengrok.indexer.configuration.Filter;
 import org.opengrok.indexer.configuration.IgnoredNames;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
-import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -157,8 +156,9 @@ class FileHistoryCacheTest {
 
     /**
      * {@link FileHistoryCache#get(File, Repository, boolean)} should not disturb history cache
-     * if run after repository update and reindex.
+     * if run between repository update and reindex.
      */
+    @EnabledOnOs({OS.LINUX, OS.MAC, OS.SOLARIS, OS.AIX, OS.OTHER})
     @EnabledForRepository(MERCURIAL)
     @Test
     void testStoreTouchGet() throws Exception {
@@ -192,14 +192,17 @@ class FileHistoryCacheTest {
         // This makes sure that the file which contains the latest revision has indeed been created.
         assertEquals("11:bbb3ce75e1b8", cache.getLatestCachedRevision(repo));
 
-        // The history should not be disturbed.
-        // Make sure that get() retrieved the history from cache.
+        /*
+         * The history should not be disturbed.
+         * Make sure that get() retrieved the history from cache. Mocking/spying static methods
+         * (FileHistoryCache#readCache() in this case) is tricky so use the cache hits metric.
+         */
         double cacheHitsBeforeGet = cache.getFileHistoryCacheHits();
         History historyAfterReindex = cache.get(file, repo, false);
         double cacheHitsAfterGet = cache.getFileHistoryCacheHits();
         assertNotNull(historyAfterReindex);
         assertEquals(historyAfterImport, historyAfterReindex);
-        assertTrue(cacheHitsAfterGet - cacheHitsBeforeGet == 1);
+        assertEquals(1, cacheHitsAfterGet - cacheHitsBeforeGet);
     }
 
     /**
@@ -884,8 +887,7 @@ class FileHistoryCacheTest {
                 updatedHistory.getHistoryEntries(), false);
     }
 
-    private void checkNoHistoryFetchRepo(String reponame, String filename,
-            boolean hasHistory, boolean historyFileExists) throws Exception {
+    private void checkNoHistoryFetchRepo(String reponame, String filename, boolean hasHistory) throws Exception {
 
         File reposRoot = new File(repositories.getSourceRoot(), reponame);
         Repository repo = RepositoryFactory.getRepository(reposRoot);
@@ -899,13 +901,6 @@ class FileHistoryCacheTest {
         // in history cache.
         History retrievedHistory = cache.get(repoFile, repo, true);
         assertEquals(hasHistory, retrievedHistory != null);
-
-        // The file in history cache should not exist since
-        // FetchHistoryWhenNotInCache is set to false.
-        File dataRoot = new File(repositories.getDataRoot(),
-                "historycache" + File.separatorChar + reponame);
-        File fileHistory = new File(dataRoot, TandemPath.join(filename, ".gz"));
-        assertEquals(historyFileExists, fileHistory.exists());
     }
 
     /*
@@ -921,9 +916,9 @@ class FileHistoryCacheTest {
         cache.setHistoryIndexDone();
 
         // First try repo with ability to fetch history for directories.
-        checkNoHistoryFetchRepo("mercurial", "main.c", false, false);
+        checkNoHistoryFetchRepo("mercurial", "main.c", false);
         // Second try repo which can fetch history of individual files only.
-        checkNoHistoryFetchRepo("teamware", "header.h", true, true);
+        checkNoHistoryFetchRepo("teamware", "header.h", true);
     }
 
     /**

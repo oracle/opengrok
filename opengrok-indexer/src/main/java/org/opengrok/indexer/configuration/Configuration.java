@@ -108,11 +108,6 @@ public final class Configuration {
      */
     private boolean historyCache;
     /**
-     * The maximum time in milliseconds {@code HistoryCache.get()} can take
-     * before its result is cached.
-     */
-    private int historyCacheTime;
-    /**
      * flag to generate history. This is bigger hammer than @{code historyCache}
      * above. If set to false, no history query will be ever made and the webapp
      * will not display any history related links/allow any history queries.
@@ -543,7 +538,6 @@ public final class Configuration {
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
-        setHistoryCacheTime(30);
         setHistoryEnabled(true);
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
@@ -805,28 +799,6 @@ public final class Configuration {
      */
     public void setHistoryCache(boolean historyCache) {
         this.historyCache = historyCache;
-    }
-
-    /**
-     * How long can a history request take before it's cached? If the time is
-     * exceeded, the result is cached. This setting only affects
-     * {@code FileHistoryCache}.
-     *
-     * @return the maximum time in milliseconds a history request can take
-     * before it's cached
-     */
-    public int getHistoryCacheTime() {
-        return historyCacheTime;
-    }
-
-    /**
-     * Set the maximum time a history request can take before it's cached. This
-     * setting is only respected if {@code FileHistoryCache} is used.
-     *
-     * @param historyCacheTime maximum time in milliseconds
-     */
-    public void setHistoryCacheTime(int historyCacheTime) {
-        this.historyCacheTime = historyCacheTime;
     }
 
     public boolean isFetchHistoryWhenNotInCache() {

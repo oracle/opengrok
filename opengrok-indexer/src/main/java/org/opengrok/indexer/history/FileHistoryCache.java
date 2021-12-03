@@ -177,6 +177,10 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    double getFileHistoryCacheHits() {
+        return fileHistoryCacheHits.count();
+    }
+
     @Override
     public void optimize() {
         // nothing to do
@@ -669,37 +673,12 @@ class FileHistoryCache implements HistoryCache {
         }
 
         final History history;
-        long time;
         try {
-            time = System.currentTimeMillis();
             history = repository.getHistory(file);
-            time = System.currentTimeMillis() - time;
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled workspace.
             return null;
-        }
-
-        // Don't cache history-information for directories, since the
-        // history information on the directory may change if a file in
-        // a sub-directory change. This will cause us to present a stale
-        // history log until the current directory is updated and
-        // invalidates the cache entry.
-        if (!file.isDirectory()) {
-            // Either the cache is stale or retrieving the history took too long, cache it!
-            if (cacheFile.exists()) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "refreshing history for ''{0}'': {1}",
-                            new Object[]{file, history.getRevisionList()});
-                }
-                storeFile(history, file, repository);
-            } else if (time > env.getHistoryReaderTimeLimit()) {
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "getting history for ''{0}'' took longer than {1} ms, caching it: {2}",
-                            new Object[]{file, env.getHistoryReaderTimeLimit(), history.getRevisionList()});
-                }
-                storeFile(history, file, repository);
-            }
         }
 
         return history;
