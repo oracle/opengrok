@@ -26,6 +26,7 @@ package org.opengrok.indexer.history;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -80,7 +82,6 @@ class FileHistoryCacheTest {
     private FileHistoryCache cache;
 
     private boolean savedFetchHistoryWhenNotInCache;
-    private int savedHistoryReaderTimeLimit;
     private boolean savedIsHandleHistoryOfRenamedFiles;
     private boolean savedIsTagsEnabled;
 
@@ -96,7 +97,6 @@ class FileHistoryCacheTest {
         cache.initialize();
 
         savedFetchHistoryWhenNotInCache = env.isFetchHistoryWhenNotInCache();
-        savedHistoryReaderTimeLimit = env.getHistoryReaderTimeLimit();
         savedIsHandleHistoryOfRenamedFiles = env.isHandleHistoryOfRenamedFiles();
         savedIsTagsEnabled = env.isTagsEnabled();
     }
@@ -112,7 +112,6 @@ class FileHistoryCacheTest {
         cache = null;
 
         env.setFetchHistoryWhenNotInCache(savedFetchHistoryWhenNotInCache);
-        env.setHistoryReaderTimeLimit(savedHistoryReaderTimeLimit);
         env.setIgnoredNames(new IgnoredNames());
         env.setIncludedNames(new Filter());
         env.setHandleHistoryOfRenamedFiles(savedIsHandleHistoryOfRenamedFiles);
@@ -154,6 +153,53 @@ class FileHistoryCacheTest {
         } else {
             assertEquals(0, actual.getFiles().size());
         }
+    }
+
+    /**
+     * {@link FileHistoryCache#get(File, Repository, boolean)} should not disturb history cache
+     * if run after repository update and reindex.
+     */
+    @EnabledForRepository(MERCURIAL)
+    @Test
+    void testStoreTouchGet() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+
+        cache.store(historyToStore, repo);
+
+        // This makes sure that the file which contains the latest revision has indeed been created.
+        assertEquals("9:8b340409b3a8", cache.getLatestCachedRevision(repo));
+
+        File file = new File(reposRoot, "main.c");
+        assertTrue(file.exists());
+        FileTime fileTimeBeforeImport = Files.getLastModifiedTime(file.toPath());
+        History historyBeforeImport = cache.get(file, repo, false);
+
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
+                Paths.get(getClass().getResource("/history/hg-export.txt").toURI()).toString());
+        FileTime fileTimeAfterImport = Files.getLastModifiedTime(file.toPath());
+        assertTrue(fileTimeBeforeImport.compareTo(fileTimeAfterImport) < 0);
+
+        // This get() call basically mimics a request through the UI or API.
+        History historyAfterImport = cache.get(file, repo, false);
+        assertNotNull(historyAfterImport);
+        assertNotEquals(historyBeforeImport, historyAfterImport);
+
+        // Simulates reindex, or at least its first part when history cache is updated.
+        repo.createCache(cache, cache.getLatestCachedRevision(repo));
+
+        // This makes sure that the file which contains the latest revision has indeed been created.
+        assertEquals("11:bbb3ce75e1b8", cache.getLatestCachedRevision(repo));
+
+        // The history should not be disturbed.
+        // Make sure that get() retrieved the history from cache.
+        double cacheHitsBeforeGet = cache.getFileHistoryCacheHits();
+        History historyAfterReindex = cache.get(file, repo, false);
+        double cacheHitsAfterGet = cache.getFileHistoryCacheHits();
+        assertNotNull(historyAfterReindex);
+        assertEquals(historyAfterImport, historyAfterReindex);
+        assertTrue(cacheHitsAfterGet - cacheHitsBeforeGet == 1);
     }
 
     /**
@@ -870,12 +916,6 @@ class FileHistoryCacheTest {
     void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
         env.setFetchHistoryWhenNotInCache(false);
-
-        // Make cache.get() predictable. Normally when the retrieval of
-        // history of given file is faster than the limit, the history of this
-        // file is not stored. For the sake of this test we want the history
-        // to be always stored.
-        env.setHistoryReaderTimeLimit(0);
 
         // Pretend we are done with first phase of indexing.
         cache.setHistoryIndexDone();
