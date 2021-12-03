@@ -392,7 +392,7 @@ class FileHistoryCache implements HistoryCache {
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
                 "Could not store history for repository {0}: {1} is not a directory",
-                new Object[]{repository.getDirectoryName(), histDir});
+                new Object[]{repository, histDir});
         } else {
             storeLatestCachedRevision(repository, latestRev);
         }
@@ -505,7 +505,7 @@ class FileHistoryCache implements HistoryCache {
          * The renamed files will be handled separately.
          */
         LOGGER.log(Level.FINE, "Storing history for {0} regular files in repository ''{1}'' till {2}",
-                new Object[]{regularFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
+                new Object[]{regularFiles.size(), repository, getRevisionString(tillRevision)});
         final File root = env.getSourceRootFile();
 
         final CountDownLatch latch = new CountDownLatch(regularFiles.size());
@@ -536,7 +536,7 @@ class FileHistoryCache implements HistoryCache {
                 LOGGER.log(Level.SEVERE, "latch exception", ex);
             }
             LOGGER.log(Level.FINE, "Stored history for {0} regular files in repository ''{1}''",
-                    new Object[]{fileHistoryCount, repository.getDirectoryName()});
+                    new Object[]{fileHistoryCount, repository});
         }
 
         if (!handleRenamedFiles) {
@@ -564,7 +564,7 @@ class FileHistoryCache implements HistoryCache {
         renamedFiles = renamedFiles.stream().filter(f -> new File(env.getSourceRootPath() + f).exists()).
                 collect(Collectors.toSet());
         LOGGER.log(Level.FINE, "Storing history for {0} renamed files in repository ''{1}'' till {2}",
-                new Object[]{renamedFiles.size(), repository.getDirectoryName(), getRevisionString(tillRevision)});
+                new Object[]{renamedFiles.size(), repository, getRevisionString(tillRevision)});
 
         createDirectoriesForFiles(renamedFiles, repository, "renamed files for history " +
                 getRevisionString(tillRevision));
@@ -602,7 +602,7 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         LOGGER.log(Level.FINE, "Stored history for {0} renamed files in repository ''{1}''",
-                new Object[]{renamedFileHistoryCount.intValue(), repository.getDirectoryName()});
+                new Object[]{renamedFileHistoryCount.intValue(), repository});
     }
 
     private void createDirectoriesForFiles(Set<String> files, Repository repository, String label)
@@ -731,11 +731,10 @@ class FileHistoryCache implements HistoryCache {
         String repoDirBasename;
 
         try {
-            repoDirBasename = env.getPathRelativeToSourceRoot(
-                    new File(repository.getDirectoryName()));
+            repoDirBasename = env.getPathRelativeToSourceRoot(new File(repository.getDirectoryName()));
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Could not resolve " +
-                repository.getDirectoryName() + " relative to source root", ex);
+            LOGGER.log(Level.WARNING,
+                    String.format("Could not resolve repository %s relative to source root", repository), ex);
             return null;
         } catch (ForbiddenSymlinkException ex) {
             LOGGER.log(Level.FINER, ex.getMessage());
@@ -768,8 +767,8 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for " + repository.getDirectoryName(),
-                ex);
+            LOGGER.log(Level.WARNING,
+                    String.format("Cannot write latest cached revision to file for repository %s", repository), ex);
         } finally {
            try {
                if (writer != null) {
@@ -788,8 +787,7 @@ class FileHistoryCache implements HistoryCache {
 
         String revPath = getRepositoryCachedRevPath(repository);
         if (revPath == null) {
-            LOGGER.log(Level.WARNING, "no rev path for {0}",
-                repository.getDirectoryName());
+            LOGGER.log(Level.WARNING, "no rev path for repository {0}", repository);
             return null;
         }
 
