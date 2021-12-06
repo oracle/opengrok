@@ -604,12 +604,18 @@ public final class Suggester implements Closeable {
     }
 
     /**
+     * Do not allow more suggester rebuilds.
+     */
+    public void terminate() {
+        terminating = true;
+    }
+
+    /**
      * Closes opened resources.
      */
     @Override
     public void close() {
         executorService.shutdownNow();
-        terminating = true;
         projectData.values().forEach(f -> {
             try {
                 f.close();

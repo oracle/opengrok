@@ -412,6 +412,10 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void close() {
+        if (suggester != null) {
+            suggester.terminate();
+        }
+
         lock.writeLock().lock();
         try {
             scheduler.shutdownNow();
