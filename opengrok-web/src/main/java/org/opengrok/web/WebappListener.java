@@ -105,7 +105,7 @@ public final class WebappListener
         }
 
         // Check index(es).
-        check_index(env);
+        checkIndex(env);
 
         env.startExpirationTimer();
         startupTimer.record(Duration.between(start, Instant.now()));
@@ -116,13 +116,13 @@ public final class WebappListener
      * is marked as not being indexed.
      * @param env runtime environment
      */
-    private void check_index(RuntimeEnvironment env) {
+    private void checkIndex(RuntimeEnvironment env) {
         if (env.isProjectsEnabled()) {
             LOGGER.log(Level.FINE, "Checking indexes for all projects");
             Map<String, Project> projects = env.getProjects();
             File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
             if (indexRoot.exists()) {
-                for (String projectName : projects.keySet()) {
+                projects.keySet().forEach(projectName -> {
                     try {
                         IndexCheck.checkDir(new File(indexRoot, projectName));
                     } catch (Exception e) {
@@ -130,7 +130,7 @@ public final class WebappListener
                                 String.format("Project %s index check failed, marking as not indexed", projectName), e);
                         projects.get(projectName).setIndexed(false);
                     }
-                }
+                });
             }
             LOGGER.log(Level.FINE, "Index check for all projects done");
         } else {
