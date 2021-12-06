@@ -31,9 +31,9 @@ import static org.opengrok.indexer.configuration.ConfigMerge.merge;
  *
  * @author vkotal
  */
-public class ConfigMergeTest {
+class ConfigMergeTest {
     @Test
-    public void basicTest() throws Exception {
+    void basicTest() throws Exception {
 
         String srcRoot = "/foo";
         String dataRoot = "/bar";

@@ -216,14 +216,6 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testHistoryReaderTimeLimit() {
-        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals(30, instance.getHistoryReaderTimeLimit());
-        instance.setHistoryReaderTimeLimit(50);
-        assertEquals(50, instance.getHistoryReaderTimeLimit());
-    }
-
-    @Test
     public void testFetchHistoryWhenNotInCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isFetchHistoryWhenNotInCache());

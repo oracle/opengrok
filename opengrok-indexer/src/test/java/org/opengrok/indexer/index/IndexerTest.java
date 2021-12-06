@@ -320,12 +320,13 @@ public class IndexerTest {
     /**
      * Test that reindex after changing a file does not wipe out history index
      * for this file. This is important for the incremental history indexing.
-     * @throws Exception
      */
     @Test
     @EnabledForRepository(MERCURIAL)
     void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        String path = "/mercurial/bar.txt";
 
         TestRepository testrepo = new TestRepository();
         testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
@@ -334,11 +335,17 @@ public class IndexerTest {
         env.setDataRoot(testrepo.getDataRoot());
         env.setRepositories(testrepo.getSourceRoot());
 
+        // Create history cache.
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                false, null, List.of("mercurial"));
+        File historyFile = new File(env.getDataRootPath(),
+                TandemPath.join("historycache" + path, ".gz"));
+        assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
+
         // create index
         Project project = new Project("mercurial", "/mercurial");
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
-        String path = "/mercurial/bar.txt";
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener(path);
         idb.addIndexChangedListener(listener);
         idb.update();
@@ -346,9 +353,6 @@ public class IndexerTest {
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
-        File historyFile = new File(env.getDataRootPath(),
-                TandemPath.join("historycache" + path, ".gz"));
-        assertTrue(historyFile.exists(), String.format("history cache for %s has to exist", path));
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial", "bar.txt");
         assertTrue(bar.exists());
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(bar, true))) {

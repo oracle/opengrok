@@ -657,25 +657,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the max time a SCM operation may use to avoid being cached.
-     *
-     * @return the maximum time in milliseconds
-     */
-    public int getHistoryReaderTimeLimit() {
-        return syncReadConfiguration(Configuration::getHistoryCacheTime);
-    }
-
-    /**
-     * Specify the maximum time a SCM operation should take before it will be
-     * cached (in ms).
-     *
-     * @param historyCacheTime the max time in ms before it is cached
-     */
-    public void setHistoryReaderTimeLimit(int historyCacheTime) {
-        syncWriteConfiguration(historyCacheTime, Configuration::setHistoryCacheTime);
-    }
-
-    /**
      * Is history cache currently enabled?
      *
      * @return true if history cache is enabled
