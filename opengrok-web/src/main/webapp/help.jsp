@@ -201,8 +201,8 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
     <strong>^</strong> , e.g. help^4 opengrok - will make term help boosted
 </p>
 
-<p>Opengrok search is powered by <a href="http://lucene.apache.org/">Lucene</a>,
-for more detail on query syntax refer to <a href="http://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description">Lucene docs</a>.
+<p>Opengrok search is powered by <a href="https://lucene.apache.org/">Lucene</a>,
+for more detail on query syntax refer to <a href="https://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description">Lucene docs</a>.
 </p>
 
 <h4>Intelligence Window</h4>
