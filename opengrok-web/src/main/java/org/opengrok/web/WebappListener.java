@@ -118,21 +118,22 @@ public final class WebappListener
      */
     private void checkIndex(RuntimeEnvironment env) {
         if (env.isProjectsEnabled()) {
-            LOGGER.log(Level.FINE, "Checking indexes for all projects");
             Map<String, Project> projects = env.getProjects();
             File indexRoot = new File(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
             if (indexRoot.exists()) {
-                projects.keySet().forEach(projectName -> {
+                LOGGER.log(Level.FINE, "Checking indexes for all projects");
+                for (Map.Entry<String, Project> projectEntry : projects.entrySet()) {
                     try {
-                        IndexCheck.checkDir(new File(indexRoot, projectName));
+                        IndexCheck.checkDir(new File(indexRoot, projectEntry.getKey()));
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING,
-                                String.format("Project %s index check failed, marking as not indexed", projectName), e);
-                        projects.get(projectName).setIndexed(false);
+                                String.format("Project %s index check failed, marking as not indexed",
+                                        projectEntry.getKey()), e);
+                        projectEntry.getValue().setIndexed(false);
                     }
-                });
+                }
+                LOGGER.log(Level.FINE, "Index check for all projects done");
             }
-            LOGGER.log(Level.FINE, "Index check for all projects done");
         } else {
             LOGGER.log(Level.FINE, "Checking index");
             try {
