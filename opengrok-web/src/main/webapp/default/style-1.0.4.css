@@ -743,7 +743,7 @@ div[id^='src'] pre {
 
 .l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
-#difftable i, del.d { /* line number/annotation block */
+#difftable em, del.d { /* line number/annotation block */
     display: inline-block;
     width: 6ex;
     text-align: right;
