@@ -34,7 +34,7 @@ import java.util.TreeSet;
 import org.webjars.WebJarAssetLocator;
 
 /**
- * A list-like container for javascripts in the page.
+ * A list-like container for JavasScript sources in JSP/HTML pages.
  *
  * @author Krystof Tulinger
  */
@@ -62,7 +62,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         protected String scriptData;
         protected int priority;
 
-        public Script(String scriptData, int priority) {
+        protected Script(String scriptData, int priority) {
             this.scriptData = scriptData;
             this.priority = priority;
         }
