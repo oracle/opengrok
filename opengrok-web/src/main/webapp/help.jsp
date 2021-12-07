@@ -209,16 +209,16 @@ for more detail on query syntax refer to <a href="https://lucene.apache.org/core
 <p>
 Key "1" toggles <dfn>Intelligence Window</dfn>.  It gives the user many helper actions on the last symbol pointed by the mouse cursor.
 </p>
-<img src="<%= PageConfig.get(request).getCssDir() %>/img/intelli-window.png"/>
+<img src="<%= PageConfig.get(request).getCssDir() %>/img/intelli-window.png" alt="Intelligence window screenshot"/>
 
 <h5>Symbol Highlighting</h5>
 <p>
 Keys "2", "3", "4" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
 <p>
-Key "5" toggles unhighlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+Key "5" toggles un-highlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
-<img src="<%= PageConfig.get(request).getCssDir() %>/img/symbol-highlighting.png"/>
+<img src="<%= PageConfig.get(request).getCssDir() %>/img/symbol-highlighting.png" alt="symbol highlighting screenshot"/>
 
 <p>
     You can close the intelligence window either by mouse in the right upper corner or by keyboard with "Esc" key.
@@ -235,14 +235,14 @@ is made to the next symbol in the file from the current one. If you have highlig
 <p>
 The OpenGrok also provides an easy way how to jump through the large diffs finding the interesting pieces of code. In the diff mode you can enable diff jumper by hitting the "jumper" button.
 </p>
-<img src="<%= PageConfig.get(request).getCssDir() %>/img/diff-jumper.png"/>
+<img src="<%= PageConfig.get(request).getCssDir() %>/img/diff-jumper.png" alt="diff jumper screenshot"/>
 
 <h5>Mouse and keyboard navigation</h5>
 <p>
 You can then use your mouse to intuitively navigate yourself through the diff. Also there is a convenient shortcut for moving on your keyboard,
 you can use 'n' for next and 'b' for back to jump over to the next chunk. This is available even when the jumper window is not opened.
 </p>
-<img src="<%= PageConfig.get(request).getCssDir() %>/img/diff-jumping.png"/>
+<img src="<%= PageConfig.get(request).getCssDir() %>/img/diff-jumping.png" alt="screenshot of diff jumper in action"/>
 
         </div>
 <%
