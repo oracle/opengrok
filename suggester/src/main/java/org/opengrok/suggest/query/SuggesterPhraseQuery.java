@@ -26,6 +26,7 @@ package org.opengrok.suggest.query;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.util.ArrayList;
@@ -144,6 +145,11 @@ public class SuggesterPhraseQuery extends Query {
     @Override
     public Query rewrite(final IndexReader reader) {
         return phraseQuery.rewrite(reader);
+    }
+
+    @Override
+    public void visit(QueryVisitor visitor) {
+        visitor.visitLeaf(this);
     }
 
 }

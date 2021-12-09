@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.search.ConjunctionDISI;
+import org.apache.lucene.search.ConjunctionUtils;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
@@ -84,7 +84,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
         if (iterators.size() == 1) {
             conjunction = iterators.get(0);
         } else {
-            conjunction = ConjunctionDISI.intersectIterators(iterators);
+            conjunction = ConjunctionUtils.intersectIterators(iterators);
         }
         // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;
