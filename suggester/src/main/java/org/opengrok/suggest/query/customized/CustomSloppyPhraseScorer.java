@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.ConjunctionDISI;
+import org.apache.lucene.search.ConjunctionUtils;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
@@ -94,7 +94,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         if (iterators.length == 1) {
             conjunction = iterators[0];
         } else {
-            conjunction = ConjunctionDISI.intersectIterators(Arrays.asList(iterators));
+            conjunction = ConjunctionUtils.intersectIterators(Arrays.asList(iterators));
         }
         // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;

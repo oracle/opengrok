@@ -31,6 +31,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
@@ -240,6 +241,11 @@ public class CustomPhraseQuery extends Query {
     }
 
     @Override
+    public void visit(QueryVisitor visitor) {
+        visitor.visitLeaf(this);
+    }
+
+    @Override
     public Weight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) throws IOException {
         return new CustomPhraseWeight(searcher, this);
     }
@@ -263,7 +269,6 @@ public class CustomPhraseQuery extends Query {
             }
         }
 
-        @Override
         @Deprecated
         public void extractTerms(Set<Term> set) {
             throw new UnsupportedOperationException();
