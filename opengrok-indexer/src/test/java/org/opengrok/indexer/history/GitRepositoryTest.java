@@ -381,7 +381,7 @@ public class GitRepositoryTest {
     }
 
     @Test
-    void testInvalidRenamedFiles() {
+    void testInvalidRenamedFiles() throws Exception {
         String[][] tests = new String[][] {
                 {"", "67dfbe26"},
                 {"moved/renamed2.c", ""},
@@ -390,14 +390,13 @@ public class GitRepositoryTest {
                 {"moved/renamed2.c", null}
 
         };
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitRepository = (GitRepository) RepositoryFactory.getRepository(root);
         assertThrows(IOException.class, () -> {
-            File root = new File(repository.getSourceRoot(), "git");
-            GitRepository gitrepo = (GitRepository) RepositoryFactory.getRepository(root);
-
             for (String[] test : tests) {
                 String file = test[0];
                 String changeset = test[1];
-                gitrepo.findOriginalName(file, changeset);
+                gitRepository.findOriginalName(file, changeset);
             }
         });
     }
