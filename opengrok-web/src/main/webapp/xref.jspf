@@ -129,7 +129,7 @@ org.opengrok.indexer.web.QueryParameters"
                             defs, annotation, project);
                     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>" alt="<%= path %>"/>
+    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>" alt="Image from Source Repository"/>
     <pre><%
                     } else if (g == AbstractAnalyzer.Genre.HTML) {
                         /*
