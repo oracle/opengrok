@@ -1099,8 +1099,7 @@ public final class PageConfig {
      */
     public String getPath() {
         if (path == null) {
-            path = Util.getCanonicalPath(Laundromat.launderInput(
-                    req.getPathInfo()), PATH_SEPARATOR);
+            path = Util.getCanonicalPath(Laundromat.launderInput(req.getPathInfo()), PATH_SEPARATOR);
             if (PATH_SEPARATOR_STRING.equals(path)) {
                 path = "";
             }
