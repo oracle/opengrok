@@ -141,6 +141,13 @@ public final class Indexer {
     private static OptionParser optParser = null;
     private static boolean verbose = false;
 
+    private static final String[] ON_OFF = {ON, OFF};
+    private static final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
+    private static final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
+    private static final String OPENGROK_JAR = "opengrok.jar";
+
+    private static final int WEBAPP_CONNECT_TIMEOUT = 1000;  // in milliseconds
+
     public static Indexer getInstance() {
         return index;
     }
@@ -161,12 +168,10 @@ public final class Indexer {
 
         boolean createDict = false;
 
-        int CONNECT_TIMEOUT = 1000;  // in milliseconds
-
         try {
             argv = parseOptions(argv);
 
-            if (webappURI != null && !HostUtil.isReachable(webappURI, CONNECT_TIMEOUT)) {
+            if (webappURI != null && !HostUtil.isReachable(webappURI, WEBAPP_CONNECT_TIMEOUT)) {
                 System.err.println(webappURI + " is not reachable.");
                 System.exit(1);
             }
@@ -413,10 +418,6 @@ public final class Indexer {
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
         final String[] usage = {HELP_OPT_1};
-        final String program = "opengrok.jar";
-        final String[] ON_OFF = {ON, OFF};
-        final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
-        final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -448,8 +449,7 @@ public final class Indexer {
         // Limit usage lines to 72 characters for concise formatting.
 
         optParser = OptionParser.execute(parser -> {
-            parser.setPrologue(
-                String.format("\nUsage: java -jar %s [options] [subDir1 [...]]%n", program));
+            parser.setPrologue(String.format("%nUsage: java -jar %s [options] [subDir1 [...]]%n", OPENGROK_JAR));
 
             parser.on(HELP_OPT_3, HELP_OPT_2, HELP_OPT_1, "=[mode]",
                     "With no mode specified, display this usage summary. Or specify a mode:",
@@ -813,7 +813,7 @@ public final class Indexer {
 
             parser.on("--userPage", "=URL",
                 "Base URL of the user Information provider.",
-                "Example: \"http://www.myserver.org/viewProfile.jspa?username=\".",
+                "Example: \"https://www.example.org/viewProfile.jspa?username=\".",
                 "Use \"none\" to disable link.").execute(v -> cfg.setUserPage((String) v));
 
             parser.on("--userPageSuffix", "=URL-suffix",
@@ -864,7 +864,7 @@ public final class Indexer {
             die("Missing webappURI setting");
         }
 
-        if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
+        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
             die("Repositories were specified; history is off however");
         }
 
@@ -992,7 +992,7 @@ public final class Indexer {
         }
 
         // Projects need to be created first since when adding repositories below,
-        // some of the project properties might be needed for that.
+        // some project properties might be needed for that.
         if (addProjects) {
             File[] files = env.getSourceRootFile().listFiles();
             Map<String, Project> projects = env.getProjects();
@@ -1068,9 +1068,9 @@ public final class Indexer {
         IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
