@@ -964,9 +964,6 @@ public final class Indexer {
      * generated for repositories (at least for those which support getting
      * history per directory).
      *
-     * PMD wants us to use length() &gt; 0 &amp;&amp; charAt(0) instead of startsWith()
-     * for performance. We prefer clarity to performance here, so silence it.
-     *
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
@@ -977,7 +974,6 @@ public final class Indexer {
      * @throws IndexerException indexer exception
      * @throws IOException I/O exception
      */
-    @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             Set<String> searchPaths,
             boolean addProjects,
