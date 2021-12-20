@@ -262,8 +262,8 @@ public final class Indexer {
             // Check version of index(es) versus current Lucene version and exit
             // with return code upon failure.
             if (checkIndex) {
-                if (cfg == null) {
-                    System.err.println("Need configuration to check index (use -R)");
+                if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
+                    System.err.println("Need data root in configuration for index check (use -R)");
                     System.exit(1);
                 }
 
