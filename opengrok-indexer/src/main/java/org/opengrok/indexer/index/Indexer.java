@@ -248,9 +248,9 @@ public final class Indexer {
                 subFilesList.add(path);
             }
 
-            // If an user used customizations for projects he perhaps just
+            // If a user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
-            // expects a name for the project. Therefore we fill the name
+            // expects a name for the project. Therefore, we fill the name
             // according to the project key which is the same.
             for (Entry<String, Project> entry : cfg.getProjects().entrySet()) {
                 if (entry.getValue().getName() == null) {
