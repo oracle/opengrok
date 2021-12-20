@@ -965,7 +965,7 @@ public final class Indexer {
      * history per directory).
      *
      * PMD wants us to use length() &gt; 0 &amp;&amp; charAt(0) instead of startsWith()
-     * for performance. We prefer clarity over performance here, so silence it.
+     * for performance. We prefer clarity to performance here, so silence it.
      *
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
