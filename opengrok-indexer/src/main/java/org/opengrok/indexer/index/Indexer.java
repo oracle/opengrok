@@ -378,7 +378,7 @@ public final class Indexer {
 
             writeConfigToFile(env, configFilename);
 
-            // Finally ping webapp to refresh indexes in the case of partial reindex
+            // Finally, ping webapp to refresh indexes in the case of partial reindex
             // or send new configuration to the web application in the case of full reindex.
             if (webappURI != null) {
                 if (!subFiles.isEmpty()) {
