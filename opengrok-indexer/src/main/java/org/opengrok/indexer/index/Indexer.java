@@ -241,9 +241,8 @@ public final class Indexer {
             canonicalRoots.addAll(cfg.getCanonicalRoots());
             cfg.setCanonicalRoots(canonicalRoots);
 
-            // Assemble the unprocessed command line arguments (possibly
-            // a list of paths). This will be used to perform more fine
-            // grained checking in invalidateRepositories().
+            // Assemble the unprocessed command line arguments (possibly a list of paths).
+            // This will be used to perform more fine-grained checking in invalidateRepositories().
             for (String arg : argv) {
                 String path = Paths.get(cfg.getSourceRoot(), arg).toString();
                 subFilesList.add(path);
@@ -425,8 +424,8 @@ public final class Indexer {
         }
 
         /*
-         * Pre-match any of the --help options so that some possible exception-
-         * generating args handlers (e.g. -R) can be short-circuited.
+         * Pre-match any of the --help options so that some possible exception-generating args handlers (e.g. -R)
+         * can be short-circuited.
          */
         boolean preHelp = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
                 HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
