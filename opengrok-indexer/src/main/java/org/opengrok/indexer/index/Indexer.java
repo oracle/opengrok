@@ -141,6 +141,13 @@ public final class Indexer {
     private static OptionParser optParser = null;
     private static boolean verbose = false;
 
+    private static final String[] ON_OFF = {ON, OFF};
+    private static final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
+    private static final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
+    private static final String OPENGROK_JAR = "opengrok.jar";
+
+    private static final int WEBAPP_CONNECT_TIMEOUT = 1000;  // in milliseconds
+
     public static Indexer getInstance() {
         return index;
     }
@@ -161,12 +168,10 @@ public final class Indexer {
 
         boolean createDict = false;
 
-        int CONNECT_TIMEOUT = 1000;  // in milliseconds
-
         try {
             argv = parseOptions(argv);
 
-            if (webappURI != null && !HostUtil.isReachable(webappURI, CONNECT_TIMEOUT)) {
+            if (webappURI != null && !HostUtil.isReachable(webappURI, WEBAPP_CONNECT_TIMEOUT)) {
                 System.err.println(webappURI + " is not reachable.");
                 System.exit(1);
             }
@@ -236,17 +241,16 @@ public final class Indexer {
             canonicalRoots.addAll(cfg.getCanonicalRoots());
             cfg.setCanonicalRoots(canonicalRoots);
 
-            // Assemble the unprocessed command line arguments (possibly
-            // a list of paths). This will be used to perform more fine
-            // grained checking in invalidateRepositories().
+            // Assemble the unprocessed command line arguments (possibly a list of paths).
+            // This will be used to perform more fine-grained checking in invalidateRepositories().
             for (String arg : argv) {
                 String path = Paths.get(cfg.getSourceRoot(), arg).toString();
                 subFilesList.add(path);
             }
 
-            // If an user used customizations for projects he perhaps just
+            // If a user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
-            // expects a name for the project. Therefore we fill the name
+            // expects a name for the project. Therefore, we fill the name
             // according to the project key which is the same.
             for (Entry<String, Project> entry : cfg.getProjects().entrySet()) {
                 if (entry.getValue().getName() == null) {
@@ -257,8 +261,8 @@ public final class Indexer {
             // Check version of index(es) versus current Lucene version and exit
             // with return code upon failure.
             if (checkIndex) {
-                if (cfg == null) {
-                    System.err.println("Need configuration to check index (use -R)");
+                if (cfg.getDataRoot() == null || cfg.getDataRoot().isEmpty()) {
+                    System.err.println("Need data root in configuration for index check (use -R)");
                     System.exit(1);
                 }
 
@@ -374,7 +378,7 @@ public final class Indexer {
 
             writeConfigToFile(env, configFilename);
 
-            // Finally ping webapp to refresh indexes in the case of partial reindex
+            // Finally, ping webapp to refresh indexes in the case of partial reindex
             // or send new configuration to the web application in the case of full reindex.
             if (webappURI != null) {
                 if (!subFiles.isEmpty()) {
@@ -413,10 +417,6 @@ public final class Indexer {
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
         final String[] usage = {HELP_OPT_1};
-        final String program = "opengrok.jar";
-        final String[] ON_OFF = {ON, OFF};
-        final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
-        final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -424,8 +424,8 @@ public final class Indexer {
         }
 
         /*
-         * Pre-match any of the --help options so that some possible exception-
-         * generating args handlers (e.g. -R) can be short-circuited.
+         * Pre-match any of the --help options so that some possible exception-generating args handlers (e.g. -R)
+         * can be short-circuited.
          */
         boolean preHelp = Arrays.stream(argv).anyMatch(s -> HELP_OPT_1.equals(s) ||
                 HELP_OPT_2.equals(s) || HELP_OPT_3.equals(s));
@@ -448,8 +448,7 @@ public final class Indexer {
         // Limit usage lines to 72 characters for concise formatting.
 
         optParser = OptionParser.execute(parser -> {
-            parser.setPrologue(
-                String.format("\nUsage: java -jar %s [options] [subDir1 [...]]%n", program));
+            parser.setPrologue(String.format("%nUsage: java -jar %s [options] [subDir1 [...]]%n", OPENGROK_JAR));
 
             parser.on(HELP_OPT_3, HELP_OPT_2, HELP_OPT_1, "=[mode]",
                     "With no mode specified, display this usage summary. Or specify a mode:",
@@ -813,7 +812,7 @@ public final class Indexer {
 
             parser.on("--userPage", "=URL",
                 "Base URL of the user Information provider.",
-                "Example: \"http://www.myserver.org/viewProfile.jspa?username=\".",
+                "Example: \"https://www.example.org/viewProfile.jspa?username=\".",
                 "Use \"none\" to disable link.").execute(v -> cfg.setUserPage((String) v));
 
             parser.on("--userPageSuffix", "=URL-suffix",
@@ -864,7 +863,7 @@ public final class Indexer {
             die("Missing webappURI setting");
         }
 
-        if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
+        if (!repositories.isEmpty() && !cfg.isHistoryEnabled()) {
             die("Repositories were specified; history is off however");
         }
 
@@ -965,9 +964,6 @@ public final class Indexer {
      * generated for repositories (at least for those which support getting
      * history per directory).
      *
-     * PMD wants us to use length() &gt; 0 &amp;&amp; charAt(0) instead of startsWith()
-     * for performance. We prefer clarity over performance here, so silence it.
-     *
      * @param env runtime environment
      * @param searchPaths list of paths in which to search for repositories
      * @param addProjects if true, add projects
@@ -978,7 +974,6 @@ public final class Indexer {
      * @throws IndexerException indexer exception
      * @throws IOException I/O exception
      */
-    @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             Set<String> searchPaths,
             boolean addProjects,
@@ -992,39 +987,12 @@ public final class Indexer {
         }
 
         // Projects need to be created first since when adding repositories below,
-        // some of the project properties might be needed for that.
+        // some project properties might be needed for that.
         if (addProjects) {
             File[] files = env.getSourceRootFile().listFiles();
             Map<String, Project> projects = env.getProjects();
 
-            // Keep a copy of the old project list so that we can preserve
-            // the customization of existing projects.
-            Map<String, Project> oldProjects = new HashMap<>();
-            for (Project p : projects.values()) {
-                oldProjects.put(p.getName(), p);
-            }
-
-            projects.clear();
-
-            // Add a project for each top-level directory in source root.
-            for (File file : files) {
-                String name = file.getName();
-                String path = '/' + name;
-                if (oldProjects.containsKey(name)) {
-                    // This is an existing object. Reuse the old project,
-                    // possibly with customizations, instead of creating a
-                    // new with default values.
-                    Project p = oldProjects.get(name);
-                    p.setPath(path);
-                    p.setName(name);
-                    p.completeWithDefaults();
-                    projects.put(name, p);
-                } else if (!name.startsWith(".") && file.isDirectory()) {
-                    // Found a new directory with no matching project, so
-                    // create a new project with default properties.
-                    projects.put(name, new Project(name, path));
-                }
-            }
+            addProjects(files, projects);
         }
 
         if (!searchPaths.isEmpty()) {
@@ -1053,6 +1021,37 @@ public final class Indexer {
         }
     }
 
+    private void addProjects(File[] files, Map<String, Project> projects) {
+        // Keep a copy of the old project list so that we can preserve
+        // the customization of existing projects.
+        Map<String, Project> oldProjects = new HashMap<>();
+        for (Project p : projects.values()) {
+            oldProjects.put(p.getName(), p);
+        }
+
+        projects.clear();
+
+        // Add a project for each top-level directory in source root.
+        for (File file : files) {
+            String name = file.getName();
+            String path = '/' + name;
+            if (oldProjects.containsKey(name)) {
+                // This is an existing object. Reuse the old project,
+                // possibly with customizations, instead of creating a
+                // new with default values.
+                Project p = oldProjects.get(name);
+                p.setPath(path);
+                p.setName(name);
+                p.completeWithDefaults();
+                projects.put(name, p);
+            } else if (!name.startsWith(".") && file.isDirectory()) {
+                // Found a new directory with no matching project, so
+                // create a new project with default properties.
+                projects.put(name, new Project(name, path));
+            }
+        }
+    }
+
     /**
      * This is the second phase of the indexer which generates Lucene index
      * by passing source code files through ctags, generating xrefs
@@ -1068,9 +1067,9 @@ public final class Indexer {
         IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         IndexerParallelizer parallelizer = env.getIndexerParallelizer();
         final CountDownLatch latch;
         if (subFiles == null || subFiles.isEmpty()) {
