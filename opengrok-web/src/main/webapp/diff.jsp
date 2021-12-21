@@ -113,9 +113,9 @@ include file="mast.jsp"
         </tr>
         </thead>
         <tbody>
-        <tr><td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>"/>
+        <tr><td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(0) %>" alt="previous image"/>
             </td>
-            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>"/>
+            <td><img src="<%= link %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= data.getRev(1) %>" alt="new image"/>
             </td>
         </tr>
         </tbody>
