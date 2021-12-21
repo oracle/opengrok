@@ -605,6 +605,10 @@ table#revisions tbody tr td p {
     background-color: #8bd98b;
 }
 
+#diffbar .it, #difftable .it {
+    font-style: italic;
+}
+
 #diffbar .legend, #diffbar .tabs, #diffbar .ctype {
     display: inline-block;
 }
@@ -743,7 +747,7 @@ div[id^='src'] pre {
 
 .l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
-#difftable em, del.d { /* line number/annotation block */
+#difftable .it, del.d { /* line number/annotation block */
     display: inline-block;
     width: 6ex;
     text-align: right;
