@@ -245,7 +245,7 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
      * @param stack  the stack
      * @param entity the authorization entity (stack or plugin)
      */
-    protected void addPlugin(AuthorizationStack stack, AuthorizationEntity entity) {
+    void addPlugin(AuthorizationStack stack, AuthorizationEntity entity) {
         if (stack != null) {
             stack.add(entity);
         }
