@@ -266,12 +266,12 @@ action=download">download diff</a></span><%
             <tr class="k"><td><%
                         if (full || (cn2 - ln2 < 20)) {
                             for (int j = ln2; j < cn2; j++) {
-                %><em><%= ++ln2 %></em><%=
+                %><span class="it"><%= ++ln2 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln2; j < ln2 + 8; j++) {
-                %><em><%= j+1 %></em><%=
+                %><span class="it"><%= j+1 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -283,7 +283,7 @@ action=download">download diff</a></span><%
                     --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
-                %><em><%= ++ln2 %></em><%= Util.htmlize(file2[j]) %><br/><%
+                %><span class="it"><%= ++ln2 %></span><%= Util.htmlize(file2[j]) %><br/><%
                             }
                         }
                 %></td>
@@ -308,10 +308,10 @@ action=download">download diff</a></span><%
                     }
                 %>"><td><%
                         for (int j = cn2; j  < cl2; j++) {
-                %><em class="a"><%= ++ln2 %></em><%= file2[j]
+                %><span class="a it"><%= ++ln2 %></span><%= file2[j]
                 %><br/><%
                         }
-                %><em class="a"><%= ++ln2 %></em><%= file2[cl2] %><%
+                %><span class="a it"><%= ++ln2 %></span><%= file2[cl2] %><%
                         if(full) {
                 %><a name="<%= ln2 %>" /><%
                         }
@@ -325,17 +325,17 @@ action=download">download diff</a></span><%
             <tr class="k"><td><%
                         if (full || cn2 - ln2 < 20) {
                             for (int j = ln1; j < cn1; j++) {
-                %><em><%= ++ln1 %></em><%=
+                %><span class="it"><%= ++ln1 %></span><%=
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %></td><td><%
                             for (int j = ln2; j  < cn2 ; j++) {
-                %><em><%= ++ln2 %></em><%=
+                %><span class="it"><%= ++ln2 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln1; j < ln1 + 8; j++) {
-                %><em><%= j+1 %></em><%=
+                %><span class="it"><%= j+1 %></span><%=
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn1 - ln1 - 16
@@ -347,12 +347,12 @@ action=download">download diff</a></span><%
                     --- <br/><br/><%
                             ln1 = cn1 - 8;
                             for (int j = ln1; j < cn1; j++) {
-                %><em><%= ++ln1 %></em><%=
+                %><span class="it"><%= ++ln1 %></span><%=
                     Util.htmlize(file1[j]) %><br/><%
                             }
                 %></td><td><%
                             for (int j = ln2; j < ln2 + 8; j++) {
-                %><em><%= j+1 %></em><%=
+                %><span class="it"><%= j+1 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                 %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -364,7 +364,7 @@ action=download">download diff</a></span><%
                     --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
-                %><em><%= ++ln2 %></em><%=
+                %><span class="it"><%= ++ln2 %></span><%=
                     Util.htmlize(file2[j]) %><br/><%
                             }
                         }
@@ -374,11 +374,11 @@ action=download">download diff</a></span><%
             %>
             <tr class="k chunk"><td><%
                     for (int j = cn1; j  <= cl1; j++) {
-                %><em><%= ++ln1 %></em><%= file1[j] %><br/><%
+                %><span class="it"><%= ++ln1 %></span><%= file1[j] %><br/><%
                     }
                 %></td><td><%
                     for (int j = cn2; j  <= cl2; j++) {
-                %><em><%= ++ln2 %></em><a name="<%= ln2 %>"></a><%=
+                %><span class="it"><%= ++ln2 %></span><a name="<%= ln2 %>"></a><%=
                     file2[j] %><br/><%
                     }
                 %></td>
@@ -389,12 +389,12 @@ action=download">download diff</a></span><%
                     if (cn1 > ln1) {
                         if (full || cn1 - ln1 < 20) {
                             for (int j = ln1; j < cn1; j++) {
-        %><em><%= ++ln1 %></em><%=
+        %><span class="it"><%= ++ln1 %></span><%=
             Util.htmlize(file1[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln1; j < ln1 + 8; j++) {
-        %><em><%= j+1 %></em><%=
+        %><span class="it"><%= j+1 %></span><%=
             Util.htmlize(file1[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn1 - ln1 - 16
@@ -405,13 +405,13 @@ action=download">download diff</a></span><%
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%=ln1%>">view full</a>) --- <br/><br/><%
                             ln1 = cn1 - 8;
                             for (int j = ln1; j < cn1; j++) {
-        %><em><%= ++ln1 %></em><%=
+        %><span class="it"><%= ++ln1 %></span><%=
             Util.htmlize(file1[j]) %><br/><%
                             }
                         }
                     }
                     for (int j = cn1; j  <= cl1 ; j++) {
-        %><em><%= ++ln1 %></em><%= file1[j] %><br/><%
+        %><span class="it"><%= ++ln1 %></span><%= file1[j] %><br/><%
                     }
                     if (full) {
         %><a name="<%=ln1%>" ></a><%
@@ -421,12 +421,12 @@ action=download">download diff</a></span><%
                     if (cn2 > ln2) {
                         if (full || cn2 - ln2 < 20) {
                             for (int j = ln2; j  < cn2 ; j++) {
-        %><em><%= ++ln2 %></em><%=
+        %><span class="it"><%= ++ln2 %></span><%=
             Util.htmlize(file2[j]) %><br/><%
                             }
                         } else {
                             for (int j = ln2; j < ln2 + 8; j++) {
-        %><em><%= j+1 %></em><%=
+        %><span class="it"><%= j+1 %></span><%=
             Util.htmlize(file2[j]) %><br/><%
                             }
         %><br/>--- <strong><%= cn2 - ln2 - 16
@@ -437,13 +437,13 @@ action=download">download diff</a></span><%
 <%= QueryParameters.DIFF_LEVEL_PARAM_EQ %>1#<%= ln2 %>">view full</a>) --- <br/><br/><%
                             ln2 = cn2 - 8;
                             for (int j = ln2; j < cn2; j++) {
-            %><em><%= ++ln2 %></em><%=
+            %><span class="it"><%= ++ln2 %></span><%=
                 Util.htmlize(file2[j]) %><br/><%
                             }
                         }
                     }
                     for (int j = cn2; j  <= cl2 ; j++) {
-        %><em><%= ++ln2 %></em><%= file2[j] %><br/><%
+        %><span class="it"><%= ++ln2 %></span><%= file2[j] %><br/><%
                     }
                     if (full) {
         %><a name="<%= ln2 %>"></a><%
@@ -458,11 +458,11 @@ action=download">download diff</a></span><%
             %>
             <tr><td><%
                     for (int j = ln1; j < file1.length ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file1[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 %></td><td><%
                     for (int j = ln2; j < file2.length ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file2[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %></td>
             </tr>
@@ -472,12 +472,12 @@ action=download">download diff</a></span><%
             %>
             <tr><td><%
                     for (int j = ln1; j < ln1 + 8 ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file1[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 %><br/> --- <strong><%= file1.length - ln1 - 8
                 %> unchanged lines hidden</strong> --- </td><td><%
                     for (int j = ln2; j < ln2 + 8 ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file2[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %><br/>--- <strong><%= file1.length - ln1 - 8
                 %> unchanged lines hidden</strong> ---</td>
@@ -490,7 +490,7 @@ action=download">download diff</a></span><%
             %>
             <tr><td><%
                     for (int j = ln2; j < file2.length ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file2[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %></td>
             </tr>
@@ -500,7 +500,7 @@ action=download">download diff</a></span><%
             %>
             <tr><td><%
                     for (int j = ln2; j < ln2 + 8 ; j++) {
-                %><em><%= j+1 %></em><%= Util.htmlize(file2[j]) %><br/><%
+                %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
                 %><br/>--- <strong><%= file2.length - ln2 - 8
                 %> unchanged lines hidden</strong> ---</td>
@@ -511,11 +511,11 @@ action=download">download diff</a></span><%
             } else if (type == DiffType.OLD) {
                 if (full || file1.length - ln1 < 20) {
                     for (int j = ln1; j < file1.length ; j++) {
-        %><em><%= j+1 %></em><%= Util.htmlize(file1[j]) %><br/><%
+        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
                 } else {
                     for (int j = ln1; j < ln1 + 8 ; j++) {
-        %><em><%= j+1 %></em><%= Util.htmlize(file1[j]) %><br/><%
+        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file1[j]) %><br/><%
                     }
         %><br/> --- <strong><%= file1.length - ln1 - 8
         %> unchanged lines hidden</strong> ---<br/><%
@@ -523,11 +523,11 @@ action=download">download diff</a></span><%
             } else if (type == DiffType.NEW) {
                 if (full || file2.length - ln2 < 20) {
                     for (int j = ln2; j < file2.length ; j++) {
-        %><em><%= j+1 %></em><%=Util.htmlize(file2[j])%><br/><%
+        %><span class="it"><%= j+1 %></span><%=Util.htmlize(file2[j])%><br/><%
                     }
                 } else {
                     for (int j = ln2; j < ln2 + 8 ; j++) {
-        %><em><%= j+1 %></em><%= Util.htmlize(file2[j]) %><br/><%
+        %><span class="it"><%= j+1 %></span><%= Util.htmlize(file2[j]) %><br/><%
                     }
         %><br/> --- <strong><%= file2.length - ln2 - 8
         %> unchanged lines hidden</strong> ---<br/><%
