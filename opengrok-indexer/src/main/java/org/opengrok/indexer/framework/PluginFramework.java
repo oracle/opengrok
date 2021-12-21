@@ -80,7 +80,7 @@ public abstract class PluginFramework<PluginType> {
      * @param classType the class of the plugin type
      * @param path      the plugin directory path
      */
-    public PluginFramework(Class<PluginType> classType, String path) {
+    protected PluginFramework(Class<PluginType> classType, String path) {
         this.classType = classType;
         setPluginDirectory(path);
     }

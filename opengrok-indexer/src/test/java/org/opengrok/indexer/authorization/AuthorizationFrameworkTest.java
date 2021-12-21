@@ -32,6 +32,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.condition.DeliberateRuntimeException;
@@ -928,5 +929,16 @@ public class AuthorizationFrameworkTest {
 
     private static TestCase NewTest(boolean expected, HttpServletRequest request, Nameable entity) {
         return new TestCase(expected, request, entity);
+    }
+
+    @Test
+    void setPluginDirectoryTest() {
+        String pluginDirectoryPath = "foo";
+        AuthorizationFramework authorizationFramework = new AuthorizationFramework(pluginDirectoryPath, null);
+        assertEquals(pluginDirectoryPath, authorizationFramework.getPluginDirectory().toString());
+
+        pluginDirectoryPath = "bar";
+        authorizationFramework.setPluginDirectory(pluginDirectoryPath);
+        assertEquals(pluginDirectoryPath, authorizationFramework.getPluginDirectory().toString());
     }
 }
