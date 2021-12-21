@@ -378,12 +378,12 @@ public final class AuthorizationFramework extends PluginFramework<IAuthorization
         loadAllPlugins(loadingStack);
 
         AuthorizationStack oldStack;
-        /**
-         * Replace the stack in a write lock to avoid inconsistent state between
+        /*
+         * Replace the stack in write lock to avoid inconsistent state between
          * the stack change and currently executing requests performing some
          * authorization on the same stack.
          *
-         * @see #performCheck is controlled with a read lock
+         * performCheck() uses read lock.
          */
         lock.writeLock().lock();
         try {
