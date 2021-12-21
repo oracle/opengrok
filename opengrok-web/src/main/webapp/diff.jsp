@@ -52,7 +52,7 @@ private String getAnnotateRevision(DiffData data) {
      * This block must be the first block before any other output in the
      * response.
      *
-     * If there is already any output written into the response and we
+     * If there is already any output written into the response, and we
      * use the same response and reset the content and the headers then we have
      * a collision with the response streams and the "getOutputStream() has
      * already been called" exception occurs.
