@@ -43,7 +43,7 @@ public class MercurialIsWorkingTest {
 
     @BeforeAll
     public static void setUpClass() throws Exception {
-        repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
+        repository.create(RepositoryFactoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll

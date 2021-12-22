@@ -69,7 +69,7 @@ public class BitKeeperRepositoryTest {
     public void setUp() {
         try {
             testRepo = new TestRepository();
-            testRepo.create(getClass().getResourceAsStream("repositories.zip"));
+            testRepo.create(getClass().getResource("/repositories"));
             final File root = new File(testRepo.getSourceRoot(), "bitkeeper");
             bkRepo = (BitKeeperRepository) RepositoryFactory.getRepository(root);
             bkFiles = Arrays.asList(root.list(new BitKeeperFilenameFilter()));

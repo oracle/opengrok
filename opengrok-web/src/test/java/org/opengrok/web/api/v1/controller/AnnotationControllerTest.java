@@ -66,7 +66,7 @@ public class AnnotationControllerTest extends OGKJerseyTest {
     public void setUp() throws Exception {
         super.setUp();
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());

@@ -34,6 +34,7 @@ import org.opengrok.indexer.util.TestRepository;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,13 +85,13 @@ public class MercurialRepositoryTest {
      * Set up a test repository. Should be called by the tests that need it. The
      * test repository will be destroyed automatically when the test finishes.
      */
-    private void setUpTestRepository() throws IOException {
+    private void setUpTestRepository() throws IOException, URISyntaxException {
         repository = new TestRepository();
-        repository.create(getClass().getResourceAsStream("repositories.zip"));
+        repository.create(getClass().getResource("/repositories"));
     }
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() throws IOException, URISyntaxException {
         setUpTestRepository();
     }
 

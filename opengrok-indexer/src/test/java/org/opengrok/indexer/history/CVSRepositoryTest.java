@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,9 +63,9 @@ public class CVSRepositoryTest {
      * Set up a test repository. Should be called by the tests that need it. The
      * test repository will be destroyed automatically when the test finishes.
      */
-    private void setUpTestRepository() throws IOException {
+    private void setUpTestRepository() throws IOException, URISyntaxException {
         repository = new TestRepository();
-        repository.create(getClass().getResourceAsStream("repositories.zip"));
+        repository.create(getClass().getResource("/repositories"));
 
         // Checkout cvsrepo anew in order to get the CVS/Root files point to
         // the temporary directory rather than the OpenGrok workspace directory

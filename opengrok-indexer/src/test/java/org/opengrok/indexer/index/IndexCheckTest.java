@@ -25,6 +25,7 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,9 +67,9 @@ class IndexCheckTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getResourceAsStream("/org/opengrok/indexer/history/repositories.zip"));
+        repository.create(IndexerTest.class.getResource("/repositories"));
         oldIndexDataDir = null;
         configuration = new Configuration();
         configuration.setDataRoot(env.getDataRootPath());

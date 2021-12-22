@@ -24,6 +24,7 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
@@ -53,8 +54,8 @@ public class RCSRepositoryTest {
     private static final String[] REVISIONS = {"1.2", "1.1"};
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
-        repository.create(RCSRepositoryTest.class.getResourceAsStream("repositories.zip"));
+    public static void setUpClass() throws IOException, URISyntaxException {
+        repository.create(RCSRepositoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll

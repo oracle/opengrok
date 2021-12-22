@@ -31,6 +31,7 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -38,10 +39,10 @@ public class IndexerMainTest {
     private TestRepository repository;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
     }
 
     @AfterEach

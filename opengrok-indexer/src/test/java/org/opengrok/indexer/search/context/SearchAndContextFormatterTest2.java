@@ -90,10 +90,10 @@ public class SearchAndContextFormatterTest2 {
         assertTrue(dataroot.isDirectory(), "dataroot.isDirectory()");
 
         repository1 = new TestRepository();
-        repository1.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository1.create(HistoryGuru.class.getResource("/repositories"));
 
         repository2 = new TestRepository();
-        repository2.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository2.create(HistoryGuru.class.getResource("/repositories"));
 
         // Create symlink #1 underneath source root.
         final String SYMLINK1 = "symlink1";

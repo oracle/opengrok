@@ -329,7 +329,7 @@ public class IndexerTest {
         String path = "/mercurial/bar.txt";
 
         TestRepository testrepo = new TestRepository();
-        testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        testrepo.create(HistoryGuru.class.getResource("/repositories"));
 
         env.setSourceRoot(testrepo.getSourceRoot());
         env.setDataRoot(testrepo.getDataRoot());
@@ -375,7 +375,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         TestRepository testrepo = new TestRepository();
-        testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        testrepo.create(HistoryGuru.class.getResource("/repositories"));
         env.setSourceRoot(testrepo.getSourceRoot());
 
         env.setRepositories(testrepo.getSourceRoot());

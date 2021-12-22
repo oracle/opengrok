@@ -65,7 +65,7 @@ class SearchAndContextFormatterTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
 
         env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));

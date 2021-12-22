@@ -60,7 +60,7 @@ public class RepositoryFactoryTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        repository.create(RepositoryFactoryTest.class.getResourceAsStream("repositories.zip"));
+        repository.create(RepositoryFactoryTest.class.getResource("/repositories"));
         savedDisabledRepositories = env.getDisabledRepositories();
         savedIsProjectsEnabled = env.isProjectsEnabled();
     }

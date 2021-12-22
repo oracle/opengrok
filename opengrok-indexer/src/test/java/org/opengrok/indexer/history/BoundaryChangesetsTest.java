@@ -53,7 +53,7 @@ public class BoundaryChangesetsTest {
     @BeforeEach
     public void setUp() throws Exception {
         repositories = new TestRepository();
-        repositories.create(getClass().getResourceAsStream("repositories.zip"));
+        repositories.create(getClass().getResource("/repositories"));
 
         File reposRoot = new File(repositories.getSourceRoot(), "git");
         Repository repo = RepositoryFactory.getRepository(reposRoot);

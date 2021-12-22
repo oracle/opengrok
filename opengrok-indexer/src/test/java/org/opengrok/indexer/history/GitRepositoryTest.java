@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -76,8 +77,8 @@ public class GitRepositoryTest {
     private GitRepository instance;
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
-        repository.create(GitRepositoryTest.class.getResourceAsStream("repositories.zip"));
+    public static void setUpClass() throws IOException, URISyntaxException {
+        repository.create(GitRepositoryTest.class.getResource("/repositories"));
     }
 
     @AfterAll
