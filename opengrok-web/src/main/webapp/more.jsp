@@ -83,7 +83,7 @@ file="mast.jsp"
     try {
         Query tquery = qbuilder.build();
         if (tquery != null) {
-%><p><span class="pagetitle">Lines Matching <b><%= tquery %></b></span></p>
+%><p><span class="pagetitle">Lines Matching <span class="bold"><%= tquery %></span></span></p>
 <div id="more" style="line-height:1.5em;">
     <pre><%
             String xrefPrefix = request.getContextPath() + Prefix.XREF_P;
