@@ -55,20 +55,23 @@ public class TestRepository {
     private static final char JAR_PATH_DELIMITER = '!';
 
     private static final Map<Path, Path> renameMappings = new LinkedHashMap<>(Map.of(
-            Path.of("bazaar", "bzr"), Path.of("bazaar", ".bzr"),
+            Path.of("bazaar", "bzr"),
+            Path.of("bazaar", ".bzr"),
 
-            Path.of("bitkeeper", "bk", "BitKeeper", "etc", "SCCS_dir"),
-            Path.of("bitkeeper", ".bk", "BitKeeper", "etc", "SCCS"),
-            Path.of("bitkeeper", "bk", "SCCS_dir"),
-            Path.of("bitkeeper", ".bk", "SCCS"),
+            Path.of("bitkeeper", "bk"),
+            Path.of("bitkeeper", ".bk"),
 
-            Path.of("bitkeeper", "bk"), Path.of("bitkeeper", ".bk"),
-            Path.of("mercurial", "hg"), Path.of("mercurial", ".hg"),
-            Path.of("mercurial", "hgignore"), Path.of("mercurial", ".hgignore"),
-            Path.of("git", "git"), Path.of("git", ".git"),
-            Path.of("cvs_test", "cvsrepo", "CVS_dir"), Path.of("cvs_test", "cvsrepo", "CVS"),
-            Path.of("rcs_test", "RCS_dir"), Path.of("rcs_test", "RCS"),
-            Path.of("teamware", "SCCS_dir"), Path.of("teamware", "SCCS")
+            Path.of("mercurial", "hg"),
+            Path.of("mercurial", ".hg"),
+
+            Path.of("mercurial", "hgignore"),
+            Path.of("mercurial", ".hgignore"),
+
+            Path.of("git", "git"),
+            Path.of("git", ".git"),
+
+            Path.of("cvs_test", "cvsrepo", "CVS_dir"),
+            Path.of("cvs_test", "cvsrepo", "CVS")
     ));
 
     private final RuntimeEnvironment env;
@@ -102,30 +105,35 @@ public class TestRepository {
 
     private void copyDirectory(Path src, Path dest) throws IOException {
         try (Stream<Path> stream = Files.walk(src)) {
-            stream.forEach(source -> {
-                if (source.equals(src)) {
+            stream.forEach(sourceFile -> {
+                if (sourceFile.equals(src)) {
                     return;
                 }
                 try {
-                    // possibly strip zip filesystem for the startsWith method to work
-                    var relativePath = Path.of(src.relativize(source).toString());
-                    for (var e : renameMappings.entrySet()) {
-                        if (relativePath.startsWith(e.getKey())) {
-                            if (relativePath.getNameCount() > e.getKey().getNameCount()) {
-                                relativePath = relativePath.subpath(e.getKey().getNameCount(), relativePath.getNameCount());
-                            } else {
-                                relativePath = Path.of("");
-                            }
-                            relativePath = e.getValue().resolve(relativePath);
-                            break;
-                        }
-                    }
-                    Files.copy(source, dest.resolve(relativePath.toString()), REPLACE_EXISTING);
+                    Path destRelativePath = getDestinationRelativePath(src, sourceFile);
+                    Files.copy(sourceFile, dest.resolve(destRelativePath.toString()), REPLACE_EXISTING);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             });
         }
+    }
+
+    private Path getDestinationRelativePath(Path sourceDirectory, Path sourceFile) {
+        // possibly strip zip filesystem for the startsWith method to work
+        var relativePath = Path.of(sourceDirectory.relativize(sourceFile).toString());
+        for (var e : renameMappings.entrySet()) {
+            if (relativePath.startsWith(e.getKey())) {
+                if (relativePath.getNameCount() > e.getKey().getNameCount()) {
+                    relativePath = relativePath.subpath(e.getKey().getNameCount(), relativePath.getNameCount());
+                } else {
+                    relativePath = Path.of("");
+                }
+                relativePath = e.getValue().resolve(relativePath);
+                break;
+            }
+        }
+        return relativePath;
     }
 
     public void create(InputStream inputBundle) throws IOException {
