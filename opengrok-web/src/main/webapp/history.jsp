@@ -148,8 +148,8 @@ include file="httpheader.jspf"
 %>
         <div id="Masthead">History log of 
         <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-        (Results <b> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start
-            %></b> of <b><%= totalHits %></b>)
+        (Results <span class="bold"> <%= totalHits != 0 ? start + 1 : 0 %> – <%= thispage + start
+            %></span> of <span class="bold"><%= totalHits %></span>)
         </div>
 <%
     }
@@ -271,7 +271,7 @@ document.domReady.push(function() {domReadyHistory();});
                     %>
         <tr class="revtags-hidden">
             <td colspan="<%= colspan %>" class="revtags">
-                <b>Revision tags:</b> <%= tags %>
+                <span class="bold">Revision tags:</span> <%= tags %>
             </td>
         </tr><tr style="display: none;"></tr><%
                 }
@@ -432,7 +432,7 @@ document.domReady.push(function() {domReadyHistory();});
 
 </form><%
             if (striked) {
-%><p><b>Note:</b> No associated file changes are available for
+%><p><span class="bold">Note:</span> No associated file changes are available for
 revisions with strike-through numbers (eg. <del>1.45</del>)</p><%
             }
 %>

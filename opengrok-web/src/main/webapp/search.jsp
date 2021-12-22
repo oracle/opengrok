@@ -160,7 +160,7 @@ include file="menu.jspf"
             %><%= Util.htmlize(SearchHelper.PARSE_ERROR_MSG) %>
             <br/>You might try to enclose your search term in quotes,
             <a href="help.jsp#escaping">escape special characters</a>
-            with <b>\</b>, or read the <a href="help.jsp">Help</a>
+            with <code>\</code>, or read the <a href="help.jsp">Help</a>
             on the query language. Error message from parser:<br/>
             <%= Util.htmlize(errorMsg.substring(SearchHelper.PARSE_ERROR_MSG.length())) %><%
         } else {
@@ -196,8 +196,8 @@ include file="menu.jspf"
         %></p><%
         }
         %>
-        <p class="pagetitle"> Your search <b><%
-            Util.htmlize(searchHelper.getQuery().toString(), out); %></b>
+        <p class="pagetitle"> Your search <span class="bold"><%
+            Util.htmlize(searchHelper.getQuery().toString(), out); %></span>
             did not match any files.
             <br/> Suggestions:<br/>
         </p>
@@ -216,10 +216,10 @@ include file="menu.jspf"
         // We have a lots of results to show: create a slider for
         String slider = Util.createSlider(start, max, totalHits, request);
         %>
-        <p class="pagetitle">Searched <b><%
+        <p class="pagetitle">Searched <span class="bold"><%
             Util.htmlize(searchHelper.getQuery().toString(), out);
-            %></b> (Results <b> <%= start + 1 %> – <%= thispage + start
-            %></b> of <b><%= totalHits %></b>) sorted by <%=
+            %></span> (Results <span class="bold"> <%= start + 1 %> – <%= thispage + start
+            %></span> of <span class="bold"><%= totalHits %></span>) sorted by <%=
             searchHelper.getOrder().getDesc() %></p><%
         if (slider.length() > 0) {
         %>

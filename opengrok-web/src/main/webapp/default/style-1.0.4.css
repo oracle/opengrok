@@ -65,6 +65,10 @@ tbody:not(.search-result) tr:nth-child(EVEN) {
     background-color: #e8e8f0;
 }
 
+.bold {
+    font-weight: bold;
+}
+
 .btn {
     padding-left: 7px;
     padding-right: 7px;
