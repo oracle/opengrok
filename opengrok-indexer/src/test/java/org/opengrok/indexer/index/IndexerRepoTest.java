@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 import java.io.File;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,10 +62,10 @@ public class IndexerRepoTest {
     private TestRepository repository;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, URISyntaxException {
         repository = new TestRepository();
         // For these tests we need Mercurial repository with renamed files.
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
     }
 
     @AfterEach

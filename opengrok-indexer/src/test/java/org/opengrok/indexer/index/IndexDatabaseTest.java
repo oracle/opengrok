@@ -64,8 +64,7 @@ public class IndexDatabaseTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         repository = new TestRepository();
-        repository.create(
-                HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());

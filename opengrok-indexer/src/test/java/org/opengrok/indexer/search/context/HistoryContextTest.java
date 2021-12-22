@@ -57,8 +57,7 @@ public class HistoryContextTest {
     @BeforeAll
     public static void setUpClass() throws Exception {
         repositories = new TestRepository();
-        repositories.create(HistoryContextTest.class.getResourceAsStream(
-                "/org/opengrok/indexer/history/repositories.zip"));
+        repositories.create(HistoryContextTest.class.getResource("/repositories"));
         RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 

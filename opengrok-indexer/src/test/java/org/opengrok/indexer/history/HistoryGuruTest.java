@@ -73,7 +73,7 @@ public class HistoryGuruTest {
         savedNestingMaximum = env.getNestingMaximum();
 
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
         RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 FILES, true);

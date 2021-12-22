@@ -50,7 +50,7 @@ class DiffTest {
     @BeforeAll
     static void setUp() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+        repository.create(HistoryGuru.class.getResource("/repositories"));
 
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());

@@ -412,6 +412,14 @@ Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <addDefaultExcludes>false</addDefaultExcludes>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
