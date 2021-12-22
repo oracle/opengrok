@@ -70,7 +70,7 @@ To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
 To find assignments to variable foo:
 <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>%22foo+%3D%22">"foo ="</a>
 
-To find Makefiles where pstack binary is being built:
+    To find Makefiles where the <code>pstack</code> binary is being built:
 <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>pstack&amp;
 <%= QueryParameters.PATH_SEARCH_PARAM_EQ %>Makefile">pstack <%= QueryBuilder.PATH %>:Makefile</a>
 
@@ -99,9 +99,9 @@ To find all main methods in all files analyzed by C analyzer (so .c, .h, ...) do
 <h4>More info:</h4>
 A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
 <ul>
-    <li>a plus "<strong>+</strong>" or a minus "<strong>-</strong>" sign, indicating that the clause
+    <li>a plus "<code>+</code>" or a minus "<code>-</code>" sign, indicating that the clause
         is required or prohibited respectively; or</li>
-    <li>a <dfn>term</dfn> followed by a colon "<strong>:</strong>", indicating the
+    <li>a <dfn>term</dfn> followed by a colon "<code>:</code>", indicating the
         <dfn>field</dfn> to be searched. This enables one to construct queries
         which search multiple <dfn>fields</dfn>.</li>
 </ul>
@@ -110,32 +110,32 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
     <li>a <dfn>term</dfn>, indicating all the documents that contain this term;
         or</li>
     <li>a <dfn>phrase</dfn> - group of words surrounded by double quotes
-        <strong>" "</strong>, e.g. "hello dolly"  </li>
-    <li>a nested query, enclosed in parentheses "<strong>(</strong>" "<strong>)</strong>" (also
+        <code>" "</code>, e.g. "hello dolly"  </li>
+    <li>a nested query, enclosed in parentheses "<code>(</code>" "<code>)</code>" (also
         called query/field <dfn>grouping</dfn>) . Note that this may be used
         with a +/- prefix to require any of a set of terms. </li>
     <li>boolean <dfn>operators</dfn> which allow terms to be combined through
-        logic operators. Supported are <strong>AND</strong>(<strong>&amp;&amp;</strong>), "<strong>+</strong>",
-        <strong>OR</strong>(<strong>||</strong>), <strong>NOT</strong>(<strong>!</strong>) and "<strong>-</strong>" (Note: they
+        logic operators. Supported are <code>AND</code>(<code>&amp;&amp;</code>), "<code>+</code>",
+        <code>OR</code>(<code>||</code>), <code>NOT</code>(<code>!</code>) and "<code>-</code>" (Note: they
         must be ALL CAPS).</li>
 </ul>
-<p>Regular Expression, Wildcard, Fuzzy, Proximity &amp; Range Searches:</p>
+<p>Regular Expression, Wildcard, Fuzzy, Proximity and Range Searches:</p>
 <ul>
-    <li>to perform a regular expression search use the "<strong>/</strong>" enclosure,
+    <li>to perform a regular expression search use the "<code>/</code>" enclosure,
         e.g.  /[mb]an/ - will search for man or for ban;<br/>
         NOTE: path field search escapes "/" by default, so it only supports
         regexps when the search string <u>starts and ends</u> with "/".<br/>
-        More info can be found on <a href="http://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">Lucene regexp page</a>.
+        More info can be found on <a href="https://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">Lucene regexp page</a>.
     </li>
-    <li>to perform a single character wildcard search use the "<strong>?</strong>" symbol,
-        e.g.  te?t</li>
-    <li>to perform a multiple character wildcard search use the "<strong>*</strong>"
-        symbol, e.g. test* or te*t</li>
+    <li>to perform a single character wildcard search use the "<code>?</code>" symbol,
+        e.g. <code>te?t</code></li>
+    <li>to perform a multiple character wildcard search use the "<code>*</code>"
+        symbol, e.g. <code>test*</code> or <code>te*t</code></li>
     <li>you can use a * or ? symbol as the first character of a search
         (unless not enabled using indexer option -a).</li>
     <li>to do a fuzzy search (find words similar in spelling, based on the
         Levenshtein Distance, or Edit Distance algorithm) use the tilde,
-        "<strong>~</strong>", e.g. rcs~ </li>
+        "<code>~</code>", e.g. rcs~ </li>
     <li>to do a proximity search use the tilde, "~", symbol at the end of a
         Phrase. For example to search for a "opengrok" and "help" within 10
         words of each other enter: "opengrok help"~10 </li>
@@ -143,7 +143,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
         between the lower and upper bound specified by the Range Query. Range
         Queries can be inclusive or exclusive of the upper and lower bounds.
         Sorting is done lexicographically. Inclusive queries are denoted by
-        square brackets <strong>[ ]</strong> , exclusive by curly brackets <strong>{ }</strong>.
+        square brackets <code>[ ]</code> , exclusive by curly brackets <code>{ }</code>.
         For example: title:{Aida TO Carmen} - will find all documents between
         Aida to Carmen, exclusive of Aida and Carmen. </li>
 </ul>
@@ -152,9 +152,9 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
 <p>
     Opengrok supports escaping special characters that are part of the query
     syntax. Current special characters are:<br/>
-    <strong>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \ / </strong><br/>
+    <code>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \ / </code><br/>
     To escape these character use the \ before the character. For example to
-    search for <strong>(1+1):2</strong> use the query: <strong>\(1\+1\)\:2</strong>
+    search for <code>(1+1):2</code> use the query: <code>\(1\+1\)\:2</code>
 </p>
 <p>
     NOTE on analyzers: Indexed words are made up of Alpha-Numeric and Underscore
@@ -162,11 +162,11 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
     Most other characters (including single and double quotes) are treated as
     "spaces/whitespace" (so even if you escape them, they will not be found, since
     most analyzers ignore them). <br/>
-    The exceptions are: <strong>@ $ % ^ &amp; = ? . :</strong> which are mostly indexed as
+    The exceptions are: <code>@ $ % ^ &amp; = ? . :</code> which are mostly indexed as
     separate words.<br/>
     Because some of them are part of the query syntax, they must be escaped with a
     reverse slash as noted above.<br/>
-    So searching for <strong>\+1</strong> or <strong>\+ 1</strong> will both find <strong>+1</strong> and <strong>+ 1</strong>.
+    So searching for <code>\+1</code> or <code>\+ 1</code> will both find <code>+1</code> and <code>+ 1</code>.
 </p>
 
 <p>Valid <dfn>FIELDs</dfn> are</p>
@@ -198,7 +198,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
 
 <p>
     The term (phrases) can be boosted (making it more relevant) using a caret
-    <strong>^</strong> , e.g. help^4 opengrok - will make term help boosted
+    <code>^</code> , e.g. help^4 opengrok - will make term help boosted
 </p>
 
 <p>Opengrok search is powered by <a href="https://lucene.apache.org/">Lucene</a>,
