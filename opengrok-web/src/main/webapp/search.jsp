@@ -117,7 +117,6 @@ include file="httpheader.jspf"
                 <label for="sortby">Sort by</label>
                 <%
 {
-    PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
     StringBuilder url = createUrl(request, searchHelper, true).append("&amp;").
             append(QueryParameters.SORT_PARAM_EQ);
@@ -149,7 +148,6 @@ include file="menu.jspf"
 
     <div id="results"> <%
 {
-    PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
