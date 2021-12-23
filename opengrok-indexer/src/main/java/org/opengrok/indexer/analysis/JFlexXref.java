@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -286,7 +286,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                 case LABEL:
                     // Only PowerShell seems to be using this.
                     out.write("<a class=\"xlbl\" name=\"");
-                    Util.URIEncode(lstr, out);
+                    Util.uriEncode(lstr, out);
                     out.write("\">");
                     Util.htmlize(str, out, PRE);
                     out.write("</a>");

@@ -164,9 +164,9 @@ public class CustomAssertions {
         int ln0 = diffLines.get(0);
         int numln = diffLines.size();
         int loff = (Math.min(ln0, expecteds.length)) + 1;
-        int lnum = count_within(expecteds.length, ln0, numln);
+        int lnum = countWithin(expecteds.length, ln0, numln);
         int roff = (Math.min(ln0, actuals.length)) + 1;
-        int rnum = count_within(actuals.length, ln0, numln);
+        int rnum = countWithin(actuals.length, ln0, numln);
 
         System.out.format("@@ -%d,%d +%d,%d @@", loff, lnum, roff, rnum);
         System.out.println();
@@ -189,7 +189,7 @@ public class CustomAssertions {
         }
     }
 
-    private static int count_within(int maxoffset, int ln0, int numln) {
+    private static int countWithin(int maxoffset, int ln0, int numln) {
         while (numln > 0) {
             if (ln0 + numln <= maxoffset) {
                 return numln;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.web.api.v1.controller;
@@ -651,7 +651,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void ZtestRebuild() throws InterruptedException {
+    void zTestRebuild() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .request()
@@ -662,7 +662,7 @@ public class SuggesterControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void ZtestRebuildProject() throws InterruptedException {
+    void zTestRebuildProject() throws InterruptedException {
         Response res = target(SuggesterController.PATH)
                 .path("rebuild")
                 .path("c")

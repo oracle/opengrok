@@ -89,7 +89,7 @@ public class HistoryContextTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testGetContext_3args() throws Exception {
+    public void testGetContext3Args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile").toString();
 
@@ -136,7 +136,7 @@ public class HistoryContextTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testGetContext_4args() throws Exception {
+    public void testGetContext4args() throws Exception {
         String path = "/mercurial/Makefile";
         Path file = Paths.get(repositories.getSourceRoot(), "mercurial", "Makefile");
         String parent = file.getParent().toString();

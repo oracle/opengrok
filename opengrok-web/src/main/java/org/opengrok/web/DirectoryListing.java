@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -232,7 +232,7 @@ public class DirectoryListing {
                 out.write("</td><td><a href=\"");
                 if (isDir) {
                     String longpath = getSimplifiedPath(child);
-                    out.write(Util.URIEncodePath(longpath));
+                    out.write(Util.uriEncodePath(longpath));
                     out.write("/\"><b>");
                     int idx;
                     if ((idx = longpath.lastIndexOf('/')) > 0) {
@@ -245,7 +245,7 @@ public class DirectoryListing {
                     }
                     out.write("</b></a>/");
                 } else {
-                    out.write(Util.URIEncodePath(filename));
+                    out.write(Util.uriEncodePath(filename));
                     out.write("\">");
                     out.write(filename);
                     out.write("</a>");

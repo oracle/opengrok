@@ -291,7 +291,7 @@ document.domReady.push(function() {domReadyHistory();});
             <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + uriEncodedName + "?" +
-                        QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(rev) %>"><%= rev %>
+                        QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(rev) %>"><%= rev %>
                 </a></td>
             <td><%
                 %><input type="radio"

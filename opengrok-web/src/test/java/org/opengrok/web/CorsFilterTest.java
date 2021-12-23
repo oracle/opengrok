@@ -44,7 +44,7 @@ public class CorsFilterTest {
     }
 
     @Test
-    public void CorsTest() {
+    public void corsTest() {
         testBoth("https://example.org", List.of("*"));
     }
 

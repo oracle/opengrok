@@ -218,29 +218,29 @@ public final class IOUtils {
      * Byte-order markers.
      */
     private static final Map<String, byte[]> BOMS = Map.of(
-            StandardCharsets.UTF_8.name(), UTF_8_BOM(),
-            StandardCharsets.UTF_16BE.name(), UTF_16BE_BOM(),
-            StandardCharsets.UTF_16LE.name(), UTF_16LE_BOM()
+            StandardCharsets.UTF_8.name(), utf8Bom(),
+            StandardCharsets.UTF_16BE.name(), utf16BeBom(),
+            StandardCharsets.UTF_16LE.name(), utf16LeBom()
     );
 
     /**
      * Gets a new array containing the UTF-8 BOM.
      */
-    public static byte[] UTF_8_BOM() {
+    public static byte[] utf8Bom() {
         return new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
     }
 
     /**
      * Gets a new array containing the UTF-16BE BOM (Big-Endian).
      */
-    public static byte[] UTF_16BE_BOM() {
+    public static byte[] utf16BeBom() {
         return new byte[]{(byte) 0xFE, (byte) 0xFF};
     }
 
     /**
      * Gets a new array containing the UTF-16LE BOM (Little-Endian).
      */
-    public static byte[] UTF_16LE_BOM() {
+    public static byte[] utf16LeBom() {
         return new byte[]{(byte) 0xFF, (byte) 0xFE};
     }
 

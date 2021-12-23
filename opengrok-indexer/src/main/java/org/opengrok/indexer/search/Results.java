@@ -163,7 +163,7 @@ public final class Results {
             throws HistoryException, IOException, ClassNotFoundException {
         Project p;
         String contextPath = sh.getContextPath();
-        String ctxE = Util.URIEncodePath(contextPath);
+        String ctxE = Util.uriEncodePath(contextPath);
         String xrefPrefix = contextPath + Prefix.XREF_P;
         String morePrefix = contextPath + Prefix.MORE_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
@@ -178,7 +178,7 @@ public final class Results {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
             out.write(xrefPrefixE);
-            out.write(Util.URIEncodePath(parent));
+            out.write(Util.uriEncodePath(parent));
             out.write("/\">");
             out.write(htmlize(parent));
             out.write("/</a>");
@@ -205,7 +205,7 @@ public final class Results {
             for (int docId : entry.getValue()) {
                 Document doc = sh.getSearcher().doc(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
-                String rpathE = Util.URIEncodePath(rpath);
+                String rpathE = Util.uriEncodePath(rpath);
                 if (evenRow) {
                     out.write("<tr class=\"search-result-even-row\">");
                 } else {

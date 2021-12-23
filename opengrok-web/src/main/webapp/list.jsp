@@ -190,7 +190,7 @@ document.pageReady.push(function() { pageReadyList();});
             FileExtraZipper zipper = new FileExtraZipper();
             List<DirectoryEntry> entries = zipper.zip(resourceFile, files, extras);
 
-            List<String> readMes = dl.extraListTo(Util.URIEncodePath(request.getContextPath()),
+            List<String> readMes = dl.extraListTo(Util.uriEncodePath(request.getContextPath()),
                     resourceFile, out, path, entries);
             File[] catfiles = cfg.findDataFiles(readMes);
             for (int i=0; i < catfiles.length; i++) {
@@ -206,7 +206,7 @@ document.pageReady.push(function() { pageReadyList();});
             <h3><%= readMes.get(i) %></h3>
         </div>
         <div class="markdown-content"
-             data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.URIEncodePath(cfg.getPath() + readMes.get(i)) %>">
+             data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.uriEncodePath(cfg.getPath() + readMes.get(i)) %>">
         </div>
         <pre data-markdown-original><%
             Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));

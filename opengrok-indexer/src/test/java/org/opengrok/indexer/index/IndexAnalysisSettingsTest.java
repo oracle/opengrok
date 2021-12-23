@@ -23,10 +23,7 @@
 package org.opengrok.indexer.index;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.search.QueryBuilder;
 
@@ -42,17 +39,9 @@ public class IndexAnalysisSettingsTest {
     private static final String PROJECT_NAME = "foo-1-2-3";
     private static final long ANALYZER_GURU_VERSION = 3;
     private static final int TABSIZE = 17;
-    private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
-
-    @BeforeAll
-    public static void setUpClass() {
-        ANALYZER_VERSIONS.put("abc", 6L);
-        ANALYZER_VERSIONS.put("ABC", 45L);
-        ANALYZER_VERSIONS.put("d e", Long.MAX_VALUE - 19);
-    }
 
     @Test
-    public void shouldAffirmINDEX_ANALYSIS_SETTINGS_OBJUID() {
+    public void shouldAffirmIndexAnalysisSettingsObjuid() {
         String objuid = QueryBuilder.normalizeDirPath("58859C75-F941-42E5-8D1A-FAF71DDEBBA7");
         assertEquals(objuid, IndexAnalysisSettingsAccessor.INDEX_ANALYSIS_SETTINGS_OBJUID,
                 "IndexAnalysisSettingsDao objuid");

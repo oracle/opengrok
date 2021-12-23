@@ -150,9 +150,8 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O exception
      */
-    public static void qurlencode(String str, Appendable dest)
-            throws IOException {
-        URIEncode(QueryParser.escape(str), dest);
+    public static void qurlencode(String str, Appendable dest) throws IOException {
+        uriEncode(QueryParser.escape(str), dest);
     }
 
     /**
@@ -438,7 +437,7 @@ public final class Util {
             markup.append(sep);
         }
         for (int i = 0; i < pnames.length; i++) {
-            pwd.append(URIEncodePath(pnames[i]));
+            pwd.append(uriEncodePath(pnames[i]));
             if (isDir || i < pnames.length - 1) {
                 pwd.append(PATH_SEPARATOR);
             }
@@ -739,12 +738,12 @@ public final class Util {
             out.write("\" style=\"background-color: ");
             out.write(annotation.getColors().getOrDefault(r, "inherit"));
             out.write("\" href=\"");
-            out.write(URIEncode(annotation.getFilename()));
+            out.write(uriEncode(annotation.getFilename()));
             out.write("?");
             out.write(QueryParameters.ANNOTATION_PARAM_EQ_TRUE);
             out.write("&amp;");
             out.write(QueryParameters.REVISION_PARAM_EQ);
-            out.write(URIEncode(r));
+            out.write(uriEncode(r));
             String msg = annotation.getDesc(r);
             out.write("\" title=\"");
             if (msg != null) {
@@ -786,7 +785,7 @@ public final class Util {
             out.write("&amp;");
             out.write(QueryParameters.HIST_SEARCH_PARAM_EQ);
             out.write("&quot;");
-            out.write(URIEncode(r));
+            out.write(uriEncode(r));
             out.write("&quot;&amp;");
             out.write(QueryParameters.TYPE_SEARCH_PARAM_EQ);
             out.write("\" title=\"Search history for this revision");
@@ -805,7 +804,7 @@ public final class Util {
             out.write(anchorClassStart);
             out.write("a\" href=\"");
             out.write(userPageLink);
-            out.write(URIEncode(a));
+            out.write(uriEncode(a));
             if (userPageSuffix != null) {
                 out.write(userPageSuffix);
             }
@@ -909,7 +908,7 @@ public final class Util {
      * @return null if failed, otherwise the encoded string
      * @see URLEncoder#encode(String, String)
      */
-    public static String URIEncode(String q) {
+    public static String uriEncode(String q) {
         return q == null ? "" : URLEncoder.encode(q, StandardCharsets.UTF_8);
     }
 
@@ -920,9 +919,9 @@ public final class Util {
      * @param dest a defined target
      * @throws IOException I/O
      */
-    public static void URIEncode(String str, Appendable dest)
+    public static void uriEncode(String str, Appendable dest)
             throws IOException {
-        String uenc = URIEncode(str);
+        String uenc = uriEncode(str);
         dest.append(uenc);
     }
 
@@ -936,13 +935,13 @@ public final class Util {
      * @param value the value for the given parameter. Gets automatically UTF-8
      * URL encoded.
      * @throws NullPointerException if the given buffer is {@code null}.
-     * @see #URIEncode(String)
+     * @see #uriEncode(String)
      */
     public static void appendQuery(StringBuilder buf, String key,
             String value) {
 
         if (value != null) {
-            buf.append("&amp;").append(key).append('=').append(URIEncode(value));
+            buf.append("&amp;").append(key).append('=').append(uriEncode(value));
         }
     }
 
@@ -953,7 +952,7 @@ public final class Util {
      * @return the encoded path.
      * @throws NullPointerException if a parameter is {@code null}
      */
-    public static String URIEncodePath(String path) {
+    public static String uriEncodePath(String path) {
         // Bug #19188: Ideally, we'd like to use the standard class library to
         // encode the paths. We're aware of the following two methods:
         //

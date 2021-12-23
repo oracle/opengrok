@@ -534,9 +534,9 @@ public class SearchHelper {
             Definitions tags = Definitions.deserialize(rawTags);
             String symbol = termQuery.getTerm().text();
             if (tags.occurrences(symbol) == 1) {
-                String anchor = Util.URIEncode(symbol);
+                String anchor = Util.uriEncode(symbol);
                 redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + Util.uriEncodePath(doc.get(QueryBuilder.PATH))
                         + '?' + QueryParameters.FRAGMENT_IDENTIFIER_PARAM_EQ + anchor
                         + '#' + anchor;
             }
@@ -580,7 +580,7 @@ public class SearchHelper {
             }
             if (offset >= 0) {
                 redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(doc.get(QueryBuilder.PATH))
+                        + Util.uriEncodePath(doc.get(QueryBuilder.PATH))
                         + '?' + QueryParameters.MATCH_OFFSET_PARAM_EQ + offset;
             }
         }
@@ -588,7 +588,7 @@ public class SearchHelper {
 
     private void redirectToFile(int docID) throws IOException {
         Document doc = searcher.doc(docID);
-        redirect = contextPath + Prefix.XREF_P + Util.URIEncodePath(doc.get(QueryBuilder.PATH));
+        redirect = contextPath + Prefix.XREF_P + Util.uriEncodePath(doc.get(QueryBuilder.PATH));
     }
 
     private void getSuggestion(Term term, IndexReader ir,

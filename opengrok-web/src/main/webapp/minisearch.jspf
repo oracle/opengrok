@@ -88,11 +88,11 @@ org.opengrok.indexer.web.Util"%><%
         %>
 	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath() +
             (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
-            QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(cfg.getRequestedRevision()))
+            QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="raw"></span>Raw</a></li>
 	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath() +
             (cfg.getRequestedRevision().length() == 0 ? "" : "?" +
-            QueryParameters.REVISION_PARAM_EQ + Util.URIEncode(cfg.getRequestedRevision()))
+            QueryParameters.REVISION_PARAM_EQ + Util.uriEncode(cfg.getRequestedRevision()))
             %>"><span id="download"></span>Download</a></li>
 	<%
     }

@@ -57,20 +57,20 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED),
+                newStack(AuthControlFlag.REQUIRED),
                 // no plugins => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()),
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()))
             },
             // Test that null entities will result in denial.
             {
                     new StackSetup(
-                        NewStack(AuthControlFlag.REQUIRED),
+                        newStack(AuthControlFlag.REQUIRED),
                         // no plugins should return true however we have null entities here
-                        NewTest(false, null),
-                        NewTest(false, null))
+                        newTest(false, null),
+                        newTest(false, null))
             },
             // -------------------------------------------------------------- //
             //
@@ -80,130 +80,130 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // sufficient returns true => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // sufficient return false
                 // required returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             }, //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin())
                 ),
                 // sufficient return false
                 // required returns true => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // sufficient returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // all plugins are sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // required returns true
                 // the rest is sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // required returns false => false
                 // the rest is sufficient => false
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // sufficient return false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // required returns false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // required returns true
                 // required returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin())
                 ),
                 // requisite returns false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // requisite returns true
                 // the rest is sufficient => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUISITE, createAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin())
                 ),
                 // requisite return true
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUISITE, createNotAllowedPrefixPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // requisite returns true
                 // requisite returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // requisite returns false
                 // requisite returns true => false
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             // -------------------------------------------------------------- //
             //
@@ -214,69 +214,69 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // sufficient return false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient return false
                 // required returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // all are sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // required returns false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin())
                 ),
                 // sufficient returns false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin())
                 ),
                 // required returns false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             // -------------------------------------------------------------- //
             //
@@ -288,71 +288,71 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())
                 ),
                 // sufficient return false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedProject()),
                 // sufficient return false
                 // required returns false => false
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient return false
                 // required returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // all are sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())
                 ),
                 // required returns false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin())
                 ),
                 // sufficient returns false
                 // required returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin()),
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin())
                 ),
                 // required returns false => false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             // -------------------------------------------------------------- //
             //
@@ -361,116 +361,116 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // sufficient stack returns false
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()))
                 ),
                 // sufficient stack returns false
                 // required stack returns true => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // sufficient stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()))
                 ),
                 // required stack1 returns false
                 // required stack2 returns true => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // required stack1 returns true
                 // required stack2 returns false => false
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()))
                 ),
                 // sufficient stack returns false
                 // required stack returns true => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // sufficient stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()))
                 ),
                 // all stacks are sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin()))
                 ),
                 // all plugins are sufficient => true
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUISITE,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUISITE,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createAllowedPrefixPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin()))
                 ),
                 // requisite stack returns false
                 // sufficient stack return false
                 // required stack returns true => false (requisite)
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // requisite stack returns true
                 // sufficient stack return true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             // -------------------------------------------------------------- //
             //
@@ -481,84 +481,84 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // sufficient stack returns false
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient stack returns false
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin())),
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // required stack returns false => false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createLoadFailingPlugin()))
                 ),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns false => false
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createLoadFailingPlugin()))
                 ),
                 // required stack returns false
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             // -------------------------------------------------------------- //
             //
@@ -569,165 +569,165 @@ public class AuthorizationFrameworkTest {
             // -------------------------------------------------------------- //
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // sufficient stack returns false
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // sufficient stack returns false
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin())),
-                NewStack(AuthControlFlag.SUFFICIENT,
+                newStack(AuthControlFlag.SUFFICIENT,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // required stack returns false => false
                 // the rest is sufficient => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin()))
                 ),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createTestFailingPlugin()))
                 ),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns false => false
-                NewTest(true, createUnallowedProject()),
-                NewTest(true, createUnallowedGroup()),
+                newTest(true, createUnallowedProject()),
+                newTest(true, createUnallowedGroup()),
                 // required stack returns true (sufficient plugin failed has no effect)
                 // required stack returns true => true
-                NewTest(true, createAllowedProject()),
-                NewTest(true, createAllowedGroup()))
+                newTest(true, createAllowedProject()),
+                newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                NewStack(AuthControlFlag.REQUIRED,
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin())),
-                NewStack(AuthControlFlag.REQUIRED,
+                newStack(AuthControlFlag.REQUIRED,
                 new AuthorizationPlugin(AuthControlFlag.REQUIRED, createTestFailingPlugin()))
                 ),
                 // required stack returns false
                 // required stack returns false => false
-                NewTest(false, createUnallowedProject()),
-                NewTest(false, createUnallowedGroup()),
-                NewTest(false, createAllowedProject()),
-                NewTest(false, createAllowedGroup()))
+                newTest(false, createUnallowedProject()),
+                newTest(false, createUnallowedGroup()),
+                newTest(false, createAllowedProject()),
+                newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                         new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createTestFailingPlugin()),
                         new AuthorizationPlugin(AuthControlFlag.REQUIRED, createAllowedPrefixPlugin())),
                     // optional plugin returns false
                     // required plugin returns false => false
-                    NewTest(false, createUnallowedProject()),
-                    NewTest(false, createUnallowedGroup()),
+                    newTest(false, createUnallowedProject()),
+                    newTest(false, createUnallowedGroup()),
                     // optional plugin returns false
                     // required plugin returns true => true
-                    NewTest(true, createAllowedProject()),
-                    NewTest(true, createAllowedGroup()))
+                    newTest(true, createAllowedProject()),
+                    newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin()),
                             new AuthorizationPlugin(AuthControlFlag.REQUIRED, createNotAllowedPrefixPlugin())),
                     // optional plugin returns false
                     // required plugin returns true => true
-                    NewTest(true, createUnallowedProject()),
-                    NewTest(true, createUnallowedGroup()),
+                    newTest(true, createUnallowedProject()),
+                    newTest(true, createUnallowedGroup()),
                     // optional plugin returns true
                     // required plugin returns false => false
-                    NewTest(false, createAllowedProject()),
-                    NewTest(false, createAllowedGroup()))
+                    newTest(false, createAllowedProject()),
+                    newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createTestFailingPlugin())
                             ),
                     // optional plugin returns false => false
-                    NewTest(false, createUnallowedProject()),
-                    NewTest(false, createUnallowedGroup()),
-                    NewTest(false, createAllowedProject()),
-                    NewTest(false, createAllowedGroup()))
+                    newTest(false, createUnallowedProject()),
+                    newTest(false, createUnallowedGroup()),
+                    newTest(false, createAllowedProject()),
+                    newTest(false, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin())
                     ),
                     // optional plugin returns false => false
-                    NewTest(false, createUnallowedProject()),
-                    NewTest(false, createUnallowedGroup()),
+                    newTest(false, createUnallowedProject()),
+                    newTest(false, createUnallowedGroup()),
                     // optional plugin returns true => true
-                    NewTest(true, createAllowedProject()),
-                    NewTest(true, createAllowedGroup()))
+                    newTest(true, createAllowedProject()),
+                    newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin()),
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createNotAllowedPrefixPlugin())
                     ),
                     // optional plugin1 returns false
                     // optional plugin2 returns true => true
-                    NewTest(true, createUnallowedProject()),
-                    NewTest(true, createUnallowedGroup()),
+                    newTest(true, createUnallowedProject()),
+                    newTest(true, createUnallowedGroup()),
                     // optional plugin1 returns true
                     // optional plugin2 returns false => true
-                    NewTest(true, createAllowedProject()),
-                    NewTest(true, createAllowedGroup()))
+                    newTest(true, createAllowedProject()),
+                    newTest(true, createAllowedGroup()))
             },
             {
                 new StackSetup(
-                    NewStack(AuthControlFlag.REQUIRED,
+                    newStack(AuthControlFlag.REQUIRED,
                             new AuthorizationPlugin(AuthControlFlag.OPTIONAL, createAllowedPrefixPlugin()),
                             new AuthorizationPlugin(AuthControlFlag.SUFFICIENT, createNotAllowedPrefixPlugin())
                     ),
                     // optional plugin returns false
                     // sufficient plugin returns true => true
-                    NewTest(true, createUnallowedProject()),
-                    NewTest(true, createUnallowedGroup()),
+                    newTest(true, createUnallowedProject()),
+                    newTest(true, createUnallowedGroup()),
                     // optional plugin returns true
                     // sufficient plugin returns false => true
-                    NewTest(true, createAllowedProject()),
-                    NewTest(true, createAllowedGroup()))
+                    newTest(true, createAllowedProject()),
+                    newTest(true, createAllowedGroup()))
             },
         };
     }
@@ -915,7 +915,7 @@ public class AuthorizationFrameworkTest {
         }
     }
 
-    private static AuthorizationStack NewStack(AuthControlFlag flag, AuthorizationEntity... entities) {
+    private static AuthorizationStack newStack(AuthControlFlag flag, AuthorizationEntity... entities) {
         AuthorizationStack stack = new AuthorizationStack(flag, "stack-" + entities.hashCode());
         for (AuthorizationEntity entity : entities) {
             stack.add(entity);
@@ -923,11 +923,11 @@ public class AuthorizationFrameworkTest {
         return stack;
     }
 
-    private static TestCase NewTest(boolean expected, Nameable entity) {
-        return NewTest(expected, createRequest(), entity);
+    private static TestCase newTest(boolean expected, Nameable entity) {
+        return newTest(expected, createRequest(), entity);
     }
 
-    private static TestCase NewTest(boolean expected, HttpServletRequest request, Nameable entity) {
+    private static TestCase newTest(boolean expected, HttpServletRequest request, Nameable entity) {
         return new TestCase(expected, request, entity);
     }
 

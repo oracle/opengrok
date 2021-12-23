@@ -1374,17 +1374,17 @@ public final class PageConfig {
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
-        sb.append(Util.URIEncodePath(getPath()));
+        sb.append(Util.uriEncodePath(getPath()));
         sb.append("?");
         sb.append(QueryParameters.REVISION_PARAM_EQ);
-        sb.append(Util.URIEncode(revStr));
+        sb.append(Util.uriEncode(revStr));
 
         if (req.getQueryString() != null) {
             sb.append("&");
             sb.append(req.getQueryString());
         }
         if (fragmentIdentifier != null) {
-            String anchor = Util.URIEncode(fragmentIdentifier);
+            String anchor = Util.uriEncode(fragmentIdentifier);
 
             String reqFrag = req.getParameter(QueryParameters.FRAGMENT_IDENTIFIER_PARAM);
             if (reqFrag == null || reqFrag.isEmpty()) {
@@ -1448,7 +1448,7 @@ public final class PageConfig {
      */
     public String getUriEncodedPath() {
         if (uriEncodedPath == null) {
-            uriEncodedPath = Util.URIEncodePath(getPath());
+            uriEncodedPath = Util.uriEncodePath(getPath());
         }
         return uriEncodedPath;
     }

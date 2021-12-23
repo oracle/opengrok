@@ -170,11 +170,8 @@ public class JFlexXrefUtils {
                 List<Tag> tags = defs.getTags(line);
                 if (tags != null) {
                     for (Tag tag : tags) {
-                        if (tag.type.startsWith("function") ||
-                            tag.type.startsWith("method")) {
-                            Scope scope = new Scope(tag.line, tag.line,
-                                tag.symbol, tag.namespace, tag.signature);
-                            return scope;
+                        if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                            return new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
                         }
                     }
                 }
@@ -316,7 +313,7 @@ public class JFlexXrefUtils {
         out.append("<a class=\"");
         out.append(style_class);
         out.append(" intelliWindow-symbol\" href=\"#");
-        Util.URIEncode(symbol, out);
+        Util.uriEncode(symbol, out);
         out.append("\"");
         out.append(" data-definition-place=\"defined-in-file\"");
         out.append(">");

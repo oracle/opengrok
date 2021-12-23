@@ -177,15 +177,12 @@ public class Context {
         AbstractAnalyzer anz = fac.getAnalyzer();
 
         String path = doc.get(QueryBuilder.PATH);
-        String pathE = Util.URIEncodePath(path);
-        String urlPrefixE = urlPrefix == null ? "" : Util.URIEncodePath(
-            urlPrefix);
-        String moreURL = morePrefix == null ? null : Util.URIEncodePath(
-            morePrefix) + pathE + "?" + queryAsURI;
+        String pathE = Util.uriEncodePath(path);
+        String urlPrefixE = urlPrefix == null ? "" : Util.uriEncodePath(urlPrefix);
+        String moreURL = morePrefix == null ? null : Util.uriEncodePath(morePrefix) + pathE + "?" + queryAsURI;
 
-        ContextArgs args = new ContextArgs(env.getContextSurround(),
-            env.getContextLimit());
-        /**
+        ContextArgs args = new ContextArgs(env.getContextSurround(), env.getContextLimit());
+        /*
          * Lucene adds to the following value in FieldHighlighter, so avoid
          * integer overflow by not using Integer.MAX_VALUE -- Short is good
          * enough.
@@ -238,8 +235,7 @@ public class Context {
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
-            sb.append(field).append("=").append(Util.URIEncode(queryText))
-                .append('&');
+            sb.append(field).append("=").append(Util.uriEncode(queryText)).append('&');
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -277,9 +273,8 @@ public class Context {
         }
         boolean anything = false;
         TreeMap<Integer, String[]> matchingTags = null;
-        String urlPrefixE =
-                (urlPrefix == null) ? "" : Util.URIEncodePath(urlPrefix);
-        String pathE = Util.URIEncodePath(path);
+        String urlPrefixE = (urlPrefix == null) ? "" : Util.uriEncodePath(urlPrefix);
+        String pathE = Util.uriEncodePath(path);
         if (tags != null) {
             matchingTags = new TreeMap<>();
             try {
@@ -354,9 +349,8 @@ public class Context {
                 }
             }
         }
-        /**
-         * Just to get the matching tag send a null in
-         */
+
+        // Just to get the matching tag send a null in
         if (in == null) {
             return anything;
         }
@@ -433,9 +427,8 @@ public class Context {
             }
             anything = matchedLines > 0;
             tokens.dumpRest();
-            if (lim && (truncated || matchedLines == limit_max_lines) &&
-                    out != null) {
-                out.write("<a href=\"" + Util.URIEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
+            if (lim && (truncated || matchedLines == limit_max_lines) && out != null) {
+                out.write("<a href=\"" + Util.uriEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Could not get context for " + path, e);

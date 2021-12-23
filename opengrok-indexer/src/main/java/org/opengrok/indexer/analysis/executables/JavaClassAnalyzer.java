@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  * Portions Copyright (c) 2020, Lubos Kosco <tarzanek@gmail.com>.
  */
@@ -173,14 +173,14 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     protected String linkPath(String path) {
         rstring.setLength(0);
         return rstring.append(AHREF).append(urlPrefix).append(QueryParameters.PATH_SEARCH_PARAM_EQ)
-                .append(Util.URIEncodePath(path)).append(AHREFT_END)
+                .append(Util.uriEncodePath(path)).append(AHREFT_END)
                 .append(Util.htmlize(path)).append(AHREFEND).toString();
     }
 
     protected String linkDef(String def) {
         rstring.setLength(0);
         return rstring.append(AHREF).append(urlPrefix).append(QueryParameters.DEFS_SEARCH_PARAM_EQ)
-                .append(Util.URIEncode(def)).append(AHREFT_END)
+                .append(Util.uriEncode(def)).append(AHREFT_END)
                 .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
 
@@ -195,7 +195,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         rstring.setLength(0);
         return rstring.append(ADHREF).append(Util.formQuoteEscape(name))
                 .append(AIHREF).append(urlPrefix).append(QueryParameters.DEFS_SEARCH_PARAM_EQ)
-                .append(Util.URIEncode(def)).append(AHREFT_END)
+                .append(Util.uriEncode(def)).append(AHREFT_END)
                 .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
 
