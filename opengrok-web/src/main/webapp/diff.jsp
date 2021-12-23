@@ -106,7 +106,7 @@ include file="mast.jsp"
             + Util.htmlize(cfg.getPath());
 %>
 <div id="difftable">
-    <table class="image">
+    <table class="image" aria-label="table with old and new image">
         <thead>
         <tr><th><%= data.getFilename() %> (revision <%= data.getRev(0) %>)</th>
             <th><%= data.getFilename() %> (revision <%= data.getRev(1) %>)</th>
@@ -210,7 +210,7 @@ action=download">download diff</a></span><%
 <div id="difftable">
     <div class="pre"><%
         if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
-        %><table class="plain"><%
+        %><table class="plain" aria-label="table with old and new content"><%
             if (type == DiffType.SIDEBYSIDE) {
             %>
             <thead><tr>

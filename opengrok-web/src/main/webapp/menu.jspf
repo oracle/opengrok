@@ -59,7 +59,7 @@ document.domReady.push(function() { domReadyMenu(); });
 </script>
 <form action="<%= request.getContextPath() %>/search" id="sbox" onsubmit="searchSubmit(this)">
 <div id="qtbl">
-    <table>
+    <table aria-label="query table">
     <%
     if (projects.size() != 0) {
     %>

@@ -212,7 +212,7 @@ document.domReady.push(function() {domReadyHistory();});
 </style>
 <![endif]-->
 <form action="<%= context + Prefix.DIFF_P + uriEncodedName %>">
-<table class="src" id="revisions">
+<table class="src" id="revisions" aria-label="table of revisions">
     <thead>
         <tr>
             <th>Revision <%

@@ -226,7 +226,7 @@ include file="menu.jspf"
         <p class="slider"><%= slider %></p><%
         }
         %>
-        <table><%
+        <table aria-label="table of results"><%
         Results.prettyPrint(out, searchHelper, start, start + thispage);
         %>
         </table>
