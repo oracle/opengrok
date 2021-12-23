@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.configuration;
 
@@ -65,7 +65,7 @@ public class ConfigMerge {
                 Modifier.isFinal(modifiers)) {
                 continue;
             }
-            PropertyDescriptor desc = null;
+            PropertyDescriptor desc;
             try {
                 desc = new PropertyDescriptor(fieldName, Configuration.class);
             } catch (IntrospectionException ex) {
@@ -108,23 +108,22 @@ public class ConfigMerge {
             getopt.parse();
         } catch (ParseException ex) {
             System.err.println(NAME + ": " + ex.getMessage());
-            b_usage(System.err);
+            bUsage(System.err);
             System.exit(1);
         }
 
         int cmd;
-        File f;
         getopt.reset();
         while ((cmd = getopt.getOpt()) != -1) {
             switch (cmd) {
                 case '?':
                 case 'h':
-                    a_usage(System.out);
+                    aUsage(System.out);
                     System.exit(0);
                     break;
                 default:
                     System.err.println("Internal Error - Not implemented option: " + (char) cmd);
-                    b_usage(System.err);
+                    bUsage(System.err);
                     System.exit(1);
                     break;
             }
@@ -132,7 +131,7 @@ public class ConfigMerge {
 
         int optind = getopt.getOptind();
         if (optind < 0 || argv.length - optind != 2) {
-            a_usage(System.err);
+            aUsage(System.err);
             System.exit(1);
         }
 
@@ -164,7 +163,7 @@ public class ConfigMerge {
         cfgNew.encodeObject(os);
     }
 
-    private static void a_usage(PrintStream out) {
+    private static void aUsage(PrintStream out) {
         out.println("Usage:");
         out.println(NAME + " [-h] <config_file_base> <config_file_new>");
         out.println();
@@ -175,7 +174,7 @@ public class ConfigMerge {
         out.println();
     }
 
-    private static void b_usage(PrintStream out) {
+    private static void bUsage(PrintStream out) {
         out.println("Maybe try to run " + NAME + " -h");
     }
 }

@@ -383,7 +383,7 @@ public class IndexDatabase {
                     .path("api")
                     .path("v1")
                     .path("projects")
-                    .path(Util.URIEncode(project.getName()))
+                    .path(Util.uriEncode(project.getName()))
                     .path("indexed")
                     .request()
                     .headers(getWebAppHeaders())

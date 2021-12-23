@@ -86,7 +86,7 @@ org.opengrok.indexer.web.QueryParameters"
 %>
 <div id="src">
     Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a>
+<%= Util.uriEncode(rev) %>"><%= basename %></a>
 </div><%
                 } else {
 %>
@@ -129,7 +129,7 @@ org.opengrok.indexer.web.QueryParameters"
                             defs, annotation, project);
                     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
         %></pre>
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>" alt="Image from Source Repository"/>
+    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>" alt="Image from Source Repository"/>
     <pre><%
                     } else if (g == AbstractAnalyzer.Genre.HTML) {
                         /*
@@ -145,7 +145,7 @@ org.opengrok.indexer.web.QueryParameters"
                         Util.dumpXref(out, r, request.getContextPath());
                     } else {
     %>Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a><%
+<%= Util.uriEncode(rev) %>"><%= basename %></a><%
                     }
                 }
             } catch (IOException e) {
@@ -176,14 +176,14 @@ org.opengrok.indexer.web.QueryParameters"
     } else if (g == AbstractAnalyzer.Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.URIEncode(rev) %>"
+    <img src="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %><%= Util.uriEncode(rev) %>"
          alt="Image from Source Repository"/>
 </div><%
     } else {
 %>
 <div id="src">
     Download binary file, <a href="<%= rawPath %>?<%= QueryParameters.REVISION_PARAM_EQ %>
-<%= Util.URIEncode(rev) %>"><%= basename %></a>
+<%= Util.uriEncode(rev) %>"><%= basename %></a>
 </div><%
     }
 }

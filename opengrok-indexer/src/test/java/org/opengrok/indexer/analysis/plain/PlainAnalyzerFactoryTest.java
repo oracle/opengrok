@@ -64,30 +64,30 @@ class PlainAnalyzerFactoryTest {
     }
 
     @Test
-    void shouldMatchNonASCIIUTF_8WithoutBOM() throws IOException {
+    void shouldMatchNonASCIIUTF8WithoutBOM() throws IOException {
         byte[] fileBytes = "ゲーム盤の生成(h:縦，w:横，m:爆弾の数)".getBytes(StandardCharsets.UTF_8);
         boolean isMatch = checkIsPlainMatch(fileBytes);
         assertTrue(isMatch, "should match non-ASCII UTF-8 without BOM");
     }
 
     @Test
-    void shouldMatchNonASCIIUTF_8WithBOM() throws IOException {
-        byte[] fileBytes = enc(IOUtils.UTF_8_BOM(), "ゲーム盤の生成(h:縦，w:横，m:爆弾の数)",
+    void shouldMatchNonASCIIUTF8WithBOM() throws IOException {
+        byte[] fileBytes = enc(IOUtils.utf8Bom(), "ゲーム盤の生成(h:縦，w:横，m:爆弾の数)",
                 StandardCharsets.UTF_8);
         boolean isMatch = checkIsPlainMatch(fileBytes);
         assertTrue(isMatch, "should match non-ASCII UTF-8 with BOM");
     }
 
     @Test
-    void shouldMatchUTF_16BEWithBOM() throws IOException {
-        byte[] fileBytes = enc(IOUtils.UTF_16BE_BOM(), "The contents of this file are subject to",
+    void shouldMatchUTF16BEWithBOM() throws IOException {
+        byte[] fileBytes = enc(IOUtils.utf16BeBom(), "The contents of this file are subject to",
                 StandardCharsets.UTF_16BE);
         boolean isMatch = checkIsPlainMatch(fileBytes);
         assertTrue(isMatch, "should match UTF-16BE content with BOM");
     }
 
     @Test
-    void shouldNotMatchUTF_16BEWithoutBOM() throws IOException {
+    void shouldNotMatchUTF16BEWithoutBOM() throws IOException {
         byte[] fileBytes = "The contents of this file are subject to".getBytes(
                 StandardCharsets.UTF_16BE);
         boolean isMatch = checkIsPlainMatch(fileBytes);
@@ -95,15 +95,15 @@ class PlainAnalyzerFactoryTest {
     }
 
     @Test
-    void shouldMatchUTF_16LEWithBOM() throws IOException {
-        byte[] fileBytes = enc(IOUtils.UTF_16LE_BOM(), "The contents of this file are subject to",
+    void shouldMatchUTF16LEWithBOM() throws IOException {
+        byte[] fileBytes = enc(IOUtils.utf16LeBom(), "The contents of this file are subject to",
                 StandardCharsets.UTF_16LE);
         boolean isMatch = checkIsPlainMatch(fileBytes);
         assertTrue(isMatch, "should match UTF-16LE content");
     }
 
     @Test
-    void shouldNotMatchUTF_16LEWithoutBOM() throws IOException {
+    void shouldNotMatchUTF16LEWithoutBOM() throws IOException {
         byte[] fileBytes = "The contents of this file are subject to".getBytes(
                 StandardCharsets.UTF_16LE);
         boolean isMatch = checkIsPlainMatch(fileBytes);
@@ -111,7 +111,7 @@ class PlainAnalyzerFactoryTest {
     }
 
     @Test
-    void shouldNotMatchUTF_EBCDIC() throws IOException {
+    void shouldNotMatchUtfEbcdic() throws IOException {
         /*
          * 4-byte UTF-EBCDIC BOM plus 2-byte UTF-EBCDIC 'H' 'i'. EBCDIC 'H' 'i'
          * on its own would be mis-identified as extended ASCII plain text.
@@ -126,7 +126,6 @@ class PlainAnalyzerFactoryTest {
         byte[] leadingContent = Arrays.copyOf(fileBytes, Math.max(8, fileBytes.length));
         ByteArrayInputStream bin = new ByteArrayInputStream(fileBytes);
 
-        PlainAnalyzerFactory fac = PlainAnalyzerFactory.DEFAULT_INSTANCE;
         return (PlainAnalyzerFactory.MATCHER.isMagic(leadingContent, bin) != null);
     }
 

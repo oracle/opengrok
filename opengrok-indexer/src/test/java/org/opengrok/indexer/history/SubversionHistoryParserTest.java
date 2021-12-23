@@ -72,7 +72,7 @@ public class SubversionHistoryParserTest {
      * Test of parsing output similar to that in subversions own svn repository.
      */
     @Test
-    public void ParseALaSvn() throws Exception {
+    public void parseALaSvn() throws Exception {
         String revId1 = "12345";
         String author1 = "username1";
         String date1 = "2007-09-11T11:48:56.123456Z";

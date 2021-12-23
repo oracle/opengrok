@@ -29,6 +29,7 @@
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
+        <module name="MethodName"/>
         <module name="MethodLength">
             <property name="max" value="200"/>
         </module>

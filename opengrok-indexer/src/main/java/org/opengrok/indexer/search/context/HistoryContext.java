@@ -237,9 +237,9 @@ public class HistoryContext {
         if (wcontext != null && nrev != null && !wcontext.isEmpty()) {
             out.append("<a href=\"");
             printHTML(out, wcontext + Prefix.DIFF_P +
-                    Util.URIEncodePath(path) +
-                    "?" + QueryParameters.REVISION_2_PARAM_EQ + Util.URIEncodePath(path) + "@" +
-                    rev + "&" + QueryParameters.REVISION_1_PARAM_EQ + Util.URIEncodePath(path) +
+                    Util.uriEncodePath(path) +
+                    "?" + QueryParameters.REVISION_2_PARAM_EQ + Util.uriEncodePath(path) + "@" +
+                    rev + "&" + QueryParameters.REVISION_1_PARAM_EQ + Util.uriEncodePath(path) +
                     "@" + nrev + "\" title=\"diff to previous version\"", flatten);
             out.append(">diff</a> ");
         }

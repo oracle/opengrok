@@ -173,21 +173,21 @@ include file="menu.jspf"
 	  if (hint.getFreetext() != null) {
 	    for (String word : hint.getFreetext()) {
             %> <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>
-<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+<%= Util.uriEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.getRefs() != null)  {
 	    for (String word : hint.getRefs()) {
             %> <a href="search?<%= QueryParameters.REFS_SEARCH_PARAM_EQ %>
-<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+<%= Util.uriEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.getDefs() != null) {
 	    for (String word : hint.getDefs()) {
             %> <a href="search?<%= QueryParameters.DEFS_SEARCH_PARAM_EQ %>
-<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
+<%= Util.uriEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
             }
 	  }

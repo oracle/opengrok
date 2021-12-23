@@ -175,28 +175,28 @@ public class UtilTest {
     }
 
     @Test
-    public void URIEncode() {
-        assertEquals("", Util.URIEncode(""));
-        assertEquals("a+b", Util.URIEncode("a b"));
-        assertEquals("a%23b", Util.URIEncode("a#b"));
-        assertEquals("a%2Fb", Util.URIEncode("a/b"));
-        assertEquals("README.txt", Util.URIEncode("README.txt"));
+    public void testUriEncode() {
+        assertEquals("", Util.uriEncode(""));
+        assertEquals("a+b", Util.uriEncode("a b"));
+        assertEquals("a%23b", Util.uriEncode("a#b"));
+        assertEquals("a%2Fb", Util.uriEncode("a/b"));
+        assertEquals("README.txt", Util.uriEncode("README.txt"));
     }
 
     @Test
-    public void URIEncodePath() {
-        assertEquals("", Util.URIEncodePath(""));
-        assertEquals("/", Util.URIEncodePath("/"));
-        assertEquals("a", Util.URIEncodePath("a"));
-        assertEquals("%09", Util.URIEncodePath("\t"));
-        assertEquals("a%2Bb", Util.URIEncodePath("a+b"));
-        assertEquals("a%20b", Util.URIEncodePath("a b"));
+    public void testUriEncodePath() {
+        assertEquals("", Util.uriEncodePath(""));
+        assertEquals("/", Util.uriEncodePath("/"));
+        assertEquals("a", Util.uriEncodePath("a"));
+        assertEquals("%09", Util.uriEncodePath("\t"));
+        assertEquals("a%2Bb", Util.uriEncodePath("a+b"));
+        assertEquals("a%20b", Util.uriEncodePath("a b"));
         assertEquals("/a//x/yz/%23%23/%20/%20%3F",
-                Util.URIEncodePath("/a//x/yz/##/ / ?"));
+                Util.uriEncodePath("/a//x/yz/##/ / ?"));
         assertEquals("foo%3A%3Abar%3A%3Atest.js",
-                Util.URIEncodePath("foo::bar::test.js"));
+                Util.uriEncodePath("foo::bar::test.js"));
         assertEquals("bl%C3%A5b%C3%A6rsyltet%C3%B8y",
-                Util.URIEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
+                Util.uriEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
     }
 
     @Test
@@ -522,25 +522,20 @@ public class UtilTest {
             }
         };
 
-        /**
-         * Absolute including hostname.
-         */
+        // Absolute including hostname.
         assertEquals("http://opengrok.com/user=", Util.completeUrl("http://opengrok.com/user=", req));
         assertEquals("http://opengrok.cz.grok.com/user=", Util.completeUrl("http://opengrok.cz.grok.com/user=", req));
         assertEquals("http://opengrok.com/user=123&id=", Util.completeUrl("http://opengrok.com/user=123&id=", req));
 
-        /**
-         * Absolute/relative without the hostname.
-         */
+        // Absolute/relative without the hostname.
         assertEquals("http://www.example.com:8080/cgi-bin/user=", Util.completeUrl("/cgi-bin/user=", req));
         assertEquals("http://www.example.com:8080/cgi-bin/user=123&id=", Util.completeUrl("/cgi-bin/user=123&id=", req));
         assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=", Util.completeUrl("cgi-bin/user=", req));
         assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=123&id=", Util.completeUrl("cgi-bin/user=123&id=", req));
 
         assertEquals("http://www.example.com:8080/source/location/undefined", Util.completeUrl("", req));
-        /**
-         * Escaping should work.
-         */
+
+        // Escaping should work.
         assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
     }
 

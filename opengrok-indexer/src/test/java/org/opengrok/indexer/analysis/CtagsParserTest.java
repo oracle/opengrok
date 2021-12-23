@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CtagsParserTest {
 
     @Test
-    public void ctags_vs_universal_ctags() throws Exception {
+    public void ctagsVsUniversalCtags() throws Exception {
         String universal_ctags_c = "TEST\tsample.c\t/^#define TEST($/;\"\tmacro\tline:6\tsignature:(x)\n"
                 + "foo\tsample.c\t/^int foo(int a, int b) {$/;\"\tfunction\tline:8\ttyperef:typename:int\tsignature:(int a, int b)\n"
                 + "c\tsample.c\t/^    int c;$/;\"\tlocal\tline:13\tfunction:foo\ttyperef:typename:int\n"

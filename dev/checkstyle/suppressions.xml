@@ -61,4 +61,6 @@ Portions Copyright (c) 2018-2020, Chris Fraire <cfraire@me.com>.
     <suppress checks="WhitespaceAfter" files="CustomSloppyPhraseScorer\.java|CustomPhraseQuery\.java" />
 
     <suppress checks="AnonInnerLength" files="DummyHttpServletRequestLdap\.java|DummyHttpServletRequestUser\.java" />
+
+    <suppress checks="MethodName" files="org[\\/]opengrok[\\/]indexer[\\/]analysis" />
 </suppressions>
