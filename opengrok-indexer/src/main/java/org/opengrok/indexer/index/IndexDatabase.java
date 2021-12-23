@@ -1603,6 +1603,7 @@ public class IndexDatabase {
      * @return The index database where the file should be located or null if it
      * cannot be located.
      */
+    @SuppressWarnings("java:S2095")
     public static IndexReader getIndexReader(String path) {
         IndexReader ret = null;
 

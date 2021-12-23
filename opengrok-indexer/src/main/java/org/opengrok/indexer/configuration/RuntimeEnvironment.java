@@ -1782,6 +1782,7 @@ public final class RuntimeEnvironment {
      * @return SearcherManager for given project
      * @throws IOException I/O exception
      */
+    @SuppressWarnings("java:S2095")
     public SuperIndexSearcher getIndexSearcher(String projectName) throws IOException {
         SearcherManager mgr = searcherManagerMap.get(projectName);
         SuperIndexSearcher searcher;
