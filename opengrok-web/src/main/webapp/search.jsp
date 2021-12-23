@@ -117,7 +117,6 @@ include file="httpheader.jspf"
                 <label for="sortby">Sort by</label>
                 <%
 {
-    PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
     StringBuilder url = createUrl(request, searchHelper, true).append("&amp;").
             append(QueryParameters.SORT_PARAM_EQ);
@@ -149,7 +148,6 @@ include file="menu.jspf"
 
     <div id="results"> <%
 {
-    PageConfig cfg = PageConfig.get(request);
     SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
@@ -171,7 +169,7 @@ include file="menu.jspf"
     } else if (searchHelper.getHits().length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
-        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.getName() %>)</font>:<%
+        %><p class="suggestions"><span style="color: #cc0000; ">Did you mean (for <%= hint.getName() %>)</span>:<%
 	  if (hint.getFreetext() != null) {
 	    for (String word : hint.getFreetext()) {
             %> <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>
