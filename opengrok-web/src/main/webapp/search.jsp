@@ -171,7 +171,7 @@ include file="menu.jspf"
     } else if (searchHelper.getHits().length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
-        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.getName() %>)</font>:<%
+        %><p class="suggestions"><span style="color: #cc0000; ">Did you mean (for <%= hint.getName() %>)</span>:<%
 	  if (hint.getFreetext() != null) {
 	    for (String word : hint.getFreetext()) {
             %> <a href="search?<%= QueryParameters.FULL_SEARCH_PARAM_EQ %>
