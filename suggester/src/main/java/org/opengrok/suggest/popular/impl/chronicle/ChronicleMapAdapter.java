@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.suggest.popular.impl.chronicle;
 
@@ -110,6 +110,7 @@ public class ChronicleMapAdapter implements PopularityMap {
      * @param newMapAvgKey new average key size
      * @throws IOException if some error occurred
      */
+    @SuppressWarnings("java:S2095")
     public void resize(final int newMapSize, final double newMapAvgKey) throws IOException {
         if (newMapSize < 0) {
             throw new IllegalArgumentException("Cannot resize chronicle map to negative size");

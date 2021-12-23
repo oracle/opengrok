@@ -288,6 +288,7 @@ class SuggesterProjectData implements Closeable {
         }
     }
 
+    @SuppressWarnings("java:S2095")
     private void initSearchCountMap() throws IOException {
         searchCountMaps.values().forEach(PopularityMap::close);
         searchCountMaps.clear();
