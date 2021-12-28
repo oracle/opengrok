@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
@@ -61,6 +62,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.NamedThreadFactory;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.history.HistoryGuru;
@@ -1399,6 +1401,22 @@ public final class RuntimeEnvironment {
         syncWriteConfiguration(serverName, Configuration::setServerName);
     }
 
+    public int getApiTimeout() {
+        return syncReadConfiguration(Configuration::getApiTimeout);
+    }
+
+    public void setApiTimeout(int apiTimeout) {
+        syncWriteConfiguration(apiTimeout, Configuration::setApiTimeout);
+    }
+
+    public int getConnectTimeout() {
+        return syncReadConfiguration(Configuration::getConnectTimeout);
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        syncWriteConfiguration(connectTimeout, Configuration::setConnectTimeout);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
@@ -1440,15 +1458,62 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Write the current configuration to a socket.
+     * Busy waits for API call to complete by repeatedly querying the status API endpoint passed
+     * in the {@code Location} header in the response parameter. The overall time is governed
+     * by the {@link #getApiTimeout()}, however each individual status check
+     * uses {@link #getConnectTimeout()} so in the worst case the total time can be
+     * {@code getApiTimeout() * getConnectTimeout()}.
+     * @param response response returned from the server upon asynchronous API request
+     * @return response from the status API call
+     * @throws InterruptedException on sleep interruption
+     * @throws IllegalArgumentException on invalid request (no {@code Location} header)
+     */
+    private @NotNull Response waitForAsyncApi(@NotNull Response response)
+            throws InterruptedException, IllegalArgumentException {
+
+        String location = response.getHeaderString(HttpHeaders.LOCATION);
+        if (location == null) {
+            throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));
+        }
+
+        LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
+        for (int i = 0; i < getApiTimeout(); i++) {
+            response = ClientBuilder.newBuilder().
+                    connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build().
+                    target(location).request().get();
+            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+                Thread.sleep(1000);
+            } else {
+                break;
+            }
+        }
+
+        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+            LOGGER.log(Level.WARNING, "API request still not completed: {0}", response);
+            return response;
+        }
+
+        LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
+        Response deleteResponse = ClientBuilder.newBuilder().connectTimeout(3, TimeUnit.SECONDS).build().
+                target(location).request().delete();
+        if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
+                    new Object[]{location, response.getStatusInfo()});
+        }
+
+        return response;
+    }
+
+    /**
+     * Write the current configuration to a socket and waits for the result.
      *
      * @param host the host address to receive the configuration
      * @throws IOException if an error occurs
      */
-    public void writeConfiguration(String host) throws IOException {
+    public void writeConfiguration(String host) throws IOException, InterruptedException, IllegalArgumentException {
         String configXML = syncReadConfiguration(Configuration::getXMLRepresentationAsString);
 
-        Response r = ClientBuilder.newClient()
+        Response response = ClientBuilder.newClient()
                 .target(host)
                 .path("api")
                 .path("v1")
@@ -1458,8 +1523,12 @@ public final class RuntimeEnvironment {
                 .headers(getWebAppHeaders())
                 .put(Entity.xml(configXML));
 
-        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            throw new IOException(r.toString());
+        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+            response = waitForAsyncApi(response);
+        }
+
+        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            throw new IOException(response.toString());
         }
     }
 

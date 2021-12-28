@@ -133,10 +133,13 @@ def get_configuration(logger, uri, headers=None, timeout=None):
     return res.text
 
 
-def set_configuration(logger, configuration, uri, headers=None, timeout=None):
+def set_configuration(logger, configuration, uri, headers=None, timeout=None, api_timeout=None):
     try:
-        do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration'),
-                    data=configuration, headers=headers, timeout=timeout)
+        r = do_api_call('PUT', get_uri(uri, 'api', 'v1', 'configuration'),
+                        data=configuration, headers=headers, timeout=timeout, api_timeout=api_timeout)
+        if r is None or r.status_code != 201:
+            logger.error('could not set configuration to web application')
+            return False
     except Exception as exception:
         logger.error('could not set configuration to web application: {}'.
                      format(exception))
@@ -183,11 +186,14 @@ def add_project(logger, project, uri, headers=None, timeout=None):
     return True
 
 
-def delete_project(logger, project, uri, headers=None, timeout=None):
+def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout=None):
     try:
-        do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
-                                      urllib.parse.quote_plus(project)),
-                    headers=headers, timeout=timeout)
+        r = do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
+                                          urllib.parse.quote_plus(project)),
+                        headers=headers, timeout=timeout, api_timeout=api_timeout)
+        if r is None or r.status != 204:
+            logger.error(f"could not delete project '{project}' in web application")
+            return False
     except Exception as exception:
         logger.error("could not delete project '{}' in web application: {}".
                      format(project, exception))

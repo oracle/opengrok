@@ -8,6 +8,10 @@ Besides `/suggester`, `/search` and `/metrics` endpoints, everything is accessib
 unless authentication bearer tokens are configured in the web application and used via the 'Authorization' HTTP header
 (within HTTPS connection).
 
+Some of the APIs are asynchronous. They return status code 202 (Accepted) and a Location header that contains the URL
+for the status endpoint to check for the result of the API call. Once the status API returns result other than 202,
+the client should issue DELETE request to this URL to clean up server resources.
+
 ## Annotation [/annotation{?path}]
 
 ### Get annotation for a file [GET]
@@ -37,6 +41,8 @@ unless authentication bearer tokens are configured in the web application and us
 
 ### reloads authorization framework [POST]
 
+This is asynchronous API endpoint.
+
 + Request (application/text)
 
 + Response 204
@@ -61,6 +67,8 @@ unless authentication bearer tokens are configured in the web application and us
 
 ### sets configuration from XML representation [PUT]
 
+This is asynchronous API endpoint.
+
 + Request (application/xml)
   + Body
 
@@ -84,6 +92,8 @@ unless authentication bearer tokens are configured in the web application and us
 + Response 200 (application/json)
 
 ### sets specific configuration field [PUT]
+
+This is asynchronous API endpoint.
 
 + Parameters
   + reindex (boolean) - specifies if the underlying data were also reindexed (refreshes some searchers and additional data structures)
@@ -577,3 +587,22 @@ This kicks off suggester data rebuild in the background, i.e. the rebuild will v
   + project - project name
 
 + Response 204
+
+## Status [/status/{uuid}]
+
+### Check the state of API request [GET]
+
++ Parameters
+  + uuid
+
++ Response 202
+
+### Delete state associated with API request tracking [DELETE]
+
+This should be done only after the API request is completed, i.e. after the GET request for the API request state
+returns appropriate status code (e.g. 201).
+
++ Parameters
+  + uuid
+
++ Response 200

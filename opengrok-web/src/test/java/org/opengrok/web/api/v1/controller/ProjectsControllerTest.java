@@ -24,12 +24,18 @@
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.ServletDeploymentContext;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +54,7 @@ import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
 import org.opengrok.indexer.index.IndexerException;
 import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.File;
@@ -71,6 +78,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.MERCURIAL;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SUBVERSION;
 import static org.opengrok.indexer.util.IOUtils.removeRecursive;
+import static org.opengrok.web.api.v1.controller.ApiUtils.waitForTask;
 
 @ExtendWith(MockitoExtension.class)
 @EnabledForRepository({MERCURIAL, SUBVERSION})
@@ -83,15 +91,25 @@ class ProjectsControllerTest extends OGKJerseyTest {
     @Mock
     private SuggesterService suggesterService;
 
+    @BeforeAll
+    static void setup() {
+        ApiTaskManager.getInstance().addPool("projects", 1);
+    }
+
     @Override
-    protected Application configure() {
-        return new ResourceConfig(ProjectsController.class)
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new GrizzlyWebTestContainerFactory();
+    }
+
+    @Override
+    protected DeploymentContext configureDeployment() {
+        return ServletDeploymentContext.forServlet(new ServletContainer(new ResourceConfig(ProjectsController.class)
                 .register(new AbstractBinder() {
                     @Override
                     protected void configure() {
                         bind(suggesterService).to(SuggesterService.class);
                     }
-                });
+                }))).build();
     }
 
     @BeforeEach
@@ -243,7 +261,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
     /**
      * This test needs to perform indexing so that it can be verified that
-     * the delete handling performs removal of the index data.
+     * delete handling does remove the index data.
      */
     @Test
     void testDelete() throws Exception {
@@ -301,7 +319,8 @@ class ProjectsControllerTest extends OGKJerseyTest {
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
         for (String proj : projectsToDelete) {
-            delete(proj);
+            Response response = delete(proj);
+            waitForTask(response);
         }
 
         assertEquals(1, env.getProjects().size());
@@ -330,8 +349,8 @@ class ProjectsControllerTest extends OGKJerseyTest {
         assertEquals(0, group.getProjects().size());
     }
 
-    private void delete(final String project) {
-        target("projects")
+    private Response delete(final String project) {
+        return target("projects")
                 .path(project)
                 .request()
                 .delete();
@@ -369,7 +388,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
 
         MercurialRepositoryTest.runHgCommand(mercurialRoot, "import", temp.toString());
 
-        temp.toFile().delete();
+        assertTrue(temp.toFile().delete());
 
         // Test that the project's indexed flag becomes true only after
         // the message is applied.
@@ -423,7 +442,7 @@ class ProjectsControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testGetReposForNonExistentProject() throws Exception {
+    void testGetReposForNonExistentProject() {
         GenericType<List<String>> type = new GenericType<>() {
         };
 

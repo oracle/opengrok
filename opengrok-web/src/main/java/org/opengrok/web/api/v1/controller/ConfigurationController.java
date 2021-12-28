@@ -24,6 +24,7 @@
 package org.opengrok.web.api.v1.controller;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -33,19 +34,28 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.web.api.ApiTask;
+import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-@Path("/configuration")
+import static org.opengrok.web.api.v1.controller.ConfigurationController.PATH;
+
+@Path(PATH)
 public class ConfigurationController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    public static final String PATH = "/configuration";
 
     @Inject
     private SuggesterService suggesterService;
@@ -58,9 +68,19 @@ public class ConfigurationController {
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    public void set(final String body, @QueryParam("reindex") final boolean reindex) {
-        env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
-        suggesterService.refresh();
+    public Response set(@Context HttpServletRequest request,
+                        @QueryParam("reindex") final boolean reindex) throws IOException {
+
+        String body;
+        try (InputStream inputStream = request.getInputStream()) {
+            body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+        return ApiTaskManager.getInstance().submitApiTask(PATH,
+                new ApiTask(request.getRequestURI(), () -> {
+                    env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
+                    suggesterService.refresh();
+                }));
     }
 
     @GET
@@ -72,17 +92,25 @@ public class ConfigurationController {
 
     @PUT
     @Path("/{field}")
-    public void setField(@PathParam("field") final String field, final String value) {
+    public Response setField(@Context HttpServletRequest request,
+                             @PathParam("field") final String field, final String value) {
+
         setConfigurationValueException(field, value);
-        // apply the configuration - let the environment reload the configuration if necessary
-        env.applyConfig(false, CommandTimeoutType.RESTFUL);
-        suggesterService.refresh();
+
+        return ApiTaskManager.getInstance().submitApiTask(PATH,
+                new ApiTask(request.getRequestURI(), () -> {
+                    // apply the configuration - let the environment reload the configuration if necessary
+                    env.applyConfig(false, CommandTimeoutType.RESTFUL);
+                    suggesterService.refresh();
+                }));
     }
 
     @POST
     @Path("/authorization/reload")
-    public void reloadAuthorization() {
-        env.getAuthorizationFramework().reload();
+    public Response reloadAuthorization(@Context HttpServletRequest request) {
+        return ApiTaskManager.getInstance().submitApiTask("authorization",
+                new ApiTask(request.getRequestURI(),
+                        () -> env.getAuthorizationFramework().reload(), Response.Status.NO_CONTENT));
     }
 
     private Object getConfigurationValueException(String fieldName) throws WebApplicationException {

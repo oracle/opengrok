@@ -40,6 +40,9 @@ import org.opengrok.indexer.index.IndexCheck;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.web.api.ApiTaskManager;
+import org.opengrok.web.api.v1.controller.ConfigurationController;
+import org.opengrok.web.api.v1.controller.ProjectsController;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 import java.io.File;
@@ -108,6 +111,14 @@ public final class WebappListener
         checkIndex(env);
 
         env.startExpirationTimer();
+
+        ApiTaskManager.getInstance().setContextPath(context.getContextPath());
+        // register API task queues
+        ApiTaskManager.getInstance().addPool(ProjectsController.PROJECTS_PATH, 1);
+        // Used by ConfigurationController#reloadAuthorization()
+        ApiTaskManager.getInstance().addPool("authorization", 1);
+        ApiTaskManager.getInstance().addPool(ConfigurationController.PATH, 1);
+
         startupTimer.record(Duration.between(start, Instant.now()));
     }
 
@@ -163,6 +174,13 @@ public final class WebappListener
         // need to explicitly close the suggester service because it might have scheduled rebuild which could prevent
         // the web application from closing
         SuggesterServiceFactory.getDefault().close();
+
+        // destroy queue(s) of API tasks
+        try {
+            ApiTaskManager.getInstance().shutdown();
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "could not shutdown API task manager cleanly", e);
+        }
     }
 
     /**

@@ -28,15 +28,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.opengrok.web.api.v1.controller.ApiUtils.waitForTask;
 
 import java.util.concurrent.CountDownLatch;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.ServletDeploymentContext;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -45,6 +52,7 @@ import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.web.PageConfig;
+import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,15 +63,26 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     @Mock
     private SuggesterService suggesterService;
 
+    @BeforeAll
+    static void setup() {
+        ApiTaskManager.getInstance().addPool("configuration", 1);
+    }
+
     @Override
-    protected Application configure() {
-        return new ResourceConfig(ConfigurationController.class)
-                .register(new AbstractBinder() {
-                    @Override
-                    protected void configure() {
-                        bind(suggesterService).to(SuggesterService.class);
-                    }
-                });
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        return new GrizzlyWebTestContainerFactory();
+    }
+
+    @Override
+    protected DeploymentContext configureDeployment() {
+        return ServletDeploymentContext.
+                forServlet(new ServletContainer(new ResourceConfig(ConfigurationController.class)
+                        .register(new AbstractBinder() {
+                            @Override
+                            protected void configure() {
+                                bind(suggesterService).to(SuggesterService.class);
+                            }
+                        }))).build();
     }
 
     @Test
@@ -74,11 +93,12 @@ class ConfigurationControllerTest extends OGKJerseyTest {
 
         String configStr = config.getXMLRepresentationAsString();
 
-        target("configuration")
+        Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
+        waitForTask(response);
 
-        assertEquals(env.getSourceRootPath(), srcRoot);
+        assertEquals(srcRoot, env.getSourceRootPath());
 
         String returnedConfig = target("configuration")
                 .request()
@@ -95,10 +115,12 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     private Response setValue(final String field, final String value) {
-        return target("configuration")
+        Response response = target("configuration")
                 .path(field)
                 .request()
                 .put(Entity.text(value));
+
+        return waitForTask(response);
     }
 
     @Test
@@ -234,11 +256,12 @@ class ConfigurationControllerTest extends OGKJerseyTest {
     }
 
     @Test
-    void testSuggesterServiceNotifiedOnConfigurationChange() {
+    void testSuggesterServiceNotifiedOnConfigurationChange() throws InterruptedException {
         reset(suggesterService);
-        target("configuration")
+        Response response = target("configuration")
                 .request()
                 .put(Entity.xml(new Configuration().getXMLRepresentationAsString()));
+        waitForTask(response);
         verify(suggesterService).refresh();
     }
 
@@ -266,15 +289,15 @@ class ConfigurationControllerTest extends OGKJerseyTest {
         thread.start();
         startLatch.await();
 
-        // Set brand new configuration.
+        // Set brand-new configuration.
         int newValue = origValue + 42;
         Configuration config = new Configuration();
         config.setHitsPerPage(newValue);
         String configStr = config.getXMLRepresentationAsString();
-        Response res = target("configuration")
+        Response response = target("configuration")
                 .request()
                 .put(Entity.xml(configStr));
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+        waitForTask(response);
 
         // Unblock the thread.
         endLatch.countDown();
