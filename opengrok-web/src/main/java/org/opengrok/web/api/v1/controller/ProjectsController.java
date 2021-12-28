@@ -27,6 +27,7 @@ import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -50,13 +52,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
 import org.opengrok.indexer.history.RepositoryInfo;
@@ -65,13 +67,17 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.web.api.ApiTask;
 import org.opengrok.indexer.web.Laundromat;
+import org.opengrok.web.api.ApiTaskManager;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
-@Path("/projects")
+@Path(ProjectsController.PROJECTS_PATH)
 public class ProjectsController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProjectsController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectsController.class);
+
+    public static final String PROJECTS_PATH = "/projects";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -98,9 +104,9 @@ public class ProjectsController {
                 env.getProjectRepositoriesMap().put(project, repos);
             }
 
-            // Finally introduce the project to the configuration.
+            // Finally, introduce the project to the configuration.
             // Note that the project is inactive in the UI until it is indexed.
-            // See {@code isIndexed()}
+            // See isIndexed()
             env.getProjects().put(projectName, project);
             env.populateGroups(env.getGroups(), new TreeSet<>(env.getProjectList()));
         } else {
@@ -161,16 +167,21 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}")
-    public void deleteProject(@PathParam("project") String projectName)
-            throws HistoryException {
+    public Response deleteProject(@Context HttpServletRequest request, @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
 
         Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
+        LOGGER.log(Level.INFO, "deleting configuration for project {0}", projectName);
 
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(),
+                        () -> deleteProjectWorkHorse(projectName, project), Response.Status.NO_CONTENT));
+    }
+
+    private void deleteProjectWorkHorse(String projectName, Project project) {
         // Delete index data associated with the project.
-        deleteProjectData(projectName);
+        deleteProjectDataWorkHorse(projectName);
 
         // Remove the project from its groups.
         for (Group group : project.getGroups()) {
@@ -195,12 +206,19 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/data")
-    public void deleteProjectData(@PathParam("project") String projectNameParam) {
+    public Response deleteProjectData(@Context HttpServletRequest request,
+                                      @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
-        Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting data for project {0}", projectName);
+        disableProject(projectName);
+
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(), () -> deleteProjectDataWorkHorse(projectName)));
+    }
+
+    private void deleteProjectDataWorkHorse(String projectName) {
+        LOGGER.log(Level.INFO, "deleting data for project {0}", projectName);
 
         // Delete index and xrefs.
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
@@ -208,32 +226,40 @@ public class ProjectsController {
             try {
                 IOUtils.removeRecursive(path);
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Could not delete {0}", path.toString());
+                LOGGER.log(Level.WARNING, "Could not delete {0}", path);
             }
         }
 
-        deleteHistoryCache(projectName);
+        deleteHistoryCacheWorkHorse(projectName);
 
         // Delete suggester data.
-        CompletableFuture.runAsync(() -> suggester.delete(projectName));
+        suggester.delete(projectName);
     }
 
     @DELETE
     @Path("/{project}/historycache")
-    public void deleteHistoryCache(@PathParam("project") String projectName) {
+    public Response deleteHistoryCache(@Context HttpServletRequest request,
+                                       @PathParam("project") String projectNameParam) {
+
         if (!env.isHistoryEnabled()) {
-            return;
+            return Response.status(Response.Status.NO_CONTENT).build();
         }
 
         // Avoid classification as a taint bug.
-        projectName = Laundromat.launderInput(projectName);
+        final String projectName = Laundromat.launderInput(projectNameParam);
 
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(), () -> deleteHistoryCacheWorkHorse(projectName)));
+    }
+
+    private void deleteHistoryCacheWorkHorse(String projectName) {
         Project project = disableProject(projectName);
-        logger.log(Level.INFO, "deleting history cache for project {0}", projectName);
+
+        LOGGER.log(Level.INFO, "deleting history cache for project {0}", projectName);
 
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(project);
         if (repos == null || repos.isEmpty()) {
-            logger.log(Level.INFO, "history cache for project {0} is not present", projectName);
+            LOGGER.log(Level.INFO, "history cache for project {0} is not present", projectName);
             return;
         }
 
@@ -244,10 +270,10 @@ public class ProjectsController {
                     try {
                         return env.getPathRelativeToSourceRoot(new File((x).getDirectoryName()));
                     } catch (ForbiddenSymlinkException e) {
-                        logger.log(Level.FINER, e.getMessage());
+                        LOGGER.log(Level.FINER, e.getMessage());
                         return "";
                     } catch (IOException e) {
-                        logger.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
+                        LOGGER.log(Level.WARNING, "cannot remove files for repository {0}", x.getDirectoryName());
                         // Empty output should not cause any harm
                         // since {@code getReposFromString()} inside
                         // {@code removeCache()} will return nothing.
@@ -259,13 +285,16 @@ public class ProjectsController {
     @PUT
     @Path("/{project}/indexed")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void markIndexed(@PathParam("project") String projectNameParam) throws Exception {
+    public void markIndexed(@PathParam("project") String projectNameParam)
+            throws ForbiddenSymlinkException, IOException, InvocationTargetException, InstantiationException,
+            IllegalAccessException, NoSuchMethodException {
+
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
 
         Project project = env.getProjects().get(projectName);
         if (project == null) {
-            logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
+            LOGGER.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
             throw new NotFoundException(String.format("project '%s' does not exist", projectName));
         }
 
@@ -301,7 +330,7 @@ public class ProjectsController {
             @PathParam("project") String projectName,
             @PathParam("field") String field,
             final String value
-    ) throws Exception {
+    ) throws IOException {
         // Avoid classification as a taint bug.
         projectName = Laundromat.launderInput(projectName);
         field = Laundromat.launderInput(field);
@@ -322,7 +351,7 @@ public class ProjectsController {
                 }
             }
         } else {
-            logger.log(Level.WARNING, "cannot find project {0} to set a property", projectName);
+            LOGGER.log(Level.WARNING, "cannot find project {0} to set a property", projectName);
         }
     }
 

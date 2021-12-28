@@ -48,6 +48,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -378,7 +379,7 @@ public class IndexDatabase {
 
         Response r;
         try {
-            r = ClientBuilder.newClient()
+            r = ClientBuilder.newBuilder().connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build()
                     .target(env.getConfigURI())
                     .path("api")
                     .path("v1")

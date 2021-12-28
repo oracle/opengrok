@@ -297,6 +297,9 @@ public final class Configuration {
 
     private String serverName;  // for reverse proxy environment
 
+    private int connectTimeout = -1;    // connect timeout in seconds
+    private int apiTimeout = -1;    // API timeout in seconds
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -577,6 +580,8 @@ public final class Configuration {
         setWebappLAF("default");
         // webappCtags is default(boolean)
         setXrefTimeout(30);
+        setApiTimeout(300); // 5 minutes
+        setConnectTimeout(3);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -1383,6 +1388,28 @@ public final class Configuration {
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        if (connectTimeout < 0) {
+            throw new IllegalArgumentException(String.format(NEGATIVE_NUMBER_ERROR, "connectTimeout", connectTimeout));
+        }
+        this.connectTimeout = connectTimeout;
+    }
+
+    public int getApiTimeout() {
+        return apiTimeout;
+    }
+
+    public void setApiTimeout(int apiTimeout) {
+        if (apiTimeout < 0) {
+            throw new IllegalArgumentException(String.format(NEGATIVE_NUMBER_ERROR, "apiTimeout", apiTimeout));
+        }
+        this.apiTimeout = apiTimeout;
     }
 
     /**

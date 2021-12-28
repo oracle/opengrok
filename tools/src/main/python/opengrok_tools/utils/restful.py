@@ -23,6 +23,7 @@
 
 import json
 import logging
+import time
 
 import requests
 
@@ -33,7 +34,42 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None):
+def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
+    """
+    :param response: request
+    :param api_timeout: asynchronous API timeout
+    :param headers: request headers
+    :param timeout: connect timeout
+    :return: request
+    """
+    logger = logging.getLogger(__name__)
+
+    location_uri = response.headers.get("Location")
+    if location_uri is None:
+        raise Exception(f"no Location header in {response}")
+
+    for _ in range(api_timeout):
+        logger.debug(f"GET API call: {location_uri}, timeout {timeout} seconds and headers: {headers}")
+        response = requests.get(location_uri, headers=headers, proxies=get_proxies(location_uri), timeout=timeout)
+        if response is None:
+            raise Exception("API call failed")
+
+        if response.status_code == 202:
+            time.sleep(1)
+        else:
+            break
+
+    if response.status_code == 202:
+        logger.warn(f"API request still not completed: {response}")
+        return response
+
+    logger.debug(f"DELETE API call to {location_uri}")
+    requests.delete(location_uri, headers=headers, proxies=get_proxies(location_uri), timeout=timeout)
+
+    return response
+
+
+def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, api_timeout=None):
     """
     Perform an API call. Will raise an exception if the request fails.
     :param verb: string holding HTTP verb
@@ -42,7 +78,10 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None):
     :param headers: HTTP headers dictionary
     :param data: data or None
     :param timeout: optional connect timeout in seconds.
+                    Applies also to asynchronous API status calls.
                     If None, default (60 seconds) will be used.
+    :param api_timeout: optional timeout for asynchronous API requests in seconds.
+                    If None, default (300 seconds) will be used.
     :return: the result of the handler call, can be None
     """
     logger = logging.getLogger(__name__)
@@ -53,6 +92,9 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None):
 
     if timeout is None:
         timeout = 60
+
+    if api_timeout is None:
+        api_timeout = 300
 
     logger.debug("{} API call: {} with data '{}', timeout {} seconds and headers: {}".
                  format(verb, uri, data, timeout, headers))
@@ -67,6 +109,9 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None):
 
     if r is None:
         raise Exception("API call failed")
+
+    if r.status_code == 202:
+        r = wait_for_async_api(r, api_timeout, headers=headers, timeout=timeout)
 
     r.raise_for_status()
 

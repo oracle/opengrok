@@ -468,6 +468,12 @@ public final class Indexer {
                         }
             });
 
+            parser.on("--apiTimeout", "=number", Integer.class,
+                    "Set timeout for asynchronous API requests.").execute(v -> cfg.setApiTimeout((Integer) v));
+
+            parser.on("--connectTimeout", "=number", Integer.class,
+                    "Set connect timeout. Used for API requests.").execute(v -> cfg.setConnectTimeout((Integer) v));
+
             parser.on(
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer",
                     "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
@@ -1154,10 +1160,12 @@ public final class Indexer {
         LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
         try {
             env.writeConfiguration(host);
-        } catch (IOException ex) {
+        } catch (IOException | IllegalArgumentException ex) {
             LOGGER.log(Level.SEVERE, String.format(
                     "Failed to send configuration to %s "
                     + "(is web application server running with opengrok deployed?)", host), ex);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "interrupted while sending configuration");
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }

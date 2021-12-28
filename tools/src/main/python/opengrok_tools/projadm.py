@@ -184,7 +184,7 @@ def project_add(doit, logger, project, uri, headers=None, timeout=None):
 
 
 def project_delete(logger, project, uri, doit=True, deletesource=False,
-                   headers=None, timeout=None):
+                   headers=None, timeout=None, api_timeout=None):
     """
     Delete the project for configuration and all its data.
     Works in multiple steps:
@@ -201,7 +201,8 @@ def project_delete(logger, project, uri, doit=True, deletesource=False,
     logger.info("Deleting project {} and its index data".format(project))
 
     if doit:
-        delete_project(logger, project, uri, headers=headers, timeout=timeout)
+        delete_project(logger, project, uri, headers=headers, timeout=timeout,
+                       api_timeout=api_timeout)
 
     if deletesource:
         src_root = get_config_value(logger, 'sourceRoot', uri, headers=headers,
@@ -267,6 +268,8 @@ def main():
     add_http_headers(parser)
     parser.add_argument('--api_timeout', type=int,
                         help='Set response timeout in seconds for RESTful API calls')
+    parser.add_argument('--async_api_timeout', type=int,
+                        help='Set timeout in seconds for asynchronous RESTful API calls')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', metavar='project', nargs='+',
@@ -371,7 +374,8 @@ def main():
                                    uri=uri, doit=doit,
                                    deletesource=not args.nosourcedelete,
                                    headers=headers,
-                                   timeout=args.api_timeout)
+                                   timeout=args.api_timeout,
+                                   api_timeout=args.async_api_timeout)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
@@ -406,7 +410,8 @@ def main():
                             if not set_configuration(logger,
                                                      config_data, uri,
                                                      headers=headers,
-                                                     timeout=args.api_timeout):
+                                                     timeout=args.api_timeout,
+                                                     api_timeout=args.async_api_timeout):
                                 sys.exit(FAILURE_EXITVAL)
                 else:
                     logger.error("file {} does not exist".format(main_config))
