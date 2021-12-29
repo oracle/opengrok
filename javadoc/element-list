@@ -67,6 +67,7 @@ org.opengrok.suggest.query
 org.opengrok.suggest.query.customized
 org.opengrok.suggest.query.data
 org.opengrok.web
+org.opengrok.web.api
 org.opengrok.web.api.error
 org.opengrok.web.api.v1
 org.opengrok.web.api.v1.controller
