@@ -103,7 +103,7 @@ public class ApiTask {
     }
 
     /**
-     * @return response status
+     * @return response status to be used when the task was successfully completed
      */
     Response.Status getResponseStatus() {
         return responseStatus;
