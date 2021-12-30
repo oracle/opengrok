@@ -67,6 +67,11 @@ public class ApiTask {
         this(path, callable, Response.Status.OK);
     }
 
+    /**
+     * @param path request path (for identification)
+     * @param callable Callable object
+     * @param status request status to return after the runnable is done
+     */
     public ApiTask(String path, Callable<Object> callable, Response.Status status) {
         this(path, callable, status, null);
     }
@@ -89,6 +94,10 @@ public class ApiTask {
         }
     }
 
+    /**
+     * The UUID is randomly generated in the constructor.
+     * @return UUID
+     */
     public UUID getUuid() {
         return uuid;
     }
@@ -107,6 +116,9 @@ public class ApiTask {
         state = ApiTaskState.SUBMITTED;
     }
 
+    /**
+     * @return whether the API task successfully completed
+     */
     public boolean isCompleted() {
         return state.equals(ApiTaskState.COMPLETED);
     }
@@ -115,10 +127,16 @@ public class ApiTask {
         state = ApiTaskState.COMPLETED;
     }
 
+    /**
+     * @param future Future object used for tracking the progress of the API task
+     */
     public void setFuture(Future<Object> future) {
         this.future = future;
     }
 
+    /**
+     * @return whether the task is finished (normally or with exception)
+     */
     public boolean isDone() {
         if (future != null) {
             return future.isDone();
@@ -131,6 +149,11 @@ public class ApiTask {
         return exceptionStatusMap.getOrDefault(exception.getCause().getClass(), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    /**
+     * This method assumes that the API task is finished.
+     * @return response object corresponding to the state of the API task
+     * @throws IllegalStateException if the API task is not finished
+     */
     public Response getResponse() {
         // Avoid thread being blocked in future.get() below.
         if (!isDone()) {
