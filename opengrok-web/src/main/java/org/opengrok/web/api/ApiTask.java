@@ -166,10 +166,10 @@ public class ApiTask {
                 public Object call() throws Exception {
                     LOGGER.log(Level.FINE, "API task {0} started", this);
                     setSubmitted();
-                    callable.call();
+                    Object ret = callable.call();
                     setCompleted();
                     LOGGER.log(Level.FINE, "API task {0} done", this);
-                    return null;
+                    return ret;
                 }
             };
         }

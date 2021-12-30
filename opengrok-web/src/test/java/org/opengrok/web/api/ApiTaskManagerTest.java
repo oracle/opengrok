@@ -97,16 +97,31 @@ class ApiTaskManagerTest {
         ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
         String name = "exceptionMap";
         apiTaskManager.addPool(name, 1);
-        ApiTask apiTask = new ApiTask("foo", () -> { throw new IllegalStateException("foo"); },
+        final String exceptionText = "exception text";
+        ApiTask apiTask = new ApiTask("foo", () -> { throw new IllegalStateException(exceptionText); },
                 Response.Status.NO_CONTENT,
                 Map.of(IllegalStateException.class, Response.Status.NOT_ACCEPTABLE));
         apiTaskManager.submitApiTask(name, apiTask);
         await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
-        assertEquals(Response.Status.NOT_ACCEPTABLE.getStatusCode(), apiTask.getResponse().getStatus());
+        Response response = apiTask.getResponse();
+        assertEquals(Response.Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity().toString().contains(exceptionText));
     }
 
-    // TODO: test payload with exception
-    // TODO: test payload with data returned from callable
+    @Test
+    void testCallable() {
+        ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
+        String name = "payload";
+        apiTaskManager.addPool(name, 1);
+        final String payloadText = "payload text";
+        ApiTask apiTask = new ApiTask("payload", () -> payloadText);
+        apiTaskManager.submitApiTask(name, apiTask);
+        await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
+        Response response = apiTask.getResponse();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        assertTrue(response.getEntity().toString().contains(payloadText));
+    }
 
     @Test
     void testTaskInvalidUuid() {
