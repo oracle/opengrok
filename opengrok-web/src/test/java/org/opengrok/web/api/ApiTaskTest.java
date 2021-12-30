@@ -32,7 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApiTaskTest {
 
-    private void doNothing() {
+    private Object doNothing() {
+        return null;
     }
 
     @Test
@@ -65,20 +66,27 @@ class ApiTaskTest {
     }
 
     @Test
-    void testRunnable() {
+    void testCallable() throws Exception {
         Task task = new Task();
         int newValue = task.getValue() ^ 1;
-        ApiTask apiTask = new ApiTask("foo", () -> task.setValue(newValue));
+        ApiTask apiTask = new ApiTask("foo", () -> { task.setValue(newValue); return newValue; });
         assertFalse(apiTask.isCompleted());
-        apiTask.getRunnable().run();
+        assertFalse(apiTask.isDone());
+        apiTask.getCallable().call();
         assertEquals(newValue, task.getValue());
         assertTrue(apiTask.isCompleted());
+    }
+
+    @Test
+    void testEarlyGetResponse() {
+        ApiTask apiTask = new ApiTask("early", () -> null);
+        assertThrows(IllegalStateException.class, apiTask::getResponse);
     }
 
     @Test
     void testAlreadySubmitted() {
         ApiTask apiTask = new ApiTask("foo", this::doNothing);
         apiTask.setSubmitted();
-        assertThrows(IllegalStateException.class, apiTask::getRunnable);
+        assertThrows(IllegalStateException.class, apiTask::getCallable);
     }
 }

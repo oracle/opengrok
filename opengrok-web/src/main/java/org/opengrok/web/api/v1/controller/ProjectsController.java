@@ -167,6 +167,7 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}")
+    @Produces("text/plain")
     public Response deleteProject(@Context HttpServletRequest request, @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
@@ -176,7 +177,8 @@ public class ProjectsController {
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
-                        () -> deleteProjectWorkHorse(projectName, project), Response.Status.NO_CONTENT));
+                        () -> { deleteProjectWorkHorse(projectName, project); return null; },
+                        Response.Status.NO_CONTENT));
     }
 
     private void deleteProjectWorkHorse(String projectName, Project project) {
@@ -206,6 +208,7 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/data")
+    @Produces("text/plain")
     public Response deleteProjectData(@Context HttpServletRequest request,
                                       @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
@@ -214,7 +217,7 @@ public class ProjectsController {
         disableProject(projectName);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
-                new ApiTask(request.getRequestURI(), () -> deleteProjectDataWorkHorse(projectName)));
+                new ApiTask(request.getRequestURI(), () -> { deleteProjectDataWorkHorse(projectName); return null; }));
     }
 
     private void deleteProjectDataWorkHorse(String projectName) {
@@ -238,6 +241,7 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/historycache")
+    @Produces("text/plain")
     public Response deleteHistoryCache(@Context HttpServletRequest request,
                                        @PathParam("project") String projectNameParam) {
 
@@ -249,7 +253,7 @@ public class ProjectsController {
         final String projectName = Laundromat.launderInput(projectNameParam);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
-                new ApiTask(request.getRequestURI(), () -> deleteHistoryCacheWorkHorse(projectName)));
+                new ApiTask(request.getRequestURI(), () -> { deleteHistoryCacheWorkHorse(projectName); return null; }));
     }
 
     private void deleteHistoryCacheWorkHorse(String projectName) {

@@ -68,6 +68,7 @@ public class ConfigurationController {
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
+    @Produces("text/plain")
     public Response set(@Context HttpServletRequest request,
                         @QueryParam("reindex") final boolean reindex) throws IOException {
 
@@ -80,6 +81,7 @@ public class ConfigurationController {
                 new ApiTask(request.getRequestURI(), () -> {
                     env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
+                    return null;
                 }));
     }
 
@@ -92,6 +94,7 @@ public class ConfigurationController {
 
     @PUT
     @Path("/{field}")
+    @Produces("text/plain")
     public Response setField(@Context HttpServletRequest request,
                              @PathParam("field") final String field, final String value) {
 
@@ -102,15 +105,18 @@ public class ConfigurationController {
                     // apply the configuration - let the environment reload the configuration if necessary
                     env.applyConfig(false, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
+                    return null;
                 }));
     }
 
     @POST
     @Path("/authorization/reload")
+    @Produces("text/plain")
     public Response reloadAuthorization(@Context HttpServletRequest request) {
         return ApiTaskManager.getInstance().submitApiTask("authorization",
                 new ApiTask(request.getRequestURI(),
-                        () -> env.getAuthorizationFramework().reload(), Response.Status.NO_CONTENT));
+                        () -> { env.getAuthorizationFramework().reload(); return null; },
+                        Response.Status.NO_CONTENT));
     }
 
     private Object getConfigurationValueException(String fieldName) throws WebApplicationException {

@@ -92,7 +92,7 @@ public final class ApiTaskManager {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        queues.get(queueName).submit(apiTask.getRunnable());
+        apiTask.setFuture(queues.get(queueName).submit(apiTask.getCallable()));
         apiTasks.put(apiTask.getUuid(), apiTask);
 
         return Response.status(Response.Status.ACCEPTED).

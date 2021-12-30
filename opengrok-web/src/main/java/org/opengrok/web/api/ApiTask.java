@@ -25,7 +25,12 @@ package org.opengrok.web.api;
 import jakarta.ws.rs.core.Response;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +41,7 @@ public class ApiTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiTask.class);
 
-    private final Runnable runnable;
+    private final Callable<Object> callable;
 
     enum ApiTaskState {
         INITIAL,
@@ -50,25 +55,38 @@ public class ApiTask {
 
     private final Response.Status responseStatus;
 
-    /**
-     * @param path request path (for identification)
-     * @param runnable Runnable object
-     */
-    public ApiTask(String path, Runnable runnable) {
-        this(path, runnable, Response.Status.OK);
-    }
+    private Future<Object> future;
+
+    private final Map<Class<?>,Response.Status> exceptionStatusMap = new HashMap<>();
 
     /**
      * @param path request path (for identification)
-     * @param runnable Runnable object
-     * @param status request status to return after the runnable is done
+     * @param callable Callable object
      */
-    public ApiTask(String path, Runnable runnable, Response.Status status) {
-        this.runnable = runnable;
+    public ApiTask(String path, Callable<Object> callable) {
+        this(path, callable, Response.Status.OK);
+    }
+
+    public ApiTask(String path, Callable<Object> callable, Response.Status status) {
+        this(path, callable, status, null);
+    }
+
+   /**
+    * @param path request path (for identification)
+    * @param callable Callable object
+    * @param status request status to return after the runnable is done
+    * @param exceptionStatusMap map of {@link Exception} to {@link Response.Status}
+    */
+    public ApiTask(String path, Callable<Object> callable, Response.Status status,
+                   Map<Class<?>, Response.Status> exceptionStatusMap) {
+        this.callable = callable;
         this.uuid = UUID.randomUUID();
         this.responseStatus = status;
         this.path = path;
         this.state = ApiTaskState.INITIAL;
+        if (exceptionStatusMap != null) {
+            this.exceptionStatusMap.putAll(exceptionStatusMap);
+        }
     }
 
     public UUID getUuid() {
@@ -97,21 +115,62 @@ public class ApiTask {
         state = ApiTaskState.COMPLETED;
     }
 
+    public void setFuture(Future<Object> future) {
+        this.future = future;
+    }
+
+    public boolean isDone() {
+        if (future != null) {
+            return future.isDone();
+        } else {
+            return false;
+        }
+    }
+
+    private Response.Status mapExceptionToStatus(ExecutionException exception) {
+        return exceptionStatusMap.getOrDefault(exception.getCause().getClass(), Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
+    public Response getResponse() {
+        // Avoid thread being blocked in future.get() below.
+        if (!isDone()) {
+            throw new IllegalStateException(String.format("task %s not yet done", this));
+        }
+
+        Object obj;
+        try {
+            obj = future.get();
+        } catch (InterruptedException ex) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        } catch (ExecutionException ex) {
+            return Response.status(mapExceptionToStatus(ex)).entity(ex.toString()).build();
+        }
+
+        if (obj != null) {
+            return Response.status(getResponseStatus()).entity(obj.toString()).build();
+        }
+
+        return Response.status(getResponseStatus()).build();
+    }
+
     /**
      * @return Runnable object that contains the work that needs to be completed for this API request
      */
-    public Runnable getRunnable() {
+    public Callable<Object> getCallable() {
         synchronized (this) {
             if (state.equals(ApiTaskState.SUBMITTED)) {
                 throw new IllegalStateException(String.format("API task %s already submitted", this));
             }
 
-            return () -> {
-                LOGGER.log(Level.FINE, "API task {0} started", this);
-                setSubmitted();
-                runnable.run();
-                setCompleted();
-                LOGGER.log(Level.FINE, "API task {0} done", this);
+            return new Callable<>() {
+                public Object call() throws Exception {
+                    LOGGER.log(Level.FINE, "API task {0} started", this);
+                    setSubmitted();
+                    callable.call();
+                    setCompleted();
+                    LOGGER.log(Level.FINE, "API task {0} done", this);
+                    return null;
+                }
             };
         }
     }

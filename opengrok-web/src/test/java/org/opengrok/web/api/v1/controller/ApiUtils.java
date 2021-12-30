@@ -65,10 +65,10 @@ public class ApiUtils {
         assertNotNull(apiTask);
         await().atMost(16, TimeUnit.SECONDS).until(apiTask::isCompleted);
 
-        if (!apiTask.isCompleted()) {
+        if (!apiTask.isDone()) {
             return response;
         } else {
-            return Response.status(apiTask.getResponseStatus()).build();
+            return apiTask.getResponse();
         }
     }
 }
