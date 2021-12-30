@@ -111,7 +111,7 @@ public class ApiTask {
         return state.equals(ApiTaskState.COMPLETED);
     }
 
-    public void setCompleted() {
+    void setCompleted() {
         state = ApiTaskState.COMPLETED;
     }
 
