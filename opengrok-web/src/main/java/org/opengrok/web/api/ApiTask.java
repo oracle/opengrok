@@ -103,7 +103,7 @@ public class ApiTask {
     /**
      * Set status as submitted.
      */
-    public void setSubmitted() {
+    void setSubmitted() {
         state = ApiTaskState.SUBMITTED;
     }
 
