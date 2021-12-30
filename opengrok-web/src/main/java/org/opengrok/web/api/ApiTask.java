@@ -96,7 +96,7 @@ public class ApiTask {
     /**
      * @return response status
      */
-    public Response.Status getResponseStatus() {
+    Response.Status getResponseStatus() {
         return responseStatus;
     }
 
