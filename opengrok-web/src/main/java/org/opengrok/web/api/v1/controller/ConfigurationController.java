@@ -115,7 +115,10 @@ public class ConfigurationController {
     public Response reloadAuthorization(@Context HttpServletRequest request) {
         return ApiTaskManager.getInstance().submitApiTask("authorization",
                 new ApiTask(request.getRequestURI(),
-                        () -> { env.getAuthorizationFramework().reload(); return null; },
+                        () -> {
+                            env.getAuthorizationFramework().reload();
+                            return null;
+                        },
                         Response.Status.NO_CONTENT));
     }
 

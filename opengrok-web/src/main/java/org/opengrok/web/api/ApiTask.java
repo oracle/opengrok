@@ -57,7 +57,7 @@ public class ApiTask {
 
     private Future<Object> future;
 
-    private final Map<Class<?>,Response.Status> exceptionStatusMap = new HashMap<>();
+    private final Map<Class<?>, Response.Status> exceptionStatusMap = new HashMap<>();
 
     /**
      * @param path request path (for identification)

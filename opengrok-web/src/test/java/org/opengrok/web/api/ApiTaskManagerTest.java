@@ -86,7 +86,10 @@ class ApiTaskManagerTest {
         ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
         String name = "exception";
         apiTaskManager.addPool(name, 1);
-        ApiTask apiTask = new ApiTask("foo", () -> { throw new Exception("foo"); });
+        ApiTask apiTask = new ApiTask("foo",
+                () -> {
+                    throw new Exception("foo");
+                });
         apiTaskManager.submitApiTask(name, apiTask);
         await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), apiTask.getResponse().getStatus());
@@ -98,7 +101,10 @@ class ApiTaskManagerTest {
         String name = "exceptionMap";
         apiTaskManager.addPool(name, 1);
         final String exceptionText = "exception text";
-        ApiTask apiTask = new ApiTask("foo", () -> { throw new IllegalStateException(exceptionText); },
+        ApiTask apiTask = new ApiTask("foo",
+                () -> {
+                    throw new IllegalStateException(exceptionText);
+                },
                 Response.Status.NO_CONTENT,
                 Map.of(IllegalStateException.class, Response.Status.NOT_ACCEPTABLE));
         apiTaskManager.submitApiTask(name, apiTask);

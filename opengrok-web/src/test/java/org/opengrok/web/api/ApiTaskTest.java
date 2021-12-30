@@ -69,7 +69,11 @@ class ApiTaskTest {
     void testCallable() throws Exception {
         Task task = new Task();
         int newValue = task.getValue() ^ 1;
-        ApiTask apiTask = new ApiTask("foo", () -> { task.setValue(newValue); return newValue; });
+        ApiTask apiTask = new ApiTask("foo",
+                () -> {
+                    task.setValue(newValue);
+                    return newValue;
+                });
         assertFalse(apiTask.isCompleted());
         assertFalse(apiTask.isDone());
         apiTask.getCallable().call();

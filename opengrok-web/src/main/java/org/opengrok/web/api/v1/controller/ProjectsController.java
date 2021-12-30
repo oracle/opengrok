@@ -177,7 +177,10 @@ public class ProjectsController {
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
                 new ApiTask(request.getRequestURI(),
-                        () -> { deleteProjectWorkHorse(projectName, project); return null; },
+                        () -> {
+                            deleteProjectWorkHorse(projectName, project);
+                            return null;
+                        },
                         Response.Status.NO_CONTENT));
     }
 
@@ -217,7 +220,11 @@ public class ProjectsController {
         disableProject(projectName);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
-                new ApiTask(request.getRequestURI(), () -> { deleteProjectDataWorkHorse(projectName); return null; }));
+                new ApiTask(request.getRequestURI(),
+                        () -> {
+                            deleteProjectDataWorkHorse(projectName);
+                            return null;
+                        }));
     }
 
     private void deleteProjectDataWorkHorse(String projectName) {
@@ -253,7 +260,11 @@ public class ProjectsController {
         final String projectName = Laundromat.launderInput(projectNameParam);
 
         return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
-                new ApiTask(request.getRequestURI(), () -> { deleteHistoryCacheWorkHorse(projectName); return null; }));
+                new ApiTask(request.getRequestURI(),
+                        () -> {
+                            deleteHistoryCacheWorkHorse(projectName);
+                            return null;
+                        }));
     }
 
     private void deleteHistoryCacheWorkHorse(String projectName) {
