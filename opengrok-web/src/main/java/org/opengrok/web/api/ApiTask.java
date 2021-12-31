@@ -145,6 +145,12 @@ public class ApiTask {
         }
     }
 
+    /**
+     * Provides simple Exception to status code mapping. The Exception match is exact, i.e. exception class hierarchy
+     * is not considered.
+     * @param exception Exception
+     * @return Response status
+     */
     private Response.Status mapExceptionToStatus(ExecutionException exception) {
         return exceptionStatusMap.getOrDefault(exception.getCause().getClass(), Response.Status.INTERNAL_SERVER_ERROR);
     }
