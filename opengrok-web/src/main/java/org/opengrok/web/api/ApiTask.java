@@ -130,7 +130,7 @@ public class ApiTask {
     /**
      * @param future Future object used for tracking the progress of the API task
      */
-    public void setFuture(Future<Object> future) {
+    void setFuture(Future<Object> future) {
         this.future = future;
     }
 
