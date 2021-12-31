@@ -68,7 +68,6 @@ public class ConfigurationController {
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    @Produces("text/plain")
     public Response set(@Context HttpServletRequest request,
                         @QueryParam("reindex") final boolean reindex) throws IOException {
 
@@ -94,7 +93,6 @@ public class ConfigurationController {
 
     @PUT
     @Path("/{field}")
-    @Produces("text/plain")
     public Response setField(@Context HttpServletRequest request,
                              @PathParam("field") final String field, final String value) {
 
@@ -111,7 +109,6 @@ public class ConfigurationController {
 
     @POST
     @Path("/authorization/reload")
-    @Produces("text/plain")
     public Response reloadAuthorization(@Context HttpServletRequest request) {
         return ApiTaskManager.getInstance().submitApiTask("authorization",
                 new ApiTask(request.getRequestURI(),

@@ -167,7 +167,6 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}")
-    @Produces("text/plain")
     public Response deleteProject(@Context HttpServletRequest request, @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
@@ -211,7 +210,6 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/data")
-    @Produces("text/plain")
     public Response deleteProjectData(@Context HttpServletRequest request,
                                       @PathParam("project") String projectNameParam) {
         // Avoid classification as a taint bug.
@@ -248,7 +246,6 @@ public class ProjectsController {
 
     @DELETE
     @Path("/{project}/historycache")
-    @Produces("text/plain")
     public Response deleteHistoryCache(@Context HttpServletRequest request,
                                        @PathParam("project") String projectNameParam) {
 
