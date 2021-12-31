@@ -185,15 +185,13 @@ public class ApiTask {
                 throw new IllegalStateException(String.format("API task %s already submitted", this));
             }
 
-            return new Callable<>() {
-                public Object call() throws Exception {
-                    LOGGER.log(Level.FINE, "API task {0} started", this);
-                    setSubmitted();
-                    Object ret = callable.call();
-                    setCompleted();
-                    LOGGER.log(Level.FINE, "API task {0} done", this);
-                    return ret;
-                }
+            return () -> {
+                LOGGER.log(Level.FINE, "API task {0} started", this);
+                setSubmitted();
+                Object ret = callable.call();
+                setCompleted();
+                LOGGER.log(Level.FINE, "API task {0} done", this);
+                return ret;
             };
         }
     }
