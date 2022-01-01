@@ -55,7 +55,8 @@ class StatusControllerTest extends OGKJerseyTest {
         ApiTaskManager.getInstance().shutdown();
     }
 
-    private void doNothing() {
+    private Object doNothing() {
+        return null;
     }
 
     @Test
@@ -85,6 +86,7 @@ class StatusControllerTest extends OGKJerseyTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            return null;
         }, Response.Status.CREATED);
         String uuidString = apiTask.getUuid().toString();
         ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
@@ -114,6 +116,7 @@ class StatusControllerTest extends OGKJerseyTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            return null;
         });
         String uuidString = apiTask.getUuid().toString();
         ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();

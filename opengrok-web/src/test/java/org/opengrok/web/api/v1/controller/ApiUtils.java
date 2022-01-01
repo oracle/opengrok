@@ -63,12 +63,12 @@ public class ApiUtils {
         String uuid = locationUri.substring(idx + apiPrefix.length());
         ApiTask apiTask = ApiTaskManager.getInstance().getApiTask(uuid);
         assertNotNull(apiTask);
-        await().atMost(16, TimeUnit.SECONDS).until(apiTask::isCompleted);
+        await().atMost(16, TimeUnit.SECONDS).until(apiTask::isDone);
 
-        if (!apiTask.isCompleted()) {
+        if (!apiTask.isDone()) {
             return response;
         } else {
-            return Response.status(apiTask.getResponseStatus()).build();
+            return apiTask.getResponse();
         }
     }
 }

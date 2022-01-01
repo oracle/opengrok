@@ -80,6 +80,7 @@ public class ConfigurationController {
                 new ApiTask(request.getRequestURI(), () -> {
                     env.applyConfig(body, reindex, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
+                    return null;
                 }));
     }
 
@@ -102,6 +103,7 @@ public class ConfigurationController {
                     // apply the configuration - let the environment reload the configuration if necessary
                     env.applyConfig(false, CommandTimeoutType.RESTFUL);
                     suggesterService.refresh();
+                    return null;
                 }));
     }
 
@@ -110,7 +112,11 @@ public class ConfigurationController {
     public Response reloadAuthorization(@Context HttpServletRequest request) {
         return ApiTaskManager.getInstance().submitApiTask("authorization",
                 new ApiTask(request.getRequestURI(),
-                        () -> env.getAuthorizationFramework().reload(), Response.Status.NO_CONTENT));
+                        () -> {
+                            env.getAuthorizationFramework().reload();
+                            return null;
+                        },
+                        Response.Status.NO_CONTENT));
     }
 
     private Object getConfigurationValueException(String fieldName) throws WebApplicationException {

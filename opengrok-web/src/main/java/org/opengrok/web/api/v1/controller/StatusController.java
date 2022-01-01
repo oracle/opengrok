@@ -55,8 +55,8 @@ public class StatusController {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (apiTask.isCompleted()) {
-            return Response.status(apiTask.getResponseStatus()).build();
+        if (apiTask.isDone()) {
+            return apiTask.getResponse();
         } else {
             return Response.status(Response.Status.ACCEPTED).build();
         }
@@ -70,8 +70,8 @@ public class StatusController {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!apiTask.isCompleted()) {
-            LOGGER.log(Level.WARNING, "API task {0} not yet completed", apiTask);
+        if (!apiTask.isDone()) {
+            LOGGER.log(Level.WARNING, "API task {0} not yet done", apiTask);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 

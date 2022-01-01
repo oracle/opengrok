@@ -26,8 +26,11 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,7 +52,8 @@ class ApiTaskManagerTest {
         assertEquals(name.substring(1), ApiTaskManager.getQueueName(name));
     }
 
-    private void doNothing() {
+    private Object doNothing() {
+        return null;
     }
 
     @Test
@@ -75,6 +79,54 @@ class ApiTaskManagerTest {
         assertSame(apiTask, apiTaskManager.getApiTask(uuidString));
         apiTaskManager.deleteApiTask(uuidString);
         assertNull(apiTaskManager.getApiTask(uuidString));
+    }
+
+    @Test
+    void taskSubmitCallableWithException() {
+        ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
+        String name = "exception";
+        apiTaskManager.addPool(name, 1);
+        ApiTask apiTask = new ApiTask("foo",
+                () -> {
+                    throw new Exception("foo");
+                });
+        apiTaskManager.submitApiTask(name, apiTask);
+        await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), apiTask.getResponse().getStatus());
+    }
+
+    @Test
+    void taskSubmitCallableWithExceptionMapping() {
+        ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
+        String name = "exceptionMap";
+        apiTaskManager.addPool(name, 1);
+        final String exceptionText = "exception text";
+        ApiTask apiTask = new ApiTask("foo",
+                () -> {
+                    throw new IllegalStateException(exceptionText);
+                },
+                Response.Status.NO_CONTENT,
+                Map.of(IllegalStateException.class, Response.Status.NOT_ACCEPTABLE));
+        apiTaskManager.submitApiTask(name, apiTask);
+        await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
+        Response response = apiTask.getResponse();
+        assertEquals(Response.Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
+        assertTrue(response.getEntity().toString().contains(exceptionText));
+    }
+
+    @Test
+    void testCallable() {
+        ApiTaskManager apiTaskManager = ApiTaskManager.getInstance();
+        String name = "payload";
+        apiTaskManager.addPool(name, 1);
+        final String payloadText = "payload text";
+        ApiTask apiTask = new ApiTask("payload", () -> payloadText);
+        apiTaskManager.submitApiTask(name, apiTask);
+        await().atMost(3, TimeUnit.SECONDS).until(apiTask::isDone);
+        Response response = apiTask.getResponse();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertNotNull(response.getEntity());
+        assertTrue(response.getEntity().toString().contains(payloadText));
     }
 
     @Test
