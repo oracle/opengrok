@@ -37,15 +37,24 @@ import opengrok.auth.plugin.ldap.LdapFacade;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -111,7 +120,7 @@ class LdapUserPluginTest {
         params.put(LdapUserPlugin.USE_DN, false);
         LdapUserPlugin plugin = new LdapUserPlugin();
         plugin.load(params, mockprovider);
-        assertEquals(mockprovider, plugin.getLdapProvider());
+        assertSame(mockprovider, plugin.getLdapProvider());
 
         HttpServletRequest request = new DummyHttpServletRequestLdap();
         User user = new User("foo@example.com", "id");
@@ -119,6 +128,31 @@ class LdapUserPluginTest {
 
         assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
         assertEquals(dn, ((LdapUser) request.getSession().getAttribute(SESSION_ATTR)).getDn());
+    }
+
+    @Test
+    void testNegativeCache() throws LdapException {
+        AbstractLdapProvider mockprovider = mock(LdapFacade.class);
+        when(mockprovider.lookupLdapContent(isNull(), isNull(), any(String[].class))).thenReturn(null);
+
+        Map<String, Object> params = getParamsMap();
+        params.put(LdapUserPlugin.ATTRIBUTES, "mail");
+        params.put(LdapUserPlugin.USE_DN, false);
+        LdapUserPlugin origPlugin = new LdapUserPlugin();
+        LdapUserPlugin plugin = Mockito.spy(origPlugin);
+        plugin.load(params, mockprovider);
+        assertSame(mockprovider, plugin.getLdapProvider());
+
+        HttpServletRequest dummyRequest = new DummyHttpServletRequestLdap();
+        User user = new User("foo@example.com", "id");
+        dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR, new User("foo", "123"));
+        plugin.fillSession(dummyRequest, user);
+
+        assertNotNull(dummyRequest.getSession().getAttribute(SESSION_ATTR));
+        assertFalse(plugin.isAllowed(dummyRequest, new Project("foo")));
+        assertFalse(plugin.isAllowed(dummyRequest, new Group("bar")));
+        // Make sure that the session was filled so that the second call to isAllowed() did not fill it again.
+        verify(plugin, times(2)).updateSession(eq(dummyRequest), anyString(), anyBoolean());
     }
 
     @Test

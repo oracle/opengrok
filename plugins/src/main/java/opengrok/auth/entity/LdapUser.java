@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.entity;
 
@@ -46,7 +46,6 @@ public class LdapUser implements Serializable {
 
     public LdapUser(String dn, Map<String, Set<String>> attrs) {
         this.dn = dn;
-
         this.attributes = Objects.requireNonNullElseGet(attrs, HashMap::new);
     }
 
