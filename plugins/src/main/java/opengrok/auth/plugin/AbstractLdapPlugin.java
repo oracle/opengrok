@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -264,9 +264,7 @@ public abstract class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param username new username
      * @param established new value for established
      */
-    protected void updateSession(HttpServletRequest req,
-            String username,
-            boolean established) {
+    protected void updateSession(HttpServletRequest req, String username, boolean established) {
         setSessionEstablished(req, established);
         setSessionUsername(req, username);
     }
