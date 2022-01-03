@@ -23,6 +23,7 @@
 package opengrok.auth.plugin;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,6 +36,7 @@ import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.LdapException;
+import org.jetbrains.annotations.NotNull;
 import org.opengrok.indexer.authorization.AuthorizationException;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
@@ -52,6 +54,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private static final Logger LOGGER = Logger.getLogger(LdapUserPlugin.class.getName());
 
     static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
+    static final String NEGATIVE_CACHE_ATTR = "opengrok-ldap-plugin-user-invalid-user";
 
     /**
      * List of configuration names.
@@ -135,9 +138,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      */
     String expandFilter(User user) {
         String filter = ldapFilter;
-
         filter = expandUserFilter(user, filter);
-
         filter = filter.replace("\\%", "%");
 
         return filter;
@@ -170,19 +171,20 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         AbstractLdapProvider ldapProvider = getLdapProvider();
         try {
             AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> res;
-            if ((res = ldapProvider.lookupLdapContent(dn, expandedFilter,
-                    attrSet.toArray(new String[0]))) == null) {
+            if ((res = ldapProvider.lookupLdapContent(dn, expandedFilter, attrSet.toArray(new String[0]))) == null) {
                 LOGGER.log(Level.WARNING, "failed to get LDAP attributes ''{2}'' for user {0} " +
                                 "with filter ''{1}'' from LDAP provider {3}",
                         new Object[]{user, expandedFilter, attrSet, getLdapProvider()});
+                LdapUser ldapUser = new LdapUser(dn, null);
+                ldapUser.setAttribute(NEGATIVE_CACHE_ATTR, Collections.singleton(null));
+                updateSession(req, ldapUser);
                 return;
             }
 
             records = res.getAttrs();
             if (Boolean.FALSE.equals(useDN)) {
                 dn = res.getDN();
-                LOGGER.log(Level.FINEST, "got DN ''{0}'' for user {1}",
-                        new Object[]{dn, user});
+                LOGGER.log(Level.FINEST, "got DN ''{0}'' for user {1}", new Object[]{dn, user});
             }
         } catch (LdapException ex) {
             throw new AuthorizationException(ex);
@@ -206,8 +208,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
             userAttrSet.put(attrName, records.get(attrName));
         }
 
-        LOGGER.log(Level.FINEST, "DN for user {0} is ''{1}'' on {2}",
-                new Object[]{user, dn, ldapProvider});
+        LOGGER.log(Level.FINEST, "DN for user {0} is ''{1}'' on {2}", new Object[]{user, dn, ldapProvider});
         updateSession(req, new LdapUser(dn, userAttrSet));
     }
 
@@ -217,7 +218,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * @param req the request
      * @param user the new value for user
      */
-    void updateSession(HttpServletRequest req, LdapUser user) {
+    void updateSession(@NotNull HttpServletRequest req, LdapUser user) {
         req.getSession().setAttribute(getSessionAttrName(), user);
     }
 
@@ -229,13 +230,18 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         return getSessionAttrName(instanceNum);
     }
 
+    private boolean checkUser(@NotNull HttpServletRequest request) {
+        LdapUser ldapUser = (LdapUser) request.getSession().getAttribute(getSessionAttrName());
+        return ldapUser != null && ldapUser.getAttribute(NEGATIVE_CACHE_ATTR) == null;
+    }
+
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return request.getSession().getAttribute(getSessionAttrName()) != null;
+        return checkUser(request);
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return request.getSession().getAttribute(getSessionAttrName()) != null;
+        return checkUser(request);
     }
 }
