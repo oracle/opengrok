@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -39,6 +39,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static opengrok.auth.plugin.LdapUserPlugin.SESSION_ATTR;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Vladimir Kotal
  */
-public class LdapUserPluginTest {
+class LdapUserPluginTest {
 
     private LdapUserPlugin plugin;
 
@@ -68,37 +69,37 @@ public class LdapUserPluginTest {
     }
 
     @Test
-    public void loadTestNegative1() {
+    void loadTestNegative1() {
         Map<String, Object> params = getParamsMap();
         params.put("foo", "bar");
         assertThrows(NullPointerException.class, () -> plugin.load(params));
     }
 
     @Test
-    public void loadTestPositive() {
+    void loadTestPositive() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, "mail");
         plugin.load(params);
     }
 
     @Test
-    public void filterTest() {
+    void filterTest() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.LDAP_FILTER, "(&(objectclass=person)(mail=%username%))");
         params.put(LdapUserPlugin.ATTRIBUTES, "uid,mail");
         plugin.load(params);
 
-        User user = new User("foo@bar.cz", "id", null, false);
+        User user = new User("foo@example.com", "id", null, false);
         String filter = plugin.expandFilter(user);
-        assertEquals("(&(objectclass=person)(mail=foo@bar.cz))", filter);
+        assertEquals("(&(objectclass=person)(mail=foo@example.com))", filter);
     }
 
     @Test
-    public void testFillSessionWithDnOff() throws LdapException {
+    void testFillSessionWithDnOff() throws LdapException {
         AbstractLdapProvider mockprovider = mock(LdapFacade.class);
         Map<String, Set<String>> attrs = new HashMap<>();
-        attrs.put("mail", Collections.singleton("foo@bar.cz"));
-        final String dn = "cn=FOO_BAR,L=EMEA,DC=FOO,DC=COM";
+        attrs.put("mail", Collections.singleton("foo@example.com"));
+        final String dn = "cn=FOO_BAR,L=EMEA,DC=EXAMPLE,DC=COM";
         AbstractLdapProvider.LdapSearchResult<Map<String, Set<String>>> result =
                 new AbstractLdapProvider.LdapSearchResult<>(dn, attrs);
         assertNotNull(result);
@@ -113,7 +114,7 @@ public class LdapUserPluginTest {
         assertEquals(mockprovider, plugin.getLdapProvider());
 
         HttpServletRequest request = new DummyHttpServletRequestLdap();
-        User user = new User("foo@bar.cz", "id");
+        User user = new User("foo@example.com", "id");
         plugin.fillSession(request, user);
 
         assertNotNull(request.getSession().getAttribute(SESSION_ATTR));
@@ -121,7 +122,7 @@ public class LdapUserPluginTest {
     }
 
     @Test
-    public void testInstance() {
+    void testInstance() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, "mail");
         params.put(LdapUserPlugin.INSTANCE, "42");
@@ -134,7 +135,7 @@ public class LdapUserPluginTest {
     }
 
     @Test
-    public void testInvalidInstance() {
+    void testInvalidInstance() {
         Map<String, Object> params = getParamsMap();
         params.put(LdapUserPlugin.ATTRIBUTES, "mail");
         params.put(LdapUserPlugin.INSTANCE, "foobar");
