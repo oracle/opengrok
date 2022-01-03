@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -57,9 +57,11 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * List of configuration names.
      * <ul>
      * <li><code>filter</code> is LDAP filter used for searching (optional)</li>
-     * <li><code>useDN</code> boolean value indicating if User.username should be treated as Distinguished Name (optional, default is false)</li>
+     * <li><code>useDN</code> boolean value indicating if User.username should be treated as Distinguished Name
+     * (optional, default is false)</li>
      * <li><code>attributes</code> is comma separated list of LDAP attributes to be produced (mandatory)</li>
-     * <li><code>instance</code> integer that can be used to identify instance of this plugin by other LDAP plugins (optional, default empty)</li>
+     * <li><code>instance</code> integer that can be used to identify instance of this plugin by other LDAP plugins
+     * (optional, default empty)</li>
      * </ul>
      */
     static final String LDAP_FILTER = "filter";
@@ -89,8 +91,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private void init(Map<String, Object> parameters) {
         String attributesVal;
         if ((attributesVal = (String) parameters.get(ATTRIBUTES)) == null) {
-            throw new NullPointerException("Missing configuration parameter [" + ATTRIBUTES +
-                    "] in the setup");
+            throw new NullPointerException("Missing configuration parameter [" + ATTRIBUTES + "] in the setup");
         }
         attrSet = new HashSet<>(Arrays.asList(attributesVal.split(",")));
 
@@ -119,8 +120,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      */
     @Override
     protected boolean sessionExists(HttpServletRequest req) {
-        return super.sessionExists(req)
-                && req.getSession().getAttribute(getSessionAttrName()) != null;
+        return super.sessionExists(req) && req.getSession().getAttribute(getSessionAttrName()) != null;
     }
 
     /**
@@ -157,8 +157,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         String dn = null;
         if (Boolean.TRUE.equals(useDN)) {
             dn = user.getUsername();
-            LOGGER.log(Level.FINEST, "using DN ''{0}'' for user {1}",
-                    new Object[]{dn, user});
+            LOGGER.log(Level.FINEST, "using DN ''{0}'' for user {1}", new Object[]{dn, user});
         }
 
         String expandedFilter = null;
