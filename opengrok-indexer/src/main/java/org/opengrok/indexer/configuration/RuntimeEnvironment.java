@@ -77,6 +77,7 @@ import org.opengrok.indexer.util.LazilyInstantiate;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.util.ResourceLock;
 import org.opengrok.indexer.util.Statistics;
+import org.opengrok.indexer.web.ApiUtils;
 import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.Util;
 import org.opengrok.indexer.web.messages.Message;
@@ -1458,53 +1459,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Busy waits for API call to complete by repeatedly querying the status API endpoint passed
-     * in the {@code Location} header in the response parameter. The overall time is governed
-     * by the {@link #getApiTimeout()}, however each individual status check
-     * uses {@link #getConnectTimeout()} so in the worst case the total time can be
-     * {@code getApiTimeout() * getConnectTimeout()}.
-     * @param response response returned from the server upon asynchronous API request
-     * @return response from the status API call
-     * @throws InterruptedException on sleep interruption
-     * @throws IllegalArgumentException on invalid request (no {@code Location} header)
-     */
-    private @NotNull Response waitForAsyncApi(@NotNull Response response)
-            throws InterruptedException, IllegalArgumentException {
-
-        String location = response.getHeaderString(HttpHeaders.LOCATION);
-        if (location == null) {
-            throw new IllegalArgumentException(String.format("no %s header in %s", HttpHeaders.LOCATION, response));
-        }
-
-        LOGGER.log(Level.FINER, "checking asynchronous API result on {0}", location);
-        for (int i = 0; i < getApiTimeout(); i++) {
-            response = ClientBuilder.newBuilder().
-                    connectTimeout(RuntimeEnvironment.getInstance().getConnectTimeout(), TimeUnit.SECONDS).build().
-                    target(location).request().get();
-            if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-                Thread.sleep(1000);
-            } else {
-                break;
-            }
-        }
-
-        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-            LOGGER.log(Level.WARNING, "API request still not completed: {0}", response);
-            return response;
-        }
-
-        LOGGER.log(Level.FINER, "making DELETE API request to {0}", location);
-        Response deleteResponse = ClientBuilder.newBuilder().connectTimeout(3, TimeUnit.SECONDS).build().
-                target(location).request().delete();
-        if (deleteResponse.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            LOGGER.log(Level.WARNING, "DELETE API call to {0} failed with HTTP error {1}",
-                    new Object[]{location, response.getStatusInfo()});
-        }
-
-        return response;
-    }
-
-    /**
      * Write the current configuration to a socket and waits for the result.
      *
      * @param host the host address to receive the configuration
@@ -1524,7 +1478,7 @@ public final class RuntimeEnvironment {
                 .put(Entity.xml(configXML));
 
         if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
-            response = waitForAsyncApi(response);
+            response = ApiUtils.waitForAsyncApi(response);
         }
 
         if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {

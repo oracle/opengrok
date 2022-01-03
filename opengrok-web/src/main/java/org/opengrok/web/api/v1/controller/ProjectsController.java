@@ -297,9 +297,7 @@ public class ProjectsController {
     @PUT
     @Path("/{project}/indexed")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void markIndexed(@PathParam("project") String projectNameParam)
-            throws ForbiddenSymlinkException, IOException, InvocationTargetException, InstantiationException,
-            IllegalAccessException, NoSuchMethodException {
+    public Response markIndexed(@Context HttpServletRequest request, @PathParam("project") String projectNameParam) {
 
         // Avoid classification as a taint bug.
         final String projectName = Laundromat.launderInput(projectNameParam);
@@ -312,28 +310,34 @@ public class ProjectsController {
 
         project.setIndexed(true);
 
-        // Refresh current version of the project's repositories.
-        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
-        if (riList != null) {
-            for (RepositoryInfo ri : riList) {
-                Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
+        return ApiTaskManager.getInstance().submitApiTask(PROJECTS_PATH,
+                new ApiTask(request.getRequestURI(),
+                        () -> {
+                            // Refresh current version of the project's repositories.
+                            List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+                            if (riList != null) {
+                                for (RepositoryInfo ri : riList) {
+                                    Repository repo = getRepository(ri, CommandTimeoutType.RESTFUL);
 
-                if (repo != null && repo.getCurrentVersion() != null && repo.getCurrentVersion().length() > 0) {
-                    // getRepository() always creates fresh instance
-                    // of the Repository object so there is no need
-                    // to call setCurrentVersion() on it.
-                    ri.setCurrentVersion(repo.determineCurrentVersion());
-                }
-            }
-        }
+                                    if (repo != null && repo.getCurrentVersion() != null &&
+                                            repo.getCurrentVersion().length() > 0) {
+                                        // getRepository() always creates fresh instance
+                                        // of the Repository object so there is no need
+                                        // to call setCurrentVersion() on it.
+                                        ri.setCurrentVersion(repo.determineCurrentVersion());
+                                    }
+                                }
+                            }
 
-        CompletableFuture.runAsync(() -> suggester.rebuild(projectName));
+                            CompletableFuture.runAsync(() -> suggester.rebuild(projectName));
 
-        // In case this project has just been incrementally indexed,
-        // its IndexSearcher needs a poke.
-        env.maybeRefreshIndexSearchers(Collections.singleton(projectName));
+                            // In case this project has just been incrementally indexed,
+                            // its IndexSearcher needs a poke.
+                            env.maybeRefreshIndexSearchers(Collections.singleton(projectName));
 
-        env.refreshDateForLastIndexRun();
+                            env.refreshDateForLastIndexRun();
+                            return null;
+                        }));
     }
 
     @PUT
