@@ -110,6 +110,7 @@ import org.opengrok.indexer.util.TandemPath;
 import org.opengrok.indexer.web.Util;
 
 import static org.opengrok.indexer.index.IndexerUtil.getWebAppHeaders;
+import static org.opengrok.indexer.web.ApiUtils.waitForAsyncApi;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -377,9 +378,9 @@ public class IndexDatabase {
             return;
         }
 
-        Response r;
+        Response response;
         try {
-            r = ClientBuilder.newBuilder().connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build()
+            response = ClientBuilder.newBuilder().connectTimeout(env.getConnectTimeout(), TimeUnit.SECONDS).build()
                     .target(env.getConfigURI())
                     .path("api")
                     .path("v1")
@@ -390,14 +391,22 @@ public class IndexDatabase {
                     .headers(getWebAppHeaders())
                     .put(Entity.text(""));
         } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, String.format("Couldn''t notify the webapp that project %s was indexed",
+            LOGGER.log(Level.WARNING, String.format("Could not notify the webapp that project %s was indexed",
                     project), e);
             return;
         }
 
-        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            LOGGER.log(Level.WARNING, "Couldn''t notify the webapp that project {0} was indexed: {1}",
-                    new Object[] {project, r});
+        if (response.getStatus() == Response.Status.ACCEPTED.getStatusCode()) {
+            try {
+                response = waitForAsyncApi(response);
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING, "interrupted while waiting for API response", e);
+            }
+        }
+
+        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            LOGGER.log(Level.WARNING, "Could not notify the webapp that project {0} was indexed: {1}",
+                    new Object[] {project, response});
         }
     }
 
