@@ -27,7 +27,6 @@ import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
