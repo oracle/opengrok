@@ -23,6 +23,8 @@
  */
 package org.opengrok.indexer.history;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -177,6 +179,18 @@ public class History implements Serializable {
         }
 
         tags.clear();
+    }
+
+    /**
+     * @return last (newest) history entry or null
+     */
+    public @Nullable HistoryEntry getLastHistoryEntry() {
+        List<HistoryEntry> historyEntries = getHistoryEntries();
+        if (historyEntries == null || historyEntries.isEmpty()) {
+            return null;
+        }
+
+        return historyEntries.get(0);
     }
 
     @Override

@@ -469,7 +469,7 @@ public class GitRepository extends RepositoryWithPerPartesHistory {
     @Override
     public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
         History hist = getHistory(file, null, null, 1);
-        return getLastHistoryEntry(hist);
+        return hist.getLastHistoryEntry();
     }
 
     public History getHistory(File file, String sinceRevision, String tillRevision) throws HistoryException {
