@@ -60,7 +60,7 @@ public interface RepositoryLookup {
     /**
      * Find enclosing repository for a given path.
      *
-     * @param path path to find encolsing repository for
+     * @param path path to find enclosing repository for
      * @param repoParentDirs Set of repository parent dirs (parents of repository roots)
      * @param repositories Map of repository root to Repository
      * @param canonicalizer PathCanonicalizer reference
@@ -77,7 +77,7 @@ public interface RepositoryLookup {
     /**
      * Lifecycle method to invalidate any cache entries that point to given repositories that are being removed.
      *
-     * @param removedRepos
+     * @param removedRepos collection of repositories
      */
     void repositoriesRemoved(Collection<Repository> removedRepos);
 }

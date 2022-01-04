@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.Configuration.RemoteSCM;
 import org.opengrok.indexer.configuration.PathAccepter;
@@ -228,50 +229,92 @@ public final class HistoryGuru {
         return getHistory(file, true, true);
     }
 
-    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
-        final Repository repo = getRepository(file);
-        if (repo != null) {
-            return repo.getLastHistoryEntry(file, ui);
-        }
-        return null;
-    }
-
-    /**
-     * Get the history for the specified file.
-     *
-     * @param file the file to get the history for
-     * @param withFiles whether or not the returned history should contain a
-     * list of files touched by each changeset (the file list may be skipped if
-     * false, but it doesn't have to)
-     * @param ui called from the webapp
-     * @return history for the file
-     * @throws HistoryException on error when accessing the history
-     */
-    public History getHistory(File file, boolean withFiles, boolean ui)
-            throws HistoryException {
-        final File dir = file.isDirectory() ? file : file.getParentFile();
-        final Repository repo = getRepository(dir);
-
+    private boolean isRepoHistoryEligible(Repository repo, File file, boolean ui) {
         RemoteSCM rscm = env.getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
                 || (rscm == RemoteSCM.ON)
                 || (ui || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories()));
 
-        if (repo != null && repo.isHistoryEnabled() && repo.isWorking() && repo.fileHasHistory(file)
-                && (!repo.isRemote() || doRemote)) {
+        return (repo != null && repo.isHistoryEnabled() && repo.isWorking() && repo.fileHasHistory(file)
+                && (!repo.isRemote() || doRemote));
+    }
 
-            if (useCache() && historyCache.supportsRepository(repo)) {
-                try {
-                    return historyCache.get(file, repo, withFiles);
-                } catch (ForbiddenSymlinkException ex) {
-                    LOGGER.log(Level.FINER, ex.getMessage());
-                    return null;
-                }
-            }
-            return repo.getHistory(file);
+    @Nullable
+    private History getHistoryFromCache(File file, Repository repository, boolean withFiles, boolean ui)
+            throws HistoryException, ForbiddenSymlinkException {
+
+        if (useCache() && historyCache.supportsRepository(repository)) {
+            return historyCache.get(file, repository, withFiles);
         }
 
         return null;
+    }
+
+    /**
+     * @param file file to get the history entry for
+     * @param ui is the request coming from the UI
+     * @return last (newest) history entry for given file or null
+     * @throws HistoryException if history retrieval failed
+     */
+    @Nullable
+    public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
+        final File dir = file.isDirectory() ? file : file.getParentFile();
+        final Repository repository = getRepository(dir);
+
+        if (!isRepoHistoryEligible(repository, file, ui)) {
+            return null;
+        }
+
+        History history;
+        try {
+            history = getHistoryFromCache(file, repository, false, ui);
+            if (history != null) {
+                HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
+                if (lastHistoryEntry != null) {
+                    LOGGER.log(Level.FINEST, "got latest history entry {0} for ''{1}'' from history cache",
+                            new Object[]{lastHistoryEntry, file});
+                    return lastHistoryEntry;
+                }
+            }
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return null;
+        }
+
+        return repository.getLastHistoryEntry(file, ui);
+    }
+
+    /**
+     * Get the history for the specified file. The history cache is tried first, then the repository.
+     *
+     * @param file the file to get the history for
+     * @param withFiles whether the returned history should contain a
+     * list of files touched by each changeset (the file list may be skipped if false, but it doesn't have to)
+     * @param ui called from the webapp
+     * @return history for the file
+     * @throws HistoryException on error when accessing the history
+     */
+    public History getHistory(File file, boolean withFiles, boolean ui) throws HistoryException {
+
+        final File dir = file.isDirectory() ? file : file.getParentFile();
+        final Repository repository = getRepository(dir);
+
+        if (!isRepoHistoryEligible(repository, file, ui)) {
+            return null;
+        }
+
+        History history;
+        try {
+            history = getHistoryFromCache(file, repository, withFiles, ui);
+            if (history != null) {
+                return history;
+            }
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return null;
+        }
+
+        return repository.getHistory(file);
     }
 
     /**
@@ -732,8 +775,9 @@ public final class HistoryGuru {
         return repos;
     }
 
-    protected Repository getRepository(File file) {
-        return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories, PathUtils::getRelativeToCanonical);
+    private Repository getRepository(File file) {
+        return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
+                PathUtils::getRelativeToCanonical);
     }
 
     /**

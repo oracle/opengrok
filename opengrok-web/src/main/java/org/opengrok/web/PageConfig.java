@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2011, Jens Elkner.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
@@ -1288,17 +1288,20 @@ public final class PageConfig {
     /**
      * @return last revision string for {@code file} or null
      */
+    @Nullable
     public String getLatestRevision() {
         if (!getEnv().isHistoryEnabled()) {
             return null;
         }
 
+        // Try getting the history revision from the index first.
         String lastRev = getLastRevFromIndex();
         if (lastRev != null) {
             return lastRev;
         }
 
-        // fallback
+        // If this is older index, fallback to the history (either fetch from history cache or retrieve from
+        // the repository directly).
         try {
             return getLastRevFromHistory();
         } catch (HistoryException e) {
@@ -1309,8 +1312,8 @@ public final class PageConfig {
 
     @Nullable
     private String getLastRevFromHistory() throws HistoryException {
-        HistoryEntry he = HistoryGuru.getInstance().
-                getLastHistoryEntry(new File(getEnv().getSourceRootFile(), getPath()), true);
+        File file = new File(getEnv().getSourceRootFile(), getPath());
+        HistoryEntry he = HistoryGuru.getInstance().getLastHistoryEntry(file, true);
         if (he != null) {
             return he.getRevision();
         }

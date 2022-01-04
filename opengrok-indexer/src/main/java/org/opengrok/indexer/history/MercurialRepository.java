@@ -571,9 +571,10 @@ public class MercurialRepository extends RepositoryWithPerPartesHistory {
     @Override
     public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
         History hist = getHistory(file, null, null, 1);
-        return getLastHistoryEntry(hist);
+        return hist.getLastHistoryEntry();
     }
 
+    @Override
     History getHistory(File file, String sinceRevision) throws HistoryException {
         return getHistory(file, sinceRevision, null);
     }

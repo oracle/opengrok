@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -49,8 +49,6 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.BufferSink;
 import org.opengrok.indexer.util.Executor;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * An interface for an external repository.
@@ -96,7 +94,6 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @return {@code true} if the repository can get history for directories
      */
-    @NotNull
     abstract boolean hasHistoryForDirectories();
 
     public String toString() {
@@ -132,19 +129,6 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract History getHistory(File file) throws HistoryException;
 
-    HistoryEntry getLastHistoryEntry(History hist) {
-        if (hist == null) {
-            return null;
-        }
-
-        List<HistoryEntry> hlist = hist.getHistoryEntries();
-        if (hlist == null || hlist.isEmpty()) {
-            return null;
-        }
-
-        return hlist.get(0);
-    }
-
     /**
      * This is generic implementation that retrieves the full history of given file
      * and returns the latest history entry. This is obviously very inefficient, both in terms of memory and I/O.
@@ -154,15 +138,19 @@ public abstract class Repository extends RepositoryInfo {
      * @throws HistoryException on error
      */
     public HistoryEntry getLastHistoryEntry(File file, boolean ui) throws HistoryException {
-        History hist;
+        History history;
         try {
-            hist = HistoryGuru.getInstance().getHistory(file, false, ui);
+            history = HistoryGuru.getInstance().getHistory(file, false, ui);
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "failed to get history for {0}", file);
             return null;
         }
 
-        return getLastHistoryEntry(hist);
+        if (history != null) {
+            return history.getLastHistoryEntry();
+        } else {
+            return null;
+        }
     }
 
     public Repository() {
@@ -519,7 +507,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Determine and return the current version of the repository.
      *
-     * This operation is consider "heavy" so this function should not be
+     * This operation is considered "heavy" so this function should not be
      * called on every web request.
      *
      * @param cmdType command timeout type
