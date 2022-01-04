@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -35,9 +35,10 @@ import java.util.TreeMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class HistoryTest {
+class HistoryTest {
     private final List<HistoryEntry> entries = List.of(
             new HistoryEntry("84599b3c", new Date(1485438707000L),
                     "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
@@ -49,7 +50,7 @@ public class HistoryTest {
                     Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))));
 
     @Test
-    public void testEqualsRenamed() {
+    void testEqualsRenamed() {
         History history = new History(entries,
                 List.of(Paths.get("moved", "renamed2.c").toString(),
                         Paths.get("moved2", "renamed2.c").toString(),
@@ -59,7 +60,7 @@ public class HistoryTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         History history = new History(entries);
         assertEquals(2, history.getHistoryEntries().size());
         History historySmaller = new History(entries.subList(1, 2));
@@ -114,5 +115,17 @@ public class HistoryTest {
         history1.setTags(Map.of("foo", "bar", "Bar", "foo"));
         history2.setTags(Map.of("foo", "bar", "bar", "foo"));
         assertNotEquals(history1, history2);
+    }
+
+    @Test
+    void testGetLastHistoryEntryEmpty() {
+        History history = new History();
+        assertNull(history.getLastHistoryEntry());
+    }
+
+    @Test
+    void testGetLastHistoryEntry() {
+        History history = new History(entries);
+        assertEquals(entries.get(0), history.getLastHistoryEntry());
     }
 }
