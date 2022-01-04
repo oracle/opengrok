@@ -41,7 +41,7 @@ public class ApiUtils {
 
     /**
      * Busy-waits the status of asynchronous API call, mimicking
-     * {@link org.opengrok.indexer.configuration.RuntimeEnvironment#waitForAsyncApi(Response)},
+     * {@link org.opengrok.indexer.web.ApiUtils#waitForAsyncApi(Response)},
      * however side-steps status API check by going to the {@link ApiTaskManager} directly in order to avoid
      * going through the {@link StatusController} as it might not be deployed in the unit tests.
      * The method will return right away if the status of the response object parameter is not
