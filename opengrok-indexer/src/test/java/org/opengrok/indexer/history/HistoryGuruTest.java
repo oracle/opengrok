@@ -75,8 +75,7 @@ public class HistoryGuruTest {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResource("/repositories"));
         RepositoryFactory.initializeIgnoredNames(env);
-        FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
-                FILES, true);
+        FileUtilities.getAllFiles(new File(repository.getSourceRoot()), FILES, true);
         assertNotEquals(0, FILES.size());
 
         HistoryGuru histGuru = HistoryGuru.getInstance();

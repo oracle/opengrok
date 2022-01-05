@@ -156,6 +156,7 @@ public final class HistoryGuru {
      * <code>HistoryParser</code> does not support annotation
      * @throws IOException if I/O exception occurs
      */
+    @Nullable
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation annotation = null;
 
