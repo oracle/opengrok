@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -107,7 +107,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void testGetRevision() throws HistoryException, IOException {
+    void testGetRevision() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
 
         for (File f : FILES) {
@@ -127,7 +127,7 @@ public class HistoryGuruTest {
 
     @Test
     @EnabledForRepository(SUBVERSION)
-    public void testBug16465() throws HistoryException, IOException {
+    void testBug16465() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (f.getName().equals("bugreport16465@")) {
@@ -138,7 +138,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void annotation() throws Exception {
+    void annotation() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : FILES) {
             if (instance.hasAnnotation(f)) {
@@ -148,14 +148,14 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void getCacheInfo() throws HistoryException {
+    void getCacheInfo() throws HistoryException {
         // FileHistoryCache is used by default
         assertEquals("FileHistoryCache",
                 HistoryGuru.getInstance().getCacheInfo());
     }
 
     @Test
-    public void testAddRemoveRepositories() {
+    void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         final int numReposOrig = instance.getRepositories().size();
 
@@ -180,7 +180,7 @@ public class HistoryGuruTest {
 
     @Test
     @EnabledForRepository(CVS)
-    public void testAddSubRepositoryNotNestable() {
+    void testAddSubRepositoryNotNestable() {
         HistoryGuru instance = HistoryGuru.getInstance();
 
         // Check out CVS underneath a Git repository.
@@ -201,7 +201,7 @@ public class HistoryGuruTest {
 
     @Test
     @EnabledForRepository(MERCURIAL)
-    public void testAddSubRepository() {
+    void testAddSubRepository() {
         HistoryGuru instance = HistoryGuru.getInstance();
 
         // Clone a Mercurial repository underneath a Mercurial repository.
@@ -218,7 +218,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void testNestingMaximum() throws IOException {
+    void testNestingMaximum() throws IOException {
         // Just fake a nesting of Repo -> Git -> Git.
         File repoRoot = new File(repository.getSourceRoot(), "repoRoot");
         certainlyMkdirs(repoRoot);
@@ -253,7 +253,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void testScanningDepth() throws IOException {
+    void testScanningDepth() throws IOException {
         String topLevelDirName = "scanDepthTest";
         File repoRoot = new File(repository.getSourceRoot(), topLevelDirName);
         certainlyMkdirs(repoRoot);
@@ -293,7 +293,7 @@ public class HistoryGuruTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testGetLastHistoryEntry(boolean isIndexerParam) throws HistoryException {
+    void testGetLastHistoryEntryVsIndexer(boolean isIndexerParam) throws HistoryException {
         boolean isIndexer = env.isIndexer();
         env.setIndexer(isIndexerParam);
         boolean isTagsEnabled = env.isTagsEnabled();
@@ -308,5 +308,17 @@ public class HistoryGuruTest {
         }
         env.setIndexer(isIndexer);
         env.setTagsEnabled(isTagsEnabled);
+    }
+
+    @Test
+    void testGetLastHistoryEntryRepoHistoryDisabled() throws HistoryException {
+        File file = new File(repository.getSourceRoot(), "git");
+        assertTrue(file.exists());
+        HistoryGuru instance = HistoryGuru.getInstance();
+        Repository repository = instance.getRepository(file);
+        assertNotNull(repository);
+        repository.setHistoryEnabled(false);
+        assertNull(instance.getLastHistoryEntry(file, false));
+        repository.setHistoryEnabled(true);
     }
 }

@@ -229,7 +229,7 @@ public final class HistoryGuru {
         return getHistory(file, true, true);
     }
 
-    private boolean isRepoHistoryEligible(Repository repo, File file, boolean ui) {
+    boolean isRepoHistoryEligible(Repository repo, File file, boolean ui) {
         RemoteSCM rscm = env.getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
                 || (rscm == RemoteSCM.ON)
@@ -775,7 +775,7 @@ public final class HistoryGuru {
         return repos;
     }
 
-    private Repository getRepository(File file) {
+    Repository getRepository(File file) {
         return repositoryLookup.getRepository(file.toPath(), repositoryRoots.keySet(), repositories,
                 PathUtils::getRelativeToCanonical);
     }
