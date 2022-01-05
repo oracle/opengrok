@@ -18,13 +18,15 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 interface HistoryCache {
@@ -51,17 +53,23 @@ interface HistoryCache {
      * parsing the history information in the repository.
      *
      * @param file The file to retrieve history for
-     * @param repository The external repository to read the history from (can
-     * be <code>null</code>)
-     * @param withFiles A flag saying whether or not the returned history
-     * should include a list of files touched by each changeset. If false,
-     * the implementation is allowed to skip the file list, but it doesn't
-     * have to.
+     * @param repository The external repository to read the history from (can be <code>null</code>)
+     * @param withFiles A flag saying whether the returned history should include a list of files
+     *                  touched by each changeset. If false, the implementation is allowed to skip the file list,
+     *                  but it doesn't have to.
+     * @param fallback whether to fall back to {@link Repository#getHistory(File)}
+     *                 if the history cannot be retrieved from the cache
      * @throws HistoryException if the history cannot be fetched
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters
      * an ineligible link
      */
-    History get(File file, Repository repository, boolean withFiles)
+    History get(File file, @Nullable Repository repository, boolean withFiles, boolean fallback)
+            throws HistoryException, ForbiddenSymlinkException;
+
+    /**
+     * Usually a wrapper of {@link HistoryCache#get(File, Repository, boolean, boolean)}.
+     */
+    History get(File file, @Nullable Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException;
 
     /**
