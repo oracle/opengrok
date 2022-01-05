@@ -198,8 +198,7 @@ class FileHistoryCache implements HistoryCache {
      * @param file the file to find the cache for
      * @return file that might contain cached history for <code>file</code>
      */
-    private static File getCachedFile(File file) throws HistoryException,
-            ForbiddenSymlinkException {
+    private static File getCachedFile(File file) throws HistoryException, ForbiddenSymlinkException {
 
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
