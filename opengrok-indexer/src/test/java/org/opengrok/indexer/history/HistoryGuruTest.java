@@ -111,11 +111,9 @@ public class HistoryGuruTest {
 
         for (File f : FILES) {
             if (f.isFile() && instance.hasHistory(f)) {
-                for (HistoryEntry entry
-                        : instance.getHistory(f).getHistoryEntries()) {
+                for (HistoryEntry entry : instance.getHistory(f).getHistoryEntries()) {
                     String revision = entry.getRevision();
-                    try (InputStream in = instance.getRevision(
-                            f.getParent(), f.getName(), revision)) {
+                    try (InputStream in = instance.getRevision(f.getParent(), f.getName(), revision)) {
                         assertNotNull(in, "Failed to get revision " + revision
                                 + " of " + f.getAbsolutePath());
                     }
