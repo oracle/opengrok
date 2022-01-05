@@ -205,7 +205,7 @@ public final class Configuration {
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
      * in history cache for repositories capable of fetching history for
-     * directories. This option affects file based history cache only.
+     * directories.
      */
     private boolean fetchHistoryWhenNotInCache;
     /*

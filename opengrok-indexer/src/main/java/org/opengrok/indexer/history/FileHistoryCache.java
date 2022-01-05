@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, 2020, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -638,6 +638,14 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException, ForbiddenSymlinkException {
+
+        return get(file, repository, withFiles, env.isFetchHistoryWhenNotInCache());
+    }
+
+    @Override
+    public History get(File file, Repository repository, boolean withFiles, boolean fallback)
+            throws HistoryException, ForbiddenSymlinkException {
+
         File cacheFile = getCachedFile(file);
         if (isUpToDate(file, cacheFile)) {
             try {
@@ -661,9 +669,8 @@ class FileHistoryCache implements HistoryCache {
          * since the history of all files in this repository should have been
          * fetched in the first phase of indexing.
          */
-        if (isHistoryIndexDone() && repository.isHistoryEnabled() &&
-                repository.hasHistoryForDirectories() &&
-                !env.isFetchHistoryWhenNotInCache()) {
+        if (isHistoryIndexDone() && repository.isHistoryEnabled() && repository.hasHistoryForDirectories() &&
+                !fallback) {
             return null;
         }
 

@@ -241,11 +241,11 @@ public final class HistoryGuru {
     }
 
     @Nullable
-    private History getHistoryFromCache(File file, Repository repository, boolean withFiles, boolean ui)
+    private History getHistoryFromCache(File file, Repository repository, boolean withFiles, boolean fallback)
             throws HistoryException, ForbiddenSymlinkException {
 
         if (useCache() && historyCache.supportsRepository(repository)) {
-            return historyCache.get(file, repository, withFiles);
+            return historyCache.get(file, repository, withFiles, fallback);
         }
 
         return null;
@@ -268,7 +268,7 @@ public final class HistoryGuru {
 
         History history;
         try {
-            history = getHistoryFromCache(file, repository, false, ui);
+            history = getHistoryFromCache(file, repository, false, false);
             if (history != null) {
                 HistoryEntry lastHistoryEntry = history.getLastHistoryEntry();
                 if (lastHistoryEntry != null) {
@@ -306,7 +306,7 @@ public final class HistoryGuru {
 
         History history;
         try {
-            history = getHistoryFromCache(file, repository, withFiles, ui);
+            history = getHistoryFromCache(file, repository, withFiles, true);
             if (history != null) {
                 return history;
             }
@@ -315,7 +315,7 @@ public final class HistoryGuru {
             return null;
         }
 
-        return repository.getHistory(file);
+        return null;
     }
 
     /**

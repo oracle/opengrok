@@ -887,9 +887,9 @@ class FileHistoryCacheTest {
                 updatedHistory.getHistoryEntries(), false);
     }
 
-    private void checkNoHistoryFetchRepo(String reponame, String filename, boolean hasHistory) throws Exception {
+    private void checkNoHistoryFetchRepo(String repoName, String filename, boolean hasHistory) throws Exception {
 
-        File reposRoot = new File(repositories.getSourceRoot(), reponame);
+        File reposRoot = new File(repositories.getSourceRoot(), repoName);
         Repository repo = RepositoryFactory.getRepository(reposRoot);
 
         // Make sure the file exists in the repository.
@@ -897,8 +897,7 @@ class FileHistoryCacheTest {
         assertTrue(repoFile.exists());
 
         // Try to fetch the history for given file. With default setting of
-        // FetchHistoryWhenNotInCache this should create corresponding file
-        // in history cache.
+        // FetchHistoryWhenNotInCache this should get the history even if not in cache.
         History retrievedHistory = cache.get(repoFile, repo, true);
         assertEquals(hasHistory, retrievedHistory != null);
     }
