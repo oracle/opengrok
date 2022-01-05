@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.util;
@@ -63,7 +63,7 @@ public class Executor {
     private final File workingDirectory;
     private byte[] stdout;
     private byte[] stderr;
-    private int timeout; // in seconds, 0 means no timeout
+    private int timeout; // in milliseconds, 0 means no timeout
 
     /**
      * Create a new instance of the Executor.
@@ -83,14 +83,18 @@ public class Executor {
 
     /**
      * Create a new instance of the Executor with default command timeout value.
+     * The timeout value will be based on the running context (indexer or web application).
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the
      *                         working directory
      */
     public Executor(List<String> cmdList, File workingDirectory) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        int timeoutSec = env.isIndexer() ? env.getIndexerCommandTimeout() : env.getInteractiveCommandTimeout();
+
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
-        this.timeout = RuntimeEnvironment.getInstance().getIndexerCommandTimeout() * 1000;
+        this.timeout = timeoutSec * 1000;
     }
 
     /**
