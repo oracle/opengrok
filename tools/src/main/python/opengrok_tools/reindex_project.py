@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2009, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -43,7 +43,7 @@ from .utils.exitvals import (
 """
 
 
-def get_logprop_file(logger, template, pattern, project):
+def get_logprop_file(template, pattern, project):
     """
     Return the filename of file with logging properties specific for given
     project.
@@ -93,7 +93,7 @@ def main():
                         help='URI of the webapp with context path')
     parser.add_argument('--printoutput', action='store_true', default=False)
     add_http_headers(parser)
-    parser.add_argument('--api_timeout', type=int,
+    parser.add_argument('--api_timeout', type=int, default=3,
                         help='Set response timeout in seconds for RESTful API calls')
 
     cmd_args = sys.argv[1:]
@@ -105,18 +105,17 @@ def main():
     logger = get_console_logger(get_class_basename(), args.loglevel)
 
     # Make sure the log directory exists.
-    if args.directory:
-        if not os.path.isdir(args.directory):
-            os.makedirs(args.directory)
+    if args.directory and not os.path.isdir(args.directory):
+        os.makedirs(args.directory)
 
     # Get files needed for per-project reindex.
     headers = get_headers(args.header)
-    conf_file = get_config_file(logger, args.uri, headers=headers)
+    conf_file = get_config_file(logger, args.uri, headers=headers, timeout=args.api_timeout)
     if conf_file is None:
         fatal("could not get config file to run the indexer")
     logprop_file = None
     if args.template and args.pattern:
-        logprop_file = get_logprop_file(logger, args.template, args.pattern,
+        logprop_file = get_logprop_file(args.template, args.pattern,
                                         args.project)
 
     # Reindex with the modified logging.properties file and read-only config.
