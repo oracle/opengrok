@@ -49,11 +49,11 @@ def test_replacement(monkeypatch):
             self.status_code = okay_status
             self.raise_for_status = self.p
 
-    def mock_do_api_call(verb, uri, headers, data, timeout):
+    def mock_do_api_call(verb, uri, **kwargs):
         # Spying on mocked function is maybe too much so verify
         # the arguments here.
         assert uri == "http://localhost:8080/source/api/v1/BAR"
-        assert data == '"fooBARbar"'
+        assert kwargs['data'] == '"fooBARbar"'
 
         return MockResponse()
 
@@ -88,7 +88,8 @@ def test_content_type(monkeypatch):
             command = {"command": ["http://localhost:8080/source/api/v1/foo",
                                    verb, "data", header_arg]}
 
-            def mock_response(uri, verb, headers, data, timeout):
+            def mock_response(verb, uri, **kwargs):
+                headers = kwargs['headers']
                 if header_arg:
                     assert text_plain_header.items() <= headers.items()
                 else:
@@ -109,22 +110,25 @@ def test_headers_timeout(monkeypatch):
     """
     headers = {'Tatsuo': 'Yasuko'}
     expected_timeout = 42
+    expected_api_timeout = 24
     command = {"command": ["http://localhost:8080/source/api/v1/bar",
                            'GET', "data", headers]}
     extra_headers = {'Mei': 'Totoro'}
 
-    def mock_do_api_call(uri, verb, headers, data, timeout):
+    def mock_do_api_call(verb, uri, **kwargs):
         all_headers = headers
         all_headers.update(extra_headers)
         assert headers == all_headers
-        assert timeout == expected_timeout
+        assert kwargs['timeout'] == expected_timeout
+        assert kwargs['api_timeout'] == expected_api_timeout
 
     with monkeypatch.context() as m:
         m.setattr("opengrok_tools.utils.restful.do_api_call",
                   mock_do_api_call)
         call_rest_api(command,
                       http_headers=extra_headers,
-                      timeout=expected_timeout)
+                      timeout=expected_timeout,
+                      api_timeout=expected_api_timeout)
 
 
 def test_headers_timeout_requests():
