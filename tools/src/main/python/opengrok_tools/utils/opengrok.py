@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import urllib.parse
@@ -191,7 +191,7 @@ def delete_project(logger, project, uri, headers=None, timeout=None, api_timeout
         r = do_api_call('DELETE', get_uri(uri, 'api', 'v1', 'projects',
                                           urllib.parse.quote_plus(project)),
                         headers=headers, timeout=timeout, api_timeout=api_timeout)
-        if r is None or r.status != 204:
+        if r is None or r.status_code != 204:
             logger.error(f"could not delete project '{project}' in web application")
             return False
     except Exception as exception:

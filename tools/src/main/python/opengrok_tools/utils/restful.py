@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import json
@@ -48,6 +48,7 @@ def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
     if location_uri is None:
         raise Exception(f"no Location header in {response}")
 
+    start_time = time.time()
     for _ in range(api_timeout):
         logger.debug(f"GET API call: {location_uri}, timeout {timeout} seconds and headers: {headers}")
         response = requests.get(location_uri, headers=headers, proxies=get_proxies(location_uri), timeout=timeout)
@@ -60,7 +61,8 @@ def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
             break
 
     if response.status_code == 202:
-        logger.warn(f"API request still not completed: {response}")
+        wait_time = time.time() - start_time
+        logger.warn(f"API request still not completed after {int(wait_time)} seconds: {response}")
         return response
 
     logger.debug(f"DELETE API call to {location_uri}")
@@ -69,7 +71,7 @@ def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
     return response
 
 
-def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, api_timeout=None):
+def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=60, api_timeout=300):
     """
     Perform an API call. Will raise an exception if the request fails.
     :param verb: string holding HTTP verb
@@ -90,14 +92,8 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, a
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
 
-    if timeout is None:
-        timeout = 60
-
-    if api_timeout is None:
-        api_timeout = 300
-
-    logger.debug("{} API call: {} with data '{}', timeout {} seconds and headers: {}".
-                 format(verb, uri, data, timeout, headers))
+    logger.debug("{} API call: {} with data '{}', connect timeout {} seconds, API timeout {} seconds and headers: {}".
+                 format(verb, uri, data, timeout, api_timeout, headers))
     r = handler(
         uri,
         data=data,
