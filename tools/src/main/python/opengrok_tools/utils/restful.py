@@ -141,7 +141,7 @@ def subst(src, substitutions):
     return src
 
 
-def call_rest_api(command, substitutions=None, http_headers=None, timeout=None):
+def call_rest_api(command, substitutions=None, http_headers=None, timeout=None, api_timeout=None):
     """
     Make RESTful API call. Occurrence of the pattern in the URI
     (first part of the command) or data payload will be replaced by the name.
@@ -154,6 +154,7 @@ def call_rest_api(command, substitutions=None, http_headers=None, timeout=None):
                           data substitution
     :param http_headers: optional dictionary of HTTP headers to be appended
     :param timeout: optional timeout in seconds for API call response
+    :param api_timeout: optional timeout in seconds for asynchronous API call
     :return value from given requests method
     """
 
@@ -200,4 +201,4 @@ def call_rest_api(command, substitutions=None, http_headers=None, timeout=None):
         data = subst(data, substitutions)
         logger.debug("entity data: {}".format(data))
 
-    return do_api_call(verb, uri, headers=headers, data=data, timeout=timeout)
+    return do_api_call(verb, uri, headers=headers, data=data, timeout=timeout, api_timeout=api_timeout)
