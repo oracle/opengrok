@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import pytest
@@ -130,8 +130,8 @@ def test_headers_timeout(monkeypatch):
 def test_headers_timeout_requests():
     """
     Test that headers and timeout parameters from do_call_api() are passed
-    to the appropriate function in the requests module.
-    Currently done for the GET HTTP verb only.
+    to the appropriate function in the 'requests' module.
+    Currently, this is done for the GET HTTP verb only.
     """
 
     uri = "http://foo:8080"
