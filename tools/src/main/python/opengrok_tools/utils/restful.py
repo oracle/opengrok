@@ -71,7 +71,7 @@ def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
     return response
 
 
-def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=60, api_timeout=300):
+def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, api_timeout=None):
     """
     Perform an API call. Will raise an exception if the request fails.
     :param verb: string holding HTTP verb
@@ -91,6 +91,12 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=60, api
     handler = getattr(requests, verb.lower())
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
+
+    if timeout is None:
+        timeout = 60
+
+    if api_timeout is None:
+        api_timeout = 300
 
     logger.debug("{} API call: {} with data '{}', connect timeout {} seconds, API timeout {} seconds and headers: {}".
                  format(verb, uri, data, timeout, api_timeout, headers))
