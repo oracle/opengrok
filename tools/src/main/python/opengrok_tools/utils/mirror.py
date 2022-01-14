@@ -80,6 +80,7 @@ def get_repos_for_project(project_name, uri, source_root,
                   variables
     :param command_timeout: command timeout value in seconds
     :param headers: optional HTTP headers dictionary
+    :param timeout: connect timeout for API calls
     :return: list of Repository objects
     """
 

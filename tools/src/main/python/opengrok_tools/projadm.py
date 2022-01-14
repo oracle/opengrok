@@ -266,9 +266,9 @@ def main():
                         default=False, help='Do not delete source code when '
                                             'deleting a project')
     add_http_headers(parser)
-    parser.add_argument('--api_timeout', type=int,
+    parser.add_argument('--api_timeout', type=int, default=3,
                         help='Set response timeout in seconds for RESTful API calls')
-    parser.add_argument('--async_api_timeout', type=int,
+    parser.add_argument('--async_api_timeout', type=int, default=300,
                         help='Set timeout in seconds for asynchronous RESTful API calls')
 
     group = parser.add_mutually_exclusive_group()

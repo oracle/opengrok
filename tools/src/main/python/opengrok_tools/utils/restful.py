@@ -34,10 +34,30 @@ CONTENT_TYPE = 'Content-Type'
 APPLICATION_JSON = 'application/json'   # default
 
 
-def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
+def call_finished(location_uri, headers, timeout):
+    """
+    :param location_uri: URI to check the status of API call
+    :param headers: HTTP headers
+    :param timeout: connect timeout
+    """
+    logger = logging.getLogger(__name__)
+
+    logger.debug(f"GET API call: {location_uri}, timeout {timeout} seconds and headers: {headers}")
+    response = requests.get(location_uri, headers=headers, proxies=get_proxies(location_uri), timeout=timeout)
+    if response is None:
+        raise Exception("API call failed")
+
+    response.raise_for_status()
+    if response.status_code == 202:
+        return False
+    else:
+        return True
+
+
+def wait_for_async_api(response, api_timeout=None, headers=None, timeout=None):
     """
     :param response: request
-    :param api_timeout: asynchronous API timeout
+    :param api_timeout: asynchronous API timeout (will wait forever or until error if None)
     :param headers: request headers
     :param timeout: connect timeout
     :return: request
@@ -49,16 +69,16 @@ def wait_for_async_api(response, api_timeout, headers=None, timeout=None):
         raise Exception(f"no Location header in {response}")
 
     start_time = time.time()
-    for _ in range(api_timeout):
-        logger.debug(f"GET API call: {location_uri}, timeout {timeout} seconds and headers: {headers}")
-        response = requests.get(location_uri, headers=headers, proxies=get_proxies(location_uri), timeout=timeout)
-        if response is None:
-            raise Exception("API call failed")
-
-        if response.status_code == 202:
+    if api_timeout is None:
+        while True:
+            if call_finished(location_uri, headers, timeout):
+                break
             time.sleep(1)
-        else:
-            break
+    else:
+        for _ in range(api_timeout):
+            if call_finished(location_uri, headers, timeout):
+                break
+            time.sleep(1)
 
     if response.status_code == 202:
         wait_time = time.time() - start_time
@@ -81,9 +101,7 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, a
     :param data: data or None
     :param timeout: optional connect timeout in seconds.
                     Applies also to asynchronous API status calls.
-                    If None, default (60 seconds) will be used.
     :param api_timeout: optional timeout for asynchronous API requests in seconds.
-                    If None, default (300 seconds) will be used.
     :return: the result of the handler call, can be None
     """
     logger = logging.getLogger(__name__)
@@ -91,12 +109,6 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, a
     handler = getattr(requests, verb.lower())
     if handler is None or not callable(handler):
         raise Exception('Unknown HTTP verb: {}'.format(verb))
-
-    if timeout is None:
-        timeout = 60
-
-    if api_timeout is None:
-        api_timeout = 300
 
     logger.debug("{} API call: {} with data '{}', connect timeout {} seconds, API timeout {} seconds and headers: {}".
                  format(verb, uri, data, timeout, api_timeout, headers))
@@ -113,7 +125,7 @@ def do_api_call(verb, uri, params=None, headers=None, data=None, timeout=None, a
         raise Exception("API call failed")
 
     if r.status_code == 202:
-        r = wait_for_async_api(r, api_timeout, headers=headers, timeout=timeout)
+        r = wait_for_async_api(r, api_timeout=api_timeout, headers=headers, timeout=timeout)
 
     r.raise_for_status()
 
@@ -142,7 +154,7 @@ def call_rest_api(command, substitutions=None, http_headers=None, timeout=None):
                           data substitution
     :param http_headers: optional dictionary of HTTP headers to be appended
     :param timeout: optional timeout in seconds for API call response
-    :return return value from given requests method
+    :return value from given requests method
     """
 
     logger = logging.getLogger(__name__)
