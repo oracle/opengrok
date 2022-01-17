@@ -275,8 +275,8 @@ def main():
                         ignore_errors, uri, args.workers,
                         driveon=args.driveon, http_headers=headers,
                         timeout=args.api_timeout)
-        except CommandConfigurationException:
-            logger.error("Invalid configuration")
+        except CommandConfigurationException as exc:
+            logger.error("Invalid configuration: {}".format(exc))
             return FAILURE_EXITVAL
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
@@ -289,8 +289,8 @@ def main():
                                 ignore_errors, uri, args.workers,
                                 driveon=args.driveon, http_headers=headers,
                                 timeout=args.api_timeout)
-                except CommandConfigurationException:
-                    logger.error("Invalid configuration")
+                except CommandConfigurationException as exc:
+                    logger.error("Invalid configuration: {}".format(exc))
                     return FAILURE_EXITVAL
         except Timeout:
             logger.warning("Already running")

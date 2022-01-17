@@ -48,11 +48,11 @@ def check_command_property(command):
     :param command: command element
     """
     if not isinstance(command, dict):
-        raise CommandConfigurationException("command {} is not a dictionary".format(command))
+        raise CommandConfigurationException("command '{}' is not a dictionary".format(command))
 
     command_value = command.get(COMMAND_PROPERTY)
     if command_value is None:
-        raise CommandConfigurationException("command dictionary has no {} key: {}".
+        raise CommandConfigurationException("command dictionary has no '{}' key: {}".
                                             format(COMMAND_PROPERTY, command))
 
     if not isinstance(command_value, list):
