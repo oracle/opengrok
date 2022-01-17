@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -33,17 +33,17 @@ except ImportError:
     JSONDecodeError = ValueError
 
 
-def read_config(logger, inputfile):
+def read_config(logger, input_file):
     """
-    Try to interpret inputfile as either JSON or YAML file,
+    Try to interpret input_file as either JSON or YAML file,
     parse it and return an object representing its contents.
 
     If neither is valid, return None.
     """
-    logging.debug("reading in {}".format(inputfile))
+    logging.debug("reading in {}".format(input_file))
     cfg = None
     try:
-        with open(inputfile) as data_file:
+        with open(input_file) as data_file:
             data = data_file.read()
 
             try:
@@ -67,6 +67,6 @@ def read_config(logger, inputfile):
 
                 return cfg
     except IOError as e:
-        logger.error("cannot open '{}': {}".format(inputfile, e.strerror))
+        logger.error("cannot open '{}': {}".format(input_file, e.strerror))
 
     return cfg
