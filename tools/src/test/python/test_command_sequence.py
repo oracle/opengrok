@@ -62,7 +62,7 @@ def test_invalid_configuration_commands_no_command():
         CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
                                                     {"foo": "bar"}]))
 
-    assert str(exc_info.value).startswith("command dictionary has no {} key".
+    assert str(exc_info.value).startswith("command dictionary has no '{}' key".
                                           format(COMMAND_PROPERTY))
 
 
