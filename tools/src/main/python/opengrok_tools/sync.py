@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -36,7 +36,7 @@ from os import path
 
 from filelock import Timeout, FileLock
 
-from .utils.commandsequence import CommandSequence, CommandSequenceBase
+from .utils.commandsequence import CommandSequence, CommandSequenceBase, CommandConfigurationException
 from .utils.log import get_console_logger, get_class_basename, fatal
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_base_parser, add_http_headers, get_headers
@@ -98,7 +98,7 @@ def do_sync(loglevel, commands, cleanup, dirs_to_process, ignore_errors,
                                        api_timeout=timeout)
         cmds_base.append(cmd_base)
 
-    # Map the commands into pool of workers so they can be processed.
+    # Map the commands into pool of workers, so they can be processed.
     retval = SUCCESS_EXITVAL
     with Pool(processes=numworkers) as pool:
         try:
@@ -269,21 +269,29 @@ def main():
         lockfile_name = os.path.basename(sys.argv[0])
 
     if args.nolock:
-        r = do_sync(args.loglevel, commands, config.get("cleanup"),
-                    dirs_to_process,
-                    ignore_errors, uri, args.workers,
-                    driveon=args.driveon, http_headers=headers,
-                    timeout=args.api_timeout)
+        try:
+            r = do_sync(args.loglevel, commands, config.get("cleanup"),
+                        dirs_to_process,
+                        ignore_errors, uri, args.workers,
+                        driveon=args.driveon, http_headers=headers,
+                        timeout=args.api_timeout)
+        except CommandConfigurationException:
+            logger.error("Invalid configuration")
+            return FAILURE_EXITVAL
     else:
         lock = FileLock(os.path.join(tempfile.gettempdir(),
                                      lockfile_name + ".lock"))
         try:
             with lock.acquire(timeout=0):
-                r = do_sync(args.loglevel, commands, config.get("cleanup"),
-                            dirs_to_process,
-                            ignore_errors, uri, args.workers,
-                            driveon=args.driveon, http_headers=headers,
-                            timeout=args.api_timeout)
+                try:
+                    r = do_sync(args.loglevel, commands, config.get("cleanup"),
+                                dirs_to_process,
+                                ignore_errors, uri, args.workers,
+                                driveon=args.driveon, http_headers=headers,
+                                timeout=args.api_timeout)
+                except CommandConfigurationException:
+                    logger.error("Invalid configuration")
+                    return FAILURE_EXITVAL
         except Timeout:
             logger.warning("Already running")
             return FAILURE_EXITVAL

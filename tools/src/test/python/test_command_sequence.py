@@ -20,7 +20,7 @@
 #
 
 #
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -32,8 +32,8 @@ import tempfile
 from requests.exceptions import HTTPError
 
 from opengrok_tools.utils.commandsequence import CommandSequence, \
-    CommandSequenceBase
-from opengrok_tools.utils.patterns import PROJECT_SUBST
+    CommandSequenceBase, CommandConfigurationException
+from opengrok_tools.utils.patterns import PROJECT_SUBST, COMMAND_PROPERTY
 
 
 def test_str():
@@ -41,6 +41,45 @@ def test_str():
                                                [{"command": ['foo']},
                                                 {"command": ["bar"]}]))
     assert str(cmds) == "opengrok-master"
+
+
+def test_invalid_configuration_commands_none():
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", None))
+
+    assert str(exc_info.value) == "commands is None"
+
+
+def test_invalid_configuration_commands_not_list():
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", {"foo": "bar"}))
+
+    assert str(exc_info.value) == "commands is not a list"
+
+
+def test_invalid_configuration_commands_no_command():
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
+                                                    {"foo": "bar"}]))
+
+    assert str(exc_info.value).startswith("command dictionary has no {} key".
+                                          format(COMMAND_PROPERTY))
+
+
+def test_invalid_configuration_commands_no_list():
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
+                                                    {"command": "bar"}]))
+
+    assert str(exc_info.value).startswith("command value not a list")
+
+
+def test_invalid_configuration_commands_no_dict():
+    with pytest.raises(CommandConfigurationException) as exc_info:
+        CommandSequence(CommandSequenceBase("foo", [{"command": ['foo']},
+                                                    "command"]))
+
+    assert str(exc_info.value).find("is not a dictionary") != -1
 
 
 @pytest.mark.skipif(not os.path.exists('/bin/sh')
@@ -125,11 +164,11 @@ def test_project_subst():
 
 def test_cleanup_exception():
     """
-    If cleanup is not a list, Exception should be thrown when initializing
+    If cleanup is not a list, exception should be thrown when initializing
     the CommandSequence object.
     """
     cleanup = {"cleanup": ["foo", PROJECT_SUBST]}
-    with pytest.raises(Exception):
+    with pytest.raises(CommandConfigurationException):
         CommandSequence(CommandSequenceBase("test-cleanup-list", None,
                                             cleanup=cleanup))
 
