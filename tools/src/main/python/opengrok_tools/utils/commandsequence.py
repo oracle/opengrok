@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2022, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
@@ -37,6 +37,29 @@ from .patterns import PROJECT_SUBST, COMMAND_PROPERTY, URL_SUBST
 import re
 
 
+class CommandConfigurationException(Exception):
+    pass
+
+
+def check_command_property(command):
+    """
+    Check if the 'commands' parameter of CommandSequenceBase() has the right structure
+    w.r.t. individual commands.
+    :param command: command element
+    """
+    if not isinstance(command, dict):
+        raise CommandConfigurationException("command {} is not a dictionary".format(command))
+
+    command_value = command.get(COMMAND_PROPERTY)
+    if command_value is None:
+        raise CommandConfigurationException("command dictionary has no {} key: {}".
+                                            format(COMMAND_PROPERTY, command))
+
+    if not isinstance(command_value, list):
+        raise CommandConfigurationException("command value not a list: {}".
+                                            format(command_value))
+
+
 class CommandSequenceBase:
     """
     Wrap the run of a set of Command instances.
@@ -49,14 +72,26 @@ class CommandSequenceBase:
                  driveon=False, url=None, env=None, http_headers=None,
                  api_timeout=None):
         self.name = name
+
+        if commands is None:
+            raise CommandConfigurationException("commands is None")
+        if not isinstance(commands, list):
+            raise CommandConfigurationException("commands is not a list")
         self.commands = commands
+        for command in self.commands:
+            check_command_property(command)
+
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
-        if cleanup and not isinstance(cleanup, list):
-            raise Exception("cleanup is not a list of commands")
 
+        if cleanup and not isinstance(cleanup, list):
+            raise CommandConfigurationException("cleanup is not a list of commands")
         self.cleanup = cleanup
+        if self.cleanup:
+            for command in self.cleanup:
+                check_command_property(command)
+
         self.loglevel = loglevel
         self.driveon = driveon
         self.env = env
@@ -75,11 +110,11 @@ class CommandSequenceBase:
         :return: command output as string
         """
 
-        str = ""
+        str_out = ""
         for line in self.outputs.get(cmd, []):
-            str += '{}{}'.format(indent, line)
+            str_out += '{}{}'.format(indent, line)
 
-        return str
+        return str_out
 
     def fill(self, retcodes, outputs, failed):
         self.retcodes = retcodes
