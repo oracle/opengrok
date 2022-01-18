@@ -154,13 +154,16 @@ class SCCSRepositoryTest {
     @Test
     void testDetermineParentInvalid() throws Exception {
         File codemgrDir = new File(repositoryRoot, SCCSRepository.CODEMGR_WSDATA);
-        assertTrue(codemgrDir.mkdirs());
+        if (!codemgrDir.isDirectory()) {
+            assertTrue(codemgrDir.mkdirs());
+        }
         File parentFile = new File(codemgrDir, "parent");
         assertTrue(parentFile.createNewFile());
         try (PrintWriter out = new PrintWriter(parentFile.toString())) {
             out.println("foo");
         }
         assertNull(sccsRepository.determineParent(CommandTimeoutType.INDEXER));
+        assertTrue(parentFile.delete());
     }
 
     /**
@@ -169,7 +172,9 @@ class SCCSRepositoryTest {
     @Test
     void testDetermineParent() throws Exception {
         File codemgrDir = new File(repositoryRoot, SCCSRepository.CODEMGR_WSDATA);
-        assertTrue(codemgrDir.mkdirs());
+        if (!codemgrDir.isDirectory()) {
+            assertTrue(codemgrDir.mkdirs());
+        }
         File parentFile = new File(codemgrDir, "parent");
         assertTrue(parentFile.createNewFile());
         final String expectedParent = "/foo";
@@ -178,6 +183,7 @@ class SCCSRepositoryTest {
             out.println(expectedParent);
         }
         assertEquals(expectedParent, sccsRepository.determineParent(CommandTimeoutType.INDEXER));
+        assertTrue(parentFile.delete());
     }
 
     private static class GetHistoryTestParams {
