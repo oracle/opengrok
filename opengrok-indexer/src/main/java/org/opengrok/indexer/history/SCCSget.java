@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -28,6 +28,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import org.opengrok.indexer.util.Executor;
 
+/**
+ * Used by both {@link RazorRepository} and {@link SCCSRepository} to retrieve revisions of a file.
+ */
 public final class SCCSget {
 
     public static InputStream getRevision(String command, File file, String revision) throws IOException {
