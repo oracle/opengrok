@@ -36,6 +36,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
@@ -106,7 +107,9 @@ class SCCSgetTest {
      */
     @Test
     void getRevision() throws Exception {
-        ZipInputStream zstream = new ZipInputStream(getClass().getResourceAsStream("/history/sccs-revisions.zip"));
+        InputStream inputStream = getClass().getResourceAsStream("/history/sccs-revisions.zip");
+        assertNotNull(inputStream);
+        ZipInputStream zstream = new ZipInputStream(inputStream);
         ZipEntry entry;
 
         while ((entry = zstream.getNextEntry()) != null) {
