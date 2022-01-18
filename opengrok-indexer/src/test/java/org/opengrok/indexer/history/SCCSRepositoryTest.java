@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
@@ -45,7 +46,7 @@ class SCCSRepositoryTest {
     private void testIsRepositoryFor(final String fileName, boolean shouldPass) throws IOException {
         File tdir = Files.createTempDirectory("SCCSrepotest" + fileName).toFile();
         File test = new File(tdir, fileName);
-        test.mkdirs();
+        assertTrue(test.mkdirs(), "failed to create directory");
         tdir.deleteOnExit();
         test.deleteOnExit();
         SCCSRepository instance = new SCCSRepository();
