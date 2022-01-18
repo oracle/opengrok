@@ -22,14 +22,20 @@
  */
 package org.opengrok.indexer.history;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
@@ -40,8 +46,24 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 @EnabledForRepository(SCCS)
 class SCCSRepositoryTest {
 
+    private static TestRepository repository;
+
+    @BeforeAll
+    public static void setup() throws IOException, URISyntaxException {
+        repository = new TestRepository();
+        repository.create(SCCSRepositoryTest.class.getResource("/repositories"));
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        if (repository != null) {
+            repository.destroy();
+            repository = null;
+        }
+    }
+
     /**
-     * Test of isRepositoryFor method, of class SCCSRepository.
+     * Test of {@link SCCSRepository#isRepositoryFor(File)}.
      */
     private void testIsRepositoryFor(final String fileName, boolean shouldPass) throws IOException {
         File tdir = Files.createTempDirectory("SCCSrepotest" + fileName).toFile();
@@ -71,5 +93,22 @@ class SCCSRepositoryTest {
     @Test
     void testIsRepositoryForCodemgrNot() throws IOException {
         testIsRepositoryFor("NOT", false);
+    }
+
+    /**
+     * Test of {@link SCCSRepository#annotate(File, String)}.
+     */
+    @Test
+    void testAnnotation() throws Exception {
+        File repositoryRoot = new File(repository.getSourceRoot(), "teamware");
+        assertTrue(repositoryRoot.isDirectory());
+        SCCSRepository sccsRepository = (SCCSRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(sccsRepository);
+        File file = new File(repositoryRoot, "main.c");
+        assertTrue(file.isFile());
+        Annotation annotation = sccsRepository.annotate(file, null);
+        assertNotNull(annotation);
+        Set<String> revSet = Set.of("1.2", "1.1");
+        assertEquals(revSet, annotation.getRevisions());
     }
 }

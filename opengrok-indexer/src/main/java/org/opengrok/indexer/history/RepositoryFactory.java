@@ -168,7 +168,7 @@ public final class RepositoryFactory {
      * @param file File that might contain a repository
      * @param cmdType command timeout type
      * @param isNested a value indicating if a nestable {@link Repository} is required
-     * @return Correct repository for the given file
+     * @return Correct repository for the given file or {@code null}
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file
      * @throws NoSuchMethodException in case we cannot create the repository object
