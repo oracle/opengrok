@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
- * Test the SCCSget class.
+ * Test the {@link SCCSget} class.
  * @author Trond Norbye
  */
 @EnabledForRepository(SCCS)
