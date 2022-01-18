@@ -18,23 +18,26 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
  *
  * @author Lubos Kosco
  */
-public class SCCSRepositoryTest {
+@EnabledForRepository(SCCS)
+class SCCSRepositoryTest {
 
     /**
      * Test of isRepositoryFor method, of class SCCSRepository.
@@ -50,22 +53,22 @@ public class SCCSRepositoryTest {
     }
 
     @Test
-    public void testIsRepositoryForCodemgr1() throws IOException {
+    void testIsRepositoryForCodemgr1() throws IOException {
         testIsRepositoryFor("Codemgr_wsdata", true);
     }
 
     @Test
-    public void testIsRepositoryForCodemgr2() throws IOException {
+    void testIsRepositoryForCodemgr2() throws IOException {
         testIsRepositoryFor("codemgr_wsdata", true);
     }
 
     @Test
-    public void testIsRepositoryForCodemgr3() throws IOException {
+    void testIsRepositoryForCodemgr3() throws IOException {
         testIsRepositoryFor("SCCS", true);
     }
 
     @Test
-    public void testIsRepositoryForCodemgrNot() throws IOException {
+    void testIsRepositoryForCodemgrNot() throws IOException {
         testIsRepositoryFor("NOT", false);
     }
 }
