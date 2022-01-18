@@ -22,15 +22,20 @@
  */
 package org.opengrok.indexer.history;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.opengrok.indexer.condition.EnabledForRepository;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Date;
@@ -173,5 +178,41 @@ class SCCSRepositoryTest {
             out.println(expectedParent);
         }
         assertEquals(expectedParent, sccsRepository.determineParent(CommandTimeoutType.INDEXER));
+    }
+
+    private static class GetHistoryTestParams {
+        private final String revision;
+        private final boolean shouldContain;
+
+        GetHistoryTestParams(String revision, boolean shouldContain) {
+            this.revision = revision;
+            this.shouldContain = shouldContain;
+        }
+    }
+
+    private static List<GetHistoryTestParams> getHistoryGetParams() {
+        return List.of(new GetHistoryTestParams("1.1", false),
+                new GetHistoryTestParams("1.2", true));
+    }
+
+    /**
+     * Test of {@link SCCSRepository#getHistoryGet(OutputStream, String, String, String)}.
+     */
+    @ParameterizedTest
+    @MethodSource("getHistoryGetParams")
+    void testGetHistoryGet(final GetHistoryTestParams testParams) throws Exception {
+        try (InputStream inputStream = sccsRepository.getHistoryGet(repositoryRoot.toString(),
+                "main.c", testParams.revision)) {
+            assertNotNull(inputStream);
+            byte[] buffer = new byte[1024];
+            IOUtils.readFully(inputStream, buffer);
+            String fileContents = new String(buffer);
+            final String castedPrintf = "(void)printf";
+            if (testParams.shouldContain) {
+                assertTrue(fileContents.contains(castedPrintf));
+            } else {
+                assertFalse(fileContents.contains(castedPrintf));
+            }
+        }
     }
 }
