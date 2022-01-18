@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -42,8 +42,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
 /**
- * This class gives access to repositories built on top of SCCS (including
- * TeamWare).
+ * This class gives access to repositories built on top of SCCS (including TeamWare).
  */
 public class SCCSRepository extends Repository {
 
@@ -53,8 +52,7 @@ public class SCCSRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.indexer.history.SCCS";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.indexer.history.SCCS";
     /**
      * The command to use to access the repository if none was given explicitly.
      */
