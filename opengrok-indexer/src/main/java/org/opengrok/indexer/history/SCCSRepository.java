@@ -81,8 +81,7 @@ public class SCCSRepository extends Repository {
         } catch (FileNotFoundException ex) {
             // continue below
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING,
-                    "An error occurred while getting revision", ex);
+            LOGGER.log(Level.WARNING, "An error occurred while getting revision", ex);
         }
         return false;
     }
