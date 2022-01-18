@@ -32,9 +32,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
@@ -47,11 +51,18 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 class SCCSRepositoryTest {
 
     private static TestRepository repository;
+    private static SCCSRepository sccsRepository;
+    private static File repositoryRoot;
 
     @BeforeAll
-    public static void setup() throws IOException, URISyntaxException {
+    public static void setup() throws Exception {
         repository = new TestRepository();
         repository.create(SCCSRepositoryTest.class.getResource("/repositories"));
+
+        repositoryRoot = new File(repository.getSourceRoot(), "teamware");
+        assertTrue(repositoryRoot.isDirectory());
+        sccsRepository = (SCCSRepository) RepositoryFactory.getRepository(repositoryRoot);
+        assertNotNull(sccsRepository);
     }
 
     @AfterAll
@@ -100,15 +111,34 @@ class SCCSRepositoryTest {
      */
     @Test
     void testAnnotation() throws Exception {
-        File repositoryRoot = new File(repository.getSourceRoot(), "teamware");
-        assertTrue(repositoryRoot.isDirectory());
-        SCCSRepository sccsRepository = (SCCSRepository) RepositoryFactory.getRepository(repositoryRoot);
-        assertNotNull(sccsRepository);
         File file = new File(repositoryRoot, "main.c");
         assertTrue(file.isFile());
         Annotation annotation = sccsRepository.annotate(file, null);
         assertNotNull(annotation);
         Set<String> revSet = Set.of("1.2", "1.1");
         assertEquals(revSet, annotation.getRevisions());
+    }
+
+    @Test
+    void testHasHistoryForDirectories() {
+        assertFalse(sccsRepository.hasHistoryForDirectories());
+    }
+
+    /**
+     * Test of {@link SCCSRepository#getHistory(File)}.
+     */
+    @Test
+    void testGetHistory() throws Exception {
+        File file = new File(repositoryRoot, "main.c");
+        assertTrue(file.isFile());
+        History history = sccsRepository.getHistory(file);
+        assertNotNull(history);
+        List<HistoryEntry> entries = List.of(
+                new HistoryEntry("1.2", new Date(1218492000000L),
+                        "trond", "Fixed lint warnings\n", true),
+                new HistoryEntry("1.1", new Date(1218492000000L),
+                        "trond", "date and time created 08/08/12 22:09:23 by trond\n\n", true));
+        History expectedHistory = new History(entries);
+        assertEquals(expectedHistory, history);
     }
 }
