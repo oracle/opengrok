@@ -102,7 +102,7 @@ class SCCSgetTest {
     }
 
     /**
-     * Test of getRevision method, of class SCCSget.
+     * Test {@link SCCSget#getRevision(String, File, String)}.
      */
     @Test
     void getRevision() throws Exception {
