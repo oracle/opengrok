@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengrok.indexer.condition.EnabledForRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,74 +37,37 @@ import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
  * Test the SCCSget class.
  * @author Trond Norbye
  */
-public class SCCSgetTest {
+@EnabledForRepository(SCCS)
+class SCCSgetTest {
 
     private static boolean haveSccs = true;
     private File sccsfile;
     private File sccsdir;
 
-    @BeforeAll
-    public static void setUpClass() throws Exception {
-        // Check to see if we have sccs..
-        Process p = null;
-        try {
-            p = Runtime.getRuntime().exec("sccs help help");
-            p.waitFor();
-            haveSccs = (p.exitValue() == 0);
-        } catch (Exception e) {
-            haveSccs = false;
-        } finally {
-            try {
-                if (p != null) {
-                    p.destroy();
-                }
-            } catch (Exception e) {
-
-            }
-        }
-        try {
-            p = Runtime.getRuntime().exec("sccs --version");
-            p.waitFor();
-            haveSccs = (p.exitValue() == 0);
-        } catch (Exception e) {
-            haveSccs = false;
-        } finally {
-            try {
-                if (p != null) {
-                    p.destroy();
-                }
-            } catch (Exception e) {
-
-            }
-        }
-    }
-
     @BeforeEach
     public void setUp() throws IOException {
-        if (!haveSccs) {
-            return;
-        }
         try {
             sccsdir = File.createTempFile("s.test", "sccs");
-            sccsdir.delete();
+            assertTrue(sccsdir.delete());
             assertTrue(sccsdir.mkdirs(), "Failed to set up the test-directory");
             sccsfile = new File(sccsdir, "s.note.txt");
-            InputStream in = getClass().getResourceAsStream("/history/s.note.txt");
-            FileOutputStream out = new FileOutputStream(sccsfile);
-            byte[] buffer = new byte[8192];
-            int nr;
+            try (InputStream in = getClass().getResourceAsStream("/history/s.note.txt");
+                 FileOutputStream out = new FileOutputStream(sccsfile)) {
 
-            while ((nr = in.read(buffer, 0, buffer.length)) != -1) {
-                out.write(buffer, 0, nr);
+                byte[] buffer = new byte[8192];
+                int nr;
+
+                while ((nr = in.read(buffer, 0, buffer.length)) != -1) {
+                    out.write(buffer, 0, nr);
+                }
+                out.flush();
             }
-            out.flush();
-            in.close();
-            out.close();
         } catch (IOException ex) {
             if (sccsfile != null) {
                 sccsfile.delete();
@@ -143,7 +106,7 @@ public class SCCSgetTest {
      * Test of getRevision method, of class SCCSget.
      */
     @Test
-    public void getRevision() throws Exception {
+    void getRevision() throws Exception {
         if (!haveSccs) {
             System.out.println("sccs not available. Skipping test");
             return;
