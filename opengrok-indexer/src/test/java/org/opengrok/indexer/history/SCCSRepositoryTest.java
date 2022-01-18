@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
 /**
- *
+ * Test {@link SCCSRepository}.
+ * The {@code #testDetermineParent*} tests should not run in parallel, otherwise it should be okay.
  * @author Lubos Kosco
  */
 @EnabledForRepository(SCCS)
@@ -63,7 +65,9 @@ class SCCSRepositoryTest {
     @BeforeAll
     public static void setup() throws Exception {
         repository = new TestRepository();
-        repository.create(SCCSRepositoryTest.class.getResource("/repositories"));
+        URL repositoriesUrl = SCCSRepositoryTest.class.getResource("/repositories");
+        assertNotNull(repositoriesUrl);
+        repository.create(repositoriesUrl);
 
         repositoryRoot = new File(repository.getSourceRoot(), "teamware");
         assertTrue(repositoryRoot.isDirectory());
