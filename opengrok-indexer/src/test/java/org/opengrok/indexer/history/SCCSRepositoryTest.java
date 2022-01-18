@@ -26,10 +26,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opengrok.indexer.condition.EnabledForRepository;
+import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +40,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 
@@ -138,5 +141,37 @@ class SCCSRepositoryTest {
                         "trond", "date and time created 08/08/12 22:09:23 by trond\n\n", true));
         History expectedHistory = new History(entries);
         assertEquals(expectedHistory, history);
+    }
+
+    /**
+     * Negative test of {@link SCCSRepository#determineParent(CommandTimeoutType)}.
+     */
+    @Test
+    void testDetermineParentInvalid() throws Exception {
+        File codemgrDir = new File(repositoryRoot, SCCSRepository.CODEMGR_WSDATA);
+        assertTrue(codemgrDir.mkdirs());
+        File parentFile = new File(codemgrDir, "parent");
+        assertTrue(parentFile.createNewFile());
+        try (PrintWriter out = new PrintWriter(parentFile.toString())) {
+            out.println("foo");
+        }
+        assertNull(sccsRepository.determineParent(CommandTimeoutType.INDEXER));
+    }
+
+    /**
+     * Test of {@link SCCSRepository#determineParent(CommandTimeoutType)}.
+     */
+    @Test
+    void testDetermineParent() throws Exception {
+        File codemgrDir = new File(repositoryRoot, SCCSRepository.CODEMGR_WSDATA);
+        assertTrue(codemgrDir.mkdirs());
+        File parentFile = new File(codemgrDir, "parent");
+        assertTrue(parentFile.createNewFile());
+        final String expectedParent = "/foo";
+        try (PrintWriter out = new PrintWriter(parentFile.toString())) {
+            out.println("VERSION 1");
+            out.println(expectedParent);
+        }
+        assertEquals(expectedParent, sccsRepository.determineParent(CommandTimeoutType.INDEXER));
     }
 }

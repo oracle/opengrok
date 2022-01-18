@@ -58,7 +58,7 @@ public class SCCSRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "sccs";
 
-    private static final String CODEMGR_WSDATA = "Codemgr_wsdata";
+    static final String CODEMGR_WSDATA = "Codemgr_wsdata";
 
     public SCCSRepository() {
         type = "SCCS";
