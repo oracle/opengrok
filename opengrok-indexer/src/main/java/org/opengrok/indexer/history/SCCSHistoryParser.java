@@ -249,11 +249,11 @@ final class SCCSHistoryParser {
         return -1;
     }
 
-    protected static File getSCCSFile(File file) {
+    private static File getSCCSFile(File file) {
         return getSCCSFile(file.getParent(), file.getName());
     }
 
-    protected static File getSCCSFile(String parent, String name) {
+    static File getSCCSFile(String parent, String name) {
         File f = new File(parent + "/SCCS/s." + name);
         if (!f.exists()) {
             return null;
