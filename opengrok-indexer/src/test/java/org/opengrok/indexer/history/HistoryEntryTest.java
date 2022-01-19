@@ -274,7 +274,7 @@ public class HistoryEntryTest {
     @Test
     public void testEqualsWithFilesInstance() {
         HistoryEntry e = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, null, historyMessage, true,
+                historyAuthor, historyMessage, true,
                 Set.of(File.separator + Paths.get("foo", "main.o"),
                         File.separator + Paths.get("foo", "testsprog")));
         assertNotSame(e, instance);
@@ -286,9 +286,9 @@ public class HistoryEntryTest {
         Set<String> files = Set.of(File.separator + Paths.get("foo", "main.o"),
                 File.separator + Paths.get("foo", "testsprog"));
         HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, null, historyMessage, true, files);
+                historyAuthor, historyMessage, true, files);
         HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, null, historyMessage, true, files);
+                historyAuthor, historyMessage, true, files);
         assertNotSame(e1, e2);
         assertEquals(e1, e2);
     }
@@ -298,10 +298,10 @@ public class HistoryEntryTest {
         String file1 = File.separator + Paths.get("foo", "main.o");
         String file2 = File.separator + Paths.get("foo", "testsprog");
         HistoryEntry e1 = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, null, historyMessage, true,
+                historyAuthor, historyMessage, true,
                 Set.of(file1, file2));
         HistoryEntry e2 = new HistoryEntry(historyRevision, historyDate,
-                historyAuthor, null, historyMessage, true,
+                historyAuthor, historyMessage, true,
                 Set.of(file1, file2 + "X"));
         assertNotSame(e1, e2);
         assertNotEquals(e1, e2);

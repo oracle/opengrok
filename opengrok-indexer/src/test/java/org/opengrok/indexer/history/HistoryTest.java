@@ -41,11 +41,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HistoryTest {
     private final List<HistoryEntry> entries = List.of(
             new HistoryEntry("84599b3c", new Date(1485438707000L),
-                    "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                    "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                     "    renaming directories\n\n", true,
                     Set.of(File.separator + Paths.get("git", "moved2", "renamed2.c"))),
             new HistoryEntry("67dfbe26", new Date(1485263397000L),
-                    "Kryštof Tulinger <krystof.tulinger@oracle.com>", null,
+                    "Kryštof Tulinger <krystof.tulinger@oracle.com>",
                     "    renaming renamed -> renamed2\n\n", true,
                     Set.of(File.separator + Paths.get("git", "moved", "renamed2.c"))));
 
