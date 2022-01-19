@@ -63,6 +63,7 @@ public class SCCSRepository extends Repository {
     public SCCSRepository() {
         type = "SCCS";
         datePatterns = new String[]{
+            "yy/MM/dd HH:mm:ss",
             "yy/MM/dd"
         };
 

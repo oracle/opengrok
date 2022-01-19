@@ -39,7 +39,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -143,10 +144,11 @@ class SCCSRepositoryTest {
         assertTrue(file.isFile());
         History history = sccsRepository.getHistory(file);
         assertNotNull(history);
+        DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy");
         List<HistoryEntry> entries = List.of(
-                new HistoryEntry("1.2", new Date(1218492000000L),
+                new HistoryEntry("1.2", dateFormat.parse("Tue Aug 12 22:11:54 2008"),
                         "trond", "Fixed lint warnings\n", true),
-                new HistoryEntry("1.1", new Date(1218492000000L),
+                new HistoryEntry("1.1", dateFormat.parse("Tue Aug 12 22:09:23 2008"),
                         "trond", "date and time created 08/08/12 22:09:23 by trond\n\n", true));
         History expectedHistory = new History(entries);
         assertEquals(expectedHistory, history);
