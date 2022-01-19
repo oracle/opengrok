@@ -31,6 +31,8 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.jetbrains.annotations.Nullable;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
@@ -254,6 +256,7 @@ final class SCCSHistoryParser {
         return getSCCSFile(file.getParent(), file.getName());
     }
 
+    @Nullable
     static File getSCCSFile(String parent, String name) {
         File f = Paths.get(parent, "SCCS", "s." + name).toFile();
         if (!f.exists()) {
