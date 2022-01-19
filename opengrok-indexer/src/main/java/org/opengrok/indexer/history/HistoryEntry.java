@@ -186,6 +186,7 @@ public class HistoryEntry implements Serializable {
      */
     @Deprecated(since = "1.7.11", forRemoval = true)
     public void setTags(String tags) {
+        // Tags moved to the History object.
     }
 
     @Override
