@@ -35,7 +35,7 @@ import org.opengrok.indexer.util.IOUtils;
 /**
  * Reads and filters out junk from a SCCS history file.
  * See sccsfile(4) for details of the file format.
- * Wrote it since invoking 'sccs prs' for each file was
+ * Wrote it since invoking {@code sccs prs} for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
 final class SCCSHistoryParser {
