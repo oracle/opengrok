@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2022, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.indexer.history;
 
@@ -38,14 +38,14 @@ import org.opengrok.indexer.util.IOUtils;
  * Wrote it since invoking 'sccs prs' for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
-class SCCSHistoryParser {
+final class SCCSHistoryParser {
 
     boolean pass;
     boolean passRecord;
     boolean active;
     int field;
     boolean sep;
-    StringBuilder record = new StringBuilder(128);
+    StringBuilder sccsRecord = new StringBuilder(128);
     Reader in;
 
     // Record fields
@@ -102,31 +102,31 @@ class SCCSHistoryParser {
     }
 
     /**
-     * Read a single line of delta record into the 'record' member.
+     * Read a single line of delta record into the {@link #sccsRecord} member.
      *
-     * @throws java.io.IOException
+     * @throws java.io.IOException on I/O error
      * @return boolean indicating whether there is another record.
      */
     private boolean next() throws java.io.IOException {
         sep = true;
-        record.setLength(0);
+        sccsRecord.setLength(0);
         int c;
         while ((c = read()) > 1) {
-            record.append((char) c);
+            sccsRecord.append((char) c);
         }
         // to flag that revision needs to be re populated if you really need it
         revision = null;
-        return (record.length() > 2);
+        return (sccsRecord.length() > 2);
     }
 
     /**
      * Split record into fields.
      *
-     * @throws java.io.IOException
+     * @throws ParseException if the date in the record cannot be parsed
      */
     private void initFields() throws ParseException {
         if (revision == null) {
-            String[] f = record.toString().split(" ", 6);
+            String[] f = sccsRecord.toString().split(" ", 6);
             if (f.length > 5) {
                 revision = f[1];
                 try {
