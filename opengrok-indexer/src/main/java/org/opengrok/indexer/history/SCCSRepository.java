@@ -148,7 +148,10 @@ public class SCCSRepository extends Repository {
     public boolean fileHasHistory(File file) {
         String parentFile = file.getParent();
         String name = file.getName();
-        File f = Paths.get(parentFile, "SCCS", "s." + name).toFile();
+        File f = SCCSHistoryParser.getSCCSFile(parentFile, name);
+        if (f == null) {
+            return false;
+        }
         return f.exists();
     }
 

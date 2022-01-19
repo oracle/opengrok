@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -254,7 +255,7 @@ final class SCCSHistoryParser {
     }
 
     static File getSCCSFile(String parent, String name) {
-        File f = new File(parent + "/SCCS/s." + name);
+        File f = Paths.get(parent, "SCCS", "s." + name).toFile();
         if (!f.exists()) {
             return null;
         }
