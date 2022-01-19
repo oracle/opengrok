@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2022, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2019, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.history;
@@ -84,7 +84,7 @@ public class HistoryEntry implements Serializable {
     }
 
     public HistoryEntry(String revision, Date date, String author,
-                        String tags, String message, boolean active, Collection<String> files) {
+                        String message, boolean active, Collection<String> files) {
         this(revision, date, author, message, active);
         this.files.addAll(files);
     }
