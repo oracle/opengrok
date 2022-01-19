@@ -166,7 +166,7 @@ public class SCCSRepository extends Repository {
             if (f.isDirectory()) {
                 return true;
             }
-            return new File(file, "SCCS").isDirectory();
+            return new File(file, SCCSHistoryParser.SCCS_DIR_NAME).isDirectory();
         }
         return false;
     }

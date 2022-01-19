@@ -43,6 +43,8 @@ import org.opengrok.indexer.util.IOUtils;
  */
 final class SCCSHistoryParser {
 
+    static final String SCCS_DIR_NAME = "SCCS";
+
     boolean pass;
     boolean passRecord;
     boolean active;
@@ -258,7 +260,7 @@ final class SCCSHistoryParser {
 
     @Nullable
     static File getSCCSFile(String parent, String name) {
-        File f = Paths.get(parent, "SCCS", "s." + name).toFile();
+        File f = Paths.get(parent, SCCS_DIR_NAME, "s." + name).toFile();
         if (!f.exists()) {
             return null;
         }
