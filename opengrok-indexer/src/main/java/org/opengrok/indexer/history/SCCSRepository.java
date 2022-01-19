@@ -62,6 +62,11 @@ public class SCCSRepository extends Repository {
 
     public SCCSRepository() {
         type = "SCCS";
+        /*
+         * Originally there was only the "yy/MM/dd" pattern however the newer SCCS implementations seem
+         * to use the time as well. Some historical SCCS versions might still use that, so it is left there
+         * for potential compatibility.
+         */
         datePatterns = new String[]{
             "yy/MM/dd HH:mm:ss",
             "yy/MM/dd"

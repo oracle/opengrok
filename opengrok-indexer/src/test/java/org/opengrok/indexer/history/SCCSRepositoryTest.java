@@ -144,6 +144,12 @@ class SCCSRepositoryTest {
         assertTrue(file.isFile());
         History history = sccsRepository.getHistory(file);
         assertNotNull(history);
+        /*
+         * SCCSRepository code parses the contents of the "s." files directly.
+         * The time strings embedded therein do not contain time zone so the expected date values
+         * in the HistoryEntry list are constructed using zone-less time value
+         * instead of time stamp in long to avoid mismatch due to time zone recalculation.
+         */
         DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy");
         List<HistoryEntry> entries = List.of(
                 new HistoryEntry("1.2", dateFormat.parse("Tue Aug 12 22:11:54 2008"),
