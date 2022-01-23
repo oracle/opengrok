@@ -47,7 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,7 +130,7 @@ public final class Configuration {
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
     private Map<String, Project> projects; // project name -> Project
-    private Set<Group> groups;
+    private Map<String, Group> groups; // group name -> group
     private String sourceRoot;
     private String dataRoot;
     /**
@@ -537,7 +537,8 @@ public final class Configuration {
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
-        setGroups(new TreeSet<>());
+        setGroups(new TreeMap<>());
+    
         setGroupsCollapseThreshold(4);
         setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
@@ -847,25 +848,31 @@ public final class Configuration {
     }
 
     /**
-     * Adds a group to the set. This is performed upon configuration parsing
+     * Adds a group to the map. This is performed upon configuration parsing
      *
      * @param group group
      * @throws IOException when group is not unique across the set
      */
     public void addGroup(Group group) throws IOException {
-        if (!groups.add(group)) {
+        if(!groups.containsKey(group.getName())){
             throw new IOException(
                     String.format("Duplicate group name '%s' in configuration.",
                             group.getName()));
-        }
+            }else{
+                groups.put(group.getName(), group);
+            }
     }
 
-    public Set<Group> getGroups() {
+    public Map<String, Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
+    public void setGroups(Map<String, Group> groups) {
+        Map<String, Group> settedGroup = new HashMap<String, Group>();
+        for (Group entry : groups.values()){
+            settedGroup.put(entry.getName(), entry);
+        }
+        this.groups = settedGroup;
     }
 
     public String getSourceRoot() {
@@ -1480,22 +1487,25 @@ public final class Configuration {
         // This ensures that when the configuration is reloaded then the set
         // contains only root groups. Subgroups are discovered again
         // as follows below
-        conf.groups.removeIf(g -> g.getParent() != null);
+        conf.groups.entrySet().removeIf( entries -> entries.getValue().getParent() != null);
 
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)
         // supporting an iterator.
-        TreeSet<Group> copy = new TreeSet<>();
-        LinkedList<Group> stack = new LinkedList<>(conf.groups);
+        Map<String, Group> copy = new TreeMap<>();
+        LinkedList<Group> stack = new LinkedList<>(conf.groups.values());
         while (!stack.isEmpty()) {
             Group group = stack.pollFirst();
             stack.addAll(group.getSubgroups());
 
-            if (!copy.add(group)) {
+            if (!copy.containsKey(group.getName())) {
                 throw new IOException(
                         String.format("Duplicate group name '%s' in configuration.",
                                 group.getName()));
+            }else{
+                copy.put(group.getName(), group);
             }
+            
 
             // populate groups where the current group in in their subtree
             Group tmp = group.getParent();

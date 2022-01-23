@@ -28,8 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
@@ -102,7 +102,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Set of groups which match this project.
      */
-    private transient Set<Group> groups = new TreeSet<>();
+    private transient Map<String, Group> groups = new TreeMap<>();
 
     /**
      * These properties override global settings, if set.
@@ -294,12 +294,8 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      *
      * @return set of groups|empty if none
      */
-    public Set<Group> getGroups() {
+    public Map<String,Group> getGroups() {
         return groups;
-    }
-
-    public void setGroups(Set<Group> groups) {
-        this.groups = groups;
     }
 
     /**
@@ -309,7 +305,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public void addGroup(Group group) {
         while (group != null) {
-            this.groups.add(group);
+            this.groups.put(group.getName(), group);
             group = group.getParent();
         }
     }

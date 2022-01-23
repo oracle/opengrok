@@ -23,8 +23,11 @@
  */
 package org.opengrok.indexer.configuration;
 
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -287,7 +290,7 @@ public class Group implements Comparable<Group>, Nameable {
         Group ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasGroups()) {
-            for (Group grp : env.getGroups()) {
+            for (Group grp : env.getGroups().values()) {
                 if (name.equals(grp.getName())) {
                     ret = grp;
                 }
@@ -301,12 +304,12 @@ public class Group implements Comparable<Group>, Nameable {
      * the project's description.
      *
      * @param project the project
-     * @param groups set of groups
+     * @param map set of groups
      * @return set of groups matching the project
      */
-    public static Set<Group> matching(Project project, Set<Group> groups) {
-        Set<Group> copy = new TreeSet<>(groups);
-        copy.removeIf(g -> !g.match(project));
+    public static Map<String, Group> matching(Project project, Map<String, Group> map) {
+        Map<String, Group> copy = new TreeMap<>(map);
+        ((Collection<Group>) copy).removeIf(g -> !g.match(project));
         return copy;
     }
 }

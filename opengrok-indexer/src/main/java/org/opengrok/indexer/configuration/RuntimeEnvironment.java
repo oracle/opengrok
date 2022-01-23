@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -487,7 +488,7 @@ public final class RuntimeEnvironment {
     public void setProjects(Map<String, Project> projects) {
         syncWriteConfiguration(projects, (c, p) -> {
             if (p != null) {
-                populateGroups(getGroups(), new TreeSet<>(p.values()));
+                populateGroups(getGroups(), new TreeMap<>(p));
             }
             c.setProjects(p);
         });
@@ -507,7 +508,7 @@ public final class RuntimeEnvironment {
      *
      * @return a set containing all of the groups (may be null)
      */
-    public Set<Group> getGroups() {
+    public Map<String, Group> getGroups() {
         return syncReadConfiguration(Configuration::getGroups);
     }
 
@@ -516,10 +517,10 @@ public final class RuntimeEnvironment {
      *
      * @param groups the set of groups to use
      */
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Map<String, Group> groups) {
         syncWriteConfiguration(groups, (c, g) -> {
-            populateGroups(g, new TreeSet<>(getProjects().values()));
-            c.setGroups(g);
+            populateGroups(g, new TreeMap<>(getProjects()));
+            c.setGroups(groups);
         });
     }
 
@@ -1545,30 +1546,30 @@ public final class RuntimeEnvironment {
      * If any of the groups contain some projects or repositories already,
      * these get discarded.
      *
-     * @param groups   set of groups to be filled with matching projects
+     * @param map   set of groups to be filled with matching projects
      * @param projects projects to classify
      */
-    public void populateGroups(Set<Group> groups, Set<Project> projects) {
-        if (projects == null || groups == null) {
+    public void populateGroups(Map<String, Group> map, Map<String, Project> projects) {
+        if (projects == null || map == null) {
             return;
         }
 
         // clear the groups first if they had something in them
-        for (Group group : groups) {
+        for (Group group : map.values()) {
             group.getRepositories().clear();
             group.getProjects().clear();
         }
 
         // now fill the groups with appropriate projects
-        for (Project project : projects) {
+        for (Project project : projects.values()) {
             // clear the project's groups
             project.getGroups().clear();
 
             // filter projects only to groups which match project's name
-            Set<Group> copy = Group.matching(project, groups);
+            Map<String, Group> copy = Group.matching(project, map);
 
             // add project to the groups
-            for (Group group : copy) {
+            for (Group group : copy.values()) {
                 if (repository_map.get(project) == null) {
                     group.addProject(project);
                 } else {
@@ -1636,11 +1637,12 @@ public final class RuntimeEnvironment {
         }
 
         // populate groups is dependent on repositories map
-        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
+        populateGroups(getGroups(), new TreeMap<>(getProjects()));
 
         includeFiles.reloadIncludeFiles();
     }
 
+  
     public IncludeFiles getIncludeFiles() {
         return includeFiles;
     }
