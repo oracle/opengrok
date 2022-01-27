@@ -47,44 +47,36 @@ import static org.opengrok.indexer.condition.RepositoryInstalled.Type.SCCS;
 @EnabledForRepository(SCCS)
 class SCCSgetTest {
 
-    private File sccs_file;
-    private File sccs_dir;
+    private File sccsFile;
+    private File sccsDir;
 
     @BeforeEach
     public void setUp() throws IOException {
-        try {
-            sccs_dir = File.createTempFile("s.test", "sccs");
-            assertTrue(sccs_dir.delete());
-            assertTrue(sccs_dir.mkdirs(), "Failed to set up the test-directory");
-            sccs_file = new File(sccs_dir, "s.note.txt");
-            try (InputStream in = getClass().getResourceAsStream("/history/s.note.txt");
-                 FileOutputStream out = new FileOutputStream(sccs_file)) {
+        sccsDir = File.createTempFile("s.test", "sccs");
+        assertTrue(sccsDir.delete());
+        assertTrue(sccsDir.mkdirs(), "Failed to set up the test-directory");
+        sccsFile = new File(sccsDir, "s.note.txt");
+        try (InputStream in = getClass().getResourceAsStream("/history/s.note.txt");
+             FileOutputStream out = new FileOutputStream(sccsFile)) {
 
-                byte[] buffer = new byte[8192];
-                int nr;
+            byte[] buffer = new byte[8192];
+            int nr;
 
-                while ((nr = in.read(buffer, 0, buffer.length)) != -1) {
-                    out.write(buffer, 0, nr);
-                }
-                out.flush();
+            while ((nr = in.read(buffer, 0, buffer.length)) != -1) {
+                out.write(buffer, 0, nr);
             }
-        } catch (IOException ex) {
-            if (sccs_file != null) {
-                sccs_file.delete();
-                sccs_dir.delete();
-            }
-            throw ex;
+            out.flush();
         }
     }
 
     @AfterEach
     public void tearDown() {
-        if (sccs_file != null) {
-            sccs_file.delete();
+        if (sccsFile != null) {
+            sccsFile.delete();
         }
 
-        if (sccs_dir != null) {
-            sccs_dir.delete();
+        if (sccsDir != null) {
+            sccsDir.delete();
         }
     }
 
@@ -107,19 +99,20 @@ class SCCSgetTest {
      */
     @Test
     void getRevision() throws Exception {
-        InputStream inputStream = getClass().getResourceAsStream("/history/sccs-revisions.zip");
-        assertNotNull(inputStream);
-        ZipInputStream zstream = new ZipInputStream(inputStream);
-        ZipEntry entry;
+        try (InputStream inputStream = getClass().getResourceAsStream("/history/sccs-revisions.zip")) {
+            assertNotNull(inputStream);
+            ZipInputStream zstream = new ZipInputStream(inputStream);
+            ZipEntry entry;
 
-        while ((entry = zstream.getNextEntry()) != null) {
-            String expected = readInput(zstream);
-            InputStream sccs = SCCSget.getRevision("sccs", sccs_file, entry.getName());
-            String got = readInput(sccs);
-            sccs.close();
-            zstream.closeEntry();
-            assertEquals(expected, got);
+            while ((entry = zstream.getNextEntry()) != null) {
+                String expected = readInput(zstream);
+                InputStream sccs = SCCSget.getRevision("sccs", sccsFile, entry.getName());
+                String got = readInput(sccs);
+                sccs.close();
+                zstream.closeEntry();
+                assertEquals(expected, got);
+            }
+            zstream.close();
         }
-        zstream.close();
     }
 }

@@ -22,7 +22,6 @@
  */
 package org.opengrok.indexer.history;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -99,7 +98,7 @@ class SCCSRepositoryTest {
 
     @Test
     void testIsRepositoryForCodemgr1() throws IOException {
-        testIsRepositoryFor("Codemgr_wsdata", true);
+        testIsRepositoryFor(SCCSRepository.CODEMGR_WSDATA, true);
     }
 
     @Test
@@ -222,8 +221,7 @@ class SCCSRepositoryTest {
         try (InputStream inputStream = sccsRepository.getHistoryGet(repositoryRoot.toString(),
                 "main.c", testParams.revision)) {
             assertNotNull(inputStream);
-            byte[] buffer = new byte[1024];
-            IOUtils.readFully(inputStream, buffer);
+            byte[] buffer = inputStream.readAllBytes();
             String fileContents = new String(buffer);
             final String castedPrintf = "(void)printf";
             if (testParams.shouldContain) {

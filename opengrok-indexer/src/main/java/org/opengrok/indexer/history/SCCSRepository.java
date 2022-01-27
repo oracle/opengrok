@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.VisibleForTesting;
 import org.opengrok.indexer.configuration.CommandTimeoutType;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -58,6 +59,7 @@ public class SCCSRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "sccs";
 
+    @VisibleForTesting
     static final String CODEMGR_WSDATA = "Codemgr_wsdata";
 
     public SCCSRepository() {
