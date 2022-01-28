@@ -81,7 +81,7 @@ def get_repos_for_project(project_name, uri, source_root,
     :param command_timeout: command timeout value in seconds
     :param headers: optional HTTP headers dictionary
     :param timeout: connect timeout for API calls
-    :return: list of Repository objects
+    :return: list of Repository objects, the repository matching the project path will be first
     """
 
     logger = logging.getLogger(__name__)
@@ -127,7 +127,10 @@ def get_repos_for_project(project_name, uri, source_root,
                          format(repo_path, e))
 
         if repo:
-            repos.append(repo)
+            if repo_path == os.path.sep + project_name:
+                repos.insert(0, repo)
+            else:
+                repos.append(repo)
 
     return repos
 
@@ -269,6 +272,7 @@ def process_changes(repos, project_name, uri, headers=None):
     """
     :param repos: repository list
     :param project_name: project name
+    :param uri: web application URI
     :param headers: optional dictionary of HTTP headers
     :return: exit code
     """
@@ -306,6 +310,11 @@ def process_changes(repos, project_name, uri, headers=None):
                     logger.debug('Repository {} has incoming changes'.
                                  format(repo))
                     changes_detected = True
+                    break
+
+                if repo.top_level():
+                    logger.debug('Repository {} is top level, finishing incoming check'.
+                                 format(repo))
                     break
             except RepositoryException:
                 logger.error('Cannot determine incoming changes for '
@@ -392,8 +401,8 @@ def mirror_project(config, project_name, check_changes, uri,
     :param project_name: name of the project
     :param check_changes: check for changes in the project or its repositories
      and terminate if no change is found
-    :param uri
-    :param source_root
+    :param uri web application URI
+    :param source_root source root
     :param headers: optional dictionary of HTTP headers
     :param timeout: optional timeout in seconds for API call response
     :return exit code
@@ -484,6 +493,10 @@ def mirror_project(config, project_name, check_changes, uri,
             logger.error("failed to synchronize repository {}".
                          format(repo.path))
             ret = FAILURE_EXITVAL
+
+        if repo.top_level():
+            logger.info("Repository {} is top level, breaking".format(repo))
+            break
 
     if not process_hook(HOOK_POST_PROPERTY, posthook, source_root, project_name,
                         proxy, hook_timeout):

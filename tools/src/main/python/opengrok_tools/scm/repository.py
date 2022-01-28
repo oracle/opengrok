@@ -199,7 +199,7 @@ class Repository:
 
     def _check_command(self):
         """
-        Could be overriden in given repository class to provide different check.
+        Could be overridden in given repository class to provide different check.
         :return: True if self.command is a file, False otherwise.
         """
         if self.command and not os.path.isfile(self.command):
@@ -212,7 +212,7 @@ class Repository:
     def check_command(self):
         """
         Check the validity of the command. Does not check the command if
-        the sync/incoming is overriden.
+        the sync/incoming is overridden.
         :return: True if self.command is valid, False otherwise.
         """
 
@@ -231,3 +231,10 @@ class Repository:
             return False
 
         return self._check_command()
+
+    def top_level(self):
+        """
+
+        :return:
+        """
+        return False
