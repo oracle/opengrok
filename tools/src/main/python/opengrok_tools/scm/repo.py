@@ -44,7 +44,7 @@ class RepoRepository(Repository):
         return True
 
     def reposync(self):
-        return self._run_custom_sync_command([self.command, 'sync', '-cf'])
+        return self._run_custom_sync_command([self.command, 'sync', '-c'])
 
     def incoming_check(self):
         return self._run_custom_incoming_command([self.command, 'sync', '-n'])
